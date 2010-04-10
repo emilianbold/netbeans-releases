@@ -64,6 +64,7 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
 
     private static final Logger LOG = Logger.getLogger(ProxyHighlightsContainer.class.getName());
     
+    private Document doc;
     private HighlightsContainer[] layers;
     private boolean[] blacklisted;
     private long version = 0;
@@ -155,17 +156,26 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
      */
     @Override
     public void setLayers(Document doc, HighlightsContainer[] layers) {
+        Document docForEvents = null;
+
         synchronized (LOCK) {
+            if (doc == null) {
+                assert layers == null : "If doc is null the layers must be null too."; //NOI18N
+            }
+
+            docForEvents = doc != null ? doc : this.doc;
+
             // Remove the listener from the current layers
             if (this.layers != null) {
                 for (int i = 0; i < this.layers.length; i++) {
                     this.layers[i].removeHighlightsChangeListener(listener);
                 }
             }
-    
+
+            this.doc = doc;
             this.layers = layers;
             this.blacklisted = layers == null ? null : new boolean [layers.length];
-            this.version++;
+            increaseVersion();
 
             // Add the listener to the new layers
             if (this.layers != null) {
@@ -175,20 +185,44 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
             }
         }
         
-        fireHighlightsChange(0, Integer.MAX_VALUE);
+        if (docForEvents != null) {
+            docForEvents.render(new Runnable() {
+                public @Override void run() {
+                    fireHighlightsChange(0, Integer.MAX_VALUE);
+                }
+            });
+        }
     }
 
     // ----------------------------------------------------------------------
     //  Private implementation
     // ----------------------------------------------------------------------
     
-    private void layerChanged(HighlightsContainer layer, int changeStartOffset, int changeEndOffset) {
+    private void layerChanged(HighlightsContainer layer, final int changeStartOffset, final int changeEndOffset) {
+        Document docForEvents = null;
+
         synchronized (LOCK) {
-            version++;
+            LOG.log(Level.FINE, "Container's layer changed: {0}", layer); //NOI18N
+            increaseVersion();
+            docForEvents = doc;
         }
         
         // Fire an event
-        fireHighlightsChange(changeStartOffset, changeEndOffset);
+        if (docForEvents != null) {
+            docForEvents.render(new Runnable() {
+                public @Override void run() {
+                    fireHighlightsChange(changeStartOffset, changeEndOffset);
+                }
+            });
+        }
+    }
+
+    private void increaseVersion() {
+        version++;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("PHC@" + Integer.toHexString(System.identityHashCode(this)) + //NOI18N
+                ", doc@" + Integer.toHexString(System.identityHashCode(doc)) + " version=" + version); //NOI18N
+        }
     }
 
     private static final class LayerListener implements HighlightsChangeListener {

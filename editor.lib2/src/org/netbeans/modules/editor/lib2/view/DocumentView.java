@@ -499,7 +499,8 @@ public final class DocumentView extends EditorBoxView
             prefsListener = new PreferenceChangeListener() {
                 @Override
                 public void preferenceChange(PreferenceChangeEvent evt) {
-                    if (evt.getKey().equals(SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE)) {
+                    String key = evt.getKey();
+                    if (key ==  null || key.equals(SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE)) {
                         reinitViews();
                     }
                 }
