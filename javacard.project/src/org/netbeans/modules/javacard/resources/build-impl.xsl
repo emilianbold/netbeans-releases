@@ -769,14 +769,13 @@ run   - Builds and deploys the application and starts the browser.
                 <!-- deploying JAR files dependencies -->
                 <xsl:if test="@kind = 'EXTENSION_LIB_JAR' or @kind = 'CLASSIC_LIB_JAR'">
                     <xsl:element name="jc-load">
-                        <!-- basedir needed or task will misinterpret path -->
                         <xsl:attribute name="bundlefile">
-                            <xsl:text>${basedir}/${dependency.</xsl:text>
+                            <xsl:text>${dependency.</xsl:text>
                             <xsl:value-of select="@id"/>
                             <xsl:text>.origin}</xsl:text>
                         </xsl:attribute>
                         <xsl:attribute name="signaturefile">
-                            <xsl:text>${basedir}/${dependency.</xsl:text>
+                            <xsl:text>${dependency.</xsl:text>
                             <xsl:value-of select="@id"/>
                             <xsl:text>.sigfile}</xsl:text>
                         </xsl:attribute>
@@ -1043,8 +1042,7 @@ run   - Builds and deploys the application and starts the browser.
                 <xsl:if test="@kind = 'EXTENSION_LIB_JAR' or @kind = 'CLASSIC_LIB_JAR'">
                     <xsl:element name="jc-unload">
                         <xsl:attribute name="bundlefile">
-                            <!-- basedir needed or task will misinterpret path -->
-                            <xsl:text>${basedir}/${dependency.</xsl:text>
+                            <xsl:text>${dependency.</xsl:text>
                             <xsl:value-of select="@id"/>
                             <xsl:text>.origin}</xsl:text>
                         </xsl:attribute>
