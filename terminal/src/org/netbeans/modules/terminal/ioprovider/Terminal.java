@@ -56,6 +56,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -74,6 +75,7 @@ import org.openide.windows.IOContainer;
 
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.StreamTerm;
+import org.netbeans.lib.terminalemulator.Term;
 
 import org.netbeans.lib.terminalemulator.support.DefaultFindState;
 import org.netbeans.lib.terminalemulator.support.FindState;
@@ -221,6 +223,8 @@ public final class Terminal extends JComponent {
         // this.term = new StreamTerm();
         this.term = new ActiveTerm();
 
+	applyDebugFlags();
+
         this.term.setCursorVisible(true);
 
         findState = new DefaultFindState(term);
@@ -310,6 +314,33 @@ public final class Terminal extends JComponent {
     public boolean requestFocusInWindow() {
 	// redirect focus into terminal's screen
 	return term.getScreen().requestFocusInWindow();
+    }
+
+    private void applyDebugFlags() {
+	String value = System.getProperty("Term.debug");
+	if (value == null)
+	    return;
+
+	int flags = 0;
+	StringTokenizer st = new StringTokenizer(value, ",");	// NOI18N
+	while (st.hasMoreTokens()) {
+	    String s = st.nextToken();
+	    if (s.toLowerCase().equals("ops"))			// NOI18N
+		flags |= Term.DEBUG_OPS;
+	    else if (s.toLowerCase().equals("keys"))		// NOI18N
+		flags |= Term.DEBUG_KEYS;
+	    else if (s.toLowerCase().equals("input"))		// NOI18N
+		flags |= Term.DEBUG_INPUT;
+	    else if (s.toLowerCase().equals("output"))		// NOI18N
+		flags |= Term.DEBUG_OUTPUT;
+	    else if (s.toLowerCase().equals("wrap"))		// NOI18N
+		flags |= Term.DEBUG_WRAP;
+	    else if (s.toLowerCase().equals("margins"))		// NOI18N
+		flags |= Term.DEBUG_MARGINS;
+	    else
+		;
+	}
+	term.setDebugFlags(flags);
     }
 
     private void applyTermOptions(boolean initial) {
@@ -572,7 +603,7 @@ public final class Terminal extends JComponent {
 
     private void updateName() {
 	Task task = new Task.UpdateName(ioContainer, this);
-	task.dispatch();
+	task.post();
     }
 
     private boolean isBooleanStateAction(Action a) {

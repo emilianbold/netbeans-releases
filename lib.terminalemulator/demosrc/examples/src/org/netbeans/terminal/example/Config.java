@@ -59,6 +59,7 @@ public final class Config {
     private final IOShuttling ioShuttling;
     private final boolean restartable;
     private final boolean hupOnClose;
+    private final boolean keep;
 
     public Config(
 		String command,
@@ -69,7 +70,8 @@ public final class Config {
 		Execution execution,
 		IOShuttling ioShuttling,
 		boolean restartable,
-		boolean hupOnClose
+		boolean hupOnClose,
+		boolean keep
 	    ) {
 	this.command  = command;
 	this.containerProvider  = containerProvider;
@@ -80,6 +82,7 @@ public final class Config {
 	this.ioShuttling  = ioShuttling;
 	this.restartable  = restartable;
 	this.hupOnClose  = hupOnClose;
+	this.keep = keep;
     }
 
     public static Config getShellConfig() {
@@ -91,7 +94,9 @@ public final class Config {
 	                  null,
 	                  IOShuttling.INTERNAL,
 	                  false,	// restartable
-	                  true);	// hupOnClose
+	                  true,		// hupOnClose
+			  false		// keep
+			  );
     }
 
     public static Config getCmdConfig(String command) {
@@ -103,7 +108,9 @@ public final class Config {
 	                  null,
 	                  IOShuttling.INTERNAL,
 	                  true,		// restartable
-	                  true);	// hupOnClose
+	                  true,		// hupOnClose
+			  false		// keep
+			  );
     }
 
     public String getCommand() {
@@ -136,6 +143,10 @@ public final class Config {
 
     public boolean isHUPOnClose() {
 	return hupOnClose;
+    }
+
+    public boolean isKeep() {
+	return keep;
     }
 
     public IOShuttling getIOShuttling() {
