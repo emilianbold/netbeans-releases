@@ -587,18 +587,20 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
             history.addItem(lastEvaluationRecord.expr, lastEvaluationRecord.type,
                     lastEvaluationRecord.value, lastEvaluationRecord.toString);
         }
-        String type = result.getType();
-        String value = result.getValue();
-        String toString = ""; // NOI18N
-        if (result instanceof ObjectVariable) {
-            try {
-                toString = ((ObjectVariable) result).getToStringValue ();
-            } catch (InvalidExpressionException ex) {
+        if (result != null) { // 'result' can be null if debugger finishes
+            String type = result.getType();
+            String value = result.getValue();
+            String toString = ""; // NOI18N
+            if (result instanceof ObjectVariable) {
+                try {
+                    toString = ((ObjectVariable) result).getToStringValue ();
+                } catch (InvalidExpressionException ex) {
+                }
+            } else {
+                toString = value;
             }
-        } else {
-            toString = value;
+            lastEvaluationRecord = new HistoryRecord(expr, type, value, toString);
         }
-        lastEvaluationRecord = new HistoryRecord(expr, type, value, toString);
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
