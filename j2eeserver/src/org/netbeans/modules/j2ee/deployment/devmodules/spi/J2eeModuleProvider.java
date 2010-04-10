@@ -819,15 +819,20 @@ public abstract class J2eeModuleProvider {
                 getConfigSupportImpl().ensureConfigurationReady();
 
                 if (oldCtxPath == null || oldCtxPath.equals("")) { //NOI18N
-                    oldCtxPath = getDeploymentName().replace(' ', '_'); //NOI18N
-                    char c [] = oldCtxPath.toCharArray();
-                    for (int i = 0; i < c.length; i++) {
-                        if (!Character.UnicodeBlock.BASIC_LATIN.equals(Character.UnicodeBlock.of(c[i])) ||
-                                !Character.isLetterOrDigit(c[i])) {
-                            c[i] = '_';
+                    oldCtxPath = getDeploymentName();
+                    if (null != oldCtxPath) {
+                        char c [] = oldCtxPath.replace(' ', '_').toCharArray();
+                        for (int i = 0; i < c.length; i++) {
+                            if (!Character.UnicodeBlock.BASIC_LATIN.equals(Character.UnicodeBlock.of(c[i])) ||
+                                    !Character.isLetterOrDigit(c[i])) {
+                                c[i] = '_';
+                            }
                         }
+                        oldCtxPath = "/" + new String (c); //NOI18N
+                    } else {
+                        LOGGER.log(Level.WARNING, "null deploymentName for "+
+                                getConfigSupportImpl().toString());
                     }
-                    oldCtxPath = "/" + new String (c); //NOI18N
                 }
                 getConfigSupportImpl().setWebContextRoot(oldCtxPath);
 

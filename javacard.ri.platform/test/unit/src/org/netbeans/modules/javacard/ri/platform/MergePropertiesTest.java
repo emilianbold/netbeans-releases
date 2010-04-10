@@ -144,9 +144,6 @@ public class MergePropertiesTest {
             in.close();
         }
         assertTrue (outfile.delete());
-        for (Object o : p.keySet()) {
-            System.err.println(o + "=" + p.getProperty(o.toString()));
-        }
         for (Object key : p.keySet()) {
             String k = (String) key;
             assertFalse ("Prepend properties should not be saved", k.startsWith(MergeProperties.PREPEND_PREFIX));
