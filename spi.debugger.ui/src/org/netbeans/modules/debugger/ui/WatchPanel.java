@@ -85,11 +85,14 @@ public class WatchPanel {
 
         FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
         int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
+        String mimeType = file != null ? file.getMIMEType() : "text/plain"; // NOI18N
 
         //Add JEditorPane and context
-        JComponent [] editorComponents = Utilities.createSingleLineEditor(file.getMIMEType());
+        JComponent [] editorComponents = Utilities.createSingleLineEditor(mimeType);
         editorPane = (JTextComponent) editorComponents[1];
-        DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
+        if (file != null) {
+            DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
+        }
         editorPane.setText(expression);
 
         editorPane.setText (expression);
