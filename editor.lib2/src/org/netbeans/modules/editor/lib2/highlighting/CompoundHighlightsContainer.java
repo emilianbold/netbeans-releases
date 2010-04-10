@@ -290,7 +290,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
 
         synchronized (LOCK) {
             // XXX: Perhaps we could do something more efficient.
-            LOG.log(Level.FINE, "Cache obsoleted by changes in ", layer);
+            LOG.log(Level.FINE, "Cache obsoleted by changes in {0}", layer); //NOI18N
             cacheObsolete = true;
             increaseVersion();
             
