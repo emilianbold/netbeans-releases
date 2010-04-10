@@ -322,20 +322,20 @@ public final class Terminal extends JComponent {
 	    return;
 
 	int flags = 0;
-	StringTokenizer st = new StringTokenizer(value, ",");
+	StringTokenizer st = new StringTokenizer(value, ",");	// NOI18N
 	while (st.hasMoreTokens()) {
 	    String s = st.nextToken();
-	    if (s.toLowerCase().equals("ops"))
+	    if (s.toLowerCase().equals("ops"))			// NOI18N
 		flags |= Term.DEBUG_OPS;
-	    else if (s.toLowerCase().equals("keys"))
+	    else if (s.toLowerCase().equals("keys"))		// NOI18N
 		flags |= Term.DEBUG_KEYS;
-	    else if (s.toLowerCase().equals("input"))
+	    else if (s.toLowerCase().equals("input"))		// NOI18N
 		flags |= Term.DEBUG_INPUT;
-	    else if (s.toLowerCase().equals("output"))
+	    else if (s.toLowerCase().equals("output"))		// NOI18N
 		flags |= Term.DEBUG_OUTPUT;
-	    else if (s.toLowerCase().equals("wrap"))
+	    else if (s.toLowerCase().equals("wrap"))		// NOI18N
 		flags |= Term.DEBUG_WRAP;
-	    else if (s.toLowerCase().equals("margins"))
+	    else if (s.toLowerCase().equals("margins"))		// NOI18N
 		flags |= Term.DEBUG_MARGINS;
 	    else
 		;
