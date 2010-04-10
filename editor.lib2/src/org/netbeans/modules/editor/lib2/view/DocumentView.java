@@ -83,6 +83,7 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.PriorityMutex;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -514,8 +515,10 @@ public final class DocumentView extends EditorBoxView
             if (lineWrapType == null) {
                 lineWrapType = LineWrapType.NONE;
             }
-            
-            defaultLimitLineWidth = (Integer) getDocument().getProperty(SimpleValueNames.TEXT_LIMIT_WIDTH);
+
+            // #183797 - most likely seeing a non-nb document during the editor pane creation
+            Integer dllw = (Integer) getDocument().getProperty(SimpleValueNames.TEXT_LIMIT_WIDTH);
+            defaultLimitLineWidth = dllw != null ? dllw.intValue() : EditorPreferencesDefaults.defaultTextLimitWidth;
 
             DocumentUtilities.addPropertyChangeListener(doc, WeakListeners.propertyChange(this, doc));
         }
