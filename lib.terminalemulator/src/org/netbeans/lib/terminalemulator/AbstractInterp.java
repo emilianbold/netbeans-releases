@@ -53,6 +53,7 @@ public abstract class AbstractInterp implements Interp {
 
 	// some generic actors
 	Actor act_error = new Actor() {
+	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		return "generic error";	// NOI18N
 	    } 
@@ -149,10 +150,15 @@ public abstract class AbstractInterp implements Interp {
 	return number[0].equals("");	// NOI18N
     }
     protected int numberAt(int position) {
-	if (position > numberx) {
+	// SHOULD pass in a fallback number instead of returning 0 or 1.
+	if (position > numberx)
 	    return 1;
+
+	try {
+	    return Integer.parseInt(number[position]);
+	} catch (NumberFormatException x) {
+	    return 0;
 	}
-	return Integer.parseInt(number[position]);
     }
     protected int nNumbers() {
 	return numberx;
