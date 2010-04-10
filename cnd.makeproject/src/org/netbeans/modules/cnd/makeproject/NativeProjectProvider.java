@@ -64,6 +64,8 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
@@ -807,9 +809,19 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 throw ioe;
             }
         } else {
-            ExitStatus exitStatus = ProcessUtils.execute(ev, executable, args); // NOI18N
-            // FIXUP: need to handle env!
-            return new NativeExitStatus(exitStatus.exitCode, exitStatus.output, exitStatus.error);
+            ServerRecord record = ServerList.get(ev);
+            if (!record.isOnline()) {
+                return new NativeExitStatus(-1, "", getString("HOST_OFFLINE", ev.getHost()));
+            }
+            try {
+                // FIXUP: need to handle env!
+                ExitStatus exitStatus;
+                exitStatus = ProcessUtils.execute(ev, executable, args);
+                return new NativeExitStatus(exitStatus.exitCode, exitStatus.output, exitStatus.error);
+            }
+            catch (Exception e) {
+                return new NativeExitStatus(-1, "", e.getMessage());
+            }
         }
     }
 
