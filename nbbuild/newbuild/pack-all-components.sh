@@ -35,11 +35,11 @@ pack_all_components()
 	ant zip-cluster-config -Dcluster.config=full -Dzip.name=$DIST_DIR/zip/$NAME-javafx-full.zip || exit 1
 
         cd $NB_ALL/nbbuild/netbeans
-	cp $NB_ALL/javafx/build/clusters/common.jar      $DIST_DIR/zip/moduleclusters/$NAME-javafx.zip             || exit 1
-	cp $NB_ALL/javafx/build/clusters/windows.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-windows.zip     || exit 1
-	cp $NB_ALL/javafx/build/clusters/linux.jar       $DIST_DIR/zip/moduleclusters/$NAME-javafx-linux.zip       || exit 1
-	cp $NB_ALL/javafx/build/clusters/mac.jar         $DIST_DIR/zip/moduleclusters/$NAME-javafx-mac.zip         || exit 1
-	cp $NB_ALL/javafx/build/clusters/solaris.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-solaris-x86.zip || exit 1
+	cp $JAVAFX_DIR/javafx/build/clusters/common.jar      $DIST_DIR/zip/moduleclusters/$NAME-javafx.zip             || exit 1
+	cp $JAVAFX_DIR/javafx/build/clusters/windows.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-windows.zip     || exit 1
+	cp $JAVAFX_DIR/javafx/build/clusters/linux.jar       $DIST_DIR/zip/moduleclusters/$NAME-javafx-linux.zip       || exit 1
+	cp $JAVAFX_DIR/javafx/build/clusters/mac.jar         $DIST_DIR/zip/moduleclusters/$NAME-javafx-mac.zip         || exit 1
+	cp $JAVAFX_DIR/javafx/build/clusters/solaris.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-solaris-x86.zip || exit 1
 	rm -rf javafx*
     fi
 
