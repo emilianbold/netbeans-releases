@@ -64,7 +64,6 @@ import javax.swing.filechooser.FileSystemView;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLockUtils;
-import org.netbeans.modules.masterfs.providers.ProvidedExtensionsTest;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -98,6 +97,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         root = testedFS.findResource(getResourcePrefix());
     }
 
+    @Override
     protected String[] getResources(String testName) {
         return new String[] {"testdir/ignoredir/nextdir/", 
                              "testdir/mountdir/nextdir/",
@@ -425,21 +425,27 @@ public class BaseFileObjectTestHid extends TestBaseHid{
             final List<Boolean> valid = new ArrayList<Boolean>();
             FileObject fo = FileUtil.toFileObject(fileF);
             fo.addFileChangeListener(new FileChangeListener() {
+                @Override
                 public void fileAttributeChanged(FileAttributeEvent fe) {
                     update();
                 }
+                @Override
                 public void fileChanged(FileEvent fe) {
                     update();
                 }
+                @Override
                 public void fileDataCreated(FileEvent fe) {
                     update();
                 }
+                @Override
                 public void fileDeleted(FileEvent fe) {
                     update();
                 }
+                @Override
                 public void fileFolderCreated(FileEvent fe) {
                     update();
                 }
+                @Override
                 public void fileRenamed(FileRenameEvent fe) {
                     update();
                 }
@@ -568,6 +574,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         fs.addFileChangeListener(tl);
         try {
             fs.runAtomicAction(new FileSystem.AtomicAction(){
+                @Override
                 public void run() throws IOException {
                     FileObject subpackage = root.getFileObject("subpackage");
                     allSubPackages.add(subpackage);
@@ -595,6 +602,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         fs.addFileChangeListener(tl);
         try {
              fs.runAtomicAction(new FileSystem.AtomicAction(){
+                @Override
                 public void run() throws IOException {
                     FileObject subpackage1 = root.getFileObject("subpackage1");
                     FileObject newclass = root.getFileObject("subpackage1/newclass.java");
@@ -1025,14 +1033,15 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     
     private class IgnoreDirFileSystem extends LocalFileSystem {
         org.openide.filesystems.FileSystem.Status status = new org.openide.filesystems.FileSystem.HtmlStatus() {
+            @Override
             public String annotateName (String name, java.util.Set files) {
-                java.lang.StringBuffer sb = new StringBuffer (name);                
+                StringBuilder sb = new StringBuilder (name);
                 Iterator it = files.iterator ();
                 while (it.hasNext()) {                    
                     FileObject fo = (FileObject)it.next();
                     try {
                         if (fo.getFileSystem() instanceof IgnoreDirFileSystem) {
-                            sb.append ("," +fo.getNameExt());//NOI18N
+                            sb.append(",").append (fo.getNameExt());//NOI18N
                         }
                     } catch (Exception ex) {
                         fail ();
@@ -1042,10 +1051,12 @@ public class BaseFileObjectTestHid extends TestBaseHid{
                 return sb.toString () ;
             }
 
+            @Override
             public java.awt.Image annotateIcon (java.awt.Image icon, int iconType, java.util.Set files) {
                 return icon;
             }
 
+            @Override
             public String annotateNameHtml(String name, Set files) {
                 return annotateName (name, files);
             }            
