@@ -358,7 +358,13 @@ public class BaseKit extends DefaultEditorKit {
 
     private final SearchableKit searchableKit;
 
-    /* package */ static final boolean LINEWRAP_ENABLED = !Boolean.getBoolean("org.netbeans.editor.linewrap.disable"); //NOI18N
+    /* package */ static final boolean LINEWRAP_ENABLED;
+    static {
+        String value = System.getProperty("org.netbeans.editor.linewrap");
+        LINEWRAP_ENABLED = (value != null)
+                ? value.equalsIgnoreCase("true")
+                : false; // false for NB6.9 Beta
+    }
 
 //    static SettingsChangeListener settingsListener = new SettingsChangeListener() {
 //        public void settingsChange(SettingsChangeEvent evt) {
