@@ -167,6 +167,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     private final Lookup lookup;
     private final ClassPathProviderImpl cpProvider;
     private ClassPath bootPath;
+    private ClassPath proxyBootPath;
     private ClassPath libPath;
     private ClassPath compileTimePath;
     private ClassPath processorPath;
@@ -724,10 +725,19 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         return libPath;
     }
 
+    private final ClassPath getProxyBootClassPath() {
+        synchronized (classpathLock) {
+            if (proxyBootPath == null) {
+                proxyBootPath = ClassPathFactory.createClassPath(new BootClassPathImpl(this, true));
+            }
+            return proxyBootPath;
+        }
+    }
+
     private final ClassPath getBootClassPath() {
         synchronized (classpathLock) {
             if (bootPath == null) {
-                bootPath = ClassPathFactory.createClassPath(new BootClassPathImpl(this));
+                bootPath = ClassPathFactory.createClassPath(new BootClassPathImpl(this, false));
             }
             return bootPath;
         }
@@ -1322,6 +1332,22 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         }
     }
 
+    private final boolean isProxySource (FileObject fo) {
+        assert kind.isClassic();
+        String prop = ProjectPropertyNames.PROJECT_PROP_PROXY_SRC_DIR;
+        String proxiesPath = evaluator().getProperty(prop);
+        if (proxiesPath != null) {
+            FileObject root = getProjectDirectory();
+            if (!root.isValid()) {
+                return false;
+            }
+            FileObject proxySrcDir = getProjectDirectory().getFileObject(proxiesPath);
+            return proxySrcDir == null ? false : FileUtil.isParentOf(proxySrcDir, fo);
+        } else {
+            return false;
+        }
+    }
+
     private final class ClassPathProviderImpl implements ClassPathProvider {
 
         public ClassPath findClassPath(FileObject file, String type) {
@@ -1332,6 +1358,9 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             } else if (type.equals(ClassPath.SOURCE)) {
                 return getSourceClassPath();
             } else if (type.equals(ClassPath.BOOT)) {
+                if (kind().isClassic() && isProxySource(file)) {
+                    return getProxyBootClassPath();
+                }
                 return getBootClassPath();
             } else if (type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
                 return getProcessorClassPath();
@@ -1348,13 +1377,13 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             ClassPath cp = null;
 
             if (ClassPath.SOURCE.equals(type)) {
-                cp = ClassPathSupport.createClassPath(getRoots().getRoots());
+                cp = getSourceClassPath();
             } else if (ClassPath.COMPILE.equals(type)) {
                 cp = getCompileTimeClassPath();
             } else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
                 cp = getProcessorClassPath();
             } else {
-                cp = getBootClassPath();
+                return new ClassPath[] { getBootClassPath(), getProxyBootClassPath() };
             }
             return cp == null ? null : new ClassPath[]{cp};
         }
