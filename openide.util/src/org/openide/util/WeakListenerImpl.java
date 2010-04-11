@@ -120,6 +120,11 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         }
     }
 
+    final Object getSource() {
+        Reference<Object> r = this.source;
+        return r == null ? null : r.get();
+    }
+
     /** Method name to use for removing the listener.
     * @return name of method of the source object that should be used
     *   to remove the listener from listening on source of events
@@ -517,12 +522,12 @@ abstract class WeakListenerImpl implements java.util.EventListener {
                 return;
             }
 
-            if (weakListener.source != source) {
+            if (weakListener.getSource() != source) {
                 // plan new cleanup into the activeReferenceQueue with this listener and 
                 // provided source
                 weakListener.source = new WeakReference<Object> (source) {
-                            ListenerReference doNotGCRef = new ListenerReference(new Object(), weakListener);
-                        };
+                    ListenerReference doNotGCRef = new ListenerReference(new Object(), weakListener);
+                };
             }
         }
 

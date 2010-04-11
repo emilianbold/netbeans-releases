@@ -490,28 +490,33 @@ public final class ParseProjectXml extends Task {
                 }
                 String name = getProject().getBaseDir().getName() + "/";
                 StringBuilder aliases = null;
-                Reader r = new FileReader(new File(getProject().getProperty("nb_all"), ".hgmail"));
-                try {
-                    BufferedReader br = new BufferedReader(r);
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        int equals = line.indexOf('=');
-                        if (equals == -1) {
-                            continue;
-                        }
-                        for (String piece: line.substring(equals + 1).split(",")) {
-                            if (name.matches(piece.replace(".", "[.]").replace("*", ".*"))) {
-                                if (aliases == null) {
-                                    aliases = new StringBuilder();
-                                } else {
-                                    aliases.append(' ');
+                File hgmail = new File(getProject().getProperty("nb_all"), ".hgmail");
+                if (hgmail.canRead()) {
+                    Reader r = new FileReader(hgmail);
+                    try {
+                        BufferedReader br = new BufferedReader(r);
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            int equals = line.indexOf('=');
+                            if (equals == -1) {
+                                continue;
+                            }
+                            for (String piece: line.substring(equals + 1).split(",")) {
+                                if (name.matches(piece.replace(".", "[.]").replace("*", ".*"))) {
+                                    if (aliases == null) {
+                                        aliases = new StringBuilder();
+                                    } else {
+                                        aliases.append(' ');
+                                    }
+                                    aliases.append(line.substring(0, equals));
                                 }
-                                aliases.append(line.substring(0, equals));
                             }
                         }
+                    } finally {
+                        r.close();
                     }
-                } finally {
-                    r.close();
+                } else {
+                    log("Cannot find " + hgmail + " to read addresses from", Project.MSG_VERBOSE);
                 }
                 if (aliases != null) {
                     define(commitMailProperty, aliases.toString());
