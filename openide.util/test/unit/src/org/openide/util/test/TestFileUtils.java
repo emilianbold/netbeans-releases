@@ -170,6 +170,10 @@ public class TestFileUtils {
             Thread.sleep(pause);
             f.setLastModified(System.currentTimeMillis() + 1);  // plus 1 needed for FileObject tests (initially FO lastModified is set to currentTimeMillis)
             if (f.lastModified() > older) {
+                while (f.lastModified() >= System.currentTimeMillis()) {
+//                    LOG.log(Level.INFO, "Modification time is in future {0}", System.currentTimeMillis());
+                    Thread.sleep(10);
+                }
                 return;
             }
         }
