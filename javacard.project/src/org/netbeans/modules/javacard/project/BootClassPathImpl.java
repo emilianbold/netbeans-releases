@@ -58,8 +58,13 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 final class BootClassPathImpl extends ListenerProxy<JCProject> implements ClassPathImplementation, ChangeListener {
     private ClassPath bootPath;
     volatile boolean attached;
-    BootClassPathImpl (JCProject project) {
+    private final boolean isProxy;
+    BootClassPathImpl (JCProject project, boolean isProxy) {
         super (project);
+        this.isProxy = isProxy;
+    }
+    BootClassPathImpl (JCProject project) {
+        this (project, false);
     }
 
     @Override
@@ -108,7 +113,8 @@ final class BootClassPathImpl extends ListenerProxy<JCProject> implements ClassP
     }
 
     private ClassPath bootPath() {
-        return get().getPlatform().getBootstrapLibraries(get().kind());
+        return isProxy ? get().getPlatform().getBootstrapLibraries() :
+            get().getPlatform().getBootstrapLibraries(get().kind());
     }
 
     private final class PRI implements PathResourceImplementation {
