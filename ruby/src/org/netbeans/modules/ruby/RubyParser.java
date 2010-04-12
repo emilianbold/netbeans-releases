@@ -852,7 +852,9 @@ public final class RubyParser extends Parser {
 
         @Override
         public boolean showExplorerBadge() {
-            return true;
+            // don't show explored badges for rhtml files,
+            // see #183453
+            return !RubyUtils.isRhtmlFile(file);
         }
     }    
 }
