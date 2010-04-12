@@ -39,16 +39,20 @@
 
 package org.netbeans.modules.keyring.fallback;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.keyring.Utils;
 import org.netbeans.modules.keyring.spi.EncryptionProvider;
 import org.netbeans.spi.keyring.KeyringProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -85,12 +89,16 @@ public class FallbackProvider implements KeyringProvider, Callable<Void> {
     }
     
     private boolean testSampleKey(Preferences prefs) {
-        byte[] ciphertext = prefs().getByteArray(SAMPLE_KEY, null);
+        byte[] ciphertext = prefs.getByteArray(SAMPLE_KEY, null);
         if (ciphertext == null) {
-            save(SAMPLE_KEY, (SAMPLE_KEY + UUID.randomUUID()).toCharArray(),
-                    NbBundle.getMessage(FallbackProvider.class, "FallbackProvider.sample_key.description"));
-            LOG.fine("saved sample key");
-            return true;
+            if (_save(SAMPLE_KEY, (SAMPLE_KEY + UUID.randomUUID()).toCharArray(),
+                    NbBundle.getMessage(FallbackProvider.class, "FallbackProvider.sample_key.description"))) {
+                LOG.fine("saved sample key");
+                return true;
+            } else {
+                LOG.fine("could not save sample key");
+                return promptToDelete(prefs);
+            }
         } else {
             while (true) {
                 try {
@@ -104,12 +112,31 @@ public class FallbackProvider implements KeyringProvider, Callable<Void> {
                     LOG.log(Level.FINE, "failed to decrypt sample key", x);
                 }
                 if (!encryption.decryptionFailed()) {
-                    LOG.fine("sample key decryption failed and are not retrying");
-                    return false;
+                    LOG.fine("sample key decryption failed");
+                    return promptToDelete(prefs);
                 }
                 LOG.fine("will retry decryption of sample key");
             }
         }
+    }
+
+    private boolean promptToDelete(Preferences prefs) {
+        Object result = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(FallbackProvider.class, "FallbackProvider.msg_clear_keys"),
+                NbBundle.getMessage(FallbackProvider.class, "FallbackProvider.title_clear_keys"),
+                NotifyDescriptor.OK_CANCEL_OPTION));
+        if (result == NotifyDescriptor.OK_OPTION) {
+            try {
+                LOG.log(Level.FINE, "agreed to delete stored passwords: {0}", Arrays.asList(prefs.keys()));
+                prefs.clear();
+                return true;
+            } catch (BackingStoreException x) {
+                LOG.log(Level.INFO, null, x);
+            }
+        } else {
+            LOG.fine("refused to delete stored passwords");
+        }
+        return false;
     }
 
     private Preferences prefs() {
@@ -130,17 +157,21 @@ public class FallbackProvider implements KeyringProvider, Callable<Void> {
     }
 
     public void save(String key, char[] password, String description) {
+        _save(key, password, description);
+    }
+    private boolean _save(String key, char[] password, String description) {
         Preferences prefs = prefs();
         try {
             prefs.putByteArray(key, encryption.encrypt(password));
         } catch (Exception x) {
             LOG.log(Level.FINE, "failed to encrypt password for " + key, x);
-            return;
+            return false;
         }
         if (description != null) {
             // Preferences interface gives no access to *.properties comments, so:
             prefs.put(key + DESCRIPTION, description);
         }
+        return true;
     }
 
     public void delete(String key) {
