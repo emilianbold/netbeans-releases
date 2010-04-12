@@ -75,6 +75,7 @@ public class MasterPasswordEncryption implements EncryptionProvider {
     private boolean unlocked;
     private Callable<Void> encryptionChanging;
     private char[] newMasterPassword;
+    private boolean fresh;
 
     public @Override boolean enabled() {
         if (GraphicsEnvironment.isHeadless()) {
@@ -158,7 +159,7 @@ public class MasterPasswordEncryption implements EncryptionProvider {
         }
         char[][] passwords = Mutex.EVENT.readAccess(new Mutex.Action<char[][]>() {
             public @Override char[][] run() {
-                return new MasterPasswordPanel().display();
+                return new MasterPasswordPanel().display(fresh);
             }
         });
         if (passwords == null) {
@@ -224,6 +225,10 @@ public class MasterPasswordEncryption implements EncryptionProvider {
         }
         Arrays.fill(newMasterPassword, '\0');
         newMasterPassword = null;
+    }
+
+    public @Override void freshKeyring(boolean fresh) {
+        this.fresh = fresh;
     }
 
 }

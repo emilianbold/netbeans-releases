@@ -91,6 +91,7 @@ public class FallbackProvider implements KeyringProvider, Callable<Void> {
     private boolean testSampleKey(Preferences prefs) {
         byte[] ciphertext = prefs.getByteArray(SAMPLE_KEY, null);
         if (ciphertext == null) {
+            encryption.freshKeyring(true);
             if (_save(SAMPLE_KEY, (SAMPLE_KEY + UUID.randomUUID()).toCharArray(),
                     NbBundle.getMessage(FallbackProvider.class, "FallbackProvider.sample_key.description"))) {
                 LOG.fine("saved sample key");
@@ -100,6 +101,7 @@ public class FallbackProvider implements KeyringProvider, Callable<Void> {
                 return promptToDelete(prefs);
             }
         } else {
+            encryption.freshKeyring(false);
             while (true) {
                 try {
                     if (new String(encryption.decrypt(ciphertext)).startsWith(SAMPLE_KEY)) {
@@ -129,7 +131,7 @@ public class FallbackProvider implements KeyringProvider, Callable<Void> {
             try {
                 LOG.log(Level.FINE, "agreed to delete stored passwords: {0}", Arrays.asList(prefs.keys()));
                 prefs.clear();
-                return true;
+                return testSampleKey(prefs);
             } catch (BackingStoreException x) {
                 LOG.log(Level.INFO, null, x);
             }
