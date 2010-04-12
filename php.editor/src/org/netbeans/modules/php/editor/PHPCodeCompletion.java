@@ -897,7 +897,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     final Set<QualifiedName> qualifiedNames = typeName != null ?
                         Collections.singleton(QualifiedName.create(typeName)) :
                         Collections.<QualifiedName>emptySet();
-                    VariableElement ic = new VariableElementImpl(name, 0, localFileURL,
+                    VariableElement ic = VariableElementImpl.create(name, 0, localFileURL,
                             varName.getElementQuery(), TypeResolverImpl.forNames(qualifiedNames));
                     localVars.put(name, ic);
                 }
