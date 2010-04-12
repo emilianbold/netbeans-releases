@@ -39,6 +39,8 @@
 package org.netbeans.modules.nativeexecution.api.pty;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.PtyNativeProcess;
@@ -195,6 +197,22 @@ public final class PtySupport {
          */
         public void close() throws IOException {
             impl.close();
+        }
+
+        /**
+         * Return an InputStream (i.e. to be connected to a terminal)
+         * @return An InputStream of Pty
+         */
+        public InputStream getInputStream() {
+            return impl.getInputStream();
+        }
+
+        /**
+         * Return an OutputStream (i.e. to be connected to a terminal)
+         * @return An OutputStream of Pty
+         */
+        public OutputStream getOutputStream() {
+            return impl.getOutputStream();
         }
     }
 
