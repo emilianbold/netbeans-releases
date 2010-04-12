@@ -73,8 +73,6 @@ public class JiraConfiguration {
     private JiraClient client;
     private final JiraRepository repository;
 
-    private static final Object PROJECT_LOCK = new Object();
-
     public JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
         this.client = jiraClient;
         this.repository = repository;
