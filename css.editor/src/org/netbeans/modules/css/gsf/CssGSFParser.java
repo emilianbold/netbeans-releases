@@ -49,11 +49,12 @@ import java.io.StringReader;
 import java.util.List;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.css.editor.LexerUtils;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.css.parser.CssParser;
 import org.netbeans.modules.css.parser.CssParserConstants;
+import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.ParseException;
 import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.css.parser.Token;
 import org.netbeans.modules.css.parser.TokenMgrError;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -97,7 +98,7 @@ public class CssGSFParser extends Parser {
         }
 
         List<Error> errors = new ArrayList<Error>();
-        errors.addAll(errors(parseExceptions, snapshot)); //parser errors
+        errors.addAll(errors(parseExceptions, snapshot, root)); //parser errors
         errors.addAll(CssAnalyser.checkForErrors(snapshot, root));
         
         this.lastResult = new CssParserResult(this, snapshot, root, errors);
@@ -123,10 +124,10 @@ public class CssGSFParser extends Parser {
         //no-op, no state changes supported
     }
 
-    public List<Error> errors(List<ParseException> parseExceptions, Snapshot snapshot) {
+    public List<Error> errors(List<ParseException> parseExceptions, Snapshot snapshot, SimpleNode root) {
         List<Error> errors = new ArrayList<Error>(parseExceptions.size());
         for (ParseException pe : parseExceptions) {
-            Error e = createError(pe, snapshot);
+            Error e = createError(pe, snapshot, root);
             if (e != null) {
                 errors.add(e);
             }
@@ -138,7 +139,7 @@ public class CssGSFParser extends Parser {
         return CharSequenceUtilities.indexOf(text, GENERATED_CODE) != -1;
     }
 
-    private Error createError(ParseException pe, Snapshot snapshot) {
+    private Error createError(ParseException pe, Snapshot snapshot, SimpleNode root) {
         FileObject fo = snapshot.getSource().getFileObject();
         Token lastSuccessToken = pe.currentToken;
         if (lastSuccessToken == null) {
@@ -157,6 +158,27 @@ public class CssGSFParser extends Parser {
 
                 if (documentStartOffset == -1 && documentEndOffset == -1) {
                     //the error is completely out of the mappable area, map it to the beginning of the document
+                    if(root != null) {
+                        //lets try to filter out some of the unwanted errors on generated virtual code
+                        SimpleNode errorNode = SimpleNodeUtil.findDescendant(root, errorToken.offset);
+                        assert errorNode != null;
+                        SimpleNode parent = (SimpleNode)errorNode.jjtGetParent();
+                        //[Bug 183631] generated inline style is marked as an error
+                        //The code <h1 style="#{x.style}"></h1> is translated to
+                        // SELECTOR { @@@; } which is unparseable
+                        //
+                        //check if the declaration node contains generated code (@@@)
+                        //if so, just ignore the error
+                        if(parent != null) {
+                            if(parent.kind() == CssParserTreeConstants.JJTDECLARATION) {
+                                if(containsGeneratedCode(parent.image())) {
+                                    return null;
+                                }
+                            }
+                        }
+                    }
+
+
                     documentStartOffset = documentEndOffset = 0;
                 } else if (documentStartOffset == -1) {
                     documentStartOffset = documentEndOffset;
