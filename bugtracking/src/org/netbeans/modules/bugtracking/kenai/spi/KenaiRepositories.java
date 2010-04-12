@@ -165,18 +165,7 @@ abstract class KenaiRepositories {
             BugtrackingManager.LOG.log(Level.FINER, "returning lock {0} for {1}", new Object[]{lock, key}); // NOI18N
             return lock;
         }
-    }
-
-    /**
-     * Returns bugtracking repositories of all Kenai projects currently opened
-     * in the Kenai dashboard.
-     *
-     * @return  array of repositories collected from the projects
-     *          (never {@code null})
-     */
-    public Repository[] getRepositories() {
-        return getRepositories(false);
-    }
+    }   
 
     /**
      * Returns bugtracking repositories of all Kenai projects.
@@ -200,6 +189,9 @@ abstract class KenaiRepositories {
     private static class DefaultImpl extends KenaiRepositories {
 
         public Repository[] getRepositories(boolean allOpenProjects) {
+            if("true".equals(System.getProperty("netbeans.bugtracking.noOpenProjects", "false"))) {
+                allOpenProjects = false; 
+            }
             KenaiProject[] kenaiProjects = allOpenProjects
                                            ? union(getDashboardProjects(),
                                                    getProjectsViewProjects())
