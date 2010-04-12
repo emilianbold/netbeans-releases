@@ -78,6 +78,7 @@ public final class ConcurrentTasksSupport {
         Thread[] threads = new Thread[concurrentTasks];
         final AtomicInteger counter = new AtomicInteger(0);
         final Random r = new Random();
+        final AtomicInteger idx = new AtomicInteger(0);
 
         for (int i = 0; i < concurrentTasks; i++) {
             threads[i] = new Thread(new Runnable() {
@@ -86,7 +87,16 @@ public final class ConcurrentTasksSupport {
 
                 @Override
                 public void run() {
-                    TaskFactory factoryToUse = factories.get(r.nextInt(factories.size()));
+                    int fidx;
+                    synchronized (idx) {
+                        fidx = idx.getAndIncrement();
+                        if (fidx >= factories.size()) {
+                            fidx = 0;
+                            idx.set(0);
+                        }
+                    }
+                    TaskFactory factoryToUse = factories.get(fidx);
+
 
                     Runnable task = factoryToUse.newTask();
 
