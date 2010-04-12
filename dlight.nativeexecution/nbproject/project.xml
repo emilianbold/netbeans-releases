@@ -224,8 +224,6 @@
                 <package>org.netbeans.modules.nativeexecution.api.pty</package>
                 <package>org.netbeans.modules.nativeexecution.api.util</package>
                 <package>org.netbeans.modules.nativeexecution.spi</package>
-                <package>org.netbeans.modules.nativeexecution.spi.pty</package>
-                <package>org.netbeans.modules.nativeexecution.spi.support.pty</package>
             </friend-packages>
         </data>
     </configuration>
