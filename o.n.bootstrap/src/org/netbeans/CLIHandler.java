@@ -980,7 +980,7 @@ public abstract class CLIHandler extends Object {
                 try {
                     handleConnect(work);
                 } catch (IOException ex) {
-                    OUTPUT.log(Level.WARNING, null, ex);
+                    OUTPUT.log(Level.INFO, null, ex);
                 }
                 return;
             }
