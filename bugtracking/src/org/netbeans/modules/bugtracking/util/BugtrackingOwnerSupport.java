@@ -49,7 +49,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -294,8 +293,9 @@ public abstract class BugtrackingOwnerSupport {
 
     private static class DefaultImpl extends BugtrackingOwnerSupport {
 
-        private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport");   // NOI18N
+        private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport");   // NOI18N
 
+        @Override
         protected Repository getRepository(DataObject dataObj) {
             FileObject fileObj = dataObj.getPrimaryFile();
             if (fileObj == null) {
@@ -319,6 +319,7 @@ public abstract class BugtrackingOwnerSupport {
             return repo;
         }
 
+        @Override
         public Repository getRepository(Project project, boolean askIfUnknown) {
             Repository repo;
 
@@ -336,10 +337,11 @@ public abstract class BugtrackingOwnerSupport {
             if (context != null) {
                 return getRepositoryForContext(context, null, askIfUnknown);
             } else {
-                return askUserToSpecifyRepository(null, null);
+                return askUserToSpecifyRepository(null);
             }
         }
 
+        @Override
         public Repository getRepository(File file, String issueId, boolean askIfUnknown) {
             //TODO - synchronization/threading
             FileObject fileObject = FileUtil.toFileObject(file);
@@ -373,8 +375,9 @@ public abstract class BugtrackingOwnerSupport {
             Repository repo = FileToRepoMappingStorage.getInstance()
                               .getFirmlyAssociatedRepository(context);
             if (repo != null) {
-                LOG.log(Level.FINER, " found stored repository [" + repo    //NOI18N
-                                     + "] for directory " + context); //NOI18N
+                LOG.log(Level.FINER, 
+                        " found stored repository [{0}] for directory {1}",     //NOI18N
+                        new Object[]{repo, context});
                 return repo;
             }
 
@@ -384,7 +387,7 @@ public abstract class BugtrackingOwnerSupport {
                 return suggestedRepository;
             }
 
-            repo = askUserToSpecifyRepository(issueId, suggestedRepository);
+            repo = askUserToSpecifyRepository(suggestedRepository);
             if (repo != null) {
                 return repo;
             }
@@ -427,15 +430,15 @@ public abstract class BugtrackingOwnerSupport {
                     }
                 } catch (IOException ex) {
                     /* the remote location (URL) denotes a Kenai project */
-                    if ("Not Found".equals(ex.getMessage())) {              //NOI18N
-                        BugtrackingManager.LOG.log(Level.INFO,
-                                "Kenai project corresponding to URL "       //NOI18N
-                                        + attValue
-                                        + " does not exist.");              //NOI18N
+                    if ("Not Found".equals(ex.getMessage())) {              // NOI18N
+                        BugtrackingManager.LOG.log(
+                                Level.INFO,
+                                "Kenai project corresponding to URL {0} does not exist.",  // NOI18N
+                                attValue);
                     } else {
                         BugtrackingManager.LOG.throwing(
                                 BugtrackingOwnerSupport.class.getName(),    //class name
-                                "getRepository(String)",    //method name //NOI18N
+                                "getRepository(String)",    //method name       // NOI18N
                                 ex);
                     }
                     throw ex;
@@ -462,8 +465,7 @@ public abstract class BugtrackingOwnerSupport {
             return KenaiUtil.getRepository(remoteLocation);
         }
 
-        private Repository askUserToSpecifyRepository(String issueId,
-                                                      Repository suggestedRepo) {
+        private Repository askUserToSpecifyRepository(Repository suggestedRepo) {
             Repository[] repos = BugtrackingUtil.getKnownRepositories(true);
             BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
 

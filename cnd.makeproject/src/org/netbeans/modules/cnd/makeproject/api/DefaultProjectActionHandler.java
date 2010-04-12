@@ -360,7 +360,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             public void run() {
                 Future<Integer> et = executorTask;
                 if (et != null) {
-                    executorTask.cancel(true);
+                    et.cancel(true);
                 }
             }
         });

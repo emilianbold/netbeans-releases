@@ -102,5 +102,22 @@ public class LexerUtils {
 
     }
 
+    /** @param optimized - first sequence is lowercase, one call to Character.toLowerCase() only*/
+    public static boolean equals(CharSequence text1, CharSequence text2, boolean ignoreCase, boolean optimized) {
+        if (text1.length() != text2.length()) {
+            return false;
+        } else {
+            //compare content
+            for (int i = 0; i < text1.length(); i++) {
+                char ch1 = ignoreCase && !optimized ? Character.toLowerCase(text1.charAt(i)) : text1.charAt(i);
+                char ch2 = ignoreCase ? Character.toLowerCase(text2.charAt(i)) : text2.charAt(i);
+                if (ch1 != ch2) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
 
 }
