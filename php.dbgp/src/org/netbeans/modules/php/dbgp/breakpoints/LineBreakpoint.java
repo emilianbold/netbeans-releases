@@ -89,7 +89,7 @@ public class LineBreakpoint extends AbstractBreakpoint {
     }
     
     public boolean isSessionRelated( DebugSession session ){
-        SessionId id = session.getSessionId();
+        SessionId id = session != null ? session.getSessionId() : null;
         if ( id == null ){
             return false;
         }

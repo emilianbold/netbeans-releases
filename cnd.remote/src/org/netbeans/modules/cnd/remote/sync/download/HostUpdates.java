@@ -149,6 +149,7 @@ public class HostUpdates {
             return;
         }
         ActionListener onClickAction = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 CndUtils.assertUiThread();
                 showConfirmDialog();
@@ -270,6 +271,7 @@ public class HostUpdates {
         final AtomicReference<Notification> notRef = new AtomicReference<Notification>();
 
         ActionListener onClickAction = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Notification n = notRef.get();
                 if (n != null) {
@@ -297,6 +299,7 @@ public class HostUpdates {
                 onClickAction,
                 NotificationDisplayer.Priority.LOW));
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 Notification n = notRef.get();
                 if (n != null) {

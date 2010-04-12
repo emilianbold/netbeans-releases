@@ -84,6 +84,8 @@ final class ProcessList {
     private final RequestProcessor RP = new RequestProcessor("Process list", 1); //NOI18N
     private RequestProcessor.Task task = null;
 
+    private static final boolean DISABLE_PARGS = Boolean.getBoolean("gdb.disable.pargs"); //NOI18N
+
     protected ProcessList(ExecutionEnvironment exEnv) {
         this.exEnv = exEnv;
     }
@@ -184,7 +186,7 @@ final class ProcessList {
                         }
 
                         // pargs call if needed (IZ 168499)
-                        if (isSolaris) {
+                        if (isSolaris && !DISABLE_PARGS) {
                             NativeProcessBuilder pargsBuilder = NativeProcessBuilder.newProcessBuilder(exEnv);
                             pargsBuilder.setExecutable("/usr/bin/pargs").redirectError(); // NOI18N
                             String[] pargs_args = new String[proclist.size()+1];

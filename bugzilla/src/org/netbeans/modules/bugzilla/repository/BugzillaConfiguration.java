@@ -326,4 +326,12 @@ public class BugzillaConfiguration {
         return issueFields;
     }
 
+    public IssueField getField(String key) {
+        for (IssueField issueField : getFields()) {
+            if(issueField.getKey().equals(key)) {
+                return issueField;
+            }
+        }
+        return null;
+    }
 }
