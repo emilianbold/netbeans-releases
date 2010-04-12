@@ -105,7 +105,7 @@ static void serve_connection(void* data) {
 
         trace("Request (%s): %s sd=%d\n", pkg_kind_to_string(pkg->kind), pkg->data, conn_data->sd);
         if (first ? (pkg->kind != pkg_handshake) : (pkg->kind != pkg_request && pkg->kind != pkg_written)) {
-            fprintf(stderr, "prodocol error: unexpected %s from %s sd=%d\n", pkg_kind_to_string(pkg->kind), requestor_id, conn_data->sd);
+            fprintf(stderr, "protocol error: unexpected %s from %s sd=%d\n", pkg_kind_to_string(pkg->kind), requestor_id, conn_data->sd);
             break;
         }
 
@@ -343,7 +343,6 @@ typedef struct file_elem {
  * adds info about new file to the tail of the list
  */
 static file_elem* add_file_to_list(file_elem* tail, const char* filename, enum file_state state, const char* real_path) {
-    trace("File %s is added to the list to be send to LC as not yet copied files\n", filename);
     int namelen = strlen(filename);
     int realpath_len = strlen(real_path);
     int size = sizeof(file_elem) + namelen + realpath_len + 2;
@@ -356,6 +355,7 @@ static file_elem* add_file_to_list(file_elem* tail, const char* filename, enum f
     if (tail != NULL) {
         tail->next = fe;
     }
+    trace("\t\tadd_file_to_list %c %s -> %s\n", fe->state, fe->filename, fe->real_path);
     return fe;
 }
 
@@ -391,7 +391,7 @@ static int init_files() {
             *lf = 0;
         }
         if (strchr(buffer, '\r')) {
-            report_error("prodocol error: unexpected CR: %s\n", buffer);
+            report_error("protocol error: unexpected CR: %s\n", buffer);
             return false;
         }
 
@@ -403,7 +403,7 @@ static int init_files() {
         trace("\t\tpath=%s size=%d state=%c (0x%x)\n", path, file_size, (char) state, (char) state);
 
         if (state == -1) {
-            report_error("prodocol error: %s\n", buffer);
+            report_error("protocol error: %s\n", buffer);
             break;
         } else if (state == DIRECTORY) { // directory
             create_dir(path);
@@ -415,7 +415,7 @@ static int init_files() {
                 *lf = 0;
             }
             if (strchr(buffer, '\r')) {
-                report_error("prodocol error: unexpected CR: %s\n", buffer);
+                report_error("protocol error: unexpected CR: %s\n", buffer);
                 return false;
             }
             create_lnk(path, lnk_src);
@@ -428,7 +428,7 @@ static int init_files() {
             } else if (state == UNCONTROLLED || state == INEXISTENT) {
                 // nothing
             } else {
-                report_error("prodocol error: %s\n", buffer);
+                report_error("protocol error: %s\n", buffer);
             }
 
             enum file_state new_state = state;
@@ -476,15 +476,16 @@ static int init_files() {
                        break; 
                     }
                 }
-                trace("\t\tadded %s with state '%c' (0x%x)\n", real_path, (char) new_state, (char) new_state);
+                trace("\t\tadding %s with state '%c' (0x%x) -> %s\n", path, (char) new_state, (char) new_state, real_path);
                 add_file_data(real_path, new_state);
-                // inform local controller that he is not right about copied status of file
+                // send real path to local controller
                 tail = add_file_to_list(tail, path, new_state, real_path);
+                //trace("\t\tadded to list %s with state '%c' (0x%x) -> %s\n", tail->filename, tail->state, tail->state, tail->real_path);
                 if (list == NULL) {
                     list = tail;
                 }
             } else {
-                report_error("prodocol error: %s is not absoulte\n", path);
+                report_error("protocol error: %s is not absoulte\n", path);
                 break;
             }
         }
