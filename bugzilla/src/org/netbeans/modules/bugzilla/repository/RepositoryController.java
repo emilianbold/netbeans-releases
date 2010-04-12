@@ -350,13 +350,13 @@ public class RepositoryController extends BugtrackingController implements Docum
         }
     }
 
-    private abstract class TaskRunner implements Runnable, Cancellable {
+    private abstract class TaskRunner implements Runnable, Cancellable, ActionListener {
         private Task task;
         private ProgressHandle handle;
         private String labelText;
 
         public TaskRunner(String labelText) {
-            this.labelText = labelText;
+            this.labelText = labelText;            
         }
 
         final void startTask() {
@@ -382,10 +382,12 @@ public class RepositoryController extends BugtrackingController implements Docum
             JComponent comp = ProgressHandleFactory.createProgressComponent(handle);
             panel.progressPanel.removeAll();
             panel.progressPanel.add(comp, BorderLayout.CENTER);
-
+            panel.cancelButton.addActionListener(this);
             panel.connectionLabel.setVisible(false);
             handle.start();
             panel.progressPanel.setVisible(true);
+            panel.cancelButton.setVisible(true);
+            panel.validateButton.setVisible(false);
             panel.validateLabel.setVisible(true);
             panel.enableFields(false);
             panel.validateLabel.setText(labelText); // NOI18N
@@ -395,8 +397,11 @@ public class RepositoryController extends BugtrackingController implements Docum
             if(handle != null) {
                 handle.finish();
             }
+            panel.cancelButton.removeActionListener(this);
             panel.progressPanel.setVisible(false);
             panel.validateLabel.setVisible(false);
+            panel.validateButton.setVisible(true);
+            panel.cancelButton.setVisible(false);
             panel.enableFields(true);
         }
 
@@ -410,6 +415,14 @@ public class RepositoryController extends BugtrackingController implements Docum
             errorMessage = null;
             return ret;
         }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(e.getSource() == panel.cancelButton) {
+                cancel();
+            }
+        }
+
     }
 
     private RequestProcessor getRequestProcessor() {
