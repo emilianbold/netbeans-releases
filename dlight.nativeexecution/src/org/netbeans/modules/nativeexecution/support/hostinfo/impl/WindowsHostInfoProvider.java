@@ -52,6 +52,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider.class, position = 90)
 public class WindowsHostInfoProvider implements HostInfoProvider {
 
+    @Override
     public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException {
         // Windows is supported for localhosts only.
         if (!execEnv.isLocal() || !Utilities.isWindows()) {
@@ -78,7 +79,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         private File tmpDirFile;
         private String tmpDir;
 
-        public HostInfoImpl() {
+        HostInfoImpl() {
             Map<String, String> env = WindowsSupport.getInstance().getEnv();
 
             // Use os.arch to detect bitness.
@@ -107,18 +108,22 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
 
             os = new OS() {
 
+                @Override
                 public OSFamily getFamily() {
                     return osFamily;
                 }
 
+                @Override
                 public String getName() {
                     return osName;
                 }
 
+                @Override
                 public String getVersion() {
                     return osVersion;
                 }
 
+                @Override
                 public Bitness getBitness() {
                     return osBitness;
                 }
@@ -131,7 +136,36 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             String ioTmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
             Map<String, String> env = WindowsSupport.getInstance().getEnv();
 
-            _tmpDirFile = new File(ioTmpDir, "dlight_" + env.get("USERNAME")); // NOI18N
+            /**
+             * Some magic with temp dir...
+             * In case of non-ascii chars in username use hashcode instead of
+             * plain name as in case of MinGW (without cygwin) execution may (will)
+             * fail...
+             */
+            String username = env.get("USERNAME"); // NOI18N
+
+            if (username != null) {
+                for (int i = 0; i < username.length(); i++) {
+                    char c = username.charAt(i);
+
+                    if (Character.isDigit(c) || c == '_') {
+                        continue;
+                    }
+
+                    if (c >= 'A' && c <= 'Z') {
+                        continue;
+                    }
+
+                    if (c >= 'a' && c <= 'z') {
+                        continue;
+                    }
+
+                    username = "" + username.hashCode(); // NOI18N
+                    break;
+                }
+            }
+
+            _tmpDirFile = new File(ioTmpDir, "dlight_" + username); // NOI18N
             _tmpDirFile = new File(_tmpDirFile, HostInfoFactory.getNBKey());
             _tmpDir = _tmpDirFile.getAbsolutePath();
 
@@ -148,42 +182,52 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             tmpDir = _tmpDir;
         }
 
+        @Override
         public OS getOS() {
             return os;
         }
 
+        @Override
         public CpuFamily getCpuFamily() {
             return cpuFamily;
         }
 
+        @Override
         public int getCpuNum() {
             return cpuNum;
         }
 
+        @Override
         public OSFamily getOSFamily() {
             return osFamily;
         }
 
+        @Override
         public String getHostname() {
             return hostname;
         }
 
+        @Override
         public String getShell() {
             return shell;
         }
 
+        @Override
         public String getTempDir() {
             return tmpDir;
         }
 
+        @Override
         public File getTempDirFile() {
             return tmpDirFile;
         }
 
+        @Override
         public long getClockSkew() {
             return 0;
         }
 
+        @Override
         public String getPath() {
             return path;
         }
