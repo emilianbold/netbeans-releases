@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.keyring.fallback;
 
+import java.awt.GraphicsEnvironment;
 import java.security.Key;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.KeySpec;
@@ -76,6 +77,10 @@ public class MasterPasswordEncryption implements EncryptionProvider {
     private char[] newMasterPassword;
 
     public @Override boolean enabled() {
+        if (GraphicsEnvironment.isHeadless()) {
+            LOG.fine("disabling master password encryption in headless mode");
+            return false;
+        }
         try {
             KEY_FACTORY = SecretKeyFactory.getInstance(ENCRYPTION_ALGORITHM);
             encrypt = Cipher.getInstance(ENCRYPTION_ALGORITHM);
