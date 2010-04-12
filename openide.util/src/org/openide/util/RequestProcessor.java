@@ -86,7 +86,7 @@ import java.util.logging.Logger;
  * In case you want something to be done later in some background thread,
  * create an instance of <code>RequestProcessor</code> and post tasks to it.
  * <pre>
- * private static final RequestProcessor RP = new RequestProcessor("My tasks");
+ * private static final RequestProcessor RP = new {@link RequestProcessor#RequestProcessor(java.lang.Class) RequestProcessor(MyClass.class)};
  * // later
  * RP.{@link #post(java.lang.Runnable,int) post(runnable,&nbsp;delay)}
  * </pre>
@@ -119,7 +119,7 @@ import java.util.logging.Logger;
  * It is also possible to do something periodically. Use the {@link RequestProcessor.Task#schedule schedule} method:
  * <pre>
  * class Periodic implements Runnable {
- *   private static final RequestProcessor RP = new RequestProcessor("My tasks");
+ *   private static final RequestProcessor RP = new {@link RequestProcessor#RequestProcessor(java.lang.Class) RequestProcessor(Periodic.class)};
  *   private final RequestProcessor.Task CLEANER = RP.{@link #create(java.lang.Runnable) create(this)};
  *   public void run() {
  *     doTheWork();
@@ -140,7 +140,7 @@ import java.util.logging.Logger;
  * reported by the model. This can be achieved with a sliding task:
  * <pre>
  * class Updater implements PropertyChangeListener, Runnable {
- *   private static final RequestProcessor RP = new RequestProcessor("My tasks");
+ *   private static final RequestProcessor RP = new {@link RequestProcessor#RequestProcessor(java.lang.Class) RequestProcessor(Updater.class)};
  *   private final RequestProcessor.Task UPDATE = RP.{@link #create(java.lang.Runnable) create(this)};
  *
  *   public void propertyChange(PropertyChangeEvent ev) {
@@ -258,6 +258,23 @@ public final class RequestProcessor implements ScheduledExecutorService {
         this(name, 1);
     }
 
+    /** Convenience constructor for a new RequestProcessor with throughput 1.
+     * Typical usage is:
+     * <pre>
+     * class MyClass {
+     *   private static final RequestProcessor RP = new RequestProcessor(MyClass.class);
+     * 
+     * }
+     * </pre>
+     * Behaves as <code>new RequestProcessor(MyClass.class.getName())</code>.
+     *
+     * @param forClass name of this class gives name for the processor threads
+     * @since 8.6
+     */
+    public RequestProcessor(Class<?> forClass) {
+        this(forClass.getName());
+    }
+
     /** Creates a new named RequestProcessor with defined throughput.
      * @param name the name to use for the request processor thread
      * @param throughput the maximal count of requests allowed to run in parallel
@@ -328,9 +345,40 @@ public final class RequestProcessor implements ScheduledExecutorService {
     }
 
     
-    /** The getter for the shared instance of the <CODE>RequestProcessor</CODE>.
+    /** <b>Warning:</b> The instance of <code>RequestProcessor</code> returned
+     * by this method has very bad performance side effects, don't use unless
+     * you understand all implications!
+     * <p>
+     * The getter for the shared instance of the <CODE>RequestProcessor</CODE>.
      * This instance is shared by anybody who
-     * needs a way of performing sporadic or repeated asynchronous work.
+     * needs a way of performing <em>sporadic</em> asynchronous work.
+     * <p>
+     * The problem of this method lays exactly in the definition of <em>sporadic</em>.
+     * Often one needs to process something at some <em>sporadic</em> moment,
+     * but, for examle
+     * due to <em>storm of events</em>, one needs to execute more than one tasks
+     * at the same <em>sporadic</em> moment. In this situation
+     * using {@link #getDefault()} is horribly inefficient. All such tasks
+     * would be processed in parallel, allocating their own execution threads
+     * (up to 50). As the price per one thread is estimated to 1MB on common
+     * systems, you shall think twice whether you want to increase the memory
+     * consumption of your application so much at these <em>sporadic</em> moments.
+     * <p>
+     * There is a runtime detection of the <em>parallel misuse</em> of this
+     * method since version 8.3. It is activated only in development mode
+     * (when executed with assertions on) and prints warning into log
+     * whenever there are more than three same tasks running in parallel.
+     * In case you see such warning, or in case you are in doubts consider
+     * creation of your own, private, single throughput processor:
+     * <pre>
+     * class YourClass {
+     *   private static final RequestProcessor RP = new {@link RequestProcessor#RequestProcessor(java.lang.Class) RequestProcessor(YourClass.class)};
+     * }
+     * </pre>
+     * Such private field is lightweight and guarantees that all your tasks
+     * will be processed sequentially, one by one. Just don't forget to make
+     * the field static!
+     * <p>
      * Tasks posted to this instance may be canceled until they start their
      * execution. If a there is a need to cancel a task while it is running
      * a seperate request processor needs to be created via 
