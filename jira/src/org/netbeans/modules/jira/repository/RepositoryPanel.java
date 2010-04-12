@@ -145,6 +145,13 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
         connectionLabel.setForeground(java.awt.Color.green);
         connectionLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.connectionLabel.text")); // NOI18N
 
+        cancelButton.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.cancelButton.text")); // NOI18N
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -181,7 +188,9 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(validateLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(progressPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
+                        .add(progressPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(cancelButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(connectionLabel)))
                 .addContainerGap())
@@ -219,7 +228,8 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
                     .add(validateButton)
                     .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(validateLabel)
-                    .add(connectionLabel))
+                    .add(connectionLabel)
+                    .add(cancelButton))
                 .add(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -239,8 +249,13 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
         // TODO add your handling code here:
     }//GEN-LAST:event_httpCheckBoxActionPerformed
 
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cancelButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JButton cancelButton = new javax.swing.JButton();
     final javax.swing.JLabel connectionLabel = new javax.swing.JLabel();
     final javax.swing.JCheckBox httpCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JPasswordField httpPsswdField = new javax.swing.JPasswordField();
