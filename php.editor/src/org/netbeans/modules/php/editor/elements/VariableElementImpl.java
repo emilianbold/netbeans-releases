@@ -42,6 +42,7 @@ package org.netbeans.modules.php.editor.elements;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.openide.filesystems.FileObject;
 import org.netbeans.modules.csl.api.OffsetRange;
 import  org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import  org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
@@ -61,12 +62,12 @@ import org.openide.util.Parameters;
 /**
  * @author Radek Matous
  */
-public final class VariableElementImpl extends PhpElementImpl implements VariableElement {
+public class VariableElementImpl extends PhpElementImpl implements VariableElement {
     public static final String DOLLAR_PREFIX = "$";//NOI18N
     public static final String REFERENCE_PREFIX = "&";//NOI18N
     public static final String IDX_FIELD = PHPIndexer.FIELD_VAR;
     private final Set<TypeResolver> instanceTypes;
-    public VariableElementImpl(
+    protected VariableElementImpl(
             final String variableName,
             final int offset,
             final String fileUrl,
@@ -74,6 +75,29 @@ public final class VariableElementImpl extends PhpElementImpl implements Variabl
             final Set<TypeResolver> instanceTypes) {
         super(VariableElementImpl.getName(variableName, true), null, fileUrl, offset, elementQuery);
         this.instanceTypes = instanceTypes;
+    }
+
+    public static VariableElementImpl create(
+            final String variableName,
+            final int offset,
+            final String fileUrl,
+            final ElementQuery elementQuery,
+            final Set<TypeResolver> instanceTypes) {
+        return new VariableElementImpl(variableName, offset, fileUrl, elementQuery, instanceTypes);
+    }
+
+    public static VariableElementImpl create(
+            final String variableName,
+            final int offset,
+            final FileObject fileObject,
+            final ElementQuery elementQuery,
+            final Set<TypeResolver> instanceTypes) {
+        return new VariableElementImpl(variableName, offset, (String)null, elementQuery, instanceTypes) {
+            @Override
+            public synchronized FileObject getFileObject() {
+                return fileObject;
+            }
+        };
     }
 
     public static Set<VariableElement> fromSignature(final IndexQueryImpl indexQuery, final IndexResult indexResult) {

@@ -70,6 +70,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.web.common.api.FileReference;
 import org.netbeans.modules.web.common.api.FileReferenceModification;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -376,7 +377,8 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
                 List<Difference> diffs = new ArrayList<Difference>();
                 for (Entry entry : entries) {
-                    if (entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
+                    if (entry.isValidInSourceDocument() && 
+                            LexerUtils.equals(elementImage, entry.getName(), type == RefactoringElementType.COLOR, false)) {
                         diffs.add(new Difference(Difference.Kind.CHANGE,
                                 editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
                                 editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),

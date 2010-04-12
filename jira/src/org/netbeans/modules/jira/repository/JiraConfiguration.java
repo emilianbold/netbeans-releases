@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
+import java.util.StringTokenizer;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -76,6 +78,23 @@ public class JiraConfiguration {
     public JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
         this.client = jiraClient;
         this.repository = repository;
+        String value = System.getProperty("org.netbeans.modules.jira.datePattern"); // NOI18N
+        if (value != null) {
+            client.getConfiguration().setDatePattern(value);
+        }
+        value = System.getProperty("org.netbeans.modules.jira.dateTimePattern"); // NOI18N
+        if (value != null) {
+            client.getConfiguration().setDateTimePattern(value);
+        }
+        value = System.getProperty("org.netbeans.modules.jira.locale"); // NOI18N
+        if (value != null) {
+            StringTokenizer st = new StringTokenizer(value,"_"); // NOI18N
+            String language = st.nextToken();
+            String country = st.hasMoreTokens() ? st.nextToken() : ""; // NOI18N
+            String variant = st.hasMoreTokens() ? st.nextToken() : ""; // NOI18N
+            Locale locale = new Locale(language, country, variant);
+            client.getConfiguration().setLocale(locale);
+        }
     }
 
     public IssueType getIssueTypeById(String id) {

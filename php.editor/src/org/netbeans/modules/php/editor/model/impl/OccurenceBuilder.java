@@ -1579,17 +1579,18 @@ class OccurenceBuilder {
         if (var != null) {
             for (Entry<ASTNodeInfo<Variable>, Scope> entry : variables.entrySet()) {
                 ASTNodeInfo<Variable> nodeInfo = entry.getKey();
+                boolean addOccurence = false;
                 if (NameKind.exact(nodeInfo.getName()).matchesName(PhpElementKind.VARIABLE, nodeCtxInfo.getName())) {
                     if (!var.isGloballyVisible()) {
                         Scope nextScope = entry.getValue();
                         if (var.representsThis() && nextScope.getInScope() instanceof TypeScope) {
                             final Scope inScope = ctxVarScope instanceof MethodScope ? ctxVarScope.getInScope() : ctxVarScope;
                             if (nextScope.getInScope().equals(inScope)) {
-                                occurences.add(new OccurenceImpl(var, nodeInfo.getRange()));
+                                addOccurence = true;
                             }
                         } else {
                             if (ctxVarScope.equals(nextScope)) {
-                                occurences.add(new OccurenceImpl(var, nodeInfo.getRange()));
+                                addOccurence = true;
                             }
                         }
                     } else {
@@ -1598,9 +1599,22 @@ class OccurenceBuilder {
                             final Set<VariableName> nextVars = nameFilter.filter(new HashSet<VariableName>(((VariableScope) nextScope).getDeclaredVariables()));
                             final VariableName nextVar =  (nextVars.size() == 1) ? nextVars.iterator().next() : null;
                             if (nextVar != null && nextVar.isGloballyVisible()) {
-                                occurences.add(new OccurenceImpl(var, nodeInfo.getRange()));
+                                addOccurence = true;
                             }
                         }
+                    }
+                }
+                if (addOccurence) {
+                    if ((var instanceof VariableNameImpl) && (((VariableNameImpl) var).indexedElement instanceof PhpElement)) {
+                        final VariableNameImpl nameImpl = (VariableNameImpl) var;
+                        occurences.add(new OccurenceImpl(var, nodeInfo.getRange()) {
+                            @Override
+                            public Collection<? extends PhpElement> gotoDeclarations() {
+                                return Collections.singleton((PhpElement)nameImpl.indexedElement);
+                            }
+                        });
+                    } else {
+                        occurences.add(new OccurenceImpl(var, nodeInfo.getRange()));
                     }
                 }
             }
