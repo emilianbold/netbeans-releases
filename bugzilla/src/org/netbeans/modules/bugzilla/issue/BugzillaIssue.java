@@ -50,10 +50,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
@@ -108,8 +110,9 @@ import org.openide.util.RequestProcessor;
  */
 public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
 
-    public static final String RESOLVE_FIXED = "FIXED";                         // NOI18N
-    public static final String RESOLVE_DUPLICATE = "DUPLICATE";                 //NOI18N
+    public static final String RESOLVE_FIXED = "FIXED";                                                         // NOI18N
+    public static final String RESOLVE_DUPLICATE = "DUPLICATE";                                                 // NOI18N
+    public static final String VCSHOOK_BUGZILLA_FIELD = "netbeans.vcshook.bugzilla.";                           // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
     private static final SimpleDateFormat MODIFIED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
     private static final SimpleDateFormat CREATED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");       // NOI18N
@@ -628,6 +631,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         if(f == IssueField.PRODUCT) {
             handleProductChange(a);
         }
+        Bugzilla.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
         a.setValue(value);
     }
 
@@ -818,10 +822,37 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         if(close) {
             Bugzilla.LOG.log(Level.FINER, "resolving issue #{0} as fixed", new Object[]{getID()});
             resolve(RESOLVE_FIXED); // XXX constant?
+
+            // check for other preselections
+            Properties p = System.getProperties();
+            Enumeration<Object> keys = p.keys();
+            List<String> keyList = new LinkedList<String>();
+            while(keys.hasMoreElements()) {
+                Object key = keys.nextElement();
+                if(key.toString().startsWith(VCSHOOK_BUGZILLA_FIELD)) {
+                    keyList.add(key.toString());
+                }
+            }
+            for (String key : keyList) {
+                String fieldName = key.substring(VCSHOOK_BUGZILLA_FIELD.length());
+                String value = p.getProperty(key);
+                IssueField issueField = repository.getConfiguration().getField(fieldName);
+                if(issueField != null) {
+                    if(issueField.isReadOnly()) {
+                        Bugzilla.LOG.log(Level.WARNING, "field [{0}] is read-only.", new Object[]{repository.getUrl(), fieldName});
+                    } else {
+                        setFieldValue(issueField, value);
+                    }
+                } else {
+                    Bugzilla.LOG.log(Level.WARNING, "Repsitory [{0}] has no field [{1}]", new Object[]{repository.getUrl(), fieldName});
+                }
+            }
+
         }
         if(comment != null) {
             addComment(comment);
-        }
+        }        
+
         submitAndRefresh();
     }
 

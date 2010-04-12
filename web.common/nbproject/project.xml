@@ -135,6 +135,7 @@
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.project</friend>
+                <friend>org.netbeans.modules.maven.j2ee</friend>
                 <package>org.netbeans.modules.web.common.api</package>
                 <package>org.netbeans.modules.web.common.spi</package>
                 <package>org.netbeans.modules.web.common.taginfo</package>

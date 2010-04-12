@@ -597,7 +597,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertNotNull(root.getFileObject("subpackage1"));
         assertNotNull(root.getFileObject("subpackage1/newclass.java"));
         FileObjectTestHid.implOfTestGetFileObjectForSubversion(root, "subpackage");                                
-        final String subpackageName = Utilities.isWindows() ? 
+        final String subpackageName = Utilities.isWindows() || Utilities.isMac() ?
             "subpackage2" : "Subpackage";
         fs.addFileChangeListener(tl);
         try {
