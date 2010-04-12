@@ -702,6 +702,50 @@ run   - Builds and deploys the application and starts the browser.
                         <xsl:text>)</xsl:text>
                     </xsl:attribute>
                 </xsl:element>
+                <xsl:element name="property">
+                    <xsl:attribute name="name">
+                        <xsl:text>dependency.</xsl:text>
+                        <xsl:value-of select="@id"/>
+                        <xsl:text>.sigfile</xsl:text>
+                    </xsl:attribute>
+                    <xsl:attribute name="value">
+                         <xsl:text>${dependency.</xsl:text>
+                         <xsl:value-of select="@id"/>
+                         <xsl:text>.origin}/dist/</xsl:text>
+                         <xsl:value-of select="@id"/>
+                         <xsl:text>.signature</xsl:text>
+                    </xsl:attribute>
+                </xsl:element>
+                <xsl:element name="property">
+                    <xsl:attribute name="name">
+                        <xsl:text>dependency.</xsl:text>
+                        <xsl:value-of select="@id"/>
+                        <xsl:text>.expfile</xsl:text>
+                    </xsl:attribute>
+                    <xsl:attribute name="value">
+                         <xsl:text>${dependency.</xsl:text>
+                         <xsl:value-of select="@id"/>
+                         <xsl:text>.origin}/dist/</xsl:text>
+                         <xsl:value-of select="@id"/>
+                         <xsl:text>/javacard/</xsl:text>
+                    </xsl:attribute>
+                </xsl:element>
+                <xsl:element name="echo">
+                    <xsl:attribute name="message">
+                        <xsl:text>Dependency sigfile set to ${</xsl:text>
+                        <xsl:text>dependency.</xsl:text>
+                        <xsl:value-of select="@id"/>
+                        <xsl:text>.sigfile}</xsl:text>
+                    </xsl:attribute>
+                </xsl:element>
+                <xsl:element name="echo">
+                    <xsl:attribute name="message">
+                        <xsl:text>Dependency expfile set to ${</xsl:text>
+                        <xsl:text>dependency.</xsl:text>
+                        <xsl:value-of select="@id"/>
+                        <xsl:text>.expfile}</xsl:text>
+                    </xsl:attribute>
+                </xsl:element>
                 <!-- Project root dependencies -->
                 <xsl:if test="@kind = 'CLASSIC_LIB' or @kind = 'EXTENSION_LIB'">
                     <xsl:element name="ant">
