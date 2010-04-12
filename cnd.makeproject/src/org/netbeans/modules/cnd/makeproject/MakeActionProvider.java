@@ -716,13 +716,14 @@ public final class MakeActionProvider implements ActionProvider {
         }
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
         String buildCommand;
+        String makeCommand = getMakeCommand(pd, conf);
         if(actionEvent == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
-            buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " build-tests", ""); // NOI18N
+            buildCommand = makeArtifact.getBuildCommand(makeCommand + " build-tests", ""); // NOI18N
         } else {
-            buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), ""); // NOI18N
+            buildCommand = makeArtifact.getBuildCommand(makeCommand, ""); // NOI18N
         }
         String args = "";
-        int index = buildCommand.indexOf(' ');
+        int index = makeCommand.length();
         if (index > 0) {
             args = buildCommand.substring(index + 1);
             buildCommand = buildCommand.substring(0, index);
