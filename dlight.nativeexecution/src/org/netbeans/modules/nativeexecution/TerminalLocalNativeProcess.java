@@ -39,17 +39,19 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -139,11 +141,15 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             String envFile = pidFile + ".env"; // NOI18N
             String shFile = pidFile + ".sh"; // NOI18N
 
-            FileWriter shWriter = new FileWriter(shFileFile);
+            FileOutputStream shfos = new FileOutputStream(shFileFile);
+
+            // Always use UTF-8 here as it will be executed from shell
+            Charset charset = (osFamily == OSFamily.WINDOWS) ? WindowsSupport.getInstance().getShellCharset() : Charset.forName("UTF-8"); // NOI18N
+            BufferedWriter shWriter = new BufferedWriter(new OutputStreamWriter(shfos, charset));
+
             shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
             shWriter.write(". \"" + envFile + "\" 2>/dev/null\n"); // NOI18N
             shWriter.write("exec " + commandLine + "\n"); // NOI18N
-            shWriter.flush();
             shWriter.close();
 
             final ExternalTerminalAccessor terminalInfo =

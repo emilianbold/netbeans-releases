@@ -177,10 +177,11 @@ class RfsLocalController implements Runnable {
                 Exceptions.printStackTrace(ex);
             }
         }
-        fileData.store();
+        //fileData.store();
+        shutdown();
     }
 
-    void shutdown() {
+    private void shutdown() {
         fileData.store();
         if (!remoteUpdates.isEmpty()) {
             HostUpdates.register(remoteUpdates, execEnv, privProjectStorageDir);

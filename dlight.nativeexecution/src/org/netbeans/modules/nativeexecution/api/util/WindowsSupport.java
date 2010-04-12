@@ -38,9 +38,12 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,6 +60,7 @@ import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.api.util.Shell.PathType;
 import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
 import org.netbeans.modules.nativeexecution.support.TasksCachedProcessor;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -70,9 +74,15 @@ public final class WindowsSupport {
     private final TasksCachedProcessor<PathConverterParams, String> converter =
             new TasksCachedProcessor<PathConverterParams, String>(new PathConverter(), false);
     private final boolean isWindows;
+    private static final String cmd;
     private Shell activeShell = null;
     private Map<String, String> env = null;
     private String REG_EXE;
+
+    static {
+        String os = System.getProperty("os.name").toLowerCase(); // NOI18N
+        cmd = os.contains("windows 9") ? "command.com" : "cmd.exe"; // NOI18N
+    }
 
     private WindowsSupport() {
         isWindows = Utilities.isWindows();
@@ -82,7 +92,7 @@ public final class WindowsSupport {
         if (activeShell == null) {
             log.fine("WindowsSupport: no shell found"); // NOI18N
         } else {
-            log.fine("WindowsSupport: found " + activeShell.type + " shell in " + activeShell.bindir.getAbsolutePath()); // NOI18N
+            log.log(Level.FINE, "WindowsSupport: found {0} shell in {1}", new Object[]{activeShell.type, activeShell.bindir.getAbsolutePath()}); // NOI18N
         }
     }
 
@@ -214,7 +224,7 @@ public final class WindowsSupport {
     public int getWinPID(int shellPID) {
         ProcessBuilder pb = null;
         File psFile = new File(getActiveShell().bindir, "ps.exe"); // NOI18N
-        
+
         if (!psFile.exists()) {
             return shellPID;
         }
@@ -231,7 +241,7 @@ public final class WindowsSupport {
             default:
                 return shellPID;
         }
-        
+
         try {
             Process p = pb.start();
             List<String> output = ProcessUtils.readProcessOutput(p);
@@ -343,23 +353,33 @@ public final class WindowsSupport {
         return env;
     }
 
+    /**
+     * @return charset to be used when 'communicating' with a shell
+     */
+    public Charset getShellCharset() {
+        switch (getActiveShell().type) {
+            case CYGWIN:
+                return Charset.forName("UTF-8"); // NOI18N
+            case MSYS:
+                return Charset.defaultCharset();
+            default:
+                return Charset.defaultCharset();
+        }
+    }
+
     private static Map<String, String> readEnv() {
         Map<String, String> result = new TreeMap<String, String>(new CaseInsensitiveComparator());
 
         try {
-            String os = System.getProperty("os.name").toLowerCase(); // NOI18N
-            String cmd = "cmd"; // NOI18N
+            String codepage = getCodePage();
 
-            if (os.contains("windows 9")) { // NOI18N Win95, Win98.. not supported... but, still...
-                cmd = "command.com"; // NOI18N
-            }
-
-            ProcessBuilder pb = new ProcessBuilder(cmd, "/c", "set"); // NOI18N
+            ProcessBuilder pb = new ProcessBuilder(cmd, "/C", "set"); // NOI18N
             Process p = pb.start();
 
-            List<String> out = ProcessUtils.readProcessOutput(p);
+            String line;
+            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream(), codepage));
 
-            for (String line : out) {
+            while ((line = br.readLine()) != null) {
                 int idx = line.indexOf('=');
                 String key = line.substring(0, idx).trim();
                 String value = line.substring(idx + 1);
@@ -404,9 +424,10 @@ public final class WindowsSupport {
 
     private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {
 
-        public CaseInsensitiveComparator() {
+        CaseInsensitiveComparator() {
         }
 
+        @Override
         public int compare(String s1, String s2) {
             if (s1 == null && s2 == null) {
                 return 0;
@@ -431,7 +452,7 @@ public final class WindowsSupport {
         private final String path;
         private final boolean isSinglePath;
 
-        public PathConverterParams(PathType srcType, PathType trgType, String path, boolean isSinglePath) {
+        PathConverterParams(PathType srcType, PathType trgType, String path, boolean isSinglePath) {
             this.srcType = srcType;
             this.trgType = trgType;
             this.path = path;
@@ -446,10 +467,10 @@ public final class WindowsSupport {
 
             PathConverterParams that = (PathConverterParams) obj;
 
-            return this.srcType == that.srcType &&
-                    this.trgType == that.trgType &&
-                    this.isSinglePath == that.isSinglePath &&
-                    ((this.path == null) ? (that.path == null) : this.path.equals(that.path));
+            return this.srcType == that.srcType
+                    && this.trgType == that.trgType
+                    && this.isSinglePath == that.isSinglePath
+                    && ((this.path == null) ? (that.path == null) : this.path.equals(that.path));
         }
 
         @Override
@@ -465,6 +486,7 @@ public final class WindowsSupport {
 
     private final class PathConverter implements Computable<PathConverterParams, String> {
 
+        @Override
         public String compute(final PathConverterParams taskArguments) throws InterruptedException {
             String path = taskArguments.path;
 
@@ -585,21 +607,46 @@ public final class WindowsSupport {
             cmd.addAll(paths);
 
             ProcessBuilder pb = new ProcessBuilder(cmd);
+            List<String> result = new ArrayList<String>();
+
             try {
                 Process p = pb.start();
-                List<String> result = ProcessUtils.readProcessOutput(p);
+                String line;
+                // Always use UTF-8 when work with cygpath ...
+                BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream(), "UTF-8")); // NOI18N
+                while ((line = br.readLine()) != null) {
+                    result.add(line);
+                }
                 int exitCode = p.waitFor();
 
                 if (exitCode == 0) {
                     return result;
                 }
 
-                log.fine(cygpath.getAbsolutePath() + " failed."); // NOI18N
+                log.log(Level.FINE, "{0} failed.", cygpath.getAbsolutePath()); // NOI18N
                 ProcessUtils.logError(Level.FINE, log, p);
             } catch (InterruptedException ex) {
             } catch (IOException ex) {
             }
             return null;
         }
+    }
+
+    private static String getCodePage() {
+        try {
+            ProcessBuilder pb = new ProcessBuilder(Arrays.asList(cmd, "/C", "chcp")); // NOI18N
+            Process p = pb.start();
+            p.waitFor();
+            String out = ProcessUtils.readProcessOutputLine(p);
+            Pattern pattern = Pattern.compile(".*: ([0-9]+)"); // NOI18N
+            Matcher m = pattern.matcher(out);
+            if (m.matches()) {
+                return "CP" + m.group(1); // NOI18N
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return "CP866"; // NOI18N
     }
 }
