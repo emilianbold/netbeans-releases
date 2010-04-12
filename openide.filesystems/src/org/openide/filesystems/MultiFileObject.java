@@ -191,7 +191,10 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                     }
 
                     if (fo.isValid()) {
-                        Number weight = weightOf(fo, writable);
+                        Number weight = 
+                            fo.isRoot() &&
+                            !mfs.canHaveRootAttributeOnReadOnlyFS(WEIGHT_ATTRIBUTE)
+                            ? 0 : weightOf(fo, writable);
                         if (led == null || weight.doubleValue() > maxWeight.doubleValue()) {
                             led = fo;
                             maxWeight = weight;
@@ -788,8 +791,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 if (localFo.isRoot() && (prefixattr != null)) {
                     try {
                         FileSystem foFs = localFo.getFileSystem();
-
-                        if (!(foFs instanceof XMLFileSystem)) {
+                        if (!foFs.isReadOnly() || getMultiFileSystem().canHaveRootAttributeOnReadOnlyFS(prefixattr)) {
                             localFo = foFs.getRoot();
                             oPerf = getAttribute(localFo, prefixattr, ""); // NOI18N
 
@@ -849,20 +851,21 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 }
             }
 
-            // Don't check for root override on XMLFileSystem's; the override
-            // could only have been made on a writable filesystem to begin with.
-            // Could skip all RO FSs but then multi-user installs would not work
-            // quite right.
-            if ((prefixattr != null) && !(systems[i] instanceof XMLFileSystem)) {
-                fo = systems[i].getRoot();
+            if (prefixattr != null) {
+                if (
+                    !systems[i].isReadOnly() ||
+                    getMultiFileSystem().canHaveRootAttributeOnReadOnlyFS(prefixattr)
+                ) {
+                    fo = systems[i].getRoot();
 
-                Object o = getAttribute(fo, prefixattr, ""); // NOI18N
+                    Object o = getAttribute(fo, prefixattr, ""); // NOI18N
 
-                if (o != null) {
-                    Number weight = weightOf(fo, writable);
-                    if (attr == null || weight.doubleValue() > maxWeight.doubleValue()) {
-                        attr = o;
-                        maxWeight = weight;
+                    if (o != null) {
+                        Number weight = weightOf(fo, writable);
+                        if (attr == null || weight.doubleValue() > maxWeight.doubleValue()) {
+                            attr = o;
+                            maxWeight = weight;
+                        }
                     }
                 }
             }

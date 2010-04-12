@@ -68,9 +68,9 @@ public class PickIconAction extends CookieAction {
     
     protected void performAction(Node[] activatedNodes) {
         FileObject f = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
-        URL location = (URL) f.getAttribute("WritableXMLFileSystem.location"); // NOI18N
-        assert location != null : f;
-        NbModuleProject p = (NbModuleProject) FileOwnerQuery.getOwner(URI.create(location.toExternalForm()));
+        URL[] location = (URL[]) f.getAttribute("layers"); // NOI18N
+        assert location != null && location.length == 1 : f;
+        NbModuleProject p = (NbModuleProject) FileOwnerQuery.getOwner(URI.create(location[0].toExternalForm()));
         assert p != null : location;
         FileObject src = p.getSourceDirectory();
         JFileChooser chooser = UIUtil.getIconFileChooser();

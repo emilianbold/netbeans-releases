@@ -42,11 +42,7 @@
 package org.netbeans.modules.apisupport.project.layers;
 
 import java.awt.EventQueue;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,14 +58,11 @@ import javax.xml.parsers.SAXParserFactory;
 //import org.openide.DialogDisplayer;
 //import org.openide.DialogDisplayer;
 //import org.openide.NotifyDescriptor;
-import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.URLMapper;
-import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
@@ -88,8 +81,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Open the layer file(s) declaring the SFS node.
- * 
- * @author Sandip Chitale
  */
 public class OpenLayerFilesAction extends CookieAction {
 
@@ -107,98 +98,17 @@ public class OpenLayerFilesAction extends CookieAction {
     }
 
     private void openLayersForFile(FileObject f) throws FileStateInvalidException {
-        FileSystem fs = f.getFileSystem();
-        while (fs instanceof LayerFileSystem) {
-            try {
-                FileSystem[] delegates = ((LayerFileSystem) fs).getLayerFileSystems();
-                if (delegates != null && delegates.length > 0) {
-                    fs = delegates[0];
-                    if (fs instanceof LayerFileSystem) {
-                        // keep going
-                        continue;
-                    } else if (fs instanceof WritableXMLFileSystem) {
-                        // Now, try other layer files visible to the module project
-                        for (int i = 0; i < delegates.length; i++) {
-                            fs = delegates[i];
-                            if (fs == null) {
-                                continue;
-                            }
-                            FileObject originalF = fs.findResource(f.getPath());
-                            if (fs instanceof WritableXMLFileSystem) {
-                                // Issue # 118839
-                                // Avoid CCE
-                                // try current module project's layer file.
-                                if (originalF != null) {
-                                    URL url = (URL) f.getAttribute("WritableXMLFileSystem.location"); // NOI18N
-                                    FileObject layerFileObject = URLMapper.findFileObject(url);
-                                    if (layerFileObject != null) {
-                                        try {
-                                            DataObject layerDataObject = DataObject.find(layerFileObject);
-                                            openLayerFileAndFind(layerDataObject, originalF);
-                                        } catch (DataObjectNotFoundException ex) {
-                                            Exceptions.printStackTrace(ex);
-                                        }
-                                    }
-                                }
-                            } else {
-                                URL[] urls = null;
-                                boolean isCandidate = originalF != null;
-                                if (fs instanceof XMLFileSystem) {
-                                    XMLFileSystem xMLFileSystem = (XMLFileSystem) fs;
-                                    // Have to use deprecated API to get all the Xml URLs
-                                    urls = xMLFileSystem.getXmlUrls();
-                                } else if (isCandidate) {
-                                    // try cached LFS layers
-                                    File jar = PlatformLayersCacheManager.findOriginatingJar(fs);
-                                    if (jar != null) {
-                                        ManifestManager mm = ManifestManager.getInstanceFromJAR(jar, true);
-                                        String layer = mm.getLayer();
-                                        String generatedLayer = mm.getGeneratedLayer();
-                                        List<URL> urll = new ArrayList<URL>(2);
-                                        URI juri = jar.toURI();
-                                        if (layer != null) {
-                                            urll.add(new URL("jar:" + juri + "!/" + layer));
-                                        }
-                                        if (generatedLayer != null) {
-                                            urll.add(new URL("jar:" + juri + "!/" + generatedLayer));
-                                        }
-                                        urls = urll.toArray(new URL[urll.size()]);
-                                    }
-                                }
-                                if (urls == null) {
-                                    continue;
-                                }
-                                for (URL url : urls) {
-                                    try {
-                                        // Build an XML FS for the given URL
-                                        XMLFileSystem aXMLFileSystem = new XMLFileSystem(url);
-                                        // Find the resource using the file path
-                                        originalF = aXMLFileSystem.findResource(f.getPath());
-                                        // Found?
-                                        if (originalF != null) {
-                                            // locate the layer's file object and open it
-                                            FileObject layerFileObject = URLMapper.findFileObject(url);
-                                            if (layerFileObject != null) {
-                                                try {
-                                                    DataObject layerDataObject = DataObject.find(layerFileObject);
-                                                    openLayerFileAndFind(layerDataObject, originalF);
-                                                } catch (DataObjectNotFoundException ex) {
-                                                    Exceptions.printStackTrace(ex);
-                                                }
-                                            }
-                                        }
-                                    } catch (SAXException ex) {
-                                        Exceptions.printStackTrace(ex);
-                                    }
-                                }
-                            }
-                        }
+        URL[] location = (URL[]) f.getAttribute("layers"); // NOI18N
+        if (location != null) {
+            for (URL u : location) {
+                FileObject layer = URLMapper.findFileObject(u);
+                if (layer != null) {
+                    try {
+                        openLayerFileAndFind(DataObject.find(layer), f);
+                    } catch (DataObjectNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
     }
@@ -249,6 +159,9 @@ public class OpenLayerFilesAction extends CookieAction {
                                 }
                             }
                         }
+                        // XXX also look for comment giving class name in same project to open, e.g.
+                        // <file name="org-netbeans-modules-apisupport-project-suite.instance">
+                        //     <!--org.netbeans.modules.apisupport.project.suite.SuiteProject-->
                     }
                     parser.parse(in, new Handler(lineage));
                     if (line[0] < 1) {
