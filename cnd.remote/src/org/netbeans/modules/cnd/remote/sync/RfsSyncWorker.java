@@ -244,9 +244,10 @@ import org.openide.util.RequestProcessor;
             lc = localController;
             localController = null;
         }
-        if (lc != null) {
-            lc.shutdown();
-        }
+        // now local controller does this as soon as
+        //if (lc != null) {
+        //    lc.shutdown();
+        //}
     }
     
     private void remoteControllerCleanup() {
