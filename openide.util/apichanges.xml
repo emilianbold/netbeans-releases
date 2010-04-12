@@ -48,6 +48,21 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="RequestProcessorForClass">
+        <api name="util"/>
+        <summary>Simplified constructor for RequestProcessor</summary>
+        <version major="8" minor="6"/>
+        <date day="13" month="4" year="2010"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Simpler constructor for RequestProcessor.
+            </p>
+        </description>
+        <class package="org.openide.util" name="RequestProcessor"/>
+        <issue number="180458"/>
+    </change>
     <change id="CharSequences">
         <api name="util"/>
         <summary>Added <code>CharSequences</code></summary>
