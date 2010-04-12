@@ -456,7 +456,9 @@ static int init_files() {
                     if (file == path) { // the file resides in root directory
                         strcpy(real_path, path);
                     } else {
-                        // NB: we modify the path!
+                        // NB: we modify the path! but we'll restore later
+                        char *pfile_start = file; // save file start char
+                        char file_start = *file;  // save file start char
                         *file = 0; // replace the '/' that separates file from dir by zero
                         file++; 
                         if (!realpath(dir, real_path)) {
@@ -469,6 +471,7 @@ static int init_files() {
                         }
                         *(p++) = '/';
                         strncpy(p, file, sizeof real_path - (p - real_path));
+                        *pfile_start = file_start; // restore file start char
                     }
                 } else {
                     if (!realpath(path, real_path)) {
