@@ -144,11 +144,9 @@ public final class MenuWarmUpTask implements Runnable {
             if (e.getOppositeWindow() == null) {
                 synchronized (rp) {
                     if (task != null) {
-                        task.cancel();
-                    } else {
-                        task = rp.create(this);
+                        task.schedule(1500);
+                        task = null;
                     }
-                    task.schedule(1500);
                 }
             }
         }
@@ -160,6 +158,8 @@ public final class MenuWarmUpTask implements Runnable {
                 synchronized (rp) {
                     if (task != null) {
                         task.cancel();
+                    } else {
+                        task = rp.create(this);
                     }
                 }
                 LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_DEACTIVATED"); // NOI18N
@@ -228,9 +228,6 @@ public final class MenuWarmUpTask implements Runnable {
                 // connect the bridge with the masterfs's RefreshSlow
                 run.equals(handleBridge);
                 run.run();
-            }
-            synchronized (rp) {
-                task = null;
             }
             long took = System.currentTimeMillis() - now;
             try {
