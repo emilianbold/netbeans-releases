@@ -89,11 +89,15 @@ import org.openide.ErrorManager;
                     int spaceIndex = line.indexOf(' ', includeIndex + 1); // NOI18N
                     if (spaceIndex > 0) {
                         token = line.substring(includeIndex+2, spaceIndex);
-                        pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
-                        includeIndex = line.indexOf("-I", spaceIndex); // NOI18N
                     } else {
                         token = line.substring(includeIndex+2);
+                    }
+                    if (!token.equals("-xbuiltin")) { //NOI18N
                         pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
+                    }
+                    if (spaceIndex > 0) {
+                        includeIndex = line.indexOf("-I", spaceIndex); // NOI18N
+                    } else {
                         break;
                     }
                 }
