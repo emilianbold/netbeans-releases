@@ -47,6 +47,7 @@ import javax.swing.JComboBox;
 import org.netbeans.modules.maven.j2ee.ejb.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -54,14 +55,17 @@ import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
+import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 
 /**
- * An implementation of the <code>JPAModuleInfo, JPADataSourcePopulator, JPADataSourceProvider</code> for maven projects.
+ * An implementation of the <code>JPAModuleInfo, JPADataSourcePopulator, JPADataSourceProvider, ServerStatusProvider</code>
+ * for maven projects.
  * 
  * @author Milos Kleint
  */
-class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator, JPADataSourceProvider {
+class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator, 
+        JPADataSourceProvider, ServerStatusProvider {
     
     private final Project project;
     
@@ -128,6 +132,12 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator, JPADataSour
             return new DatasourceWrapper((Datasource) dataSource);
         }
         return null;
+    }
+
+    @Override
+    public boolean validServerInstancePresent() {
+        J2eeModuleProvider prvd = project.getLookup().lookup(J2eeModuleProvider.class);
+        return Util.isValidServerInstance(prvd);
     }
 
 

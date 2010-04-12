@@ -287,8 +287,7 @@ public class HgModuleConfig {
     public Boolean isUserNameValid(String name) {
         if (userName == null) getSysUserName();
         if (name.equals(userName)) return true;
-        if (name.length() == 0) return true;
-        return HgMail.isUserNameValid(name);
+        return !name.trim().isEmpty();
     }
 
     public Boolean isExecPathValid(String name) {
