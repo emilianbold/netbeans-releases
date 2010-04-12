@@ -130,15 +130,16 @@ public class RepositoryController extends BugtrackingController implements Docum
     }
 
     private boolean validate() {
-        if(!populated) {
-            return true;
-        }
         if(validateError) {
+            panel.validateButton.setEnabled(true);
+            return false;
+        }
+        panel.validateButton.setEnabled(false);
+
+        if(!populated) {
             return false;
         }
         errorMessage = null;
-
-        panel.validateButton.setEnabled(false);
 
         // check name
         String name = panel.nameField.getText().trim();
@@ -233,13 +234,16 @@ public class RepositoryController extends BugtrackingController implements Docum
             @Override
             void execute() {
                 BugzillaConfig.getInstance().setupCredentials(repository);
-                if(repository.getTaskRepository() != null) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            AuthenticationCredentials c = repository.getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
-                            panel.userField.setText(c.getUserName());
-                            panel.psswdField.setText(c.getPassword());
-                            c = repository.getTaskRepository().getCredentials(AuthenticationType.HTTP);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        TaskRepository taskRepository = repository.getTaskRepository();
+                        if(taskRepository != null) {
+                            AuthenticationCredentials c = taskRepository.getCredentials(AuthenticationType.REPOSITORY);
+                            if(c != null) {
+                                panel.userField.setText(c.getUserName());
+                                panel.psswdField.setText(c.getPassword());
+                            }
+                            c = taskRepository != null ? taskRepository.getCredentials(AuthenticationType.HTTP) : null;
                             if(c != null) {
                                 String httpUser = c.getUserName();
                                 String httpPsswd = c.getPassword();
@@ -251,17 +255,13 @@ public class RepositoryController extends BugtrackingController implements Docum
                                     panel.httpPsswdField.setText(httpPsswd);
                                 }
                             }
-                            panel.urlField.setText(repository.getTaskRepository().getUrl());
+                            panel.urlField.setText(taskRepository.getUrl());
                             panel.nameField.setText(repository.getDisplayName());
                             panel.cbEnableLocalUsers.setSelected(repository.isShortUsernamesEnabled());
-                            populated = true;
-                            fireDataChanged();
                         }
-                    });
-                } else {
-                    populated = false;
-                    fireDataChanged();
-                }
+                        populated = true;
+                    }
+                });
             }
         };
         taskRunner.startTask();
@@ -295,6 +295,7 @@ public class RepositoryController extends BugtrackingController implements Docum
         taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating")) {  // NOI18N
             @Override
             void execute() {
+                    validateError = false;
                     repository.resetRepository(); // reset mylyns caching
 
                     String name = getName();
@@ -323,7 +324,6 @@ public class RepositoryController extends BugtrackingController implements Docum
                                                Level.WARNING, name, url, user, httpUser);
                         }
                         validateError = true;
-                        fireDataChanged();
                     } else {
                         panel.connectionLabel.setVisible(true);
                         logValidateMessage("validate for [{0},{1},{2},****{3},****] ok.", // NOI18N

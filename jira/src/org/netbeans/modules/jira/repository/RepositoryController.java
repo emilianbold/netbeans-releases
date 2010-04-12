@@ -128,15 +128,16 @@ public class RepositoryController extends BugtrackingController implements Docum
     }
 
     private boolean validate() {
-        if(!populated) {
-            return true;
-        }
         if(validateError) {
+            panel.validateButton.setEnabled(true);
+            return false;
+        }
+        panel.validateButton.setEnabled(false);
+
+        if(!populated) {
             return false;
         }
         errorMessage = null;
-
-        panel.validateButton.setEnabled(false);
 
         // check name
         String name = panel.nameField.getText().trim();
@@ -230,15 +231,17 @@ public class RepositoryController extends BugtrackingController implements Docum
             }
             @Override
             void execute() {
-
                 JiraConfig.getInstance().setupCredentials(repository);
-                if(repository.getTaskRepository() != null) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            AuthenticationCredentials c = repository.getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
-                            panel.userField.setText(c.getUserName());
-                            panel.psswdField.setText(c.getPassword());
-                            c = repository.getTaskRepository().getCredentials(AuthenticationType.HTTP);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        TaskRepository taskRepository = repository.getTaskRepository();
+                        if(taskRepository != null) {
+                            AuthenticationCredentials c = taskRepository.getCredentials(AuthenticationType.REPOSITORY);
+                            if(c != null) {
+                                panel.userField.setText(c.getUserName());
+                                panel.psswdField.setText(c.getPassword());
+                            }
+                            c = taskRepository.getCredentials(AuthenticationType.HTTP);
                             if(c != null) {
                                 String httpUser = c.getUserName();
                                 String httpPsswd = c.getPassword();
@@ -250,16 +253,12 @@ public class RepositoryController extends BugtrackingController implements Docum
                                     panel.httpPsswdField.setText(httpPsswd);
                                 }
                             }
-                            panel.urlField.setText(repository.getTaskRepository().getUrl());
+                            panel.urlField.setText(taskRepository.getUrl());
                             panel.nameField.setText(repository.getDisplayName());
-                            populated = true;
-                            fireDataChanged();
                         }
-                    });
-                } else {
-                    populated = true;
-                    fireDataChanged();
-                }
+                        populated = true;
+                    }
+                });
             }
         };
         taskRunner.startTask();
@@ -292,6 +291,7 @@ public class RepositoryController extends BugtrackingController implements Docum
     private void onValidate() {
         taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating")) {  // NOI18N
             public void execute() {
+                validateError = false;
                 String name = getName();
                 String url = getUrl();
                 String user = getUser();
@@ -317,7 +317,6 @@ public class RepositoryController extends BugtrackingController implements Docum
                                            Level.WARNING, name, url, user, httpUser);
                     }
                     validateError = true;
-                    fireDataChanged();
                 } else {
                     logValidateMessage("validate for [{0},{1},{2},****{3},****] worked.", // NOI18N
                                        Level.INFO, name, url, user, httpUser);
