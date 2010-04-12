@@ -130,12 +130,16 @@ final class FileObjectKeeper implements FileChangeListener {
     }
 
     private void listenTo(FileObject fo, boolean add) {
+        Set<FileObject> k;
         if (add) {
             fo.addFileChangeListener(this);
             if (fo instanceof FolderObj) {
                 FolderObj folder = (FolderObj)fo;
                 folder.getKeeper();
-                kept.add(folder);
+                k = kept;
+                if (k != null) {
+                    k.add(folder);
+                }
             }
             LOG.log(Level.FINER, "Listening to {0}", fo);
         } else {
