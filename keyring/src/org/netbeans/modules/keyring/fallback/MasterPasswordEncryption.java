@@ -55,6 +55,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import org.netbeans.modules.keyring.Utils;
 import org.netbeans.modules.keyring.spi.EncryptionProvider;
+import org.openide.util.Mutex;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -150,7 +151,11 @@ public class MasterPasswordEncryption implements EncryptionProvider {
         if (unlocked) {
             return true;
         }
-        char[][] passwords = new MasterPasswordPanel().display();
+        char[][] passwords = Mutex.EVENT.readAccess(new Mutex.Action<char[][]>() {
+            public @Override char[][] run() {
+                return new MasterPasswordPanel().display();
+            }
+        });
         if (passwords == null) {
             LOG.fine("cancelled master password dialog");
             return false;
