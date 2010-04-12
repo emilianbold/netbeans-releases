@@ -1570,11 +1570,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 //                final boolean allFiles,
                 final boolean sourceForBinaryRoot,
                 final SourceIndexers indexers,
-                final Map<SourceIndexerFactory,Boolean> votes
+                final Map<SourceIndexerFactory, Boolean> votes,
+                final long [] recursiveListenersTime
         ) throws IOException {
             return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Boolean>() {
                 public Boolean run() throws IOException {
-                    return doIndex(resources, allResources, root, sourceForBinaryRoot, indexers, votes);
+                    return doIndex(resources, allResources, root, sourceForBinaryRoot, indexers, votes, recursiveListenersTime);
                 }
             });
         }
@@ -1586,11 +1587,16 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 //                final boolean allFiles,
                 final boolean sourceForBinaryRoot,
                 SourceIndexers indexers,
-                Map<SourceIndexerFactory,Boolean> votes
+                Map<SourceIndexerFactory, Boolean> votes,
+                long [] recursiveListenersTime
         ) throws IOException {
+            long tm = System.currentTimeMillis();
             if (!RepositoryUpdater.getDefault().rootsListeners.add(root, true, getShuttdownRequest())) {
                 //Do not call the expensive recursive listener if exiting
                 return false;
+            }
+            if (recursiveListenersTime != null) {
+                recursiveListenersTime[0] = System.currentTimeMillis() - tm;
             }
 
             final LinkedList<Context> transactionContexts = new LinkedList<Context>();
@@ -1933,7 +1939,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         invalidateSources(resources);
                         scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
                         try {
-                            if (index(resources, files.isEmpty() && forceRefresh ? resources : null, root, sourceForBinaryRoot, indexers, invalidatedMap)) {
+                            if (index(resources, files.isEmpty() && forceRefresh ? resources : null, root, sourceForBinaryRoot, indexers, invalidatedMap, null)) {
                                 crawler.storeTimestamps();
                                 return true;
                             }
@@ -3061,6 +3067,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             long completeTime = 0;
             int totalOutOfDateFiles = 0;
             int totalDeletedFiles = 0;
+            long totalRecursiveListenersTime = 0;
             boolean finished = true;
 
             if (indexers == null) {
@@ -3076,6 +3083,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 final long tmStart = System.currentTimeMillis();
                 final int [] outOfDateFiles = new int [] { 0 };
                 final int [] deletedFiles = new int [] { 0 };
+                final long [] recursiveListenersTime = new long [] { 0 };
                 try {
                     updateProgress(source);
                     boolean preregistered = false;
@@ -3085,7 +3093,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         preregistered = true;
                     }
                     try {
-                        if (scanSource (source, ctx.fullRescanSourceRoots.contains(source), ctx.sourcesForBinaryRoots.contains(source), indexers, outOfDateFiles, deletedFiles)) {
+                        if (scanSource (source, ctx.fullRescanSourceRoots.contains(source), ctx.sourcesForBinaryRoots.contains(source), indexers, outOfDateFiles, deletedFiles, recursiveListenersTime)) {
                             ctx.scannedRoots.add(source);
                             success = true;
                         } else {
@@ -3105,19 +3113,20 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     scannedRootsCnt++;
                     totalOutOfDateFiles += outOfDateFiles[0];
                     totalDeletedFiles += deletedFiles[0];
+                    totalRecursiveListenersTime += recursiveListenersTime[0];
                     if (PERF_TEST) {
                         reportRootScan(source, time);
                     }
                     if (LOGGER.isLoggable(Level.INFO)) {
-                        LOGGER.info(String.format("Indexing of: %s took: %d ms (New or modified files: %d, Deleted files: %d)", //NOI18N
-                                source.toExternalForm(), time, outOfDateFiles[0], deletedFiles[0]));
+                        LOGGER.info(String.format("Indexing of: %s took: %d ms (New or modified files: %d, Deleted files: %d) [Adding listeners took: %d ms]", //NOI18N
+                                source.toExternalForm(), time, outOfDateFiles[0], deletedFiles[0], recursiveListenersTime[0]));
                     }
                 }
             }
 
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info(String.format("Complete indexing of %d source roots took: %d ms (New or modified files: %d, Deleted files: %d)", //NOI18N
-                        scannedRootsCnt, completeTime, totalOutOfDateFiles, totalDeletedFiles));
+                LOGGER.info(String.format("Complete indexing of %d source roots took: %d ms (New or modified files: %d, Deleted files: %d) [Adding listeners took: %d ms]", //NOI18N
+                        scannedRootsCnt, completeTime, totalOutOfDateFiles, totalDeletedFiles, totalRecursiveListenersTime));
             }
             TEST_LOGGER.log(Level.FINEST, "scanSources", ctx.newRootsToScan); //NOI18N
 
@@ -3128,7 +3137,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return Boolean.getBoolean("netbeans.indexing.noRootsScan"); //NOI18N
         }
 
-        private boolean scanSource (URL root, boolean fullRescan, boolean sourceForBinaryRoot, SourceIndexers indexers, int [] outOfDateFiles, int [] deletedFiles) throws IOException {
+        private boolean scanSource (URL root, boolean fullRescan, boolean sourceForBinaryRoot, SourceIndexers indexers, int [] outOfDateFiles, int [] deletedFiles, long [] recursiveListenersTime) throws IOException {
             LOGGER.log(Level.FINE, "Scanning sources root: {0}", root); //NOI18N
 
             if (isNoRootsScan() && !fullRescan && TimeStamps.existForRoot(root)) {
@@ -3184,7 +3193,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         try {
                             delete(deleted, root);
                             invalidateSources(resources);
-                            if (index(resources, allResources, root, sourceForBinaryRoot, indexers, invalidatedMap)) {
+                            if (index(resources, allResources, root, sourceForBinaryRoot, indexers, invalidatedMap, recursiveListenersTime)) {
                                 crawler.storeTimestamps();
                                 outOfDateFiles[0] = resources.size();
                                 deletedFiles[0] = deleted.size();
