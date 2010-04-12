@@ -113,7 +113,9 @@ public class RemoteBuildUpdatesDownloadTest extends RemoteBuildTestBase {
                 notFoundMessage.append(pair.shortFileName);
             } else {
                 FileDownloadInfo.State state = info.getState();
-                if (!state.equals(pair.state)) {
+                if (state.equals(pair.state)) {
+                    System.err.printf("\tOK state %s for %s at %s\n", info.getState(), info.getLocalFile(), getTestExecutionEnvironment());
+                } else {
                     success = false;
                     if (wrongStateFoundMessage.length() == 0) {
                         wrongStateFoundMessage.append("Wrong state: ");
@@ -121,7 +123,7 @@ public class RemoteBuildUpdatesDownloadTest extends RemoteBuildTestBase {
                         wrongStateFoundMessage.append(", ");
                     }
                 }
-                wrongStateFoundMessage.append(pair.shortFileName + ": expected " + pair.state + " found " + state);
+                wrongStateFoundMessage.append(pair.shortFileName).append(": expected ").append(pair.state).append(" found ").append(state);
             }
         }
         if (!success) {
