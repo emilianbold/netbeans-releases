@@ -65,6 +65,8 @@ import org.openide.util.Exceptions;
  */
 public class TokenFormatter {
 
+    protected static String TEMPLATE_HANDLER_PROPERTY = "code-template-insert-handler";
+
     private static final Logger LOGGER = Logger.getLogger(TokenFormatter.class.getName());
 
 //    private final Context context;
@@ -354,7 +356,7 @@ public class TokenFormatter {
 
                     int delta = 0;
                     int indent = docOptions.initialIndent;
-                    final boolean templateEdit = doc.getProperty("code-template-insert-handler") != null; //NOI18N
+                    final boolean templateEdit = doc.getProperty(TEMPLATE_HANDLER_PROPERTY) != null; //NOI18N
                     final int caretOffset = EditorRegistry.lastFocusedComponent() != null
                             ? EditorRegistry.lastFocusedComponent().getCaretPosition()
                             : 0;
@@ -1357,7 +1359,10 @@ public class TokenFormatter {
 		    oldText = "";
 		}
                 if(startOffset == -1) {
-                    startOffset = formatContext.startOffset();
+                    startOffset = formatContext.startOffset() == 0
+                            ? formatContext.startOffset()
+                            : formatContext.startOffset() -1;
+                    System.out.println("char: " + document.getText().charAt(startOffset));
                     while (startOffset > 0 && Character.isWhitespace(document.getText().charAt(startOffset))) {
                         startOffset --;
                     }
@@ -1382,32 +1387,44 @@ public class TokenFormatter {
                             delta = replaceSimpleString(document, realOffset, oldText, newText, delta);
                         } else {
                             // the replacing has to be done line by line.
-                            int indexOldTextLine = 0;
-                            int indexNewTextLine = 0;
+                            int indexOldTextLine = oldText.indexOf('\n');
+                            int indexNewTextLine = newText.indexOf('\n');
                             int indexOldText = 0;
                             int indexNewText = 0;
+                            String replaceOld;
+                            String replaceNew;
 
-                            do {
-                                indexOldTextLine = oldText.indexOf('\n', indexOldText); // NOI18N
-                                indexNewTextLine = newText.indexOf('\n', indexNewText); // NOI18N
-                                if (indexOldTextLine == -1)
-                                    indexOldTextLine = oldText.length() - 1;
-                                if (indexNewTextLine == -1)
-                                    indexNewTextLine = newText.length() - 1;
-                                delta = replaceSimpleString(document, realOffset + indexOldText,
-                                        oldText.substring(indexOldText, indexOldTextLine),
-                                        indexNewText == indexNewTextLine && indexNewText != 0 ? "\n" : newText.substring(indexNewText, indexNewTextLine), delta); // NOI18N
-                                indexOldText = indexOldTextLine + 1;
-                                indexNewText = indexNewTextLine + (indexNewText == indexNewTextLine && indexNewText != 0 ? 2 : 1);
-                                realOffset = offset + delta;
+                            if ((indexOldTextLine == -1 && indexNewTextLine == -1) // no new line in both
+                                    || oldText.length() == 0) {
+                                delta = replaceSimpleString(document, realOffset, oldText, newText, delta);
+                            } else {
 
-                            } while (indexOldText < oldText.length()
-                                    && indexNewText < newText.length());
+                                do {
+                                    indexOldTextLine = oldText.indexOf('\n', indexOldText); // NOI18N
+                                    indexNewTextLine = newText.indexOf('\n', indexNewText); // NOI18N
 
-                            if (indexOldText >= oldText.length()
-                                    && indexNewText < newText.length()) {
-                                delta = replaceSimpleString(document, realOffset + oldText.length(),
-                                        "", newText.substring(indexNewText), delta);
+                                    if (indexOldTextLine == -1)
+                                        indexOldTextLine = oldText.length();
+                                    if (indexNewTextLine == -1)
+                                        indexNewTextLine = newText.length();
+                                    replaceOld = indexOldText == indexOldTextLine ? "\n" : oldText.substring(indexOldText, indexOldTextLine); // NOI18N
+                                    replaceNew = indexNewText == indexNewTextLine ? "\n" : newText.substring(indexNewText, indexNewTextLine); // NOI18N
+                                    if (!replaceOld.equals(replaceNew)) {
+                                        delta = replaceSimpleString(document, realOffset + indexOldText,
+                                                replaceOld, replaceNew, delta);
+                                    }
+                                    indexOldText = indexOldTextLine + 1;//(indexOldText == indexOldTextLine ? 2 : 1);
+                                    indexNewText = indexNewTextLine + 1;//(indexNewText == indexNewTextLine ? 2 : 1);
+                                    realOffset = offset + delta;
+
+                                } while (indexOldText < oldText.length()
+                                        && indexNewText < newText.length());
+
+                                if (indexOldText >= oldText.length()
+                                        && indexNewText < newText.length()) {
+                                    delta = replaceSimpleString(document, realOffset + oldText.length(),
+                                            "", newText.substring(indexNewText), delta);
+                                }
                             }
 
                         }
