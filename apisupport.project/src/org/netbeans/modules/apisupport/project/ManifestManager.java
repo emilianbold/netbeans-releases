@@ -110,7 +110,7 @@ public final class ManifestManager {
     public static final String CLASS_PATH = "Class-Path"; // NOI18N
     public static final String AUTO_UPDATE_SHOW_IN_CLIENT = "AutoUpdate-Show-In-Client"; // NOI18N
 
-    private static final String GENERATED_LAYER_PATH = "META-INF/generated-layer.xml";    // NOI18N
+    public static final String GENERATED_LAYER_PATH = "META-INF/generated-layer.xml";    // NOI18N
 
     static final PackageExport[] EMPTY_EXPORTED_PACKAGES = new PackageExport[0];
     

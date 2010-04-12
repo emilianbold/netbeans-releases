@@ -71,11 +71,11 @@ public class PickNameAction extends CookieAction {
     }
     
     private static NbModuleProvider findProject(FileObject f) {
-        URL location = (URL) f.getAttribute("WritableXMLFileSystem.location"); // NOI18N
-        if (location == null) {
+        URL[] location = (URL[]) f.getAttribute("layers"); // NOI18N
+        if (location == null || location.length != 1) {
             return null;
         }
-        Project p = FileOwnerQuery.getOwner(URI.create(location.toExternalForm()));
+        Project p = FileOwnerQuery.getOwner(URI.create(location[0].toExternalForm()));
                 
         assert p != null : location;
         NbModuleProvider prov = p.getLookup().lookup(NbModuleProvider.class);
