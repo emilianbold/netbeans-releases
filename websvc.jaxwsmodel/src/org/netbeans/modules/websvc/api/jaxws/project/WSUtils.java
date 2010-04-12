@@ -596,7 +596,7 @@ public class WSUtils {
             br = new BufferedReader(new FileReader(FileUtil.toFile(jaxWsFo)));
             String line = null;
             while ((line = br.readLine()) != null) {
-                if (line.contains("<client>")) { //NOI18N
+                if (line.contains("<client ")) { //NOI18N
                     found = true;
                     break;
                 }
@@ -616,7 +616,7 @@ public class WSUtils {
             br = new BufferedReader(new FileReader(FileUtil.toFile(jaxWsFo)));
             String line = null;
             while ((line = br.readLine()) != null) {
-                if (line.contains("<client>") || line.contains("<service>")) { //NOI18N
+                if (line.contains("<client ") || line.contains("<service ")) { //NOI18N
                     found = true;
                     break;
                 }
