@@ -92,7 +92,10 @@ public class RemoteBuildUpdatesDownloadTest extends RemoteBuildTestBase {
             new NameStatePair("lex.yy.c", FileDownloadInfo.State.UNCONFIRMED)
         };
         List<FileDownloadInfo> updates;
-        buildSample(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_Updates", 1);
+        //buildSample(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_Updates", 1);
+        MakeProject makeProject = prepareSampleProject(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_Updates");
+        int timeout = getSampleBuildTimeout();
+        buildProject(makeProject, ActionProvider.COMMAND_REBUILD, timeout, TimeUnit.SECONDS);
         updates = HostUpdates.testGetUpdates(getTestExecutionEnvironment());
         checkInfo(updates, filesToCheck);
     }
