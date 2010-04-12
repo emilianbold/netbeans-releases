@@ -402,6 +402,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             panel.validateLabel.setVisible(false);
             panel.validateButton.setVisible(true);
             panel.cancelButton.setVisible(false);
+            fireDataChanged();
             panel.enableFields(true);
         }
 
