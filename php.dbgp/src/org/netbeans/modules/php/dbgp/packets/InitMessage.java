@@ -138,7 +138,7 @@ public class InitMessage extends DbgpMessage {
         setCommand.setFeature(feature);
         setCommand.setValue(value);
         DbgpResponse response = session.sendSynchronCommand(setCommand);
-        assert response instanceof FeatureSetResponse;
+        assert response instanceof FeatureSetResponse : response;
     }
 
     private void setBreakpoints( DebugSession session ) {
