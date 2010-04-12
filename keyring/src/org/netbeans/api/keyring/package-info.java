@@ -63,6 +63,10 @@
  * The files in the user directory relating to this fallback keyring are marked
  * {@code go-w} on Unix systems, to discourage brute-force cracking attempts on
  * multiuser machines.</p>
+ * <p>If even master password encryption is unavailable, due to missing security
+ * providers, or a headless AWT which makes dialogs impossible, then a trivial
+ * implementation is used which just keeps passwords in memory for the duration
+ * of the JVM session.</p>
  * </div>
  * <p>Since Java lacks any API for secure non-pageable memory, please consider the
  * following recommendations when working with passwords in memory:</p>
