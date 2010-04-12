@@ -1540,23 +1540,25 @@ class OccurenceBuilder {
         final Set<VariableName> vars = ctxVarScope != null ? nameFilter.filter(new HashSet<VariableName>(ctxVarScope.getDeclaredVariables()))
                 : Collections.<VariableName>emptySet();
         final VariableName var = (vars.size() == 1) ? vars.iterator().next() : null;
-        for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
-            PhpDocTypeTagInfo nodeInfo = entry.getKey();
-            Scope scope = entry.getValue();
-            if (Kind.VARIABLE.equals(nodeInfo.getKind()) && scope instanceof VariableScope
-                    && NameKind.exact(nodeInfo.getName()).matchesName(PhpElementKind.VARIABLE, nodeCtxInfo.getName())) {
-                if (!var.isGloballyVisible()) {
-                    Scope nextScope = entry.getValue();
-                    if (ctxVarScope.equals(nextScope)) {
-                        occurences.add(new OccurenceImpl(var, nodeInfo.getRange()));
-                    }
-                } else {
-                    Scope nextScope = entry.getValue();
-                    if (nextScope instanceof VariableScope) {
-                        final Set<VariableName> nextVars = nameFilter.filter(new HashSet<VariableName>(((VariableScope) nextScope).getDeclaredVariables()));
-                        final VariableName nextVar = (nextVars.size() == 1) ? nextVars.iterator().next() : null;
-                        if (nextVar != null && nextVar.isGloballyVisible()) {
+        if (var != null) {
+            for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
+                PhpDocTypeTagInfo nodeInfo = entry.getKey();
+                Scope scope = entry.getValue();
+                if (Kind.VARIABLE.equals(nodeInfo.getKind()) && scope instanceof VariableScope
+                        && NameKind.exact(nodeInfo.getName()).matchesName(PhpElementKind.VARIABLE, nodeCtxInfo.getName())) {
+                    if (!var.isGloballyVisible()) {
+                        Scope nextScope = entry.getValue();
+                        if (ctxVarScope.equals(nextScope)) {
                             occurences.add(new OccurenceImpl(var, nodeInfo.getRange()));
+                        }
+                    } else {
+                        Scope nextScope = entry.getValue();
+                        if (nextScope instanceof VariableScope) {
+                            final Set<VariableName> nextVars = nameFilter.filter(new HashSet<VariableName>(((VariableScope) nextScope).getDeclaredVariables()));
+                            final VariableName nextVar = (nextVars.size() == 1) ? nextVars.iterator().next() : null;
+                            if (nextVar != null && nextVar.isGloballyVisible()) {
+                                occurences.add(new OccurenceImpl(var, nodeInfo.getRange()));
+                            }
                         }
                     }
                 }
