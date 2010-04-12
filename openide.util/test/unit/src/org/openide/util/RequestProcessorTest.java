@@ -233,6 +233,10 @@ public class RequestProcessorTest extends NbTestCase {
         
     }
 
+    static final class Priority {
+        static final RequestProcessor RP = new RequestProcessor(Priority.class);
+    }
+
     /**
      * A test that check that priorities are handled well.
      */
@@ -270,7 +274,7 @@ public class RequestProcessorTest extends NbTestCase {
             r[i] = new R(i);
         }
         
-        RequestProcessor rp = new RequestProcessor("PrioriyTest");
+        RequestProcessor rp = Priority.RP;
         
         RequestProcessor.Task t[] = new RequestProcessor.Task[5];
         synchronized (r[0]) {
