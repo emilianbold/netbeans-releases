@@ -46,8 +46,10 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -117,6 +119,11 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
         };
         embeddedSectionRB.addItemListener(embeddedSectionsItemListener);
         existingEmbeddedSectionsComboBox.addItemListener(embeddedSectionsItemListener);
+
+        //select first existing css section if available
+        if(existingEmbeddedSectionsComboBox.getModel().getSize() > 1) { //first item is the 'create new section'
+            existingEmbeddedSectionsComboBox.setSelectedIndex(1); //select second item, which is the first existing section
+        }
 
         ItemListener externalStylesheetsItemListener = new ItemListener() {
 
@@ -384,7 +391,21 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
             linkedObjects.add(entry.getFileReference().target());
         }
 
-        List<ExternalStyleSheetItem> items = new ArrayList<ExternalStyleSheetItem>();
+        //sort the items so the refered stylesheets are first in the list
+        Collection<ExternalStyleSheetItem> items = new TreeSet<ExternalStyleSheetItem>(new Comparator<ExternalStyleSheetItem>(){
+
+            @Override
+            public int compare(ExternalStyleSheetItem o1, ExternalStyleSheetItem o2) {
+                if(o1 instanceof ReferedExternalStyleSheetItem && !(o2 instanceof ReferedExternalStyleSheetItem)) {
+                    return -1;
+                } else if(!(o1 instanceof ReferedExternalStyleSheetItem) && o2 instanceof ReferedExternalStyleSheetItem) {
+                    return 1;
+                } else {
+                    return o1.getFile().getPath().compareTo(o2.getFile().getPath());
+                }
+            }
+
+        });
         for (FileObject stylesheet : allStylesheets) {
             if (linkedObjects.contains(stylesheet)) {
                 items.add(new ReferedExternalStyleSheetItem(stylesheet));
