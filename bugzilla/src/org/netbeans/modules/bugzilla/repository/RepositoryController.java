@@ -88,6 +88,7 @@ public class RepositoryController extends BugtrackingController implements Docum
         panel.validateButton.addActionListener(this);
     }
 
+    @Override
     public JComponent getComponent() {
         return panel;
     }
@@ -96,6 +97,7 @@ public class RepositoryController extends BugtrackingController implements Docum
         return new HelpCtx(org.netbeans.modules.bugzilla.repository.BugzillaRepository.class);
     }
 
+    @Override
     public boolean isValid() {
         return validate();
     }
@@ -235,6 +237,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             void execute() {
                 BugzillaConfig.getInstance().setupCredentials(repository);
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         TaskRepository taskRepository = repository.getTaskRepository();
                         if(taskRepository != null) {
@@ -267,24 +270,28 @@ public class RepositoryController extends BugtrackingController implements Docum
         taskRunner.startTask();
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         if(!populated) return;
         validateErrorOff(e);
         fireDataChanged();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         if(!populated) return;
         validateErrorOff(e);
         fireDataChanged();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         if(!populated) return;
         validateErrorOff(e);
         fireDataChanged();
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.validateButton) {
             onValidate();

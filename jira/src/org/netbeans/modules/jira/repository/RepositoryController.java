@@ -47,8 +47,6 @@ import java.net.URL;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
@@ -90,6 +88,7 @@ public class RepositoryController extends BugtrackingController implements Docum
         panel.validateButton.addActionListener(this);
     }
 
+    @Override
     public JComponent getComponent() {
         return panel;
     }
@@ -98,6 +97,7 @@ public class RepositoryController extends BugtrackingController implements Docum
         return new HelpCtx(JiraRepository.class);
     }
 
+    @Override
     public boolean isValid() {
         return validate();
     }
@@ -142,7 +142,7 @@ public class RepositoryController extends BugtrackingController implements Docum
         // check name
         String name = panel.nameField.getText().trim();
         if(name.equals("")) { // NOI18N
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_NAME"); 
+            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_NAME");  // NOI18N
             return false;
         }
 
@@ -152,7 +152,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             repositories = JiraConfig.getInstance().getRepositories();
             for (String repositoryName : repositories) {
                 if(name.equals(repositoryName)) {
-                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_NAME_ALREADY_EXISTS"); 
+                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_NAME_ALREADY_EXISTS");  // NOI18N
                     return false;
                 }
             }
@@ -161,14 +161,14 @@ public class RepositoryController extends BugtrackingController implements Docum
         // check url
         String url = getUrl();
         if(url.equals("")) { // NOI18N
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_URL"); 
+            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_URL");  // NOI18N
             return false;
         }
         try {
             new URL(url); // check this first even if URL is an URI
             new URI(url);
         } catch (Exception ex) {
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_WRONG_URL_FORMAT");
+            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_WRONG_URL_FORMAT");  // NOI18N
             Jira.LOG.log(Level.FINEST, errorMessage, ex);
             return false;
         }
@@ -182,7 +182,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                 JiraRepository repo = Jira.getInstance().getRepository(repositoryName);
                 if(repo == null) continue;
                 if(url.trim().equals(repo.getUrl())) {
-                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_URL_ALREADY_EXISTS"); 
+                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_URL_ALREADY_EXISTS");  // NOI18N
                     return false;
                 }
             }
@@ -233,6 +233,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             void execute() {
                 JiraConfig.getInstance().setupCredentials(repository);
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         TaskRepository taskRepository = repository.getTaskRepository();
                         if(taskRepository != null) {
@@ -264,24 +265,28 @@ public class RepositoryController extends BugtrackingController implements Docum
         taskRunner.startTask();
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         if(!populated) return;
         validateErrorOff(e);
         fireDataChanged();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         if(!populated) return;
         validateErrorOff(e);
         fireDataChanged();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         if(!populated) return;
         validateErrorOff(e);
         fireDataChanged();
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.validateButton) {
             onValidate();
@@ -290,6 +295,7 @@ public class RepositoryController extends BugtrackingController implements Docum
 
     private void onValidate() {
         taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating")) {  // NOI18N
+            @Override
             public void execute() {
                 validateError = false;
                 String name = getName();
