@@ -53,6 +53,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -124,7 +125,8 @@ public class CssOccurancesFinder extends OccurrencesFinder {
                 if (cancelled) {
                     return;
                 }
-                if(currentNode.kind() == node.kind() && currentNode.image().equals(node.image())) {
+                if(currentNode.kind() == node.kind() && 
+                        LexerUtils.equals(currentNode.image(), node.image(), currentNode.kind() == CssParserTreeConstants.JJTHEXCOLOR, false)) {
                     //something to highlight
                     int docFrom = snapshot.getOriginalOffset(node.startOffset());
 

@@ -156,29 +156,27 @@ public class CssGSFParser extends Parser {
                 int documentStartOffset = LexerUtils.findNearestMappableSourcePosition(snapshot, from, false, SEARCH_LIMIT);
                 int documentEndOffset = LexerUtils.findNearestMappableSourcePosition(snapshot, from + errorToken.image.length(), true, SEARCH_LIMIT);
 
-                if (documentStartOffset == -1 && documentEndOffset == -1) {
-                    //the error is completely out of the mappable area, map it to the beginning of the document
-                    if(root != null) {
-                        //lets try to filter out some of the unwanted errors on generated virtual code
-                        SimpleNode errorNode = SimpleNodeUtil.findDescendant(root, errorToken.offset);
-                        assert errorNode != null;
-                        SimpleNode parent = (SimpleNode)errorNode.jjtGetParent();
-                        //[Bug 183631] generated inline style is marked as an error
-                        //The code <h1 style="#{x.style}"></h1> is translated to
-                        // SELECTOR { @@@; } which is unparseable
-                        //
-                        //check if the declaration node contains generated code (@@@)
-                        //if so, just ignore the error
-                        if(parent != null) {
-                            if(parent.kind() == CssParserTreeConstants.JJTDECLARATION) {
-                                if(containsGeneratedCode(parent.image())) {
-                                    return null;
-                                }
-                            }
+                //lets try to filter out some of the unwanted errors on generated virtual code
+                SimpleNode errorNode = SimpleNodeUtil.findDescendant(root, errorToken.offset);
+                assert errorNode != null;
+                SimpleNode parent = (SimpleNode)errorNode.jjtGetParent();
+                //[Bug 183631] generated inline style is marked as an error
+                //The code <h1 style="#{x.style}"></h1> is translated to
+                // SELECTOR { @@@; } which is unparseable
+                //
+                //check if the declaration node contains generated code (@@@)
+                //if so, just ignore the error
+                if(parent != null) {
+                    if(parent.kind() == CssParserTreeConstants.JJTDECLARATION) {
+                        if(containsGeneratedCode(parent.image())) {
+                            return null;
                         }
                     }
+                }
 
 
+                if (documentStartOffset == -1 && documentEndOffset == -1) {
+                    //the error is completely out of the mappable area, map it to the beginning of the document
                     documentStartOffset = documentEndOffset = 0;
                 } else if (documentStartOffset == -1) {
                     documentStartOffset = documentEndOffset;

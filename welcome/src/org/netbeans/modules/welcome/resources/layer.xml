@@ -89,6 +89,11 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="300"/>
             </file>
+
+            <file name="community.url" url="nbresloc:/org/netbeans/modules/welcome/resources/community.url">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                <attr name="position" intvalue="400"/>
+            </file>
         </folder>
 
         <folder name="TutorialsLinks">
