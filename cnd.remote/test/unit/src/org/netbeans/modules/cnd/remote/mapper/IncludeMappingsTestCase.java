@@ -81,7 +81,7 @@ public class IncludeMappingsTestCase extends RemoteTestBase {
         String localPath;
 
         remotePath = "/usr/include/stdio.h";
-        localPath = mapper.getLocalPath(remotePath, true);
+        localPath = mapper.getLocalPath(remotePath, true).replace('\\', '/');
         assertNotNull("Mapper returned null for " + remotePath, localPath);
         assertTrue("Local path for " + remotePath + " should start with " + localSyncRoot + ", but it is " + localPath,
                 localPath.startsWith(localSyncRoot));
@@ -93,14 +93,14 @@ public class IncludeMappingsTestCase extends RemoteTestBase {
             String path = "/username/temp.tmp";
             String referenceLocalPath = localRoot + path;
             remotePath = remoteRoot + path;
-            localPath = mapper.getLocalPath(remotePath);
+            localPath = mapper.getLocalPath(remotePath).replace('\\', '/');
             System.err.printf("Mapped %s:%s to %s\n", execEnv, remotePath, localPath);
             assertNotNull("Mapper returned null for " + remotePath, localPath);
             assertEquals("Local path ", referenceLocalPath, localPath);
         } else {
             String referenceLocalPath = "/home/username/temp.tmp";
             remotePath = remoteSyncRoot + referenceLocalPath;
-            localPath = mapper.getLocalPath(remotePath);
+            localPath = mapper.getLocalPath(remotePath).replace('\\', '/');
             System.err.printf("Mapped %s:%s to %s\n", execEnv, remotePath, localPath);
             assertNotNull("Mapper returned null for " + remotePath, localPath);
             assertEquals("Local path ", referenceLocalPath, localPath);
