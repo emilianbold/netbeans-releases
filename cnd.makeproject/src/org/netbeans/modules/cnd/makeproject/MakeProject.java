@@ -169,6 +169,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     private final MakeSources sources;
     private final MutableCP sourcepath;
+    private PropertyChangeListener indexerListener = new IndexerOptionsListener();
 
     public MakeProject(AntProjectHelper helper) throws IOException {
         LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
@@ -385,6 +386,20 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         headerExtensions.clear();
         headerExtensions.addAll(hSet);
         saveAdditionalExtensions();
+    }
+
+    private synchronized void registerClassPath(boolean register) {
+        if (isOpenHookDone) {
+            if (register) {
+                GlobalPathRegistry.getDefault().register(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+            } else {
+                try {
+                    GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+                } catch (Throwable ex) {
+                    // do nothing because register depends on make options
+                }
+            }
+        }
     }
 
     private void saveAdditionalExtensions() {
@@ -895,10 +910,11 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                 openedTasks.clear();
                 openedTasks = null;
             }
-            if (MakeOptions.getInstance().isFullFileIndexer()) {
-                GlobalPathRegistry.getDefault().register(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
-            }
             isOpenHookDone = true;
+            if (MakeOptions.getInstance().isFullFileIndexer()) {
+                registerClassPath(true);
+            }
+            MakeOptions.getInstance().addPropertyChangeListener(indexerListener);
         }
     }
 
@@ -913,14 +929,9 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
             projectDescriptorProvider.getConfigurationDescriptor().closed();
         }
+        MakeOptions.getInstance().removePropertyChangeListener(indexerListener);
         if (isOpenHookDone) {
-            if (MakeOptions.getInstance().isFullFileIndexer()) {
-                try {
-                   GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
-                } catch (Throwable ex) {
-                    // do nothing because register depends on make options
-                }
-            }
+            registerClassPath(false);
             isOpenHookDone = false;
         }
         MakeProjectFileProviderFactory.removeSearchBase(this);
@@ -1173,6 +1184,17 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             }
 
             return null;
+        }
+
+    }
+
+    private final class IndexerOptionsListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (MakeOptions.FULL_FILE_INDEXER.equals(evt.getPropertyName())) {
+                registerClassPath(Boolean.TRUE.equals(evt.getNewValue()));
+            }
         }
 
     }

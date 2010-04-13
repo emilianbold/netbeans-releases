@@ -79,7 +79,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     private static final String DEF_OWNER = "defowner"; // NOI18N
     private static final String DEF_GROUP = "defgroup"; // NOI18N
     private static final String PREF_APP_LANGUAGE = "prefAppLanguage"; // NOI18N // Prefered language when creating new Application projects
-    private static final String FULL_FILE_INDEXER = "fullFileIndexer"; // NOI18N
+    public static final String FULL_FILE_INDEXER = "fullFileIndexer"; // NOI18N
 
     static {
         

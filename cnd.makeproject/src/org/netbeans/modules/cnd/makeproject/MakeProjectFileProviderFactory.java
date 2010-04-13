@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
@@ -78,7 +79,7 @@ import org.openide.util.ImageUtilities;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.file.FileProviderFactory.class, position=1000)
 public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
-    private static final Map<Project, Map<Folder,List<CharSequence>>> searchBase = new ConcurrentHashMap<Project, Map<Folder, List<CharSequence>>>();
+    private static final ConcurrentMap<Project, Map<Folder,List<CharSequence>>> searchBase = new ConcurrentHashMap<Project, Map<Folder, List<CharSequence>>>();
 
     /**
      * Store/update/remove list of non cnd files for project folder
@@ -88,21 +89,22 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
      * @param list
      */
     public static void updateSearchBase(Project project, Folder folder, List<CharSequence> list){
-        if (!MakeOptions.getInstance().isFullFileIndexer()) {
-            Map<Folder,List<CharSequence>> projectSearchBase = searchBase.get(project);
-            if (projectSearchBase == null) {
-                projectSearchBase = new ConcurrentHashMap<Folder, List<CharSequence>>();
-                searchBase.put(project, projectSearchBase);
+        Map<Folder, List<CharSequence>> projectSearchBase = searchBase.get(project);
+        if (projectSearchBase == null) {
+            projectSearchBase = new ConcurrentHashMap<Folder, List<CharSequence>>();
+            Map<Folder, List<CharSequence>> old = searchBase.putIfAbsent(project, projectSearchBase);
+            if (old != null) {
+                projectSearchBase = old;
             }
-            synchronized (projectSearchBase) {
-                if (list == null) {
-                    projectSearchBase.remove(folder);
+        }
+        synchronized (projectSearchBase) {
+            if (list == null) {
+                projectSearchBase.remove(folder);
+            } else {
+                if (list.isEmpty()) {
+                    projectSearchBase.put(folder, Collections.<CharSequence>emptyList());
                 } else {
-                    if (list.isEmpty()) {
-                        projectSearchBase.put(folder, Collections.<CharSequence>emptyList());
-                    } else {
-                        projectSearchBase.put(folder, list);
-                    }
+                    projectSearchBase.put(folder, list);
                 }
             }
         }
@@ -191,6 +193,12 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                     pattern = Pattern.compile(what);
                     break;
             }
+            FileObject projectDirectoryFO = project.getProjectDirectory();
+            // track configuration && generated files
+            if (projectDirectoryFO != null) {
+                FileObject nbFO = projectDirectoryFO.getFileObject("nbproject"); // NOI18N
+                computeFOs(nbFO, type, what, pattern, result);
+            }
             for (Item item : descriptor.getExternalFileItemsAsArray()) {
                 if (cancel.get()) {
                     return;
@@ -254,6 +262,19 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                     return pattern.matcher(name).find();
             }
             return false;
+        }
+
+        private void computeFOs(FileObject nbFO, SearchType searchType, String type, Pattern what, Result result) {
+            if (nbFO != null) {
+                assert nbFO.isFolder();
+                for (FileObject fileObject : nbFO.getChildren()) {
+                    if (fileObject.isFolder()) {
+                        computeFOs(fileObject, searchType, type, what, result);
+                    } else if (match(fileObject.getNameExt(), searchType, type, what)) {
+                        result.addFile(fileObject);
+                    }
+                }
+            }
         }
     }
 
