@@ -375,6 +375,14 @@ public class RubyFormatterTest extends RubyTestBase {
         insertNewline("      def foo^", "      def foo\n        ^\n      end", null);
     }
 
+    public void testIndentCurlyBraces() throws Exception {
+        insertNewline("{^}", "{\n  ^\n}", null);
+    }
+
+    public void testIndentCurlyBraces2() throws Exception {
+        insertNewline("{ ^}", "{ \n  ^\n}", null);
+    }
+
     public void testHeredoc1() throws Exception {
         format("def foo\n  s = <<EOS\n  stuff\nEOS\nend",
                 "def foo\n  s = <<EOS\n  stuff\nEOS\nend", null);

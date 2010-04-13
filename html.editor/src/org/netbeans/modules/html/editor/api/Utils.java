@@ -60,6 +60,11 @@ public class Utils {
     /** returns top most joined html token seuence for the document at the specified offset. */
     public static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(Document doc, int offset) {
         TokenHierarchy th = TokenHierarchy.get(doc);
+        return getJoinedHtmlSequence(th, offset);
+    }
+    
+    /** returns top most joined html token seuence for the document at the specified offset. */
+    public static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(TokenHierarchy th, int offset) {
         TokenSequence ts = th.tokenSequence();
         //XXX this seems to be wrong, the return code should be checked
         ts.move(offset);

@@ -95,6 +95,9 @@ public abstract class EditorView extends View {
     /**
      * Get raw start offset of the view which may transform to real start offset
      * when post-processed by parent view.
+     * <br/>
+     * <b>Note:</b> Typical clients should NOT call this method (they should call
+     * {@link #getStartOffset()} method instead).
      *
      * @return raw start offset of the view or -1 if the view does not support
      * storage of the raw offsets (e.g. a ParagraphView).
@@ -433,8 +436,12 @@ public abstract class EditorView extends View {
                     int childViewCount = child.getViewCount();
                     for (int j = 0; j < childViewCount; j++) {
                         EditorView childChild = (EditorView) child.getView(j);
-                        if (childChild.getParent() != child) {
-                            err = "child[" + j + "].getParent() != child";
+                        EditorView childChildParent = (EditorView) childChild.getParent();
+                        if (childChildParent != child) {
+                            String ccpStr = (childChildParent != null) ? childChildParent.getDumpId() : "<NULL>";
+                            err = "childChild[" + j + "].getParent()=" + ccpStr + // NOI18N
+                                    " != child=" + child.getDumpId(); // NOI18N
+                            break;
                         }
                     }
                 }
@@ -444,6 +451,8 @@ public abstract class EditorView extends View {
                 if (err == null) {
                     if (childStartOffset != lastOffset) {
                         err = "childStartOffset=" + childStartOffset + ", lastOffset=" + lastOffset; // NOI18N
+                    } else if (childStartOffset < 0) {
+                        err = "childStartOffset=" + childStartOffset + " < 0"; // NOI18N
                     } else if (childStartOffset > childEndOffset) {
                         err = "childStartOffset=" + childStartOffset + " > childEndOffset=" + childEndOffset; // NOI18N
                     } else if (childEndOffset > endOffset) {
@@ -453,6 +462,7 @@ public abstract class EditorView extends View {
                         noChildInfo = true;
                     }
                 }
+
                 if (err != null) {
                     return getDumpId() + "[" + i + "]=" + (noChildInfo ? "" : child.getDumpId() + ": ") + err + '\n';
                 }

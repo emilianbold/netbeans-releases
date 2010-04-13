@@ -117,20 +117,22 @@ public final class HighlightingManager {
 
         // The factories changes tracking
         private Lookup.Result<HighlightsLayerFactory> factories = null;
-        private LookupListener factoriesTracker = new LookupListener() {
+        private final LookupListener factoriesTracker = new LookupListener() {
             public @Override void resultChanged(LookupEvent ev) {
                 rebuildAllLayers();
             }
         };
+        private LookupListener weakFactoriesTracker = null;
 
         // The FontColorSettings changes tracking
         private Lookup.Result<FontColorSettings> settings = null;
-        private LookupListener settingsTracker = new LookupListener() {
+        private final LookupListener settingsTracker = new LookupListener() {
             public @Override void resultChanged(LookupEvent ev) {
 //                System.out.println("Settings tracker for '" + (lastKnownMimePaths == null ? "null" : lastKnownMimePaths[0].getPath()) + "'");
                 rebuildAllLayers();
             }
         };
+        private LookupListener weakSettingsTracker = null;
 
         private final JTextComponent pane;
         private HighlightsLayerFilter paneFilter;
@@ -224,11 +226,13 @@ public final class HighlightingManager {
                 }
                 
                 // Unregister listeners
-                if (factories != null) {
-                    factories.removeLookupListener(factoriesTracker);
+                if (factories != null && weakFactoriesTracker != null) {
+                    factories.removeLookupListener(weakFactoriesTracker);
+                    weakFactoriesTracker = null;
                 }
-                if (settings != null) {
-                    settings.removeLookupListener(settingsTracker);
+                if (settings != null && weakSettingsTracker != null) {
+                    settings.removeLookupListener(weakSettingsTracker);
+                    weakSettingsTracker = null;
                 }
 
                 if (mimePaths != null) {
@@ -247,11 +251,13 @@ public final class HighlightingManager {
                 
                 // Start listening again
                 if (factories != null) {
-                    factories.addLookupListener(factoriesTracker);
+                    weakFactoriesTracker = WeakListeners.create(LookupListener.class, factoriesTracker, factories);
+                    factories.addLookupListener(weakFactoriesTracker);
                     factories.allItems(); // otherwise we won't get any events at all
                 }
                 if (settings != null) {
-                    settings.addLookupListener(settingsTracker);
+                    weakSettingsTracker = WeakListeners.create(LookupListener.class, settingsTracker, settings);
+                    settings.addLookupListener(weakSettingsTracker);
                     settings.allItems(); // otherwise we won't get any events at all
                 }
 

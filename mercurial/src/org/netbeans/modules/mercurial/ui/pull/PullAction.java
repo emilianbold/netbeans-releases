@@ -365,6 +365,8 @@ public class PullAction extends ContextAction {
                 HgUtils.forceStatusRefresh(root);
             }
             
+        } catch (HgException.HgCommandCanceledException ex) {
+            // canceled by user, do nothing
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);

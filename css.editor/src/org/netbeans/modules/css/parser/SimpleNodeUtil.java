@@ -41,12 +41,32 @@ package org.netbeans.modules.css.parser;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
  *
  * @author marek
  */
 public class SimpleNodeUtil {
+
+    public static OffsetRange getTrimmedNodeRange(SimpleNode node) {
+        CharSequence text = node.image();
+        int from_diff;
+        int to_diff;
+        for(from_diff = 0; from_diff < text.length(); from_diff++) {
+            if(!Character.isWhitespace(text.charAt(from_diff))) {
+                break;
+            }
+        }
+
+        for(to_diff = 0; to_diff < text.length() - from_diff; to_diff++) {
+            if(!Character.isWhitespace(text.charAt(text.length() - 1 - to_diff))) {
+                break;
+            }
+        }
+
+        return new OffsetRange(node.startOffset() + from_diff, node.endOffset() - to_diff);
+    }
 
     public static Token getNodeToken(SimpleNode node, int tokenKind) {
         Token t = node.jjtGetFirstToken();

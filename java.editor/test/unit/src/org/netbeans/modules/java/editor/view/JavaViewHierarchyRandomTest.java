@@ -44,10 +44,15 @@ package org.netbeans.modules.java.editor.view;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.SwingConstants;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.junit.Filter;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.editor.util.random.DocumentTesting;
+import org.netbeans.lib.editor.util.random.EditorPaneTesting;
 import org.netbeans.lib.editor.util.random.RandomTestContainer;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyRandomTesting;
@@ -58,10 +63,18 @@ import org.netbeans.modules.editor.lib2.view.ViewHierarchyRandomTesting;
  */
 public class JavaViewHierarchyRandomTest extends NbTestCase {
 
-    private static final int OP_COUNT = 100;
+    private static final int OP_COUNT = 1000;
+
+    private static final boolean LOG_OP = false;
+    private static final boolean LOG_DOC = false;
+
+    private static final Level LOG_LEVEL = Level.FINE;
 
     public JavaViewHierarchyRandomTest(String testName) {
         super(testName);
+        Filter filter = new Filter();
+        filter.setIncludes(new Filter.IncludeExclude[] { new Filter.IncludeExclude("testRandomModsPlainText", "")});
+//        setFilter(filter);
     }
 
     @Override
@@ -69,14 +82,15 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         return Level.INFO;
     }
 
-    public void testRandomModsPlainText() throws Exception {
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(Level.FINE);
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewUpdates").setLevel(Level.FINE);
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINE);
-        RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit());
+    public void testNewlineLineOne() throws Exception {
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(LOG_LEVEL);
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewUpdates").setLevel(LOG_LEVEL);
+        // FINEST throws ISE for integrity error
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINEST);
+        RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit()); // no problem for plain mime-type
         container.setName(this.getName());
-//        DocumentTesting.setLogDoc(container, true);
-//        container.putProperty(RandomTestContainer.LOG_OP, Boolean.TRUE);
+        container.setLogOp(LOG_OP);
+        DocumentTesting.setLogDoc(container, LOG_DOC);
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty("mimeType", "text/plain");
@@ -84,18 +98,106 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         ViewHierarchyRandomTesting.initRandomText(container);
         ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
         ViewHierarchyRandomTesting.testFixedScenarios(container);
-        ViewHierarchyRandomTesting.testRandomMods(container);
-        // Failed seeds: 1269936518464L 1269878830601L
+
+        RandomTestContainer.Context context = container.context();
+        // Clear document contents
+        DocumentTesting.remove(context, 0, doc.getLength());
+        DocumentTesting.insert(context, 0, "\n");
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, true);
+        EditorPaneTesting.performAction(context, pane, DefaultEditorKit.deleteNextCharAction);
+        DocumentTesting.undo(context, 1);
+    }
+
+    public void testNPEInRedo() throws Exception {
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(LOG_LEVEL);
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewUpdates").setLevel(LOG_LEVEL);
+        // FINEST throws ISE for integrity error
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINEST);
+        RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit());
+        container.setName(this.getName());
+        container.setLogOp(LOG_OP);
+        DocumentTesting.setLogDoc(container, LOG_DOC);
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        ViewHierarchyRandomTesting.initUndoManager(container);
+        ViewHierarchyRandomTesting.initRandomText(container);
+        ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
+        ViewHierarchyRandomTesting.testFixedScenarios(container);
+
+        RandomTestContainer.Context context = container.context();
+        // Clear document contents
+        DocumentTesting.remove(context, 0, doc.getLength());
+        DocumentTesting.insert(context, 0,
+            "xrlq\n\nmz \t\tabcdef\ts \n\n\nna\n\n j   c gxo\t hw krmsl \n\n\nc " +
+            " ngw \tz\tkjwu\ndlunc b\nw\n\n\n knas \t\tbcdefj\t\t n \t\tabcdef\t" +
+            "rnehaf\ncl     xe \n\nq\nr\t bv\n       mu i\ny\n e\n\nx\n r\tt h \n" +
+            "\n\n \n\n\n\tp\t \tiv\t\nx\nu\t\tahpi\t\tdm cg\t \tcd\nef\t\tabcdef" +
+            "\taouvibcd \nwvzta\njdbm  elxb \t\tadmnuilwlbcde\tf\tmx\nz\nv f\ns " +
+            "\nfsrhe\ngu  a axsnpmr\t\tab \t\tabcdef\tcdef\t\t\tabo \tdwci\tcp \n" +
+            "\n\ncdef\t \t\tabcrd \t\tabcdef\tefahk vif\tfcg xo\t \nf\nvl\nyzfh\n"
+        );
+        EditorPaneTesting.setCaretOffset(context, 273);
+        DocumentTesting.insert(context, 279, "h");
+        EditorPaneTesting.typeChar(context, 's');
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, true);
+        EditorPaneTesting.typeChar(context, 'r');
+        EditorPaneTesting.typeChar(context, 'y');
+        DocumentTesting.insert(context, 275, "j");
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, false);
+        DocumentTesting.remove(context, 305, 1);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, false);
+        DocumentTesting.redo(context, 2);
+        DocumentTesting.undo(context, 1);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, true);
+        EditorPaneTesting.setCaretOffset(context, 142);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, true);
+        EditorPaneTesting.typeChar(context, 'n');
+        DocumentTesting.undo(context, 2);
+        DocumentTesting.redo(context, 1);
+    }
+
+    public void testRandomModsPlainText() throws Exception {
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(LOG_LEVEL);
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewUpdates").setLevel(LOG_LEVEL);
+        // FINEST throws ISE for integrity error
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINEST);
+        RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit());
+        container.setName(this.getName());
+        container.setLogOp(LOG_OP);
+        DocumentTesting.setLogDoc(container, LOG_DOC);
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        ViewHierarchyRandomTesting.initUndoManager(container);
+        ViewHierarchyRandomTesting.initRandomText(container);
+        ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
+        ViewHierarchyRandomTesting.testFixedScenarios(container);
+//        container.run(1270806278503L);
+//        container.run(1270806786819L);
+        container.run(1270806387223L);
+
+//        RandomTestContainer.Context context = container.context();
+//        DocumentTesting.undo(context, 2);
+//        DocumentTesting.redo(context, 2);
+        container.run(0L); // Test random ops
     }
 
     public void testRandomModsJava() throws Exception {
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(Level.FINE);
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewUpdates").setLevel(Level.FINE);
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINE);
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(LOG_LEVEL);
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewUpdates").setLevel(LOG_LEVEL);
+        // FINEST throws ISE for integrity error
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINEST);
         RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit());
         container.setName(this.getName());
-//        DocumentTesting.setLogDoc(container, true);
-//        container.putProperty(RandomTestContainer.LOG_OP, Boolean.TRUE);
+        container.setLogOp(LOG_OP);
+        DocumentTesting.setLogDoc(container, LOG_DOC);
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty(Language.class, JavaTokenId.language());
@@ -104,8 +206,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         ViewHierarchyRandomTesting.initRandomText(container);
         ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
         ViewHierarchyRandomTesting.testFixedScenarios(container);
-        ViewHierarchyRandomTesting.testRandomMods(container);
-        // Failed seeds: 1269936518464L 1269878830601L
+        container.run(0L); // Test random ops
     }
 
 }

@@ -254,6 +254,14 @@ public final class RandomTestContainer extends PropertyProvider {
     public Logger logger() {
         return LOG;
     }
+    /**
+     * Set whether operations descriptions should be logged.
+     * @param logOp true for logging of the operations.
+     */
+
+    public void setLogOp(boolean logOp) {
+        putProperty(LOG_OP, logOp);
+    }
 
     /**
      * Random operation that can be registered for random testing container

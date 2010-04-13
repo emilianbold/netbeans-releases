@@ -257,7 +257,7 @@ public class CommitBuilder
     private File quickFindFile(File dir, String fileName, String reposPath) {
         for (;;) {
             File deepDir = new File(dir, reposPath);
-            if (isWorkForRepository(deepDir, reposPath)) {
+            if (isWorkForRepository(deepDir, reposPath) && isUnderLocalPath(deepDir)) {
                 return new File(deepDir, fileName);
             }
             dir = dir.getParentFile();
@@ -274,5 +274,16 @@ public class CommitBuilder
         } catch (IOException e) {
             return false;
         }
+    }
+
+    private boolean isUnderLocalPath (File dir) {
+        File localDir = new File(localPath);
+        while (dir != null) {
+            if (dir.equals(localDir)) {
+                return true;
+            }
+            dir = dir.getParentFile();
+        }
+        return false;
     }
 }
