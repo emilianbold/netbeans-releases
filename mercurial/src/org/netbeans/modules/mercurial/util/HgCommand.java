@@ -1021,6 +1021,8 @@ public class HgCommand {
         try {
             List<String> list = HgCommand.doIncomingForSearch(root, toRevision, bShowMerges, logger);
             processLogMessages(root, null, list, messages, true);
+        } catch (HgException.HgCommandCanceledException ex) {
+            // do not take any action
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -1037,6 +1039,8 @@ public class HgCommand {
         try {
             List<String> list = HgCommand.doOutForSearch(root, toRevision, bShowMerges, logger);
             processLogMessages(root, null, list, messages, true);
+        } catch (HgException.HgCommandCanceledException ex) {
+            // do not take any action
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -1077,6 +1081,8 @@ public class HgCommand {
                     filesList,
                     fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);
             processLogMessages(root, filesList, list, messages, ascOrder);
+        } catch (HgException.HgCommandCanceledException ex) {
+            // do not take any action
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -2881,6 +2887,8 @@ public class HgCommand {
             error = new BufferedReader(new InputStreamReader(proc.getErrorStream(), UTF8));
             final BufferedReader errorReader = error;
             final LinkedList<String> errorOutput = new LinkedList<String>();
+            final BufferedReader inputReader = input;
+            final LinkedList<String> inputOutput = new LinkedList<String>();
             Thread errorThread = new Thread(new Runnable () {
                 @Override
                 public void run() {
@@ -2895,17 +2903,34 @@ public class HgCommand {
                 }
             });
             errorThread.start();
-            String line;
-            while ((line = input.readLine()) != null){
-                list.add(line);
-            }
-            input.close();
-            input = null;
+            Thread inputThread = new Thread(new Runnable () {
+                @Override
+                public void run() {
+                    try {
+                        String line;
+                        while ((line = inputReader.readLine()) != null) {
+                            inputOutput.add(line);
+                        }
+                    } catch (IOException ex) {
+                        // not interested
+                    }
+                }
+            });
+            inputThread.start();
             try {
+                inputThread.join();
                 errorThread.join();
             } catch (InterruptedException ex) {
-                // not interested
+                Mercurial.LOG.log(Level.FINE, "execEnv():  process interrupted {0}", ex); // NOI18N
+                // We get here is we try to cancel so kill the process
+                if (proc != null) {
+                    proc.destroy();
+                }
+                throw new HgException.HgCommandCanceledException(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_CANCELLED")); //NOI18N
             }
+            list.addAll(inputOutput); // appending output
+            input.close();
+            input = null;
             list.addAll(errorOutput); // appending error output
             error.close();
             error = null;
@@ -2927,13 +2952,6 @@ public class HgCommand {
             // We get here is we try to cancel so kill the process
             Mercurial.LOG.log(Level.FINE, "execEnv():  execEnv(): InterruptedIOException {0}", e); // NOI18N
             if (proc != null)  {
-                try {
-                    proc.getInputStream().close();
-                    proc.getOutputStream().close();
-                    proc.getErrorStream().close();
-                } catch (IOException ioex) {
-                //Just ignore. Closing streams.
-                }
                 proc.destroy();
             }
             throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_CANCELLED"));

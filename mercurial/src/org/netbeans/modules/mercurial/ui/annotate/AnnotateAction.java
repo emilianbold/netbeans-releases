@@ -183,6 +183,8 @@ public class AnnotateAction extends ContextAction {
         List<String> list = null;
         try {
              list = HgCommand.doAnnotate(repository, file, revision, progress.getLogger());
+        } catch (HgException.HgCommandCanceledException ex) {
+            // canceled by user, do nothing
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);

@@ -189,6 +189,8 @@ public class ImportDiffAction extends ContextAction {
                                             HgUtils.forceStatusRefresh(root);
                                         }
                                     }
+                                } catch (HgException.HgCommandCanceledException ex) {
+                                    // canceled by user, do nothing
                                 } catch (HgException ex) {
                                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                                     DialogDisplayer.getDefault().notifyLater(e);
@@ -231,6 +233,8 @@ public class ImportDiffAction extends ContextAction {
             Mercurial.getInstance().changesetChanged(repository);
             logger.output(list); // NOI18N
 
+        } catch (HgException.HgCommandCanceledException ex) {
+            // canceled by user, do nothing
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
