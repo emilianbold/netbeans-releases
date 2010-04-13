@@ -263,6 +263,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                             panel.cbEnableLocalUsers.setSelected(repository.isShortUsernamesEnabled());
                         }
                         populated = true;
+                        fireDataChanged();
                     }
                 });
             }
@@ -302,40 +303,41 @@ public class RepositoryController extends BugtrackingController implements Docum
         taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating")) {  // NOI18N
             @Override
             void execute() {
-                    validateError = false;
-                    repository.resetRepository(); // reset mylyns caching
+                validateError = false;
+                repository.resetRepository(); // reset mylyns caching
 
-                    String name = getName();
-                    String url = getUrl();
-                    String user = getUser();
-                    String httpUser = getHttpUser();
-                    TaskRepository taskRepo = BugzillaRepository.createTaskRepository(
-                            name,
-                            url,
-                            user,
-                            getPassword(),
-                            httpUser,
-                            getHttpPassword(),
-                            isLocalUserEnabled());
+                String name = getName();
+                String url = getUrl();
+                String user = getUser();
+                String httpUser = getHttpUser();
+                TaskRepository taskRepo = BugzillaRepository.createTaskRepository(
+                        name,
+                        url,
+                        user,
+                        getPassword(),
+                        httpUser,
+                        getHttpPassword(),
+                        isLocalUserEnabled());
 
-                    ValidateCommand cmd = new ValidateCommand(taskRepo);
-                    repository.getExecutor().execute(cmd, false, false);
-                    if(cmd.hasFailed()) {
-                        if(cmd.getErrorMessage() == null) {
-                            logValidateMessage("validate for [{0},{1},{2},****{3},****] has failed, yet the returned error message is null.", // NOI18N
-                                               Level.WARNING, name, url, user, httpUser);
-                            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_VALIDATION_FAILED"); // NOI18N
-                        } else {
-                            errorMessage = cmd.getErrorMessage();
-                            logValidateMessage("validate for [{0},{1},{2},****{3},****] has failed: " + errorMessage, // NOI18N
-                                               Level.WARNING, name, url, user, httpUser);
-                        }
-                        validateError = true;
+                ValidateCommand cmd = new ValidateCommand(taskRepo);
+                repository.getExecutor().execute(cmd, false, false);
+                if(cmd.hasFailed()) {
+                    if(cmd.getErrorMessage() == null) {
+                        logValidateMessage("validate for [{0},{1},{2},****{3},****] has failed, yet the returned error message is null.", // NOI18N
+                                           Level.WARNING, name, url, user, httpUser);
+                        errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_VALIDATION_FAILED"); // NOI18N
                     } else {
-                        panel.connectionLabel.setVisible(true);
-                        logValidateMessage("validate for [{0},{1},{2},****{3},****] ok.", // NOI18N
-                                           Level.INFO, name, url, user, httpUser);
+                        errorMessage = cmd.getErrorMessage();
+                        logValidateMessage("validate for [{0},{1},{2},****{3},****] has failed: " + errorMessage, // NOI18N
+                                           Level.WARNING, name, url, user, httpUser);
                     }
+                    validateError = true;
+                } else {
+                    panel.connectionLabel.setVisible(true);
+                    logValidateMessage("validate for [{0},{1},{2},****{3},****] ok.", // NOI18N
+                                       Level.INFO, name, url, user, httpUser);
+                }
+                fireDataChanged();
             }
 
             private void logValidateMessage(String msg, Level level, String name, String url, String user, String httpUser) {
@@ -409,7 +411,6 @@ public class RepositoryController extends BugtrackingController implements Docum
             panel.validateLabel.setVisible(false);
             panel.validateButton.setVisible(true);
             panel.cancelButton.setVisible(false);
-            fireDataChanged();
             panel.enableFields(true);
         }
 
