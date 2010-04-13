@@ -52,7 +52,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -335,18 +334,6 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
     }
 
     private void removeTab(final JComponent comp) {
-	// TMP
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-
-		@Override
-                public void run() {
-                    removeTab(comp);
-                }
-            });
-            return;
-        }
-
 	CallBacks cb = attributesFor(comp).cb;
 
 	if (cb != null && IOVisibilityControl.isSupported(cb)) {
