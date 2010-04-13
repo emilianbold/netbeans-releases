@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.remote.pbuild;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -56,13 +56,13 @@ import org.openide.filesystems.FileUtil;
 /**
  * @author Vladimir Kvashin
  */
-public class RemoteBuildMakefileTest extends RemoteBuildTestBase {
+public class RemoteBuildMakefileTestCase extends RemoteBuildTestBase {
 
-    public RemoteBuildMakefileTest(String testName) {
+    public RemoteBuildMakefileTestCase(String testName) {
         super(testName);
     }
 
-    public RemoteBuildMakefileTest(String testName, ExecutionEnvironment execEnv) {
+    public RemoteBuildMakefileTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);       
     }
 
@@ -126,6 +126,6 @@ public class RemoteBuildMakefileTest extends RemoteBuildTestBase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTestSuite(RemoteBuildMakefileTest.class);
+        return new RemoteDevelopmentTest(RemoteBuildMakefileTestCase.class);
     }
 }

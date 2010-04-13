@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,47 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.remote.support;
 
-import java.io.File;
-import java.util.concurrent.Future;
+package org.netbeans.modules.cnd.remote.pbuild;
+
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-
 /**
+ *
  * @author Vladimir Kvashin
  */
-public class DownloadTest extends RemoteTestBase {
+public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
 
-    public DownloadTest(String testName, ExecutionEnvironment execEnv) {
+    public RemoteBuildSamplesTestCase(String testName) {
+        super(testName);
+    }
+
+    public RemoteBuildSamplesTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
     @ForAllEnvironments
-    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
-    public void testCopyFrom() throws Exception {
-        File localFile = File.createTempFile("cnd", ".cnd");
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        String remoteFile = "/usr/include/stdio.h";
-        Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, execEnv, localFile.getAbsolutePath(), null);
-        int rc = task.get().intValue();
-        assertEquals("Copying finished with rc != 0: ", 0, rc);
-        String content = readFile(localFile);
-        String text2search = "printf";
-        assertTrue("The copied file (" + localFile + ") does not contain \"" + text2search + "\"",
-                content.indexOf(text2search) >= 0);
-        localFile.delete();
+    public void testBuildSample_Rfs_Gnu_Arguments_Once() throws Exception {        
+        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_01", 1);
     }
-    
+
+    @ForAllEnvironments
+    public void testBuildSample_Rfs_Gnu_Arguments_Multy() throws Exception {
+        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_02", 3, getSampleBuildTimeout(), getSampleBuildTimeout()/3);
+    }
+
     public static Test suite() {
-        return new RemoteDevelopmentTestSuite(DownloadTest.class);
+        return new RemoteDevelopmentTest(RemoteBuildSamplesTestCase.class);
     }
 }
