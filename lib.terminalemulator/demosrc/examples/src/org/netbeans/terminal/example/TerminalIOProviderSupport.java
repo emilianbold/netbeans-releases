@@ -307,6 +307,16 @@ public final class TerminalIOProviderSupport {
 	    }
 	};
 
+	private OutputListener reset = new AbstractOutputListener() {
+	    public void outputAction(OutputEvent ev, InputOutput io) {
+		try {
+		    chosen().getOut().reset();
+		} catch (IOException ex) {
+		    Exceptions.printStackTrace(ex);
+		}
+	    }
+	};
+
 	public final InputOutput setupIO(IOProvider iop,
 			     IOContainer ioContainer,
 			     String title,
@@ -366,6 +376,9 @@ public final class TerminalIOProviderSupport {
 		} else {
 		    IOColorLines.println(io, "IOTab is not supported\r", null, false, Color.BLACK);
 		}
+
+		IOColorLines.println(io, "Reset\r", reset, false, Color.CYAN);
+		IOColorLines.println(io, "\r", null, false, Color.CYAN);
 	    } catch (IOException ex) {
 		Exceptions.printStackTrace(ex);
 	    }

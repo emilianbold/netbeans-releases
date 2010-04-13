@@ -272,9 +272,10 @@ public class T1_Close_Test extends TestSupport {
 	if (IOTerm.isSupported(io)) {
 	    // just with IOTerm.connect()
 	    IOTerm.connect(io, null, null, null);
+	    sleep(1);
 	    assertTrue("IO still stream-closed after connect()",
 		       IOConnect.isConnected(io));
-	    IOTerm.disconnect(io, null);
+	    IOTerm.disconnect(io, continuationInterlock());
 	    sleep(1);
 	    assertTrue("IO not stream-closed after disconnect",
 		       ! IOConnect.isConnected(io));
@@ -292,7 +293,7 @@ public class T1_Close_Test extends TestSupport {
 		   IOConnect.isConnected(io));
 
 	if (IOTerm.isSupported(io))
-	    IOTerm.disconnect(io, null);
+	    IOTerm.disconnect(io, continuationInterlock());
 	sleep(1);
 	assertTrue("IO should still be stream-open after disconnect",
 		   IOConnect.isConnected(io));

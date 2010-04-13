@@ -96,6 +96,7 @@ public final class TerminalIOProvider extends IOProvider {
     /**
      * This operation is not supported because standard NetBeans output are
      * is not Term based.
+     * For that matter, neither Tim nor anyone else remembers what's it for.
      * @return nothing. Always throws UnsupportedOperationException.
      */
     @Override
