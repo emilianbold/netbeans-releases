@@ -28,8 +28,10 @@
 package org.netbeans.modules.spellchecker.bindings.htmlxml;
 
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -59,6 +61,14 @@ public class HtmlTokenList extends AbstractTokenList {
         hidden = Boolean.TRUE.equals (b);
     }
 
+    //fast hack for making the spellchecking embedding aware, should be fixed properly
+    //performance: the current approach is wrong since a new token sequence is obtained
+    //and positioned for each search offset!
+    @Override
+    protected int[] findNextSpellSpan() throws BadLocationException {
+        TokenSequence<HTMLTokenId> ts = getHtmlTokenSequence(doc, nextSearchOffset);
+        return findNextSpellSpan(ts, nextSearchOffset); 
+    }
 
     /** Given a sequence of HTML tokens, return the next span of eligible comments */
     @Override
@@ -79,4 +89,33 @@ public class HtmlTokenList extends AbstractTokenList {
 
         return new int[]{-1, -1};
     }
+
+
+    private TokenSequence<HTMLTokenId> getHtmlTokenSequence(Document doc, int offset) {
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenSequence ts = th.tokenSequence();
+        if(ts == null) {
+            return null;
+        }
+        ts.move(offset);
+
+        while(ts.moveNext() || ts.movePrevious()) {
+            if(ts.language() == HTMLTokenId.language()) {
+                return ts;
+            }
+
+            ts = ts.embedded();
+
+            if(ts == null) {
+                break;
+            }
+
+            //position the embedded ts so we can search deeper
+            ts.move(offset);
+        }
+
+        return null;
+
+    }
+
 }

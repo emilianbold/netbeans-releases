@@ -62,9 +62,10 @@ public class HtmlXmlTokenListProvider implements TokenListProvider {
             return null;
         }
         BaseDocument bdoc = (BaseDocument) doc;
-        if ("text/html".equals(bdoc.getProperty("mimeType"))) {
+        String mimeType = (String)bdoc.getProperty("mimeType"); //NOI18N
+        if ("text/html".equals(mimeType) || "text/xhtml".equals(mimeType)) { //NOI18N
             return new HtmlTokenList(bdoc);
-        } else if ("text/xml".equals(bdoc.getProperty("mimeType"))) {
+        } else if ("text/xml".equals(mimeType)) { //NOI18N
             return new XmlTokenList(bdoc);
         }
 

@@ -52,7 +52,7 @@ public abstract class AbstractTokenList implements TokenList {
     protected BaseDocument doc;
     private CharSequence currentWord;
     private int currentStartOffset;
-    private int nextSearchOffset;
+    protected int nextSearchOffset;
     private int ignoreBefore;
 
     /** Creates a new instance of HtmlXmlTokenList */
@@ -80,7 +80,7 @@ public abstract class AbstractTokenList implements TokenList {
         return currentWord;
     }
 
-    private int[] findNextSpellSpan() throws BadLocationException {
+    protected int[] findNextSpellSpan() throws BadLocationException {
         TokenHierarchy<Document> h = TokenHierarchy.get((Document) doc);
         TokenSequence<?> ts = h.tokenSequence();
         return findNextSpellSpan(ts, nextSearchOffset);

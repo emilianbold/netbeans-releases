@@ -52,6 +52,14 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
                 </folder>
             </folder>
+            <folder name="xhtml">
+                <folder name="TokenListProvider">
+                    <file name="org-netbeans-modules-spellchecker-bindings-htmlxml-HtmlXmlTokenListProvider.instance" />
+                </folder>
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
+                </folder>
+            </folder>
             <folder name="xml">
                 <folder name="TokenListProvider">
                     <file name="org-netbeans-modules-spellchecker-bindings-htmlxml-HtmlXmlTokenListProvider.instance" />
@@ -64,6 +72,9 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Spellcheckers">
         <file name="HTML">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spellchecker.bindings.htmlxml.Bundle"/>
+        </file>
+        <file name="XHTML">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spellchecker.bindings.htmlxml.Bundle"/>
         </file>
         <file name="XML">
