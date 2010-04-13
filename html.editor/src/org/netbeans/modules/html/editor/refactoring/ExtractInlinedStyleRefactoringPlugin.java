@@ -163,8 +163,12 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
 
                 @Override
                 public void visit(AstNode node) {
-                    if ("head".equalsIgnoreCase(node.name())) {
-                        //NOI18N
+                    if("html".equalsIgnoreCase(node.name())) { //NOI18N
+                        //append the section as first html's child if there are
+                        //no existing link attribute and head tag
+                        insertPositionRef.set(node.endOffset()); //end of the open tag offset
+                        increaseIndent.set(true);
+                    } else if ("head".equalsIgnoreCase(node.name())) { //NOI18N
                         //append the section as first head's child if there are
                         //no existing link attribute
                         insertPositionRef.set(node.endOffset()); //end of the open tag offset
@@ -244,7 +248,12 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
 
                 @Override
                 public void visit(AstNode node) {
-                    if ("head".equalsIgnoreCase(node.name())) {
+                    if("html".equalsIgnoreCase(node.name())) { //NOI18N
+                        //append the section as first html's child if there are
+                        //no existing link attribute and head tag
+                        insertPositionRef.set(node.endOffset()); //end of the open tag offset
+                        increaseIndent.set(true);
+                    } else if ("head".equalsIgnoreCase(node.name())) { //NOI18N
                         //NOI18N
                         //append the section as first head's child if there are
                         //no existing style sections
