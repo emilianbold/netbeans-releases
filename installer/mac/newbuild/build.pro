@@ -103,7 +103,7 @@
     <property name="glassfish.v3.id"           value="b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-3.0.1-b${glassfish.v3.build.number}"/>
     <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.0.1-${glassfish.v3.version}.zip"/>
-    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.0.1-${glassfish.v3.version}-ml.zip"/>
+    <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.0.1-${glassfish.v3.version}-ml.zip"/>
     <!--
     <property name="glassfish_v3_location"     value="${binary_cache_host}/glassfish/glassfish-v3-b${glassfish.v3.build.number}.zip"/>
     <property name="glassfish_v3_location_ml"  value="${binary_cache_host}/glassfish/glassfish-v3-b${glassfish.v3.build.number}-ml.zip"/>
