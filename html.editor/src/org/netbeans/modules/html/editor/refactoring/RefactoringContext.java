@@ -45,9 +45,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.refactoring.api.CssRefactoring;
@@ -62,6 +64,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.FileReference;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -184,7 +187,8 @@ public class RefactoringContext {
 
     static List<InlinedStyleInfo> findInlinedStyles(Document doc, int from, int to) {
         List<InlinedStyleInfo> found = new LinkedList<InlinedStyleInfo>();
-        TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc, from);
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(th, from);
         if (ts == null) {
             //XXX - try to search backward and forward to find some html code???
             return Collections.emptyList();
@@ -225,9 +229,30 @@ public class RefactoringContext {
                 String csstype = (String) t.getProperty(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY);
                 if (csstype == null) {
                     //inlined code
-                    int diff = WebUtils.isValueQuoted(t.text()) ? 1 : 0;
-                    range = new OffsetRange(ts.offset() + diff, ts.offset() + t.length() - diff);
-                    value = WebUtils.unquotedValue(t.text().toString());
+
+                    CharSequence text = t.text();
+                    int start = ts.offset();
+                    int end = ts.offset() + t.length();
+                    
+                    //templating language support - there might be a templating language inside the
+                    //attribute value, in such case, the CSS token is joined and we need to get the
+                    //token image and range from the parts.
+                    List<? extends Token<HTMLTokenId>> parts = t.joinedParts();
+                    if(parts != null) {
+                        Token<HTMLTokenId> first = parts.get(0);
+                        Token<HTMLTokenId> last = parts.get(parts.size() - 1);
+                        start = first.offset(th);
+                        end = last.offset(th) + last.length();
+                        try {
+                            text = doc.getText(start, end - start);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+
+                    int diff = WebUtils.isValueQuoted(text) ? 1 : 0;
+                    range = new OffsetRange(start + diff, end - diff);
+                    value = WebUtils.unquotedValue(text.toString());
                     styleAttrOffset = attrOffset;
                     styleAttr = attr;
                 } else {
