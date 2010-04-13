@@ -56,6 +56,9 @@ made subject to such option by the copyright holder.
             <file name="org.netbeans.modules.remote.ui.DisconnectAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.remote.ui.DisconnectAction"/>
             </file>
+            <file name="org.netbeans.modules.remote.ui.RemoveHostAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.remote.ui.RemoveHostAction"/>
+            </file>
         </folder>
     </folder>
     <folder name="Remote">
@@ -73,9 +76,13 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/NativeRemote/org.netbeans.modules.remote.ui.DisconnectAction.instance"/>
                     <attr name="position" intvalue="300"/>
                 </file>
+                <file name="RemoveHostAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/NativeRemote/org.netbeans.modules.remote.ui.RemoveHostAction.instance"/>
+                    <attr name="position" intvalue="400"/>
+                </file>
                 <file name="HostPropertiesAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/NativeRemote/org.netbeans.modules.remote.ui.HostPropertiesAction.instance"/>
-                    <attr name="position" intvalue="400"/>
+                    <attr name="position" intvalue="500"/>
                 </file>
             </folder>
         </folder>
