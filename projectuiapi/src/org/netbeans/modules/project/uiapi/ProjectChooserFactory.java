@@ -67,6 +67,7 @@ public interface ProjectChooserFactory {
 
     public JFileChooser createProjectChooser(); 
     
-    public WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel);
+    public WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser(Project project, SourceGroup[] folders,
+            WizardDescriptor.Panel<WizardDescriptor> bottomPanel, boolean freeFileExtension);
             
 }

@@ -283,12 +283,16 @@ final class GeneralAction {
             }
             if (now != null) {
                 Action nowAction = now.get(key);
+                boolean nowEnabled;
                 if (nowAction != null) {
                     nowAction.addPropertyChangeListener(weakL);
-                    PropertyChangeSupport sup = fire ? support : null;
-                    if (sup != null && nowAction.isEnabled() != prevEnabled) {
-                        sup.firePropertyChange("enabled", prevEnabled, !prevEnabled); // NOI18N
-                    }
+                    nowEnabled = nowAction.isEnabled();
+                } else {
+                    nowEnabled = fallback != null && fallback.isEnabled();
+                }
+                PropertyChangeSupport sup = fire ? support : null;
+                if (sup != null && nowEnabled != prevEnabled) {
+                    sup.firePropertyChange("enabled", prevEnabled, !prevEnabled); // NOI18N
                 }
             }
         }

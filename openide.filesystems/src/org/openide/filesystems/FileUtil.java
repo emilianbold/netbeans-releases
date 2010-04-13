@@ -1262,7 +1262,7 @@ public final class FileUtil extends Object {
      *
     * @param folder parent folder
     * @param name preferred base name of file
-    * @param ext extension to use
+    * @param ext extension to use (or null)
     * @return a free file name <strong>(without the extension)</strong>
      */
     public static String findFreeFileName(FileObject folder, String name, String ext) {

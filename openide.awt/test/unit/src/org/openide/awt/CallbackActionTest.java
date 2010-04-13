@@ -101,23 +101,33 @@ public class CallbackActionTest extends NbTestCase {
             fail("Shall create an action: " + obj);
         }
     }
+
+    public void testCopyLikeProblem() throws Exception {
+        FileObject fo = folder.getFileObject("testCopyLike.instance");
+
+        Object obj = fo.getAttribute("instanceCreate");
+        if (!(obj instanceof Action)) {
+            fail("Shall create an action: " + obj);
+        }
+
+        InstanceContent ic = new InstanceContent();
+        AbstractLookup l = new AbstractLookup(ic);
+        ActionMap map = new ActionMap();
+        map.put("copy-to-clipboard", new MyAction());
+        ic.add(map);
+
+        CntListener list = new CntListener();
+        Action clone = ((ContextAwareAction)obj).createContextAwareInstance(l);
+        clone.addPropertyChangeListener(list);
+        assertTrue("Enabled", clone.isEnabled());
+
+        ic.remove(map);
+        assertFalse("Disabled", clone.isEnabled());
+        list.assertCnt("one change", 1);
+    }
     
     
     public void testWithFallback() throws Exception {
-        class MyAction extends AbstractAction {
-            public int cntEnabled;
-            public int cntPerformed;
-            
-            @Override
-            public boolean isEnabled() {
-                cntEnabled++;
-                return super.isEnabled();
-            }
-            
-            public void actionPerformed(ActionEvent ev) {
-                cntPerformed++;
-            }
-        }
         MyAction myAction = new MyAction();
         MyAction fallAction = new MyAction();
         
@@ -174,5 +184,22 @@ public class CallbackActionTest extends NbTestCase {
             this.cnt = 0;
         }
     } // end of CntListener
+
+    class MyAction extends AbstractAction {
+
+        public int cntEnabled;
+        public int cntPerformed;
+
+        @Override
+        public boolean isEnabled() {
+            cntEnabled++;
+            return super.isEnabled();
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            cntPerformed++;
+        }
+    } // end of MyAction
     
 }

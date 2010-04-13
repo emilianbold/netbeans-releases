@@ -69,9 +69,11 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     private WizardDescriptor.Panel<WizardDescriptor> bottomPanel;
     private WizardDescriptor wizard;
     private boolean isFolder;
+    private boolean freeFileExtension;
     
     @SuppressWarnings("LeakingThisInConstructor")
-    SimpleTargetChooserPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, boolean isFolder) {
+    SimpleTargetChooserPanel(Project project, SourceGroup[] folders,
+            WizardDescriptor.Panel<WizardDescriptor> bottomPanel, boolean isFolder, boolean freeFileExtension) {
         this.folders = folders;
         if (folders != null && folders.length == 0) {
             throw new IllegalArgumentException("Attempting to create panel with an empty folders list"); // #161478
@@ -82,12 +84,13 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
             bottomPanel.addChangeListener( this );
         }
         this.isFolder = isFolder;
+        this.freeFileExtension = freeFileExtension;
         this.gui = null;
     }
 
     public @Override Component getComponent() {
         if (gui == null) {
-            gui = new SimpleTargetChooserPanelGUI( project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), isFolder );
+            gui = new SimpleTargetChooserPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), isFolder, freeFileExtension);
             gui.addChangeListener(this);
         }
         return gui;
@@ -117,7 +120,8 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         // check if the file name can be created
         FileObject template = Templates.getTemplate( wizard );
 
-        String errorMessage = ProjectUtilities.canUseFileName (gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), gui.getTargetName(), template.getExt (), isFolder);
+        String errorMessage = ProjectUtilities.canUseFileName(gui.getTargetGroup().getRootFolder(),
+                gui.getTargetFolder(), gui.getTargetName(), template.getExt(), isFolder, freeFileExtension);
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
 
         return errorMessage == null;

@@ -359,6 +359,20 @@ public class BaseFileObjectTestHid extends TestBaseHid{
             assertTrue(wDir.setWritable(true));
         }
     }
+
+    public void testCannotLockReadOnlyFile() throws Exception {
+        clearWorkDir();
+        final File wDir = getWorkDir();
+        final File data = new File(wDir,"c.data");
+        data.createNewFile();
+        data.setReadOnly();
+        FileObject fd = FileUtil.toFileObject(data);
+        try {
+            FileLock lock = fd.lock();
+            fail("Shall not be possible to create a lock: " + lock);
+        } catch (IOException ex) {
+        }
+    }
     
     private static void createFiles(final File data, final File fold) throws IOException {
         assertTrue(fold.mkdirs());
