@@ -95,6 +95,9 @@ public abstract class EditorView extends View {
     /**
      * Get raw start offset of the view which may transform to real start offset
      * when post-processed by parent view.
+     * <br/>
+     * <b>Note:</b> Typical clients should NOT call this method (they should call
+     * {@link #getStartOffset()} method instead).
      *
      * @return raw start offset of the view or -1 if the view does not support
      * storage of the raw offsets (e.g. a ParagraphView).
