@@ -456,15 +456,28 @@ public class JarClassLoader extends ProxyClassLoader {
                     fjar = sources.get(this);
                     if (fjar == null) {
                         fjar = init = new FutureTask<JarFile>(new Callable<JarFile>() {
+                            @Override
                             public JarFile call() throws IOException {
-                                long now = System.currentTimeMillis();
-                                JarFile ret = new JarFile(file, false);
-                                long took = System.currentTimeMillis() - now;
-                                opened(JarClassLoader.JarSource.this, forWhat);
-                                if (took > 500) {
-                                    LOGGER.log(Level.WARNING, "Opening " + file + " took " + took + " ms"); // NOI18N
+                                int retry = 0;
+                                for (;;) {
+                                    try {
+                                        long now = System.currentTimeMillis();
+                                        JarFile ret = new JarFile(file, false);
+                                        long took = System.currentTimeMillis() - now;
+                                        opened(JarClassLoader.JarSource.this, forWhat);
+                                        if (took > 500) {
+                                            LOGGER.log(Level.WARNING, "Opening {0} took {1} ms", new Object[]{file, took}); // NOI18N
+                                        }
+                                        return ret;
+                                    } catch (ZipException zip) {
+                                        if (retry++ < 3) {
+                                            LOGGER.log(Level.WARNING, "Error opening " + file + " retry: " + retry, zip); // NOI18N
+                                            doCloseJar();
+                                            continue;
+                                        }
+                                        throw zip;
+                                    }
                                 }
-                                return ret;
                             }
                         });
                         sources.put(this, fjar);
