@@ -64,6 +64,8 @@ public class ViewHierarchyRandomTesting {
         // Set the property for synchronous highlights firing since otherwise
         // the repeatability of problems with view hierarchy is none or limited.
         System.setProperty("org.netbeans.editor.sync.highlights", "true");
+        System.setProperty("org.netbeans.editor.linewrap.edt", "true");
+
 
         RandomTestContainer container = EditorPaneTesting.initContainer(null, kit);
         DocumentTesting.initContainer(container);

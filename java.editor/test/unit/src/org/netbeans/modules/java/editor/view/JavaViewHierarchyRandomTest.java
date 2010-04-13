@@ -55,7 +55,6 @@ import org.netbeans.lib.editor.util.random.DocumentTesting;
 import org.netbeans.lib.editor.util.random.EditorPaneTesting;
 import org.netbeans.lib.editor.util.random.RandomTestContainer;
 import org.netbeans.modules.editor.java.JavaKit;
-import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyRandomTesting;
 
 /**
@@ -64,7 +63,10 @@ import org.netbeans.modules.editor.lib2.view.ViewHierarchyRandomTesting;
  */
 public class JavaViewHierarchyRandomTest extends NbTestCase {
 
-    private static final int OP_COUNT = 10000;
+    private static final int OP_COUNT = 1000;
+
+    private static final boolean LOG_OP = false;
+    private static final boolean LOG_DOC = false;
 
     private static final Level LOG_LEVEL = Level.FINE;
 
@@ -87,8 +89,8 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINEST);
         RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit()); // no problem for plain mime-type
         container.setName(this.getName());
-//        DocumentTesting.setLogDoc(container, true);
-//        container.putProperty(RandomTestContainer.LOG_OP, Boolean.TRUE);
+        container.setLogOp(LOG_OP);
+        DocumentTesting.setLogDoc(container, LOG_DOC);
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty("mimeType", "text/plain");
@@ -114,8 +116,8 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINEST);
         RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit());
         container.setName(this.getName());
-//        DocumentTesting.setLogDoc(container, true);
-//        container.putProperty(RandomTestContainer.LOG_OP, Boolean.TRUE);
+        container.setLogOp(LOG_OP);
+        DocumentTesting.setLogDoc(container, LOG_DOC);
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty("mimeType", "text/plain");
@@ -168,8 +170,8 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINEST);
         RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit());
         container.setName(this.getName());
-//        DocumentTesting.setLogDoc(container, true);
-//        container.putProperty(RandomTestContainer.LOG_OP, true);
+        container.setLogOp(LOG_OP);
+        DocumentTesting.setLogDoc(container, LOG_DOC);
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty("mimeType", "text/plain");
@@ -184,7 +186,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
 //        RandomTestContainer.Context context = container.context();
 //        DocumentTesting.undo(context, 2);
 //        DocumentTesting.redo(context, 2);
-//        container.run(0L); // Test random ops
+        container.run(0L); // Test random ops
     }
 
     public void testRandomModsJava() throws Exception {
@@ -194,8 +196,8 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINEST);
         RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit());
         container.setName(this.getName());
-//        DocumentTesting.setLogDoc(container, true);
-//        container.putProperty(RandomTestContainer.LOG_OP, Boolean.TRUE);
+        container.setLogOp(LOG_OP);
+        DocumentTesting.setLogDoc(container, LOG_DOC);
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty(Language.class, JavaTokenId.language());

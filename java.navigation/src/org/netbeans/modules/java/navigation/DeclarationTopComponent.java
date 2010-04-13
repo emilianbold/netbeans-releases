@@ -43,14 +43,11 @@ package org.netbeans.modules.java.navigation;
 
 import java.awt.Rectangle;
 import java.io.Serializable;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-import org.openide.util.Utilities;
 
 /**
  * Top component which displays something.
@@ -92,7 +89,7 @@ public final class DeclarationTopComponent extends TopComponent {
         }
         declarationEditorPane.setCaretPosition(0);
         SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 declarationEditorPane.scrollRectToVisible(ZERO);
             }
         });
@@ -148,19 +145,20 @@ public final class DeclarationTopComponent extends TopComponent {
      * Obtain the DeclarationTopComponent instance. Never call {@link #getDefault} directly!
      */
     public static synchronized DeclarationTopComponent findInstance() {
-        TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
-        if (win == null) {
-            LOGGER.log(Level.WARNING, 
-                    "Cannot find MyWindow component. It will not be located properly in the window system.");
-            return getDefault();
-        }
-        if (win instanceof DeclarationTopComponent) {
-            return (DeclarationTopComponent)win;
-        }
-        LOGGER.log(Level./* Shut up! Logged dozens of times in every session. */FINE,
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
-        return getDefault();
+//        TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
+//        if (win == null) {
+//            LOGGER.log(Level.WARNING,
+//                    "Cannot find MyWindow component. It will not be located properly in the window system.");
+//            return getDefault();
+//        }
+//        if (win instanceof DeclarationTopComponent) {
+//            return (DeclarationTopComponent)win;
+//        }
+//        LOGGER.log(Level./* Shut up! Logged dozens of times in every session. */FINE,
+//                "There seem to be multiple components with the '" + PREFERRED_ID +
+//                "' ID. That is a potential source of errors and unexpected behavior.");
+//        return getDefault();
+        return instance;
     }
     
     public static boolean shouldUpdate() {
@@ -171,14 +169,17 @@ public final class DeclarationTopComponent extends TopComponent {
             return instance.isShowing();
         }
     }
-    
+
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
     
+    @Override
     public void componentOpened() {
     }
     
+    @Override
     public void componentClosed() {
     }
     
@@ -190,10 +191,12 @@ public final class DeclarationTopComponent extends TopComponent {
     
          
     /** replaces this in object stream */
+    @Override
     public Object writeReplace() {
         return new ResolvableHelper();
     }
     
+    @Override
     protected String preferredID() {
         return PREFERRED_ID;
     }
