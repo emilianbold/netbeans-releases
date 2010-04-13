@@ -196,7 +196,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
             FileObject projectDirectoryFO = project.getProjectDirectory();
             // track configuration && generated files
             if (projectDirectoryFO != null) {
-                FileObject nbFO = projectDirectoryFO.getFileObject("nbproject");
+                FileObject nbFO = projectDirectoryFO.getFileObject("nbproject"); // NOI18N
                 computeFOs(nbFO, type, what, pattern, result);
             }
             for (Item item : descriptor.getExternalFileItemsAsArray()) {
