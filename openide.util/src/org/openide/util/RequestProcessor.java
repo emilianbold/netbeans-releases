@@ -2040,7 +2040,7 @@ outer:  do {
                     ex = new IllegalStateException(msg);
                     ex.setStackTrace(todo.item.getStackTrace());
                 }
-                logger().log(Level.WARNING, msg, ex);
+                logger().log(Level.INFO, msg, ex);
             }
         }
 
