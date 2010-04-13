@@ -351,7 +351,11 @@ public class ProjectsRootNode extends AbstractNode {
         
         public void propertyChange( PropertyChangeEvent e ) {
             if ( OpenProjectList.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
-                setKeys( getKeys() );
+                RP.post(new Runnable() {
+                    public @Override void run() {
+                        setKeys(getKeys());
+                    }
+                });
             }
         }
         
