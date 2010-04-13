@@ -149,6 +149,7 @@ public abstract class AbstractModeContainer implements ModeContainer {
         tabbedHandler.setActive(active);
     }
     
+    @Override
     public void focusSelectedTopComponent() {
         // PENDING focus gets main window sometimes, investgate and refine (jdk1.4.1?).
         final TopComponent selectedTopComponent = tabbedHandler.getSelectedTopComponent();
@@ -164,36 +165,7 @@ public abstract class AbstractModeContainer implements ModeContainer {
             if (newFocusedW.equals(oldFocusedW)) {
                 // focus transfer inside one window or system is not active in OS at all
                 // so requestFocusInWindow call is right and enough
-                if (!Utilities.isMac()) {
-                    selectedTopComponent.requestFocusInWindow();
-                } else {
-                    //#60235 - on macosx 1.5 there seems to be a bug with requesting focus.
-                    // this piece of code seems to workaround most of the usecases in 60235
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            //#62947 another workaround for macosx 1.5 focus behaviour.
-                            // when maximizing the mode, the old and new focused component is the same, but removed from
-                            // awt hierarchy and added elsewhere.
-                            // the DefautlkeyboardFocusmanager doen't do it's job then and locks the keyboard.
-                            // hack it by make it believe the focus changed.
-                            try {
-                                Field fld = KeyboardFocusManager.class.getDeclaredField("focusOwner");//NOI18N
-                                fld.setAccessible(true);
-                                fld.set(KeyboardFocusManager.getCurrentKeyboardFocusManager(), null);
-                            } catch (IllegalArgumentException ex) {
-                                ex.printStackTrace();
-                            } catch (SecurityException ex) {
-                                ex.printStackTrace();
-                            } catch (NoSuchFieldException ex) {
-                                ex.printStackTrace();
-                            } catch (IllegalAccessException ex) {
-                                ex.printStackTrace();
-                            }
-                            //#62947 hack finished.
-                            selectedTopComponent.requestFocusInWindow();
-                        }
-                    });
-                }
+                selectedTopComponent.requestFocusInWindow();
             } else {
                 // focus transfer between different windows
                 newFocusedW.toFront();

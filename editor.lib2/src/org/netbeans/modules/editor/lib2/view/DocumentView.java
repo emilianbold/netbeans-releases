@@ -63,6 +63,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -107,6 +108,8 @@ public final class DocumentView extends EditorBoxView
     private static final Logger LOG = Logger.getLogger(DocumentView.class.getName());
 
     private static final Logger REPAINT_LOG = Logger.getLogger(DebugRepaintManager.class.getName());
+
+    static final boolean REQUIRE_EDT = Boolean.getBoolean("org.netbeans.editor.linewrap.edt");
 
     static final char PRINTING_SPACE = '\u00B7';
     static final char PRINTING_TAB = '\u00BB'; // \u21FE
@@ -374,18 +377,24 @@ public final class DocumentView extends EditorBoxView
     }
 
     public void reinitViews() {
-        PriorityMutex mutex = getMutex();
-        if (mutex != null) {
-            mutex.lock();
-            try {
-                ((EditorTabExpander) tabExpander).updateTabSize();
-                if (fontRenderContext != null) { // Only rebuild views with valid fontRenderContext
-                    viewUpdates.reinitViews();
+        getDocument().render(new Runnable() {
+            @Override
+            public void run() {
+                PriorityMutex mutex = getMutex();
+                if (mutex != null) {
+                    mutex.lock();
+                    // checkDocumentLocked() - unnecessary - doc.render() called
+                    try {
+                        ((EditorTabExpander) tabExpander).updateTabSize();
+                        if (fontRenderContext != null) { // Only rebuild views with valid fontRenderContext
+                            viewUpdates.reinitViews();
+                        }
+                    } finally {
+                        mutex.unlock();
+                    }
                 }
-            } finally {
-                mutex.unlock();
             }
-        }
+        });
     }
 
     void recomputeSpans() {
@@ -451,6 +460,7 @@ public final class DocumentView extends EditorBoxView
                 PriorityMutex mutex = getMutex();
                 if (mutex != null) {
                     mutex.lock();
+                    // checkDocumentLocked() - unnecessary - doc.render() called
                     try {
                         if (textComponent != null) {
                             updateVisibleWidth();
@@ -472,18 +482,24 @@ public final class DocumentView extends EditorBoxView
                 @Override
                 public void resultChanged(LookupEvent ev) {
                     @SuppressWarnings("unchecked")
-                    Lookup.Result<FontColorSettings> result = (Lookup.Result<FontColorSettings>) ev.getSource();
-                    PriorityMutex mutex = getMutex();
-                    if (mutex != null) {
-                        mutex.lock();
-                        try {
-                            if (textComponent != null) {
-                                updateDefaultFontAndColors(result);
+                    final Lookup.Result<FontColorSettings> result = (Lookup.Result<FontColorSettings>) ev.getSource();
+                    getDocument().render(new Runnable() {
+                        @Override
+                        public void run() {
+                            PriorityMutex mutex = getMutex();
+                            if (mutex != null) {
+                                mutex.lock();
+                                // checkDocumentLocked() - unnecessary - doc.render() called
+                                try {
+                                    if (textComponent != null) {
+                                        updateDefaultFontAndColors(result);
+                                    }
+                                } finally {
+                                    mutex.unlock();
+                                }
                             }
-                        } finally {
-                            mutex.unlock();
                         }
-                    }
+                    });
                 }
             };
             String mimeType = DocumentUtilities.getMimeType(textComponent);
@@ -600,7 +616,7 @@ public final class DocumentView extends EditorBoxView
             defaultUnderlineThickness = lineMetrics.getUnderlineThickness();
             defaultStrikethroughOffset = lineMetrics.getStrikethroughOffset();
             defaultStrikethroughThickness = lineMetrics.getStrikethroughThickness();
-            defaultCharWidth = (float) ViewUtils.cutFractions(textLayout.getAdvance());
+            defaultCharWidth = ViewUtils.cutFractions(textLayout.getAdvance());
             tabTextLayout = null;
             singleCharTabTextLayout = null;
             lineContinuationTextLayout = null;
@@ -894,6 +910,9 @@ public final class DocumentView extends EditorBoxView
                 LOG.log(Level.INFO, "Document not locked", new Exception("Document not locked")); // NOI18N
             }
         }
+        if (REQUIRE_EDT && !SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException("Not in Event Dispatch Thread"); // NOI18N
+        }
     }
 
     @Override
@@ -963,6 +982,47 @@ public final class DocumentView extends EditorBoxView
             return "Invalid endOffset=" + endOffset + ", docLen=" + doc.getLength(); // NOI18N
         }
         return null;
+    }
+
+    @Override
+    public String findTreeIntegrityError() {
+        final String[] ret = new String[1];
+        getDocument().render(new Runnable() {
+            @Override
+            public void run() {
+                PriorityMutex mutex = getMutex();
+                if (mutex != null) {
+                    mutex.lock();
+                    // checkDocumentLocked() - unnecessary - doc.render() called
+                    try {
+                        ret[0] = DocumentView.super.findTreeIntegrityError();
+                    } finally {
+                        mutex.unlock();
+                    }
+                }
+            }
+        });
+        return ret[0];
+    }
+
+    @Override
+    protected StringBuilder appendViewInfo(final StringBuilder sb, final int indent, final int importantChildIndex) {
+        getDocument().render(new Runnable() {
+            @Override
+            public void run() {
+                PriorityMutex mutex = getMutex();
+                if (mutex != null) {
+                    mutex.lock();
+                    // checkDocumentLocked() - unnecessary - doc.render() called
+                    try {
+                        DocumentView.super.appendViewInfo(sb, indent, importantChildIndex);
+                    } finally {
+                        mutex.unlock();
+                    }
+                }
+            }
+        });
+        return sb;
     }
 
 }

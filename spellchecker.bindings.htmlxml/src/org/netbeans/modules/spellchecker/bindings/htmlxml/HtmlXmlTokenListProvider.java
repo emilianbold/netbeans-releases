@@ -42,7 +42,15 @@
  */
 package org.netbeans.modules.spellchecker.bindings.htmlxml;
 
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.spellchecker.spi.language.TokenList;
 import org.netbeans.modules.spellchecker.spi.language.TokenListProvider;
@@ -59,12 +67,34 @@ public class HtmlXmlTokenListProvider implements TokenListProvider {
 
     public TokenList findTokenList(Document doc) {
         if (!(doc instanceof BaseDocument)) {
+            Logger.getLogger(HtmlXmlTokenListProvider.class.getName()).log(Level.INFO, null,
+                    new IllegalStateException("The given document is not an instance of the BaseDocument, is just " +  //NOI18N
+                    doc.getClass().getName()));
             return null;
         }
-        BaseDocument bdoc = (BaseDocument) doc;
-        if ("text/html".equals(bdoc.getProperty("mimeType"))) {
-            return new HtmlTokenList(bdoc);
-        } else if ("text/xml".equals(bdoc.getProperty("mimeType"))) {
+
+        //html
+        final BaseDocument bdoc = (BaseDocument) doc;
+        final AtomicReference<TokenList> ret = new AtomicReference<TokenList>();
+        doc.render(new Runnable() {
+            public void run() {
+                TokenHierarchy<?> th = TokenHierarchy.get(bdoc);
+                Set<LanguagePath> paths = th.languagePaths();
+                for(LanguagePath path : paths) {
+                    if(path.innerLanguage() == HTMLTokenId.language()) {
+                        ret.set(new HtmlTokenList(bdoc));
+                        break;
+                    }
+                }
+            }
+        });
+        if(ret.get() != null) {
+            return ret.get();
+        }
+
+        //xml
+        String mimeType = (String)bdoc.getProperty("mimeType"); //NOI18N
+        if ("text/xml".equals(mimeType)) { //NOI18N
             return new XmlTokenList(bdoc);
         }
 

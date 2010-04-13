@@ -137,12 +137,16 @@ public class MergeAction extends ContextAction {
                                 doMergeAction(root, revStr, logger);
                                 HgUtils.forceStatusRefreshProject(context);
                                 logger.output(""); // NOI18N
+                            } catch (HgException.HgCommandCanceledException ex) {
+                                // canceled by user, do nothing
                             } catch (HgException ex) {
                                 NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                                 DialogDisplayer.getDefault().notifyLater(e);
                             }
                         }
                     });
+                } catch (HgException.HgCommandCanceledException ex) {
+                    // canceled by user, do nothing
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);

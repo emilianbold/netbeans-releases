@@ -109,11 +109,14 @@ public class ConnectionDialog {
                     /*icon*/ null, basePane, 
                     NbBundle.getMessage (ConnectionDialog.class, "BasePanelHint") ); // NOI18N
 
-        // extend panel for select schema name
-        tabs.addTab(NbBundle.getMessage (ConnectionDialog.class, "ExtendPanelTitle"), // NOI18N
-                    /*icon*/ null, 
-                    extendPane, 
-                    NbBundle.getMessage (ConnectionDialog.class, "ExtendPanelHint") ); // NOI18N
+        if (extendPane != null) {
+            // extend panel for select schema name
+            tabs.addTab(NbBundle.getMessage (ConnectionDialog.class, "ExtendPanelTitle"), // NOI18N
+                        /*icon*/ null, 
+                        extendPane, 
+                        NbBundle.getMessage (ConnectionDialog.class, "ExtendPanelHint") ); // NOI18N
+
+        }
 
         tabs.getAccessibleContext().setAccessibleName(NbBundle.getMessage (ConnectionDialog.class, "ACS_ConnectDialogA11yName"));
         tabs.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ConnectionDialog.class, "ACS_ConnectDialogA11yDesc"));
@@ -163,7 +166,9 @@ public class ConnectionDialog {
         descriptor.setValid(valid);
         
         boolean isConnected = mediator.isConnected();
-        tabs.setEnabledAt(1, valid && isConnected);
+        if (tabs.getTabCount() > 1) {
+            tabs.setEnabledAt(1, valid && isConnected);
+        }
     }
     
     /**

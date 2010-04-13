@@ -49,6 +49,7 @@ import org.netbeans.modules.project.uiapi.Utilities;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -200,30 +201,80 @@ public class Templates {
     }
             
     /**
-     * Create a basic target chooser suitable for many kinds of templates.
-     * The user is prompted to choose a location for the new file and a (base) name.
-     * Instantiation is handled by {@link DataObject#createFromTemplate}.
-     * @param project The project to work on.
-     * @param folders a list of possible roots to create the new file in
-     * @return a wizard panel(s) prompting the user to choose a name and location
+     * @deprecated Use {@link #buildSimpleTargetChooser} instead.
      */
+    @Deprecated
     public static WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser( Project project, SourceGroup[] folders ) {        
-        return createSimpleTargetChooser( project, folders, null );
+        return buildSimpleTargetChooser(project, folders).create();
     }
     
     /**
-     * Create a basic target chooser suitable for many kinds of templates.
-     * The user is prompted to choose a location for the new file and a (base) name.
+     * @deprecated Use {@link #buildSimpleTargetChooser} instead.
+     */
+    @Deprecated
+    public static WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
+        return buildSimpleTargetChooser(project, folders).bottomPanel(bottomPanel).create();
+    }
+
+    /**
+     * Builder for simple target choosers.
+     * The chooser is suitable for many kinds of templates.
+     * The user is prompted to choose a location for the new file and a name.
      * Instantiation is handled by {@link DataObject#createFromTemplate}.
-     * Resulting panel can be decorated with additional panel placed below the standard target 
-     * chooser.
      * @param project The project to work on.
      * @param folders a list of possible roots to create the new file in
-     * @param bottomPanel panel which should be placed underneth the default chooser
-     * @return a wizard panel(s) prompting the user to choose a name and location
+     * @return a builder which can be used to customize and then create the target chooser
+     * @since org.netbeans.modules.projectuiapi/1 1.45
      */
-    public static WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
-        return Utilities.getProjectChooserFactory().createSimpleTargetChooser( project, folders, bottomPanel );
+    public static SimpleTargetChooserBuilder buildSimpleTargetChooser(Project project, SourceGroup[] folders) {
+        return new SimpleTargetChooserBuilder(project, folders);
+    }
+
+    /**
+     * A builder for simple target choosers.
+     * @see #buildSimpleTargetChooser
+     * @since org.netbeans.modules.projectuiapi/1 1.45
+     */
+    public static final class SimpleTargetChooserBuilder {
+        final Project project;
+        final SourceGroup[] folders;
+        WizardDescriptor.Panel<WizardDescriptor> bottomPanel;
+        boolean freeFileExtension;
+        SimpleTargetChooserBuilder(Project project, SourceGroup[] folders) {
+            this.project = project;
+            this.folders = folders;
+        }
+        /**
+         * Sets a panel which should be placed underneath the default chooser.
+         * @param bottomPanel a custom bottom panel
+         * @return this builder
+         */
+        public SimpleTargetChooserBuilder bottomPanel(WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
+            this.bottomPanel = bottomPanel;
+            return this;
+        }
+        /**
+         * Permits the file extension of the created file to be customized by the user.
+         * By default, the file extension is fixed to be the same as that of the template:
+         * whatever is entered for the filename is taken to be a base name only.
+         * In this mode, the GUI makes it possible to use an alternate extension: it
+         * simply checks for a file name containing a period (<samp>.</samp>) and
+         * suppresses the automatic appending of the template's extension,
+         * taking the entered filename as complete.
+         * @return this builder
+         * @see CreateFromTemplateHandler#FREE_FILE_EXTENSION
+         */
+        public SimpleTargetChooserBuilder freeFileExtension() {
+            this.freeFileExtension = true;
+            return this;
+        }
+        /**
+         * Creates the target chooser panel.
+         * @return a wizard panel prompting the user to choose a name and location
+         */
+        public WizardDescriptor.Panel<WizardDescriptor> create() {
+            return Utilities.getProjectChooserFactory().createSimpleTargetChooser(project, folders, bottomPanel, freeFileExtension);
+        }
     }
         
 }

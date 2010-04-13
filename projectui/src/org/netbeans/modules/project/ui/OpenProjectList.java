@@ -392,8 +392,9 @@ public final class OpenProjectList {
             lazilyOpenedProjects = new ArrayList<Project>();
             List<URL> URLs = OpenProjectListSettings.getInstance().getOpenProjectsURLs();
             Project[] inital;
+            final LinkedList<Project> projects = URLs2Projects(URLs);
             synchronized (toOpenProjects) {
-                toOpenProjects.addAll(URLs2Projects(URLs));
+                toOpenProjects.addAll(projects);
                 log(Level.FINER, "loadOnBackground {0}", toOpenProjects); // NOI18N
                 inital = toOpenProjects.toArray(new Project[0]);
             }

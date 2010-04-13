@@ -55,7 +55,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.PopupMenuEvent;
@@ -99,7 +98,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
     private final PropertyChangeListener lst;
     private final LookupListener looklst;
-    private final JComboBox configListCombo;
+    private JComboBox configListCombo;
     private boolean listeningToCombo = true;
 
     private Project currentProject;
@@ -111,6 +110,8 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     public ActiveConfigAction() {
         super();
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        EventQueue.invokeLater(new Runnable() {
+            public @Override void run() {
         configListCombo = new JComboBox();
         configListCombo.addPopupMenuListener(new PopupMenuListener() {
             private Component prevFocusOwner = null;
@@ -147,6 +148,8 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                 } else if (o != null) {
                     activeConfigurationSelected((ProjectConfiguration) o, null);
                 }
+            }
+        });
             }
         });
         lst = new PropertyChangeListener() {
@@ -206,7 +209,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
     private synchronized void activeConfigurationChanged(final ProjectConfiguration config) {
         LOGGER.log(Level.FINER, "activeConfigurationChanged: {0}", config);
-        SwingUtilities.invokeLater(new Runnable() {
+        EventQueue.invokeLater(new Runnable() {
             public void run() {
                 listeningToCombo = false;
                 try {
