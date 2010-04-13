@@ -907,19 +907,24 @@ AtomicLockListener, FoldHierarchyListener {
             return;
         }
         JTextComponent c = component;
-        if (c != null) {
+        Document doc;
+        if (c != null && (doc = c.getDocument()) != null) {
             selectionVisible = v;
 
             // repaint the block
-            BaseTextUI ui = (BaseTextUI)c.getUI();
-            try {
-                ui.getEditorUI().repaintBlock(caretMark.getOffset(), selectionMark.getOffset());
-            } catch (BadLocationException e) {
-                Utilities.annotateLoggable(e);
-            } catch (InvalidMarkException e) {
-                Utilities.annotateLoggable(e);
-            }
-
+            final BaseTextUI ui = (BaseTextUI)c.getUI();
+            doc.render(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ui.getEditorUI().repaintBlock(caretMark.getOffset(), selectionMark.getOffset());
+                    } catch (BadLocationException e) {
+                        Utilities.annotateLoggable(e);
+                    } catch (InvalidMarkException e) {
+                        Utilities.annotateLoggable(e);
+                    }
+                }
+            });
         }
     }
 
