@@ -110,8 +110,6 @@
                     <attr methodvalue="org.netbeans.modules.csl.core.EmbeddingIndexerFactoryImpl.create" name="instanceCreate"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"/></file>
 
-                <!--<file name="org-netbeans-modules-csl-core-TLIndexerFactory.instance">
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"/></file>-->
             </folder>
         </folder>
     </folder>
@@ -223,17 +221,8 @@
         <folder name="Frameworks">
             <file name="org-netbeans-modules-php-smarty-SmartyPhpFrameworkProvider.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.smarty.SmartyPhpFrameworkProvider.getInstance"/>
-                <attr name="position" intvalue="80"/>
+                <attr name="position" intvalue="300"/>
             </file>
-        </folder>
-    </folder>
-
-    <folder name="Hidden">
-        <folder name="PathRecognizers">
-            <file name="org-netbeans-modules-csl-core-PathRecognizerImpl-text-x-tpl.instance">
-                <attr name="mimeType" stringvalue="text/x-tpl"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.PathRecognizer"/>
-            <attr methodvalue="org.netbeans.modules.csl.core.PathRecognizerImpl.createInstance" name="instanceCreate"/></file>
         </folder>
     </folder>
 
