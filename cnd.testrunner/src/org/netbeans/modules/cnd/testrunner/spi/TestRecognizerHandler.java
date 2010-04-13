@@ -36,7 +36,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.testrunner.ui;
+package org.netbeans.modules.cnd.testrunner.spi;
 
 import java.util.Collections;
 import java.util.List;
@@ -59,7 +59,7 @@ public abstract class TestRecognizerHandler {
     protected final Pattern pattern;
     protected Matcher matcher;
 
-    TestRecognizerHandler(String regex) {
+    public TestRecognizerHandler(String regex) {
         // handle newline chars at the end -- see #143508
         if (!regex.endsWith(".*")) { //NOI18N
             regex += ".*";  //NOI18N
@@ -71,19 +71,19 @@ public abstract class TestRecognizerHandler {
         this.pattern = Pattern.compile(regex, Pattern.DOTALL);
     }
 
-    final boolean matches(String line) {
+    public final boolean matches(String line) {
         return match(line).matches();
     }
     
     /**
      * <i>Package private for unit tests, otherwise don't use directly</i>.
      */
-    final Matcher match(String line) {
+    public final Matcher match(String line) {
         this.matcher = pattern.matcher(line);
         return matcher;
     }
 
-    abstract void updateUI(Manager manager, TestSession session);
+    public abstract void updateUI(Manager manager, TestSession session);
 
     /**
      * Gets the RecognizedOutput for output that should be passed on 
@@ -94,7 +94,7 @@ public abstract class TestRecognizerHandler {
      * @return the RecognizedOutput for output that should be passed on 
      * for printing to Output. 
      */
-    List<String> getRecognizedOutput() {
+    public List<String> getRecognizedOutput() {
         return Collections.<String>emptyList();
     }
 
