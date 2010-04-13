@@ -571,8 +571,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 d.putProperty("mainFileTemplate", "Templates/qtFiles/main.cc"); // NOI18N
             }
         }
-        ServerRecord sr = (ServerRecord) hostComboBox.getSelectedItem();
-        if (sr != null) {
+        Object obj = hostComboBox.getSelectedItem();
+        if (obj != null && obj instanceof ServerRecord) {
+            ServerRecord sr = (ServerRecord)obj;
             d.putProperty("hostUID", ExecutionEnvironmentFactory.toUniqueID(sr.getExecutionEnvironment())); // NOI18N
         }
         d.putProperty("toolchain", toolchainComboBox.getSelectedItem()); // NOI18N
