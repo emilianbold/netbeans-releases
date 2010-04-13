@@ -175,7 +175,10 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
     private Map<PhpFrameworkProvider, PhpModuleExtender> createExtenders() {
         Map<PhpFrameworkProvider, PhpModuleExtender> extenders = new LinkedHashMap<PhpFrameworkProvider, PhpModuleExtender>();
         for (PhpFrameworkProvider provider : PhpFrameworks.getFrameworks()) {
-            extenders.put(provider, provider.createPhpModuleExtender(null));
+            PhpModuleExtender extender = provider.createPhpModuleExtender(null);
+            if (extender != null) {
+                extenders.put(provider, extender);
+            }
         }
         return extenders;
     }

@@ -80,8 +80,6 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     private static final RequestProcessor RP = 
             new RequestProcessor("Highlights-Coalescing", 1, false, false); // NOI18N
 
-//    private static final int COALESCE_DELAY = 10; // Delay before highlights will be rendered
-
     private static final boolean SYNC_HIGHLIGHTS =
             Boolean.getBoolean("org.netbeans.editor.sync.highlights"); //NOI18N
 
@@ -305,7 +303,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                             lastPending = (affectedRangePendingRunnable == this);
                         }
                         if (lastPending) {
-                            if (SwingUtilities.isEventDispatchThread()) { // Already posted to AWT
+                            if (SYNC_HIGHLIGHTS || SwingUtilities.isEventDispatchThread()) { // Already posted to AWT
                                 if (doc instanceof AbstractDocument) {
                                     AbstractDocument adoc = (AbstractDocument) doc;
                                     adoc.readLock();
