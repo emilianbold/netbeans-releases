@@ -39,64 +39,6 @@
 
 package org.netbeans.modules.html.editor.refactoring.api;
 
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
-
-/**
- *
- * @author marekfukala
- */
-public class ExtractInlinedStyleRefactoring extends AbstractRefactoring {
-
-    public enum Mode {
-        refactorToExistingEmbeddedSection,
-        refactorToNewEmbeddedSection,
-        refactorToReferedExternalSheet,
-        refactorToExistingExternalSheet,
-        refactorToNewExternalSheet,
-    }
-
-    private Mode mode;
-    private SelectorType selectorType;
-    private OffsetRange existingEmbeddedCssSection;
-    private FileObject externalSheet;
-
-    public ExtractInlinedStyleRefactoring(Lookup refactoringSource) {
-        super(refactoringSource);
-    }
-
-    public OffsetRange getExistingEmbeddedCssSection() {
-        return existingEmbeddedCssSection;
-    }
-
-    public void setExistingEmbeddedCssSection(OffsetRange existingEmbeddedCssSection) {
-        this.existingEmbeddedCssSection = existingEmbeddedCssSection;
-    }
-
-    public FileObject getExternalSheet() {
-        return externalSheet;
-    }
-
-    public void setExternalSheet(FileObject externalSheet) {
-        this.externalSheet = externalSheet;
-    }
-
-    public Mode getMode() {
-        return mode;
-    }
-
-    public void setMode(Mode mode) {
-        this.mode = mode;
-    }
-
-    public SelectorType getSelectorType() {
-        return selectorType;
-    }
-
-    public void setSelectorType(SelectorType selectorType) {
-        this.selectorType = selectorType;
-    }
-
+public enum SelectorType {
+    CLASS, ID
 }
