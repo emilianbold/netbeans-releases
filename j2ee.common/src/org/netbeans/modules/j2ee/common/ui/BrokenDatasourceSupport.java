@@ -153,9 +153,6 @@ public class BrokenDatasourceSupport {
             dss = jmp.getConfigSupport().getDatasources();
         } catch (ConfigurationException e) {
             dss = new HashSet<Datasource>();
-//        } catch (Throwable e) {
-//            //Exceptions.printStackTrace(e);
-//            dss = new HashSet<Datasource>();
         }
         
         Set<Datasource> brokenDatasources = new HashSet<Datasource>();
