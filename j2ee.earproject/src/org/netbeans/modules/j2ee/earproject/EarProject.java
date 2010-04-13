@@ -223,7 +223,7 @@ public final class EarProject implements Project, AntProjectListener {
             // remove in next release
             new EarImpl(ear, appModule),
             new EarActionProvider(this, updateHelper),
-            new J2eeArchiveLogicalViewProvider(this, updateHelper, evaluator(), refHelper),
+            new J2eeArchiveLogicalViewProvider(this, updateHelper, evaluator(), refHelper, appModule),
             new MyIconBaseProvider(),
             new CustomizerProviderImpl(this, helper, refHelper),
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
@@ -476,7 +476,8 @@ public final class EarProject implements Project, AntProjectListener {
                 Deployment.getDefault().enableCompileOnSaveSupport(appModule);
             }
             
-            if (J2eeArchiveLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
+            J2eeArchiveLogicalViewProvider logicalViewProvider = (J2eeArchiveLogicalViewProvider) EarProject.this.getLookup().lookup (J2eeArchiveLogicalViewProvider.class);
+            if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
                 BrokenReferencesSupport.showAlert();
             }
 

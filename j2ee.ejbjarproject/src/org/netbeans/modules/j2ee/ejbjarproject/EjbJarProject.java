@@ -423,7 +423,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 // remove in next release
                 new EjbJarImpl(apiEjbJar),
                 new EjbJarActionProvider( this, helper, refHelper, updateHelper, eval ),
-                new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper),
+                new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper, ejbModule),
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
                 LookupMergerSupport.createClassPathProviderMerger(cpProvider),
                 QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),

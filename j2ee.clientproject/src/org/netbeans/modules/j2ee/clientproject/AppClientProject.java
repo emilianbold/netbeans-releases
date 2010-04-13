@@ -304,7 +304,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             helper.createAuxiliaryProperties(),
             spp,
             new AppClientActionProvider( this, helper, this.updateHelper ),
-            new AppClientLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
+            new AppClientLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper, appClient),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
