@@ -44,14 +44,13 @@ package org.netbeans.modules.java.editor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.EditorRegistry;
@@ -72,13 +71,13 @@ import org.openide.util.RequestProcessor;
  * @author  Tomas Pavek, Martin Roskanin
  */
 
-public class JavaEditorWarmUpTask implements Runnable{
+public class JavaEditorWarmUpTask implements Runnable {
     
     /**
      * Number of lines that an artificial document
      * for view hierarchy code optimization will have.
      * <br/>
-     * The number is hotspot's threshold for method compilation 1500 divied by 10 + 1
+     * The number is hotspot's threshold for method compilation 1500 divided by 10 + 1
      * since 1500 would be rather high line count. Anyway main effect of warmup
      * the class pre-loading should apply regardless of this value.
      */
@@ -104,10 +103,9 @@ public class JavaEditorWarmUpTask implements Runnable{
      * Number of paints to be simulated.
      */
     private static final int PAINT_COUNT = 1;
-    
 
-    private static final boolean debug
-        = Boolean.getBoolean("netbeans.debug.editor.warmup"); // NOI18N
+    // -J-Dorg.netbeans.modules.java.editor.JavaEditorWarmUpTask.level=FINE
+    private static final Logger LOG = Logger.getLogger(JavaEditorWarmUpTask.class.getName());
     
     private static final int STATUS_INIT = 0;
     private static final int STATUS_CREATE_PANE = 1;
@@ -129,12 +127,10 @@ public class JavaEditorWarmUpTask implements Runnable{
 
     private long startTime;
     
-    public void run() {
+    public @Override void run() {
         switch (status) {
             case STATUS_INIT:
-                if (debug) {
-                    startTime = System.currentTimeMillis();
-                }
+                startTime = System.currentTimeMillis();
         
                 // Init of JavaKit and JavaOptions
                 javaKit = BaseKit.getKit(JavaKit.class);
@@ -153,11 +149,10 @@ public class JavaEditorWarmUpTask implements Runnable{
 
                 // Start of a code block that tries to force hotspot to compile
                 // the view hierarchy and related classes for faster performance
-                if (debug) {
-                    System.out.println("Kit instances initialized: " // NOI18N
-                        + (System.currentTimeMillis()-startTime));
-                    startTime = System.currentTimeMillis();
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Kit instances initialized: {0}", (System.currentTimeMillis() - startTime)); //NOI18N
                 }
+                startTime = System.currentTimeMillis();
 
                 
                 if (EditorRegistry.lastFocusedComponent() == null) { // no components opened yet
@@ -192,7 +187,7 @@ public class JavaEditorWarmUpTask implements Runnable{
                     // Fill the document with data.
                     // Number of lines is more important here than number of columns in a line
                     // Do one big insert instead of many small inserts
-                    StringBuffer sb = new StringBuffer();
+                    StringBuilder sb = new StringBuilder();
                     for (int i = ARTIFICIAL_DOCUMENT_LINE_COUNT; i > 0; i--) {
                         sb.append("int ident = 1; // comment\n"); // NOI18N
                     }
@@ -258,11 +253,10 @@ public class JavaEditorWarmUpTask implements Runnable{
 
                 // Candidates Annotations.getLineAnnotations()
 
-                if (debug) {
-                    System.out.println("View hierarchy initialized: " // NOI18N
-                        + (System.currentTimeMillis()-startTime));
-                    startTime = System.currentTimeMillis();
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "View hierarchy initialized: {0}", (System.currentTimeMillis() - startTime)); //NOI18N
                 }
+                startTime = System.currentTimeMillis();
                 status = STATUS_INIT;
                 break;
                 
