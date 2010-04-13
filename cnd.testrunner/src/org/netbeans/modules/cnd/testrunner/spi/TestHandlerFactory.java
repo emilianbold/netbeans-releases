@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.testrunner.ui;
+package org.netbeans.modules.cnd.testrunner.spi;
 
 import java.util.List;
 
