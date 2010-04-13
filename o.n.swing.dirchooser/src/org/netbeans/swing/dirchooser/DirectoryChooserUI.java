@@ -191,7 +191,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private FileCompletionPopup completionPopup;
     
-    private UpdateWorker updateWorker;
+    private final static UpdateWorker updateWorker = new UpdateWorker();
     
     private boolean useShellFolder = false;
     
@@ -1102,10 +1102,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     }
 
     private void initUpdateWorker () {
-        updateWorker = new UpdateWorker();
-        RP.post(updateWorker);
-        //fileChooser.addActionListener(updateWorker);
-        fileChooser.addPropertyChangeListener(DIALOG_IS_CLOSING, updateWorker); //NOI18N
+        updateWorker.attachFileChooser(this);
     }
     
     private void markStartTime () {
@@ -2432,7 +2429,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
     
-    private class DirectoryTreeModel extends DefaultTreeModel {
+    private static class DirectoryTreeModel extends DefaultTreeModel {
         
         public DirectoryTreeModel(TreeNode root) {
             super(root);
@@ -2462,75 +2459,53 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
 
-    private class UpdateWorker implements Runnable, PropertyChangeListener {
-        private String lastUpdatePathName = null;
-        private boolean workerShouldStop = false;
-        private LinkedBlockingDeque<File> updateQueue = new LinkedBlockingDeque<File>();
+    private static class UpdateWorker implements Runnable {
+        private volatile String lastUpdatePathName = null;
+        private DirectoryChooserUI ui;
+        private volatile File work;
 
         public void updateTree(final File file) {
-            try {
-                updateQueue.put(file);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            work = file;
+            RP.post(this);
+        }
+
+        public void attachFileChooser(final DirectoryChooserUI ui) {
+            this.ui = ui;
+            this.lastUpdatePathName = null;
         }
 
         @Override
         public void run() {
             assert !EventQueue.isDispatchThread();
-            while (true) {
-                File file = null;
-                try {
-                    file = updateQueue.take();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                    restoreCursor();
-                    continue;
-                }
-                if (workerShouldStop) {
-                    // restoreCursor maybe redundant here
-                    restoreCursor();
-                    return;
-                }
-                if (lastUpdatePathName != null && lastUpdatePathName.equals(file.getPath())) {
-                    restoreCursor();
-                    continue;
-                }
-                lastUpdatePathName = file.getPath();
-                markStartTime();
-                setCursor(fileChooser, Cursor.WAIT_CURSOR);
-                final DirectoryNode node = new DirectoryNode(file);
-                node.loadChildren(fileChooser, true);
-
-                // update UI in EQ thread
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        model = new DirectoryTreeModel(node);
-                        tree.setModel(model);
-                        tree.repaint();
-                        checkUpdate();
-                        restoreCursor();
-                    }
-                });
+            File file = work;
+            if (file == null) {
+                return;
             }
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            fileChooser.removePropertyChangeListener(DIALOG_IS_CLOSING, this);
-            workerShouldStop = true;
-            try {
-                updateQueue.put(new File("dummy")); //NOI18N
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+            if (lastUpdatePathName != null && lastUpdatePathName.equals(file.getPath())) {
+                restoreCursor();
+                return;
             }
+            lastUpdatePathName = file.getPath();
+            ui.markStartTime();
+            ui.setCursor(fileChooser, Cursor.WAIT_CURSOR);
+            final DirectoryNode node = new DirectoryNode(file);
+            node.loadChildren(fileChooser, true);
+
+            // update UI in EQ thread
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ui.model = new DirectoryTreeModel(node);
+                    tree.setModel(ui.model);
+                    tree.repaint();
+                    ui.checkUpdate();
+                    restoreCursor();
+                }
+            });
         }
 
         private void restoreCursor () {
-            if (updateQueue.isEmpty()) {
-                setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
-            }
+            ui.setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
         }
 
     } // end of UpdateWorker
