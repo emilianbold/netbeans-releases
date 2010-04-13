@@ -57,6 +57,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
+import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.filesystems.FileAttributeEvent;
@@ -66,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.CharSequences;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
 
@@ -163,18 +165,24 @@ public class Folder implements FileChangeListener, ChangeListener {
             return;
         }
         List<File> fileList = new ArrayList<File>();
+        List<CharSequence> otherFileList = new ArrayList<CharSequence>();
         for (int i = 0; i < files.length; i++) {
             if (!VisibilityQuery.getDefault().isVisible(files[i])) {
                 continue;
             }
-            if (files[i].isFile() && !CndFileVisibilityQuery.getDefault().isVisible(files[i])) {
-                continue;
-            }
-            if (files[i].isDirectory() && getConfigurationDescriptor().getFolderVisibilityQuery().isVisible(files[i])) {
-                continue;
+            if (files[i].isDirectory()) {
+                if (getConfigurationDescriptor().getFolderVisibilityQuery().isVisible(files[i])) {
+                    continue;
+                }
+            } else {
+                if (!CndFileVisibilityQuery.getDefault().isVisible(files[i])) {
+                    otherFileList.add(CharSequences.create(files[i].getName()));
+                    continue;
+                }
             }
             fileList.add(files[i]);
         }
+        MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), this, otherFileList);
         for (File file : fileList) {
             if (file.isDirectory()) {
                 if (findFolderByName(file.getName()) == null) {
@@ -185,7 +193,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
                 }
             } else {
-                String path = getRootPath() + '/' + file.getName();
+                String path = rootPath + '/' + file.getName();
                 if (path.startsWith("./")) { // NOI18N
                     path = path.substring(2);
                 }
@@ -721,6 +729,10 @@ public class Folder implements FileChangeListener, ChangeListener {
     private boolean removeFolder(Folder folder, boolean setModified) {
         boolean ret = false;
         if (folder != null) {
+            for (Folder f : folder.getAllFolders(false)){
+                MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), f, null);
+            }
+            MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), folder, null);
             if (folder.isDiskFolder()) {
                 folder.detachListener();
             }

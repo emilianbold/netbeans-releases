@@ -895,8 +895,9 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                 openedTasks.clear();
                 openedTasks = null;
             }
-
-            GlobalPathRegistry.getDefault().register(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+            if (MakeOptions.getInstance().isFullFileIndexer()) {
+                GlobalPathRegistry.getDefault().register(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+            }
             isOpenHookDone = true;
         }
     }
@@ -913,9 +914,16 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             projectDescriptorProvider.getConfigurationDescriptor().closed();
         }
         if (isOpenHookDone) {
-            GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+            if (MakeOptions.getInstance().isFullFileIndexer()) {
+                try {
+                   GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+                } catch (Throwable ex) {
+                    // do nothing because register depends on make options
+                }
+            }
             isOpenHookDone = false;
         }
+        MakeProjectFileProviderFactory.removeSearchBase(this);
     }
 
     public synchronized void save(){
