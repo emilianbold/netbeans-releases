@@ -157,19 +157,21 @@ public class CssGSFParser extends Parser {
                 int documentEndOffset = LexerUtils.findNearestMappableSourcePosition(snapshot, from + errorToken.image.length(), true, SEARCH_LIMIT);
 
                 //lets try to filter out some of the unwanted errors on generated virtual code
-                SimpleNode errorNode = SimpleNodeUtil.findDescendant(root, errorToken.offset);
-                assert errorNode != null;
-                SimpleNode parent = (SimpleNode)errorNode.jjtGetParent();
-                //[Bug 183631] generated inline style is marked as an error
-                //The code <h1 style="#{x.style}"></h1> is translated to
-                // SELECTOR { @@@; } which is unparseable
-                //
-                //check if the declaration node contains generated code (@@@)
-                //if so, just ignore the error
-                if(parent != null) {
-                    if(parent.kind() == CssParserTreeConstants.JJTDECLARATION) {
-                        if(containsGeneratedCode(parent.image())) {
-                            return null;
+                if(root != null) { //the root can become null in case of completely unparseable file
+                    SimpleNode errorNode = SimpleNodeUtil.findDescendant(root, errorToken.offset);
+                    assert errorNode != null;
+                    SimpleNode parent = (SimpleNode)errorNode.jjtGetParent();
+                    //[Bug 183631] generated inline style is marked as an error
+                    //The code <h1 style="#{x.style}"></h1> is translated to
+                    // SELECTOR { @@@; } which is unparseable
+                    //
+                    //check if the declaration node contains generated code (@@@)
+                    //if so, just ignore the error
+                    if(parent != null) {
+                        if(parent.kind() == CssParserTreeConstants.JJTDECLARATION) {
+                            if(containsGeneratedCode(parent.image())) {
+                                return null;
+                            }
                         }
                     }
                 }
