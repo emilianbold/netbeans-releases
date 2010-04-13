@@ -169,7 +169,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     private final MakeSources sources;
     private final MutableCP sourcepath;
-    private PropertyChangeListener indexerListener = new IndexerOptionsListener();
+    private final PropertyChangeListener indexerListener = new IndexerOptionsListener();
 
     public MakeProject(AntProjectHelper helper) throws IOException {
         LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
