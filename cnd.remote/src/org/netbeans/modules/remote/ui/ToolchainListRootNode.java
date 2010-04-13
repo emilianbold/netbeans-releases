@@ -154,7 +154,13 @@ public class ToolchainListRootNode extends AbstractNode {
 
         @Override
         public Action[] getActions(boolean context) {
-            return new Action[] { new ShowToolchainsAction(env, compilerSet) };
+            if (compilerSet.getName().equals(CompilerSet.None)) {
+                return new Action[]{new ShowToolchainsAction(env, compilerSet)};
+            } else {
+                return new Action[]{
+                        new ShowToolchainsAction(env, compilerSet),
+                        new SetDefaultToolchainAction(env, compilerSet)};
+            }
         }
     }
 
