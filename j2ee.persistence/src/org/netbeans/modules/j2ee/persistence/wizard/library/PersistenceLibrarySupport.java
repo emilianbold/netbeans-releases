@@ -299,8 +299,10 @@ public class PersistenceLibrarySupport {
      *
      * add jdbc driver jdbc driver
      * called in separate rp request
+     * method is DISABLED and do nothing for now
      */
     public static void addDriver(final Project project, final JDBCDriver driver) {
+        if(true)return;
         RequestProcessor.getDefault().post(
                 new Runnable() {
 
