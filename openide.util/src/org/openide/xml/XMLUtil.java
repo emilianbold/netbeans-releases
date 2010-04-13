@@ -398,20 +398,6 @@ public final class XMLUtil extends Object {
             throw new NullPointerException("You must set an encoding; use \"UTF-8\" unless you have a good reason not to!"); // NOI18N
         }
         Document doc2 = normalize(doc);
-        // XXX the following DOM 3 LS implementation of the rest of this method works fine on JDK 6 but pretty-printing is broken on JDK 5:
-        /*
-        DOMImplementationLS ls = (DOMImplementationLS) doc.getImplementation().getFeature("LS", "3.0"); // NOI18N
-        assert ls != null : "No DOM 3 LS supported in " + doc.getClass().getName();
-        LSOutput output = ls.createLSOutput();
-        output.setEncoding(enc);
-        output.setByteStream(out);
-        LSSerializer ser = ls.createLSSerializer();
-        String fpp = "format-pretty-print"; // NOI18N
-        if (ser.getDomConfig().canSetParameter(fpp, true)) {
-            ser.getDomConfig().setParameter(fpp, true);
-        }
-        ser.write(doc2, output);
-         */
         try {
             Transformer t = TransformerFactory.newInstance().newTransformer(
                     new StreamSource(new StringReader(IDENTITY_XSLT_WITH_INDENT)));
@@ -443,7 +429,7 @@ public final class XMLUtil extends Object {
             Result result = new StreamResult(out);
             t.transform(source, result);
         } catch (Exception e) {
-            throw (IOException) new IOException(e.toString()).initCause(e);
+            throw new IOException(e);
         }
     }
 
@@ -489,12 +475,12 @@ public final class XMLUtil extends Object {
         Validator v = schema.newValidator();
         final SAXException[] error = {null};
         v.setErrorHandler(new ErrorHandler() {
-            public void warning(SAXParseException x) throws SAXException {}
-            public void error(SAXParseException x) throws SAXException {
+            public @Override void warning(SAXParseException x) throws SAXException {}
+            public @Override void error(SAXParseException x) throws SAXException {
                 // Just rethrowing it is bad because it will also print it to stderr.
                 error[0] = x;
             }
-            public void fatalError(SAXParseException x) throws SAXException {
+            public @Override void fatalError(SAXParseException x) throws SAXException {
                 error[0] = x;
             }
         });
@@ -562,7 +548,7 @@ public final class XMLUtil extends Object {
             return val;
         }
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < val.length(); i++) {
             char ch = val.charAt(i);
@@ -647,7 +633,7 @@ public final class XMLUtil extends Object {
      * @since 1.29
      */
     public static String toHex(byte[] val, int start, int len) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < len; i++) {
             byte b = val[start + i];
@@ -796,7 +782,7 @@ public final class XMLUtil extends Object {
         try {
             builder = factory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
-            throw (IOException) new IOException("Cannot create parser satisfying configuration parameters: " + e).initCause(e); //NOI18N
+            throw new IOException("Cannot create parser satisfying configuration parameters: " + e, e); //NOI18N
         }
 
         DocumentType doctype = null;
@@ -828,7 +814,7 @@ public final class XMLUtil extends Object {
                     doc.appendChild(doc.importNode(node, true));
                 } catch (DOMException x) {
                     // Thrown in NB-Core-Build #2896 & 2898 inside GeneratedFilesHelper.applyBuildExtensions
-                    throw (IOException) new IOException("Could not import or append " + node + " of " + node.getClass()).initCause(x);
+                    throw new IOException("Could not import or append " + node + " of " + node.getClass(), x);
                 }
             }
         }
@@ -862,12 +848,12 @@ public final class XMLUtil extends Object {
      * @param el element to be added
      * @param order order of the elements which must be followed
      * @throws IllegalArgumentException if the order cannot be followed, either
-     * a missing existing or new child element is not specifed in order
+     * a missing existing or new child element is not specified in order
      *
      * @since 8.4
      */
     public static void appendChildElement(Element parent, Element el, String[] order) throws IllegalArgumentException {
-        List l = Arrays.asList(order);
+        List<String> l = Arrays.asList(order);
         int index = l.indexOf(el.getLocalName());
 
         // ensure the new new element is contained in the 'order'
@@ -1072,17 +1058,17 @@ public final class XMLUtil extends Object {
             Exceptions.attachMessage(exception, "Occurred at: " + exception.getSystemId() + ":" + exception.getLineNumber()); // NOI18N
         }
 
-        public void fatalError(SAXParseException exception) throws SAXException {
+        public @Override void fatalError(SAXParseException exception) throws SAXException {
             annotate(exception);
             throw exception;
         }
 
-        public void error(SAXParseException exception) throws SAXException {
+        public @Override void error(SAXParseException exception) throws SAXException {
             annotate(exception);
             throw exception;
         }
 
-        public void warning(SAXParseException exception) throws SAXException {
+        public @Override void warning(SAXParseException exception) throws SAXException {
             annotate(exception);
             Logger.getLogger(XMLUtil.class.getName()).log(Level.INFO, null, exception);
         }
