@@ -282,7 +282,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
             try {
                 stopped = true;
                 timer.cancel();
-                if ("cancel".equals(e.getActionCommand())) {    // NOI18N
+                if ("cancel".equals(e.getActionCommand()) || samples < 1) {    // NOI18N
                     return;
                 }
                 double average = sum / samples;
