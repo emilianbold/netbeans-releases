@@ -83,6 +83,7 @@ public class HtmlXmlTokenListProvider implements TokenListProvider {
                 for(LanguagePath path : paths) {
                     if(path.innerLanguage() == HTMLTokenId.language()) {
                         ret.set(new HtmlTokenList(bdoc));
+                        break;
                     }
                 }
             }
