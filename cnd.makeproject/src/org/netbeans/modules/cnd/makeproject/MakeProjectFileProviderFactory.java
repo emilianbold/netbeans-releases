@@ -58,6 +58,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
@@ -196,7 +197,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
             FileObject projectDirectoryFO = project.getProjectDirectory();
             // track configuration && generated files
             if (projectDirectoryFO != null) {
-                FileObject nbFO = projectDirectoryFO.getFileObject("nbproject"); // NOI18N
+                FileObject nbFO = projectDirectoryFO.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
                 computeFOs(nbFO, type, what, pattern, result);
             }
             for (Item item : descriptor.getExternalFileItemsAsArray()) {
@@ -220,6 +221,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                 synchronized (projectSearchBase) {
                     projectSearchBase = new HashMap<Folder, List<CharSequence>>(projectSearchBase);
                 }
+                String baseDir = descriptor.getBaseDir();
                 for (Map.Entry<Folder, List<CharSequence>> entry : projectSearchBase.entrySet()) {
                     if (cancel.get()) {
                         return;
@@ -232,7 +234,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                                 return;
                             }
                             if (match(name.toString(), type, what, pattern)) {
-                                result.addFileDescriptor(new OtherFD(name.toString(), project, descriptor, folder));
+                                result.addFileDescriptor(new OtherFD(name.toString(), project, baseDir, folder));
                             }
                         }
                     }
@@ -355,13 +357,12 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         private final String name;
         private final Project project;
         private final Folder folder;
-        private final MakeConfigurationDescriptor descriptor;
-
-        public OtherFD(String name, Project project, MakeConfigurationDescriptor descriptor, Folder folder) {
+        private final String baseDir;
+        public OtherFD(String name, Project project, String baseDir, Folder folder) {
             this.name = name;
             this.project = project;
             this.folder = folder;
-            this.descriptor = descriptor;
+            this.baseDir = baseDir;
         }
 
 
@@ -424,7 +425,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
         @Override
         public FileObject getFileObject() {
-            String AbsRootPath = CndPathUtilitities.toAbsolutePath(descriptor.getBaseDir(), folder.getRootPath());
+            String AbsRootPath = CndPathUtilitities.toAbsolutePath(baseDir, folder.getRootPath());
             File file = new File(AbsRootPath, name);
             return FileUtil.toFileObject(file);
         }
