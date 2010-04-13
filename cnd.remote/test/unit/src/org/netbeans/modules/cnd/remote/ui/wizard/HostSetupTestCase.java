@@ -44,7 +44,7 @@ import java.util.List;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -55,9 +55,9 @@ import org.netbeans.modules.nativeexecution.test.RcFile;
  * Tests for setting up a remote host
  * @author vk155633
  */
-public class HostSetupTest extends RemoteTestBase {
+public class HostSetupTestCase extends RemoteTestBase {
 
-    public HostSetupTest(String testName, ExecutionEnvironment execEnv) {
+    public HostSetupTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
@@ -103,6 +103,6 @@ public class HostSetupTest extends RemoteTestBase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTestSuite(HostSetupTest.class);
+        return new RemoteDevelopmentTest(HostSetupTestCase.class);
     }
 }

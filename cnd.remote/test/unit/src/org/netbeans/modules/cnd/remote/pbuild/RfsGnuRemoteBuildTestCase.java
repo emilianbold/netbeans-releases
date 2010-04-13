@@ -39,35 +39,57 @@
 
 package org.netbeans.modules.cnd.remote.pbuild;
 
+import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.spi.project.ActionProvider;
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RemoteBuildSamplesTest extends RemoteBuildTestBase {
+public class RfsGnuRemoteBuildTestCase extends RemoteBuildTestBase {
 
-    public RemoteBuildSamplesTest(String testName) {
+    public RfsGnuRemoteBuildTestCase(String testName) {
         super(testName);
     }
 
-    public RemoteBuildSamplesTest(String testName, ExecutionEnvironment execEnv) {
+    public RfsGnuRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
-    @ForAllEnvironments
-    public void testBuildSample_Rfs_Gnu_Arguments_Once() throws Exception {        
-        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_01", 1);
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        setupHost("rfs");
     }
 
     @ForAllEnvironments
-    public void testBuildSample_Rfs_Gnu_Arguments_Multy() throws Exception {
-        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_02", 3, getSampleBuildTimeout(), getSampleBuildTimeout()/3);
+    public void testBuildRfsSampleArgsGNU_Single() throws Exception {
+        setDefaultCompilerSet("GNU");
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_single");
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
+    }
+
+    @ForAllEnvironments
+    public void testBuildRfsSampleArgsGNU_Multy() throws Exception {
+        setDefaultCompilerSet("GNU");
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_multy");
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        System.err.printf("BUILDING FIRST TIME\n");
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
+        System.err.printf("BUILDING SECOND TIME\n");
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
+        System.err.printf("BUILDING THIRD TIME\n");
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTestSuite(RemoteBuildSamplesTest.class);
+        return new RemoteDevelopmentTest(RfsGnuRemoteBuildTestCase.class);
     }
 }

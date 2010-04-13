@@ -43,7 +43,7 @@ import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.cnd.remote.sync.RfsSyncFactory;
@@ -53,8 +53,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
- *
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
 public class IncludeMappingsTestCase extends RemoteTestBase {
 
@@ -119,7 +118,7 @@ public class IncludeMappingsTestCase extends RemoteTestBase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTestSuite(IncludeMappingsTestCase.class);
+        return new RemoteDevelopmentTest(IncludeMappingsTestCase.class);
     }
 
 }

@@ -44,7 +44,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collections;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -60,8 +60,23 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
     abstract BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, 
             PrintWriter out, PrintWriter err, File privProjectStorageDir);
 
+    protected abstract String getTestNamePostfix();
+
     public AbstractSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
+    }
+
+    @Override
+    public String getName() {
+        String name = super.getName();
+        int pos = name.indexOf('[');
+        if (pos > 1) {
+            if (name.charAt(pos - 1) == ' ') {
+                pos--;
+            }
+            name = name.substring(0, pos) + "_" + getTestNamePostfix() + name.substring(pos);
+        }
+        return name;
     }
 
     @Override
@@ -147,6 +162,6 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTestSuite(AbstractSyncWorkerTestCase.class);
+        return new RemoteDevelopmentTest(AbstractSyncWorkerTestCase.class);
     }
 }
