@@ -113,6 +113,8 @@ public class JavaEditorWarmUpTask implements Runnable {
     private static final int STATUS_SWITCH_DOCUMENTS = 3;
     private static final int STATUS_TRAVERSE_VIEWS = 4;
     private static final int STATUS_RENDER_FRAME = 5;
+    private static final int STATUS_FINISHED = 6;
+    
     private static final RequestProcessor RP = new RequestProcessor(JavaEditorWarmUpTask.class.getName(), 1, false, false);
     
     private int status = STATUS_INIT;
@@ -257,9 +259,21 @@ public class JavaEditorWarmUpTask implements Runnable {
                     LOG.log(Level.FINE, "View hierarchy initialized: {0}", (System.currentTimeMillis() - startTime)); //NOI18N
                 }
                 startTime = System.currentTimeMillis();
-                status = STATUS_INIT;
+                status = STATUS_FINISHED;
+                RP.post(this);
                 break;
-                
+
+            case STATUS_FINISHED:
+                this.pane = null;
+                this.frame = null;
+                this.emptyDoc = null;
+                this.longDoc = null;
+                this.bGraphics = null;
+                this.javaKit = null;
+                this.startTime = 0;
+                this.status = STATUS_INIT;
+                break;
+
             default:
                 throw new IllegalStateException();
         }
