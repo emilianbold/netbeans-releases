@@ -82,6 +82,8 @@ class SftpSupport {
     private static Map<ExecutionEnvironment, SftpSupport> instances = new HashMap<ExecutionEnvironment, SftpSupport>();
     private static AtomicInteger uploadCount = new AtomicInteger(0);
 
+    private static final int PUT_RETRY_COUNT = Integer.getInteger("sftp.put.retries", 1);
+
     /** for test purposes only */
     /*package-local*/ static int getUploadCount() {
         return uploadCount.get();
@@ -118,7 +120,11 @@ class SftpSupport {
     // Instance stuff
     //
     private final ExecutionEnvironment execEnv;
-    private final RequestProcessor requestProcessor;
+
+    //private final RequestProcessor requestProcessor;
+    // Trying to work around #184068 -  Instable remote unit tests failure
+    private static final RequestProcessor requestProcessor = new RequestProcessor("SFTP request processor"); // NOI18N;
+
     // its's ok to hav a single one since we have only single-threaded request processor
     private ChannelSftp channel;
     private final Object channelLock = new Object();
@@ -126,7 +132,8 @@ class SftpSupport {
     private SftpSupport(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
         // we've got some sftp issues => only 1 task at a moment
-        requestProcessor = new RequestProcessor("SFTP request processor for " + execEnv, 1); // NOI18N
+        // make it statis: workaround for #184068 -  Instable remote unit tests failure
+        // requestProcessor = new RequestProcessor("SFTP request processor for " + execEnv, 1); // NOI18N
     }
 
     private ChannelSftp getChannel() throws IOException, CancellationException, JSchException, ExecutionException {
@@ -253,9 +260,40 @@ class SftpSupport {
                 }
             }
             ChannelSftp cftp = getChannel();
-            cftp.put(srcFileName, dstFileName);
+            put(cftp);
             cftp.chmod(mask, dstFileName);
             uploadCount.incrementAndGet();
+        }
+
+        private void put(ChannelSftp cftp) throws SftpException {
+            // the below is just the replacement for one code line:
+            // cftp.put(srcFileName, dstFileName);
+            // (connected with #184068 -  Instable remote unit tests failure)
+            int attempt = 0;
+            while (true) {
+                attempt++;
+                try {
+                    if (attempt > 1) {
+                        LOG.log(Level.FINE, "Sleeping before attempt {0} to copy {1} to {2}:{3} :\n",
+                                new Object[] {attempt, srcFileName, execEnv, dstFileName});
+                        //try { Thread.sleep(5); } catch (InterruptedException ex) { Exceptions.printStackTrace(ex); }
+                    }
+                    cftp.put(srcFileName, dstFileName);
+                    if (attempt > 1) {
+                        LOG.log(Level.FINE, "Success on attempt {0} to copy {1} to {2}:{3} :\n",
+                                new Object[] {attempt, srcFileName, execEnv, dstFileName});
+                    }
+                    return;
+                } catch (SftpException e) {
+                    if (attempt > PUT_RETRY_COUNT) {
+                        throw e;
+                    } else {
+                        LOG.log(Level.FINE, "Error on attempt {0} to copy {1} to {2}:{3} :\n",
+                                new Object[] {attempt, srcFileName, execEnv, dstFileName});
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
 
         @Override

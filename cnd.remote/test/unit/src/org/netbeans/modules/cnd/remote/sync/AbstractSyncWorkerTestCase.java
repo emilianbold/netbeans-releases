@@ -126,7 +126,8 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
         System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst);
         File privProjectStorageDir = createTempFile(src.getName() + "-nbproject-private-", "", true);
         BaseSyncWorker worker = createWorker(src, execEnv, out, err, privProjectStorageDir);
-        worker.startup(Collections.<String, String>emptyMap());
+        boolean ok = worker.startup(Collections.<String, String>emptyMap());
+        assertTrue(worker.getClass().getSimpleName() + ".startup failed", ok);
         worker.shutdown();
         CommonTasksSupport.rmDir(execEnv, dst, true, err).get();
         removeDirectory(privProjectStorageDir);

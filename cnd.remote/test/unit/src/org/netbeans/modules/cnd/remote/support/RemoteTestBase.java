@@ -104,6 +104,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     static {
         System.setProperty("jsch.connection.timeout", "30000");
         System.setProperty("socket.connection.timeout", "30000");
+        System.setProperty("sftp.put.retries", "5");
     }
 
     static {
