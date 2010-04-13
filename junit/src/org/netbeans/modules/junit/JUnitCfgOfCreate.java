@@ -152,15 +152,21 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
     private static final int MSG_TYPE_CLASSNAME_INVALID = 1;
     /** layer index for a message about non-default class name */
     private static final int MSG_TYPE_CLASSNAME_NOT_DEFAULT = 2;
+    /** layer index for a message about modified files */
+    private static final int MSG_TYPE_MODIFIED_FILES = 3;
     /** */
-    private MessageStack msgStack = new MessageStack(3);
+    private MessageStack msgStack = new MessageStack(4);
 
     /**
      * Creates a JUnit configuration panel.
      *
-     * @param  nodes  nodes selected when the Create Tests action was invoked
+     * @param nodes  nodes selected when the Create Tests action was invoked
+     * @param isShowMsgFilesWillBeSaved if {@code true} then a warning message
+     *        like "Warning: All modified files will be saved." will be
+     *        displayed on the panel, otherwise (i.e. if {@code false}) then
+     *        the message won't be displayed.
      */
-    JUnitCfgOfCreate(Node[] nodes) {
+    JUnitCfgOfCreate(Node[] nodes, boolean isShowMsgFilesWillBeSaved) {
         assert (nodes != null) && (nodes.length != 0);
         
         this.nodes = nodes;
@@ -169,6 +175,10 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         initBundle();
         try {
             initComponents();
+            if(isShowMsgFilesWillBeSaved) {
+                String msg = bundle.getString("MSG_MODIFIED_FILES"); // NOI18N
+                setMessage(msg, MSG_TYPE_MODIFIED_FILES);
+            }
             setBorder(BorderFactory.createEmptyBorder(12, 12, 0, 11));
             addAccessibleDescriptions();
             initializeCheckBoxStates();
