@@ -292,6 +292,10 @@ public class JpaControllerUtil {
     public static String getPropNameFromMethod(String name) {
         //getABcd should be converted to ABcd, getFooBar should become fooBar
         //getA1 is "a1", getA_ is a_, getAB is AB
+        //in case method doesn't start with "get" return name with brackets
+        if (!name.startsWith("get")) {  //NOI18N
+            return name+"()";   //NOI18n
+        }
         boolean makeFirstLower = name.length() < 5 || (!Character.isUpperCase(name.charAt(4)));
         return makeFirstLower ? name.substring(3,4).toLowerCase() + name.substring(4) : name.substring(3);
     }
