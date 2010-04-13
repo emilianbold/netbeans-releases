@@ -64,7 +64,7 @@ import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring;
-import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring.SelectorType;
+import org.netbeans.modules.html.editor.refactoring.api.SelectorType;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;

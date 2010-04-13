@@ -990,7 +990,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         boolean notifyMod;
         if (notifyModifyStatus == null) { // not in atomic lock
             notifyModifyStatus = new NotifyModifyStatus (this);
-            STATUS.set (notifyModifyStatus);
+            setThreadStatusVar(notifyModifyStatus);
             notifyModify(notifyModifyStatus);
             notifyMod = true;
         } else {
@@ -999,7 +999,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
         if (notifyModifyStatus.isModificationVetoed()) {
             if (notifyMod) {
-                STATUS.set (null);
+                setThreadStatusVar(null);
             }
             BadLocationException ble = new BadLocationException(vetoExceptionText, offset);
             PropertyVetoException veto = notifyModifyStatus.veto;
@@ -1024,10 +1024,14 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      */
     void notifyModifyCheckEnd(boolean modFinished) {
         NotifyModifyStatus notifyModifyStatus = (NotifyModifyStatus)STATUS.get();
-        STATUS.set (null);
+        setThreadStatusVar(null);
         if (!modFinished) {
             notifyUnmodify(notifyModifyStatus);
         }
+    }
+
+    private void setThreadStatusVar(Object value) {
+        STATUS.set(value);
     }
 
     /** This method is called automatically before the document
@@ -1731,7 +1735,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             if (notifyModifyStatus == null) {
                 // Notify that the modification will be done prior locking
                 notifyModifyStatus = new NotifyModifyStatus (this);
-                STATUS.set (notifyModifyStatus);
+                setThreadStatusVar(notifyModifyStatus);
                 //assert atomicDepth == 0 : "New status only on depth 0, but: " + atomicDepth; // NOI18N
             } else {
                 //assert atomicDepth > 0 : "When there is a status: " + notifyModifyStatus+ " there needs to be a lot as well: " + atomicDepth; // NOI18N
@@ -1767,6 +1771,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     }
     
     final void atomicUnlockImpl () {
+        atomicUnlockImpl(true);
+    }
+
+    final void atomicUnlockImpl (boolean doNotifyModify) {
         boolean modsDone = false;
         boolean lastAtomic = false;
         synchronized (this) {
@@ -1800,18 +1808,20 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             }
         }
 
-        // Notify unmodification if there were document modifications
-        // inside the atomic section
-        // or in case when in undo/redo because in such case
-        // no insertString() or remove() would be done (just undoing
-        // physical changes in the buffer and firing document listeners)
-        if (modsDone) {
-            NotifyModifyStatus notifyModifyStatus = (NotifyModifyStatus)STATUS.get();
-            notifyModify(notifyModifyStatus);
-        }
+        if (doNotifyModify) {
+            // Notify unmodification if there were document modifications
+            // inside the atomic section
+            // or in case when in undo/redo because in such case
+            // no insertString() or remove() would be done (just undoing
+            // physical changes in the buffer and firing document listeners)
+            if (modsDone) {
+                NotifyModifyStatus notifyModifyStatus = (NotifyModifyStatus) STATUS.get();
+                notifyModify(notifyModifyStatus);
+            }
 
-        if (lastAtomic) {
-            STATUS.set (null);
+            if (lastAtomic) {
+                setThreadStatusVar(null);
+            }
         }
     }
 

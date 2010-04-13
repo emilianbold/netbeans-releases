@@ -674,7 +674,8 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                     assert files != null;
                     clearEvents();
                     T newValue = annotate(initialValue, files);
-                    boolean fireEvent = setValue(refreshCandidate, newValue);
+                    files = new HashSet<FileObject>(files);
+                    boolean fireEvent = setValue(new ItemKey<T, KEY>(files, refreshCandidate.keyPart, initialValue), newValue);
                     if (fireEvent) {
                         Set<File> filesToRefresh = new HashSet<File>(files.size());
                         for (FileObject fo : files) {

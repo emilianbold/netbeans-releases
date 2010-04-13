@@ -79,6 +79,9 @@ public final class PhpEditorExtender {
             return false;
         }
         FileObject opened = NbEditorUtilities.getFileObject(component.getDocument());
+        if (opened == null) {
+            return false;
+        }
         return opened.equals(fo);
     }
 
