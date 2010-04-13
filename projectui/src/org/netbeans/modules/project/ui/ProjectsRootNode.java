@@ -65,7 +65,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -241,6 +240,8 @@ public class ProjectsRootNode extends AbstractNode {
     // XXX Needs to listen to project rename
     // However project rename is currently disabled so it is not a big deal
     static class ProjectChildren extends Children.Keys<ProjectChildren.Pair> implements ChangeListener, PropertyChangeListener {
+
+        private static final RequestProcessor RP = new RequestProcessor(ProjectChildren.class);
         
         private java.util.Map <Sources,Reference<Project>> sources2projects = new WeakHashMap<Sources,Reference<Project>>();
         
@@ -370,8 +371,8 @@ public class ProjectsRootNode extends AbstractNode {
             }
             
             // Fix for 50259, callers sometimes hold locks
-            SwingUtilities.invokeLater( new Runnable() {
-                public void run() {
+            RP.post(new Runnable() {
+                public @Override void run() {
                     refresh(project);
                 }
             } );
