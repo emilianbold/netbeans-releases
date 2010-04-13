@@ -531,6 +531,28 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
             if (children.size() == 0) {
                 return "children.size()==0";
             }
+            // Check children (visual offsets)
+            if (children.rawOffsetUpdate()) {
+                int viewCount = getViewCount();
+                double lastVisualOffset = 0d;
+                for (int i = 0; i < viewCount; i++) {
+                    EditorView child = (EditorView) getView(i);
+                    double childVisualOffset = getViewVisualOffset(child);
+                    float span = child.getPreferredSpan(getMajorAxis());
+                    String err = null;
+                    if (childVisualOffset != lastVisualOffset) {
+                        err = "childVisualOffset=" + childVisualOffset + ", lastVisualOffset=" + lastVisualOffset; // NOI18N
+                    } else if (childVisualOffset < 0) {
+                        err = "childVisualOffset=" + childVisualOffset + " < 0"; // NOI18N
+                    } else if (span < 0) {
+                        err = "span=" + span + " < 0";
+                    }
+                    if (err != null) {
+                        return getDumpId() + "[" + i + "]=" + child.getDumpId() + ": " + err + '\n';
+                    }
+                    lastVisualOffset = childVisualOffset + span;
+                }
+            }
         } else {
             return "children==null";
         }

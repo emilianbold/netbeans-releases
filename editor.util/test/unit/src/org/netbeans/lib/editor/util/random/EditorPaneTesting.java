@@ -175,7 +175,8 @@ public class EditorPaneTesting {
     {
         if (logOpEnabled && context.isLogOp()) {
             StringBuilder sb = context.logOpBuilder();
-            sb.append(" runAction(").append(actionName).append(")\n");
+            sb.append(" runAction(").append(actionName).append("), ");
+            debugCaret(sb, pane).append("\n");
             context.logOp(sb);
         }
         if (evt == null) {
@@ -189,6 +190,13 @@ public class EditorPaneTesting {
                 action.actionPerformed(validEvt);
             }
         });
+    }
+
+    private static StringBuilder debugCaret(StringBuilder sb, JEditorPane pane) {
+        sb.append("caret[").append(pane.getCaretPosition()).append(',');
+        sb.append(pane.getSelectionStart()).append(',');
+        sb.append(pane.getSelectionEnd()).append(']');
+        return sb;
     }
 
     private static Action getAction(JEditorPane pane, String actionName) {
@@ -207,45 +215,62 @@ public class EditorPaneTesting {
      * @throws Exception
      */
     public static void moveOrSelect(Context context, int direction, boolean select) throws Exception {
+        JEditorPane pane = context.getInstance(JEditorPane.class);
         String actionName;
         String directionName;
+        String debugDirection;
         switch (direction) {
             case SwingConstants.WEST:
                 actionName = select ? DefaultEditorKit.selectionBackwardAction : DefaultEditorKit.backwardAction;
                 directionName = "left";
+                debugDirection = "SwingConstants.WEST";
                 break;
             case SwingConstants.EAST:
                 actionName = select ? DefaultEditorKit.selectionForwardAction : DefaultEditorKit.forwardAction;
                 directionName = "right";
+                debugDirection = "SwingConstants.EAST";
                 break;
             case SwingConstants.NORTH:
                 actionName = select ? DefaultEditorKit.selectionUpAction : DefaultEditorKit.upAction;
                 directionName = "up";
+                debugDirection = "SwingConstants.NORTH";
                 break;
             case SwingConstants.SOUTH:
                 actionName = select ? DefaultEditorKit.selectionDownAction : DefaultEditorKit.downAction;
                 directionName = "down";
+                debugDirection = "SwingConstants.SOUTH";
                 break;
             default:
                 throw new IllegalStateException("Invalid direction=" + direction); // NOI18N
         }
+        StringBuilder sb = null;
         if (context.isLogOp()) {
-            StringBuilder sb = context.logOpBuilder();
+            sb = context.logOpBuilder();
             sb.append(select ? "Selection" : "Cursor").append(' ').append(directionName).append("\n");
+            debugCaret(sb, pane).append(" => ");
+            sb.append("moveOrSelect(context, ").append(debugDirection).append(", ").append(select).append(")");
+            sb.append(" => "); // Fill in after action gets performed
+        }
+        performAction(context, pane, actionName, null, false);
+        if (context.isLogOp()) {
+            debugCaret(sb, pane);
             context.logOp(sb);
         }
-        JEditorPane pane = context.getInstance(JEditorPane.class);
-        performAction(context, pane, actionName, null, false);
     }
 
-    public static void setCaretOffset(Context context, int offset) throws Exception {
-        JEditorPane pane = context.getInstance(JEditorPane.class);
+    public static void setCaretOffset(Context context, final int offset) throws Exception {
+        final JEditorPane pane = context.getInstance(JEditorPane.class);
         if (context.isLogOp()) {
             StringBuilder sb = context.logOpBuilder();
             sb.append("SET_CARET_OFFSET: ").append(pane.getCaretPosition()).append(" => ").append(offset).append("\n");
             context.logOp(sb);
         }
-        pane.setCaretPosition(offset);
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                pane.setCaretPosition(offset);
+            }
+        });
     }
 
     public static void typeChar(Context context, char ch) throws Exception {
@@ -255,13 +280,18 @@ public class EditorPaneTesting {
         } else if (ch == '\t') { // Insert TAB
             performAction(context, pane, DefaultEditorKit.insertTabAction, null, true);
         } else { // default key typed action
+            StringBuilder sb = null;
             if (context.isLogOp()) {
-                StringBuilder sb = context.logOpBuilder();
-                sb.append(" typeChar('").append(CharSequenceUtilities.debugChar(ch)).append("')\n");
-                context.logOp(sb);
+                sb = context.logOpBuilder();
+                sb.append("typeChar(context, '").append(CharSequenceUtilities.debugChar(ch)).append("')\n");
+                debugCaret(sb, pane).append(" => ");
             }
             performAction(context, pane, DefaultEditorKit.defaultKeyTypedAction,
                     new ActionEvent(pane, 0, String.valueOf(ch)), false);
+            if (context.isLogOp()) {
+                debugCaret(sb, pane).append("\n");
+                context.logOp(sb);
+            }
         }
     }
 

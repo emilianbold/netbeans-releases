@@ -124,8 +124,24 @@ public final class MakeProjectType implements AntBasedProjectType {
      * System fs path for other modules to add make project specific actions
      * @return A path
      */
-    public String actionsPath() {
+    public String projectActionsPath() {
         return projectLayerPath() + "/Actions"; //NOI18N
+    }
+
+    /**
+     * System fs path for other modules to add make project folders' specific actions
+     * @return A path
+     */
+    public String folderActionsPath() {
+        return projectLayerPath() + "/ActionsFolder"; //NOI18N
+    }
+
+    /**
+     * System fs path for other modules to add make project external folders' specific actions
+     * @return A path
+     */
+    public String extFolderActionsPath() {
+        return projectLayerPath() + "/ActionsExtFolder"; //NOI18N
     }
 
     private String projectLayerPath() {

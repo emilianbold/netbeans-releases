@@ -58,6 +58,7 @@ import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
@@ -102,13 +103,11 @@ public class ZendEditorExtender extends EditorExtender {
         return null;
     }
 
-    // XXX
     private PhpClass getPhpClass(PhpBaseElement element) {
         String fqn = element.getFullyQualifiedName();
         if (fqn == null) {
             return null;
         }
-        // XXX
         return new PhpClass(element.getName(), fqn);
     }
 
@@ -185,12 +184,12 @@ public class ZendEditorExtender extends EditorExtender {
                                 if ("$this".equals(CodeUtils.extractVariableName(var))) { // NOI18N
                                     String fqn = null;
                                     for (TypeScope typeScope : ModelUtils.resolveType(actionParseResult.getModel(), assignment)) {
-                                        // XXX
                                         fqn = typeScope.getFullyQualifiedName().toString();
                                         break;
                                     }
+                                    Variable field = node.getField();
                                     synchronized (fields) {
-                                        fields.add(new PhpVariable("$" + CodeUtils.extractVariableName(node.getField()), fqn, action)); // NOI18N
+                                        fields.add(new PhpVariable("$" + CodeUtils.extractVariableName(field), fqn, action, ASTNodeInfo.toOffsetRangeVar(field).getStart())); // NOI18N
                                     }
                                 }
                             }

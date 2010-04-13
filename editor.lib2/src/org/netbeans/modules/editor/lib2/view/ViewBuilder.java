@@ -130,6 +130,7 @@ final class ViewBuilder {
     {
         Document doc = documentView.getDocument();
         docTextLength = doc.getLength() + 1;
+        assert (startOffset >= 0) : "startOffset=" + startOffset + " < 0"; // NOI18N
         if (paragraphView != null) {
             fReplace = new ViewReplace<ParagraphView, EditorView>(
                     paragraphView, paragraphView.getViewIndex(startOffset));
@@ -144,11 +145,15 @@ final class ViewBuilder {
         int endAffectedOffset = Math.max(endModOffset, endOffset);
         if (fReplace != null) {
             int paragraphViewStartOffset = paragraphView.getStartOffset();
-            assert (paragraphViewStartOffset <= startOffset);
+            assert (paragraphViewStartOffset <= startOffset) : "paragraphViewStartOffset=" + // NOI18N
+                    paragraphViewStartOffset + " > startOffset=" + startOffset; // NOI18N
             EditorView childView = fReplace.childViewAtIndex();
             // Round start offset to child's start offset
-            startOffset = childView.getStartOffset();
-            assert (paragraphViewStartOffset <= startOffset);
+            int childStartOffset = childView.getStartOffset();
+            // Re-check updated startOffset
+            assert (childStartOffset <= startOffset) : "childStartOffset=" + childStartOffset + // NOI18N
+                    " > startOffset=" + startOffset; // NOI18N
+            startOffset = childStartOffset;
             // Get paragraph end offset in original offset coordinates
             paragraphViewEndOffset = paragraphViewStartOffset + paragraphView.getLength();
             if (endAffectedOffset < paragraphViewEndOffset) {
@@ -158,6 +163,11 @@ final class ViewBuilder {
                     matchOffset += childView.getLength();
                     fReplace.removeCount++;
                     int index = fReplace.removeEndIndex(); // Should be within PV's bounds
+                    if (index == paragraphView.getViewCount()) { // When endAffectedOffset inside last child view
+                        assert (matchOffset == paragraphViewEndOffset) : "matchOffset=" + // NOI18N
+                                matchOffset + " != paragraphViewEndOffset=" + paragraphViewEndOffset; // NOI18N
+                        break;
+                    }
                     childView = paragraphView.getEditorView(index);
                 }
                 assert (matchOffset >= endAffectedOffset);
@@ -273,7 +283,10 @@ final class ViewBuilder {
         }
 
         if (LOG.isLoggable(Level.FINE)) {
-            if (LOG.isLoggable(Level.FINER)) {
+            LOG.fine("ViewBuilder-creationEndOffset=" + lastCreatedViewEndOffset + "\n");
+        }
+        if (LOG.isLoggable(Level.FINER)) {
+            if (LOG.isLoggable(Level.FINEST)) {
                 // Log original docView state
                 // Use separate string builder to at least log original state if anything goes wrong.
                 LOG.finer("ViewBuilder-Original:\n" + dReplace.view.toStringDetail() + '\n');
@@ -457,7 +470,7 @@ final class ViewBuilder {
                 }
                 if (!fResult.getRepaintBounds().isEmpty()) {
                     repaintBounds.add(fResult.getRepaintBounds());
-                    if (LOG.isLoggable(Level.FINE)) {
+                    if (LOG.isLoggable(Level.FINEST)) {
                         LOG.fine("fReplace:REPAINT:" + ViewUtils.toString(fResult.getRepaintBounds()) + '\n');
                     }
                 }
@@ -479,7 +492,7 @@ final class ViewBuilder {
             }
             if (!dResult.getRepaintBounds().isEmpty()) {
                 repaintBounds.add(dResult.getRepaintBounds());
-                if (LOG.isLoggable(Level.FINE)) {
+                if (LOG.isLoggable(Level.FINEST)) {
                     LOG.fine("dReplace:REPAINT:" + ViewUtils.toString(dResult.getRepaintBounds()) + '\n');
                 }
             }
@@ -497,7 +510,7 @@ final class ViewBuilder {
                 }
                 if (!pResult.getRepaintBounds().isEmpty()) {
                     repaintBounds.add(pResult.getRepaintBounds());
-                    if (LOG.isLoggable(Level.FINE)) {
+                    if (LOG.isLoggable(Level.FINEST)) {
                         LOG.fine("pReplaceList[" + i + "]:REPAINT:" + // NOI18N
                                 ViewUtils.toString(pResult.getRepaintBounds()) + '\n');
                     }
@@ -505,7 +518,7 @@ final class ViewBuilder {
             }
         }
         if (!repaintBounds.isEmpty()) {
-            if (LOG.isLoggable(Level.FINE)) {
+            if (LOG.isLoggable(Level.FINEST)) {
                 LOG.fine("REPAINT-bounds:" + ViewUtils.toString(repaintBounds) + '\n');
             }
             ViewUtils.repaint(textComponent, repaintBounds);
