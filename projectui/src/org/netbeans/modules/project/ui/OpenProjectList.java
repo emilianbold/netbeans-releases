@@ -128,7 +128,9 @@ import org.openide.windows.WindowManager;
  */
 public final class OpenProjectList {
     
-    public static final Comparator<Project> PROJECT_BY_DISPLAYNAME = new ProjectByDisplayNameComparator();
+    public static Comparator<Project> projectByDisplayName() {
+        return new ProjectByDisplayNameComparator();
+    }
     
     // Property names
     public static final String PROPERTY_OPEN_PROJECTS = "OpenProjects";
@@ -1643,9 +1645,20 @@ public final class OpenProjectList {
         
     }
     
-    public static class ProjectByDisplayNameComparator implements Comparator<Project> {
+    private static class ProjectByDisplayNameComparator implements Comparator<Project> {
         
-	private static Comparator<Object> COLLATOR = Collator.getInstance();
+        private static Comparator<Object> COLLATOR = Collator.getInstance();
+
+        // memoize results since it could be called >1 time per project:
+        private final Map<Project,String> names = new HashMap<Project,String>();
+        private String getDisplayName(Project p) {
+            String n = names.get(p);
+            if (n == null) {
+                n = ProjectUtils.getInformation(p).getDisplayName();
+                names.put(p, n);
+            }
+            return n;
+        }
         
         public int compare(Project p1, Project p2) {
 //            Uncoment to make the main project be the first one
@@ -1658,8 +1671,8 @@ public final class OpenProjectList {
 //                return 1;
 //            }
             
-            String n1 = ProjectUtils.getInformation(p1).getDisplayName();
-            String n2 = ProjectUtils.getInformation(p2).getDisplayName();
+            String n1 = getDisplayName(p1);
+            String n2 = getDisplayName(p2);
             if (n1 != null && n2 != null) {
                 return COLLATOR.compare(n1, n2);
             } else if (n1 == null && n2 != null) {

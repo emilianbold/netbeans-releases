@@ -385,7 +385,7 @@ public class ProjectsRootNode extends AbstractNode {
         
         public Collection<Pair> getKeys() {
             List<Project> projects = Arrays.asList( OpenProjectList.getDefault().getOpenProjects() );
-            Collections.sort( projects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
+            Collections.sort(projects, OpenProjectList.projectByDisplayName());
             
             List<Pair> dirs = Arrays.asList( new Pair[projects.size()] );
             
