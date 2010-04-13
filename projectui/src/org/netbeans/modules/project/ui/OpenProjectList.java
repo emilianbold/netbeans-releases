@@ -1095,7 +1095,6 @@ public final class OpenProjectList {
         for (ProjectOpenedHook hook : p.getLookup().lookupAll(ProjectOpenedHook.class)) {
             try {
                 ProjectOpenedTrampoline.DEFAULT.projectOpened(hook);
-                prepareTemplates(null, null, null, null, p, p.getLookup());
             } catch (RuntimeException e) {
                 log(Level.WARNING, null, e);
                 // Do not try to call its close hook if its open hook already failed:
@@ -1109,6 +1108,7 @@ public final class OpenProjectList {
                 ok = false;
             }
         }
+        prepareTemplates(null, null, null, null, p, p.getLookup());
         return ok;
     }
     
@@ -1130,21 +1130,19 @@ public final class OpenProjectList {
             Project project, Lookup lookup) {
         // check the action context for recommmended/privileged templates..
         PrivilegedTemplates privs = lookup.lookup(PrivilegedTemplates.class);
-        List lruList = OpenProjectList.getDefault().getTemplatesLRU(project, privs);
         boolean itemAdded = false;
-        for (Iterator it = lruList.iterator(); it.hasNext();) {
-            DataObject template = (DataObject) it.next();
-
+        for (DataObject template : OpenProjectList.getDefault().getTemplatesLRU(project, privs)) {
             Node delegate = template.getNodeDelegate();
             Icon icon = ImageUtilities.image2Icon(delegate.getIcon(BeanInfo.ICON_COLOR_16x16));
+            String displayName = delegate.getDisplayName();
             if (templateName != null) {
                 JMenuItem item = new JMenuItem(
-                        templateName.format(new Object[]{delegate.getDisplayName()}),
+                        templateName.format(new Object[]{displayName}),
                         icon);
                 item.addActionListener(menuListener);
                 item.putClientProperty(propertyName, template);
                 menuItem.add(item);
-            }
+            } // else being warmed up from notifyOpened
             itemAdded = true;
         }
         return itemAdded;
