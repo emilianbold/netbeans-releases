@@ -126,19 +126,21 @@ public class CssOccurancesFinder extends OccurrencesFinder {
                     return;
                 }
                 if(currentNode.kind() == node.kind() && 
-                        LexerUtils.equals(currentNode.image(), node.image(), currentNode.kind() == CssParserTreeConstants.JJTHEXCOLOR, false)) {
+                        LexerUtils.equals(currentNode.image().trim(), node.image().trim(), currentNode.kind() == CssParserTreeConstants.JJTHEXCOLOR, false)) {
+
+                    OffsetRange trimmedNodeRange = SimpleNodeUtil.getTrimmedNodeRange(node);
                     //something to highlight
-                    int docFrom = snapshot.getOriginalOffset(node.startOffset());
+                    int docFrom = snapshot.getOriginalOffset(trimmedNodeRange.getStart());
 
                     //virtual class or id handling - the class and id elements inside
                     //html tag's CLASS or ID attribute has the dot or hash prefix just virtual
                     //so if we want to highlight such occurances we need to increment the
                     //start offset by one
                     if(docFrom == -1 && (node.kind() == CssParserTreeConstants.JJT_CLASS || node.kind() == CssParserTreeConstants.JJTHASH )) {
-                        docFrom = snapshot.getOriginalOffset(node.startOffset() + 1); //lets try +1 offset
+                        docFrom = snapshot.getOriginalOffset(trimmedNodeRange.getStart() + 1); //lets try +1 offset
                     }
 
-                    int docTo = snapshot.getOriginalOffset(node.endOffset());
+                    int docTo = snapshot.getOriginalOffset(trimmedNodeRange.getEnd());
 
                     if(docFrom == -1 || docTo == -1) {
                         return ; //something is virtual

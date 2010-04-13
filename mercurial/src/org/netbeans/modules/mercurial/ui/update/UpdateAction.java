@@ -150,6 +150,8 @@ public class UpdateAction extends ContextAction {
                         logger.output(""); // NOI18N
                     }
 
+                } catch (HgException.HgCommandCanceledException ex) {
+                    // canceled by user, do nothing
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);

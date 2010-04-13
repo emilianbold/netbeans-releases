@@ -28,6 +28,8 @@
 package org.netbeans.modules.spellchecker.bindings.htmlxml;
 
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.xml.lexer.XMLTokenId;
@@ -58,14 +60,14 @@ public class XmlTokenList extends AbstractTokenList {
         hidden = Boolean.TRUE.equals (b);
     }
 
-    /** Given a sequence of HTML/XML tokens, return the next span of eligible comments */
-    @Override
-    protected int[] findNextSpellSpan(TokenSequence<? extends TokenId> ts, int offset) throws BadLocationException {
+    protected int[] findNextSpellSpan() throws BadLocationException {
+        TokenHierarchy<Document> h = TokenHierarchy.get((Document) doc);
+        TokenSequence<?> ts = h.tokenSequence();
         if (ts == null || hidden) {
             return new int[]{-1, -1};
         }
 
-        ts.move(offset);
+        ts.move(nextSearchOffset);
 
         while (ts.moveNext()) {
             TokenId id = ts.token().id();

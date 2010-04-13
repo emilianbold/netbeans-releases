@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,47 +31,75 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.navigation;
+package org.netbeans.modules.css.parser;
 
-import java.util.List;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.JavaSource.Priority;
-import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
-import org.openide.filesystems.FileObject;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
- * This factory creates tasks sensitive to the caret position in open Java editor.
  *
- * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
+ * @author marekfukala
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
-public class CaretListeningFactory extends CaretAwareJavaSourceTaskFactory {
-    
-    private static CaretListeningFactory INSTANCE;
-    
-    public CaretListeningFactory() {
-        super(Phase.RESOLVED, Priority.LOW);
-        INSTANCE = this;
+public class SimpleNodeUtilTest {
+
+    public SimpleNodeUtilTest() {
     }
 
-    public CancellableTask<CompilationInfo> createTask(FileObject fileObject) {
-        return new CaretListeningTask(this, fileObject);
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
-    
-    static void runAgain() {
-        if (INSTANCE != null) {
-            List<FileObject> fileObjects = INSTANCE.getFileObjects();
-            CaretListeningTask.resetLastEH();
-            if ( !fileObjects.isEmpty() ) {
-                // System.out.println("Rescheduling for " + fileObjects.get(0));
-                INSTANCE.reschedule(fileObjects.iterator().next());
-            }
-        }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
     }
-    
-    
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    /**
+     * Test of getTrimmedNodeRange method, of class SimpleNodeUtil.
+     */
+    @Test
+    public void testGetTrimmedNodeRange() {
+        SimpleNode node = new SimpleNode(0);
+        Token firstToken = new Token(CssParserConstants.IDENT);
+        firstToken.offset = 10;
+        firstToken.image = "  hello"; //2 spaces
+
+        Token lastToken = new Token(CssParserConstants.IDENT);
+        lastToken.offset = 10 + firstToken.image.length();
+        lastToken.image = " world!   "; //3 spaces
+        firstToken.next = lastToken;
+
+        node.firstToken = firstToken;
+        node.lastToken = lastToken;
+
+        assertEquals(10, node.startOffset());
+        assertEquals(10 + firstToken.image.length() + lastToken.image.length(), node.endOffset());
+        assertEquals("  hello world!   ", node.image());
+
+        OffsetRange result = SimpleNodeUtil.getTrimmedNodeRange(node);
+
+        assertEquals(10 + 2, result.getStart());
+        assertEquals(10 + firstToken.image.length() + lastToken.image.length() - 3, result.getEnd());
+        
+    }
+
+
 }

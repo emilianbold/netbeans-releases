@@ -141,6 +141,7 @@ public final class ViewUpdates implements DocumentListener {
         PriorityMutex mutex = documentView.getMutex();
         if (mutex != null) {
             mutex.lock();
+            documentView.checkDocumentLocked();
             try {
                 if (!documentView.isActive()) {
                     return;
@@ -268,6 +269,7 @@ public final class ViewUpdates implements DocumentListener {
         PriorityMutex mutex = documentView.getMutex();
         if (mutex != null) {
             mutex.lock();
+            documentView.checkDocumentLocked();
             try {
                 if (!documentView.isActive()) {
                     return;
@@ -380,6 +382,7 @@ public final class ViewUpdates implements DocumentListener {
         PriorityMutex mutex = documentView.getMutex();
         if (mutex != null) {
             mutex.lock();
+            documentView.checkDocumentLocked();
             try {
                 if (!documentView.isActive()) {
                     return;
@@ -444,6 +447,7 @@ public final class ViewUpdates implements DocumentListener {
         if (mutex != null) {
             mutex.lock();
             try {
+                documentView.checkDocumentLocked();
                 if (documentView.isActive() && !incomingModification) {
                     if (isRebuildNecessary()) {
                         int rStartOffset = rebuildStartOffset;
