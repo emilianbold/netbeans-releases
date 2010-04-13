@@ -82,7 +82,7 @@ class SftpSupport {
     private static Map<ExecutionEnvironment, SftpSupport> instances = new HashMap<ExecutionEnvironment, SftpSupport>();
     private static AtomicInteger uploadCount = new AtomicInteger(0);
 
-    private static final int PUT_RETRY_COUNT = Integer.getInteger("sftp.put.retries", 1);
+    private static final int PUT_RETRY_COUNT = Integer.getInteger("sftp.put.retries", 1); // NOI18N
 
     /** for test purposes only */
     /*package-local*/ static int getUploadCount() {
