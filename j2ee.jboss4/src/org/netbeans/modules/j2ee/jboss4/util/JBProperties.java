@@ -239,8 +239,15 @@ public class JBProperties {
                 }
             }
 
-            File jsfAPI = new File(serverDir, "/deploy/jboss-web.deployer/jsf-libs/jsf-api.jar"); // NOI18N
+            // JBoss 5
+            File jsfAPI = new File(serverDir, "/deploy/jbossweb.sar/jsf-libs/jsf-api.jar"); // NOI18N
             if (jsfAPI.exists()) {
+                try {
+                    list.add(fileToUrl(jsfAPI));
+                } catch (MalformedURLException e) {
+                    LOGGER.log(Level.INFO, null, e);
+                }
+            } else if ((jsfAPI = new File(serverDir, "/deploy/jboss-web.deployer/jsf-libs/jsf-api.jar")).exists()) { // NOI18N
                 try {
                     list.add(fileToUrl(jsfAPI));
                 } catch (MalformedURLException e) {
@@ -260,8 +267,14 @@ public class JBProperties {
                 }
             }
 
-            File jsfIMPL = new File(serverDir, "/deploy/jboss-web.deployer/jsf-libs/jsf-impl.jar"); // NOI18N
+            File jsfIMPL = new File(serverDir, "/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar"); // NOI18N
             if (jsfIMPL.exists()) {
+                try {
+                    list.add(fileToUrl(jsfIMPL));
+                } catch (MalformedURLException e) {
+                    LOGGER.log(Level.INFO, null, e);
+                }
+            } else if ((jsfIMPL = new File(serverDir, "/deploy/jboss-web.deployer/jsf-libs/jsf-impl.jar")).exists()) { // NOI18N
                 try {
                     list.add(fileToUrl(jsfIMPL));
                 } catch (MalformedURLException e) {

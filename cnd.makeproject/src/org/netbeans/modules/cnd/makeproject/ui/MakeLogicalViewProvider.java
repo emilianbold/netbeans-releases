@@ -72,6 +72,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.TextAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -684,7 +685,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             //actions.add(new CodeAssistanceAction());
             // makeproject sensitive actions
             final MakeProjectType projectKind = provider.getProject().getLookup().lookup(MakeProjectType.class);
-            final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.actionsPath());
+            final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.projectActionsPath());
             if (!actionsForMakeProject.isEmpty()) {
                 actions.addAll(actionsForMakeProject);
                 actions.add(null);
@@ -1324,6 +1325,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             null,
                             SystemAction.get(PropertiesFolderAction.class),};
             }
+            // makeproject sensitive actions
+            final MakeProjectType projectKind = provider.getProject().getLookup().lookup(MakeProjectType.class);
+            final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.folderActionsPath());
+            if (!actionsForMakeProject.isEmpty()) {
+                actionsForMakeProject.add(null);
+                result = TextAction.augmentList(result, actionsForMakeProject.toArray(new Action[actionsForMakeProject.size()]));
+            }
             result = insertSyncActions(result, RenameNodeAction.class);
             return result;
         }
@@ -1540,6 +1548,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         new AddExternalItemAction(provider.getProject()),
                         null,
                         SystemAction.get(org.openide.actions.FindAction.class),};
+            // makeproject sensitive actions
+            final MakeProjectType projectKind = provider.getProject().getLookup().lookup(MakeProjectType.class);
+            final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.extFolderActionsPath());
+            if (!actionsForMakeProject.isEmpty()) {
+                actionsForMakeProject.add(null);
+                result = TextAction.augmentList(result, actionsForMakeProject.toArray(new Action[actionsForMakeProject.size()]));
+            }
             result = insertSyncActions(result, AddExternalItemAction.class);
             return result;
         }

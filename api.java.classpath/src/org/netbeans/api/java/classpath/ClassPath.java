@@ -816,7 +816,18 @@ public final class ClassPath {
                     //#130998:IllegalArgumentException when switching tabs
                     return false;
                 }
-                throw new IllegalArgumentException(file + " (valid: " + file.isValid() + ") not in " + r + " (valid: " + r.isValid() + ")"); //NOI18N
+                StringBuilder sb = new StringBuilder();
+                sb.append(file).append(" (valid: ").append(file.isValid()).append(") not in "). // NOI18N
+                   append(r).append(" (valid: ").append(r.isValid()).append(")"); // NOI18N
+                if (file.getPath().startsWith(r.getPath())) {
+                    while (file.getPath().length() > r.getPath().length()) {
+                        file = file.getParent();
+                        sb.append("\nChildren of ").append(file).append(" are:\n  ").append(Arrays.toString(file.getChildren()));
+                    }
+                } else {
+                    sb.append("\nRoot path is not prefix"); // NOI18N
+                }
+                throw new IllegalArgumentException(sb.toString());
             }
             if (file.isFolder()) {
                 path += "/"; // NOI18N

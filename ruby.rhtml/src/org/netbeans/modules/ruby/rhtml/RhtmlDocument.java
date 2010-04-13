@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,47 +34,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.editor;
+package org.netbeans.modules.ruby.rhtml;
 
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.ruby.RubyUtils;
 
 /**
- * Class representing a PHP local variable.
- * @since 1.13
- * @author Tomas Mysik
+ * A document impl for RHTML.
+ *
+ * @author Erno Mononen
  */
-public final class PhpVariable extends PhpBaseElement {
+public final class RhtmlDocument extends NbEditorDocument {
 
-    public PhpVariable(String name, String fullyQualifiedName, String description) {
-        super(name, fullyQualifiedName, description);
+    public RhtmlDocument(String mimeType) {
+        super(mimeType);
     }
 
-    /**
-     * @since 1.25
-     */
-    public PhpVariable(String name, String fullyQualifiedName, FileObject file) {
-        super(name, fullyQualifiedName, file);
+    @Override
+    public boolean isIdentifierPart(char ch) {
+        return RubyUtils.isIdentifierChar(ch);
     }
 
-    /**
-     * @since 1.28
-     */
-    public PhpVariable(String name, String fullyQualifiedName, FileObject file, int offset) {
-        super(name, fullyQualifiedName, file, offset, null);
-    }
-
-    public PhpVariable(String name, String fullyQualifiedName) {
-        super(name, fullyQualifiedName);
-    }
-
-    public PhpVariable(String name, String fullyQualifiedName, int offset, String description) {
-        super(name, fullyQualifiedName, offset, description);
-    }
-
-    public PhpVariable(String name, String fullyQualifiedName, int offset) {
-        super(name, fullyQualifiedName, offset);
-    }
 }
