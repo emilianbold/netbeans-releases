@@ -104,6 +104,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Templates.buildSimpleTargetChooser">
+            <api name="general"/>
+            <summary>Added <code>Templates.buildSimpleTargetChooser</code></summary>
+            <version major="1" minor="45"/>
+            <date day="13" month="4" year="2010"/>
+            <author login="jglick"/>
+            <compatibility addition="yes" deprecation="yes"/>
+            <description>
+                <p>
+                    Added a builder for simple target choosers.
+                    <code>freeFileExtension()</code> permits the user to pick a
+                    file extension for the new file distinct from that of the template.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.templates.support" name="Templates"/>
+            <issue number="141886"/>
+        </change>
         <change id="CommonProjectActions.forType">
             <api name="general"/>
             <summary>Added <code>CommonProjectActions.forType</code></summary>

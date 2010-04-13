@@ -322,7 +322,8 @@ public class ProjectUtilities {
      *                           is allowed in the newObjectName
      * @return localized error message or null if all right
      */    
-    public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName, String extension, boolean allowFileSeparator) {
+    public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName,
+            String extension, boolean allowFileSeparator, boolean freeFileExtension) {
         assert newObjectName != null; // SimpleTargetChooserPanel.isValid returns false if it is... XXX should it use an error label instead?
 
         boolean allowSlash = false;
@@ -372,7 +373,7 @@ public class ProjectUtilities {
         }
         relFileName.append(newObjectName);
         String ext = "";
-        if (extension != null && extension.length() != 0) {
+        if (extension != null && extension.length() != 0 && (!freeFileExtension || newObjectName.indexOf('.') == -1)) {
             ext = "." + extension;
             relFileName.append(ext);
         }

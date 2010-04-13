@@ -111,8 +111,8 @@ made subject to such option by the copyright holder.
         <folder name="Scripting">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
             <attr name="position" intvalue="20"/>
-            <file name="EmptyPHP" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHP.php">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+            <file name="EmptyPHP.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHP.php">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.ui.wizards.Bundle#Templates/Scripting/EmptyPHP"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
                 <attr name="template" boolvalue="true"/>
@@ -120,8 +120,8 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="100"/>
             </file>
-            <file name="EmptyPHPWebPage" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyWebPagePHP.php">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+            <file name="EmptyPHPWebPage.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyWebPagePHP.php">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.ui.wizards.Bundle#Templates/Scripting/EmptyPHPWebPage"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
                 <attr name="template" boolvalue="true"/>
@@ -129,18 +129,18 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="200"/>
             </file>
-            <file name="PHPClass" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyClassPHP.php">
+            <file name="PHPClass.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyClassPHP.php">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.ui.wizards.Bundle#Templates/Scripting/PHPClass"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPClassDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="300"/>
             </file>
-            <file name="PHPInterface" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyInterfacePHP.php">
+            <file name="PHPInterface.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyInterfacePHP.php">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.ui.wizards.Bundle#Templates/Scripting/PHPInterface"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPInterfaceDescription.html"/>

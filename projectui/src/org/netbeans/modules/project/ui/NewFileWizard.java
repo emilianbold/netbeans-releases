@@ -143,7 +143,7 @@ public final class NewFileWizard extends TemplateWizard {
 
     protected WizardDescriptor.Panel<WizardDescriptor> createTargetChooser() {
         Sources c = ProjectUtils.getSources(getCurrentProject());
-        return Templates.createSimpleTargetChooser(getCurrentProject(), c.getSourceGroups(Sources.TYPE_GENERIC));
+        return Templates.buildSimpleTargetChooser(getCurrentProject(), c.getSourceGroups(Sources.TYPE_GENERIC)).create();
     }
 }
  
