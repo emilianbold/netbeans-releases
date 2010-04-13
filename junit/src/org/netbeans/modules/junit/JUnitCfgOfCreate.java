@@ -297,6 +297,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         btnOK.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JUnitCfgOfCreate.class, "AD_OK"));
         btnOK.setEnabled(isAcceptable());
         addChangeListener(changeListener = new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 btnOK.setEnabled(isAcceptable());
             }
@@ -445,6 +446,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
     private final class CheckBoxListener implements ItemListener {
         public CheckBoxListener () {}
         
+        @Override
         public void itemStateChanged(ItemEvent e) {
             final Object source = e.getSource();
             
@@ -584,6 +586,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      * @param  e  event describing the state change event
      *            (unused in this method)
      */
+    @Override
     public void stateChanged(ChangeEvent e) {
         checkClassNameValidity();
         checkAcceptability();
@@ -925,6 +928,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
             setOpaque(true);
         }
         
+        @Override
         public Component getListCellRendererComponent(
                 JList list,
                 Object value,
