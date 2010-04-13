@@ -42,17 +42,16 @@ package org.netbeans.modules.cnd.remote.support;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.ParseException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
@@ -61,15 +60,11 @@ import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.remote.sync.RemoteSyncTestSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
-import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 
 /**
@@ -170,16 +165,23 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        ConnectionManager.getInstance().disconnect(getTestExecutionEnvironment());
+        //ConnectionManager.getInstance().disconnect(getTestExecutionEnvironment());
         System.err.printf("\n###< tearDown %s\n", getClass().getName() + '.' + getName());
     }
 
-    protected static void setupHost(ExecutionEnvironment execEnv) {
-        ToolsCacheManager tcm = ToolsCacheManager.createInstance(true);
-        HostValidatorImpl validator = new HostValidatorImpl(tcm);
-        boolean ok = validator.validate(execEnv, null, false, new PrintWriter(System.out));
-        assertTrue("Error setting up host " + execEnv, ok);
-        tcm.applyChanges();
+    private static Set<ExecutionEnvironment> hosts = new HashSet<ExecutionEnvironment>();
+
+    protected static synchronized void setupHost(ExecutionEnvironment execEnv) {
+        if (! hosts.contains(execEnv)) {
+            ToolsCacheManager tcm = ToolsCacheManager.createInstance(true);
+            HostValidatorImpl validator = new HostValidatorImpl(tcm);
+            boolean ok = validator.validate(execEnv, null, false, new PrintWriter(System.out));
+            if (ok) {
+                hosts.add(execEnv);
+            }
+            assertTrue("Error setting up host " + execEnv, ok);
+            tcm.applyChanges();
+        }
     }
 
 //    protected void rebuildProject(MakeProject makeProject, long timeout, TimeUnit unit)

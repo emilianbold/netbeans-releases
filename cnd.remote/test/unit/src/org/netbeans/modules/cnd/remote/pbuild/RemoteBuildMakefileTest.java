@@ -48,7 +48,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
@@ -92,7 +91,7 @@ public class RemoteBuildMakefileTest extends RemoteBuildTestBase {
             assertNotNull("project is null", makeProject);
             buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
         } finally {
-            ConnectionManager.getInstance().disconnect(execEnv);
+            // ConnectionManager.getInstance().disconnect(execEnv);
         }
     }
 
