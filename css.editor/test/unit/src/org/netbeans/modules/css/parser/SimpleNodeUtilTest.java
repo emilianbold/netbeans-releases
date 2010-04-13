@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,47 +34,72 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.editor;
+package org.netbeans.modules.css.parser;
 
-import org.openide.filesystems.FileObject;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
- * Class representing a PHP local variable.
- * @since 1.13
- * @author Tomas Mysik
+ *
+ * @author marekfukala
  */
-public final class PhpVariable extends PhpBaseElement {
+public class SimpleNodeUtilTest {
 
-    public PhpVariable(String name, String fullyQualifiedName, String description) {
-        super(name, fullyQualifiedName, description);
+    public SimpleNodeUtilTest() {
+    }
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
     }
 
     /**
-     * @since 1.25
+     * Test of getTrimmedNodeRange method, of class SimpleNodeUtil.
      */
-    public PhpVariable(String name, String fullyQualifiedName, FileObject file) {
-        super(name, fullyQualifiedName, file);
+    @Test
+    public void testGetTrimmedNodeRange() {
+        SimpleNode node = new SimpleNode(0);
+        Token firstToken = new Token(CssParserConstants.IDENT);
+        firstToken.offset = 10;
+        firstToken.image = "  hello"; //2 spaces
+
+        Token lastToken = new Token(CssParserConstants.IDENT);
+        lastToken.offset = 10 + firstToken.image.length();
+        lastToken.image = " world!   "; //3 spaces
+        firstToken.next = lastToken;
+
+        node.firstToken = firstToken;
+        node.lastToken = lastToken;
+
+        assertEquals(10, node.startOffset());
+        assertEquals(10 + firstToken.image.length() + lastToken.image.length(), node.endOffset());
+        assertEquals("  hello world!   ", node.image());
+
+        OffsetRange result = SimpleNodeUtil.getTrimmedNodeRange(node);
+
+        assertEquals(10 + 2, result.getStart());
+        assertEquals(10 + firstToken.image.length() + lastToken.image.length() - 3, result.getEnd());
+        
     }
 
-    /**
-     * @since 1.28
-     */
-    public PhpVariable(String name, String fullyQualifiedName, FileObject file, int offset) {
-        super(name, fullyQualifiedName, file, offset, null);
-    }
 
-    public PhpVariable(String name, String fullyQualifiedName) {
-        super(name, fullyQualifiedName);
-    }
-
-    public PhpVariable(String name, String fullyQualifiedName, int offset, String description) {
-        super(name, fullyQualifiedName, offset, description);
-    }
-
-    public PhpVariable(String name, String fullyQualifiedName, int offset) {
-        super(name, fullyQualifiedName, offset);
-    }
 }

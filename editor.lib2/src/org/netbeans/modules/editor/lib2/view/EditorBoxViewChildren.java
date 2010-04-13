@@ -45,6 +45,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Position;
 import javax.swing.text.TabExpander;
@@ -126,7 +127,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         moveStorage(index + removeCount); // Includes moveGap()
         double visualOffset = getViewVisualOffset(boxView, index);
         double removedSpan;
-        int gapIndexDelta = removeCount;
+        int gapIndexDelta = -removeCount;
         if (removeCount != 0) { // Removing at least one item => index < size
             // Update visual offsets
             removedSpan = getViewVisualOffset(boxView, index + removeCount) - visualOffset;
@@ -315,7 +316,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
     private double raw2VisualOffset(double rawVisualOffset) {
         return (gapStorage == null || rawVisualOffset < gapStorage.visualGapStart)
                 ? rawVisualOffset
-                : rawVisualOffset + gapStorage.visualGapLength;
+                : rawVisualOffset - gapStorage.visualGapLength;
     }
 
     final double getViewVisualOffset(EditorBoxView boxView, int index) {
@@ -424,13 +425,15 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
     }
 
     final void moveStorage(int index) {
-        if (gapStorage == null) {
-            if (false && size() > GAP_STORAGE_THRESHOLD) { // [TODO] Enable gap behavior
-                gapStorage = new GapStorage(size());
+        if (size() > 0) { // This should ensure that the gap will not be constructed if no replace done yet
+            if (gapStorage == null) {
+                if (false && size() > GAP_STORAGE_THRESHOLD) {
+                    gapStorage = new GapStorage(size());
+                    moveGap(index);
+                }
+            } else { // Existing gap storage
                 moveGap(index);
             }
-        } else { // Existing gap storage
-            moveGap(index);
         }
     }
 
@@ -480,6 +483,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
     }
 
     private void moveGap(int index) {
+        checkGap();
         if (index != gapStorage.gapIndex) {
             boolean supportsRawOffsetUpdate = rawOffsetUpdate();
             if (index < gapStorage.gapIndex) {
@@ -488,11 +492,11 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                 for (int i = gapStorage.gapIndex - 1; i >= index; i--) {
                     EditorView view = get(i);
                     if (supportsRawOffsetUpdate) {
-                        lastOffset = view.getRawOffset() + gapStorage.offsetGapLength;
-                        view.setRawOffset(lastOffset);
+                        lastOffset = view.getRawOffset();
+                        view.setRawOffset(lastOffset + gapStorage.offsetGapLength);
                     }
-                    lastVisualOffset = view.getRawVisualOffset() + gapStorage.visualGapLength;
-                    view.setRawVisualOffset(lastVisualOffset);
+                    lastVisualOffset = view.getRawVisualOffset();
+                    view.setRawVisualOffset(lastVisualOffset + gapStorage.visualGapLength);
                 }
                 if (supportsRawOffsetUpdate) {
                     gapStorage.offsetGapStart = lastOffset;
@@ -507,13 +511,15 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                         view.setRawOffset(view.getRawOffset() - gapStorage.offsetGapLength);
                     }
                 }
-                if (index < size()) { // Gap moved to existing view
+                if (index < size()) { // Gap moved to existing view - the view is right above gap => subtract gap-lengths
                     EditorView view = get(index);
                     if (supportsRawOffsetUpdate) {
                         gapStorage.offsetGapStart = view.getRawOffset() - gapStorage.offsetGapLength;
                     }
                     gapStorage.visualGapStart = view.getRawVisualOffset() - gapStorage.visualGapLength;
-                } else { // Gap above at end of all existing views => make gap starts high enough to eliminate translation
+                } else {
+                    // Gap above at end of all existing views => make gap starts high enough
+                    // so that no offset/visual-offset is >= offsetGapStart/visualGapStart (no translation occurs)
                     assert (index == size()) : "Invalid requested index=" + index + // NOI18N
                             ", size()=" + size() + ", gapIndex=" + gapStorage.gapIndex; // NOI18N
                     if (supportsRawOffsetUpdate) {
@@ -523,6 +529,71 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                 }
             }
             gapStorage.gapIndex = index;
+        }
+        checkGap();
+    }
+    
+    private void checkGap() {
+        if (LOG.isLoggable(Level.FINE)) {
+            String error = null;
+            int gapIndex = gapStorage.gapIndex;
+            if (gapIndex > size()) {
+                error = "gapIndex=" + gapIndex + " > size()=" + size(); // NOI18N
+            } else {
+                for (int i = 0; i < size(); i++) {
+                    EditorView view = get(i);
+                    int rawOffset = view.getRawOffset();
+                    int relOffset = raw2RelOffset(rawOffset);
+                    double rawVisualOffset = view.getRawVisualOffset();
+                    double visualOffset = raw2VisualOffset(rawVisualOffset);
+                    // Check textual offset
+                    if (rawOffsetUpdate()) {
+                        if (i < gapIndex) {
+                            if (rawOffset >= gapStorage.offsetGapStart) {
+                                error = "Not below offset-gap: rawOffset=" + rawOffset + // NOI18N
+                                        " >= offsetGapStart=" + gapStorage.offsetGapStart; // NOI18N
+                            }
+                        } else { // Above gap
+                            if (rawOffset < gapStorage.offsetGapStart) {
+                                error = "Not above offset-gap: rawOffset=" + rawOffset + // NOI18N
+                                        " < offsetGapStart=" + gapStorage.offsetGapStart; // NOI18N
+                            }
+                            if (i == gapIndex) {
+                                if (relOffset != gapStorage.offsetGapStart) {
+                                    error = "relOffset=" + relOffset + " != gapStorage.offsetGapStart=" + // NOI18N
+                                            gapStorage.offsetGapStart;
+                                }
+                            }
+
+                        }
+                    }
+                    // Check visual offset
+                    if (i < gapIndex) {
+                        if (rawVisualOffset >= gapStorage.visualGapStart) {
+                            error = "Not below visual-gap: rawVisualOffset=" + rawVisualOffset + // NOI18N
+                                    " >= visualGapStart=" + gapStorage.visualGapStart; // NOI18N
+                        }
+                    } else { // Above gap
+                        if (rawVisualOffset < gapStorage.visualGapStart) {
+                            error = "Not above visual-gap: rawVisualOffset=" + rawVisualOffset + // NOI18N
+                                    " < visualGapStart=" + gapStorage.visualGapStart; // NOI18N
+                        }
+                        if (i == gapIndex) {
+                            if (visualOffset != gapStorage.visualGapStart) {
+                                error = "visualOffset=" + visualOffset + " != gapStorage.visualGapStart=" + // NOI18N
+                                        gapStorage.visualGapStart;
+                            }
+                        }
+
+                    }
+                    if (error != null) {
+                        break;
+                    }
+                }
+            }
+            if (error != null) {
+                throw new IllegalStateException("gapStorage INTEGRITY ERROR!!!\n" + error);
+            }
         }
     }
 
@@ -669,6 +740,13 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         return sb;
     }
 
+    protected StringBuilder appendViewInfoCore(StringBuilder sb, int indent, int importantChildIndex) {
+        if (gapStorage != null) {
+            gapStorage.appendInfo(sb);
+        }
+        return sb;
+    }
+
     /**
      * Gap storage speeds up operations when a number of children views exceeds
      */
@@ -706,6 +784,11 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
          * Index of the gap in the contained children.
          */
         int gapIndex;
+
+        void appendInfo(StringBuilder sb) {
+            sb.append("<").append(offsetGapStart).append("|").append(offsetGapLength);
+            sb.append(", vis<").append(visualGapStart).append("|").append(visualGapLength);
+        }
 
     }
 

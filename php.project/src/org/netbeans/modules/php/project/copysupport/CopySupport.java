@@ -76,7 +76,7 @@ import org.openide.util.WeakListeners;
  * @author Radek Matous
  */
 public final class CopySupport extends FileChangeAdapter implements PropertyChangeListener, FileChangeListener, ChangeListener {
-    private static final Logger LOGGER = Logger.getLogger(CopySupport.class.getName());
+    static final Logger LOGGER = Logger.getLogger(CopySupport.class.getName());
 
     public static final boolean ALLOW_BROKEN = Boolean.getBoolean(CopySupport.class.getName() + ".allowBroken"); // NOI18N
 
@@ -94,7 +94,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     // process property changes just once
     private final RequestProcessor.Task initTask;
 
-    private volatile boolean projectOpened = false;
+    volatile boolean projectOpened = false;
     private final ProxyOperationFactory proxyOperationFactory;
     // @GuardedBy(this)
     private FileSystem fileSystem;
@@ -198,7 +198,16 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             }
         } else {
             fileChangeListener = new SourcesFileChangeListener(this);
-            FileUtil.addRecursiveListener(fileChangeListener, FileUtil.toFile(getSources()));
+            FileUtil.addRecursiveListener(fileChangeListener, FileUtil.toFile(getSources()), new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    boolean cancel = !projectOpened;
+                    if (cancel) {
+                        LOGGER.log(Level.INFO, "Adding of recursive listener interrupted for project {0}", project.getName());
+                    }
+                    return cancel;
+                }
+            });
             LOGGER.log(Level.FINE, "\t-> RECURSIVE listener registered for project {0}", project.getName());
         }
     }

@@ -58,10 +58,6 @@ public class ExtractInlinedStyleRefactoring extends AbstractRefactoring {
         refactorToNewExternalSheet,
     }
 
-    public enum SelectorType {
-        CLASS, ID;
-    }
-
     private Mode mode;
     private SelectorType selectorType;
     private OffsetRange existingEmbeddedCssSection;
