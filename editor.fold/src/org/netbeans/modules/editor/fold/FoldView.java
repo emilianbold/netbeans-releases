@@ -51,10 +51,8 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextHitInfo;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -176,15 +174,8 @@ public class FoldView extends EditorView implements TextLayoutView {
         if (textLayout == null) {
             return alloc; // Leave given bounds
         }
-	TextHitInfo hit = TextHitInfo.afterOffset(0);
-	float[] locs = textLayout.getCaretInfo(hit);
+        TextHitInfo hit = TextHitInfo.afterOffset(0);
         Rectangle2D.Double bounds = ViewUtils.shape2Bounds(alloc);
-	bounds.setRect(
-                bounds.getX(),
-                bounds.getY(),
-                locs[0],
-                bounds.getHeight()
-        );
         return bounds;
     }
 
@@ -209,41 +200,28 @@ public class FoldView extends EditorView implements TextLayoutView {
     public int getNextVisualPositionFromChecked(int offset, Bias bias, Shape alloc, int direction, Bias[] biasRet) {
         int startOffset = getStartOffset();
         switch (direction) {
-            case View.NORTH:
-            case View.SOUTH:
-                if (offset != -1) {
-                    // Presumably pos is between startOffset and endOffset,
-                    // since GlyphView is only one line, we won't contain
-                    // the position to the north/south, therefore return -1.
-                    return -1;
-                }
-                Caret caret = textComponent.getCaret();
-                Point magicPoint;
-                magicPoint = (caret != null) ? caret.getMagicCaretPosition() : null;
-                if (magicPoint == null) {
-                    biasRet[0] = Position.Bias.Forward;
-                    return startOffset;
-                }
-                TextLayout textLayout = getTextLayout();
-                if (textLayout != null) {
-                    return viewToModelChecked((double) magicPoint.x, 0d, alloc, biasRet);
-                }
-                break;
-
+            case NORTH:
             case WEST:
                 if (offset == -1) {
                     offset = Math.max(0, startOffset + fold.getDescription().length() - 1);
                 } else {
-                    offset = Math.max(0, offset - 1);
+                    if (fold.isCollapsed ())
+                        offset = getStartOffset ();
+                    else
+                        offset--;
                 }
                 break;
+            case SOUTH:
             case EAST:
                 if (offset == -1) {
                     offset = startOffset;
                 } else {
                     Document doc = getDocument();
                     if (doc != null) {
-                        offset = Math.min(offset + 1, doc.getLength());
+                        if (fold.isCollapsed ())
+                            offset = getEndOffset ();
+                        else
+                            offset++;
                     }
                 }
                 break;
