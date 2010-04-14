@@ -1737,22 +1737,24 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     }
 
     private static synchronized void initializeProfiling(long when) {
-        if (profile != null) {
-            return;
-        }
-        FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance"); // NOI18N
-        if (fo == null) {
-            return;
-        }
-        Action a = (Action) fo.getAttribute("delegate"); // NOI18N
-        if (a == null) {
-            return;
-        }
-        Object profiler = a.getValue("logger-completion"); // NOI18N
-        if (profiler == null) {
-            return;
-        }
-        profile = new Profile(profiler, when);
+//        disabled in 6.9 beta:
+//
+//        if (profile != null) {
+//            return;
+//        }
+//        FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance"); // NOI18N
+//        if (fo == null) {
+//            return;
+//        }
+//        Action a = (Action) fo.getAttribute("delegate"); // NOI18N
+//        if (a == null) {
+//            return;
+//        }
+//        Object profiler = a.getValue("logger-completion"); // NOI18N
+//        if (profiler == null) {
+//            return;
+//        }
+//        profile = new Profile(profiler, when);
     }
 
     private static final class Profile implements Runnable {
