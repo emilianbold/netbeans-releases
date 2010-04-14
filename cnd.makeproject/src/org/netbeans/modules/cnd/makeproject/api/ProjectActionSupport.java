@@ -529,11 +529,7 @@ public class ProjectActionSupport {
         private boolean checkExecutable(ProjectActionEvent pae) {
             // Check if something is specified
             String executable = pae.getExecutable();
-            MakeConfiguration configuration = pae.getConfiguration();
-            ExecutionEnvironment execEnviroment = configuration.getDevelopmentHost().getExecutionEnvironment();
-            //executable can be not 0 length but still is not a file
-            File executableFile = RemoteFile.create(execEnviroment, executable);
-            if (executable.length() == 0 || executableFile.isDirectory()) {
+            if (executable.length() == 0) {
                 SelectExecutablePanel panel = new SelectExecutablePanel(pae.getConfiguration());
                 DialogDescriptor descriptor = new DialogDescriptor(panel, getString("SELECT_EXECUTABLE"));
                 panel.setDialogDescriptor(descriptor);

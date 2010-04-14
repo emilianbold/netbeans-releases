@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,62 +34,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.pbuild;
+package org.netbeans.modules.remote.ui;
 
-import java.util.Collection;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Sergey Grinev
+ * @author Alexey Vladykin
  */
-public class BuildTestSuite extends CndBaseTestSuite {
+/*package*/ final class RemoveToolchainAction extends AbstractAction {
 
-    public static final String PLATFORMS_SECTION = "remote.platforms";
-    public static final String DEFAULT_SECTION = "remote";
+    private final ExecutionEnvironment execEnv;
+    private final String compilerSetName;
 
-    public BuildTestSuite(Class testClass) {
-        this(testClass.getName(), testClass);
+    public RemoveToolchainAction(ExecutionEnvironment execEnv, CompilerSet compilerSet) {
+        super(NbBundle.getMessage(RemoveToolchainAction.class, "RemoveToolchainMenuItem")); // NOI18N
+        this.execEnv = execEnv;
+        this.compilerSetName = compilerSet.getName();
     }
 
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public BuildTestSuite(String name, Test... tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
-    }
-
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public BuildTestSuite(String name, Collection<Test> tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
-    }
-
-    public BuildTestSuite() {
-        this("Remote Development", // NOI18N
-             RfsGnuRemoteBuildTestCase.class,
-             RfsSunStudioRemoteBuildTestCase.class,
-             RemoteBuildSamplesTestCase.class,
-             RemoteBuildMakefileTestCase.class);
-    }
-
-
-    private BuildTestSuite(String name, Class... testClasses) {
-        super(name, PLATFORMS_SECTION, testClasses);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new BuildTestSuite();
-        return suite;
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        ToolsPanelSupport.removeCompilerSet(execEnv, compilerSetName);
     }
 }

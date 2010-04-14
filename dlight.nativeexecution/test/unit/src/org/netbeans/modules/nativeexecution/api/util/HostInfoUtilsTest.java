@@ -116,9 +116,9 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
      */
     @org.junit.Test
     public void testMultipleGetInfo() {
-        System.setProperty("dlight.nativeexecution.SlowHostInfoProviderEnabled", "true"); // NOI18N
-
         final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
+
+        System.setProperty("dlight.nativeexecution.SlowHostInfoProviderEnabled", "true"); // NOI18N
 
         try {
             // Reset hosts data - it may be already collected in previous tests

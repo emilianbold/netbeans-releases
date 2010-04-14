@@ -38,6 +38,9 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 
@@ -98,4 +101,18 @@ public class Logger {
     public static final void assertNonUiThread() {
         assertNonUiThread("Should not be called from UI thread"); //NOI18N
     }
+
+    public static void fullThreadDump(String title){
+        final Set<Entry<Thread, StackTraceElement[]>> stack = Thread.getAllStackTraces().entrySet();
+        System.err.printf("----- %s Start Thread Dump-----\n", title == null ? "" : title);
+        for (Map.Entry<Thread, StackTraceElement[]> entry : stack) {
+            System.err.println(entry.getKey().getName());
+            for (StackTraceElement element : entry.getValue()) {
+                System.err.println("\tat " + element.toString());
+            }
+            System.err.println();
+        }
+        System.err.println("----- End Thread Dump-----");
+    }
+
 }

@@ -66,10 +66,12 @@ import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -77,7 +79,7 @@ import org.openide.util.NbBundle;
  *
  * @author  thp
  */
-/*package-local*/ final class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentListener, Runnable {
+public final class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentListener, Runnable {
 
     private DialogDescriptor dialogDescriptor = null;
     private final CompilerSetManagerImpl csm;
@@ -114,6 +116,18 @@ import org.openide.util.NbBundle;
         tfName.getDocument().addDocumentListener(AddCompilerSetPanel.this);
 
         compilerCheckExecutor = Executors.newScheduledThreadPool(1);
+    }
+
+    public static CompilerSet invokeMe(CompilerSetManagerImpl csm) {
+        AddCompilerSetPanel panel = new AddCompilerSetPanel(csm);
+        ExecutionEnvironment execEnv = csm.getExecutionEnvironment();
+        String title = execEnv.isRemote()
+                ? NbBundle.getMessage(AddCompilerSetPanel.class, "NEW_TOOL_SET_TITLE_REMOTE", ExecutionEnvironmentFactory.toUniqueID(execEnv)) // NOI18N
+                : NbBundle.getMessage(AddCompilerSetPanel.class, "NEW_TOOL_SET_TITLE"); // NOI18N
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
+        panel.setDialogDescriptor(dialogDescriptor);
+        DialogDisplayer.getDefault().notify(dialogDescriptor);
+        return dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION ? panel.getCompilerSet() : null;
     }
 
     @Override
@@ -415,7 +429,7 @@ import org.openide.util.NbBundle;
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(lbName)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(tfBaseDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, 287, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -430,7 +444,7 @@ import org.openide.util.NbBundle;
                 .addGap(120, 120, 120))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(lbError, javax.swing.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                .addComponent(lbError, javax.swing.GroupLayout.DEFAULT_SIZE, 595, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(

@@ -56,7 +56,7 @@ import java.util.logging.Logger;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -235,7 +235,7 @@ public class MeasurementTestCase extends RemoteTestBase {
         statistics.clear(); //
     }
 
-    private static class MeasurementTestSuite extends RemoteDevelopmentTestSuite {
+    private static class MeasurementTestSuite extends RemoteDevelopmentTest {
 
         public MeasurementTestSuite(String name, Collection<Test> tests) {
             super(name, tests);
@@ -253,7 +253,7 @@ public class MeasurementTestCase extends RemoteTestBase {
         Collection<Test> tests = new ArrayList<Test>();
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
         Collection<String> dirs = rcFile.getKeys("remote.zip.testdirs");
-        Collection<String> mspecs = rcFile.getKeys(RemoteDevelopmentTestSuite.PLATFORMS_SECTION);
+        Collection<String> mspecs = rcFile.getKeys(RemoteDevelopmentTest.PLATFORMS_SECTION);
         for (String mspec : mspecs) {
             ExecutionEnvironment env = NativeExecutionTestSupport.getTestExecutionEnvironment(mspec);
             for (String dir : dirs) {
@@ -269,7 +269,7 @@ public class MeasurementTestCase extends RemoteTestBase {
                 }
             }
         }
-        RemoteDevelopmentTestSuite suite = new MeasurementTestSuite(MeasurementTestCase.class.getName(), tests);
+        RemoteDevelopmentTest suite = new MeasurementTestSuite(MeasurementTestCase.class.getName(), tests);
         return suite;
     }
 }

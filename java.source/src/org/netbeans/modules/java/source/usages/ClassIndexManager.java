@@ -46,9 +46,9 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
@@ -67,7 +67,7 @@ public final class ClassIndexManager {
     private final Map<URL, ClassIndexImpl> instances = new HashMap<URL, ClassIndexImpl> ();
     private final ReentrantReadWriteLock lock;
     private final InternalLock internalLock;
-    private final Collection<ClassIndexManagerListener> listeners = new ConcurrentLinkedQueue<ClassIndexManagerListener> ();
+    private final Map<ClassIndexManagerListener,Void> listeners = new IdentityHashMap<ClassIndexManagerListener, Void>();
     private boolean invalid;
     private Set<URL> added;
     private Set<URL> removed;
@@ -80,9 +80,9 @@ public final class ClassIndexManager {
 
     public void addClassIndexManagerListener (final ClassIndexManagerListener listener) {
         assert listener != null;
-        this.listeners.add(listener);
+        this.listeners.put(listener,null);
     }
-    
+
     public void removeClassIndexManagerListener (final ClassIndexManagerListener listener) {
         assert listener != null;
         this.listeners.remove(listener);
@@ -235,7 +235,7 @@ public final class ClassIndexManager {
     private void fire (final Set<? extends URL> roots, final byte op) {
         if (!this.listeners.isEmpty()) {
             final ClassIndexManagerEvent event = new ClassIndexManagerEvent (this, roots);
-            for (ClassIndexManagerListener listener : this.listeners) {
+            for (ClassIndexManagerListener listener : this.listeners.keySet()) {
                 if (op == OP_ADD) {
                     listener.classIndexAdded(event);
                 }

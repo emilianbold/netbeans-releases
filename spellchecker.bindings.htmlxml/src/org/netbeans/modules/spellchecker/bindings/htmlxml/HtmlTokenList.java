@@ -47,21 +47,25 @@ import org.openide.filesystems.FileUtil;
  */
 public class HtmlTokenList extends AbstractTokenList {
 
-
+    private String fileType;
     private boolean hidden = false;
     private Iterator<TokenSequence<?>> tss;
     private TokenSequence<?> ts;
 
-    public HtmlTokenList(BaseDocument doc) {
+    public HtmlTokenList(BaseDocument doc, String fileType) {
         super(doc);
+        this.fileType = fileType;
     }
 
     @Override
     public void setStartOffset(int offset) {
         super.setStartOffset (offset);
-        FileObject fileObject = FileUtil.getConfigFile ("Spellcheckers/HTML");
-        Boolean b = (Boolean) fileObject.getAttribute ("Hidden");
-        hidden = Boolean.TRUE.equals (b);
+
+        if(fileType != null) {
+            FileObject fileObject = FileUtil.getConfigFile ("Spellcheckers/" + fileType);
+            Boolean b = (Boolean) fileObject.getAttribute ("Hidden");
+            hidden = Boolean.TRUE.equals (b);
+        }
 
         //find top most html embedding token sequence list
         TokenHierarchy<?> th = TokenHierarchy.get(doc);
@@ -83,8 +87,12 @@ public class HtmlTokenList extends AbstractTokenList {
         assert htmlPath != null;
 
         tss = th.tokenSequenceList(htmlPath, offset, Integer.MAX_VALUE).iterator(); //no range provided by the API
-        ts = tss.next(); //position to the first sequence
-        ts.move(offset);
+        if(tss.hasNext()) {
+            ts = tss.next(); //position to the first sequence
+            ts.move(offset);
+        } else {
+           //no html code in the file
+        }
         
     }
 
@@ -93,7 +101,7 @@ public class HtmlTokenList extends AbstractTokenList {
     //and positioned for each search offset!
     @Override
     protected int[] findNextSpellSpan() throws BadLocationException {
-        if (hidden) {
+        if (ts == null || !ts.isValid() || hidden) {
             return new int[]{-1, -1};
         }
 

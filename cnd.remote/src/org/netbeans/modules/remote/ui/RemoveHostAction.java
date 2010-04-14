@@ -67,6 +67,11 @@ public class RemoveHostAction extends SingleHostAction {
     }
 
     @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    @Override
     protected void performAction(final ExecutionEnvironment env, Node node) {
         ServerRecord record = ServerList.get(env);
         String title = NbBundle.getMessage(HostNode.class, "RemoveHostCaption");

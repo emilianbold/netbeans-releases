@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.remote.mapper;
 import java.io.StringReader;
 import java.util.Map;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -51,7 +51,7 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  *
  * @author Sergey Grinev
  */
-public class MappingsTest extends RemoteTestBase {
+public class MappingsTestCase extends RemoteTestBase {
 
 //    public void testHMPW() throws Exception {
 //        new HostMappingProviderWindows().findMappings("localhost", "randomguy@eaglet-sr");
@@ -223,16 +223,16 @@ public class MappingsTest extends RemoteTestBase {
 //    }
 
     // we need this since some methods are without @ForAllEnvironments
-    public MappingsTest(String testName) {
+    public MappingsTestCase(String testName) {
         super(testName);
     }
 
-    public MappingsTest(String testName, ExecutionEnvironment execEnv) {
+    public MappingsTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTestSuite(MappingsTest.class);
+        return new RemoteDevelopmentTest(MappingsTestCase.class);
     }
 
 }

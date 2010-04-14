@@ -785,11 +785,11 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                 break;
             }
         }
-        // find 'best' Sun set and copy it
-        CompilerSet sun = getCompilerSet("OracleSolarisStudio"); // NOI18N
-        if (sun != null) {
+        // "OracleSolarisStudio" and "SunStudio" compiler sets must exist
+        if (getCompilerSet("OracleSolarisStudio") != null && getCompilerSet("SunStudio") != null) { // NOI18N
             return;
         }
+        // if one or both are missing, find the 'best' Sun set and copy it
         if (bestCandidate == null) {
             bestCandidate = (CompilerSetImpl) getCompilerSet("OracleSolarisStudio_12.2"); // NOI18N
         }
@@ -827,13 +827,13 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             return;
         }
         CompilerFlavor flavor = CompilerFlavorImpl.toFlavor("OracleSolarisStudio", platform); // NOI18N
-        if (flavor != null) { // #158084 NPE
+        if (flavor != null && getCompilerSet("OracleSolarisStudio") == null) { // #158084 NPE // NOI18N
             CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
                     flavor, bestCandidate.getDirectory(), "OracleSolarisStudio", true); // NOI18N
             addUnsafe(bestCandidateCopy);
         }
         flavor = CompilerFlavorImpl.toFlavor("SunStudio", platform); // NOI18N
-        if (flavor != null) { // #158084 NPE
+        if (flavor != null && getCompilerSet("SunStudio") == null) { // #158084 NPE // NOI18N
             CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
                     flavor, bestCandidate.getDirectory(), "SunStudio", true); // NOI18N
             addUnsafe(bestCandidateCopy);

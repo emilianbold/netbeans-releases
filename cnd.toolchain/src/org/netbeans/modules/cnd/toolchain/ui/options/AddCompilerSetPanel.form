@@ -36,7 +36,7 @@
                       <Component id="lbName" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace pref="22" max="32767" attributes="0"/>
+              <EmptySpace pref="66" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Component id="tfBaseDirectory" min="-2" pref="287" max="-2" attributes="0"/>
@@ -55,7 +55,7 @@
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="lbError" pref="539" max="32767" attributes="0"/>
+              <Component id="lbError" pref="595" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>

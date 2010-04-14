@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -58,7 +60,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -123,6 +124,12 @@ public final class ConnectionManager {
                 }
             }
         }
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                shutdown();
+            }
+        }));
     }
 
     private ConnectionManager() {
@@ -360,6 +367,17 @@ public final class ConnectionManager {
                 session.disconnect();
                 fireDisconnected(env);
             }
+        }
+    }
+
+    private static void shutdown() {
+        log.fine("Shutting down Connection Manager");
+        Collection<ExecutionEnvironment> connectedEnvs;
+        synchronized (sessions) {
+            connectedEnvs = new ArrayList<ExecutionEnvironment>(sessions.keySet());
+        }
+        for (ExecutionEnvironment env : connectedEnvs) {
+            ConnectionManager.getInstance().disconnect(env);
         }
     }
 

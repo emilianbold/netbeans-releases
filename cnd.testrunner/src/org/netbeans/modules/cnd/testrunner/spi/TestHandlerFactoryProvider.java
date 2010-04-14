@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,62 +34,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.pbuild;
-
-import java.util.Collection;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+package org.netbeans.modules.cnd.testrunner.spi;
 
 /**
+ * Service that provides output handlers for unit tests.
  *
- * @author Sergey Grinev
+ * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-public class BuildTestSuite extends CndBaseTestSuite {
+public interface TestHandlerFactoryProvider {
 
-    public static final String PLATFORMS_SECTION = "remote.platforms";
-    public static final String DEFAULT_SECTION = "remote";
-
-    public BuildTestSuite(Class testClass) {
-        this(testClass.getName(), testClass);
-    }
-
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public BuildTestSuite(String name, Test... tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
-    }
-
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public BuildTestSuite(String name, Collection<Test> tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
-    }
-
-    public BuildTestSuite() {
-        this("Remote Development", // NOI18N
-             RfsGnuRemoteBuildTestCase.class,
-             RfsSunStudioRemoteBuildTestCase.class,
-             RemoteBuildSamplesTestCase.class,
-             RemoteBuildMakefileTestCase.class);
-    }
-
-
-    private BuildTestSuite(String name, Class... testClasses) {
-        super(name, PLATFORMS_SECTION, testClasses);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new BuildTestSuite();
-        return suite;
-    }
+    /**
+     * Provides factory.
+     *
+     * @return - test handler factory
+     */
+    public TestHandlerFactory getFactory();
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,42 +34,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.remote.ui;
 
-package org.netbeans.modules.cnd.remote.fs;
-
-import junit.framework.Test;
-import org.netbeans.modules.cnd.test.CndBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Alexey Vladykin
  */
-public class RemoteFileSupportTest extends CndBaseTestCase {
+/*package*/ final class RestoreToolchainsAction extends AbstractAction {
 
-    public RemoteFileSupportTest(String testName) {
-        super(testName);
+    private final ExecutionEnvironment execEnv;
+
+    public RestoreToolchainsAction(ExecutionEnvironment execEnv) {
+        super(NbBundle.getMessage(RestoreToolchainsAction.class, "RestoreToolchainsMenuItem")); // NOI18N
+        this.execEnv = execEnv;
     }
 
-    public void testCCSmallReplacement() throws Exception {
-        String[][] data = new String[][] {{ "dir1/cc/dir2", "dir1/cc.cnd.rfs.small/dir2"},
-                                                            { "cc", "cc.cnd.rfs.small"},
-                                                            { "include/cc", "include/cc.cnd.rfs.small" },
-                                                            { "cc/dir", "cc.cnd.rfs.small/dir" },
-
-                                                            {"include/ccd", "include/ccd"},
-                                                            { "dcc/dir", "dcc/dir" },
-                                                            { "ccdir", "ccdir"}
-                                                          };
-        for (String[] pair : data) {
-            assertEquals(pair[1], RemoteFileSupport.fixCaseSensitivePathIfNeeded(pair[0]));
-            assertEquals(pair[0], RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(pair[1]));
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(RestoreToolchainsAction.class, "RestoreToolchainsMessage"), // NOI18N
+                NbBundle.getMessage(RestoreToolchainsAction.class, "RestoreToolchainsTitle"), // NOI18N
+                NotifyDescriptor.OK_CANCEL_OPTION);
+        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
+            ToolsPanelSupport.restoreCompilerSets(execEnv);
         }
-    }
-
-    public static Test suite() {
-        return new NativeExecutionBaseTestSuite(RemoteFileSupportTest.class);
     }
 }

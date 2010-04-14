@@ -44,7 +44,7 @@ package org.netbeans.modules.terminal.ioprovider;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -74,12 +74,12 @@ import org.openide.util.NbPreferences;
 import org.openide.windows.IOContainer;
 
 import org.netbeans.lib.terminalemulator.ActiveTerm;
-import org.netbeans.lib.terminalemulator.StreamTerm;
 import org.netbeans.lib.terminalemulator.Term;
 
 import org.netbeans.lib.terminalemulator.support.DefaultFindState;
 import org.netbeans.lib.terminalemulator.support.FindState;
 import org.netbeans.lib.terminalemulator.support.TermOptions;
+import org.netbeans.lib.terminalemulator.Coord;
 import org.netbeans.modules.terminal.api.IOConnect;
 import org.netbeans.modules.terminal.api.IOVisibility;
 import org.netbeans.modules.terminal.api.IOVisibilityControl;
@@ -92,6 +92,14 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.lib.terminalemulator.ActiveRegion;
+import org.netbeans.lib.terminalemulator.ActiveTermListener;
+import org.netbeans.lib.terminalemulator.Extent;
+import org.netbeans.lib.terminalemulator.TermListener;
+import org.netbeans.modules.terminal.api.IOResizable;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 /**
  * A {@link org.netbeans.lib.terminalemulator.Term}-based terminal component for
@@ -129,7 +137,8 @@ public final class Terminal extends JComponent {
 
     // Not final so we can dispose of them
     private Action[] actions;
-    private StreamTerm term;
+    private ActiveTerm term;
+    private final TermListener termListener;
     private FindState findState;
 
     private static final Preferences prefs =
@@ -209,6 +218,31 @@ public final class Terminal extends JComponent {
 	}
     }
 
+    /**
+     * Adapter to forward Term size change events as property changes.
+     */
+    private class MyTermListener implements TermListener {
+	@Override
+	public void sizeChanged(Dimension cells, Dimension pixels) {
+	    IOResizable.Size size = new IOResizable.Size(cells, pixels);
+	    tio.pcs().firePropertyChange(IOResizable.PROP_SIZE, null, size);
+	}
+    }
+
+    private static class TerminalOutputEvent extends OutputEvent {
+        private final String text;
+
+        public TerminalOutputEvent(InputOutput io, String text) {
+            super(io);
+            this.text = text;
+        }
+
+        @Override
+        public String getLine() {
+            return text;
+        }
+    }
+
     /* package */ Terminal(IOContainer ioContainer, TerminalInputOutput tio, Action[] actions, String name) {
 	if (ioContainer == null)
 	    throw new IllegalArgumentException("ioContainer cannot be null");	// NOI18N
@@ -251,6 +285,25 @@ public final class Terminal extends JComponent {
         };
         term.getScreen().addMouseListener(mouseAdapter);
 
+	termListener = new MyTermListener();
+	term.addListener(termListener);
+
+        // Set up to convert clicks on active regions, created by OutputWriter.
+        // println(), to outputLineAction notifications.
+        term.setActionListener(new ActiveTermListener() {
+	    @Override
+            public void action(ActiveRegion r, InputEvent e) {
+                OutputListener ol = (OutputListener) r.getUserObject();
+                if (ol == null)
+                    return;
+                Extent extent = r.getExtent();
+                String text = term.textWithin(extent.begin, extent.end);
+                OutputEvent oe =
+                    new TerminalOutputEvent(Terminal.this.tio, text);
+                ol.outputLineAction(oe);
+            }
+        });
+
         // Tell term about keystrokes we use for menu accelerators so
         // it passes them through.
         /* LATER
@@ -265,7 +318,6 @@ public final class Terminal extends JComponent {
         this.setLayout(new BorderLayout());
         add(term, BorderLayout.CENTER);
 	setFocusable(false);
-	// OLD setActions(actions);
     }
 
     void dispose() {
@@ -274,6 +326,8 @@ public final class Terminal extends JComponent {
 	disposed = true;
 
         term.getScreen().removeMouseListener(mouseAdapter);
+	term.removeListener(termListener);
+	term.setActionListener(null);
 	actions = null;
 	findState = null;
 	term = null;
@@ -344,8 +398,8 @@ public final class Terminal extends JComponent {
     }
 
     private void applyTermOptions(boolean initial) {
-        Font font = term.getFont();
         /* OLD
+        Font font = term.getFont();
         if (font != null) {
             Font newFont = new Font(font.getName(),
                                     font.getStyle(),
@@ -384,7 +438,7 @@ public final class Terminal extends JComponent {
      * Return the underlying Term.
      * @return the underlying StreamTerm.
      */
-    public StreamTerm term() {
+    public ActiveTerm term() {
         return term;
     }
 
@@ -709,4 +763,8 @@ public final class Terminal extends JComponent {
 	});
     }
      */
+
+    void scrollTo(Coord coord) {
+        term.possiblyNormalize(coord);
+    }
 }

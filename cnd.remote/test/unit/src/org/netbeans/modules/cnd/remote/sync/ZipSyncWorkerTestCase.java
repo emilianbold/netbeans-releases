@@ -37,46 +37,37 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.pbuild;
+package org.netbeans.modules.cnd.remote.sync;
 
-import java.util.concurrent.TimeUnit;
+import java.io.File;
+import java.io.PrintWriter;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.spi.project.ActionProvider;
+
 /**
- *
+ * Test for ScpSyncWorker
  * @author Vladimir Kvashin
  */
-public class RfsSunStudioRemoteBuildTest extends RemoteBuildTestBase {
+public class ZipSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
 
-    public RfsSunStudioRemoteBuildTest(String testName) {
-        super(testName);
-    }
-
-    public RfsSunStudioRemoteBuildTest(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);       
+    public ZipSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
     }
 
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        setupHost("rfs");
+    BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, 
+            PrintWriter out, PrintWriter err, File privProjectStorageDir) {
+        return new ZipSyncWorker(execEnv, out, err, privProjectStorageDir, src);
     }
 
-    @ForAllEnvironments
-    public void testBuildRfsSampleArgsSunStudio() throws Exception {
-        setDefaultCompilerSet("SunStudio");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
+    @Override
+    protected String getTestNamePostfix() {
+        return "zip";
     }
+
 
     public static Test suite() {
-        return new RemoteDevelopmentTestSuite(RfsSunStudioRemoteBuildTest.class);
+        return new RemoteDevelopmentTest(ZipSyncWorkerTestCase.class);
     }
 }

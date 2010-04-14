@@ -227,3 +227,10 @@ int main(int argc, char** argv) {
 
     return (EXIT_SUCCESS);
 }
+
+#ifdef __CYGWIN__
+//added for compatibility with cygwin 1.5
+int posix_openpt(int flags) {
+    return open("/dev/ptmx", flags);
+}
+#endif
