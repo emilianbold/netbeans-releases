@@ -165,7 +165,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             return;
         }
         List<File> fileList = new ArrayList<File>();
-        List<CharSequence> otherFileList = new ArrayList<CharSequence>();
+        ArrayList<CharSequence> otherFileList = new ArrayList<CharSequence>();
         for (int i = 0; i < files.length; i++) {
             if (!VisibilityQuery.getDefault().isVisible(files[i])) {
                 continue;
@@ -181,6 +181,9 @@ public class Folder implements FileChangeListener, ChangeListener {
                 }
             }
             fileList.add(files[i]);
+        }
+        if (otherFileList.size() > 0) {
+            otherFileList.trimToSize();
         }
         MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), this, otherFileList);
         for (File file : fileList) {
