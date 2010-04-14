@@ -1342,6 +1342,9 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                 return false;
             }
             FileObject proxySrcDir = getProjectDirectory().getFileObject(proxiesPath);
+            if (fo.equals(proxySrcDir)) {
+                return true;
+            }
             return proxySrcDir == null ? false : FileUtil.isParentOf(proxySrcDir, fo);
         } else {
             return false;

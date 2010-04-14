@@ -121,7 +121,7 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         
         Project projects[] = OpenProjectList.getDefault().getOpenProjects();
         
-        Arrays.sort( projects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
+        Arrays.sort(projects, OpenProjectList.projectByDisplayName());
         
         // Enable disable the action according to number of open projects
         if ( projects == null || projects.length == 0 ) {

@@ -128,7 +128,9 @@ import org.openide.windows.WindowManager;
  */
 public final class OpenProjectList {
     
-    public static final Comparator<Project> PROJECT_BY_DISPLAYNAME = new ProjectByDisplayNameComparator();
+    public static Comparator<Project> projectByDisplayName() {
+        return new ProjectByDisplayNameComparator();
+    }
     
     // Property names
     public static final String PROPERTY_OPEN_PROJECTS = "OpenProjects";
@@ -392,8 +394,9 @@ public final class OpenProjectList {
             lazilyOpenedProjects = new ArrayList<Project>();
             List<URL> URLs = OpenProjectListSettings.getInstance().getOpenProjectsURLs();
             Project[] inital;
+            final LinkedList<Project> projects = URLs2Projects(URLs);
             synchronized (toOpenProjects) {
-                toOpenProjects.addAll(URLs2Projects(URLs));
+                toOpenProjects.addAll(projects);
                 log(Level.FINER, "loadOnBackground {0}", toOpenProjects); // NOI18N
                 inital = toOpenProjects.toArray(new Project[0]);
             }
@@ -1094,7 +1097,6 @@ public final class OpenProjectList {
         for (ProjectOpenedHook hook : p.getLookup().lookupAll(ProjectOpenedHook.class)) {
             try {
                 ProjectOpenedTrampoline.DEFAULT.projectOpened(hook);
-                prepareTemplates(null, null, null, null, p, p.getLookup());
             } catch (RuntimeException e) {
                 log(Level.WARNING, null, e);
                 // Do not try to call its close hook if its open hook already failed:
@@ -1108,6 +1110,7 @@ public final class OpenProjectList {
                 ok = false;
             }
         }
+        prepareTemplates(null, null, null, null, p, p.getLookup());
         return ok;
     }
     
@@ -1129,21 +1132,19 @@ public final class OpenProjectList {
             Project project, Lookup lookup) {
         // check the action context for recommmended/privileged templates..
         PrivilegedTemplates privs = lookup.lookup(PrivilegedTemplates.class);
-        List lruList = OpenProjectList.getDefault().getTemplatesLRU(project, privs);
         boolean itemAdded = false;
-        for (Iterator it = lruList.iterator(); it.hasNext();) {
-            DataObject template = (DataObject) it.next();
-
+        for (DataObject template : OpenProjectList.getDefault().getTemplatesLRU(project, privs)) {
             Node delegate = template.getNodeDelegate();
             Icon icon = ImageUtilities.image2Icon(delegate.getIcon(BeanInfo.ICON_COLOR_16x16));
+            String displayName = delegate.getDisplayName();
             if (templateName != null) {
                 JMenuItem item = new JMenuItem(
-                        templateName.format(new Object[]{delegate.getDisplayName()}),
+                        templateName.format(new Object[]{displayName}),
                         icon);
                 item.addActionListener(menuListener);
                 item.putClientProperty(propertyName, template);
                 menuItem.add(item);
-            }
+            } // else being warmed up from notifyOpened
             itemAdded = true;
         }
         return itemAdded;
@@ -1644,9 +1645,20 @@ public final class OpenProjectList {
         
     }
     
-    public static class ProjectByDisplayNameComparator implements Comparator<Project> {
+    private static class ProjectByDisplayNameComparator implements Comparator<Project> {
         
-	private static Comparator<Object> COLLATOR = Collator.getInstance();
+        private static Comparator<Object> COLLATOR = Collator.getInstance();
+
+        // memoize results since it could be called >1 time per project:
+        private final Map<Project,String> names = new HashMap<Project,String>();
+        private String getDisplayName(Project p) {
+            String n = names.get(p);
+            if (n == null) {
+                n = ProjectUtils.getInformation(p).getDisplayName();
+                names.put(p, n);
+            }
+            return n;
+        }
         
         public int compare(Project p1, Project p2) {
 //            Uncoment to make the main project be the first one
@@ -1659,8 +1671,8 @@ public final class OpenProjectList {
 //                return 1;
 //            }
             
-            String n1 = ProjectUtils.getInformation(p1).getDisplayName();
-            String n2 = ProjectUtils.getInformation(p2).getDisplayName();
+            String n1 = getDisplayName(p1);
+            String n2 = getDisplayName(p2);
             if (n1 != null && n2 != null) {
                 return COLLATOR.compare(n1, n2);
             } else if (n1 == null && n2 != null) {

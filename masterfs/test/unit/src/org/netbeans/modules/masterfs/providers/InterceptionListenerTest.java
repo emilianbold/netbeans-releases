@@ -137,7 +137,8 @@ public class InterceptionListenerTest extends NbTestCase  {
             fail();
         } catch (IOException ex) {
             assertEquals(0,iListener.deleteSuccessCalls);
-            assertEquals(1,iListener.deleteFailureCalls);
+            // fails to lock non-existing fileobject
+            assertEquals(0,iListener.deleteFailureCalls);
         }
     }
     

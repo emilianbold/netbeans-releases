@@ -62,8 +62,9 @@ public class ProjectChooserFactoryImpl implements ProjectChooserFactory {
         return ProjectChooserAccessory.createProjectChooser( false );
     }
 
-    public @Override WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
-        return new SimpleTargetChooserPanel( project, folders, bottomPanel, false );
+    public @Override WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser(Project project, SourceGroup[] folders,
+            WizardDescriptor.Panel<WizardDescriptor> bottomPanel, boolean freeFileExtension) {
+        return new SimpleTargetChooserPanel(project, folders, bottomPanel, false, freeFileExtension);
     }
 
     public @Override File getProjectsFolder() {

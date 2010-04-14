@@ -1850,6 +1850,16 @@ public abstract class TreeView extends JScrollPane {
             }
         }
 
+        @Override
+        public Rectangle getRowBounds(int row) {
+            Rectangle r = super.getRowBounds(row);
+            if (r == null) {
+                LOG.log(Level.WARNING, "No bounds for row {0} in three view: {1}", new Object[]{row, this});
+                return new Rectangle();
+            }
+            return r;
+        }
+
         //
         // Certain operation should be executed in guarded mode - e.g.
         // not allow changes in nodes during the operation being executed

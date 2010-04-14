@@ -49,7 +49,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -316,8 +315,12 @@ public class FileObj extends BaseFileObj {
     }
 
 
+    @Override
     public final FileLock lock() throws IOException {
         final File me = getFileName().getFile();
+        if (!me.canWrite()) {
+            FSException.io("EXC_CannotLock", me);
+        }
         try {            
             final FileLock result = LockForFile.tryLock(me);
             getProvidedExtensions().fileLocked(this);

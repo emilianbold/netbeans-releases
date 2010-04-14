@@ -726,8 +726,6 @@ run   - Builds and deploys the application and starts the browser.
                          <xsl:text>${dependency.</xsl:text>
                          <xsl:value-of select="@id"/>
                          <xsl:text>.origin}/dist/</xsl:text>
-                         <xsl:value-of select="@id"/>
-                         <xsl:text>/javacard/</xsl:text>
                     </xsl:attribute>
                 </xsl:element>
                 <xsl:element name="echo">
