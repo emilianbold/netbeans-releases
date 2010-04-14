@@ -89,6 +89,7 @@ import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 
         String cmd;
         String[] args;
+        boolean first;
 
         final HostInfo hostIinfo = HostInfoUtils.getHostInfo(executionEnvironment);
         if (hostIinfo == null) {
@@ -99,10 +100,17 @@ import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
             case LINUX:
                 cmd = "/usr/bin/md5sum"; // NOI18N
                 args = new String[] { "-b", remotePath }; // NOI18N
+                first = true;
                 break;
             case SUNOS:
                 cmd = "/usr/bin/digest"; // NOI18N
                 args = new String[] {"-a", "md5", remotePath }; //NOI18N
+                first = true;
+                break;
+            case MACOSX:
+                cmd = "sh";
+                args = new String [] {"-c", String.format("md5 %s || openssl -md5 %s", remotePath, remotePath)}; //NOI18N
+                first = false;
                 break;
             default:
                 throw new NoSuchAlgorithmException("Unexpected OS: " + oSFamily); // NOI18N
@@ -139,7 +147,7 @@ import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
         if (parts.length == 0) {
             throw new CheckSumException("Line shouldn't be empty"); // NOI18N
         }
-        String remoteCheckSum = parts[0];
+        String remoteCheckSum = first ? parts[0] : parts[parts.length - 1];
         if (remoteCheckSum.equals(localCheckSum)) {
             return Result.UPTODATE;
         }
