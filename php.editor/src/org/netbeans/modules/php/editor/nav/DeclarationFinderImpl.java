@@ -58,7 +58,6 @@ import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.Occurence;
-import org.netbeans.modules.php.editor.model.Occurence.Accuracy;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
@@ -78,10 +77,12 @@ import org.openide.filesystems.FileUtil;
  * @author Radek Matous
  */
 public class DeclarationFinderImpl implements DeclarationFinder {
+    @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
         return findDeclarationImpl(info, caretOffset);
     }
 
+    @Override
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
         TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
         return getReferenceSpan(ts, caretOffset);
@@ -194,7 +195,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         DeclarationLocation retval = DeclarationLocation.NONE;
         if (underCaret != null) {
             Collection<? extends PhpElement> gotoDeclarations = underCaret.gotoDeclarations();
-            if (gotoDeclarations == null || gotoDeclarations.size() == 0) {
+            if (gotoDeclarations == null || gotoDeclarations.isEmpty()) {
                 return DeclarationLocation.NONE;
             }
             PhpElement declaration = gotoDeclarations.iterator().next();
@@ -241,10 +242,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             this(modelElement, new DeclarationLocation(modelElement.getFileObject(), modelElement.getOffset(), modelElement));
         }
 
+        @Override
         public ElementHandle getElement() {
             return modelElement;
         }
 
+        @Override
         public String getDisplayHtml(HtmlFormatter formatter) {
             formatter.reset();
             ElementKind ek = modelElement.getKind();
@@ -270,10 +273,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             return formatter.getText();
         }
 
+        @Override
         public DeclarationLocation getLocation() {
             return declaration;
         }
 
+        @Override
         public int compareTo(AlternativeLocation o) {
             AlternativeLocationImpl i = (AlternativeLocationImpl) o;
             return this.modelElement.getName().compareTo(i.modelElement.getName());

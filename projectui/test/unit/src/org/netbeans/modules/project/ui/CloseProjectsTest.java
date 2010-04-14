@@ -132,6 +132,7 @@ public class CloseProjectsTest extends NbTestCase {
             }
             i++;
         }
+        ProjectsRootNode.ProjectChildren.RP.post(new Runnable() {public @Override void run() {}}).waitFinished();
         assertEquals("Just fifteen left nodes", 15, logicalView.getChildren().getNodesCount());
 
         // let the project open hook run
@@ -139,6 +140,7 @@ public class CloseProjectsTest extends NbTestCase {
         
         OpenProjects.getDefault().close(arr);
         
+        ProjectsRootNode.ProjectChildren.RP.post(new Runnable() {public @Override void run() {}}).waitFinished();
         assertEquals("View is empty", 0, logicalView.getChildren().getNodesCount());
     }
     

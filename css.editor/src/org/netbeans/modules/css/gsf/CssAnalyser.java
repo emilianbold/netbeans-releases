@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.css.gsf;
 
+import java.util.Arrays;
+import java.util.Collection;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
@@ -73,6 +75,7 @@ public class CssAnalyser {
         final PropertyModel model = PropertyModel.instance();
         NodeVisitor visitor = new NodeVisitor() {
 
+            @Override
             public void visit(SimpleNode node) {
                 if (node.kind() == CssParserTreeConstants.JJTDECLARATION) {
                     SimpleNode propertyNode = SimpleNodeUtil.getChildByType(node, CssParserTreeConstants.JJTPROPERTY);
@@ -80,6 +83,13 @@ public class CssAnalyser {
 
                     if (propertyNode != null) {
                         String propertyName = propertyNode.image().trim();
+
+                        //check non css 2.1 compatible properties and ignore them
+                        //values are not checked as well
+                        if(isNonCss21CompatibleDeclarationPropertyName(propertyName)) {
+                            return ;
+                        }
+
                         //check for vendor specific properies - ignore them
                         Property property = model.getProperty(propertyName);
                         if (!CssGSFParser.containsGeneratedCode(propertyName) && !isVendorSpecificProperty(propertyName) && property == null) {
@@ -114,6 +124,10 @@ public class CssAnalyser {
 
                                     //error in property 
                                     String unexpectedToken = pv.left().get(pv.left().size() - 1);
+
+                                    if(isNonCss21CompatiblePropertyValue(unexpectedToken)) {
+                                        return ;
+                                    }
 
                                     if (errorMsg == null) {
                                         errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken);
@@ -186,4 +200,21 @@ public class CssAnalyser {
     public static boolean isVendorSpecificProperty(String propertyName) {
         return propertyName.startsWith("_") || propertyName.startsWith("-"); //NOI18N
     }
+
+    //this is only a temporary hack for being able to filter out the css 2.1 errors for
+    //commonly used properties not defined in the specification
+    private static boolean isNonCss21CompatibleDeclarationPropertyName(String propertyName) {
+        return NON_CSS21_DECLARATION_PROPERTY_NAMES.contains(propertyName);
+    }
+
+    private static boolean isNonCss21CompatiblePropertyValue(String propertyValue) {
+        return NON_CSS21_DECLARATION_PROPERTY_VALUES.contains(propertyValue);
+    }
+
+    private static final Collection<String> NON_CSS21_DECLARATION_PROPERTY_NAMES = Arrays.asList(
+            new String[]{"opacity", "resize", "text-overflow", "text-shadow", "filter"}); //NOI18N
+
+    private static final Collection<String> NON_CSS21_DECLARATION_PROPERTY_VALUES = Arrays.asList(
+            new String[]{"expression"}); //NOI18N
+
 }

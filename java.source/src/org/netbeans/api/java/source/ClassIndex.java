@@ -53,6 +53,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -232,13 +233,10 @@ public final class ClassIndex {
         this.oldSources = new HashSet<URL>();
         this.depsIndeces = new HashSet<ClassIndexImpl>();
         this.sourceIndeces = new HashSet<ClassIndexImpl>();
-        
-        final ClassIndexManager manager = ClassIndexManager.getDefault();
-        manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, (ClassIndexManagerListener) this.spiListener, manager));
         this.bootPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.bootPath));
         this.classPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.classPath));
-        this.sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.sourcePath));                
-        reset (true, true);	    
+        this.sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.sourcePath));
+        reset (true, true);
     }
     
     
@@ -526,7 +524,9 @@ public final class ClassIndex {
     }           
     
     private class SPIListener implements ClassIndexImplListener, ClassIndexManagerListener, PropertyChangeListener {
-        
+
+        private final AtomicBoolean attached = new AtomicBoolean();
+
         public void typesAdded (final ClassIndexImplEvent event) {
             assert event != null;
             final Runnable action = new Runnable () {
@@ -596,6 +596,13 @@ public final class ClassIndex {
             //Not important handled by propertyChange from ClassPath
         }
 
+        private void attachClassIndexManagerListener () {
+            if (!attached.getAndSet(true)) {
+                final ClassIndexManager manager = ClassIndexManager.getDefault();
+                manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, (ClassIndexManagerListener) this, manager));
+            }
+        }
+
         @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
         private boolean containsRoot (final ClassPath cp, final Set<? extends URL> roots, final List<? super URL> affectedRoots, final boolean translate) {
             final List<ClassPath.Entry> entries = cp.entries();
@@ -606,28 +613,29 @@ public final class ClassIndex {
                 URL[] srcRoots = null;
                 if (translate) {
                     srcRoots = preg.sourceForBinaryQuery(entry.getURL(), cp, false);
-                }                
+                }
                 if (srcRoots == null) {
                     if (roots.contains(url)) {
                         affectedRoots.add(url);
-                        result = true;                    
+                        result = true;
                     }
                 }
                 else {
                     for (URL _url : srcRoots) {
                         if (roots.contains(_url)) {
                             affectedRoots.add(url);
-                            result = true;                    
+                            result = true;
                         }
                     }
-                }                
+                }
             }
             return result;
         }
-        
+
         private boolean containsNewRoot (final ClassPath cp, final Set<? extends URL> roots,
                 final List<? super URL> newRoots, final List<? super URL> removedRoots,
-                final boolean translate) throws IOException {
+                final boolean[] attachListener, final boolean translate) throws IOException {
+            assert attachListener != null && attachListener.length == 1;
             final List<ClassPath.Entry> entries = cp.entries();
             final PathRegistry preg = PathRegistry.getDefault();
             final ClassIndexManager mgr = ClassIndexManager.getDefault();
@@ -637,18 +645,26 @@ public final class ClassIndex {
                 URL[] srcRoots = null;
                 if (translate) {
                     srcRoots = preg.sourceForBinaryQuery(entry.getURL(), cp, false);
-                }                
+                }
                 if (srcRoots == null) {
-                    if (!roots.remove(url) && mgr.getUsagesQuery(url)!=null) {
-                        newRoots.add (url);
-                        result = true;
+                    if (!roots.remove(url)) {
+                        if (mgr.getUsagesQuery(url)!=null) {
+                            newRoots.add (url);
+                            result = true;
+                        } else {
+                            attachListener[0]=true;
+                        }
                     }
                 }
                 else {
                     for (URL _url : srcRoots) {
-                        if (!roots.remove(_url) && mgr.getUsagesQuery(_url)!=null) {
-                            newRoots.add (_url);
-                            result = true;
+                        if (!roots.remove(_url)) {
+                            if (mgr.getUsagesQuery(_url)!=null) {
+                                newRoots.add (_url);
+                                result = true;
+                            } else {
+                                attachListener[0]=true;
+                            }
                         }
                     }
                 }
@@ -657,7 +673,7 @@ public final class ClassIndex {
             Collection<? super URL> c = removedRoots;
             c.addAll(roots);
             return result;
-        }                
+        }
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (ClassPath.PROP_ENTRIES.equals (evt.getPropertyName())) {
@@ -666,30 +682,33 @@ public final class ClassIndex {
                 boolean dirtySource = false;
                 boolean dirtyDeps = false;
                 try {
-                    Object source = evt.getSource();                
+                    Object source = evt.getSource();
+                    final boolean [] attachListener = new boolean[]{false};
                     if (source == ClassIndex.this.sourcePath) {
                         Set<URL> copy;
                         synchronized (ClassIndex.this) {
                             copy = new HashSet<URL>(oldSources);
                         }
-                        dirtySource = containsNewRoot(sourcePath, copy, newRoots, removedRoots, false);                        
-                    }                
+                        dirtySource = containsNewRoot(sourcePath, copy, newRoots, removedRoots, attachListener, false);
+                    }
                     else if (source == ClassIndex.this.classPath) {
                         Set<URL> copy;
                         synchronized (ClassIndex.this) {
                             copy = new HashSet<URL>(oldCompile);
                         }
-                        dirtyDeps = containsNewRoot(classPath, copy, newRoots, removedRoots, true);                        
+                        dirtyDeps = containsNewRoot(classPath, copy, newRoots, removedRoots, attachListener, true);
                     }
                     else if (source == ClassIndex.this.bootPath) {
                         Set<URL> copy;
                         synchronized (ClassIndex.this) {
                             copy = new HashSet<URL>(oldBoot);
                         }
-                        dirtyDeps = containsNewRoot(bootPath, copy, newRoots, removedRoots, true);
+                        dirtyDeps = containsNewRoot(bootPath, copy, newRoots, removedRoots, attachListener, true);
                     }
-                    
-                    if (dirtySource || dirtyDeps) {                        
+                    if (attachListener[0]) {
+                        attachClassIndexManagerListener();
+                    }
+                    if (dirtySource || dirtyDeps) {
                         ClassIndex.this.reset(dirtySource, dirtyDeps);
                         final RootsEvent ae = newRoots.isEmpty() ? null : new RootsEvent(ClassIndex.this, newRoots);
                         final RootsEvent re = removedRoots.isEmpty() ? null : new RootsEvent(ClassIndex.this, removedRoots);
