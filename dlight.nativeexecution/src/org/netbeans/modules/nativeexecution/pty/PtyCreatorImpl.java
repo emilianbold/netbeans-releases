@@ -44,6 +44,7 @@ import java.io.OutputStream;
 import org.netbeans.modules.nativeexecution.JschSupport;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.pty.PtyOpenUtility.PtyInfo;
@@ -71,6 +72,12 @@ public class PtyCreatorImpl implements PtyAllocator {
             return null;
         }
 
+        HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+
+        if (hostInfo == null) {
+            return null;
+        }
+
         try {
             if (env.isLocal()) {
                 ProcessBuilder pb = new ProcessBuilder(ptyOpenUtilityPath);
@@ -78,9 +85,18 @@ public class PtyCreatorImpl implements PtyAllocator {
                 output = pty.getOutputStream();
                 input = pty.getInputStream();
             } else {
-                ChannelStreams streams = JschSupport.execCommand(env, ptyOpenUtilityPath, null);
+                // Here I have faced with a problem that when
+                // I'm trying to start ptyOpenUtilityPath directly - I'm fail
+                // to read from it's output in some [64-bit linux, or ssh on
+                // localhost (solaris/linux)] cases.
+                // The workaround below is to use sh -s ...
+                // It works, though I don't fully understand the reason...
+                ChannelStreams streams = JschSupport.execCommand(env, hostInfo.getShell() + " -s", null); // NOI18N
                 output = streams.in;
                 input = streams.out;
+
+                output.write(("exec " + ptyOpenUtilityPath + "\n").getBytes()); // NOI18N
+                output.flush();
             }
 
             PtyInfo ptyInfo = PtyOpenUtility.getInstance().readSatelliteOutput(input);

@@ -63,9 +63,11 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
     private Pty pty = null;
     private PtyImpl ptyImpl = null;
     private AbstractNativeProcess delegate = null;
+    private volatile boolean cancelled;
 
     public PtyNativeProcess(NativeProcessInfo info) {
         super(info);
+        cancelled = false;
     }
 
     public Pty getPty() {
@@ -79,6 +81,10 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
         if (_pty == null) {
             _pty = PtySupport.allocate(env);
+        }
+
+        if (cancelled) {
+            return;
         }
 
         if (_pty == null) {
@@ -122,11 +128,23 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
     @Override
     protected void cancel() {
-        delegate.destroy();
+        cancelled = true;
+
+        if (delegate != null) {
+            delegate.destroy();
+        }
     }
 
     @Override
     protected int waitResult() throws InterruptedException {
+        if (cancelled) {
+            throw new InterruptedException();
+        }
+
+        if (delegate == null) {
+            return 1;
+        }
+
         return delegate.waitResult();
     }
 
