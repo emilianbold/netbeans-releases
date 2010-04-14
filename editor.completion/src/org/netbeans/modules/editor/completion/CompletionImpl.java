@@ -1749,53 +1749,49 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             return;
         }
         Object profiler = a.getValue("logger-completion"); // NOI18N
-        if (profiler == null) {
+        if (!(profiler instanceof Runnable) || !(profiler instanceof ActionListener)) {
             return;
         }
         profile = new Profile(profiler, when);
     }
 
-    private static final class Profile implements Runnable {
+    private static final class Profile {
         Object profiler;
-        boolean profiling;
         private final long time;
 
         public Profile(Object profiler, long when) {
             time = when;
-            this.profiler = profiler;
-            run();
-        }
-
-        @Override
-        public synchronized void run() {
-            profiling = true;
-            if (profiler instanceof Runnable) {
-                Runnable r = (Runnable)profiler;
-                r.run();
+            synchronized (this) {
+                this.profiler = profiler;
+                ((Runnable) profiler).run();
             }
         }
 
         private synchronized void stop() throws Exception {
-            long delta = System.currentTimeMillis() - time;
-
-            ActionListener ss = (ActionListener)profiler;
-            profiler = null;
-            if (!profiling || delta < 0 || delta > 60L * 60 * 1000) {
+            if (profiler == null) {
                 return;
             }
-            try {
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                DataOutputStream dos = new DataOutputStream(out);
-                ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
-                dos.close();
-                if (dos.size() > 0) {
-                    Object[] params = new Object[]{out.toByteArray(), delta, "CodeCompletion"};
-                    Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
-                } else {
-                    LOG.log(Level.WARNING, "no snapshot taken"); // NOI18N
+
+            long delta = System.currentTimeMillis() - time;
+            ActionListener ss = (ActionListener)profiler;
+            profiler = null;
+            if (delta < 0 || delta > 60L * 60 * 1000) {
+                ss.actionPerformed(new ActionEvent(null, 0, "cancel")); // NOI18N
+            } else {
+                try {
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    DataOutputStream dos = new DataOutputStream(out);
+                    ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+                    dos.close();
+                    if (dos.size() > 0) {
+                        Object[] params = new Object[]{out.toByteArray(), delta, "CodeCompletion"};
+                        Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
+                    } else {
+                        LOG.log(Level.WARNING, "no snapshot taken"); // NOI18N
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
 

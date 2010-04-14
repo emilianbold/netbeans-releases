@@ -82,6 +82,19 @@ public final class HighlightingManager {
     // -J-Dorg.netbeans.modules.editor.lib2.highlighting.HighlightingManager.level=300
     private static final Logger LOG = Logger.getLogger(HighlightingManager.class.getName());
     
+    public static final boolean LINEWRAP_ENABLED;
+    static {
+        String value = System.getProperty("org.netbeans.editor.linewrap"); //NOI18N
+        LINEWRAP_ENABLED = (value != null)
+                ? !value.equalsIgnoreCase("false") //NOI18N
+                : true;
+        /* for NB6.9 Beta
+        LINEWRAP_ENABLED = (value != null)
+                ? value.equalsIgnoreCase("true")
+                : false;
+         */
+    }
+
     public static synchronized HighlightingManager getInstance() {
         if (instance == null) {
             instance = new HighlightingManager();
@@ -147,8 +160,6 @@ public final class HighlightingManager {
         // CompoundHighlightsContainers with containers from filtered layers
         private final WeakHashMap<HighlightsLayerFilter, WeakReference<MultiLayerContainer>> containers =
             new WeakHashMap<HighlightsLayerFilter, WeakReference<MultiLayerContainer>>();
-
-        private static final boolean LINEWRAP_ENABLED = !Boolean.getBoolean("org.netbeans.editor.linewrap.disable"); //NOI18N
 
         @SuppressWarnings("LeakingThisInConstructor")
         public Highlighting(JTextComponent pane) {
