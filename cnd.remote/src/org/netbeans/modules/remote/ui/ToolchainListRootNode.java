@@ -91,6 +91,7 @@ public class ToolchainListRootNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         return new Action[] {
                 new AddToolchainAction(env),
+                new RestoreToolchainsAction(env),
                 new ShowToolchainsAction(env, null) };
     }
 

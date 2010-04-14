@@ -330,6 +330,7 @@ public final class ParserQueue {
     private final Object lock = new Lock();
     private final boolean addAlways;
     private final Diagnostic.StopWatch stopWatch = TraceFlags.TIMING ? new Diagnostic.StopWatch(false) : null;
+    private final Diagnostic.ProjectStat parseWatch = TraceFlags.TIMING ? new Diagnostic.ProjectStat() : null;
     private final Map<ProjectBase, AtomicInteger> onStartLevel = new HashMap<ProjectBase, AtomicInteger>();
 
     private ParserQueue(boolean addAlways) {
@@ -615,10 +616,23 @@ public final class ParserQueue {
         for (ProjectBase prj : copiedProjects) {
             ProgressSupport.instance().fireProjectParsingFinished(prj);
         }
+        clearParseWatch();
     }
 
     public void startup() {
         state = State.ON;
+    }
+
+    void clearParseWatch() {
+        if (parseWatch != null) {
+            parseWatch.clear();
+        }
+    }
+
+    void addParseStatistics(ProjectBase project, FileImpl file, long parseTime) {
+        if (parseWatch != null) {
+            parseWatch.addParseFileStatistics(project, file, parseTime);
+        }
     }
 
     public void removeAll(ProjectBase project) {
@@ -772,6 +786,9 @@ public final class ParserQueue {
                 // since project files might be shuffled in queue
                 if (TraceFlags.TIMING && stopWatch != null && stopWatch.isRunning()) {
                     stopWatch.stopAndReport("=== Stopping parser queue stopwatch " + project.getName() + ": \t"); // NOI18N
+                    if (parseWatch != null) {
+                        parseWatch.traceProjectData(project);
+                    }
                 }
             }
             lock.notifyAll();
