@@ -46,17 +46,20 @@ import java.util.concurrent.Future;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.toolchain.ui.options.AddCompilerSetPanel;
 import org.netbeans.modules.cnd.toolchain.ui.options.HostToolsPanelModel;
 import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManagerImpl;
 import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -185,7 +188,7 @@ public class ToolsPanelSupport {
      * Note that saving happens asynchronously, i.e. the new toolchain
      * might not be saved yet when this method returns.
      *
-     * This method should be called from EDT.
+     * This method must be called from EDT.
      *
      * @param env execution environment
      * @return created toolchain, or <code>null</code> if the wizard was cancelled
@@ -206,7 +209,7 @@ public class ToolsPanelSupport {
      * Note that saving happens asynchronously, i.e. the new default toolchain
      * might not be saved yet when this method returns.
      *
-     * This method can be called from EDT.
+     * This method can be called from EDT or other thread.
      *
      * @param env  execution environment
      * @param csName  new default toolchain name
@@ -224,7 +227,7 @@ public class ToolsPanelSupport {
      * Note that removal happens asynchronously, i.e. the toolchain
      * might not be removed yet when this method returns.
      *
-     * This method can be called from EDT.
+     * This method can be called from EDT or other thread.
      *
      * @param env  execution environment
      * @param csName  name of toolchain to remove
@@ -236,7 +239,38 @@ public class ToolsPanelSupport {
                 new CompilerSetAction(csm, csm.getCompilerSet(csName), CompilerSetActionType.REMOVE));
     }
 
+    /**
+     * Initiates toolchain discovery which restores the default
+     * toolchain list for the given {@link ExecutionEnvironment}.
+     *
+     * Note that saving happens asynchronously, i.e. the new toolchain list
+     * might not be saved yet when this method returns.
+     *
+     * This method must be called from EDT.
+     *
+     * @param env  execution environment
+     * @return task to wait for completion
+     */
+    public static RequestProcessor.Task restoreCompilerSets(final ExecutionEnvironment env) {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                CompilerSetManagerImpl oldCsm = (CompilerSetManagerImpl) CompilerSetManager.get(env);
+                cacheManager.restoreCompilerSets(oldCsm);
+            }
+        };
+        ModalMessageDlg.runLongTask(
+                WindowManager.getDefault().getMainWindow(),
+                runnable, null, null,
+                NbBundle.getMessage(ToolsPanelSupport.class, "RestoringToolchainsTitle"), // NOI18N
+                NbBundle.getMessage(ToolsPanelSupport.class, "RestoringToolchainsMessage")); // NOI18N
+
+        return RequestProcessor.getDefault().post(
+                new CompilerSetAction(null, null, CompilerSetActionType.NONE));
+    }
+
     private static enum CompilerSetActionType {
+        NONE,
         ADD,
         REMOVE,
         SET_DEFAULT
