@@ -558,6 +558,14 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    public boolean wrapBlockBrace() {
+        return preferences.getBoolean(wrapBlockBraces, getDefaultAsBoolean(wrapBlockBraces));
+    }
+
+    public boolean wrapStatementsOnTheSameLine() {
+        return preferences.getBoolean(wrapStatementsOnTheLine, getDefaultAsBoolean(wrapStatementsOnTheLine));
+    }
+
     private static class Producer implements FmtOptions.CodeStyleProducer {
 
         public CodeStyle create(Preferences preferences) {

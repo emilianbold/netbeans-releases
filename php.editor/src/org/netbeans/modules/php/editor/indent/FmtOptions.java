@@ -214,6 +214,8 @@ public class FmtOptions {
     public static final String wrapBinaryOps = "wrapBinaryOps"; //NOI18N
     public static final String wrapTernaryOps = "wrapTernaryOps"; //NOI18N
     public static final String wrapAssignOps = "wrapAssignOps"; //NOI18N
+    public static final String wrapBlockBraces = "wrapBlockBraces";  //NOI18N
+    public static final String wrapStatementsOnTheLine = "wrapStateMentsOnTheLine"; // NOI18N
     
     public static CodeStyleProducer codeStyleProducer;
 
@@ -371,8 +373,10 @@ public class FmtOptions {
             { wrapWhileStatement, WRAP_ALWAYS}, //NOI18N
             { wrapDoWhileStatement, WRAP_ALWAYS}, //NOI18N
             { wrapBinaryOps, WRAP_NEVER}, //NOI18N
-            { wrapTernaryOps, WRAP_NEVER}, //NOI18N
-            { wrapAssignOps, WRAP_NEVER} //NOI18N
+            { wrapTernaryOps, WRAP_NEVER}, 
+            { wrapAssignOps, WRAP_NEVER},
+            { wrapBlockBraces, TRUE},
+            { wrapStatementsOnTheLine, TRUE}
 
         };
         

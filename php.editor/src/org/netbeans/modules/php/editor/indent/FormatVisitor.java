@@ -243,13 +243,16 @@ public class FormatVisitor extends DefaultVisitor {
 		}
 		addFormatToken(formatTokens);
 	    }
-	    if (!indentationIncluded) {
+
+            if (!indentationIncluded) {
 		formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.indentSize));
 	    }
-
-	    if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
+            
+            if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLASS_LEFT_BRACE, ts.offset()));
-	    }
+	    } else {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_OTHER_LEFT_BRACE, ts.offset()));
+            }
 
 	}
 
@@ -1093,7 +1096,12 @@ public class FormatVisitor extends DefaultVisitor {
 		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
 		break;
 	    case PHP_SEMICOLON:
-		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_SEMI, ts.offset()));
+                if (!(ts.movePrevious() && ts.token().id() == PHPTokenId.WHITESPACE
+                        && countOfNewLines(ts.token().text()) > 0)) {
+                    // if a line starts with the semicolon, don't put this whitespace
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_SEMI, ts.offset() + ts.token().length()));
+                }
+                ts.moveNext();
 		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
 		//tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_SEMI, ts.offset() + ts.token().length()));
 		break;
@@ -1133,8 +1141,10 @@ public class FormatVisitor extends DefaultVisitor {
 
     private void addRestOfLine() {
 	while (ts.moveNext()
-		&& !(ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) > 0)
-		&& ts.token().id() != PHPTokenId.PHP_LINE_COMMENT) {
+                && ts.token().id() != PHPTokenId.PHP_LINE_COMMENT
+		&& ((ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) == 0)
+		|| isComment(ts.token())
+                || ts.token().id() == PHPTokenId.PHP_SEMICOLON)) {
 	    addFormatToken(formatTokens);
 	}
 	if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT

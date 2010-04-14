@@ -1480,6 +1480,57 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/wrapping/for02.php", options);
     }
 
+    public void testWrappingBlock01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/wrapping/block01.php", options);
+    }
+
+    public void testWrappingBlock02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapBlockBraces, false);
+        reformatFileContents("testfiles/formatting/wrapping/block02.php", options);
+    }
+
+    public void testWrappingBlock03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapBlockBraces, true);
+        reformatFileContents("testfiles/formatting/wrapping/block03.php", options);
+    }
+
+    public void testWrappingBlock04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapBlockBraces, false);
+        reformatFileContents("testfiles/formatting/wrapping/block04.php", options);
+    }
+
+    public void testWrappingBlock05() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapBlockBraces, true);
+        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/wrapping/block05.php", options);
+    }
+
+    public void testWrappingBlock06() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapBlockBraces, false);
+        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/wrapping/block06.php", options);
+    }
+
     public void testTernaryOp01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
 	options.put(FmtOptions.wrapTernaryOps, CodeStyle.WrapStyle.WRAP_NEVER);
