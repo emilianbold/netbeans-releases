@@ -102,10 +102,11 @@ public final class ParserThread implements Runnable {
                         trace("parsing started: " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS)); // NOI18N
                     }
                     Diagnostic.StopWatch stw = TraceFlags.TIMING_PARSE_PER_FILE_FLAT ? new Diagnostic.StopWatch() : null;
+                    ProjectBase project = null;
                     try {
                         Collection<APTPreprocHandler.State> states = entry.getPreprocStates();
                         Collection<APTPreprocHandler> preprocHandlers = new ArrayList<APTPreprocHandler>(states.size());
-                        ProjectBase project = file.getProjectImpl(true);
+                        project = file.getProjectImpl(true);
                         for (APTPreprocHandler.State state : states) {
                             if (!project.isDisposing()) { // just in case check
                                 if (state == FileImpl.DUMMY_STATE) {
@@ -128,7 +129,8 @@ public final class ParserThread implements Runnable {
                         DiagnosticExceptoins.register(thr);
                     } finally {
                         if (stw != null) {
-                            stw.stopAndReport("parsing " + file.getAbsolutePath()); // NOI18N
+                            long parseTime = stw.stopAndReport("parsing " + file.getAbsolutePath()); // NOI18N
+                            ParserQueue.instance().addParseStatistics(project, file, parseTime);
                         }
                         try {
                             queue.onFileParsingFinished(file);

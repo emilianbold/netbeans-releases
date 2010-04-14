@@ -659,6 +659,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     public void scheduleReparse(Collection<CsmProject> projects) {
         CndFileUtils.clearFileExistenceCache();
+        ParserQueue.instance().clearParseWatch();
         Collection<LibProjectImpl> libs = new HashSet<LibProjectImpl>();
         Collection<ProjectBase> toReparse = new HashSet<ProjectBase>();
         for (CsmProject csmProject : projects) {
