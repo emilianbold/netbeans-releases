@@ -106,7 +106,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     private static final String PHP_KEYWORD_ICON = "org/netbeans/modules/php/editor/resources/php16Key.png"; //NOI18N
     protected static ImageIcon keywordIcon = null;
 
-    protected final CompletionRequest request;
+    final CompletionRequest request;
     private final ElementHandle element;
     protected QualifiedNameKind generateAs;
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
@@ -195,6 +195,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
 
+    @Override
     public String getInsertPrefix() {
         StringBuilder template = new StringBuilder();
         ElementHandle elem = getElement();
@@ -225,7 +226,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     }
 
                 } else if (generateAs.isQualified() && (ifq instanceof TypeElement)
-                        && ifq.getNamespaceName().equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
+                        && ifq.getNamespaceName().toString().equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
                     //TODO: this is sort of hack for CCV after use, namespace keywords - should be changed
                     generateAs = QualifiedNameKind.FULLYQUALIFIED;
                 }
@@ -246,7 +247,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     }
                 case UNQUALIFIED:
                     boolean fncFromDefaultNamespace = ((ifq instanceof FunctionElement) && ifq.getIn() == null
-                            && NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(ifq.getNamespaceName()));
+                            && NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(ifq.getNamespaceName().toString()));
                     if (!(elem instanceof NamespaceElement) && !fncFromDefaultNamespace) {
                         Model model = request.result.getModel();
                         NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
@@ -274,6 +275,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         return getName();
     }
 
+    @Override
     public String getRhsHtml(HtmlFormatter formatter) {
         if (element instanceof TypeMemberElement) {
             TypeMemberElement classMember = (TypeMemberElement) element;
@@ -305,6 +307,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     }
 
                     formatter.appendText(filename);
+                    return formatter.getText();
+                } else if (ie.getFileObject() != null) {
+                    formatter.appendText(ie.getFileObject().getNameExt());
                     return formatter.getText();
                 }
             }
@@ -347,7 +352,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
-    static class MethodElementItem extends FunctionElementItem {
+    public static class MethodElementItem extends FunctionElementItem {
         /**
          * @return more than one instance in case if optional parameters exists
          */
@@ -686,7 +691,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             if (isMagic() || type.isInterface() || method.isAbstract()) {
                 template.append("${cursor};\n");//NOI18N
             } else {
-                template.append("${cursor}parent::" + getSignature().replace("&$", "$") + ";\n");//NOI18N
+                template.append("${cursor}parent::").append(getSignature().replace("&$", "$")).append(";\n");//NOI18N
             }
             return template.toString();
         }
@@ -772,6 +777,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return formatter.getText();
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.KEYWORD;
         }
@@ -872,6 +878,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return getName();
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.VARIABLE;
         }
@@ -919,6 +926,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return (NamespaceElement) getElement();
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.PACKAGE;
         }
@@ -994,6 +1002,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return true;//cons.isResolved()
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.GLOBAL;
         }
@@ -1006,6 +1015,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             this.endWithDoubleColon = endWithDoubleColon;
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.CLASS;
         }
@@ -1056,6 +1066,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             this.endWithDoubleColon = endWithDoubleColon;
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.CLASS;
         }
@@ -1115,6 +1126,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
        
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.VARIABLE;
         }
@@ -1170,7 +1182,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
 
 
-    static class CompletionRequest {
+    public static class CompletionRequest {
         public  int anchor;
         public  PHPParseResult result;
         public  ParserResult info;
@@ -1183,6 +1195,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         if (OptionsUtils.autoCompletionTypes()) {
             service.schedule(new Runnable() {
 
+                @Override
                 public void run() {
                     Completion.get().showCompletion();
                 }
