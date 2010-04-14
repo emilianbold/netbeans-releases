@@ -801,7 +801,7 @@ class BraceCompletion {
      * @param doc the document
      * @param caretOffset position to be tested (before '\n' gets inserted into doc.
      */
-    static boolean posWithinString(BaseDocument doc, int caretOffset) {
+    static boolean posWithinString(Document doc, int caretOffset) {
         return posWithinQuotes(doc, caretOffset, '"', JavaTokenId.STRING_LITERAL);
     }
 
@@ -813,13 +813,12 @@ class BraceCompletion {
      * @param doc the document
      * @param caretOffset position of typed quote
      */
-    static boolean posWithinQuotes(BaseDocument doc, int caretOffset, char quote, JavaTokenId tokenId) {
-        TokenSequence<JavaTokenId> javaTS = javaTokenSequence(doc, caretOffset - 1, false);
+    static boolean posWithinQuotes(Document doc, int caretOffset, char quote, JavaTokenId tokenId) {
+        TokenSequence<JavaTokenId> javaTS = javaTokenSequence(doc, caretOffset, false);
         if (javaTS != null) {
-            return javaTS.token().id() == tokenId &&
-                    (caretOffset - javaTS.offset() == 1 ||
-                     (caretOffset > 0 && !(DocumentUtilities.getText(doc).charAt(caretOffset - 1) == quote &&
-                        (caretOffset < 2 || DocumentUtilities.getText(doc).charAt(caretOffset - 2) != '\\'))));
+            if (javaTS.token().id() != tokenId) return false;
+            if (caretOffset > javaTS.offset() && caretOffset < javaTS.offset() + javaTS.token().length()) return true;
+            else return false;
         }
         return false;
     }
