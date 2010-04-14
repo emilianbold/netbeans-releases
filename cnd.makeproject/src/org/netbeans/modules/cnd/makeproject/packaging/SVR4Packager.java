@@ -64,18 +64,22 @@ public class SVR4Packager implements PackagerDescriptor {
 
     public static final String PACKAGER_NAME = "SVR4"; // NOI18N
 
+    @Override
     public String getName() {
         return PACKAGER_NAME;
     }
 
+    @Override
     public String getDisplayName() {
         return getString("SCR4Package"); // FIXUP: typo...
     }
 
+    @Override
     public boolean hasInfoList() {
         return true;
     }
 
+    @Override
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         String defArch;
         if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_SOLARIS_INTEL) {
@@ -99,6 +103,7 @@ public class SVR4Packager implements PackagerDescriptor {
         return infoList;
     }
 
+    @Override
     public List<String> getOptionalInfoList() {
         List<String> entryComboBox = new ArrayList<String>();
 
@@ -131,40 +136,49 @@ public class SVR4Packager implements PackagerDescriptor {
         return entryComboBox;
     }
 
+    @Override
     public String getDefaultOptions() {
         return ""; // NOI18N
     }
 
+    @Override
     public String getDefaultTool() {
         return "pkgmk"; // NOI18N
     }
 
+    @Override
     public boolean isOutputAFolder() {
         return true;
     }
 
+    @Override
     public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return null;
     }
 
+    @Override
     public String getOutputFileSuffix() {
         return null;
     }
 
+    @Override
     public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return packagingConfiguration.findInfoValueName("PKG"); // NOI18N
     }
 
+    @Override
     public boolean supportsGroupAndOwner() {
         return true;
     }
-    
+
+    @Override
     public ShellSciptWriter getShellFileWriter() {
         return new ScriptWriter();
     }
 
     public static class ScriptWriter implements ShellSciptWriter {
 
+        @Override
         public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException {
             writePackagingScriptBodySVR4(bw, makeConfiguration);
         }

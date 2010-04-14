@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,18 +61,22 @@ public class IPSPackager implements PackagerDescriptor {
 
     public static final String PACKAGER_NAME = "IPS"; // NOI18N
 
+    @Override
     public String getName() {
         return PACKAGER_NAME;
     }
 
+    @Override
     public String getDisplayName() {
         return getString("IPSPackage"); // FIXUP: typo...
     }
 
+    @Override
     public boolean hasInfoList() {
         return true;
     }
 
+    @Override
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         List<PackagerInfoElement> infoList = new ArrayList<PackagerInfoElement>();
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "name", packagingConfiguration.getOutputName(), false, true)); // NOI18N
@@ -82,6 +85,7 @@ public class IPSPackager implements PackagerDescriptor {
         return infoList;
     }
 
+    @Override
     public List<String> getOptionalInfoList() {
         List<String> entryComboBox = new ArrayList<String>();
 
@@ -114,40 +118,49 @@ public class IPSPackager implements PackagerDescriptor {
         return entryComboBox;
     }
 
+    @Override
     public String getDefaultOptions() {
         return ""; // NOI18N
     }
 
+    @Override
     public String getDefaultTool() {
         return ""; // NOI18N
     }
 
+    @Override
     public boolean isOutputAFolder() {
         return true;
     }
 
+    @Override
     public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return null;
     }
 
+    @Override
     public String getOutputFileSuffix() {
         return null;
     }
 
+    @Override
     public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return "/usr"; // NOI18N
     }
 
+    @Override
     public boolean supportsGroupAndOwner() {
         return true;
     }
-    
+
+    @Override
     public ShellSciptWriter getShellFileWriter() {
         return new ScriptWriter();
     }
 
     public static class ScriptWriter implements ShellSciptWriter {
 
+        @Override
         public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException {
             writePackagingScriptBodyIPS(bw, makeConfiguration);
         }

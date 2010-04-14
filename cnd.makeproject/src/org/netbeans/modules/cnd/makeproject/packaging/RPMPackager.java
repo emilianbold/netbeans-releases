@@ -58,18 +58,22 @@ public class RPMPackager implements PackagerDescriptor {
 
     public static final String PACKAGER_NAME = "RPM"; // NOI18N
 
+    @Override
     public String getName() {
         return PACKAGER_NAME;
     }
 
+    @Override
     public String getDisplayName() {
         return getString("RPM");
     }
 
+    @Override
     public boolean hasInfoList() {
         return true;
     }
 
+    @Override
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         List<PackagerInfoElement> infoList = new ArrayList<PackagerInfoElement>();
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Summary", "Sumary...", true, true)); // NOI18N
@@ -83,6 +87,7 @@ public class RPMPackager implements PackagerDescriptor {
         return infoList;
     }
 
+    @Override
     public List<String> getOptionalInfoList() {
         List<String> entryComboBox = new ArrayList<String>();
 
@@ -96,40 +101,49 @@ public class RPMPackager implements PackagerDescriptor {
         return entryComboBox;
     }
 
+    @Override
     public String getDefaultOptions() {
         return ""; // NOI18N
     }
 
+    @Override
     public String getDefaultTool() {
         return "rpmbuild"; // NOI18N
     }
 
+    @Override
     public boolean isOutputAFolder() {
         return true;
     }
 
+    @Override
     public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return null;
     }
 
+    @Override
     public String getOutputFileSuffix() {
         return null;
     }
 
+    @Override
     public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return "/usr"; // NOI18N
     }
 
+    @Override
     public boolean supportsGroupAndOwner() {
         return true;
     }
 
+    @Override
     public ShellSciptWriter getShellFileWriter() {
         return new ScriptWriter();
     }
 
     public static class ScriptWriter implements ShellSciptWriter {
 
+        @Override
         public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException {
             writePackagingScriptBodyRPM(bw, makeConfiguration);
         }
