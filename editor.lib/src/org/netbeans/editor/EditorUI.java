@@ -93,6 +93,7 @@ import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib.drawing.EditorUiAccessor;
 import org.netbeans.modules.editor.lib.drawing.HighlightingDrawLayer;
+import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.openide.util.WeakListeners;
 
 /**
@@ -760,7 +761,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             }
         }
 
-        if (BaseKit.LINEWRAP_ENABLED) {
+        if (HighlightingManager.LINEWRAP_ENABLED) {
             maxHeight = -1;
             View rootView = Utilities.getDocumentView(component);
             if (rootView != null) {

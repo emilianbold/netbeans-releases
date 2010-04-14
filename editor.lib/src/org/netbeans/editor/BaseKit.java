@@ -91,6 +91,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -562,7 +563,7 @@ public class BaseKit extends DefaultEditorKit {
      */
     public @Override ViewFactory getViewFactory() {
         //Boolean.getBoolean("org.netbeans.editor.linewrap")
-        return  LINEWRAP_ENABLED
+        return  HighlightingManager.LINEWRAP_ENABLED
                 ? org.netbeans.modules.editor.lib2.view.ViewFactoryImpl.INSTANCE
                 : null;
     }
