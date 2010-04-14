@@ -58,7 +58,7 @@ public class CssParserTest extends TestBase {
 
        public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new CssParserTest("testPropertyValueWithComment"));
+        suite.addTest(new CssParserTest("testMSSyntax"));
         return suite;
     }
 
@@ -122,6 +122,17 @@ public class CssParserTest extends TestBase {
         assertNoErrors(node);
         return node;
     }
+
+//    public void testMSSyntax() throws ParseException {
+////        String code = "h1 { top: expression(offsetParent.scrollTop) } ";
+//        String code = "h1 { filter:alpha(opacity=50); }";
+//        dumpTokens(code);
+//
+//        SimpleNode node = parse(code);
+//        System.out.println(node.dump());
+//
+//        check(code);
+//    }
 
     // @@@ represents a gap from the css perspective in reality filled with 
     // a templating language code.
@@ -217,6 +228,21 @@ public class CssParserTest extends TestBase {
 //        assertNotNull(node);
 //        assertEquals("red", node.image());
  
+    }
+
+    private void dumpTokens(String source) {
+    CssParserTokenManager tm = new CssParserTokenManager(new ASCII_CharStream(new StringReader(source)));
+        org.netbeans.modules.css.parser.Token token = null;
+        do {
+            token = tm.getNextToken();
+            System.out.println(token + "; kind = " + token.kind + " (" + CssParserConstants.tokenImage[token.kind] + ")");
+            if(token == null) {
+                break;
+            }
+            if(token.kind == CssParserConstants.EOF) {
+                break;
+            }
+        } while(true);
     }
     
 }
