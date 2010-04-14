@@ -366,8 +366,11 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
         int height = highestLineNumber * editorUI.getLineHeight();
         if (rootView != null) {
             try {
-                Rectangle rec = editorPane.modelToView(rootView.getView(highestLineNumber).getEndOffset() - 1);
-                height = rec.y + rec.height;
+                int lineCount = rootView.getViewCount();
+                if (lineCount > 0) {
+                    Rectangle rec = editorPane.modelToView(rootView.getView(lineCount - 1).getEndOffset() - 1);
+                    height = rec.y + rec.height;
+                }
             } catch (BadLocationException ex) {
                 //
             }
@@ -416,7 +419,8 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
             // draw liune numbers and annotations while we are in visible area
             int lineHeight = editorUI.getLineHeight();
             int lineAscent = editorUI.getLineAscent();
-            while ((y + (lineHeight / 2)) <= (drawHere.y + drawHere.height)) {
+            int lineCount = rootView.getViewCount();
+            while (line < lineCount && (y + (lineHeight / 2)) <= (drawHere.y + drawHere.height)) {
                 View view = rootView.getView(line);
                 Rectangle rec1 = editorPane.modelToView(view.getStartOffset());
                 Rectangle rec2 = editorPane.modelToView(view.getEndOffset() - 1);
