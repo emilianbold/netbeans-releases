@@ -70,10 +70,12 @@ public class JiraConnector extends BugtrackingConnector {
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return getConnectorName();
     }
 
+    @Override
     public String getTooltip() {
         return "Jira Issue Tracking System";
     }
@@ -101,6 +103,7 @@ public class JiraConnector extends BugtrackingConnector {
         return issueFinder;
     }
 
+    @Override
     public Lookup getLookup() {
         return Lookups.singleton(Jira.getInstance().getKenaiSupport());
     }
