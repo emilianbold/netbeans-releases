@@ -73,8 +73,7 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
 	final TraceModelBase traceModel = new  TraceModelBase(true);
 	traceModel.setUseSysPredefined(true);
         
-        long waitAfterParse = 6000;
-        long waitAfterClose = 2000;
+        long waitAfterParseTimeout = 20000;
         
         // Open a project, make sure cache is NOT empty
         ProjectBase projectRoot1 = createProject(traceModel, "project-1", "file1.cpp", "int foo1");
@@ -83,16 +82,11 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
             boolean check() {
                 return ! strategy.testGetCacheFileNames().isEmpty();
             }
-        }, waitAfterParse);
+        }, waitAfterParseTimeout);
         
         // Close the project, make sure cache IS empty
         traceModel.getModel().closeProjectBase(projectRoot1);
-        waitCondition(new Condition("Cache should be empty after project closure") {
-            @Override
-            boolean check() {
-                return strategy.testGetCacheFileNames().isEmpty();
-            }
-        }, waitAfterClose);
+        assertTrue("Cache should be empty after project closure", strategy.testGetCacheFileNames().isEmpty());
 
         // Open the 2-nd project, make sure cache is NOT empty
         ProjectBase projectRoot2 = createProject(traceModel, "project-2", "file2.cpp", "int foo2");
@@ -101,26 +95,22 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
             boolean check() {
                 return ! strategy.testGetCacheFileNames().isEmpty();
             }
-        }, waitAfterParse);
+        }, waitAfterParseTimeout);
         final Collection<String> setTwo = strategy.testGetCacheFileNames();
         
-        // Open the 3-rd project, make sure cache is NOT empty
+        // Open the 3-rd project, make sure cache has changed and contains all previous keys
         ProjectBase projectRoot3 = createProject(traceModel, "project-3", "file3.cpp", "int foo3");
-        waitCondition(new Condition("Cache should not be empty at that time") {
+        waitCondition(new Condition("Cache should change at that time") {
             @Override
             boolean check() {
-                return ! strategy.testGetCacheFileNames().isEmpty();
+                Collection<String> newKeys = strategy.testGetCacheFileNames();
+                return !newKeys.equals(setTwo) && newKeys.containsAll(setTwo);
             }
-        }, waitAfterParse);
+        }, waitAfterParseTimeout);
         
         // Close the 3-rd project, make sure cache is the same as befor it was open
         traceModel.getModel().closeProjectBase(projectRoot3);
-        waitCondition(new Condition("The set of the cached files should be the same as before") {
-            @Override
-            boolean check() {
-                return strategy.testGetCacheFileNames().equals(setTwo);
-            }
-        }, waitAfterClose);
+        assertTrue("The set of the cached files should be the same as before", strategy.testGetCacheFileNames().equals(setTwo));
     }
     
     private ProjectBase createProject(TraceModelBase traceModel, String projectName, String fileName, String fileContent) throws Exception {
@@ -144,7 +134,7 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
     private void waitCondition(Condition condition, long timeout) throws Exception {
         long time = System.currentTimeMillis();
         while (!condition.check() && System.currentTimeMillis() < time + timeout) {
-            sleep(50);
+            sleep(100);
         }
         assertTrue(condition.failureMessage, condition.check());
     }
