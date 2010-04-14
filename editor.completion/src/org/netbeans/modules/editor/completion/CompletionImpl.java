@@ -45,8 +45,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,8 +77,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.spi.editor.completion.*;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -210,7 +206,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     private String completionShortcut = null;
     
     private Lookup.Result<KeyBindingSettings> kbs;
-    private static Profile profile;
+    private static CompletionImplProfile profile;
     
     private final LookupListener shortcutsTracker = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
@@ -249,8 +245,6 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             }
         });
         docAutoPopupTimer.setRepeats(false);
-        final long when = System.currentTimeMillis();
-
         pleaseWaitTimer = new Timer(PLEASE_WAIT_TIMEOUT, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String waitText = PLEASE_WAIT;
@@ -274,6 +268,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                         null, -1, CompletionImpl.this, null, null, 0);
                 pleaseWaitDisplayed = true;
                 if (!politeWaitText) {
+                    long when = System.currentTimeMillis() - PLEASE_WAIT_TIMEOUT;
                     initializeProfiling(when);
                 }
             }
@@ -475,6 +470,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                     ? new WeakReference<JTextComponent>(component)
                     : null;
             layout.setEditorComponent(getActiveComponent());
+            stopProfiling();
             installKeybindings();
             cancel = true;
         }
@@ -847,6 +843,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      */
     void requestShowCompletionPane(final Result result) {
         pleaseWaitTimer.stop();
+        stopProfiling();
         
         // Compute total count of the result sets
         int size = 0;
@@ -1015,9 +1012,9 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     private boolean hideCompletionPane(boolean completionOnly) {
         completionAutoPopupTimer.stop(); // Ensure the popup timer gets stopped
         pleaseWaitTimer.stop();
+        stopProfiling();
         boolean hidePerformed = layout.hideCompletion();
         pleaseWaitDisplayed = false;
-        stopProfiling();
         JTextComponent jtc = getActiveComponent();
         if (!completionOnly && hidePerformed && CompletionSettings.getInstance(jtc).documentationAutoPopup()) {
             hideDocumentation(true);
@@ -1736,79 +1733,22 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         UI_LOG.log(rec);
     }
 
-    private static synchronized void initializeProfiling(long when) {
-        if (profile != null) {
+    private static void initializeProfiling(long since) {
+        boolean devel = false;
+        assert devel = true;
+        if (!devel) {
             return;
         }
-        FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance"); // NOI18N
-        if (fo == null) {
-            return;
+        synchronized (CompletionImpl.class) {
+            stopProfiling();
+            profile = new CompletionImplProfile(since);
         }
-        Action a = (Action) fo.getAttribute("delegate"); // NOI18N
-        if (a == null) {
-            return;
-        }
-        Object profiler = a.getValue("logger-completion"); // NOI18N
-        if (profiler == null) {
-            return;
-        }
-        profile = new Profile(profiler, when);
     }
-
-    private static final class Profile implements Runnable {
-        Object profiler;
-        boolean profiling;
-        private final long time;
-
-        public Profile(Object profiler, long when) {
-            time = when;
-            this.profiler = profiler;
-            run();
-        }
-
-        @Override
-        public synchronized void run() {
-            profiling = true;
-            if (profiler instanceof Runnable) {
-                Runnable r = (Runnable)profiler;
-                r.run();
-            }
-        }
-
-        private synchronized void stop() throws Exception {
-            long delta = System.currentTimeMillis() - time;
-
-            ActionListener ss = (ActionListener)profiler;
-            profiler = null;
-            if (!profiling || delta < 0 || delta > 60L * 60 * 1000) {
-                return;
-            }
-            try {
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                DataOutputStream dos = new DataOutputStream(out);
-                ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
-                dos.close();
-                if (dos.size() > 0) {
-                    Object[] params = new Object[]{out.toByteArray(), delta, "CodeCompletion"};
-                    Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
-                } else {
-                    LOG.log(Level.WARNING, "no snapshot taken"); // NOI18N
-                }
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-    } // end of Profile
 
     private static synchronized void stopProfiling() {
         if (profile != null) {
-            try {
-                profile.stop();
-                profile = null;
-            } catch (Exception ex) {
-                LOG.log(Level.INFO, "Cannot stop profiling", ex);
-            }
+            profile.stop();
+            profile = null;
         }
     }
 }
