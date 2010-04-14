@@ -253,8 +253,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
 
     @Override
     public String toString() {
-        Map<CharSequence, APTMacro> tmpMap = new HashMap<CharSequence, APTMacro>();
-        APTMacroMapSnapshot.addAllMacros(active, tmpMap);
+        Map<CharSequence, APTMacro> tmpMap = APTMacroMapSnapshot.addAllMacros(active, null);
         return APTUtils.macros2String(tmpMap);
     }
     
