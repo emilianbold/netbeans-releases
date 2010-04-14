@@ -78,18 +78,22 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
 	this.refactoring = new RenameRefactoring(Lookups.fixed(lookupContent.toArray()));
     }
 
+    @Override
     public String getName() {
 	return NbBundle.getMessage(CssRenameRefactoringUI.class, "LBL_Rename");
     }
 
+    @Override
     public String getDescription() {
 	return "TODO";
     }
 
+    @Override
     public boolean isQuery() {
 	return false;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
 	if (panel == null) {
 	    panel = new RenamePanel(context.getElementName(), parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename"), true, true);
@@ -98,6 +102,7 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
 	return panel;
     }
 
+    @Override
     public Problem setParameters() {
         extraInfo.setRefactorAll(panel.isRefactorAllOccurances());
 
@@ -108,6 +113,7 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
 	return refactoring.checkParameters();
     }
 
+    @Override
     public Problem checkParameters() {
 	if (!panel.isUpdateReferences()) {
 	    return null;
@@ -119,22 +125,27 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
 	return refactoring.fastCheckParameters();
     }
 
+    @Override
     public boolean hasParameters() {
 	return true;
     }
 
+    @Override
     public AbstractRefactoring getRefactoring() {
 	return this.refactoring;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
 	return null;
     }
 
+    @Override
     public boolean isRefactoringBypassRequired() {
 	return false; //TODO fix this
     }
 
+    @Override
     public void doRefactoringBypass() throws IOException {
 	//TODO implement
     }
