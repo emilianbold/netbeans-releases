@@ -272,12 +272,7 @@ public class RegisterDerby implements DatabaseRuntime {
         try {
             ExecSupport ee= new ExecSupport();
             ee.setStringToLookFor("" + getPort()); // NOI18N
-            File javaExe = new File(System.getProperty("java.home"), "/bin/java" + (Utilities.isWindows() ? ".exe" : "")); // NOI18N
-            assert javaExe != null && javaExe.exists() && javaExe.canExecute() : javaExe + " exists and it's executable.";
-            FileObject javaFO = FileUtil.toFileObject(javaExe);
-            if (javaFO == null)
-                throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound")); // NOI18N
-            String java = FileUtil.toFile(javaFO).getAbsolutePath();
+            String java = getJavaExecutable();
             
             // create the derby.properties file
             createDerbyPropertiesFile();
@@ -362,17 +357,7 @@ public class RegisterDerby implements DatabaseRuntime {
             if (process==null){//nothing to stop...
                 return;
             }
-            //BufferedWriter processIn = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-            //processIn.write("q\ny\n");
-            //processIn.flush();
-            File javaExe = new File(System.getProperty("java.home"), "/bin/java");
-            assert javaExe != null && javaExe.exists() && javaExe.canExecute() : javaExe + " exists and it's executable.";
-            FileObject javaFO = FileUtil.toFileObject(javaExe);
-            if (javaFO == null)
-                throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
-            String java = FileUtil.toFile(javaFO).getAbsolutePath();
-            if (java == null)
-                throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
+            String java = getJavaExecutable();
             // java -Dderby.system.home="<userdir/derby>" -classpath  
             //     "<DERBY_INSTALL>/lib/derby.jar:<DERBY_INSTALL>/lib/derbytools.jar:<DERBY_INSTALL>/lib/derbynet.jar"
             //     org.apache.derby.drda.NetworkServerControl shutdown
@@ -402,6 +387,20 @@ public class RegisterDerby implements DatabaseRuntime {
         finally {
             process=null;
         }
+    }
+
+    private static String getJavaExecutable() {
+        File javaExe = new File(System.getProperty("java.home"), "/bin/java" + (Utilities.isWindows() ? ".exe" : "")); // NOI18N
+        assert javaExe != null && javaExe.exists() && javaExe.canExecute() : javaExe + " exists and it's executable.";
+        FileObject javaFO = FileUtil.toFileObject(javaExe);
+        if (javaFO == null) {
+            throw new RuntimeException (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
+        }
+        String java = FileUtil.toFile(javaFO).getAbsolutePath();
+        if (java == null) {
+            throw new RuntimeException (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
+        }
+        return java;
     }
     
     private void disconnectAllDerbyConnections() {
