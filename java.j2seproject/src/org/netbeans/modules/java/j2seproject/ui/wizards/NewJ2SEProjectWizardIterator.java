@@ -213,13 +213,13 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
         int ind = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         switch (type) {
             case APP:
-                WizardSettings.getDefault().setNewApplicationCount(ind);
+                WizardSettings.setNewApplicationCount(ind);
                 break;
             case LIB:
-                WizardSettings.getDefault().setNewLibraryCount(ind);
+                WizardSettings.setNewLibraryCount(ind);
                 break;
             case EXT:
-                WizardSettings.getDefault().setNewProjectCount(ind);
+                WizardSettings.setNewProjectCount(ind);
                 break;
         }        
         resultSet.add (dir);

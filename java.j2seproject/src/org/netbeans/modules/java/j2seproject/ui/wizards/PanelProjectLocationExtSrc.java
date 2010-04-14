@@ -167,7 +167,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
         if (projectLocation == null) {
             projectLocation = ProjectChooser.getProjectsFolder();                
-            int index = WizardSettings.getDefault().getNewProjectCount();
+            int index = WizardSettings.getNewProjectCount();
             String formater = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaProject");
             File file;
             do {

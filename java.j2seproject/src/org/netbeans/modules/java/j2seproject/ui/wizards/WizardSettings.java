@@ -42,18 +42,18 @@
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 import java.io.File;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.java.j2seproject.ui.wizards.WizardSettings;
 import org.openide.util.NbPreferences;
 
 /**
  * Storage of information application to the new j2seproject wizard.
  */
 public class WizardSettings {
-    private static final WizardSettings INSTANCE = new WizardSettings();
+
+    private WizardSettings() {}
+    
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
 
     private static final String NEW_APP_COUNT = "newApplicationCount";  //NOI18N
@@ -64,50 +64,45 @@ public class WizardSettings {
 
     private static final String LAST_USED_ARTIFACT_FOLDER = "lastUsedArtifactFolder"; //NOI18N
     
-
-    public static WizardSettings getDefault () {
-        return INSTANCE;
-    }
-    
     private static Preferences getPreferences() {
         return NbPreferences.forModule(WizardSettings.class);
     }
 
-    public int getNewProjectCount () {
+    public static int getNewProjectCount() {
         return getPreferences().getInt(NEW_PROJECT_COUNT, 0);
     }
 
-    public void setNewProjectCount (int count) {
+    public static void setNewProjectCount(int count) {
         getPreferences().putInt(NEW_PROJECT_COUNT, count);
     }
     
-    public int getNewApplicationCount () {
+    public static int getNewApplicationCount() {
         return getPreferences().getInt(NEW_APP_COUNT, 0);
     }
     
-    public void setNewApplicationCount (int count) {
+    public static void setNewApplicationCount(int count) {
         getPreferences().putInt(NEW_APP_COUNT, count);
     }
     
-    public int getNewLibraryCount () {
+    public static int getNewLibraryCount() {
         return getPreferences().getInt(NEW_LIB_COUNT, 0);
     }
     
-    public void setNewLibraryCount (int count) {
+    public static void setNewLibraryCount(int count) {
         getPreferences().putInt(NEW_LIB_COUNT, count);
     }
 
-    public File getLastUsedClassPathFolder () {
+    public static File getLastUsedClassPathFolder() {
         return new File (getPreferences().get(LAST_USED_CP_FOLDER, System.getProperty("user.home")));
     }
 
-    public void setLastUsedClassPathFolder (File folder) {
+    public static void setLastUsedClassPathFolder(File folder) {
         assert folder != null : "ClassPath root can not be null";
         String path = folder.getAbsolutePath();
         getPreferences().put(LAST_USED_CP_FOLDER, path);
     }
 
-    public File getLastUsedArtifactFolder (final File defaultValue) {
+    public static File getLastUsedArtifactFolder(final File defaultValue) {
         String val = getPreferences().get(LAST_USED_ARTIFACT_FOLDER, null);
         if (val != null) {
             return FileUtil.normalizeFile(new File (val));
@@ -118,9 +113,10 @@ public class WizardSettings {
         return FileUtil.normalizeFile(new File (System.getProperty("user.home")));
     }
 
-    public void setLastUsedArtifactFolder (File folder) {
+    public static void setLastUsedArtifactFolder(File folder) {
         assert folder != null : "Folder can not be null";
         String path = folder.getAbsolutePath();
         getPreferences().put(LAST_USED_ARTIFACT_FOLDER, path);
-    }   
+    }
+
 }

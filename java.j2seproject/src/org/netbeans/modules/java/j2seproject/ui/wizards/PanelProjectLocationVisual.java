@@ -54,7 +54,6 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -313,14 +312,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (projectName == null) {
             switch (type) {
             case APP:
-                int baseCount = WizardSettings.getDefault().getNewApplicationCount() + 1;
+                int baseCount = WizardSettings.getNewApplicationCount() + 1;
                 String formatter = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaApplication");
                 while ((projectName=validFreeProjectName(projectLocation, formatter, baseCount))==null)
                     baseCount++;                
                 settings.putProperty (NewJ2SEProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
                 break;
             default:
-                baseCount = WizardSettings.getDefault().getNewLibraryCount() + 1;
+                baseCount = WizardSettings.getNewLibraryCount() + 1;
                 formatter = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaLibrary");
                 while ((projectName=validFreeProjectName(projectLocation, formatter, baseCount))==null)
                     baseCount++;                
