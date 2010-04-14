@@ -59,6 +59,9 @@ public class JCRefactoringFactory implements RefactoringPluginFactory {
         if (refactoring instanceof RenameRefactoring) {
             RenameRefactoring r = (RenameRefactoring) refactoring;
             ClasspathInfo info = r.getContext().lookup(ClasspathInfo.class);
+            if (info == null) {
+                return null;
+            }
             ClassPath cp = info.getClassPath(ClasspathInfo.PathKind.SOURCE);
             FileObject[] roots = cp.getRoots();
             if (roots != null && roots.length > 0) {
@@ -71,6 +74,9 @@ public class JCRefactoringFactory implements RefactoringPluginFactory {
         if (refactoring instanceof MoveRefactoring) {
             MoveRefactoring m = (MoveRefactoring) refactoring;
             ClasspathInfo info = m.getContext().lookup(ClasspathInfo.class);
+            if (info == null) {
+                return null;
+            }
             ClassPath cp = info.getClassPath(ClasspathInfo.PathKind.SOURCE);
             FileObject[] roots = cp.getRoots();
             if (roots != null && roots.length > 0) {
