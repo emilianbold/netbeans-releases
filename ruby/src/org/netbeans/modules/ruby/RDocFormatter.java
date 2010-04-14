@@ -108,6 +108,7 @@ class RDocFormatter {
     private boolean inBulletedList;
     private boolean inLabelledList;
     private boolean inNumberedList;
+    private boolean inStopDoc;
     private List<String> code;
     private boolean firstVerbatim = true;
     private String seqName;
@@ -169,6 +170,16 @@ class RDocFormatter {
     }
     
     private void process(String text) {
+        if (text.indexOf(":stopdoc") != -1) {
+            inStopDoc = true;
+            return;
+        } else if (text.indexOf(":startdoc") != -1) {
+            inStopDoc = false;
+        }
+        if (inStopDoc) {
+            return;
+        }
+
         // Use the lexer! The following is naive since it will
         // do something about URLs, multiplication (*), etc.
         if (text.length() == 0) {
