@@ -273,11 +273,6 @@ class SftpSupport {
             while (true) {
                 attempt++;
                 try {
-                    if (attempt > 1) {
-                        LOG.log(Level.FINE, "Sleeping before attempt {0} to copy {1} to {2}:{3} :\n",
-                                new Object[] {attempt, srcFileName, execEnv, dstFileName});
-                        //try { Thread.sleep(5); } catch (InterruptedException ex) { Exceptions.printStackTrace(ex); }
-                    }
                     cftp.put(srcFileName, dstFileName);
                     if (attempt > 1) {
                         LOG.log(Level.FINE, "Success on attempt {0} to copy {1} to {2}:{3} :\n",
@@ -288,8 +283,12 @@ class SftpSupport {
                     if (attempt > PUT_RETRY_COUNT) {
                         throw e;
                     } else {
-                        LOG.log(Level.FINE, "Error on attempt {0} to copy {1} to {2}:{3} :\n",
-                                new Object[] {attempt, srcFileName, execEnv, dstFileName});
+                        String message = String.format("Error on attempt %d to copy %s to %s:%s :\n",
+                                attempt, srcFileName, execEnv, dstFileName);
+                        LOG.log(Level.FINE, message);
+                        if (attempt == 2) {
+                            Logger.fullThreadDump(message);
+                        }
                         e.printStackTrace();
                     }
                 }
