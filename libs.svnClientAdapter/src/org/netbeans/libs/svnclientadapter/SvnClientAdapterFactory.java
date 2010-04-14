@@ -53,7 +53,7 @@ import org.tigris.subversion.svnclientadapter.svnkit.SvnKitClientAdapterFactory;
  */
 public class SvnClientAdapterFactory {
     
-    private Logger LOG = Logger.getLogger("org.netbeans.libs.svnclientadapter");
+    private static final Logger LOG = Logger.getLogger("org.netbeans.libs.svnclientadapter");// NOI18N
     private static SvnClientAdapterFactory instance;
     private Client client;
 
@@ -70,8 +70,8 @@ public class SvnClientAdapterFactory {
         boolean retval = false;
         if (version != null) {
             version = version.toLowerCase();
-            if (version.startsWith("1.6") ||
-                    version.contains("version 1.6")) {
+            if (version.startsWith("1.6") ||                                    // NOI18N
+                    version.contains("version 1.6")) {                          // NOI18N
                 retval = true;
             }
         }
@@ -92,7 +92,7 @@ public class SvnClientAdapterFactory {
                 } catch (Throwable t) {
                     String jhlErorrs = JhlClientAdapterFactory.getLibraryLoadErrors();
                     LOG.log(Level.INFO, t.getMessage());
-                    LOG.warning(jhlErorrs + "\n");                    
+                    LOG.log(Level.WARNING, "{0}\n", jhlErorrs);                 // NOI18N
                     return false;
                 }
                 return JhlClientAdapterFactory.isAvailable();
@@ -111,19 +111,17 @@ public class SvnClientAdapterFactory {
                 return JhlClientAdapterFactory.createSVNClient(JhlClientAdapterFactory.JAVAHL_CLIENT);
             }
             case svnkit: {
-                return SvnKitClientAdapterFactory.createSVNClient(SvnKitClientAdapterFactory.SVNKIT_CLIENT); //provider.createClient();
+                return SvnKitClientAdapterFactory.createSVNClient(SvnKitClientAdapterFactory.SVNKIT_CLIENT); 
             }
         }
         return null;
     }
 
     /**
-     * Checks if accessible javahl libraries' version is supported.
+     * Checks if accessible javahl libraries version is supported.
      * Currently supported:
      * <ul>
-     * <li>1.3</li>
-     * <li>1.4</li>
-     * <li>1.5</li>
+     * <li>1.6</li>
      * </ul>
      * @return true if javahl is of a supported version, otherwise false
      */

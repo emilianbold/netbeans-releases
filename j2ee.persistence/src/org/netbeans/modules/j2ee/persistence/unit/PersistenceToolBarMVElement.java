@@ -306,7 +306,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             boolean isContainer = Util.isSupportedJavaEEVersion(project);
             final PersistenceUnitWizardPanel panel;
-            if (isContainer) {
+            if (isContainer && ProviderUtil.isValidServerInstanceOrNone(project)) {
                 panel = new PersistenceUnitWizardPanelDS(project, null, true);
             } else {
                 panel = new PersistenceUnitWizardPanelJdbc(project, null, true);

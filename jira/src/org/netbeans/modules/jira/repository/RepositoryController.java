@@ -258,6 +258,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                             panel.nameField.setText(repository.getDisplayName());
                         }
                         populated = true;
+                        fireDataChanged();
                     }
                 });
             }
@@ -328,6 +329,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                                        Level.INFO, name, url, user, httpUser);
                     panel.connectionLabel.setVisible(true);
                 }
+                fireDataChanged();
             }
 
             private void logValidateMessage(String msg, Level level, String name, String url, String user, String httpUser) {
@@ -401,7 +403,6 @@ public class RepositoryController extends BugtrackingController implements Docum
             panel.validateLabel.setVisible(false);
             panel.cancelButton.setVisible(false);
             panel.validateButton.setVisible(true);
-            fireDataChanged();
             panel.enableFields(true);
         }
 
