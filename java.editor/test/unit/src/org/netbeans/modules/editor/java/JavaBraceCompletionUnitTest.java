@@ -44,11 +44,13 @@ package org.netbeans.modules.editor.java;
 import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
 import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
+import javax.swing.text.PlainDocument;
 import junit.framework.TestCase;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -807,6 +809,29 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         ctx.assertDocumentTextEquals(
                 "if (c == '\\\\'|)"
         );
+    }
+
+    public void testCorrectHandlingOfStringEscapes184059() throws Exception {
+        assertTrue(isInsideString("foo\n\"bar|\""));
+        assertTrue(isInsideString("foo\n\"bar\\\"|\""));
+        assertFalse(isInsideString("foo\n\"bar\\\\\"|"));
+        assertFalse(isInsideString("foo\n|\"bar\\\\\""));
+        assertTrue(isInsideString("foo\n\"|bar\\\\\""));
+    }
+
+    private boolean isInsideString(String code) throws BadLocationException {
+        int pos = code.indexOf('|');
+
+        assertNotSame(-1, pos);
+
+        code = code.replaceAll(Pattern.quote("|"), "");
+
+        Document doc = new PlainDocument();
+
+        doc.putProperty(Language.class, JavaTokenId.language());
+        doc.insertString(0, code, null);
+
+        return BraceCompletion.posWithinString(doc, pos);
     }
 
     private static final class Context {
