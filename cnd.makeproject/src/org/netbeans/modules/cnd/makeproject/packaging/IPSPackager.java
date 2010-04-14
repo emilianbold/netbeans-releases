@@ -203,7 +203,7 @@ public class IPSPackager implements PackagerDescriptor {
                         if (toDir.charAt(0) == '/') {
                             toDir = toDir.substring(1);
                         }
-                        bw.write("makeDirectory " + "${NBTMPDIR}/" + toDir + "\n"); // NOI18N
+                        bw.write("makeDirectory \"" + "${NBTMPDIR}/" + toDir + "\"\n"); // NOI18N
                     }
                     bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${NBTMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
