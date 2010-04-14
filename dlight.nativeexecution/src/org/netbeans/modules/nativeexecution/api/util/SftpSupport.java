@@ -283,7 +283,7 @@ class SftpSupport {
                     if (attempt > PUT_RETRY_COUNT) {
                         throw e;
                     } else {
-                        String message = String.format("Error on attempt %d to copy %s to %s:%s :\n",
+                        String message = String.format("Error on attempt %d to copy %s to %s:%s :\n", // NOI18N
                                 attempt, srcFileName, execEnv, dstFileName);
                         LOG.log(Level.FINE, message);
                         if (attempt == 2) {
