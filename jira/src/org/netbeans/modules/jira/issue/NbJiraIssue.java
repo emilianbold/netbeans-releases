@@ -354,9 +354,13 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     public long getLastModify() {
         String value = getFieldValue(IssueField.MODIFICATION);
         try {
-            return Long.parseLong(value);
+            if(!"".equals(value)) {
+                return Long.parseLong(value);
+            } else {
+                Jira.LOG.log(Level.WARNING, "no modification value available for [{0}, {1}]", new Object[]{getRepository().getUrl(), getID()});
+            }
         } catch (NumberFormatException nfex) {
-            Jira.LOG.log(Level.WARNING, null, nfex);
+            Jira.LOG.log(Level.WARNING, "[" + getRepository().getUrl() + ", " + getID()+ "]", nfex);
         }
         return -1;
     }
