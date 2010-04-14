@@ -39,21 +39,21 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.j2seproject.ui;
+package org.netbeans.modules.java.j2seproject.ui.wizards;
 
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 import java.io.File;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
+import org.netbeans.modules.java.j2seproject.ui.wizards.WizardSettings;
 import org.openide.util.NbPreferences;
 
 /**
- * Misnamed storage of information application to the new j2seproject wizard.
+ * Storage of information application to the new j2seproject wizard.
  */
-public class FoldersListSettings {
-    private static final FoldersListSettings INSTANCE = new FoldersListSettings();
+public class WizardSettings {
+    private static final WizardSettings INSTANCE = new WizardSettings();
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
 
     private static final String NEW_APP_COUNT = "newApplicationCount";  //NOI18N
@@ -65,12 +65,12 @@ public class FoldersListSettings {
     private static final String LAST_USED_ARTIFACT_FOLDER = "lastUsedArtifactFolder"; //NOI18N
     
 
-    public static FoldersListSettings getDefault () {
+    public static WizardSettings getDefault () {
         return INSTANCE;
     }
     
     private static Preferences getPreferences() {
-        return NbPreferences.forModule(FoldersListSettings.class);
+        return NbPreferences.forModule(WizardSettings.class);
     }
 
     public int getNewProjectCount () {

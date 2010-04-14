@@ -55,7 +55,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 
@@ -168,7 +167,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
         if (projectLocation == null) {
             projectLocation = ProjectChooser.getProjectsFolder();                
-            int index = FoldersListSettings.getDefault().getNewProjectCount();
+            int index = WizardSettings.getDefault().getNewProjectCount();
             String formater = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaProject");
             File file;
             do {

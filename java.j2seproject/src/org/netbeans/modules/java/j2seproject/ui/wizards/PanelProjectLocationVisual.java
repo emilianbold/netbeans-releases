@@ -50,7 +50,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -314,14 +313,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (projectName == null) {
             switch (type) {
             case APP:
-                int baseCount = FoldersListSettings.getDefault().getNewApplicationCount() + 1;
+                int baseCount = WizardSettings.getDefault().getNewApplicationCount() + 1;
                 String formatter = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaApplication");
                 while ((projectName=validFreeProjectName(projectLocation, formatter, baseCount))==null)
                     baseCount++;                
                 settings.putProperty (NewJ2SEProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
                 break;
             default:
-                baseCount = FoldersListSettings.getDefault().getNewLibraryCount() + 1;
+                baseCount = WizardSettings.getDefault().getNewLibraryCount() + 1;
                 formatter = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaLibrary");
                 while ((projectName=validFreeProjectName(projectLocation, formatter, baseCount))==null)
                     baseCount++;                
