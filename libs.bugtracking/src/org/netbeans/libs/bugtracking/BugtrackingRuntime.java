@@ -78,15 +78,8 @@ public final class BugtrackingRuntime {
 
     private BugtrackingRuntime () {
         initCacheStore();
-        if(SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    initWebUtil();
-                }
-            });
-        } else {
-            initWebUtil();
-        }
+        initWebUtil();
+
         // XXX this is dummy
         taskRepositoryManager = new TaskRepositoryManager();
 
