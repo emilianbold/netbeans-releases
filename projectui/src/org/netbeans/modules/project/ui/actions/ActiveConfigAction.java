@@ -107,11 +107,11 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
     private Lookup lookup;
 
-    public ActiveConfigAction() {
-        super();
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-        EventQueue.invokeLater(new Runnable() {
-            public @Override void run() {
+    private void initConfigListCombo() {
+        assert EventQueue.isDispatchThread();
+        if (configListCombo != null) {
+            return;
+        }
         configListCombo = new JComboBox();
         configListCombo.addPopupMenuListener(new PopupMenuListener() {
             private Component prevFocusOwner = null;
@@ -150,6 +150,14 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                 }
             }
         });
+    }
+
+    public ActiveConfigAction() {
+        super();
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        EventQueue.invokeLater(new Runnable() {
+            public @Override void run() {
+                initConfigListCombo();
             }
         });
         lst = new PropertyChangeListener() {
@@ -265,6 +273,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         toolbarPanel.setMaximumSize(new Dimension(150, 80));
         toolbarPanel.setMinimumSize(new Dimension(150, 0));
         toolbarPanel.setPreferredSize(new Dimension(150, 23));
+        initConfigListCombo();
         // XXX top inset of 2 looks better w/ small toolbar, but 1 seems to look better for large toolbar (the default):
         toolbarPanel.add(configListCombo, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(1, 6, 1, 5), 0, 0));
         return toolbarPanel;
