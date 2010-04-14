@@ -82,6 +82,7 @@ public class BugzillaConnector extends BugtrackingConnector {
     
     @Override
     public Repository createRepository() {
+        Bugzilla.init();
         return new BugzillaRepository();
     }
 

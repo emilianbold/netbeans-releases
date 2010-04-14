@@ -82,6 +82,7 @@ public class JiraConnector extends BugtrackingConnector {
 
     @Override
     public Repository createRepository() {
+        Jira.init();
         return new JiraRepository();
     }
 
