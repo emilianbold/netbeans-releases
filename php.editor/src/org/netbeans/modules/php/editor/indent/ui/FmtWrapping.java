@@ -89,6 +89,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         ternaryOpsCombo.addFocusListener(this);
         assignOpsCombo.putClientProperty(OPTION_ID, wrapAssignOps);
         assignOpsCombo.addFocusListener(this);
+        cbOpenCloseBlockBrace.putClientProperty(OPTION_ID, wrapBlockBraces);
+        cbStatements.putClientProperty(OPTION_ID, wrapStatementsOnTheLine);
     }
     
     public static PreferencesCustomizer.Factory getController() {
@@ -116,7 +118,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         scrollPane = new javax.swing.JScrollPane();
         panel1 = new javax.swing.JPanel();
@@ -148,7 +149,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         ternaryOpsCombo = new javax.swing.JComboBox();
         assignOpsLabel = new javax.swing.JLabel();
         assignOpsCombo = new javax.swing.JComboBox();
-        spacerPanel1 = new javax.swing.JPanel();
+        cbOpenCloseBlockBrace = new javax.swing.JCheckBox();
+        cbStatements = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_Wrapping")); // NOI18N
         setOpaque(false);
@@ -159,218 +161,268 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         scrollPane.setPreferredSize(new java.awt.Dimension(350, 600));
 
         panel1.setOpaque(false);
-        panel1.setLayout(new java.awt.GridBagLayout());
 
         extendsImplemetsKeywordLabel.setLabelFor(extendsImplementsKeywordCombo);
         org.openide.awt.Mnemonics.setLocalizedText(extendsImplemetsKeywordLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_extendsImplementsKeyword")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 4, 0);
-        panel1.add(extendsImplemetsKeywordLabel, gridBagConstraints);
 
         extendsImplementsKeywordCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 6, 4, 8);
-        panel1.add(extendsImplementsKeywordCombo, gridBagConstraints);
 
         extendsImplementsListLabel.setLabelFor(extendsImplementsListCombo);
         org.openide.awt.Mnemonics.setLocalizedText(extendsImplementsListLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_extendsImplementsList")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        panel1.add(extendsImplementsListLabel, gridBagConstraints);
 
         extendsImplementsListCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
-        panel1.add(extendsImplementsListCombo, gridBagConstraints);
 
         methodParamsLabel.setLabelFor(methodParamsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(methodParamsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_methodParameters")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        panel1.add(methodParamsLabel, gridBagConstraints);
 
         methodParamsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
-        panel1.add(methodParamsCombo, gridBagConstraints);
 
         methodCallArgsLabel.setLabelFor(methodCallArgsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(methodCallArgsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_methodCallArgs")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        panel1.add(methodCallArgsLabel, gridBagConstraints);
 
         methodCallArgsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
-        panel1.add(methodCallArgsCombo, gridBagConstraints);
 
         chainedMethodCallsLabel.setLabelFor(chainedMethodCallsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(chainedMethodCallsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_chainedMethodCalls")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        panel1.add(chainedMethodCallsLabel, gridBagConstraints);
 
         chainedMethodCallsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
-        panel1.add(chainedMethodCallsCombo, gridBagConstraints);
 
         arrayInitLabel.setLabelFor(arrayInitCombo);
         org.openide.awt.Mnemonics.setLocalizedText(arrayInitLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_arrayInit")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        panel1.add(arrayInitLabel, gridBagConstraints);
 
         arrayInitCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
-        panel1.add(arrayInitCombo, gridBagConstraints);
 
         forLabel.setLabelFor(forCombo);
         org.openide.awt.Mnemonics.setLocalizedText(forLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_for")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        panel1.add(forLabel, gridBagConstraints);
 
         forCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
-        panel1.add(forCombo, gridBagConstraints);
 
         forStatementLabel.setLabelFor(forStatementCombo);
         org.openide.awt.Mnemonics.setLocalizedText(forStatementLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_forStatement")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        panel1.add(forStatementLabel, gridBagConstraints);
 
         forStatementCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
-        panel1.add(forStatementCombo, gridBagConstraints);
 
         ifStatementLabel.setLabelFor(ifStatementCombo);
         org.openide.awt.Mnemonics.setLocalizedText(ifStatementLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_ifStatement")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        panel1.add(ifStatementLabel, gridBagConstraints);
 
         ifStatementCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
-        panel1.add(ifStatementCombo, gridBagConstraints);
 
         whileStatementLabel.setLabelFor(whileStatementComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(whileStatementLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_whileStatement")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        panel1.add(whileStatementLabel, gridBagConstraints);
 
         whileStatementComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
-        panel1.add(whileStatementComboBox, gridBagConstraints);
 
         doWhileStatementLabel.setLabelFor(doWhileStatementCombo);
         org.openide.awt.Mnemonics.setLocalizedText(doWhileStatementLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_doWhileStatement")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        panel1.add(doWhileStatementLabel, gridBagConstraints);
 
         doWhileStatementCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
-        panel1.add(doWhileStatementCombo, gridBagConstraints);
 
         binaryOpsLabel.setLabelFor(binaryOpsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(binaryOpsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_binaryOps")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        panel1.add(binaryOpsLabel, gridBagConstraints);
 
         binaryOpsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
-        panel1.add(binaryOpsCombo, gridBagConstraints);
 
         ternaryOpsLabel.setLabelFor(ternaryOpsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(ternaryOpsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_ternaryOps")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        panel1.add(ternaryOpsLabel, gridBagConstraints);
 
         ternaryOpsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
-        panel1.add(ternaryOpsCombo, gridBagConstraints);
 
         assignOpsLabel.setLabelFor(assignOpsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(assignOpsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_assignOps")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        panel1.add(assignOpsLabel, gridBagConstraints);
 
         assignOpsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
-        panel1.add(assignOpsCombo, gridBagConstraints);
 
-        spacerPanel1.setOpaque(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
-        panel1.add(spacerPanel1, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(cbOpenCloseBlockBrace, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "cb_wrp_open_close_block_brace")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbStatements, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "cb_wrp_Statements")); // NOI18N
+        cbStatements.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbStatementsActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout panel1Layout = new javax.swing.GroupLayout(panel1);
+        panel1.setLayout(panel1Layout);
+        panel1Layout.setHorizontalGroup(
+            panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panel1Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(extendsImplemetsKeywordLabel)
+                .addGap(6, 6, 6)
+                .addComponent(extendsImplementsKeywordCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(panel1Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(extendsImplementsListLabel)
+                .addGap(37, 37, 37)
+                .addComponent(extendsImplementsListCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(panel1Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(methodParamsLabel)
+                .addGap(67, 67, 67)
+                .addComponent(methodParamsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(panel1Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(methodCallArgsLabel)
+                .addGap(44, 44, 44)
+                .addComponent(methodCallArgsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(panel1Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(chainedMethodCallsLabel)
+                .addGap(56, 56, 56)
+                .addComponent(chainedMethodCallsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(panel1Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(arrayInitLabel)
+                .addGap(100, 100, 100)
+                .addComponent(arrayInitCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(panel1Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(forLabel)
+                .addGap(174, 174, 174)
+                .addComponent(forCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(panel1Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(forStatementLabel)
+                .addGap(101, 101, 101)
+                .addComponent(forStatementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(panel1Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(ifStatementLabel)
+                .addGap(114, 114, 114)
+                .addComponent(ifStatementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(panel1Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(whileStatementLabel)
+                .addGap(88, 88, 88)
+                .addComponent(whileStatementComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(panel1Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(doWhileStatementLabel)
+                .addGap(54, 54, 54)
+                .addComponent(doWhileStatementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(panel1Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(binaryOpsLabel)
+                .addGap(86, 86, 86)
+                .addComponent(binaryOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(panel1Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(ternaryOpsLabel)
+                .addGap(78, 78, 78)
+                .addComponent(ternaryOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(panel1Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cbStatements)
+                    .addComponent(cbOpenCloseBlockBrace)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addComponent(assignOpsLabel)
+                        .addGap(50, 50, 50)
+                        .addComponent(assignOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(8, 8, 8))
+        );
+        panel1Layout.setVerticalGroup(
+            panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panel1Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(extendsImplemetsKeywordLabel))
+                    .addComponent(extendsImplementsKeywordCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
+                .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(extendsImplementsListLabel))
+                    .addComponent(extendsImplementsListCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
+                .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(methodParamsLabel))
+                    .addComponent(methodParamsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
+                .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(methodCallArgsLabel))
+                    .addComponent(methodCallArgsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
+                .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(chainedMethodCallsLabel))
+                    .addComponent(chainedMethodCallsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
+                .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(arrayInitLabel))
+                    .addComponent(arrayInitCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
+                .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(forLabel))
+                    .addComponent(forCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
+                .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(forStatementLabel))
+                    .addComponent(forStatementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
+                .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(ifStatementLabel))
+                    .addComponent(ifStatementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
+                .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(whileStatementLabel))
+                    .addComponent(whileStatementComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
+                .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(doWhileStatementLabel))
+                    .addComponent(doWhileStatementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
+                .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(binaryOpsLabel))
+                    .addComponent(binaryOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
+                .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(ternaryOpsLabel))
+                    .addComponent(ternaryOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
+                .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(assignOpsLabel))
+                    .addComponent(assignOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbOpenCloseBlockBrace)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbStatements)
+                .addContainerGap(39, Short.MAX_VALUE))
+        );
 
         scrollPane.setViewportView(panel1);
 
         add(scrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void cbStatementsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbStatementsActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cbStatementsActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox arrayInitCombo;
@@ -379,6 +431,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JLabel assignOpsLabel;
     private javax.swing.JComboBox binaryOpsCombo;
     private javax.swing.JLabel binaryOpsLabel;
+    private javax.swing.JCheckBox cbOpenCloseBlockBrace;
+    private javax.swing.JCheckBox cbStatements;
     private javax.swing.JComboBox chainedMethodCallsCombo;
     private javax.swing.JLabel chainedMethodCallsLabel;
     private javax.swing.JComboBox doWhileStatementCombo;
@@ -399,7 +453,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JLabel methodParamsLabel;
     private javax.swing.JPanel panel1;
     private javax.swing.JScrollPane scrollPane;
-    private javax.swing.JPanel spacerPanel1;
     private javax.swing.JComboBox ternaryOpsCombo;
     private javax.swing.JLabel ternaryOpsLabel;
     private javax.swing.JComboBox whileStatementComboBox;
