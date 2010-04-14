@@ -242,6 +242,7 @@ public final class BugtrackingManager implements LookupListener {
     }
 
     private class ActivatedTCListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             Registry registry = WindowManager.getDefault().getRegistry();
             if (registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
