@@ -61,7 +61,6 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
     private final AbstractRefactoring refactoring;
     private CssElementContext context;
     private RenamePanel panel;
-    private boolean folderRename;
     private CssRefactoringExtraInfo extraInfo;
 
     public CssRenameRefactoringUI(CssElementContext context) {
@@ -80,12 +79,12 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
 
     @Override
     public String getName() {
-	return NbBundle.getMessage(CssRenameRefactoringUI.class, "LBL_Rename");
+	return NbBundle.getMessage(CssRenameRefactoringUI.class, "LBL_Rename"); //NOI18N
     }
 
     @Override
     public String getDescription() {
-	return "TODO";
+	return NbBundle.getMessage(CssRenameRefactoringUI.class, "LBL_Rename_Descr"); //NOI18N
     }
 
     @Override
@@ -96,7 +95,7 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
 	if (panel == null) {
-	    panel = new RenamePanel(context.getElementName(), parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename"), true, true);
+	    panel = new RenamePanel(context.getElementName(), parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename"), true, true); //NOI18N
 	}
 
 	return panel;
@@ -118,11 +117,10 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
 	if (!panel.isUpdateReferences()) {
 	    return null;
 	}
-	if (refactoring instanceof RenameRefactoring) {
+        if (refactoring instanceof RenameRefactoring) {
 	    ((RenameRefactoring) refactoring).setNewName(panel.getNameValue());
 	}
-
-	return refactoring.fastCheckParameters();
+	return refactoring.checkParameters();
     }
 
     @Override
