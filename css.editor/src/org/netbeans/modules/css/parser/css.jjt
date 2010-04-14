@@ -573,7 +573,7 @@ void expr() :
 }
 {
    term()
-    ( (  operator() )? term() )*
+   ( (  operator() | <EQUALS> )? (term() | <DOT> | <COLON> ) )*
 }
 
 //
