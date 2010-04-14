@@ -121,7 +121,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 new ArrayList<ChangeListener>(ll));
     }
 
-    public final NativeProcess createAndStart() throws IOException {
+    public final NativeProcess createAndStart() {
         try {
             if (hostInfo == null) {
                 throw new IllegalStateException("Unable to create process - no HostInfo available"); // NOI18N
@@ -134,7 +134,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         } catch (Throwable ex) {
             LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex.toString());
             setState(State.ERROR);
-            throw (ex instanceof IOException) ? (IOException) ex : new IOException(ex);
+//            throw (ex instanceof IOException) ? (IOException) ex : new IOException(ex);
         }
 
         return this;

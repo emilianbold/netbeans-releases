@@ -1323,8 +1323,11 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
                     all.put(e.getKey(), e.getValue());
                 }
             }
-            
+
             if (!all.containsKey("name") && name != null) { // NOI18N
+                if (Boolean.TRUE.equals(all.get(CreateFromTemplateHandler.FREE_FILE_EXTENSION))) {
+                    name = name.replaceFirst("[.].*", "");
+                }
                 all.put("name", name); // NOI18N
             }
             if (!all.containsKey("user")) { // NOI18N
@@ -1344,7 +1347,8 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         public static Map<String,Object> enhanceParameters(Map<String,Object> old, String name, String ext) {
             HashMap<String,Object> all = new HashMap<String,Object>(old);
             if (!all.containsKey("nameAndExt") && name != null) { // NOI18N
-                if (ext != null && ext.length() > 0) {
+                if (ext != null && ext.length() > 0 &&
+                        (!Boolean.TRUE.equals(old.get(CreateFromTemplateHandler.FREE_FILE_EXTENSION)) || name.indexOf('.') == -1)) {
                     all.put("nameAndExt", name + '.' + ext); // NOI18N
                 } else {
                     all.put("nameAndExt", name); // NOI18N

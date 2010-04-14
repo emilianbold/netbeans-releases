@@ -99,7 +99,9 @@ import org.w3c.dom.Element;
  */
 @NodeFactory.Registration(projectType="org-netbeans-modules-ant-freeform")
 public class FolderNodeFactory implements NodeFactory {
-    
+
+    private static final RequestProcessor RP = new RequestProcessor(FolderNodeFactory.class.getName(), 1);
+
     /** Creates a new instance of FolderNodeFactory */
     public FolderNodeFactory() {
     }
@@ -145,7 +147,7 @@ public class FolderNodeFactory implements NodeFactory {
             }
             if (fromListener && !synchronous) {
                 // #50328, #58491 - post setKeys to different thread to prevent deadlocks
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     public void run() {
                         cs.fireChange();
                     }

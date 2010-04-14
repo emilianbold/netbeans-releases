@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 import java.util.logging.Logger;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
@@ -82,7 +83,7 @@ public class OutputFileManager extends CachingFileManager {
     private final Set<File> filteredFiles = new HashSet<File>();
     private boolean filtered;
     private String outputRoot;
-    private URL explicitSibling;
+    private final Stack<URL> explicitSibling = new Stack<URL>();
 
     /** Creates a new instance of CachingFileManager */
     public OutputFileManager(final CachingArchiveProvider provider,
@@ -178,7 +179,7 @@ public class OutputFileManager extends CachingFileManager {
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
         assert pkgName != null;
         assert relativeName != null;
-        URL siblingURL = explicitSibling != null ? explicitSibling : sibling == null ? null : sibling.toUri().toURL();
+        URL siblingURL = !explicitSibling.isEmpty() ? explicitSibling.peek() : sibling == null ? null : sibling.toUri().toURL();
         if (siblingURL == null) {
             throw new IllegalArgumentException ("sibling == null");
         }
@@ -339,11 +340,11 @@ public class OutputFileManager extends CachingFileManager {
             }
             final String aptOrigin = tail.next();
             if (aptOrigin.length() == 0) {
-                    explicitSibling = null;
+                    explicitSibling.pop();
             }
             else {
                 try {
-                    explicitSibling = new URL(aptOrigin);
+                    explicitSibling.push(new URL(aptOrigin));
                 } catch (MalformedURLException ex) {
                     throw new IllegalArgumentException("Invalid path argument: " + aptOrigin);    //NOI18N
                 }

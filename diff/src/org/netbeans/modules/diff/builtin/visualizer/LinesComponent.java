@@ -366,8 +366,11 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
         int height = highestLineNumber * editorUI.getLineHeight();
         if (rootView != null) {
             try {
-                Rectangle rec = editorPane.modelToView(rootView.getView(highestLineNumber).getEndOffset() - 1);
-                height = rec.y + rec.height;
+                int lineCount = rootView.getViewCount();
+                if (lineCount > 0) {
+                    Rectangle rec = editorPane.modelToView(rootView.getView(lineCount - 1).getEndOffset() - 1);
+                    height = rec.y + rec.height;
+                }
             } catch (BadLocationException ex) {
                 //
             }

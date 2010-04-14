@@ -85,13 +85,15 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private SourceGroup[] folders;
     private boolean isFolder;
+    private boolean freeFileExtension;
     
     /** Creates new form SimpleTargetChooserGUI */
     @SuppressWarnings("LeakingThisInConstructor")
-    public SimpleTargetChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, boolean isFolder ) {
+    public SimpleTargetChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, boolean isFolder, boolean freeFileExtension) {
         this.project = project;
         this.folders = folders.clone();
         this.isFolder = isFolder;
+        this.freeFileExtension = freeFileExtension;
         initComponents();
         
         locationComboBox.setRenderer( CELL_RENDERER );
@@ -425,7 +427,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             ( folderName.startsWith("/") || folderName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
             folderName + 
             ( folderName.endsWith("/") || folderName.endsWith( File.separator ) || folderName.length() == 0 ? "" : "/" ) + // NOI18N
-            documentName + expectedExtension;
+            documentName + (!freeFileExtension || documentName.indexOf('.') == -1 ? expectedExtension : "");
             
         fileTextField.setText( createdFileName.replace( '/', File.separatorChar ) ); // NOI18N    
             

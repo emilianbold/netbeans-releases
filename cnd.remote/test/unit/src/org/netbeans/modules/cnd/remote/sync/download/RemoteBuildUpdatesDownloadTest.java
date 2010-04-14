@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.remote.sync.download;
 
+import java.io.File;
+import java.lang.String;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.cnd.remote.pbuild.*;
@@ -50,6 +52,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileUtil;
 /**
  *
  * @author Vladimir Kvashin
@@ -65,10 +68,10 @@ public class RemoteBuildUpdatesDownloadTest extends RemoteBuildTestBase {
     }
 
     private static class NameStatePair {
-        public final String shortFileName;
+        public final File file;
         public final FileDownloadInfo.State state;
-        public NameStatePair(String shortFileName, State state) {
-            this.shortFileName = shortFileName;
+        public NameStatePair(File file, State state) {
+            this.file = file;
             this.state = state;
         }
     }
@@ -86,13 +89,18 @@ public class RemoteBuildUpdatesDownloadTest extends RemoteBuildTestBase {
 
     @ForAllEnvironments
     public void test_LexYacc_Updates() throws Exception {
-        NameStatePair[] filesToCheck = new NameStatePair[] {
-            new NameStatePair("y.tab.c", FileDownloadInfo.State.UNCONFIRMED),
-            new NameStatePair("y.tab.h", FileDownloadInfo.State.UNCONFIRMED),
-            new NameStatePair("lex.yy.c", FileDownloadInfo.State.UNCONFIRMED)
-        };
         List<FileDownloadInfo> updates;
-        buildSample(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_Updates", 1);
+        //buildSample(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_Updates", 1);
+        MakeProject makeProject = prepareSampleProject(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_Updates");
+        int timeout = getSampleBuildTimeout();
+        buildProject(makeProject, ActionProvider.COMMAND_REBUILD, timeout, TimeUnit.SECONDS);
+        File projectDirFile = FileUtil.toFile(makeProject.getProjectDirectory());
+        NameStatePair[] filesToCheck = new NameStatePair[] {
+            new NameStatePair(new File(projectDirFile, "y.tab.c"), FileDownloadInfo.State.UNCONFIRMED),
+            new NameStatePair(new File(projectDirFile, "y.tab.h"), FileDownloadInfo.State.UNCONFIRMED),
+            new NameStatePair(new File(projectDirFile, "lex.yy.c"), FileDownloadInfo.State.UNCONFIRMED)
+        };
+        sleep(2000); // workaround for #182824 program run under pty in Internal Terminal writes incorrect status and writes it incorrectly
         updates = HostUpdates.testGetUpdates(getTestExecutionEnvironment());
         checkInfo(updates, filesToCheck);
     }
@@ -102,7 +110,7 @@ public class RemoteBuildUpdatesDownloadTest extends RemoteBuildTestBase {
         StringBuilder notFoundMessage = new StringBuilder();
         StringBuilder wrongStateFoundMessage = new StringBuilder();
         for (NameStatePair pair : pairsToCheck) {
-            FileDownloadInfo info = find(updates, pair.shortFileName);
+            FileDownloadInfo info = find(updates, pair.file);
             if (info == null) {
                 success = false;
                 if (notFoundMessage.length() == 0) {
@@ -110,10 +118,12 @@ public class RemoteBuildUpdatesDownloadTest extends RemoteBuildTestBase {
                 } else {
                     notFoundMessage.append(", ");
                 }
-                notFoundMessage.append(pair.shortFileName);
+                notFoundMessage.append(pair.file.getName());
             } else {
                 FileDownloadInfo.State state = info.getState();
-                if (!state.equals(pair.state)) {
+                if (state.equals(pair.state)) {
+                    System.err.printf("\tOK state %s for %s at %s\n", info.getState(), info.getLocalFile(), getTestExecutionEnvironment());
+                } else {
                     success = false;
                     if (wrongStateFoundMessage.length() == 0) {
                         wrongStateFoundMessage.append("Wrong state: ");
@@ -121,7 +131,7 @@ public class RemoteBuildUpdatesDownloadTest extends RemoteBuildTestBase {
                         wrongStateFoundMessage.append(", ");
                     }
                 }
-                wrongStateFoundMessage.append(pair.shortFileName + ": expected " + pair.state + " found " + state);
+                wrongStateFoundMessage.append(pair.file.getName()).append(": expected ").append(pair.state).append(" found ").append(state);
             }
         }
         if (!success) {
@@ -134,9 +144,9 @@ public class RemoteBuildUpdatesDownloadTest extends RemoteBuildTestBase {
         }
     }
 
-    private FileDownloadInfo find(List<FileDownloadInfo> updates, String shortFileName) {
+    private FileDownloadInfo find(List<FileDownloadInfo> updates, File file) {
         for (FileDownloadInfo info : updates) {
-            if (info.getLocalFile().getName().equals(shortFileName)) {
+            if (info.getLocalFile().equals(file)) {
                 return info;
             }
         }

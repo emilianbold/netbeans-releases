@@ -91,18 +91,22 @@ public class Actions implements ActionsFactory {
         return SystemAction.get(OpenSubprojects.class);
     }
     
-    public synchronized Action closeProjectAction() {
+    public Action closeProjectAction() {
+        return closeProject();
+    }
+
+    public static synchronized Action closeProject() {
         if ( CLOSE_PROJECT == null ) {
             CLOSE_PROJECT = new CloseProject();
         }
         return CLOSE_PROJECT;        
     }
     
-    public synchronized Action newFileAction() {
+    public Action newFileAction() {
         return newFile();
     }
 
-    public static Action newFile() {
+    public static synchronized Action newFile() {
         if ( NEW_FILE == null ) {
             NEW_FILE = new NewFile.WithSubMenu();
         }

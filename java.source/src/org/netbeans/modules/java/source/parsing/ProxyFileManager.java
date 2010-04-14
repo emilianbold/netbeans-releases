@@ -89,7 +89,7 @@ public class ProxyFileManager implements JavaFileManager {
 
     private JavaFileObject lastInfered;
     private String lastInferedResult;
-    private boolean apt;
+    private int apt;
 
     private static final Logger LOG = Logger.getLogger(ProxyFileManager.class.getName());
 
@@ -221,7 +221,7 @@ public class ProxyFileManager implements JavaFileManager {
             FileObject result = fms[0].getFileForOutput(l, packageName, relativeName, sibling);
             //Workaround for wrongly written processors,
             //see Issue #180605
-            if (apt && l == StandardLocation.CLASS_OUTPUT) {
+            if (apt > 0 && l == StandardLocation.CLASS_OUTPUT) {
                 boolean exists = false;
                 try {
                     result.openInputStream().close();
@@ -270,7 +270,11 @@ public class ProxyFileManager implements JavaFileManager {
         final Iterable<String> defensiveCopy = copy(remains);
         if (AptSourceFileManager.ORIGIN_FILE.equals(current)) {
             final Iterator<String> it = defensiveCopy.iterator();
-            apt = it.hasNext() && it.next().length() != 0;
+            if (it.hasNext() && it.next().length() != 0) {
+                apt++;
+            } else {
+                apt--;
+            }
         }
         for (JavaFileManager m : getFileManager(ALL)) {
             if (m.handleOption(current, defensiveCopy.iterator())) {

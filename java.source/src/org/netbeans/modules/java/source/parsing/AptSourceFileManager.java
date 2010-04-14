@@ -46,6 +46,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Stack;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
@@ -72,7 +73,7 @@ public class AptSourceFileManager extends SourceFileManager {
 
     private final ClassPath userRoots;
     private final Marker marker;
-    private URL explicitSibling;
+    private final Stack<URL> explicitSibling = new Stack<URL>();
 
 
 
@@ -135,12 +136,12 @@ public class AptSourceFileManager extends SourceFileManager {
                 try {
                     markerFinished();
                 } finally {
-                    explicitSibling = null;
+                    explicitSibling.pop();
                 }
             }
             else {
                 try {
-                    explicitSibling = new URL(ownerRootURL);
+                    explicitSibling.push(new URL(ownerRootURL));
                 } catch (MalformedURLException ex) {
                     throw new IllegalArgumentException("Invalid path argument: " + ownerRootURL);    //NOI18N
                 }
@@ -163,7 +164,7 @@ public class AptSourceFileManager extends SourceFileManager {
 
     private URL getOwnerRoot (final javax.tools.FileObject sibling) {
         try {
-            return explicitSibling != null ? getOwnerRootSib(explicitSibling) :
+            return !explicitSibling.isEmpty() ? getOwnerRootSib(explicitSibling.peek()) :
                 (sibling == null ? getOwnerRootNoSib() : getOwnerRootSib(sibling.toUri().toURL()));
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
@@ -189,14 +190,14 @@ public class AptSourceFileManager extends SourceFileManager {
     }
 
     private void mark(final javax.tools.FileObject result) throws MalformedURLException {
-        if (marker != null && explicitSibling != null) {
-            marker.mark(explicitSibling, result.toUri().toURL());
+        if (marker != null && !explicitSibling.isEmpty()) {
+            marker.mark(explicitSibling.peek(), result.toUri().toURL());
         }
     }
 
     private void markerFinished() {
-        if (marker != null && explicitSibling != null) {
-            marker.finished(explicitSibling);
+        if (marker != null && !explicitSibling.isEmpty()) {
+            marker.finished(explicitSibling.peek());
         }
     }
 

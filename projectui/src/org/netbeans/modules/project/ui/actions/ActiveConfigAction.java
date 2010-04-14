@@ -55,7 +55,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.PopupMenuEvent;
@@ -99,7 +98,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
     private final PropertyChangeListener lst;
     private final LookupListener looklst;
-    private final JComboBox configListCombo;
+    private JComboBox configListCombo;
     private boolean listeningToCombo = true;
 
     private Project currentProject;
@@ -108,9 +107,11 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
     private Lookup lookup;
 
-    public ActiveConfigAction() {
-        super();
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    private void initConfigListCombo() {
+        assert EventQueue.isDispatchThread();
+        if (configListCombo != null) {
+            return;
+        }
         configListCombo = new JComboBox();
         configListCombo.addPopupMenuListener(new PopupMenuListener() {
             private Component prevFocusOwner = null;
@@ -147,6 +148,16 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                 } else if (o != null) {
                     activeConfigurationSelected((ProjectConfiguration) o, null);
                 }
+            }
+        });
+    }
+
+    public ActiveConfigAction() {
+        super();
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        EventQueue.invokeLater(new Runnable() {
+            public @Override void run() {
+                initConfigListCombo();
             }
         });
         lst = new PropertyChangeListener() {
@@ -206,7 +217,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
     private synchronized void activeConfigurationChanged(final ProjectConfiguration config) {
         LOGGER.log(Level.FINER, "activeConfigurationChanged: {0}", config);
-        SwingUtilities.invokeLater(new Runnable() {
+        EventQueue.invokeLater(new Runnable() {
             public void run() {
                 listeningToCombo = false;
                 try {
@@ -262,6 +273,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         toolbarPanel.setMaximumSize(new Dimension(150, 80));
         toolbarPanel.setMinimumSize(new Dimension(150, 0));
         toolbarPanel.setPreferredSize(new Dimension(150, 23));
+        initConfigListCombo();
         // XXX top inset of 2 looks better w/ small toolbar, but 1 seems to look better for large toolbar (the default):
         toolbarPanel.add(configListCombo, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(1, 6, 1, 5), 0, 0));
         return toolbarPanel;

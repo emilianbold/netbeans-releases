@@ -177,10 +177,11 @@ class RfsLocalController implements Runnable {
                 Exceptions.printStackTrace(ex);
             }
         }
-        fileData.store();
+        //fileData.store();
+        shutdown();
     }
 
-    void shutdown() {
+    private void shutdown() {
         fileData.store();
         if (!remoteUpdates.isEmpty()) {
             HostUpdates.register(remoteUpdates, execEnv, privProjectStorageDir);
@@ -469,6 +470,7 @@ class RfsLocalController implements Runnable {
                 }
                 String localFilePath = mapper.getLocalPath(remotePath);
                 if (localFilePath != null) {
+                    //RemoteUtil.LOGGER.log(Level.FINEST, "canonicalToAbsolute: {0} -> {0}", new Object[] {remoteCanonicalPath, remotePath});
                     canonicalToAbsolute.put(remoteCanonicalPath, remotePath);
                     File localFile = new File(localFilePath);
                     fileData.setState(localFile, state);

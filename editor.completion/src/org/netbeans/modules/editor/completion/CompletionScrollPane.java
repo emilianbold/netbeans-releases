@@ -183,18 +183,12 @@ public class CompletionScrollPane extends JScrollPane {
         // #25715 - Attempt to search keymap for the keybinding that logically corresponds to the action
         KeyStroke[] ret = new KeyStroke[] { defaultKey };
         if (component != null) {
-            TextUI componentUI = component.getUI();
+            Action a = component.getActionMap().get(editorActionName);
             Keymap km = component.getKeymap();
-            if (componentUI != null && km != null) {
-                EditorKit kit = componentUI.getEditorKit(component);
-                if (kit instanceof BaseKit) {
-                    Action a = ((BaseKit)kit).getActionByName(editorActionName);
-                    if (a != null) {
-                        KeyStroke[] keys = km.getKeyStrokesForAction(a);
-                        if (keys != null && keys.length > 0) {
-                            ret = keys;
-                        }
-                    }
+            if (a != null && km != null) {
+                KeyStroke[] keys = km.getKeyStrokesForAction(a);
+                if (keys != null && keys.length > 0) {
+                    ret = keys;
                 }
             }
         }

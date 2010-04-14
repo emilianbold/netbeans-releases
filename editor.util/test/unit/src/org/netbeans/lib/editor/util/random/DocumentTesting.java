@@ -43,7 +43,11 @@ package org.netbeans.lib.editor.util.random;
 
 import java.util.Random;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.random.RandomTestContainer.Context;
@@ -137,8 +141,8 @@ public class DocumentTesting {
         provider.putProperty(LOG_DOC, logDoc);
     }
 
-    public static void insert(Context context, int offset, String text) throws Exception {
-        Document doc = getDocument(context);
+    public static void insert(Context context, final int offset, final String text) throws Exception {
+        final Document doc = getDocument(context);
         // Possibly do logging
         if (context.isLogOp()) {
             int beforeTextStartOffset = Math.max(offset - 5, 0);
@@ -172,11 +176,20 @@ public class DocumentTesting {
             context.logOp(sb);
         }
 
-        doc.insertString(offset, text, null);
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    doc.insertString(offset, text, null);
+                } catch (BadLocationException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        });
     }
 
-    public static void remove(Context context, int offset, int length) throws Exception {
-        Document doc = getDocument(context);
+    public static void remove(Context context, final int offset, final int length) throws Exception {
+        final Document doc = getDocument(context);
         // Possibly do logging
         if (context.isLogOp()) {
             StringBuilder sb = context.logOpBuilder();
@@ -202,26 +215,55 @@ public class DocumentTesting {
             context.logOp(sb);
         }
 
-        doc.remove(offset, length);
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    doc.remove(offset, length);
+                } catch (BadLocationException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        });
     }
 
-    public static void undo(Context context, int count) {
-        Document doc = getDocument(context);
-        UndoManager undoManager = (UndoManager) doc.getProperty(UndoManager.class);
+    public static void undo(Context context, final int count) throws Exception {
+        final Document doc = getDocument(context);
+        final UndoManager undoManager = (UndoManager) doc.getProperty(UndoManager.class);
         logUndoRedoOp(context, "UNDO", count);
-        while (undoManager.canUndo() && --count >= 0) {
-            undoManager.undo();
-        }
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int cnt = count;
+                    while (undoManager.canUndo() && --cnt >= 0) {
+                        undoManager.undo();
+                    }
+                } catch (CannotUndoException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        });
         logPostUndoRedoOp(context, count);
     }
 
-    public static void redo(Context context, int count) {
-        Document doc = getDocument(context);
-        UndoManager undoManager = (UndoManager) doc.getProperty(UndoManager.class);
+    public static void redo(Context context, final int count) throws Exception {
+        final Document doc = getDocument(context);
+        final UndoManager undoManager = (UndoManager) doc.getProperty(UndoManager.class);
         logUndoRedoOp(context, "REDO", count);
-        if (undoManager.canRedo() && --count >= 0) {
-            undoManager.redo();
-        }
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int cnt = count;
+                    while (undoManager.canRedo() && --cnt >= 0) {
+                        undoManager.redo();
+                    }
+                } catch (CannotRedoException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        });
         logPostUndoRedoOp(context, count);
     }
 

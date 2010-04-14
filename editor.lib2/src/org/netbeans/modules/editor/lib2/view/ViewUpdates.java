@@ -141,6 +141,7 @@ public final class ViewUpdates implements DocumentListener {
         PriorityMutex mutex = documentView.getMutex();
         if (mutex != null) {
             mutex.lock();
+            documentView.checkDocumentLocked();
             try {
                 if (!documentView.isActive()) {
                     return;
@@ -160,7 +161,8 @@ public final class ViewUpdates implements DocumentListener {
                 int insertOffset = evt.getOffset();
                 int insertLength = evt.getLength();
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("\nDOCUMENT-INSERT: offset=" + insertOffset + ", length=" + insertLength + '\n'); // NOI18N
+                    LOG.fine("\nDOCUMENT-INSERT-evt: offset=" + insertOffset + ", length=" + insertLength + // NOI18N
+                            ", docLen=" + evt.getDocument().getLength() + '\n'); // NOI18N
                 }
                 rStartOffset = Math.min(rStartOffset, insertOffset);
                 rEndOffset = Math.max(rEndOffset, insertOffset + insertLength);
@@ -195,14 +197,21 @@ public final class ViewUpdates implements DocumentListener {
                     }
                     rebuildNecessary |= (addedLines.length > 0);
                 }
-                int paragraphViewIndex = documentView.getViewIndex(rStartOffset);
-// XXX: #182559, temporary workaround, please fix properly!
-//                assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
+                int paragraphViewIndex;
                 ParagraphView paragraphView;
-                if (paragraphViewIndex >= 0) {
-                    paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
-                } else {
+                if (insertOffset == 0) {
+                    // Insert may be in fact an undo of a previous removal at insertOffset=0
+                    // in which case the regular code with paragraphView!=null
+                    // would fail since the paragraphView.getStartOffset() would be
+                    // 0+insertLength and the ViewBuilder would retain the paragraphView.
+                    // So with paragraphView==null do a full rebuild of the first paragraph view.
+                    paragraphViewIndex = 0;
                     paragraphView = null;
+                } else {
+                    paragraphViewIndex = documentView.getViewIndex(rStartOffset);
+                    assert (paragraphViewIndex >= 0) : "paragraphViewIndex=" + paragraphViewIndex + // NOI18N
+                            ", docLen=" + evt.getDocument().getLength(); // NOI18N
+                    paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
                 }
 
                 if (paragraphView != null && !rebuildNecessary) { // Attempt to update just a single view locally
@@ -235,7 +244,7 @@ public final class ViewUpdates implements DocumentListener {
                     }
                 }
 
-                if (paragraphView != null && rebuildNecessary) {
+                if (rebuildNecessary) {
                     ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
                             viewFactories, rStartOffset, rEndOffset,
                             insertOffset + insertLength, insertLength);
@@ -247,7 +256,7 @@ public final class ViewUpdates implements DocumentListener {
                     }
                 }
 
-                checkIntegrity();
+                documentView.checkIntegrity();
             } finally {
                 incomingModification = false;
                 mutex.unlock();
@@ -260,6 +269,7 @@ public final class ViewUpdates implements DocumentListener {
         PriorityMutex mutex = documentView.getMutex();
         if (mutex != null) {
             mutex.lock();
+            documentView.checkDocumentLocked();
             try {
                 if (!documentView.isActive()) {
                     return;
@@ -278,7 +288,8 @@ public final class ViewUpdates implements DocumentListener {
                 int removeOffset = evt.getOffset();
                 int removeLength = evt.getLength();
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("\nDOCUMENT-REMOVE: offset=" + removeOffset + ", length=" + removeLength + '\n'); // NOI18N
+                    LOG.fine("\nDOCUMENT-REMOVE-evt: offset=" + removeOffset + ", length=" + removeLength + // NOI18N
+                            ", docLen=" + evt.getDocument().getLength() + '\n'); // NOI18N
                 }
                 rStartOffset = Math.min(rStartOffset, removeOffset);
                 rEndOffset = Math.max(rEndOffset, removeOffset + removeLength);
@@ -358,7 +369,7 @@ public final class ViewUpdates implements DocumentListener {
                     }
                 }
                 resetRebuildInfo();
-                checkIntegrity();
+                documentView.checkIntegrity();
             } finally {
                 incomingModification = false;
                 mutex.unlock();
@@ -371,6 +382,7 @@ public final class ViewUpdates implements DocumentListener {
         PriorityMutex mutex = documentView.getMutex();
         if (mutex != null) {
             mutex.lock();
+            documentView.checkDocumentLocked();
             try {
                 if (!documentView.isActive()) {
                     return;
@@ -382,7 +394,7 @@ public final class ViewUpdates implements DocumentListener {
                 }
                 // TODO finish
                 resetRebuildInfo();
-                checkIntegrity();
+                documentView.checkIntegrity();
             } finally {
                 incomingModification = false;
                 mutex.unlock();
@@ -424,13 +436,6 @@ public final class ViewUpdates implements DocumentListener {
         }
     }
 
-    private void checkIntegrity() {
-        if (LOG.isLoggable(Level.FINE)) {
-            String err = documentView.findIntegrityError();
-            LOG.fine(err);
-        }
-    }
-
     private void checkFactoriesComponentInited() {
         if (viewFactories == null) {
             initFactories();
@@ -442,12 +447,14 @@ public final class ViewUpdates implements DocumentListener {
         if (mutex != null) {
             mutex.lock();
             try {
+                documentView.checkDocumentLocked();
                 if (documentView.isActive() && !incomingModification) {
                     if (isRebuildNecessary()) {
                         int rStartOffset = rebuildStartOffset;
                         int rEndOffset = rebuildEndOffset;
-                        int paragraphViewIndex = documentView.getViewIndex(rStartOffset);
-                        assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
+                        documentView.checkIntegrity();
+                        int paragraphViewIndex = documentView.getViewIndexFirst(rStartOffset);
+                        assert (paragraphViewIndex >= 0) : "Paragraph view index is " + paragraphViewIndex; // NOI18N
                         ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
                         ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
                                 viewFactories, rStartOffset, rEndOffset,

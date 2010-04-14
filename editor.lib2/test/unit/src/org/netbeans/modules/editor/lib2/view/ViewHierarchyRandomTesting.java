@@ -43,27 +43,30 @@ package org.netbeans.modules.editor.lib2.view;
 
 import javax.swing.JEditorPane;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.undo.UndoManager;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.random.DocumentTesting;
 import org.netbeans.lib.editor.util.random.EditorPaneTesting;
 import org.netbeans.lib.editor.util.random.RandomTestContainer;
+import org.netbeans.lib.editor.util.random.RandomTestContainer.Context;
 import org.netbeans.lib.editor.util.random.RandomText;
 
 /**
  *
  * @author Miloslav Metelka
  */
-public class ViewHierarchyRandomTesting extends NbTestCase {
-
-    public ViewHierarchyRandomTesting(String testName) {
-        super(testName);
-    }
+public class ViewHierarchyRandomTesting {
 
     public static RandomTestContainer createContainer(EditorKit kit) throws Exception {
+        // Set the property for synchronous highlights firing since otherwise
+        // the repeatability of problems with view hierarchy is none or limited.
+        System.setProperty("org.netbeans.editor.sync.highlights", "true");
+        System.setProperty("org.netbeans.editor.linewrap.edt", "true");
+
+
         RandomTestContainer container = EditorPaneTesting.initContainer(null, kit);
         DocumentTesting.initContainer(container);
         return container;
@@ -78,7 +81,7 @@ public class ViewHierarchyRandomTesting extends NbTestCase {
 
     public static void initRandomText(RandomTestContainer container) throws Exception {
 //        container.addOp(new Op());
-//        container.addCheck(new Check());
+        container.addCheck(new ViewHierarchyCheck());
         RandomText randomText = RandomText.join(
                 RandomText.lowerCaseAZ(3),
                 RandomText.spaceTabNewline(1),
@@ -130,11 +133,24 @@ public class ViewHierarchyRandomTesting extends NbTestCase {
         DocumentTesting.undo(gContext, 1); // This throwed ISE for plain text mime type
     }
 
-    public static void testRandomMods(RandomTestContainer container) throws Exception {
-        container.run(1269936518464L);
-//        container.run(1269878830601L);
-//        container.run(1269875047713L);
-        container.run(0L); // Random operation
+    private static final class ViewHierarchyCheck extends RandomTestContainer.Check {
+
+        @Override
+        protected void check(final Context context) throws Exception {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    JEditorPane pane = EditorPaneTesting.getEditorPane(context);
+                    DocumentView docView = DocumentView.get(pane);
+                    docView.checkIntegrity();
+                    // View hierarchy dump
+//                    System.err.println("\nView Hierarchy Dump:\n" + docView.toStringDetail() + "\n");
+                }
+            });
+
+        }
+
+
     }
 
 }

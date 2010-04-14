@@ -41,13 +41,19 @@ package org.netbeans.modules.apisupport.project.api;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
@@ -55,15 +61,22 @@ import org.netbeans.modules.apisupport.project.layers.LayerUtils.SavableTreeEdit
 import org.netbeans.modules.apisupport.project.layers.WritableXMLFileSystem;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.XMLFileSystem;
+import org.xml.sax.SAXException;
 
 /**
  * Manages one project's XML layer.
  */
-public class LayerHandle {
+public final class LayerHandle {
 
     // XXX needs to hold a strong ref only when modified, probably?
     private static final Map<Project,LayerHandle> layerHandleCache = new WeakHashMap<Project,LayerHandle>();
@@ -97,6 +110,7 @@ public class LayerHandle {
      * You can make whatever Filesystems API calls you like to it.
      * Just call {@link #save} when you are done so the modified XML document is saved
      * (or the user can save it explicitly if you don't).
+     * If there is a {@code META-INF/generated-layer.xml} this will be included as well.
      * @param create if true, and there is no layer yet, create it now; if false, just return null
      */
     public FileSystem layer(boolean create) {
@@ -115,7 +129,7 @@ public class LayerHandle {
             FileObject xml = getLayerFile();
             if (xml == null) {
                 if (!create) {
-                    return null;
+                    return new DualLayers(null);
                 }
                 try {
                     NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
@@ -137,7 +151,7 @@ public class LayerHandle {
                 }
             }
             try {
-                fs = new WritableXMLFileSystem(xml.getURL(), cookie = LayerUtils.cookieForFile(xml), cp);
+                fs = new DualLayers(new WritableXMLFileSystem(xml.getURL(), cookie = LayerUtils.cookieForFile(xml), cp));
             } catch (FileStateInvalidException e) {
                 throw new AssertionError(e);
             }
@@ -156,6 +170,50 @@ public class LayerHandle {
             });
         }
         return fs;
+    }
+
+    private final class DualLayers extends MultiFileSystem implements FileChangeListener {
+        private final FileSystem explicit;
+        private final File generated;
+        DualLayers(FileSystem explicit) {
+            this.explicit = explicit;
+            if (project instanceof NbModuleProject) {
+                generated = new File(((NbModuleProject) project).getClassesDirectory(), ManifestManager.GENERATED_LAYER_PATH);
+                FileUtil.addFileChangeListener(this, generated);
+            } else {
+                // XXX currently NbModuleProvider does not define location of target/classes
+                generated = null;
+            }
+            configure();
+        }
+        private void configure() {
+            List<FileSystem> layers = new ArrayList<FileSystem>(2);
+            if (explicit != null) {
+                layers.add(explicit);
+            }
+            if (generated != null && generated.isFile()) {
+                try {
+                    layers.add(new XMLFileSystem(generated.toURI().toString()));
+                } catch (SAXException x) {
+                    Logger.getLogger(DualLayers.class.getName()).log(Level.INFO, "could not load " + generated, x);
+                }
+            }
+            setDelegates(layers.toArray(new FileSystem[layers.size()]));
+        }
+        public @Override void fileDataCreated(FileEvent fe) {
+            configure();
+        }
+        public @Override void fileChanged(FileEvent fe) {
+            configure();
+        }
+        public @Override void fileDeleted(FileEvent fe) {
+            configure();
+        }
+        public @Override void fileRenamed(FileRenameEvent fe) {
+            configure(); // ???
+        }
+        public @Override void fileFolderCreated(FileEvent fe) {}
+        public @Override void fileAttributeChanged(FileAttributeEvent fe) {}
     }
 
     /**

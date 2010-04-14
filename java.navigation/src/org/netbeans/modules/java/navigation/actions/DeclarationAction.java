@@ -43,11 +43,9 @@ package org.netbeans.modules.java.navigation.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.java.navigation.DeclarationTopComponent;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 
@@ -64,7 +62,7 @@ public class DeclarationAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent evt) {
-        TopComponent win = DeclarationTopComponent.findInstance();
+        TopComponent win = DeclarationTopComponent.getDefault();
         win.open();
         win.requestActive();
     }

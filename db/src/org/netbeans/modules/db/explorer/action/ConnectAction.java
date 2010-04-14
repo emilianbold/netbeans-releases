@@ -321,7 +321,7 @@ public class ConnectAction extends BaseAction {
                     }
                 };
 
-                dlg = new ConnectionDialog(this, basePanel, schemaPanel, basePanel.getTitle(), new HelpCtx("db_save_password"), actionListener, changeTabListener);  // NOI18N
+                dlg = new ConnectionDialog(this, basePanel, remember ? schemaPanel : null, basePanel.getTitle(), new HelpCtx("db_save_password"), actionListener, changeTabListener);  // NOI18N
                 dlg.setVisible(true);
             } else { // without dialog with connection data (username, password), just with progress dlg
                 try {

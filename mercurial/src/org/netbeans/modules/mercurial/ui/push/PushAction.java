@@ -372,6 +372,8 @@ public class PushAction extends ContextAction {
             if (bLocalPush && !bNoChanges) {
                 HgUtils.forceStatusRefresh(pushFile);
             }
+        } catch (HgException.HgCommandCanceledException ex) {
+            // canceled by user, do nothing
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);

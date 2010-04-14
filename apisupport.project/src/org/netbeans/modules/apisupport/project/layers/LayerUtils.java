@@ -61,6 +61,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -491,22 +493,25 @@ public class LayerUtils {
                         //profiler for example.
                         continue;
                     }
-                    ManifestManager mm = ManifestManager.getInstance(p2.getManifest(), false);
+                    ManifestManager mm = ManifestManager.getInstance(p2.getManifest(), false, true);
                     String layer = mm.getLayer();
-                    if (layer == null) {
-                        continue;
+                    if (layer != null) {
+                        FileObject src = p2.getSourceDirectory();
+                        if (src != null) {
+                            FileObject layerXml = src.getFileObject(layer);
+                            if (layerXml != null) {
+                                otherLayerURLs.add(layerXml.getURL());
+                            }
+                        }
                     }
-                    FileObject src = p2.getSourceDirectory();
-                    if (src == null) {
-                        continue;
+                    layer = mm.getGeneratedLayer();
+                    if (layer != null) {
+                        File layerXml = new File(nbprj.getClassesDirectory(), layer);
+                        if (layerXml.isFile()) {
+                            otherLayerURLs.add(layerXml.toURI().toURL());
+                        }
                     }
-                    FileObject layerXml = src.getFileObject(layer);
-                    if (layerXml == null) {
-                        continue;
-                    }
-                    otherLayerURLs.add(layerXml.getURL());
                     // TODO cache
-                    // XXX as above, could add generated-layer.xml
                 }
                 XMLFileSystem xfs = new XMLFileSystem();
                 try {
@@ -586,7 +591,13 @@ public class LayerUtils {
             assert root != null : other;
             FileObject fo = FileUtil.toFileObject(root);
             if (fo == null) continue;   // #142696, project deleted during scan
-            NbModuleProject p2 = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
+            NbModuleProject p2;
+            try {
+                p2 = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
+            } catch (IOException x) {
+                Logger.getLogger(LayerUtils.class.getName()).log(Level.INFO, "could not load " + fo, x);
+                continue;
+            }
             if (p2 == null) continue;
             projects.add(p2);
         }

@@ -435,19 +435,21 @@ public class HighlightsView extends EditorView implements TextLayoutView {
             if (underlineValue != null) {
                 Color underlineColor;
                 if (underlineValue instanceof Boolean) { // Correct swing-way
-                    underlineColor = textComponent.getForeground();
+                    underlineColor = Boolean.TRUE.equals(underlineValue) ? textComponent.getForeground() : null;
                 } else { // NB bug - it's Color instance
                     underlineColor = (Color) underlineValue;
                 }
-                g.setColor(underlineColor);
-                float underlineOffset = docView.getDefaultUnderlineOffset();
-                float underlineThickness = docView.getDefaultUnderlineThickness();
-                g.fillRect(
-                        (int) allocBounds.getX(),
-                        (int) (allocBounds.getY() + docView.getDefaultAscent() + underlineOffset),
-                        (int) allocBounds.getWidth(),
-                        (int) Math.max(1, Math.round(underlineThickness))
-                );
+                if (underlineColor != null) {
+                    g.setColor(underlineColor);
+                    float underlineOffset = docView.getDefaultUnderlineOffset();
+                    float underlineThickness = docView.getDefaultUnderlineThickness();
+                    g.fillRect(
+                            (int) allocBounds.getX(),
+                            (int) (allocBounds.getY() + docView.getDefaultAscent() + underlineOffset),
+                            (int) allocBounds.getWidth(),
+                            (int) Math.max(1, Math.round(underlineThickness))
+                    );
+                }
             }
         }
     }
@@ -466,19 +468,21 @@ public class HighlightsView extends EditorView implements TextLayoutView {
             if (strikeThroughValue != null) {
                 Color strikeThroughColor;
                 if (strikeThroughValue instanceof Boolean) { // Correct swing-way
-                    strikeThroughColor = textComponent.getForeground();
+                    strikeThroughColor = Boolean.TRUE.equals(strikeThroughValue) ? textComponent.getForeground() : null;
                 } else { // NB bug - it's Color instance
                     strikeThroughColor = (Color) strikeThroughValue;
                 }
-                g.setColor(strikeThroughColor);
-                float strikeOffset = docView.getDefaultStrikethroughOffset();
-                float strikeThickness = docView.getDefaultStrikethroughThickness();
-                g.fillRect(
-                        (int) allocBounds.getX(),
-                        (int) (allocBounds.getY() + docView.getDefaultAscent() + strikeOffset),
-                        (int) allocBounds.getWidth(),
-                        (int) Math.max(1, Math.round(strikeThickness))
-                );
+                if (strikeThroughColor != null) {
+                    g.setColor(strikeThroughColor);
+                    float strikeOffset = docView.getDefaultStrikethroughOffset();
+                    float strikeThickness = docView.getDefaultStrikethroughThickness();
+                    g.fillRect(
+                            (int) allocBounds.getX(),
+                            (int) (allocBounds.getY() + docView.getDefaultAscent() + strikeOffset),
+                            (int) allocBounds.getWidth(),
+                            (int) Math.max(1, Math.round(strikeThickness))
+                    );
+                }
             }
         }
     }

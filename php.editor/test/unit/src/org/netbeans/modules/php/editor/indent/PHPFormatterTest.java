@@ -1611,6 +1611,46 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue168396_01.php", options);
     }
 
+    public void testFore_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/fore_01.php", options, true);
+    }
+
+    public void testFore_02() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinForParens, true);
+        reformatFileContents("testfiles/formatting/templates/fore_02.php", options, true);
+    }
+
+    public void testFore_03() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinForParens, true);
+        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/templates/fore_03.php", options, true);
+    }
+
+    public void testFore_04() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinForParens, true);
+        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/templates/fore_04.php", options, true);
+    }
+
+    public void testFore_05() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinForParens, true);
+        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/templates/fore_05.php", options, true);
+    }
+
+    public void testFore_06() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinForParens, true);
+        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.initialIndent, 4);
+        reformatFileContents("testfiles/formatting/templates/fore_06.php", options, true);
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
@@ -1658,20 +1698,31 @@ public class PHPFormatterTest extends PHPTestBase {
         assertDescriptionMatches(file, after, false, ".formatted");
     }
 
-    
+
     protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
+        reformatFileContents(file, options, false);
+    }
+
+    protected void reformatFileContents(String file, Map<String, Object> options, boolean isTemplate) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
         BaseDocument doc = getDocument(fo);
+
+        if (isTemplate) {
+            doc.putProperty(TokenFormatter.TEMPLATE_HANDLER_PROPERTY, new Object());
+        }
+        
         assertNotNull(doc);
-        String fullTxt = doc.getText(0, doc.getLength());
         int formatStart = 0;
         int formatEnd = doc.getLength();
-        int startMarkPos = fullTxt.indexOf(FORMAT_START_MARK);
+        int startMarkPos = doc.getText(0, doc.getLength() - 1).indexOf(FORMAT_START_MARK);
 
         if (startMarkPos >= 0){
-            formatStart = startMarkPos + FORMAT_START_MARK.length();
-            formatEnd = fullTxt.indexOf(FORMAT_END_MARK);
+            //formatStart = startMarkPos + FORMAT_START_MARK.length();
+            formatStart = startMarkPos;
+            doc.remove(formatStart, FORMAT_START_MARK.length());
+            formatEnd = doc.getText(0, doc.getLength() - 1).toString().indexOf(FORMAT_END_MARK);
+            doc.remove(formatEnd, FORMAT_END_MARK.length());
 
             if (formatEnd == -1){
                 throw new IllegalStateException();

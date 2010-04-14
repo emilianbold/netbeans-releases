@@ -46,8 +46,10 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -61,9 +63,10 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.refactoring.api.CssRefactoring;
+import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.indexing.HtmlLinkEntry;
 import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring.Mode;
-import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring.SelectorType;
+import org.netbeans.modules.html.editor.refactoring.api.SelectorType;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
@@ -99,7 +102,8 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
     }
 
     private void initUI() {
-        refactorToTypeButtonGroup.getSelection();
+
+        setSectionMode(HtmlPreferences.extractInlinedStylePanelSectionMode());
 
         ItemListener embeddedSectionsItemListener = new ItemListener() {
 
@@ -113,6 +117,7 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
                 } else {
                     selection = Mode.refactorToExistingEmbeddedSection;
                 }
+                HtmlPreferences.setExtractInlinedStylePanelSectionMode(selection);
             }
         };
         embeddedSectionRB.addItemListener(embeddedSectionsItemListener);
@@ -130,6 +135,7 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
                 } else {
                     selection = Mode.refactorToExistingExternalSheet;
                 }
+                HtmlPreferences.setExtractInlinedStylePanelSectionMode(selection);
             }
         };
 
@@ -151,18 +157,15 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
                     }
 
                     setResolveDeclarationsPanel(selectorType);
+                    HtmlPreferences.setExtractInlinedStylePanelSelectorType(selectorType);
                 }
             }
-        };
+        }; 
 
         idSelectorTypeRB.addItemListener(refactorToSelectorTypeItemListener);
         classSelectorTypeRB.addItemListener(refactorToSelectorTypeItemListener);
 
-
-        //TODO store the choices in settings!
-        setButtonsGroupSelection(Mode.refactorToExistingEmbeddedSection);
-        setSelectorType(SelectorType.ID);
-
+        setSelectorType(HtmlPreferences.extractInlinedStylePanelSelectorType());
     }
 
     private void setResolveDeclarationsPanel(SelectorType type) {
@@ -191,11 +194,15 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
         repaint();
     }
 
-    private void setButtonsGroupSelection(Mode mode) {
+    private void setSectionMode(Mode mode) {
         this.selection = mode;
         JRadioButton select;
         switch (selection) {
             case refactorToExistingEmbeddedSection:
+                //select first existing css section if available
+                if(existingEmbeddedSectionsComboBox.getModel().getSize() > 1) { //first item is the 'create new section'
+                    existingEmbeddedSectionsComboBox.setSelectedIndex(1); //select second item, which is the first existing section
+                }
             case refactorToNewEmbeddedSection:
                 select = embeddedSectionRB;
                 break;
@@ -208,6 +215,8 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
                 assert false;
         }
         select.setSelected(true);
+
+
     }
 
     private void setSelectorType(SelectorType type) {
@@ -384,7 +393,21 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
             linkedObjects.add(entry.getFileReference().target());
         }
 
-        List<ExternalStyleSheetItem> items = new ArrayList<ExternalStyleSheetItem>();
+        //sort the items so the refered stylesheets are first in the list
+        Collection<ExternalStyleSheetItem> items = new TreeSet<ExternalStyleSheetItem>(new Comparator<ExternalStyleSheetItem>(){
+
+            @Override
+            public int compare(ExternalStyleSheetItem o1, ExternalStyleSheetItem o2) {
+                if(o1 instanceof ReferedExternalStyleSheetItem && !(o2 instanceof ReferedExternalStyleSheetItem)) {
+                    return -1;
+                } else if(!(o1 instanceof ReferedExternalStyleSheetItem) && o2 instanceof ReferedExternalStyleSheetItem) {
+                    return 1;
+                } else {
+                    return o1.getFile().getPath().compareTo(o2.getFile().getPath());
+                }
+            }
+
+        });
         for (FileObject stylesheet : allStylesheets) {
             if (linkedObjects.contains(stylesheet)) {
                 items.add(new ReferedExternalStyleSheetItem(stylesheet));

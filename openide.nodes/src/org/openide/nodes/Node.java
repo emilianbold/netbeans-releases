@@ -335,7 +335,9 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
             if ((ch != null) && (ch != parent)) {
                 throw new IllegalStateException(
                     "Cannot initialize " + index + "th child of node " + parent.getNode() +
-                    "; it already belongs to node " + ch.getNode()
+                    "; it already belongs to node " + ch.getNode() + "\nChildren of new node: " +
+                    Arrays.toString(parent.getNodes()) + "\nChildren of old node: " +
+                    Arrays.toString(ch.getNodes())
                 ); // NOI18N
             }
 

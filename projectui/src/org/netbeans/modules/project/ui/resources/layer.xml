@@ -66,7 +66,7 @@ made subject to such option by the copyright holder.
             </file>
             
             <file name="org-netbeans-modules-project-ui-CloseProject.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.CloseProject"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.closeProject"/>
             </file>
 
             <file name="org-netbeans-modules-project-ui-actions-OpenSubprojects.instance"/>

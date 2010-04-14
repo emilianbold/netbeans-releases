@@ -57,11 +57,11 @@ import org.openide.filesystems.FileObject;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
 public class CaretListeningFactory extends CaretAwareJavaSourceTaskFactory {
     
-    private static CaretListeningFactory INSATNCE;
+    private static CaretListeningFactory INSTANCE;
     
     public CaretListeningFactory() {
         super(Phase.RESOLVED, Priority.LOW);
-        INSATNCE = this;
+        INSTANCE = this;
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject fileObject) {
@@ -69,11 +69,13 @@ public class CaretListeningFactory extends CaretAwareJavaSourceTaskFactory {
     }
     
     static void runAgain() {
-        List<FileObject> fileObjects = INSATNCE.getFileObjects();
-        CaretListeningTask.resetLastEH();
-        if ( !fileObjects.isEmpty() ) {
-            // System.out.println("Rescheduling for " + fileObjects.get(0));
-            INSATNCE.reschedule(fileObjects.iterator().next());
+        if (INSTANCE != null) {
+            List<FileObject> fileObjects = INSTANCE.getFileObjects();
+            CaretListeningTask.resetLastEH();
+            if ( !fileObjects.isEmpty() ) {
+                // System.out.println("Rescheduling for " + fileObjects.get(0));
+                INSTANCE.reschedule(fileObjects.iterator().next());
+            }
         }
     }
     

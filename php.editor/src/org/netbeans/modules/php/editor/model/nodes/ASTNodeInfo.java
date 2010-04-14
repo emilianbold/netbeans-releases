@@ -397,7 +397,8 @@ public class ASTNodeInfo<T extends ASTNode> {
         return retval;
     }
 
-    static OffsetRange toOffsetRangeVar(Variable node) {
+    // public because of frameworks!
+    public static OffsetRange toOffsetRangeVar(Variable node) {
         Expression name = node.getName();
         //TODO: dangerous never ending loop
         while ((name instanceof Variable)) {

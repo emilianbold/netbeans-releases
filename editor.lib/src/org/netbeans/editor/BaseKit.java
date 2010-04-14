@@ -358,7 +358,13 @@ public class BaseKit extends DefaultEditorKit {
 
     private final SearchableKit searchableKit;
 
-    /* package */ static final boolean LINEWRAP_ENABLED = !Boolean.getBoolean("org.netbeans.editor.linewrap.disable"); //NOI18N
+    /* package */ static final boolean LINEWRAP_ENABLED;
+    static {
+        String value = System.getProperty("org.netbeans.editor.linewrap");
+        LINEWRAP_ENABLED = (value != null)
+                ? value.equalsIgnoreCase("true")
+                : true; // false for NB6.9 Beta
+    }
 
 //    static SettingsChangeListener settingsListener = new SettingsChangeListener() {
 //        public void settingsChange(SettingsChangeEvent evt) {
@@ -1860,6 +1866,7 @@ public class BaseKit extends DefaultEditorKit {
             super(ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 try {
@@ -1876,7 +1883,11 @@ public class BaseKit extends DefaultEditorKit {
                         }
                     }
                     try {
-                        dot = Utilities.getPositionAbove(target, dot, p.x);
+                        dot = Utilities.getPositionAbove (target, dot, p.x);
+                        dot = target.getUI().getNextVisualPositionFrom (
+                            target, dot - 1,
+                            Position.Bias.Forward, SwingConstants.EAST, null
+                        );
                         boolean select = selectionUpAction.equals(getValue(Action.NAME));
                         if (select) {
                             caret.moveDot(dot);
@@ -1905,6 +1916,7 @@ public class BaseKit extends DefaultEditorKit {
             super(ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 try {
@@ -1922,6 +1934,8 @@ public class BaseKit extends DefaultEditorKit {
                     }
                     try {
                         dot = Utilities.getPositionBelow(target, dot, p.x);
+                        dot = target.getUI().getNextVisualPositionFrom(target,
+                                  dot - 1, Position.Bias.Forward, SwingConstants.EAST, null);
                         boolean select = selectionDownAction.equals(getValue(Action.NAME));
                         if (select) {
                             caret.moveDot(dot);
@@ -2057,6 +2071,7 @@ public class BaseKit extends DefaultEditorKit {
                 | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Caret caret = target.getCaret();
