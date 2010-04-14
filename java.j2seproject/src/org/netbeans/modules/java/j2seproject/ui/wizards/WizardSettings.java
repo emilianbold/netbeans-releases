@@ -41,10 +41,8 @@
 
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
-import org.openide.filesystems.FileUtil;
-
-import java.io.File;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.java.j2seproject.ui.wizards.NewJ2SEProjectWizardIterator.WizardType;
 import org.openide.util.NbPreferences;
 
 /**
@@ -60,9 +58,7 @@ public class WizardSettings {
 
     private static final String NEW_LIB_COUNT = "newLibraryCount"; //NOI18N
 
-    private static final String LAST_USED_CP_FOLDER = "lastUsedClassPathFolder";    //NOI18N
-
-    private static final String LAST_USED_ARTIFACT_FOLDER = "lastUsedArtifactFolder"; //NOI18N
+    private static final String SET_AS_MAIN = "setAsMain."; // NOI18N
     
     private static Preferences getPreferences() {
         return NbPreferences.forModule(WizardSettings.class);
@@ -92,31 +88,12 @@ public class WizardSettings {
         getPreferences().putInt(NEW_LIB_COUNT, count);
     }
 
-    public static File getLastUsedClassPathFolder() {
-        return new File (getPreferences().get(LAST_USED_CP_FOLDER, System.getProperty("user.home")));
+    public static boolean getSetAsMain(WizardType wizardType) {
+        return getPreferences().getBoolean(SET_AS_MAIN + wizardType, wizardType != WizardType.LIB);
     }
 
-    public static void setLastUsedClassPathFolder(File folder) {
-        assert folder != null : "ClassPath root can not be null";
-        String path = folder.getAbsolutePath();
-        getPreferences().put(LAST_USED_CP_FOLDER, path);
-    }
-
-    public static File getLastUsedArtifactFolder(final File defaultValue) {
-        String val = getPreferences().get(LAST_USED_ARTIFACT_FOLDER, null);
-        if (val != null) {
-            return FileUtil.normalizeFile(new File (val));
-        }
-        if (defaultValue != null) {
-            return defaultValue;
-        }
-        return FileUtil.normalizeFile(new File (System.getProperty("user.home")));
-    }
-
-    public static void setLastUsedArtifactFolder(File folder) {
-        assert folder != null : "Folder can not be null";
-        String path = folder.getAbsolutePath();
-        getPreferences().put(LAST_USED_ARTIFACT_FOLDER, path);
+    public static void setSetAsMain(WizardType wizardType, boolean setAsMain) {
+        getPreferences().putBoolean(SET_AS_MAIN + wizardType, setAsMain);
     }
 
 }
