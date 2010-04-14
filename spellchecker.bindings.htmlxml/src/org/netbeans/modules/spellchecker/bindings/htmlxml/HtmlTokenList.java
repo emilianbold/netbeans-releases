@@ -101,7 +101,7 @@ public class HtmlTokenList extends AbstractTokenList {
     //and positioned for each search offset!
     @Override
     protected int[] findNextSpellSpan() throws BadLocationException {
-        if (ts == null || hidden) {
+        if (ts == null || !ts.isValid() || hidden) {
             return new int[]{-1, -1};
         }
 
