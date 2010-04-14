@@ -176,11 +176,11 @@ public interface CssParserConstants {
   String[] tokenImage = {
     "<EOF>",
     "<S>",
-    "<token of kind 2>",
+    "\"/*\"",
     "<token of kind 3>",
     "\"*/\"",
-    "<token of kind 5>",
     "\"expression(\"",
+    "\")\"",
     "<token of kind 7>",
     "\"{\"",
     "\"}\"",

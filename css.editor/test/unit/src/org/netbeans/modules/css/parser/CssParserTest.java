@@ -123,16 +123,21 @@ public class CssParserTest extends TestBase {
         return node;
     }
 
-//    public void testMSSyntax() throws ParseException {
-////        String code = "h1 { top: expression(offsetParent.scrollTop) } ";
-//        String code = "h1 { filter:alpha(opacity=50); }";
+    public void testMSSyntax() throws ParseException {
 //        dumpTokens(code);
-//
 //        SimpleNode node = parse(code);
 //        System.out.println(node.dump());
-//
-//        check(code);
-//    }
+
+        check("h1 { top: expression(offsetParent.scrollTop) } ");
+        check("h1 { filter:alpha(opacity=50); }");
+        check("h1 { filter: progid:DXImageTransform.Microsoft.Blur(PixelRadius=5,MakeShadow=true,ShadowOpacity=0.20); }");
+        check("h1 { filter: progid:DXImageTransform.Microsoft.Alpha(opacity=70) }");
+        check("h1 { filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='trans.png', sizingMethod='scale'); }");
+
+        //IE8
+        check("h1 { -ms-filter:\"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)\"; }");
+
+    }
 
     // @@@ represents a gap from the css perspective in reality filled with 
     // a templating language code.
