@@ -87,8 +87,12 @@ public class HtmlTokenList extends AbstractTokenList {
         assert htmlPath != null;
 
         tss = th.tokenSequenceList(htmlPath, offset, Integer.MAX_VALUE).iterator(); //no range provided by the API
-        ts = tss.next(); //position to the first sequence
-        ts.move(offset);
+        if(tss.hasNext()) {
+            ts = tss.next(); //position to the first sequence
+            ts.move(offset);
+        } else {
+           //no html code in the file
+        }
         
     }
 
@@ -97,7 +101,7 @@ public class HtmlTokenList extends AbstractTokenList {
     //and positioned for each search offset!
     @Override
     protected int[] findNextSpellSpan() throws BadLocationException {
-        if (hidden) {
+        if (ts == null || hidden) {
             return new int[]{-1, -1};
         }
 
