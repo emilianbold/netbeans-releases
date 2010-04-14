@@ -97,7 +97,7 @@ public class ChildrenKeysTest extends NbTestCase {
 
     @Override
     protected int timeOut() {
-        return 400000;
+        return 35000;
     }
 
     @Override
@@ -2383,7 +2383,7 @@ public class ChildrenKeysTest extends NbTestCase {
         thread1.start();
         block1.countDown();
         try {
-            thread1.join(10000);
+            thread1.join(40000);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
