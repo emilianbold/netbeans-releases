@@ -47,21 +47,25 @@ import org.openide.filesystems.FileUtil;
  */
 public class HtmlTokenList extends AbstractTokenList {
 
-
+    private String fileType;
     private boolean hidden = false;
     private Iterator<TokenSequence<?>> tss;
     private TokenSequence<?> ts;
 
-    public HtmlTokenList(BaseDocument doc) {
+    public HtmlTokenList(BaseDocument doc, String fileType) {
         super(doc);
+        this.fileType = fileType;
     }
 
     @Override
     public void setStartOffset(int offset) {
         super.setStartOffset (offset);
-        FileObject fileObject = FileUtil.getConfigFile ("Spellcheckers/HTML");
-        Boolean b = (Boolean) fileObject.getAttribute ("Hidden");
-        hidden = Boolean.TRUE.equals (b);
+
+        if(fileType != null) {
+            FileObject fileObject = FileUtil.getConfigFile ("Spellcheckers/" + fileType);
+            Boolean b = (Boolean) fileObject.getAttribute ("Hidden");
+            hidden = Boolean.TRUE.equals (b);
+        }
 
         //find top most html embedding token sequence list
         TokenHierarchy<?> th = TokenHierarchy.get(doc);
