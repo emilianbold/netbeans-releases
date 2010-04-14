@@ -108,7 +108,7 @@ import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
                 first = true;
                 break;
             case MACOSX:
-                cmd = "sh";
+                cmd = "sh"; // NOI18N
                 args = new String [] {"-c", String.format("md5 %s || openssl -md5 %s", remotePath, remotePath)}; //NOI18N
                 first = false;
                 break;
