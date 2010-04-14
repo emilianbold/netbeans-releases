@@ -419,7 +419,8 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
             // draw liune numbers and annotations while we are in visible area
             int lineHeight = editorUI.getLineHeight();
             int lineAscent = editorUI.getLineAscent();
-            while ((y + (lineHeight / 2)) <= (drawHere.y + drawHere.height)) {
+            int lineCount = rootView.getViewCount();
+            while (line < lineCount && (y + (lineHeight / 2)) <= (drawHere.y + drawHere.height)) {
                 View view = rootView.getView(line);
                 Rectangle rec1 = editorPane.modelToView(view.getStartOffset());
                 Rectangle rec2 = editorPane.modelToView(view.getEndOffset() - 1);
