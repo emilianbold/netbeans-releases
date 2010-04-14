@@ -126,9 +126,7 @@ public class APTHandlersSupportImpl {
     public static Map<CharSequence, APTMacro> extractMacroMap(APTPreprocHandler.State state){
         assert state != null;
         APTBaseMacroMap.StateImpl macro = (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
-        Map<CharSequence, APTMacro> tmpMap = new HashMap<CharSequence, APTMacro>(128);
-        APTMacroMapSnapshot.addAllMacros(macro.snap, tmpMap);
-        return tmpMap;
+        return APTMacroMapSnapshot.addAllMacros(macro.snap, null);
     }
 
     public static APTBaseMacroMap.State extractMacroMapState(APTPreprocHandler.State state){
