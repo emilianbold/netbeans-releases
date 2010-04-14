@@ -58,7 +58,7 @@ public class CssParserTest extends TestBase {
 
        public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new CssParserTest("testPropertyValueWithComment"));
+        suite.addTest(new CssParserTest("testMSSyntax"));
         return suite;
     }
 
@@ -121,6 +121,22 @@ public class CssParserTest extends TestBase {
         Assert.assertNotNull(node);
         assertNoErrors(node);
         return node;
+    }
+
+    public void testMSSyntax() throws ParseException {
+//        dumpTokens(code);
+//        SimpleNode node = parse(code);
+//        System.out.println(node.dump());
+
+        check("h1 { top: expression(offsetParent.scrollTop) } ");
+        check("h1 { filter:alpha(opacity=50); }");
+        check("h1 { filter: progid:DXImageTransform.Microsoft.Blur(PixelRadius=5,MakeShadow=true,ShadowOpacity=0.20); }");
+        check("h1 { filter: progid:DXImageTransform.Microsoft.Alpha(opacity=70) }");
+        check("h1 { filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='trans.png', sizingMethod='scale'); }");
+
+        //IE8
+        check("h1 { -ms-filter:\"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)\"; }");
+
     }
 
     // @@@ represents a gap from the css perspective in reality filled with 
@@ -217,6 +233,21 @@ public class CssParserTest extends TestBase {
 //        assertNotNull(node);
 //        assertEquals("red", node.image());
  
+    }
+
+    private void dumpTokens(String source) {
+    CssParserTokenManager tm = new CssParserTokenManager(new ASCII_CharStream(new StringReader(source)));
+        org.netbeans.modules.css.parser.Token token = null;
+        do {
+            token = tm.getNextToken();
+            System.out.println(token + "; kind = " + token.kind + " (" + CssParserConstants.tokenImage[token.kind] + ")");
+            if(token == null) {
+                break;
+            }
+            if(token.kind == CssParserConstants.EOF) {
+                break;
+            }
+        } while(true);
     }
     
 }

@@ -106,12 +106,44 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
     @Override
     public Problem checkParameters() {
+        String newName = refactoring.getNewName();
+        if(newName.length() == 0) {
+            return new Problem(true, NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Error_ElementEmpty")); //NOI18N
+        }
+
+        Lookup lookup = refactoring.getRefactoringSource();
+        CssElementContext context = lookup.lookup(CssElementContext.class);
+        if(context instanceof CssElementContext.Editor) {
+            CssElementContext.Editor editorContext = (CssElementContext.Editor)context;
+            char firstChar = refactoring.getNewName().charAt(0);
+            switch(editorContext.getElement().kind()) {
+                case CssParserTreeConstants.JJTHASH:
+                case CssParserTreeConstants.JJTHEXCOLOR:
+                    //hex color code
+                    //id
+                    if(firstChar != '#') {
+                        return new Problem(true, NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Error_MissingHash")); //NOI18N
+                    }
+                    break;
+                case CssParserTreeConstants.JJT_CLASS:
+                    //class
+                    if(firstChar != '.') {
+                        return new Problem(true, NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Error_MissingDot")); //NOI18N
+                    }
+                    break;
+            }
+            if(newName.length() == 1) {
+                return new Problem(true, NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Error_ElementShortName")); //NOI18N
+            }
+
+        }
+
         return null;
     }
 
     @Override
     public Problem fastCheckParameters() {
-        return null;
+        return checkParameters();
     }
 
     @Override

@@ -14,9 +14,7 @@ class Example {
     }
 
 public function forExample() {
-    for ($i = 1; $i <= 10; $i++) {
-    echo $i;
-}
+    for ($i = 1; $i <= 10; $i++) {echo 'Item: '; echo $i;}
 }
 
 public function foreachEample() {

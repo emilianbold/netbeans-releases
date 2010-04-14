@@ -110,7 +110,7 @@ public class FmtBlankLines extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
+        scrollPane1 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
         aFieldsField = new javax.swing.JTextField();
         bFieldsField = new javax.swing.JTextField();
@@ -147,6 +147,15 @@ public class FmtBlankLines extends javax.swing.JPanel {
 
         setName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_BlankLines")); // NOI18N
         setOpaque(false);
+        setRequestFocusEnabled(false);
+        setLayout(new java.awt.BorderLayout());
+
+        scrollPane1.setBackground(java.awt.SystemColor.controlLtHighlight);
+        scrollPane1.setMinimumSize(new java.awt.Dimension(250, 200));
+        scrollPane1.setPreferredSize(new java.awt.Dimension(350, 600));
+        scrollPane1.setRequestFocusEnabled(false);
+
+        jPanel1.setOpaque(false);
 
         aFieldsField.setColumns(5);
 
@@ -248,13 +257,15 @@ public class FmtBlankLines extends javax.swing.JPanel {
                     .addComponent(aMethodsLabel)
                     .addComponent(bMethodsLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(aOpenPHPTagHTMLField, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
-                    .addComponent(aOpenPHPTagField, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(bClosePHPTagField)
+                    .addComponent(aOpenPHPTagHTMLField)
+                    .addComponent(aOpenPHPTagField)
                     .addComponent(bFunctionEndField, 0, 0, Short.MAX_VALUE)
+                    .addComponent(aMethodsField, 0, 0, Short.MAX_VALUE)
                     .addComponent(bMethodsField, 0, 0, Short.MAX_VALUE)
                     .addComponent(aFieldsField, 0, 0, Short.MAX_VALUE)
-                    .addComponent(bNamespaceField, 0, 0, Short.MAX_VALUE)
+                    .addComponent(bFieldsField, 0, 0, Short.MAX_VALUE)
                     .addComponent(aClassField, 0, 0, Short.MAX_VALUE)
                     .addComponent(bClassEndField, 0, 0, Short.MAX_VALUE)
                     .addComponent(aClassHeaderField, 0, 0, Short.MAX_VALUE)
@@ -262,14 +273,13 @@ public class FmtBlankLines extends javax.swing.JPanel {
                     .addComponent(aUseField, 0, 0, Short.MAX_VALUE)
                     .addComponent(bUseField, 0, 0, Short.MAX_VALUE)
                     .addComponent(aNamespaceField, 0, 0, Short.MAX_VALUE)
-                    .addComponent(bFieldsField, 0, 0, Short.MAX_VALUE)
-                    .addComponent(aMethodsField, 0, 0, Short.MAX_VALUE)
-                    .addComponent(bClosePHPTagField, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))
-                .addContainerGap())
+                    .addComponent(bNamespaceField, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(13, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(bNamespaceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(bNamespaceLabel))
@@ -336,20 +346,9 @@ public class FmtBlankLines extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        jScrollPane1.setViewportView(jPanel1);
+        scrollPane1.setViewportView(jPanel1);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 571, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        add(scrollPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -387,7 +386,7 @@ public class FmtBlankLines extends javax.swing.JPanel {
     private javax.swing.JTextField bUseField;
     private javax.swing.JLabel bUseLabel;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane scrollPane1;
     // End of variables declaration//GEN-END:variables
     
 }
