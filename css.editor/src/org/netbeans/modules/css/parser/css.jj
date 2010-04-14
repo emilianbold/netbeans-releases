@@ -148,7 +148,7 @@ PARSER_END(CssParser)
 | < NUMBER: <NUM> >
 | < RGB: "rgb(" >
 | < FUNCTION: <IDENT> "(" >
-| < IDENT: ( "-" )?( (<GENERATED>)? | <NMSTART>) ( <GENERATED> | <NMCHAR> )* >
+| < IDENT: (<GENERATED>)+ | (( "-" )? <NMSTART> ( <NMCHAR> )*) >
 | < #NAME: ( <NMCHAR> )+ >
 | < NUM: ( ["0"-"9"] )+ | ( ["0"-"9"] )* "." ( ["0"-"9"] )+ >
 

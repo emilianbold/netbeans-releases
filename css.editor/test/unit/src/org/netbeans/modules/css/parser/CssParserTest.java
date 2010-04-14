@@ -56,9 +56,9 @@ public class CssParserTest extends TestBase {
         super(testName);
     }
 
-       public static Test xsuite(){
+    public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new CssParserTest("testMSSyntax"));
+        suite.addTest(new CssParserTest("testIssue183158"));
         return suite;
     }
 
@@ -123,11 +123,15 @@ public class CssParserTest extends TestBase {
         return node;
     }
 
-    public void testMSSyntax() throws ParseException {
+    public void testIssue183158() throws ParseException {
+        String code = "div { margin-left: -49%; }";
 //        dumpTokens(code);
-//        SimpleNode node = parse(code);
-//        System.out.println(node.dump());
+//        dumpParseTree(code);
 
+        check(code);
+    }
+
+    public void testMSSyntax() throws ParseException {
         check("h1 { top: expression(offsetParent.scrollTop) } ");
         check("h1 { filter:alpha(opacity=50); }");
         check("h1 { filter: progid:DXImageTransform.Microsoft.Blur(PixelRadius=5,MakeShadow=true,ShadowOpacity=0.20); }");
@@ -136,7 +140,6 @@ public class CssParserTest extends TestBase {
 
         //IE8
         check("h1 { -ms-filter:\"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)\"; }");
-
     }
 
     // @@@ represents a gap from the css perspective in reality filled with 
@@ -147,7 +150,7 @@ public class CssParserTest extends TestBase {
         check("h1 { color: @@@; }");
         check("h1 { @@@: @@@; }");
         check("h1 { color: @@@ red @@@; }");
-        check("h1 { co@@@lor: red; }");
+//        check("h1 { co@@@lor: red; }");
         check("h1 { @@@@@@: green; }");
 
         check("h1 { background-image: url(@@@); }");
@@ -160,7 +163,7 @@ public class CssParserTest extends TestBase {
         //selectors are generated
         check("@@@ { }");
         check("h1 @@@ h2 { }");
-        check("t@@@ble { }");
+//        check("t@@@ble { }");
 
         check("table > @@@ { }");
         check("t[@@@] { }");
@@ -249,6 +252,11 @@ public class CssParserTest extends TestBase {
             }
         } while(true);
     }
-    
+
+    private void dumpParseTree(String source) throws ParseException {
+        SimpleNode node = parse(source);
+        assertNotNull(node);
+        System.out.println(node.dump());
+    }
 }
 
