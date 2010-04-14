@@ -72,10 +72,6 @@ public class FoldersListSettings {
     private static Preferences getPreferences() {
         return NbPreferences.forModule(FoldersListSettings.class);
     }
-    
-    public String displayName() {
-        return NbBundle.getMessage(FoldersListSettings.class, "TXT_J2SEProjectFolderList");
-    }
 
     public int getNewProjectCount () {
         return getPreferences().getInt(NEW_PROJECT_COUNT, 0);
