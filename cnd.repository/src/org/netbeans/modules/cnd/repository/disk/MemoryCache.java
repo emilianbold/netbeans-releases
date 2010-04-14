@@ -155,7 +155,6 @@ public final class MemoryCache {
     public Persistent putIfAbsent(Key key, Persistent obj) {
         Persistent prevPersistent = null;
         Slice s = cache.getSilce(key);
-        SoftValue<Persistent> value = new SoftValue<Persistent>(obj, key, refQueue);
         s.w.lock();
         try {
             // do not override existed value if any
@@ -168,6 +167,7 @@ public final class MemoryCache {
                 System.err.println("unexpected value " + old + " for key " + key);
             }
             if (prevPersistent == null) {
+                SoftValue<Persistent> value = new SoftValue<Persistent>(obj, key, refQueue);
                 // no previous value
                 // put new item into storage
                 s.storage.put(key, value);

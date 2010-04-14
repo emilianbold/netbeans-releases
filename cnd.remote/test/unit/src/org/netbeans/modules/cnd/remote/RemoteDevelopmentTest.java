@@ -37,29 +37,67 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.pbuild;
+package org.netbeans.modules.cnd.remote;
 
+import org.netbeans.modules.cnd.remote.pbuild.*;
 import java.util.Collection;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.api.remote.RemoteFileTestCase;
+import org.netbeans.modules.cnd.remote.fs.RemoteFileSupportTestCase;
+import org.netbeans.modules.cnd.remote.fs.RemoteFileSystemTestCase;
+import org.netbeans.modules.cnd.remote.mapper.IncludeMappingsTestCase;
+import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
+import org.netbeans.modules.cnd.remote.support.DownloadTestCase;
+import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
+import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
+import org.netbeans.modules.cnd.remote.support.TransportTestCase;
+import org.netbeans.modules.cnd.remote.support.UploadTestCase;
+import org.netbeans.modules.cnd.remote.sync.FtpSyncWorkerTestCase;
+import org.netbeans.modules.cnd.remote.sync.ZipSyncWorkerTestCase;
+import org.netbeans.modules.cnd.remote.sync.download.RemoteBuildUpdatesDownloadTestCase;
+import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class BuildTestSuite extends CndBaseTestSuite {
+public class RemoteDevelopmentTest extends CndBaseTestSuite {
 
     public static final String PLATFORMS_SECTION = "remote.platforms";
     public static final String DEFAULT_SECTION = "remote";
 
-    public BuildTestSuite(Class testClass) {
+   public RemoteDevelopmentTest() {
+       this("Remote Development", // NOI18N
+           HostSetupTestCase.class,
+           RemoteFileTestCase.class,
+           RemoteFileSupportTestCase.class,
+           RemoteFileSystemTestCase.class,
+           MappingsTestCase.class,
+           IncludeMappingsTestCase.class,
+           RemoteBuildMakefileTestCase.class,
+           RemoteBuildSamplesTestCase.class,
+           RfsGnuRemoteBuildTestCase.class,
+           RfsSunStudioRemoteBuildTestCase.class,
+           DownloadTestCase.class,
+           RemoteUtilTestCase.class,
+           ServerListTestCase.class,
+           TransportTestCase.class,
+           UploadTestCase.class,
+           ZipSyncWorkerTestCase.class,
+           FtpSyncWorkerTestCase.class,
+           RemoteBuildUpdatesDownloadTestCase.class
+       );
+   }
+
+    public RemoteDevelopmentTest(Class testClass) {
         this(testClass.getName(), testClass);
     }
 
     // Why are tests just Test, not NativeExecutionBaseTestCase?
     // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public BuildTestSuite(String name, Test... tests) {
+    public RemoteDevelopmentTest(String name, Test... tests) {
         setName(name);
         for (Test test : tests) {
             addTest(test);
@@ -68,28 +106,19 @@ public class BuildTestSuite extends CndBaseTestSuite {
 
     // Why are tests just Test, not NativeExecutionBaseTestCase?
     // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public BuildTestSuite(String name, Collection<Test> tests) {
+    public RemoteDevelopmentTest(String name, Collection<Test> tests) {
         setName(name);
         for (Test test : tests) {
             addTest(test);
         }
     }
 
-    public BuildTestSuite() {
-        this("Remote Development", // NOI18N
-             RfsGnuRemoteBuildTestCase.class,
-             RfsSunStudioRemoteBuildTestCase.class,
-             RemoteBuildSamplesTestCase.class,
-             RemoteBuildMakefileTestCase.class);
-    }
-
-
-    private BuildTestSuite(String name, Class... testClasses) {
+    private RemoteDevelopmentTest(String name, Class... testClasses) {
         super(name, PLATFORMS_SECTION, testClasses);
     }
 
     public static Test suite() {
-        TestSuite suite = new BuildTestSuite();
+        TestSuite suite = new RemoteDevelopmentTest();
         return suite;
     }
 }

@@ -94,10 +94,12 @@ public final class APTDefineNode extends APTMacroBaseNode
         super(token);
     }
 
+    @Override
     public final int getType() {
         return APT.Type.DEFINE;
     }
     
+    @Override
     public Collection<APTToken> getParams() {
         if (params == null) {
             return null;
@@ -106,6 +108,7 @@ public final class APTDefineNode extends APTMacroBaseNode
         }
     }
     
+    @Override
     public boolean isFunctionLike() {
         return params != null;
     }
@@ -113,6 +116,7 @@ public final class APTDefineNode extends APTMacroBaseNode
     /**
      * returns List of Tokens of macro body
      */
+    @Override
     public List<APTToken> getBody() {
         return bodyTokens != null ? bodyTokens : Collections.<APTToken>emptyList();
     }
@@ -120,6 +124,7 @@ public final class APTDefineNode extends APTMacroBaseNode
     /**
      * returns true if #define directive is valid
      */
+    @Override
     public boolean isValid() {
         return stateAndHashCode != ERROR;
     }
@@ -132,7 +137,11 @@ public final class APTDefineNode extends APTMacroBaseNode
                 ((ArrayList<?>)bodyTokens).trimToSize();
             }
             if (params != null){
-                ((ArrayList<?>)params).trimToSize();
+                if (params.isEmpty()) {
+                    params = Collections.<APTToken>emptyList();
+                } else {
+                    ((ArrayList<?>)params).trimToSize();
+                }
             }
             if (stateAndHashCode == BEFORE_MACRO_NAME) {
                 // macro without name

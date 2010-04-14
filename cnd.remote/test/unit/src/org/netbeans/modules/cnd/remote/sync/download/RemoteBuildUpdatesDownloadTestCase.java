@@ -46,7 +46,7 @@ import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.cnd.remote.pbuild.*;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.sync.download.FileDownloadInfo.State;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -57,13 +57,13 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Vladimir Kvashin
  */
-public class RemoteBuildUpdatesDownloadTest extends RemoteBuildTestBase {
+public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
 
-    public RemoteBuildUpdatesDownloadTest(String testName) {
+    public RemoteBuildUpdatesDownloadTestCase(String testName) {
         super(testName);
     }
 
-    public RemoteBuildUpdatesDownloadTest(String testName, ExecutionEnvironment execEnv) {
+    public RemoteBuildUpdatesDownloadTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
@@ -154,6 +154,6 @@ public class RemoteBuildUpdatesDownloadTest extends RemoteBuildTestBase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTestSuite(RemoteBuildUpdatesDownloadTest.class);
+        return new RemoteDevelopmentTest(RemoteBuildUpdatesDownloadTestCase.class);
     }
 }

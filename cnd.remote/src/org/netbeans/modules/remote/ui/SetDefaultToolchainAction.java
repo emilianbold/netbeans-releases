@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,47 +31,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.remote.support;
+package org.netbeans.modules.remote.ui;
 
-import java.io.File;
-import java.util.concurrent.Future;
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.openide.util.NbBundle;
 
 /**
- * @author Vladimir Kvashin
+ * @author Alexey Vladykin
  */
-public class DownloadTest extends RemoteTestBase {
+/*package*/ final class SetDefaultToolchainAction extends AbstractAction {
 
-    public DownloadTest(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
+    private final ExecutionEnvironment execEnv;
+    private final CompilerSet compilerSet;
+
+    public SetDefaultToolchainAction(ExecutionEnvironment execEnv, CompilerSet compilerSet) {
+        super(NbBundle.getMessage(SetDefaultToolchainAction.class, "SetDefaultMenuItem")); // NOI18N
+        this.execEnv = execEnv;
+        this.compilerSet = compilerSet;
     }
 
-    @ForAllEnvironments
-    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
-    public void testCopyFrom() throws Exception {
-        File localFile = File.createTempFile("cnd", ".cnd");
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        String remoteFile = "/usr/include/stdio.h";
-        Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, execEnv, localFile.getAbsolutePath(), null);
-        int rc = task.get().intValue();
-        assertEquals("Copying finished with rc != 0: ", 0, rc);
-        String content = readFile(localFile);
-        String text2search = "printf";
-        assertTrue("The copied file (" + localFile + ") does not contain \"" + text2search + "\"",
-                content.indexOf(text2search) >= 0);
-        localFile.delete();
+    @Override
+    public boolean isEnabled() {
+        return !CompilerSetManager.get(execEnv).isDefaultCompilerSet(compilerSet);
     }
-    
-    public static Test suite() {
-        return new RemoteDevelopmentTestSuite(DownloadTest.class);
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        ToolsPanelSupport.setDefaultCompilerSet(execEnv, compilerSet.getName());
     }
 }

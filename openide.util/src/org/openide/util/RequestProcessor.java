@@ -349,7 +349,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
      * by this method has very bad performance side effects, don't use unless
      * you understand all implications!
      * <p>
-     * The getter for the shared instance of the <CODE>RequestProcessor</CODE>.
+     * This is the getter for the shared instance of the <CODE>RequestProcessor</CODE>.
      * This instance is shared by anybody who
      * needs a way of performing <em>sporadic</em> asynchronous work.
      * <p>

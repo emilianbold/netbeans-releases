@@ -171,9 +171,8 @@ public class APTFileMacroMap extends APTBaseMacroMap {
 
     private void initCache() {
         if (macroCache == NO_CACHE) {
-            macroCache =  new HashMap<CharSequence,APTMacro>(INITIAL_CACHE_SIZE);
             // fill cache to speedup getMacro
-            APTMacroMapSnapshot.addAllMacros(active, macroCache);
+            macroCache = APTMacroMapSnapshot.addAllMacros(active, null);
             if (crc1 == 0 && crc2 == 0) {
                 for(Map.Entry<CharSequence, APTMacro> entry : macroCache.entrySet()){
                     int i1 = entry.getKey().hashCode();

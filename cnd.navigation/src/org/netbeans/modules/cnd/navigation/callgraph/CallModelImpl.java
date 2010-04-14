@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmCondition;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
@@ -97,6 +98,7 @@ public class CallModelImpl implements CallModel {
         name = root.getName().toString();
     }
 
+    @Override
     public Function getRoot() {
         CsmFunction root = uin.getFunction();
         if (root != null) {
@@ -105,10 +107,12 @@ public class CallModelImpl implements CallModel {
         return null;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setRoot(Function newRoot) {
         if (newRoot instanceof FunctionImpl) {
             FunctionImpl impl = (FunctionImpl)newRoot;
@@ -120,6 +124,7 @@ public class CallModelImpl implements CallModel {
         }
     }
 
+    @Override
     public List<Call> getCallers(Function declaration) {
         FunctionImpl functionImpl = (FunctionImpl) declaration;
         CsmFunction owner = functionImpl.getDeclaration();
@@ -166,6 +171,12 @@ public class CallModelImpl implements CallModel {
             o = ((CsmCondition)o).getScope();
         } else if (CsmKindUtilities.isFunction(o)){
             return (CsmFunction) o;
+        } else if (CsmKindUtilities.isVariable(o)) {
+            CsmVariable var = (CsmVariable) o;
+            o = var.getScope();
+            if (CsmKindUtilities.isFunction(o)){
+                return (CsmFunction)o;
+            }
         }
         if (CsmKindUtilities.isStatement(o)){
             CsmScope scope = ((CsmStatement)o).getScope();
@@ -182,6 +193,7 @@ public class CallModelImpl implements CallModel {
         return null;
     }
     
+    @Override
     public List<Call> getCallees(Function definition) {
         FunctionImpl definitionImpl = (FunctionImpl) definition;
         CsmFunction owner = definitionImpl.getDefinition();
@@ -189,6 +201,7 @@ public class CallModelImpl implements CallModel {
             final List<CsmOffsetable> list = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks((owner).getContainingFile());
             final HashMap<CsmFunction,CsmReference> set = new HashMap<CsmFunction,CsmReference>();
             references.accept((CsmScope)owner, new CsmFileReferences.Visitor() {
+                @Override
                 public void visit(CsmReferenceContext context) {
                     CsmReference r = context.getReference();
                     if (r == null) {

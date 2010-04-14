@@ -45,7 +45,7 @@ import junit.framework.Test;
 import org.junit.AfterClass;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -57,9 +57,9 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  *
  * @author Sergey Grinev
  */
-public class ServerListTest extends RemoteTestBase {
+public class ServerListTestCase extends RemoteTestBase {
 
-    public ServerListTest(String testName, ExecutionEnvironment execEnv) {
+    public ServerListTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
@@ -122,6 +122,6 @@ public class ServerListTest extends RemoteTestBase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTestSuite(ServerListTest.class);
+        return new RemoteDevelopmentTest(ServerListTestCase.class);
     }
 }

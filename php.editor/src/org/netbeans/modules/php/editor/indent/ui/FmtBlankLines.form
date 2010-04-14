@@ -1,11 +1,12 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
     <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_BlankLines" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+      <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_BlankLines" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
     </Property>
     <Property name="opaque" type="boolean" value="false"/>
+    <Property name="requestFocusEnabled" type="boolean" value="false"/>
   </Properties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
@@ -17,29 +18,36 @@
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,-76,0,0,1,0"/>
   </AuxValues>
 
-  <Layout>
-    <DimensionLayout dim="0">
-      <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jScrollPane1" alignment="0" pref="271" max="32767" attributes="0"/>
-      </Group>
-    </DimensionLayout>
-    <DimensionLayout dim="1">
-      <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="jScrollPane1" pref="571" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
-      </Group>
-    </DimensionLayout>
-  </Layout>
+  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
   <SubComponents>
-    <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+    <Container class="javax.swing.JScrollPane" name="scrollPane1">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" id="Control Lt Highlight" palette="2" red="ff" type="palette"/>
+        </Property>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[250, 200]"/>
+        </Property>
+        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[350, 600]"/>
+        </Property>
+        <Property name="requestFocusEnabled" type="boolean" value="false"/>
+      </Properties>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+          <BorderConstraints direction="Center"/>
+        </Constraint>
+      </Constraints>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Container class="javax.swing.JPanel" name="jPanel1">
+          <Properties>
+            <Property name="opaque" type="boolean" value="false"/>
+          </Properties>
 
           <Layout>
             <DimensionLayout dim="0">
@@ -65,31 +73,32 @@
                           <Component id="bMethodsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="aOpenPHPTagHTMLField" pref="79" max="32767" attributes="3"/>
-                          <Component id="aOpenPHPTagField" pref="79" max="32767" attributes="3"/>
-                          <Component id="bFunctionEndField" min="0" pref="0" max="32767" attributes="3"/>
-                          <Component id="bMethodsField" min="0" pref="0" max="32767" attributes="3"/>
-                          <Component id="aFieldsField" min="0" pref="0" max="32767" attributes="3"/>
-                          <Component id="bNamespaceField" min="0" pref="0" max="32767" attributes="3"/>
-                          <Component id="aClassField" min="0" pref="0" max="32767" attributes="3"/>
-                          <Component id="bClassEndField" min="0" pref="0" max="32767" attributes="3"/>
-                          <Component id="aClassHeaderField" min="0" pref="0" max="32767" attributes="3"/>
-                          <Component id="bClassField" min="0" pref="0" max="32767" attributes="3"/>
-                          <Component id="aUseField" min="0" pref="0" max="32767" attributes="3"/>
-                          <Component id="bUseField" min="0" pref="0" max="32767" attributes="3"/>
-                          <Component id="aNamespaceField" min="0" pref="0" max="32767" attributes="3"/>
-                          <Component id="bFieldsField" min="0" pref="0" max="32767" attributes="3"/>
-                          <Component id="aMethodsField" min="0" pref="0" max="32767" attributes="3"/>
-                          <Component id="bClosePHPTagField" alignment="0" pref="79" max="32767" attributes="3"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="bClosePHPTagField" max="32767" attributes="3"/>
+                          <Component id="aOpenPHPTagHTMLField" alignment="0" max="32767" attributes="3"/>
+                          <Component id="aOpenPHPTagField" alignment="0" max="32767" attributes="3"/>
+                          <Component id="bFunctionEndField" alignment="0" min="0" pref="0" max="32767" attributes="3"/>
+                          <Component id="aMethodsField" alignment="0" min="0" pref="0" max="32767" attributes="3"/>
+                          <Component id="bMethodsField" alignment="0" min="0" pref="0" max="32767" attributes="3"/>
+                          <Component id="aFieldsField" alignment="0" min="0" pref="0" max="32767" attributes="3"/>
+                          <Component id="bFieldsField" alignment="0" min="0" pref="0" max="32767" attributes="3"/>
+                          <Component id="aClassField" alignment="0" min="0" pref="0" max="32767" attributes="3"/>
+                          <Component id="bClassEndField" alignment="0" min="0" pref="0" max="32767" attributes="3"/>
+                          <Component id="aClassHeaderField" alignment="0" min="0" pref="0" max="32767" attributes="3"/>
+                          <Component id="bClassField" alignment="0" min="0" pref="0" max="32767" attributes="3"/>
+                          <Component id="aUseField" alignment="0" min="0" pref="0" max="32767" attributes="3"/>
+                          <Component id="bUseField" alignment="0" min="0" pref="0" max="32767" attributes="3"/>
+                          <Component id="aNamespaceField" alignment="0" min="0" pref="0" max="32767" attributes="3"/>
+                          <Component id="bNamespaceField" alignment="0" min="-2" pref="42" max="-2" attributes="3"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace pref="13" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="bNamespaceField" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="bNamespaceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -169,7 +178,7 @@
                           <Component id="bClosePHPTagField" alignment="3" max="32767" attributes="0"/>
                           <Component id="bClosePHPTagLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

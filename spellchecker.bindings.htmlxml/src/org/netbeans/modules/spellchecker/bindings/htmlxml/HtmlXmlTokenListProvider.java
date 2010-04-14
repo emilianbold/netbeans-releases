@@ -42,8 +42,9 @@
  */
 package org.netbeans.modules.spellchecker.bindings.htmlxml;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +53,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spellchecker.spi.language.TokenList;
 import org.netbeans.modules.spellchecker.spi.language.TokenListProvider;
 
@@ -60,6 +62,16 @@ import org.netbeans.modules.spellchecker.spi.language.TokenListProvider;
  * @author Poppenreiter, Riha
  */
 public class HtmlXmlTokenListProvider implements TokenListProvider {
+
+    private static final Map<String, String> MIME_TO_SETTING_NAME = new HashMap<String, String>();
+    static {
+        MIME_TO_SETTING_NAME.put("text/html", "HTML"); //NOI18N
+        MIME_TO_SETTING_NAME.put("text/xhtml", "XHTML"); //NOI18N
+        MIME_TO_SETTING_NAME.put("text/x-jsp", "JSP"); //NOI18N
+        MIME_TO_SETTING_NAME.put("text/x-tag", "JSP"); //NOI18N
+        MIME_TO_SETTING_NAME.put("text/x-gsp", "GSP"); //NOI18N
+        MIME_TO_SETTING_NAME.put("text/x-php5", "PHP"); //NOI18N
+    }
 
     /** Creates a new instance of RubyTokenListProvider */
     public HtmlXmlTokenListProvider() {
@@ -75,6 +87,7 @@ public class HtmlXmlTokenListProvider implements TokenListProvider {
 
         //html
         final BaseDocument bdoc = (BaseDocument) doc;
+        final String docMimetype = NbEditorUtilities.getMimeType(doc);
         final AtomicReference<TokenList> ret = new AtomicReference<TokenList>();
         doc.render(new Runnable() {
             public void run() {
@@ -82,7 +95,8 @@ public class HtmlXmlTokenListProvider implements TokenListProvider {
                 Set<LanguagePath> paths = th.languagePaths();
                 for(LanguagePath path : paths) {
                     if(path.innerLanguage() == HTMLTokenId.language()) {
-                        ret.set(new HtmlTokenList(bdoc));
+                        String settingName = MIME_TO_SETTING_NAME.get(docMimetype);
+                        ret.set(new HtmlTokenList(bdoc, settingName));
                         break;
                     }
                 }
@@ -93,8 +107,7 @@ public class HtmlXmlTokenListProvider implements TokenListProvider {
         }
 
         //xml
-        String mimeType = (String)bdoc.getProperty("mimeType"); //NOI18N
-        if ("text/xml".equals(mimeType)) { //NOI18N
+        if ("text/xml".equals(docMimetype)) { //NOI18N
             return new XmlTokenList(bdoc);
         }
 

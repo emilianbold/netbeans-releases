@@ -200,9 +200,13 @@ final class ProcessList {
                             
                             idx = 0;
                             for (String procArgs : pargsOutput) {
-                                if (procArgs.length() > 0 && !procArgs.startsWith("pargs:")) { // NOI18N
-                                    proclist.get(idx++).set(5, procArgs);
+                                if (procArgs.isEmpty()) {
+                                    continue;
                                 }
+                                if (!procArgs.startsWith("pargs:")) { // NOI18N
+                                    proclist.get(idx).set(5, procArgs);
+                                }
+                                idx++;
                             }
                         }
 

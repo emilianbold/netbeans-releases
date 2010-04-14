@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,21 +34,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.testrunner.ui;
+package org.netbeans.modules.cnd.remote.fs;
 
-import java.util.List;
+import junit.framework.Test;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 
 /**
  *
- * @author Erno Mononen
+ * @author Vladimir Voskresensky
  */
-public interface TestHandlerFactory {
+public class RemoteFileSupportTestCase extends CndBaseTestCase {
 
-    List<TestRecognizerHandler> createHandlers();
+    public RemoteFileSupportTestCase(String testName) {
+        super(testName);
+    }
 
-    boolean printSummary();
+    public void testCCSmallReplacement() throws Exception {
+        String[][] data = new String[][] {{ "dir1/cc/dir2", "dir1/cc.cnd.rfs.small/dir2"},
+                                                            { "cc", "cc.cnd.rfs.small"},
+                                                            { "include/cc", "include/cc.cnd.rfs.small" },
+                                                            { "cc/dir", "cc.cnd.rfs.small/dir" },
 
+                                                            {"include/ccd", "include/ccd"},
+                                                            { "dcc/dir", "dcc/dir" },
+                                                            { "ccdir", "ccdir"}
+                                                          };
+        for (String[] pair : data) {
+            assertEquals(pair[1], RemoteFileSupport.fixCaseSensitivePathIfNeeded(pair[0]));
+            assertEquals(pair[0], RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(pair[1]));
+        }
+    }
+
+    public static Test suite() {
+        return new NativeExecutionBaseTestSuite(RemoteFileSupportTestCase.class);
+    }
 }

@@ -79,6 +79,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     private static final String DEF_OWNER = "defowner"; // NOI18N
     private static final String DEF_GROUP = "defgroup"; // NOI18N
     private static final String PREF_APP_LANGUAGE = "prefAppLanguage"; // NOI18N // Prefered language when creating new Application projects
+    public static final String FULL_FILE_INDEXER = "fullFileIndexer"; // NOI18N
 
     static {
         
@@ -278,6 +279,20 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         }
     }
 
+    // Is full file indexer available
+    public boolean isFullFileIndexer() {
+        return getPreferences().getBoolean(FULL_FILE_INDEXER, false);
+    }
+
+    public void setFullFileIndexer(boolean value) {
+        boolean oldValue = isFullFileIndexer();
+        getPreferences().putBoolean(FULL_FILE_INDEXER, value);
+        if (oldValue != value) {
+            firePropertyChange(FULL_FILE_INDEXER, oldValue, value);
+        }
+    }
+
+    @Override
     public void propertyChange(PropertyChangeEvent pce) {
     }
 

@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -538,7 +539,7 @@ public class APTUtils {
     }
 
     public static List<APTToken> toList(TokenStream ts) {
-        ArrayList<APTToken> tokens = new ArrayList<APTToken>(1024);
+        LinkedList<APTToken> tokens = new LinkedList<APTToken>();
         try {
             APTToken token = (APTToken) ts.nextToken();
             while (!isEOF(token)) {
@@ -549,7 +550,6 @@ public class APTUtils {
         } catch (TokenStreamException ex) {
             LOG.log(Level.INFO, "error on converting token stream to list", ex.getMessage()); // NOI18N
         }
-        tokens.trimToSize();
         return tokens;
     }
     
