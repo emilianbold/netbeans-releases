@@ -134,7 +134,7 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
                         liveServers.add(rec.getExecutionEnvironment());
                     }
                     serverUpdateCache = null;
-                } else {
+                } else if (selectedRecord != null) {
                     ServerList.setDefaultRecord(selectedRecord);
                 }
 

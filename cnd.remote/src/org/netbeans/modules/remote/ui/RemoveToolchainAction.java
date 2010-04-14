@@ -36,37 +36,33 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.remote.ui;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
 /**
+ *
  * @author Alexey Vladykin
  */
-/*package*/ final class SetDefaultToolchainAction extends AbstractAction {
+/*package*/ final class RemoveToolchainAction extends AbstractAction {
 
     private final ExecutionEnvironment execEnv;
-    private final CompilerSet compilerSet;
+    private final String compilerSetName;
 
-    public SetDefaultToolchainAction(ExecutionEnvironment execEnv, CompilerSet compilerSet) {
-        super(NbBundle.getMessage(SetDefaultToolchainAction.class, "SetDefaultMenuItem")); // NOI18N
+    public RemoveToolchainAction(ExecutionEnvironment execEnv, CompilerSet compilerSet) {
+        super(NbBundle.getMessage(RemoveToolchainAction.class, "RemoveToolchainMenuItem")); // NOI18N
         this.execEnv = execEnv;
-        this.compilerSet = compilerSet;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return !CompilerSetManager.get(execEnv).isDefaultCompilerSet(compilerSet);
+        this.compilerSetName = compilerSet.getName();
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        ToolsPanelSupport.setDefaultCompilerSet(execEnv, compilerSet.getName());
+        ToolsPanelSupport.removeCompilerSet(execEnv, compilerSetName);
     }
 }

@@ -89,10 +89,12 @@ public class ToolchainListRootNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] { new ShowToolchainsAction(env, null) };
+        return new Action[] {
+                new AddToolchainAction(env),
+                new ShowToolchainsAction(env, null) };
     }
 
-    private static class ToolchainListChildren extends ChildFactory<CompilerSet> implements ChangeListener {
+    /*package*/ static class ToolchainListChildren extends ChildFactory<CompilerSet> implements ChangeListener {
 
         private final ExecutionEnvironment env;
 
@@ -159,7 +161,8 @@ public class ToolchainListRootNode extends AbstractNode {
             } else {
                 return new Action[]{
                         new ShowToolchainsAction(env, compilerSet),
-                        new SetDefaultToolchainAction(env, compilerSet)};
+                        new SetDefaultToolchainAction(env, compilerSet),
+                        new RemoveToolchainAction(env, compilerSet)};
             }
         }
     }
@@ -176,9 +179,11 @@ public class ToolchainListRootNode extends AbstractNode {
 
         @Override
         protected boolean createKeys(List<Tool> toPopulate) {
-            for (Tool tool : compilerSet.getTools()) {
-                if (!tool.getPath().isEmpty()) {
-                    toPopulate.add(tool);
+            if (!compilerSet.getName().equals(CompilerSet.None)) {
+                for (Tool tool : compilerSet.getTools()) {
+                    if (!tool.getPath().isEmpty()) {
+                        toPopulate.add(tool);
+                    }
                 }
             }
             return true;
