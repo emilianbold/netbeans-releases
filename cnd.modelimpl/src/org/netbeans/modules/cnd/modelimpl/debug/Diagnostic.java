@@ -49,10 +49,18 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 import org.openide.util.Exceptions;
 
@@ -77,6 +85,100 @@ public class Diagnostic {
     private static DiagnosticUnresolved diagnosticUnresolved = null;
     
     private Diagnostic() {
+    }
+
+    public static class ProjectStat {
+        private static final int SLOW_FILE_NUMBER = Math.max(1, Integer.getInteger("cnd.modelimpl.slow.file.number", 5));
+        private final ConcurrentMap<CsmUID<CsmProject>, SlowFilesCollection> projectStats = new ConcurrentHashMap<CsmUID<CsmProject>, SlowFilesCollection>();
+        public void addParseFileStatistics(ProjectBase project, FileImpl file, long parseTime) {
+            if (project != null && !project.isArtificial()) {
+                CsmUID<CsmProject> uID = project.getUID();
+                SlowFilesCollection data = projectStats.get(uID);
+                if (data == null && uID != null) {
+                    data = new SlowFilesCollection();
+                    SlowFilesCollection old = projectStats.putIfAbsent(uID, data);
+                    if (old != null) {
+                        data = old;
+                    }
+                }
+                if (data != null) {
+                    data.put(file, parseTime);
+                }
+            }
+        }
+
+        public void traceProjectData(ProjectBase project) {
+            if (project != null && !project.isArtificial()) {
+                SlowFilesCollection data = projectStats.get(project.getUID());
+                if (data != null) {
+                    System.err.printf("Slowest Files for %s are:\n%s", project.getName(), data.asString());
+                    System.err.println();
+                    System.err.flush();
+                } else {
+                    System.err.printf("No Slowest Files info for " +  project.getName());
+                    System.err.println();
+                    System.err.flush();
+                }
+            }
+        }
+
+        public void clear() {
+            projectStats.clear();
+        }
+        
+        private final static class SlowFilesCollection {
+            private final LinkedList<Entry> times = new LinkedList<Entry>();
+
+            private void put(FileImpl file, long parseTime) {
+                synchronized (this) {
+                    // the first is the slowest
+                    ListIterator<Entry> iterator = times.listIterator(times.size());
+                    boolean add = !iterator.hasPrevious();
+                    while (iterator.hasPrevious()) {
+                        Entry elem = iterator.previous();
+                        if (elem.time < parseTime) {
+                            add = true;
+                        } else {
+                            if (add) {
+                                iterator.add(new Entry(parseTime, file.getAbsolutePath()));
+                                break;
+                            }
+                        }
+                    }
+                    if (add) {
+                        times.addFirst(new Entry(parseTime, file.getAbsolutePath()));
+                    }
+                    if (times.size() > SLOW_FILE_NUMBER) {
+                        times.removeLast();
+                    }
+                }
+            }
+
+            private String asString() {
+                StringBuilder out = new StringBuilder();
+                synchronized (this) {
+                    for (Entry entry : times) {
+                        out.append(entry).append('\n'); // NOI18N
+                    }
+                }
+                return out.toString();
+            }
+
+            private final static class Entry {
+                final long time;
+                final CharSequence file;
+
+                public Entry(long time, CharSequence file) {
+                    this.time = time;
+                    this.file = file;
+                }
+
+                @Override
+                public String toString() {
+                    return " file=" + file + " " + time + " ms"; // NOI18N
+                }
+            }
+        }
     }
 
     public static class StopWatch {
@@ -106,13 +208,14 @@ public class Diagnostic {
             time += System.currentTimeMillis() - lastStart;
         }
         
-        public void stopAndReport(String text) {
+        public long stopAndReport(String text) {
             stop();
-            report(text);
+            return report(text);
         }
         
-        public void report(String text) {
+        public long report(String text) {
             System.err.println(' ' + text + ' ' + time + " ms");
+            return time;
         }
         
         public boolean isRunning() {
