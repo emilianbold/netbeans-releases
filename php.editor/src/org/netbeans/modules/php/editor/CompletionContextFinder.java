@@ -46,7 +46,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
@@ -205,7 +204,7 @@ class CompletionContextFinder {
                Arrays.asList(new String[] {"$_SERVER","["});//NOI18N
 
 
-    static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
+    public static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, EXTENDS, IMPLEMENTS, METHOD_NAME,
         CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS, GLOBAL, NAMESPACE_KEYWORD, USE_KEYWORD, DEFAULT_PARAMETER_VALUE};
 
@@ -496,7 +495,7 @@ class CompletionContextFinder {
         boolean isIface = false;
         boolean isExtends = false;
         boolean isImplements = false;
-        boolean isNsSeparator = false;;
+        boolean isNsSeparator = false;
         boolean isString = false;
         Token<PHPTokenId> stringToken = null;
         List<? extends Token<PHPTokenId>> preceedingLineTokens = getPreceedingLineTokens(token, tokenOffset, tokenSequence);
