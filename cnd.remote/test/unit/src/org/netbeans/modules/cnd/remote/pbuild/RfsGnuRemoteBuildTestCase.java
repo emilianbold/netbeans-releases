@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,56 +31,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
- */
-package org.netbeans.modules.cnd.remote.support;
-
-import java.util.Map;
-import junit.framework.Test;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-
-/**
- * There hardly is a way to unit test remote operations.
- * This is just an entry point for manual validation.
  *
- * @author Sergey Grinev
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-public class TransportTest extends RemoteTestBase {
 
-    public TransportTest(String testName, ExecutionEnvironment execEnv) {
+package org.netbeans.modules.cnd.remote.pbuild;
+
+import java.util.concurrent.TimeUnit;
+import junit.framework.Test;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.spi.project.ActionProvider;
+/**
+ *
+ * @author Vladimir Kvashin
+ */
+public class RfsGnuRemoteBuildTestCase extends RemoteBuildTestBase {
+
+    public RfsGnuRemoteBuildTestCase(String testName) {
+        super(testName);
+    }
+
+    public RfsGnuRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
-    @ForAllEnvironments
-    public void testRun() throws Exception {
-        final String randomString = "i am just a random string, it does not matter that I mean";
-        RemoteCommandSupport rcs = new RemoteCommandSupport(getTestExecutionEnvironment(), "echo " + randomString);
-        rcs.run();
-        assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getTestExecutionEnvironment() + "' returned " + rcs.getExitStatus();
-        assert randomString.equals( rcs.getOutput().trim()) : "echo command on remote server '" + getTestExecutionEnvironment() + "' produced unexpected output: " + rcs.getOutput();
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        setupHost("rfs");
     }
 
     @ForAllEnvironments
-    public void testFileExistst() throws Exception {
-        assert HostInfoProvider.fileExists(getTestExecutionEnvironment(), "/etc/passwd");
-        assert !HostInfoProvider.fileExists(getTestExecutionEnvironment(), "/etc/passwd/noway");
+    public void testBuildRfsSampleArgsGNU_Single() throws Exception {
+        setDefaultCompilerSet("GNU");
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_single");
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
     @ForAllEnvironments
-    public void testGetEnv() throws Exception {
-        Map<String, String> env = HostInfoProvider.getEnv(getTestExecutionEnvironment());
-        System.err.println("Environment: " + env);
-        assert env != null && env.size() > 0;
-        assert env.containsKey("PATH") || env.containsKey("Path") || env.containsKey("path");
+    public void testBuildRfsSampleArgsGNU_Multy() throws Exception {
+        setDefaultCompilerSet("GNU");
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_multy");
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        System.err.printf("BUILDING FIRST TIME\n");
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
+        System.err.printf("BUILDING SECOND TIME\n");
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
+        System.err.printf("BUILDING THIRD TIME\n");
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTestSuite(TransportTest.class);
+        return new RemoteDevelopmentTest(RfsGnuRemoteBuildTestCase.class);
     }
 }

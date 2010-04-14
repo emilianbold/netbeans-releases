@@ -224,14 +224,9 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             return;
         }
 
-        AddCompilerSetPanel panel = new AddCompilerSetPanel(csm);
-        String title = isRemoteHostSelected() ? getString("NEW_TOOL_SET_TITLE_REMOTE", 
-                ExecutionEnvironmentFactory.toUniqueID(csm.getExecutionEnvironment())) : getString("NEW_TOOL_SET_TITLE");
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
-        panel.setDialogDescriptor(dialogDescriptor);
         boolean oldHostValid = ToolsUtils.isDevHostValid(execEnv);
-        DialogDisplayer.getDefault().notify(dialogDescriptor);
-        if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION) {
+        final CompilerSet cs = AddCompilerSetPanel.invokeMe(csm);
+        if (cs == null) {
             boolean newHostValid = ToolsUtils.isDevHostValid(execEnv);
             if (oldHostValid != newHostValid) {
                 // we didn't add the collection, but host changed its valid state
@@ -240,7 +235,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             return;
         }
 
-        final CompilerSet cs = panel.getCompilerSet();
         updating = true;
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         RP.post(new Runnable(){

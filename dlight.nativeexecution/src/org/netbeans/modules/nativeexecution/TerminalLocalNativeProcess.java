@@ -51,7 +51,6 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -143,9 +142,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             FileOutputStream shfos = new FileOutputStream(shFileFile);
 
-            // Always use UTF-8 here as it will be executed from shell
-            Charset charset = (osFamily == OSFamily.WINDOWS) ? WindowsSupport.getInstance().getShellCharset() : Charset.forName("UTF-8"); // NOI18N
-            BufferedWriter shWriter = new BufferedWriter(new OutputStreamWriter(shfos, charset));
+            BufferedWriter shWriter = new BufferedWriter(new OutputStreamWriter(shfos));
 
             shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
             shWriter.write(". \"" + envFile + "\" 2>/dev/null\n"); // NOI18N

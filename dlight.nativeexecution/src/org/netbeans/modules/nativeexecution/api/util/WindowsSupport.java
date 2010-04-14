@@ -357,14 +357,7 @@ public final class WindowsSupport {
      * @return charset to be used when 'communicating' with a shell
      */
     public Charset getShellCharset() {
-        switch (getActiveShell().type) {
-            case CYGWIN:
-                return Charset.forName("UTF-8"); // NOI18N
-            case MSYS:
-                return Charset.defaultCharset();
-            default:
-                return Charset.defaultCharset();
-        }
+        return Charset.defaultCharset();
     }
 
     private static Map<String, String> readEnv() {
@@ -612,8 +605,7 @@ public final class WindowsSupport {
             try {
                 Process p = pb.start();
                 String line;
-                // Always use UTF-8 when work with cygpath ...
-                BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream(), "UTF-8")); // NOI18N
+                BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream(), getShellCharset()));
                 while ((line = br.readLine()) != null) {
                     result.add(line);
                 }

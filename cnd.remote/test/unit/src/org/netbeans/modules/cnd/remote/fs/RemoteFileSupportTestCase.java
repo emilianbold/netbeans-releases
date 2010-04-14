@@ -47,9 +47,9 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
  *
  * @author Vladimir Voskresensky
  */
-public class RemoteFileSupportTest extends CndBaseTestCase {
+public class RemoteFileSupportTestCase extends CndBaseTestCase {
 
-    public RemoteFileSupportTest(String testName) {
+    public RemoteFileSupportTestCase(String testName) {
         super(testName);
     }
 
@@ -70,6 +70,6 @@ public class RemoteFileSupportTest extends CndBaseTestCase {
     }
 
     public static Test suite() {
-        return new NativeExecutionBaseTestSuite(RemoteFileSupportTest.class);
+        return new NativeExecutionBaseTestSuite(RemoteFileSupportTestCase.class);
     }
 }

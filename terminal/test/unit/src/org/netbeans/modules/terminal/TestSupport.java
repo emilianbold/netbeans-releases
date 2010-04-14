@@ -51,7 +51,6 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.modules.terminal.api.TerminalContainer;
 import org.netbeans.modules.terminal.test.IOTest;
 import org.openide.util.Exceptions;
@@ -77,6 +76,10 @@ public class TestSupport extends NbTestCase {
     protected boolean defaultContainer = false;
     // LATER: my IOContainer doesn't do well with output2 IOProvider
     protected boolean defaultProvider = false;
+
+    private static final int quantuum = 100;
+    private static final boolean interactive = false;
+
 
     static class DummyAction extends AbstractAction {
 	public DummyAction() {
@@ -169,12 +172,10 @@ public class TestSupport extends NbTestCase {
 	});
     }
 
-    private static final int quantuum = 100;
-
     /**
      * Sleep 100 milliseconds
      */
-    protected static void mSleep(int amount) {
+    private static void mSleep(int amount) {
 	try {
 	    Thread.sleep(amount);
 	} catch(InterruptedException x) {
@@ -182,9 +183,83 @@ public class TestSupport extends NbTestCase {
 	}
     }
 
-    protected void sleep(int seconds) {
+    /**
+     * Issue a dummy invokeAndWait(). This assures that any Tasks
+     * issued prior to this have run.
+     */
+    private void yieldToEDT() {
+	// flag to give some work to 'run)(' so JIT optimizer
+	// doesn't optimize it away.
+	final boolean[] flag = new boolean[] { false};
+	try {
+	    SwingUtilities.invokeAndWait(new Runnable() {
+		@Override
+		public void run() {
+		    flag[0] = true;
+		}
+	    });
+	} catch (InterruptedException ex) {
+	    Exceptions.printStackTrace(ex);
+	} catch (InvocationTargetException ex) {
+	    Exceptions.printStackTrace(ex);
+	}
+	assert flag[0] == true;
+    }
+
+    /**
+     * Ensure that all submitted Tasks have been processed and that the
+     * disconnect continuation has run within the given time.
+     * Uses invokeAndWait().
+     * @param seconds Timeout.
+     */
+    protected final void sleep(int seconds) {
 	int mSeconds = seconds * 1000;	// milliseconds
-	if (IOTest.isSupported(io)) {
+	for (int t = 0; t < mSeconds; t += quantuum) {
+	    mSleep(quantuum);
+	    yieldToEDT();
+	    if (continuationDone == null)
+		return;
+	    else if (continuationDone == true)
+		return;
+	}
+	fail(String.format("Not synced with Task queue after %d seconds\n", seconds));
+    }
+
+    private Boolean continuationDone = null;
+
+    private Runnable continuationInterlock = new Runnable() {
+	@Override
+	public void run() {
+	    continuationDone = Boolean.TRUE;
+	}
+    };
+
+    /**
+     * Provide a dummy Runnable to be used as the continuation for
+     * disconnect(). We reset a flag, the runnable sets the flag and
+     * sleep() checks the flag. Sleep needs to check this flag separately
+     * because the continuation runs on a dedicated thread, not the EDT.
+     * @return
+     */
+    protected final Runnable continuationInterlock() {
+	continuationDone = Boolean.FALSE;
+	return continuationInterlock;
+    }
+
+
+    /**
+     * Ensure that all submitted Tasks have been processed within the given
+     * time.
+     * Uses IOTest.isQuiescent().
+     * @param seconds Timeout.
+     */
+
+    protected void OLD_sleep(int seconds) {
+	// isQuiescent() method doesn't work well with MTStress_Test.
+	// While one thread may be checking for outstanding task count being
+	// 0 another thread may be adding Tasks.
+	int mSeconds = seconds * 1000;	// milliseconds
+	if (!interactive && IOTest.isSupported(io)) {
 	    for (int t = 0; t < mSeconds; t += quantuum) {
 		mSleep(quantuum);
 		if (IOTest.isQuiescent(io))
@@ -192,11 +267,7 @@ public class TestSupport extends NbTestCase {
 	    }
 	    fail(String.format("Task queue not empty after %d seconds\n", seconds));
 	} else {
-	    try {
-		Thread.sleep(mSeconds);
-	    } catch(InterruptedException x) {
-		fail("sleep interrupted");
-	    }
+	    mSleep(mSeconds);
 	}
     }
 

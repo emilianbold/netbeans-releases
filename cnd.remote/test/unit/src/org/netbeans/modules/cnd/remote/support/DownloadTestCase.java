@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,65 +31,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.remote.support;
 
-package org.netbeans.modules.cnd.remote.pbuild;
-
-import java.util.concurrent.TimeUnit;
+import java.io.File;
+import java.util.concurrent.Future;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.spi.project.ActionProvider;
+
 /**
- *
  * @author Vladimir Kvashin
  */
-public class RfsGnuRemoteBuildTest extends RemoteBuildTestBase {
+public class DownloadTestCase extends RemoteTestBase {
 
-    public RfsGnuRemoteBuildTest(String testName) {
-        super(testName);
-    }
-
-    public RfsGnuRemoteBuildTest(String testName, ExecutionEnvironment execEnv) {
+    public DownloadTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        setupHost("rfs");
-    }
-
     @ForAllEnvironments
-    public void testBuildRfsSampleArgsGNU_Single() throws Exception {
-        setDefaultCompilerSet("GNU");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_single");
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
+    public void testCopyFrom() throws Exception {
+        File localFile = File.createTempFile("cnd", ".cnd");
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        String remoteFile = "/usr/include/stdio.h";
+        Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, execEnv, localFile.getAbsolutePath(), null);
+        int rc = task.get().intValue();
+        assertEquals("Copying finished with rc != 0: ", 0, rc);
+        String content = readFile(localFile);
+        String text2search = "printf";
+        assertTrue("The copied file (" + localFile + ") does not contain \"" + text2search + "\"",
+                content.indexOf(text2search) >= 0);
+        localFile.delete();
     }
-
-    @ForAllEnvironments
-    public void testBuildRfsSampleArgsGNU_Multy() throws Exception {
-        setDefaultCompilerSet("GNU");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_multy");
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        System.err.printf("BUILDING FIRST TIME\n");
-        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
-        System.err.printf("BUILDING SECOND TIME\n");
-        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
-        System.err.printf("BUILDING THIRD TIME\n");
-        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
-    }
-
+    
     public static Test suite() {
-        return new RemoteDevelopmentTestSuite(RfsGnuRemoteBuildTest.class);
+        return new RemoteDevelopmentTest(DownloadTestCase.class);
     }
 }

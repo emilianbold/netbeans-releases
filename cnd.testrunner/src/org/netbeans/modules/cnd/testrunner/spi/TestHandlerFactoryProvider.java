@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,21 +34,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.testrunner.ui;
-
-import java.util.List;
+package org.netbeans.modules.cnd.testrunner.spi;
 
 /**
+ * Service that provides output handlers for unit tests.
  *
- * @author Erno Mononen
+ * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-public interface TestHandlerFactory {
+public interface TestHandlerFactoryProvider {
 
-    List<TestRecognizerHandler> createHandlers();
-
-    boolean printSummary();
-
+    /**
+     * Provides factory.
+     *
+     * @return - test handler factory
+     */
+    public TestHandlerFactory getFactory();
 }

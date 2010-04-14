@@ -46,8 +46,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.cnd.testrunner.spi.TestRecognizerHandler;
+import org.netbeans.modules.cnd.testrunner.spi.TestHandlerFactory;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
-import org.netbeans.modules.gsf.testrunner.api.Status;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
@@ -170,7 +171,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI( Manager manager, TestSession session) {
+        public void updateUI( Manager manager, TestSession session) {
             Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
@@ -201,7 +202,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        List<String> getRecognizedOutput() {
+        public List<String> getRecognizedOutput() {
             return new ArrayList<String>(output);
         }
     }
@@ -215,7 +216,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI( Manager manager, TestSession session) {
+        public void updateUI( Manager manager, TestSession session) {
             Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
@@ -243,7 +244,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        List<String> getRecognizedOutput() {
+        public List<String> getRecognizedOutput() {
             return new ArrayList<String>(output);
         }
     }
@@ -255,7 +256,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI( Manager manager, TestSession session) {
+        public void updateUI( Manager manager, TestSession session) {
         }
     }
 
@@ -270,7 +271,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI( Manager manager, TestSession session) {
+        public void updateUI( Manager manager, TestSession session) {
             Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
@@ -289,7 +290,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI( Manager manager, TestSession session) {
+        public void updateUI( Manager manager, TestSession session) {
         }
     }
 
@@ -300,7 +301,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI( Manager manager, TestSession session) {
+        public void updateUI( Manager manager, TestSession session) {
             manager.displayReport(session, session.getReport(toMillis(matcher.group(1))));
             manager.sessionFinished(session);
         }
@@ -313,7 +314,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI( Manager manager, TestSession session) {
+        public void updateUI( Manager manager, TestSession session) {
         }
     }
 
@@ -324,13 +325,13 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI( Manager manager, TestSession session) {
+        public void updateUI( Manager manager, TestSession session) {
             manager.displayOutput(session, matcher.group(1), true);
             manager.displayOutput(session, "", false);
         }
 
         @Override
-        List<String> getRecognizedOutput() {
+        public List<String> getRecognizedOutput() {
             return Collections.<String>singletonList(matcher.group(1));
         }
 
@@ -345,7 +346,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI( Manager manager, TestSession session) {
+        public void updateUI( Manager manager, TestSession session) {
             if (firstSuite) {
                 firstSuite = false;
                 manager.testStarted(session);
@@ -367,7 +368,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI( Manager manager, TestSession session) {
+        public void updateUI( Manager manager, TestSession session) {
         }
     }
 
@@ -381,7 +382,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI( Manager manager, TestSession session) {
+        public void updateUI( Manager manager, TestSession session) {
             Level level = Level.parse(matcher.group(1));
             if (LOGGER.isLoggable(level))
                 LOGGER.log(level, matcher.group(2));
@@ -410,7 +411,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI(Manager manager, TestSession session) {
+        public void updateUI(Manager manager, TestSession session) {
             String line = matcher.group(0);
             for (TestRecognizerHandler handler : handlers) {
                 if (handler.matches(line)) {
@@ -427,7 +428,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
             }
 
             @Override
-            void updateUI( Manager manager, TestSession session) {
+            public void updateUI( Manager manager, TestSession session) {
 
                 String suiteName = matcher.group(1);
 
@@ -464,7 +465,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
             }
 
             @Override
-            void updateUI( Manager manager, TestSession session) {
+            public void updateUI( Manager manager, TestSession session) {
 
                 String suiteName = matcher.group(1);
 
@@ -504,7 +505,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
             }
 
             @Override
-            void updateUI( Manager manager, TestSession session) {
+            public void updateUI( Manager manager, TestSession session) {
                 manager.displayReport(session, session.getReport(0));
                 manager.sessionFinished(session);
                 currentSuiteFinished = true;
@@ -526,7 +527,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI( Manager manager, TestSession session) {
+        public void updateUI( Manager manager, TestSession session) {
             if (firstSuite) {
                 firstSuite = false;
                 manager.testStarted(session);
@@ -545,7 +546,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI( Manager manager, TestSession session) {
+        public void updateUI( Manager manager, TestSession session) {
             Testcase testcase = new Testcase(matcher.group(1), CPP_UNIT, session);
             testcase.setTimeMillis(0);
             testcase.setClassName(session.getCurrentSuite().getName());
@@ -560,7 +561,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI(Manager manager, TestSession session) {
+        public void updateUI(Manager manager, TestSession session) {
             Testcase testcase = new Testcase(matcher.group(1), CPP_UNIT, session);
             testcase.setTimeMillis(0);
             testcase.setClassName(session.getCurrentSuite().getName());
@@ -578,7 +579,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         @Override
-        void updateUI( Manager manager, TestSession session) {
+        public void updateUI( Manager manager, TestSession session) {
             manager.displayReport(session, session.getReport(0));
             manager.sessionFinished(session);
         }
