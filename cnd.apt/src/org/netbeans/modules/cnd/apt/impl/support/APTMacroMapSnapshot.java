@@ -124,17 +124,21 @@ public final class APTMacroMapSnapshot {
     
     @Override
     public String toString() {
-        Map<CharSequence, APTMacro> tmpMap = new HashMap<CharSequence, APTMacro>();
-        addAllMacros(this, tmpMap);
+        Map<CharSequence, APTMacro> tmpMap = addAllMacros(this, null);
         return APTUtils.macros2String(tmpMap);
     }
     
-    public static void addAllMacros(APTMacroMapSnapshot snap, Map<CharSequence, APTMacro> out) {
+    public static Map<CharSequence, APTMacro> addAllMacros(APTMacroMapSnapshot snap, Map<CharSequence, APTMacro> out) {
         if (snap != null) {
+            int i = 0;
             LinkedList<APTMacroMapSnapshot> stack = new LinkedList<APTMacroMapSnapshot>();
             while(snap != null) {
+                i += snap.macros.size();
                 stack.add(snap);
                 snap = snap.parent;
+            }
+            if (out == null) {
+                out = new HashMap<CharSequence, APTMacro>(i);
             }
             while(!stack.isEmpty()) {
                 snap = stack.removeLast();
@@ -147,6 +151,10 @@ public final class APTMacroMapSnapshot {
                 }
             }
         }
+        if (out == null) {
+            out = new HashMap<CharSequence, APTMacro>();
+        }
+        return out;
     }
 
     public static int getMacroSize(APTMacroMapSnapshot snap) {
