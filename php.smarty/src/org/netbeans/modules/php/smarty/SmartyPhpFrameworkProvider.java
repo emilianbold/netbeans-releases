@@ -126,7 +126,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleExtender createPhpModuleExtender(PhpModule phpModule) {
-        return new SmartyPhpModuleExtender();
+        return null;
     }
 
     @Override

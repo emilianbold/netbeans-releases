@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
 
     <!-- CSL plugins -->
@@ -64,7 +64,7 @@
 
                     <folder name="goto">
                         <attr intvalue="500" name="position"/>
-                        <attr name="displayName" stringvalue="org.netbeans.modules.csl.core.Bundle#generate-goto-popup"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.csl.core.Bundle#generate-goto-popup"/>
                         <file name="goto">
                         <attr intvalue="600" name="position"/></file>
                     </folder>
@@ -213,6 +213,17 @@
             <folder name="text">
                 <file name="x-tpl" url="TplExample"/>
             </folder>
+        </folder>
+    </folder>
+
+    <!-- Options export -->
+    <folder name="OptionsExport">
+        <folder name="PHP">
+            <file name="Smarty">
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/smarty/smarty.properties"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.smarty.resources.Bundle#LBL_SmartyExportName"/>
+                <attr name="position" intvalue="500"/>
+            </file>
         </folder>
     </folder>
 
