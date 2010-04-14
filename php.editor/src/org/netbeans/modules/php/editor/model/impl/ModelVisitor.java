@@ -184,7 +184,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                             VariableNameImpl variable = findVariable(namespace, varName);
                             if (variable != null) {
                                 variable.indexedElement = VariableElementImpl.create(
-                                         varName, variable.getOffset(), phpVariable.getFile(),
+                                         varName, phpVariable.getOffset(), phpVariable.getFile(),
                                         null, TypeResolverImpl.parseTypes(phpVariable.getFullyQualifiedName()));
                             } else {
                                 int offset = namespaceScope.getOffset();
