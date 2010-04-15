@@ -56,9 +56,9 @@ public class CssParserTest extends TestBase {
         super(testName);
     }
 
-    public static Test xsuite(){
+    public static Test suite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new CssParserTest("testIssue183158"));
+        suite.addTest(new CssParserTest("testIssue183601"));
         return suite;
     }
 
@@ -128,6 +128,11 @@ public class CssParserTest extends TestBase {
 //        dumpTokens(code);
 //        dumpParseTree(code);
 
+        check(code);
+    }
+
+    public void testIssue183601() throws ParseException {
+        String code = "table tbody tr:not(.Current):hover { }";
         check(code);
     }
 
