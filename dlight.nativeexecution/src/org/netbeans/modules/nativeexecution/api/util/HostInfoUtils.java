@@ -193,24 +193,27 @@ public final class HostInfoUtils {
                     "Use quick isHostInfoAvailable() to detect whether info is available or not and go out of EDT if not"); // NOI18N
         }
 
-        HostInfo result = cache.get(execEnv);
+        synchronized (HostInfoUtils.class) {
 
-        if (result == null) {
-            try {
-                result = new FetchHostInfoTask().compute(execEnv);
-                if (result == null) {
-                    throw new IOException("Error getting host info for " + execEnv); // NOI18N
+            HostInfo result = cache.get(execEnv);
+
+            if (result == null) {
+                try {
+                    result = new FetchHostInfoTask().compute(execEnv);
+                    if (result == null) {
+                        throw new IOException("Error getting host info for " + execEnv); // NOI18N
+                    }
+                    HostInfo oldInfo = cache.putIfAbsent(execEnv, result);
+                    if (oldInfo != null) {
+                        result = oldInfo;
+                    }
+                } catch (InterruptedException ex) {
+                    throw new CancellationException("getHostInfo(" + execEnv.getDisplayName() + ") cancelled."); // NOI18N
                 }
-                HostInfo oldInfo = cache.putIfAbsent(execEnv, result);
-                if (oldInfo != null) {
-                    result = oldInfo;
-                }
-            } catch (InterruptedException ex) {
-                throw new CancellationException("getHostInfo(" + execEnv.getDisplayName() + ") cancelled."); // NOI18N
             }
+            return result;
         }
 
-        return result;
     }
 
     /**
