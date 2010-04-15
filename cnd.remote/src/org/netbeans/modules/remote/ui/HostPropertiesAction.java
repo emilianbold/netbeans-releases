@@ -53,7 +53,7 @@ public class HostPropertiesAction extends SingleHostAction {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(HostListRootNode.class, "PropertirsMenuItem");
+        return NbBundle.getMessage(HostListRootNode.class, "PropertiesMenuItem");
     }
 
     @Override

@@ -72,7 +72,6 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.TextAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -1328,10 +1327,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             // makeproject sensitive actions
             final MakeProjectType projectKind = provider.getProject().getLookup().lookup(MakeProjectType.class);
             final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.folderActionsPath());
-            if (!actionsForMakeProject.isEmpty()) {
-                actionsForMakeProject.add(null);
-                result = TextAction.augmentList(result, actionsForMakeProject.toArray(new Action[actionsForMakeProject.size()]));
-            }
+            result = mergeActions(actionsForMakeProject, result);
             result = insertSyncActions(result, RenameNodeAction.class);
             return result;
         }
@@ -1551,10 +1547,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             // makeproject sensitive actions
             final MakeProjectType projectKind = provider.getProject().getLookup().lookup(MakeProjectType.class);
             final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.extFolderActionsPath());
-            if (!actionsForMakeProject.isEmpty()) {
-                actionsForMakeProject.add(null);
-                result = TextAction.augmentList(result, actionsForMakeProject.toArray(new Action[actionsForMakeProject.size()]));
-            }
+            result = mergeActions(actionsForMakeProject, result);
             result = insertSyncActions(result, AddExternalItemAction.class);
             return result;
         }
@@ -2182,6 +2175,15 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         if (DOWNLOAD_ACTION) {
             actions.add(RemoteSyncActions.createDownloadAction());
         }
+    }
+
+    private static Action[] mergeActions(final List<? extends Action> toAdd, Action[] result) {
+        if (!toAdd.isEmpty()) {
+            List<Action> asList = Arrays.asList(result);
+            asList.addAll(toAdd);
+            result = asList.toArray(new Action[asList.size()]);
+        }
+        return result;
     }
 
     private static Action[] insertSyncActions(Action[] actions, Class insertAfter) {
