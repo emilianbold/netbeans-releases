@@ -44,11 +44,11 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.StringTokenizer;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.NotImplementedException;
 
 /**
  *
@@ -81,7 +81,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (relativePath != null && relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
             relativePath = relativePath.substring(1);
         }
-        String remoteAbsPath = remotePath + '/' + relativePath;
         try {
             File file = new File(cache, relativePath);
             if (!file.exists()) {
@@ -96,14 +95,30 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     parentRemotePath = remotePath + '/' + relativePath.substring(0, slashPos);
                 }
                 getRemoteFileSupport().ensureDirSync(parentFile, parentRemotePath);
+
+                if (!file.exists()) {
+                    return null;
+                }
             }
-            if (! file.exists()) {
-                return null;
-            } else if (file.isDirectory()) {
-                return new RemoteDirectory(fileSystem, execEnv, this, remoteAbsPath, file);
-            } else {
-                return new RemotePlainFile(fileSystem, execEnv, this, remoteAbsPath, file);
+
+            boolean resultIsDirectory = file.isDirectory();
+
+            StringBuilder remoteAbsPath = new StringBuilder(remotePath);
+            File cacheFile = remotePath.isEmpty()? cache : new File(cache.getPath() + '/' + remotePath);
+            FileObject resultFileObject = this;
+            StringTokenizer pathTokenizer = new StringTokenizer(relativePath, "/"); // NOI18N
+            while (pathTokenizer.hasMoreTokens()) {
+                String pathComponent = pathTokenizer.nextToken();
+                remoteAbsPath.append('/').append(pathComponent);
+                cacheFile = new File(cacheFile.getPath() + '/' + pathComponent);
+                if (pathTokenizer.hasMoreElements() || resultIsDirectory) {
+                    resultFileObject = new RemoteDirectory(fileSystem, execEnv, resultFileObject, remoteAbsPath.toString(), cacheFile);
+                } else {
+                    resultFileObject = new RemotePlainFile(fileSystem, execEnv, resultFileObject, remoteAbsPath.toString(), cacheFile);
+                }
             }
+            return resultFileObject;
+
         } catch (CancellationException ex) {
             // TODO: clear CndUtils cache
             return null;

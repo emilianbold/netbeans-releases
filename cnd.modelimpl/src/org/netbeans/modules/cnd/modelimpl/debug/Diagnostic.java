@@ -203,14 +203,16 @@ public class Diagnostic {
             lastStart = System.currentTimeMillis();
         }
         
-        public void stop() {
+        public long stop() {
             running = false;
             time += System.currentTimeMillis() - lastStart;
+            return time;
         }
         
         public long stopAndReport(String text) {
-            stop();
-            return report(text);
+            long out = stop();
+            report(text);
+            return out;
         }
         
         public long report(String text) {
