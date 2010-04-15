@@ -904,7 +904,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     private void insertColumnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertColumnButtonActionPerformed
         stopCellEditing(columnsTable);
         if (checkColumnCount(columns.size()+1)) {
-            columns.add(new ColumnInfo(columnModelProperty, columns.size()));
+            columns.add(new ColumnInfo(columnModelProperty, getFreeColumnIndex()));
             if (modelHardcodedChoice.isSelected()) {
                 rowTableModel.addColumn(rowTableModel.getColumnCount());
             }
@@ -935,6 +935,16 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         if (editor != null) {
             editor.stopCellEditing();
         }
+    }
+
+    private int getFreeColumnIndex() {
+        Set<Integer> set = new HashSet<Integer>();
+        for (ColumnInfo info : columns) {
+            set.add(info.getColumn().getIndex());
+        }
+        int index = 0;
+        while (set.contains(index)) index++;
+        return index;
     }
 
     private int lastSelectedCustomizer = -1;
@@ -1599,7 +1609,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         if (checkColumnCount(columnCount)) {
             boolean hardcoded = modelHardcodedChoice.isSelected();
             for (int i=columns.size(); i<columnCount; i++) {
-                columns.add(new ColumnInfo(columnModelProperty, columns.size()));
+                columns.add(new ColumnInfo(columnModelProperty, getFreeColumnIndex()));
                 if (hardcoded) {
                     rowTableModel.addColumn(i);
                 }

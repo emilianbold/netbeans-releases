@@ -214,6 +214,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
 
 
+    @Override
     public CodeCompletionResult complete(CodeCompletionContext completionContext) {
          long startTime = 0;
 
@@ -251,7 +252,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
 
             CompletionContext context = CompletionContextFinder.findCompletionContext(info, caretOffset);
-            LOGGER.fine("CC context: " + context);
+            LOGGER.log(Level.FINE, String.format("CC context: %s", context.toString()));
 
             if (context == CompletionContext.NONE) {
                 return CodeCompletionResult.NONE;
@@ -829,61 +830,27 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
      * @param globalVariables (can be bull) if null then will be looked up in index
      */
     private Collection<CompletionProposal> getVariableProposals(final CompletionRequest request, Set<VariableElement> globalVariables) {
-        final Map<String, VariableElement> variables = new LinkedHashMap<String, VariableElement>();
-        final Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-         final LocalVariables localVars = getLocalVariables(request.result, request.prefix, request.anchor, request.currentlyEditedFileURL);
-        if (localVars.globalContext) {
-            if (globalVariables == null) {
-                FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
-                final ElementFilter forCurrentFile = ElementFilter.forFiles(fileObject);
-                globalVariables = forCurrentFile.
-                        reverseFilter(request.index.getTopLevelVariables(NameKind.prefix(QualifiedName.create(request.prefix))));
-            }
-
-            for (final VariableElement globalVariable : globalVariables) {
-                variables.put(globalVariable.getName(), globalVariable);
-            }
-        }
-
-        for (final VariableElement localVariable : localVars.vars) {
-            variables.put(localVariable.getName(), localVariable);
-        }
-        for (final VariableElement variable : variables.values()) {
-            proposals.add(new PHPCompletionItem.VariableItem(variable, request));
-        }
-        for (final String name : PredefinedSymbols.SUPERGLOBALS) {
-            if (isPrefix("$" + name, request.prefix)) {//NOI18N
-                CompletionProposal proposal = new PHPCompletionItem.SuperGlobalItem(request, name);
-                proposals.add(proposal);
-            }
-        }
-        return proposals;
-    }
-
-    private boolean isPrefix(String name, String prefix){
-        return name != null && (name.startsWith(prefix)
-                || nameKind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX && name.toLowerCase().startsWith(prefix.toLowerCase()));
-    }
-
-
-
-    private class LocalVariables{
-        Collection<VariableElement> vars;
-        boolean globalContext;
-    }
-
-    private LocalVariables getLocalVariables(final PHPParseResult context, final String namePrefix, final int position, final String localFileURL) {
-        Map<String, VariableElement> localVars = new HashMap<String, VariableElement>();
-        LocalVariables result = new LocalVariables();
-        result.vars = localVars.values();
-        Model model = context.getModel();
-        VariableScope variableScope = model.getVariableScope(position);
+        final Map<String, CompletionProposal> proposals = new LinkedHashMap<String, CompletionProposal>();
+        Model model = request.result.getModel();
+        VariableScope variableScope = model.getVariableScope(request.anchor);
         if (variableScope != null) {
-            result.globalContext = variableScope instanceof NamespaceScope;
-            Collection<? extends VariableName> declaredVariables = ModelUtils.filter(variableScope.getDeclaredVariables(), QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, namePrefix);
-            final int caretOffset = position + namePrefix.length();
+            if (variableScope instanceof NamespaceScope) {
+                if (globalVariables == null) {
+                    FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
+                    final ElementFilter forCurrentFile = ElementFilter.forFiles(fileObject);
+                    globalVariables = forCurrentFile.reverseFilter(request.index.getTopLevelVariables(NameKind.prefix(QualifiedName.create(request.prefix))));
+                }
+
+                for (final VariableElement globalVariable : globalVariables) {
+                    proposals.put(globalVariable.getName(), new PHPCompletionItem.VariableItem(globalVariable, request));
+                }
+            }
+            Collection<? extends VariableName> declaredVariables = ModelUtils.filter(variableScope.getDeclaredVariables(),
+                    QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, request.prefix);
+            final int caretOffset = request.anchor + request.prefix.length();
             for (VariableName varName : declaredVariables) {
-                if (varName.getNameRange().getEnd() < caretOffset) {
+                final FileObject realFileObject = varName.getRealFileObject();
+                if (realFileObject != null || varName.getNameRange().getEnd() < caretOffset) {
                     final String name = varName.getName();
                     String notDollaredName = name.startsWith("$") ? name.substring(1) : name;
                     if (PredefinedSymbols.SUPERGLOBALS.contains(notDollaredName)) {
@@ -892,20 +859,47 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (varName.representsThis()) {
                         continue;
                     }
-                    final Collection<? extends String> typeNames = varName.getTypeNames(position);
+                    final Collection<? extends String> typeNames = varName.getTypeNames(request.anchor);
                     String typeName = typeNames.size() > 1 ? "mixed" : ModelUtils.getFirst(typeNames);//NOI18N
-                    final Set<QualifiedName> qualifiedNames = typeName != null ?
-                        Collections.singleton(QualifiedName.create(typeName)) :
-                        Collections.<QualifiedName>emptySet();
-                    VariableElement ic = VariableElementImpl.create(name, 0, localFileURL,
-                            varName.getElementQuery(), TypeResolverImpl.forNames(qualifiedNames));
-                    localVars.put(name, ic);
+                    final Set<QualifiedName> qualifiedNames = typeName != null
+                            ? Collections.singleton(QualifiedName.create(typeName))
+                            : Collections.<QualifiedName>emptySet();                    
+                    if (realFileObject != null) {
+                        //#183928 -  Extend model to allow CTRL + click for 'view/action' variables
+                        proposals.put(name, new PHPCompletionItem.VariableItem(
+                                VariableElementImpl.create(name, 0, realFileObject,
+                                varName.getElementQuery(), TypeResolverImpl.forNames(qualifiedNames)), request) {
+
+                            @Override
+                            public boolean isSmart() {
+                                return true;
+                            }
+                        });
+                    } else {
+                        proposals.put(name, new PHPCompletionItem.VariableItem(
+                                VariableElementImpl.create(name, 0, request.currentlyEditedFileURL,
+                                varName.getElementQuery(), TypeResolverImpl.forNames(qualifiedNames)), request));
+                    }
                 }
             }
+
+            for (final String name : PredefinedSymbols.SUPERGLOBALS) {
+                if (isPrefix("$" + name, request.prefix)) {//NOI18N
+                    proposals.put(name, new PHPCompletionItem.SuperGlobalItem(request, name));
+                }
+            }
+
         }
-        return result;
+        return proposals.values();
     }
 
+    private boolean isPrefix(String name, String prefix){
+        return name != null && (name.startsWith(prefix)
+                || nameKind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX && name.toLowerCase().startsWith(prefix.toLowerCase()));
+    }
+
+
+    @Override
     public String document(ParserResult info, ElementHandle element) {
         if (element instanceof ModelElement) {
             ModelElement mElem = (ModelElement) element;
@@ -924,18 +918,20 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             DocRenderer.document(info, element);
     }
 
+    @Override
     public ElementHandle resolveLink(String link, ElementHandle originalHandle) {
         return null;
     }
 
-    private static final boolean isPHPIdentifierPart(char c){
+    private static boolean isPHPIdentifierPart(char c){
         return Character.isJavaIdentifierPart(c) || c == '@';
     }
 
-    private static final boolean isPrefixBreaker(char c){
+    private static boolean isPrefixBreaker(char c){
         return !(isPHPIdentifierPart(c) || c == '\\' || c == '$' || c == ':');
     }
 
+    @Override
     public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
         try {
             BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
@@ -1049,6 +1045,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return null;
     }
 
+    @Override
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
         if(typedText.length() == 0) {
             return QueryType.NONE;
@@ -1116,14 +1113,17 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
 
+    @Override
     public String resolveTemplateVariable(String variable, ParserResult info, int caretOffset, String name, Map parameters) {
         return null;
     }
 
+    @Override
     public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin, int selectionEnd) {
         return null;
     }
 
+    @Override
     public ParameterInfo parameters(final ParserResult info, final int caretOffset, CompletionProposal proposal) {
         final org.netbeans.modules.php.editor.model.Model model = ((PHPParseResult)info).getModel();
         ParameterInfoSupport infoSupport = model.getParameterInfoSupport(caretOffset);
