@@ -50,6 +50,7 @@ import java.net.ConnectException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -182,8 +183,7 @@ class SftpSupport {
         @Override
         public Integer call() throws Exception {
             int rc = -1;
-            try {
-                LOG.log(Level.FINE, "{0} started", getTraceName());
+            try {                
                 work();
                 rc = 0;
             } catch (JSchException ex) {
@@ -242,7 +242,9 @@ class SftpSupport {
 
         @Override
         protected void work() throws IOException, CancellationException, JSchException, SftpException, InterruptedException, ExecutionException {
+            boolean checkDir = false;
             if (checkMd5) {
+                LOG.log(Level.FINE, "Md5 check for {0}:{1} started", new Object[]{execEnv, dstFileName});
                 Result res = null;
                 try {
                     res = new Md5checker(execEnv).check(new File(srcFileName), dstFileName);
@@ -255,11 +257,28 @@ class SftpSupport {
                 } catch (ExecutionException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                if (res == Result.UPTODATE) {
-                    return;
+                switch (res) {
+                    case UPTODATE:
+                        LOG.log(Level.FINE, "{0}:{1} up to date - skipped", new Object[]{execEnv, dstFileName});
+                        return;
+                    case DIFFERS:
+                        break;
+                    case INEXISTENT:
+                        checkDir = true;
+                        break;
+                    default:
+                        throw new IllegalStateException("Unexpected MD5 check result: " + res); //NOI18N
                 }
             }
+            LOG.log(Level.FINE, "{0} started", getTraceName());
             ChannelSftp cftp = getChannel();
+            if (checkDir) {
+                int slashPos = dstFileName.lastIndexOf('/'); //NOI18N
+                if (slashPos >= 0) {
+                    String remoteDir = dstFileName.substring(0, slashPos);
+                    CommonTasksSupport.mkDir(execEnv, remoteDir, error).get();
+                }
+            }
             put(cftp);
             cftp.chmod(mask, dstFileName);
             uploadCount.incrementAndGet();
@@ -309,6 +328,7 @@ class SftpSupport {
 
         @Override
         protected void work() throws IOException, CancellationException, JSchException, SftpException, ExecutionException {
+            LOG.log(Level.FINE, "{0} started", getTraceName());
             ChannelSftp cftp = getChannel();
             cftp.get(srcFileName, dstFileName);
         }
