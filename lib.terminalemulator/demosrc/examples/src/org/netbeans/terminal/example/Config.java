@@ -30,6 +30,11 @@ public final class Config {
 	EXTERNAL,
     }
 
+    public static enum ContainerStyle {
+	TABBED,
+	MUXED,
+    }
+
     public enum AllowClose {
 	 /**
 	  * Tab is unclosable.
@@ -57,6 +62,7 @@ public final class Config {
     private final DispatchThread dispatchThread;
     private final Execution execution;
     private final IOShuttling ioShuttling;
+    private final ContainerStyle containerStyle;
     private final boolean restartable;
     private final boolean hupOnClose;
     private final boolean keep;
@@ -69,6 +75,7 @@ public final class Config {
 		DispatchThread dispatchThread,
 		Execution execution,
 		IOShuttling ioShuttling,
+		ContainerStyle containerStyle,
 		boolean restartable,
 		boolean hupOnClose,
 		boolean keep
@@ -80,6 +87,7 @@ public final class Config {
 	this.dispatchThread  = dispatchThread;
 	this.execution  = execution;
 	this.ioShuttling  = ioShuttling;
+	this.containerStyle = containerStyle;
 	this.restartable  = restartable;
 	this.hupOnClose  = hupOnClose;
 	this.keep = keep;
@@ -93,6 +101,7 @@ public final class Config {
 	                  null,
 	                  null,
 	                  IOShuttling.INTERNAL,
+			  ContainerStyle.TABBED,
 	                  false,	// restartable
 	                  true,		// hupOnClose
 			  false		// keep
@@ -107,6 +116,7 @@ public final class Config {
 	                  null,
 	                  null,
 	                  IOShuttling.INTERNAL,
+			  ContainerStyle.TABBED,
 	                  true,		// restartable
 	                  true,		// hupOnClose
 			  false		// keep
@@ -151,5 +161,9 @@ public final class Config {
 
     public IOShuttling getIOShuttling() {
 	return ioShuttling;
+    }
+
+    public ContainerStyle getContainerStyle() {
+	return containerStyle;
     }
 }

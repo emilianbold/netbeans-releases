@@ -41,6 +41,7 @@ import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.modules.terminal.api.IOVisibility;
 import org.netbeans.terminal.example.Config.AllowClose;
+import org.netbeans.terminal.example.topcomponent.MuxableTerminalTopComponent;
 import org.netbeans.terminal.example.topcomponent.TerminalTopComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -688,9 +689,18 @@ public final class TerminalIOProviderSupport {
     }
 
 
-    public static IOContainer getIOContainer() {
-	TerminalTopComponent ttc = TerminalTopComponent.findInstance();
-	return ttc.ioContainer();
+    public static IOContainer getIOContainer(Config config) {
+	switch (config.getContainerStyle()) {
+	    case MUXED: {
+		MuxableTerminalTopComponent ttc = MuxableTerminalTopComponent.findInstance();
+		return ttc.ioContainer();
+		}
+	    case TABBED:
+	    default: {
+		TerminalTopComponent ttc = TerminalTopComponent.findInstance();
+		return ttc.ioContainer();
+		}
+	}
     }
 
     public static IOProvider getIOProvider() {

@@ -44,6 +44,7 @@ import org.openide.windows.IOContainer;
 import org.openide.windows.TopComponent;
 
 import org.netbeans.modules.terminal.ioprovider.TerminalContainerImpl;
+import org.netbeans.modules.terminal.ioprovider.TerminalContainerMuxableImpl;
 
 /**
  * Help a {@link org.openide.windows.TopComponent} be a an
@@ -95,6 +96,10 @@ public abstract class TerminalContainer extends JComponent {
 
     public static TerminalContainer create(TopComponent tc, String name) {
 	return new TerminalContainerImpl(tc, name);
+    }
+
+    public static TerminalContainer createMuxable(TopComponent tc, String name) {
+	return new TerminalContainerMuxableImpl(tc, name);
     }
 
     public abstract IOContainer ioContainer();
