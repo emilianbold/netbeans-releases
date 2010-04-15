@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
 import org.netbeans.modules.cnd.remote.support.TransportTestCase;
 import org.netbeans.modules.cnd.remote.support.UploadTestCase;
 import org.netbeans.modules.cnd.remote.sync.FtpSyncWorkerTestCase;
+import org.netbeans.modules.cnd.remote.sync.RfsRemoteControllerDeathTestCase;
 import org.netbeans.modules.cnd.remote.sync.ZipSyncWorkerTestCase;
 import org.netbeans.modules.cnd.remote.sync.download.RemoteBuildUpdatesDownloadTestCase;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
@@ -87,7 +88,8 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
            UploadTestCase.class,
            ZipSyncWorkerTestCase.class,
            FtpSyncWorkerTestCase.class,
-           RemoteBuildUpdatesDownloadTestCase.class
+           RemoteBuildUpdatesDownloadTestCase.class,
+           RfsRemoteControllerDeathTestCase.class
        );
    }
 
