@@ -86,7 +86,7 @@ public class AddColumnAction extends BaseAction {
                             SystemAction.get(RefreshAction.class).performAction(new Node[]{node});
                         }
                     } catch(Exception exc) {
-                        LOGGER.log(Level.WARNING, null, exc);
+                        LOGGER.log(Level.WARNING, exc.getLocalizedMessage(), exc);
                         DbUtilities.reportError(NbBundle.getMessage (AddColumnAction.class, "ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
                     }
                 }

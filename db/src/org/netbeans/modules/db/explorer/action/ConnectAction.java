@@ -240,7 +240,7 @@ public class ConnectAction extends BaseAction {
                             try {
                                 connector.finishConnect(null, dbcon, dbcon.getConnection());
                             } catch (DatabaseException exc) {
-                                LOGGER.log(Level.INFO, null, exc);
+                                LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
                                 DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                                 return;
                             }
@@ -286,7 +286,7 @@ public class ConnectAction extends BaseAction {
                                 try {
                                     connector.finishConnect(null, dbcon, dbcon.getConnection());
                                 } catch (DatabaseException exc) {
-                                    Logger.getLogger("global").log(Level.INFO, null, exc);
+                                    LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
                                     DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                                     return;
                                 }
@@ -347,7 +347,7 @@ public class ConnectAction extends BaseAction {
                                     }
                                 }
                                 catch (DatabaseException exc) {
-                                    LOGGER.log(Level.INFO, null, exc);
+                                    LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
                                     DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                                     return;
                                 }

@@ -221,7 +221,7 @@ public class ConnectUsingDriverAction extends BaseAction {
                         try {
                             cinfo.getConnector().finishConnect(null, cinfo, cinfo.getConnection());
                         } catch (DatabaseException exc) {
-                            LOGGER.log(Level.INFO, null, exc);
+                            LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
                             DbUtilities.reportError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                             return;
                         }
@@ -244,7 +244,7 @@ public class ConnectUsingDriverAction extends BaseAction {
                                 }
                                 catch (DatabaseException dbe)
                                 {
-                                    LOGGER.log(Level.INFO, null, dbe);
+                                    LOGGER.log(Level.INFO, dbe.getLocalizedMessage(), dbe);
                                     DbUtilities.reportError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToAddConnection"), dbe.getMessage()); // NOI18N
                                     cinfo.setConnection(null);
                                 }
@@ -316,7 +316,7 @@ public class ConnectUsingDriverAction extends BaseAction {
                                 }
                             }
                         } catch (DatabaseException exc) {
-                            LOGGER.log(Level.INFO, null, exc);
+                            LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
                             DbUtilities.reportError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToAddConnection"), exc.getMessage()); // NOI18N
                             closeConnection();
                         }

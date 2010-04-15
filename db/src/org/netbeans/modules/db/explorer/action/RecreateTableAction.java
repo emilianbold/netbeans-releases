@@ -152,7 +152,7 @@ public class RecreateTableAction extends BaseAction {
                         }
                     }
                 } catch (Exception exc) {
-                    LOGGER.log(Level.INFO, null, exc);
+                    LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
                     DbUtilities.reportError(NbBundle.getMessage (RecreateTableAction.class, "ERR_UnableToRecreateTable"), exc.getMessage()); //NOI18N
                 }
 
@@ -190,7 +190,7 @@ public class RecreateTableAction extends BaseAction {
                     NotifyDescriptor.ERROR_MESSAGE));
             noResult = true;
         } catch (Exception exc) {
-            LOGGER.log(Level.INFO, null, exc);
+            LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
             DbUtilities.reportError(
                     NbBundle.getMessage (RecreateTableAction.class, "ERR_UnableToRecreateTable"), // NOI18N
                     exc.getMessage());

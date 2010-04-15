@@ -329,7 +329,7 @@ public class CreateTableDialog {
                             if (cause instanceof DDLException) {
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                             } else {
-                                LOGGER.log(Level.INFO, null, cause);
+                                LOGGER.log(Level.INFO, cause.getLocalizedMessage(), cause);
                                 DbUtilities.reportError(NbBundle.getMessage (CreateTableDialog.class, "ERR_UnableToCreateTable"), e.getMessage());
                             }
                         }

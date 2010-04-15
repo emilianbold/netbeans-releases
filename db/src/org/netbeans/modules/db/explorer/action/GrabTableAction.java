@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -161,6 +163,7 @@ public class GrabTableAction extends BaseAction {
                             new GrabTableHelper().execute(node.getLookup().lookup(DatabaseConnection.class).getConnector(),
                                 spec, node.getTableHandle(), theFile);
                         } catch (Exception exc) {
+                            Logger.getLogger(GrabTableAction.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
                             DbUtilities.reportError(NbBundle.getMessage (GrabTableAction.class, "ERR_UnableToGrabTable"), exc.getMessage()); // NOI18N
                         }
                     }
@@ -168,6 +171,7 @@ public class GrabTableAction extends BaseAction {
             );
 
         } catch(Exception exc) {
+            Logger.getLogger(GrabTableAction.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
             DbUtilities.reportError(NbBundle.getMessage (GrabTableAction.class, "ERR_UnableToGrabTable"), exc.getMessage()); // NOI18N
         }
     }

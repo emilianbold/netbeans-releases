@@ -146,7 +146,7 @@ public class AddIndexAction extends BaseAction {
                 });
             }
         } catch(Exception exc) {
-            LOGGER.log(Level.INFO, exc.getMessage(), exc);
+            LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
             DbUtilities.reportError(NbBundle.getMessage (AddIndexAction.class, "ERR_UnableToAddIndex"), exc.getMessage()); // NOI18N
         }
     }
