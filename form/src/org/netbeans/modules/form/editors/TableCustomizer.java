@@ -41,6 +41,7 @@
 package org.netbeans.modules.form.editors;
 
 import java.awt.Component;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -814,6 +815,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         int index = rowsTable.getSelectedRow();
         rowTableModel.moveRow(index, index+1);
         rowsTable.getSelectionModel().setSelectionInterval(index+1, index+1);
+        ensureRowVisible(rowsTable, index+1);
     }//GEN-LAST:event_moveDownRowButtonActionPerformed
 
     private void moveUpRowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpRowButtonActionPerformed
@@ -821,6 +823,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         int index = rowsTable.getSelectedRow();
         rowTableModel.moveRow(index, index-1);
         rowsTable.getSelectionModel().setSelectionInterval(index-1, index-1);
+        ensureRowVisible(rowsTable, index-1);
     }//GEN-LAST:event_moveUpRowButtonActionPerformed
 
     private void deleteRowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteRowButtonActionPerformed
@@ -870,6 +873,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             rowTableModel.moveColumn(index, index+1);
         }
         columnsTable.getSelectionModel().setSelectionInterval(index+1, index+1);
+        ensureRowVisible(columnsTable, index+1);
     }//GEN-LAST:event_moveDownColumnButtonActionPerformed
 
     private void moveUpColumnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpColumnButtonActionPerformed
@@ -882,6 +886,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             rowTableModel.moveColumn(index, index-1);
         }
         columnsTable.getSelectionModel().setSelectionInterval(index-1, index-1);
+        ensureRowVisible(columnsTable, index-1);
     }//GEN-LAST:event_moveUpColumnButtonActionPerformed
 
     private void deleteColumnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteColumnButtonActionPerformed
@@ -929,6 +934,12 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     private void modelHardcodedChoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modelHardcodedChoiceActionPerformed
         updateModelCustomizers();
     }//GEN-LAST:event_modelHardcodedChoiceActionPerformed
+
+    private void ensureRowVisible(JTable table, int row) {
+        Rectangle visRect = table.getVisibleRect();
+        Rectangle cellRect = table.getCellRect(row, 0, false);
+        table.scrollRectToVisible(new Rectangle(visRect.x, cellRect.y, visRect.width, cellRect.height));
+    }
 
     private static void stopCellEditing(JTable table) {
         TableCellEditor editor = table.getCellEditor();
