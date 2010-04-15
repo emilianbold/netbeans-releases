@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -80,8 +81,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     private final static java.util.logging.Logger log = Logger.getInstance();
     private final static File dorunScript;
     private ExternalTerminal terminal;
-    private InputStream processOutput;
-    private InputStream processError;
     private File resultFile;
     private final OSFamily osFamily;
 
@@ -103,8 +102,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             final NativeProcessInfo info, final ExternalTerminal terminal) {
         super(info);
         this.terminal = terminal;
-        this.processOutput = new ByteArrayInputStream(
-                (loc("TerminalLocalNativeProcess.ProcessStarted.text") + '\n').getBytes()); // NOI18N
+        setInputStream(new ByteArrayInputStream(
+                (loc("TerminalLocalNativeProcess.ProcessStarted.text") + '\n').getBytes())); // NOI18N
 
         osFamily = hostInfo == null ? OSFamily.UNKNOWN : hostInfo.getOSFamily();
     }
@@ -142,7 +141,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             FileOutputStream shfos = new FileOutputStream(shFileFile);
 
-            BufferedWriter shWriter = new BufferedWriter(new OutputStreamWriter(shfos));
+            BufferedWriter shWriter = new BufferedWriter(new OutputStreamWriter(shfos, Charset.forName("UTF-8")));
 
             shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
             shWriter.write(". \"" + envFile + "\" 2>/dev/null\n"); // NOI18N
@@ -249,8 +248,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 }
             }
 
-            processError = new ByteArrayInputStream(new byte[0]);
-
             Process terminalProcess = pb.start();
 
             creation_ts = System.nanoTime();
@@ -261,8 +258,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 throw new IOException(loc("TerminalLocalNativeProcess.terminalRunCancelled.text")); // NOI18N
             }
         } catch (Throwable ex) {
-            String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage()) + "\n"; // NOI18N
-            processError = new ByteArrayInputStream(msg.getBytes());
             resultFile = null;
             throw ex;
         } finally {
@@ -363,21 +358,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         }
 
         return exitCode;
-    }
-
-    @Override
-    public OutputStream getOutputStream() {
-        return null;
-    }
-
-    @Override
-    public InputStream getInputStream() {
-        return processOutput;
-    }
-
-    @Override
-    public InputStream getErrorStream() {
-        return processError;
     }
 
     private void waitPID(Process termProcess, File pidFile) throws IOException {

@@ -5,10 +5,6 @@
 package org.netbeans.modules.nativeexecution;
 
 import com.jcraft.jsch.ChannelExec;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelParams;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
@@ -20,7 +16,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
     private final static int startupErrorExitValue = 184;
     private final static Object lock = RemoteNativeProcess.class.getName() + "Lock"; // NOI18N
-    private ChannelStreams cstreams = null;
+    private ChannelStreams streams = null;
     private Integer exitValue = null;
 
     public RemoteNativeProcess(NativeProcessInfo info) {
@@ -29,93 +25,68 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
     @Override
     protected void create() throws Throwable {
-        ChannelStreams streams = null;
-
-        try {
-            if (isInterrupted()) {
-                throw new InterruptedException();
-            }
-
-            final String commandLine = info.getCommandLineForShell();
-            final MacroMap envVars = info.getEnvironment().clone();
-
-            // Setup LD_PRELOAD to load unbuffer library...
-            if (info.isUnbuffer()) {
-                UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), envVars);
-            }
-
-            // Always append /bin and /usr/bin to PATH
-            envVars.appendPathVariable("PATH", hostInfo.getPath() + ":/bin:/usr/bin"); // NOI18N
-
-            if (isInterrupted()) {
-                throw new InterruptedException();
-            }
-
-            ChannelParams params = new ChannelParams();
-            params.setX11Forwarding(info.getX11Forwarding());
-
-            synchronized (lock) {
-                streams = JschSupport.execCommand(info.getExecutionEnvironment(), hostInfo.getShell() + " -s", params); // NOI18N
-                streams.in.write("echo $$\n".getBytes()); // NOI18N
-                streams.in.flush();
-
-                final String workingDirectory = info.getWorkingDirectory(true);
-
-                if (workingDirectory != null) {
-                    streams.in.write(EnvWriter.getBytes(
-                            "cd \"" + workingDirectory + "\" || exit " + startupErrorExitValue + "\n", true)); // NOI18N
-                }
-
-                EnvWriter ew = new EnvWriter(streams.in, true);
-                ew.write(envVars);
-
-                if (info.getInitialSuspend()) {
-                    streams.in.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N
-                    streams.in.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
-                    streams.in.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
-                }
-
-                streams.in.write(EnvWriter.getBytes("exec " + commandLine + "\n", true)); // NOI18N
-                streams.in.flush();
-
-                readPID(streams.out);
-            }
-        } catch (Throwable ex) {
-            String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage()) + "\n"; // NOI18N
-
-            streams = new ChannelStreams(null,
-                    new ByteArrayInputStream(new byte[0]),
-                    new ByteArrayInputStream(msg == null ? new byte[0] : msg.getBytes()),
-                    new ByteArrayOutputStream());
-
-            throw ex;
-        } finally {
-            cstreams = streams;
+        if (isInterrupted()) {
+            throw new InterruptedException();
         }
-    }
 
-    @Override
-    public OutputStream getOutputStream() {
-        return cstreams.in;
-    }
+        final String commandLine = info.getCommandLineForShell();
+        final MacroMap envVars = info.getEnvironment().clone();
 
-    @Override
-    public InputStream getInputStream() {
-        return cstreams.out;
-    }
+        // Setup LD_PRELOAD to load unbuffer library...
+        if (info.isUnbuffer()) {
+            UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), envVars);
+        }
 
-    @Override
-    public InputStream getErrorStream() {
-        return cstreams.err;
+        // Always append /bin and /usr/bin to PATH
+        envVars.appendPathVariable("PATH", hostInfo.getPath() + ":/bin:/usr/bin"); // NOI18N
+
+        if (isInterrupted()) {
+            throw new InterruptedException();
+        }
+
+        ChannelParams params = new ChannelParams();
+        params.setX11Forwarding(info.getX11Forwarding());
+
+        synchronized (lock) {
+            streams = JschSupport.execCommand(info.getExecutionEnvironment(), hostInfo.getShell() + " -s", params); // NOI18N
+
+            setErrorStream(streams.err);
+            setInputStream(streams.out);
+            setOutputStream(streams.in);
+
+            streams.in.write("echo $$\n".getBytes()); // NOI18N
+            streams.in.flush();
+
+            final String workingDirectory = info.getWorkingDirectory(true);
+
+            if (workingDirectory != null) {
+                streams.in.write(EnvWriter.getBytes(
+                        "cd \"" + workingDirectory + "\" || exit " + startupErrorExitValue + "\n", true)); // NOI18N
+            }
+
+            EnvWriter ew = new EnvWriter(streams.in, true);
+            ew.write(envVars);
+
+            if (info.getInitialSuspend()) {
+                streams.in.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N
+                streams.in.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
+                streams.in.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
+            }
+
+            streams.in.write(EnvWriter.getBytes("exec " + commandLine + "\n", true)); // NOI18N
+            streams.in.flush();
+
+            readPID(streams.out);
+        }
     }
 
     @Override
     public int waitResult() throws InterruptedException {
-        if (cstreams.channel == null) {
+        if (streams == null || streams.channel == null) {
             return -1;
         }
 
-        while (cstreams.channel.isConnected()) {
+        while (streams.channel.isConnected()) {
             try {
                 Thread.sleep(200);
             } catch (InterruptedException ex) {
@@ -124,7 +95,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             }
         }
 
-        exitValue = Integer.valueOf(cstreams.channel.getExitStatus());
+        exitValue = Integer.valueOf(streams.channel.getExitStatus());
 
         if (exitValue == startupErrorExitValue) {
             exitValue = -1;
@@ -142,7 +113,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
         ChannelExec channel;
 
         synchronized (lock) {
-            channel = cstreams == null ? null : cstreams.channel;
+            channel = streams == null ? null : streams.channel;
 
             if (channel != null && channel.isConnected()) {
                 channel.disconnect();

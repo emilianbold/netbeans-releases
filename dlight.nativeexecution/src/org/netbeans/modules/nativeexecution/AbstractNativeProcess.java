@@ -38,9 +38,12 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -87,11 +90,19 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private volatile boolean isInterrupted;
     private boolean cancelled = false;
     private Future<ProcessInfoProvider> infoProviderSearchTask;
+    private InputStream inputStream;
+    private InputStream errorStream;
+    private OutputStream outputStream;
 
     public AbstractNativeProcess(NativeProcessInfo info) {
         this.info = info;
         isInterrupted = false;
         state = State.INITIAL;
+
+        inputStream = new ByteArrayInputStream(new byte[0]);
+        errorStream = new ByteArrayInputStream(new byte[0]);
+        outputStream = new ByteArrayOutputStream();
+
         execEnv = info.getExecutionEnvironment();
         String cmd = info.getCommandLineForShell();
 
@@ -132,9 +143,10 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             setState(State.RUNNING);
             findInfoProvider();
         } catch (Throwable ex) {
-            LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex.toString());
+            LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex.toString()); // NOI18N
             setState(State.ERROR);
-//            throw (ex instanceof IOException) ? (IOException) ex : new IOException(ex);
+            String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage());
+            errorStream = new ByteArrayInputStream((msg + "\n").getBytes()); // NOI18N
         }
 
         return this;
@@ -398,6 +410,33 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(AbstractNativeProcess.class, key, params);
+    }
+
+    @Override
+    public final InputStream getErrorStream() {
+        return errorStream;
+    }
+
+    @Override
+    public final OutputStream getOutputStream() {
+        return outputStream;
+    }
+
+    @Override
+    public final InputStream getInputStream() {
+        return inputStream;
+    }
+
+    protected final void setErrorStream(InputStream error) {
+        errorStream = error;
+    }
+
+    protected final void setOutputStream(OutputStream output) {
+        outputStream = output;
+    }
+
+    protected final void setInputStream(InputStream input) {
+        inputStream = input;
     }
 
     private void findInfoProvider() {

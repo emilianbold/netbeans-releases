@@ -40,7 +40,6 @@ package org.netbeans.modules.nativeexecution;
 
 import com.sun.jna.Pointer;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -61,9 +60,6 @@ import org.openide.util.NbBundle;
 public final class LocalNativeProcess extends AbstractNativeProcess {
 
     private Process process = null;
-    private InputStream processOutput = null;
-    private OutputStream processInput = null;
-    private InputStream processError = null;
 
     public LocalNativeProcess(NativeProcessInfo info) {
         super(info);
@@ -83,11 +79,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             if (process != null) {
                 process.destroy();
             }
-
-            String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage()) + "\n"; // NOI18N
-            processOutput = new ByteArrayInputStream(new byte[0]);
-            processError = new ByteArrayInputStream(msg.getBytes());
-            processInput = new ByteArrayOutputStream();
             throw ex;
         }
     }
@@ -120,28 +111,31 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         process = pb.start();
 
-        processInput = process.getOutputStream();
-        processError = process.getErrorStream();
-        processOutput = process.getInputStream();
+        OutputStream toProcessStream = process.getOutputStream();
+        InputStream fromProcessStream = process.getInputStream();
 
-        processInput.write("echo $$\n".getBytes()); // NOI18N
-        processInput.flush();
+        setErrorStream(process.getErrorStream());
+        setInputStream(fromProcessStream);
+        setOutputStream(toProcessStream);
 
-        EnvWriter ew = new EnvWriter(processInput, false);
+        toProcessStream.write("echo $$\n".getBytes()); // NOI18N
+        toProcessStream.flush();
+
+        EnvWriter ew = new EnvWriter(toProcessStream, false);
         ew.write(env);
 
         if (info.getInitialSuspend()) {
-            processInput.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N
-            processInput.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
-            processInput.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
+            toProcessStream.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N
+            toProcessStream.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
+            toProcessStream.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
         }
 
-        processInput.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
-        processInput.flush();
+        toProcessStream.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
+        toProcessStream.flush();
 
         creation_ts = System.nanoTime();
 
-        readPID(processOutput);
+        readPID(fromProcessStream);
     }
 
     private void createWin() throws IOException, InterruptedException {
@@ -201,9 +195,9 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         creation_ts = System.nanoTime();
 
-        processInput = process.getOutputStream();
-        processError = process.getErrorStream();
-        processOutput = process.getInputStream();
+        setErrorStream(process.getErrorStream());
+        setInputStream(process.getInputStream());
+        setOutputStream(process.getOutputStream());
 
         int newPid = 12345;
 
@@ -225,21 +219,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         ByteArrayInputStream bis = new ByteArrayInputStream(("" + newPid).getBytes()); // NOI18N
 
         readPID(bis);
-    }
-
-    @Override
-    public OutputStream getOutputStream() {
-        return processInput;
-    }
-
-    @Override
-    public InputStream getInputStream() {
-        return processOutput;
-    }
-
-    @Override
-    public InputStream getErrorStream() {
-        return processError;
     }
 
     @Override

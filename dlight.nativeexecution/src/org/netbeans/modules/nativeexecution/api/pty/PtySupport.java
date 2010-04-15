@@ -136,7 +136,7 @@ public final class PtySupport {
      * @param env - environmant in which a pty should be allocated
      * @return newly allocated pty or <tt>null</tt> if allocation failed
      */
-    public static Pty allocate(ExecutionEnvironment env) {
+    public static Pty allocate(ExecutionEnvironment env) throws IOException {
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
             throw new IllegalStateException();
         }
@@ -152,7 +152,7 @@ public final class PtySupport {
                     pty = creator.allocate(env);
                 } catch (IOException ex) {
                     log.log(Level.WARNING, ex.getMessage());
-                    return null;
+                    throw ex;
                 }
 
                 if (pty != null) {

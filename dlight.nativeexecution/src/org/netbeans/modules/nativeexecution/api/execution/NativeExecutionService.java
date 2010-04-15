@@ -47,8 +47,10 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.terminal.api.IOTerm;
 
@@ -120,8 +122,14 @@ public final class NativeExecutionService {
 
                     }
 
+                    if (process.getState() == State.ERROR) {
+                        descriptor.inputOutput.getErr().println(ProcessUtils.readProcessErrorLine(process));
+                        return 1;
+                    }
+
                     PtySupport.connect(descriptor.inputOutput, process);
                     return process.waitFor();
+
                 } finally {
                     if (descriptor.postExecution != null) {
                         synchronized (processRef) {
@@ -132,6 +140,7 @@ public final class NativeExecutionService {
             }
         };
         FutureTask<Integer> runTask = new FutureTask<Integer>(callable) {
+
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 synchronized (processRef) {
@@ -151,17 +160,7 @@ public final class NativeExecutionService {
     }
 
     private Future<Integer> runRegular() {
-            ExecutionDescriptor descr = new ExecutionDescriptor()
-                    .controllable(descriptor.controllable)
-                    .frontWindow(descriptor.frontWindow)
-                    .inputVisible(descriptor.inputVisible)
-                    .inputOutput(descriptor.inputOutput)
-                    .outLineBased(descriptor.outLineBased)
-                    .showProgress(descriptor.showProgress)
-                    .postExecution(descriptor.postExecution)
-                    .noReset(descriptor.noReset)
-                    .errConvertorFactory(descriptor.errConvertorFactory)
-                    .outConvertorFactory(descriptor.outConvertorFactory);
+        ExecutionDescriptor descr = new ExecutionDescriptor().controllable(descriptor.controllable).frontWindow(descriptor.frontWindow).inputVisible(descriptor.inputVisible).inputOutput(descriptor.inputOutput).outLineBased(descriptor.outLineBased).showProgress(descriptor.showProgress).postExecution(descriptor.postExecution).noReset(descriptor.noReset).errConvertorFactory(descriptor.errConvertorFactory).outConvertorFactory(descriptor.outConvertorFactory);
 
         ExecutionService es = ExecutionService.newService(processBuilder, descr, displayName);
         return es.run();

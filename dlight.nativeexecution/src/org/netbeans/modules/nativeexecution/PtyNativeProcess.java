@@ -39,8 +39,6 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -80,19 +78,25 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         Pty _pty = info.getPty();
 
         if (_pty == null) {
-            _pty = PtySupport.allocate(env);
+            try {
+                _pty = PtySupport.allocate(env);
+            } catch (IOException ex) {
+                String msg = "Unable to allocate a pty for the process: " + info.getExecutable() + " [" + ex.getMessage() + "]";
+                throw new IOException(msg); // NOI18N
+            }
         }
 
         if (cancelled) {
             return;
         }
 
-        if (_pty == null) {
-            throw new IOException("Unable to allocate a pty for the process " + info.getExecutable()); // NOI18N
-        }
-
         pty = _pty;
         ptyImpl = PtyImplAccessor.getDefault().getImpl(pty);
+
+        if (ptyImpl != null) {
+            setInputStream(ptyImpl.getInputStream());
+            setOutputStream(ptyImpl.getOutputStream());
+        }
 
         String executable = PtyProcessStartUtility.getInstance().getPath(env);
 
@@ -146,27 +150,6 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         }
 
         return delegate.waitResult();
-    }
-
-    @Override
-    public OutputStream getOutputStream() {
-        return ptyImpl.getOutputStream();
-    }
-
-    @Override
-    public InputStream getInputStream() {
-        return ptyImpl.getInputStream();
-    }
-
-    @Override
-    public InputStream getErrorStream() {
-        return new InputStream() {
-
-            @Override
-            public int read() throws IOException {
-                return -1;
-            }
-        };
     }
 
     private final class Reaper implements Runnable {
