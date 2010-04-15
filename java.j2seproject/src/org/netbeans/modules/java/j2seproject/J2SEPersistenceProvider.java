@@ -315,8 +315,8 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
                                 changed = true;
                             }
                         }
-                        if (!J2SEProjectUtil.isTrue(prop.getProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR))) {
-                            prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "true");    //NOI18N
+                        if (!J2SEProjectUtil.isTrue(prop.getProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED))) {
+                            prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true");    //NOI18N
                             changed = true;
                         }
                         if (changed) {
