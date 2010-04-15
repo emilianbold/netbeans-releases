@@ -73,6 +73,20 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="ap-query-triggers">
+            <api name="classpath"/>
+            <summary>Introducing AnnotationProcessingQuery.Result.Trigger</summary>
+            <version major="1" minor="28"/>
+            <date day="15" month="4" year="2010"/>
+            <author login="dbalek"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>Modifying AnnotationProcessingQuery.Result.annotationProcessingEnabled() to return a set of triggers on which the annotation processors should be run.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="AnnotationProcessingQuery" />
+            <issue number="183793"/>
+        </change>
         <change id="ap-query-processoroptions">
             <api name="classpath"/>
             <summary>Introducing AnnotationProcessingQuery.Result.processorOptions</summary>

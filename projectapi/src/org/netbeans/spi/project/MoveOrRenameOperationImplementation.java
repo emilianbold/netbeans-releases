@@ -37,44 +37,34 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.freeform;
+package org.netbeans.spi.project;
 
-import java.net.URL;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Set;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
-import org.netbeans.api.java.queries.AnnotationProcessingQuery.Trigger;
-import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
-import org.openide.filesystems.FileObject;
+import java.io.IOException;
 
 /**
- * Currently there is no special control over AP other than {@code <classpath mode="processorpath"/>}.
+ * A preferred substitute for {@code MoveOperationImplementation} to be used when
+ * the project can behave more simply, efficiently, and robustly when it is simply
+ * being renamed (code and/or display name) without actually being moved to a new location.
+ * In this case, {@link #notifyMoving} and {@link #notifyMoved} will not be called.
+ * @since org.netbeans.modules.projectapi/1 1.31
  */
-class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplementation {
+public interface MoveOrRenameOperationImplementation extends MoveOperationImplementation {
 
-    public AnnotationProcessingQueryImpl() {}
+    /**
+     * Pre-rename notification.
+     * The exact meaning is left to the project's implementation;
+     * it might for example undeploy an application and remove all artifacts
+     * created by the build, in case they used the old name.
+     * @throws IOException if an I/O operation fails
+     */
+    void notifyRenaming() throws IOException;
 
-    public @Override Result getAnnotationProcessingOptions(FileObject file) {
-        return new Result() {
-            public @Override Set<? extends Trigger> annotationProcessingEnabled() {
-                return EnumSet.allOf(Trigger.class);
-            }
-            public @Override Iterable<? extends String> annotationProcessorsToRun() {
-                return null;
-            }
-            public @Override URL sourceOutputDirectory() {
-                return null;
-            }
-            public @Override Map<? extends String, ? extends String> processorOptions() {
-                return Collections.emptyMap();
-            }
-            public @Override void addChangeListener(ChangeListener l) {}
-            public @Override void removeChangeListener(ChangeListener l) {}
-
-        };
-    }
+    /**
+     * Notification that the rename operation has finished.
+     * The project might for example change its display name in metadata.
+     * @param nueName new name for the project
+     * @throws IOException if an I/O operation fails
+     */
+    void notifyRenamed(String nueName) throws IOException;
 
 }

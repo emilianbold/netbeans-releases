@@ -42,10 +42,13 @@
 package org.netbeans.modules.ant.freeform.ui;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.Action;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.spi.ProjectNature;
@@ -65,6 +68,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -121,25 +125,24 @@ public final class View implements LogicalViewProvider {
         return null;
     }
     
-    private static final class RootNode extends AbstractNode {
+    private static final class RootNode extends AbstractNode implements PropertyChangeListener {
         
         private final FreeformProject p;
+        private final ProjectInformation info;
         
+        @SuppressWarnings("LeakingThisInConstructor")
         public RootNode(FreeformProject p) {
             super(NodeFactorySupport.createCompositeChildren(p, "Projects/org-netbeans-modules-ant-freeform/Nodes"), Lookups.singleton(p));
             this.p = p;
+            info = ProjectUtils.getInformation(p);
+            info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
         }
         
         @Override
         public String getName() {
-            return ProjectUtils.getInformation(p).getName();
+            return info.getDisplayName();
         }
         
-        @Override
-        public String getDisplayName() {
-            return ProjectUtils.getInformation(p).getDisplayName();
-        }
-
         @Override
         public String getShortDescription() {
             return NbBundle.getMessage(View.class, "View.RootNode.shortDescription", FileUtil.getFileDisplayName(p.getProjectDirectory()));
@@ -147,7 +150,7 @@ public final class View implements LogicalViewProvider {
         
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.icon2Image(ProjectUtils.getInformation(p).getIcon());
+            return ImageUtilities.icon2Image(info.getIcon());
         }
         
         @Override
@@ -183,6 +186,13 @@ public final class View implements LogicalViewProvider {
         @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx("freeform.node." + org.netbeans.modules.ant.freeform.Util.getMergedHelpIDFragments(p)); // NOI18N
+        }
+
+        public @Override void propertyChange(PropertyChangeEvent evt) {
+            fireNameChange(null, null);
+            fireDisplayNameChange(null, null);
+            fireIconChange();
+            fireOpenedIconChange();
         }
         
     }

@@ -494,6 +494,7 @@ public class Specification implements DatabaseSpecification {
         case java.sql.Types.BINARY: typestr = "BINARY"; break; // NOI18N
         case java.sql.Types.BIT: typestr = "BIT"; break; // NOI18N
         case java.sql.Types.BLOB: typestr = "BLOB"; break; // NOI18N
+        case java.sql.Types.BOOLEAN: typestr = "BOOLEAN"; break; // NOI18N
         case java.sql.Types.CHAR: typestr = "CHAR"; break; // NOI18N
         case java.sql.Types.CLOB: typestr = "CLOB"; break; // NOI18N
         case java.sql.Types.DATE: typestr = "DATE"; break; // NOI18N
@@ -504,12 +505,18 @@ public class Specification implements DatabaseSpecification {
         case java.sql.Types.INTEGER: typestr = "INTEGER"; break; // NOI18N
         case java.sql.Types.JAVA_OBJECT: typestr = "JAVA_OBJECT"; break; // NOI18N
         case java.sql.Types.LONGVARBINARY: typestr = "LONGVARBINARY"; break; // NOI18N
+        case java.sql.Types.LONGNVARCHAR: typestr = "LONGNVARCHAR"; break; // NOI18N
         case java.sql.Types.LONGVARCHAR: typestr = "LONGVARCHAR"; break; // NOI18N
         case java.sql.Types.NUMERIC: typestr = "NUMERIC"; break; // NOI18N
+        case java.sql.Types.NCHAR: typestr = "NCHAR"; break; // NOI18N
+        case java.sql.Types.NCLOB: typestr = "NCLOB"; break; // NOI18N
+        case java.sql.Types.NVARCHAR: typestr = "NVARCHAR"; break; // NOI18N
         case java.sql.Types.OTHER: typestr = "OTHER"; break; // NOI18N        
         case java.sql.Types.REAL: typestr = "REAL"; break; // NOI18N
         case java.sql.Types.REF: typestr = "REF"; break; // NOI18N
+        case java.sql.Types.ROWID: typestr = "ROWID"; break; // NOI18N
         case java.sql.Types.SMALLINT: typestr = "SMALLINT"; break; // NOI18N
+        case java.sql.Types.SQLXML: typestr = "SQLXML"; break; // NOI18N
         case java.sql.Types.TIME: typestr = "TIME"; break; // NOI18N
         case java.sql.Types.TIMESTAMP: typestr = "TIMESTAMP"; break; // NOI18N
         case java.sql.Types.TINYINT: typestr = "TINYINT"; break; // NOI18N

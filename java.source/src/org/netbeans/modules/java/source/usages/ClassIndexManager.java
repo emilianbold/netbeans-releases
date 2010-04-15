@@ -43,7 +43,7 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -67,7 +67,7 @@ public final class ClassIndexManager {
     private final Map<URL, ClassIndexImpl> instances = new HashMap<URL, ClassIndexImpl> ();
     private final ReentrantReadWriteLock lock;
     private final InternalLock internalLock;
-    private final Map<ClassIndexManagerListener,Void> listeners = new IdentityHashMap<ClassIndexManagerListener, Void>();
+    private final Map<ClassIndexManagerListener,Void> listeners = Collections.synchronizedMap(new IdentityHashMap<ClassIndexManagerListener, Void>());
     private boolean invalid;
     private Set<URL> added;
     private Set<URL> removed;
@@ -234,8 +234,12 @@ public final class ClassIndexManager {
     
     private void fire (final Set<? extends URL> roots, final byte op) {
         if (!this.listeners.isEmpty()) {
+            ClassIndexManagerListener[] _listeners;
+            synchronized (this.listeners) {
+                _listeners = this.listeners.keySet().toArray(new ClassIndexManagerListener[this.listeners.size()]);
+            }
             final ClassIndexManagerEvent event = new ClassIndexManagerEvent (this, roots);
-            for (ClassIndexManagerListener listener : this.listeners.keySet()) {
+            for (ClassIndexManagerListener listener : _listeners) {
                 if (op == OP_ADD) {
                     listener.classIndexAdded(event);
                 }

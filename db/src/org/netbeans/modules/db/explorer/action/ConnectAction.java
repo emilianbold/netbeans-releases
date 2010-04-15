@@ -52,7 +52,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -103,6 +105,7 @@ public class ConnectAction extends BaseAction {
         return new HelpCtx(ConnectAction.class);
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
         if (activatedNodes.length == 1) {
@@ -142,6 +145,7 @@ public class ConnectAction extends BaseAction {
         /** Shows notification if DatabaseConnection fails. */
         final ExceptionListener excListener = new ExceptionListener() {
 
+            @Override
             public void exceptionOccurred(Exception exc) {
                 if (exc instanceof DDLException) {
                     LOGGER.log(Level.INFO, null, exc.getCause());
@@ -153,12 +157,12 @@ public class ConnectAction extends BaseAction {
                 if (exc instanceof ClassNotFoundException) {
                     message = MessageFormat.format(NbBundle.getMessage(ConnectAction.class, "EXC_ClassNotFound"), exc.getMessage()); //NOI18N
                 } else {
-                    StringBuffer buffer = new StringBuffer();
+                    StringBuilder buffer = new StringBuilder();
                     buffer.append(DbUtilities.formatError(NbBundle.getMessage(ConnectAction.class, "ERR_UnableToConnect"), exc.getMessage())); //NOI18N
                     if (exc instanceof DDLException && exc.getCause() instanceof SQLException) {
                         SQLException sqlEx = ((SQLException) exc.getCause()).getNextException();
                         while (sqlEx != null) {
-                            buffer.append("\n\n" + sqlEx.getMessage()); // NOI18N
+                            buffer.append("\n\n").append(sqlEx.getMessage()); // NOI18N
                             sqlEx = sqlEx.getNextException();
                         }
                     }
@@ -194,9 +198,10 @@ public class ConnectAction extends BaseAction {
                 final SchemaPanel schemaPanel = new SchemaPanel(this, dbcon);
 
                 PropertyChangeListener argumentListener = new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent event) {
                         if (event.getPropertyName().equals("argumentChanged")) { //NOI18N
-                            schemaPanel.setSchemas(new Vector(), ""); //NOI18N
+                            schemaPanel.setSchemas(Collections.EMPTY_LIST, ""); //NOI18N
                             schemaPanel.resetProgress();
                             try {
                                 Connection conn = dbcon.getConnection();
@@ -212,6 +217,7 @@ public class ConnectAction extends BaseAction {
                 basePanel.addPropertyChangeListener(argumentListener);
 
                 final PropertyChangeListener connectionListener = new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent event) {
                         if (event.getPropertyName().equals("connecting")) { // NOI18N
                             fireConnectionStarted();
@@ -240,7 +246,7 @@ public class ConnectAction extends BaseAction {
                             try {
                                 connector.finishConnect(null, dbcon, dbcon.getConnection());
                             } catch (DatabaseException exc) {
-                                LOGGER.log(Level.INFO, null, exc);
+                                LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
                                 DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                                 return;
                             }
@@ -268,6 +274,7 @@ public class ConnectAction extends BaseAction {
                 dbcon.addPropertyChangeListener(connectionListener);
 
                 ActionListener actionListener = new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent event) {
                         if (event.getSource() == DialogDescriptor.OK_OPTION) {
                             okPressed = true;
@@ -286,7 +293,7 @@ public class ConnectAction extends BaseAction {
                                 try {
                                     connector.finishConnect(null, dbcon, dbcon.getConnection());
                                 } catch (DatabaseException exc) {
-                                    Logger.getLogger("global").log(Level.INFO, null, exc);
+                                    LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
                                     DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                                     return;
                                 }
@@ -310,6 +317,7 @@ public class ConnectAction extends BaseAction {
                 };
 
                 ChangeListener changeTabListener = new ChangeListener() {
+                    @Override
                     public void stateChanged (ChangeEvent e) {
                         if (((JTabbedPane) e.getSource()).getSelectedComponent().equals(schemaPanel)) {
                             advancedPanel = true;
@@ -338,6 +346,7 @@ public class ConnectAction extends BaseAction {
                     final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
                     
                     final PropertyChangeListener connectionListener = new PropertyChangeListener() {
+                        @Override
                         public void propertyChange(PropertyChangeEvent event) {
                             if (event.getPropertyName().equals("connected")) { //NOI18N
                                 try {
@@ -347,7 +356,7 @@ public class ConnectAction extends BaseAction {
                                     }
                                 }
                                 catch (DatabaseException exc) {
-                                    LOGGER.log(Level.INFO, null, exc);
+                                    LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
                                     DbUtilities.reportError(NbBundle.getMessage (ConnectAction.class, "ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                                     return;
                                 }
@@ -404,9 +413,10 @@ public class ConnectAction extends BaseAction {
             dbcon.removeExceptionListener(excListener);
         }
 
+        @Override
         protected boolean retrieveSchemas(SchemaPanel schemaPanel, DatabaseConnection dbcon, String defaultSchema) {
             fireConnectionStep(NbBundle.getMessage (ConnectAction.class, "ConnectionProgress_Schemas")); // NOI18N
-            Vector<String> schemas = new Vector<String> ();
+            List<String> schemas = new ArrayList<String> ();
             try {
                 DatabaseMetaData dbMetaData = dbcon.getConnection().getMetaData();
                 if (dbMetaData.supportsSchemasInTableDefinitions()) {
