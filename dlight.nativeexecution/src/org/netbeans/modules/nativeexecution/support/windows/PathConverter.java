@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,61 +34,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api.util;
-
-import java.io.File;
-import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
-import org.netbeans.modules.nativeexecution.support.windows.PathConverter.PathType;
+package org.netbeans.modules.nativeexecution.support.windows;
 
 /**
  *
  * @author ak119685
  */
-public class Shell {
+public interface PathConverter {
 
-    final public ShellType type;
-    final public String shell;
-    final public File bindir;
-    private ShellValidationStatus validationStatus = null;
+    public String convert(PathType srcType, PathType trgType, String path);
 
-    public Shell(ShellType type, String shell, File bindir) {
-        this.type = type;
-        this.shell = shell;
-        this.bindir = bindir;
-    }
+    public String convertAll(PathType srcType, PathType trgType, String path);
 
-    @Override
-    public String toString() {
-        return type.name() + " in " + bindir.getAbsolutePath(); // NOI18N
-    }
+    public static enum PathType {
 
-    public synchronized ShellValidationStatus getValidationStatus() {
-        if (validationStatus == null) {
-            validationStatus = ShellValidationSupport.getValidationStatus(this);
-        }
-        
-        return validationStatus;
-    }
-
-    public enum ShellType {
-
-        NO_SHELL,
         CYGWIN,
         MSYS,
-        UNKNOWN;
-
-        public PathType toPathType() {
-            switch (this) {
-                case CYGWIN:
-                    return PathType.CYGWIN;
-                case MSYS:
-                    return PathType.MSYS;
-                default:
-                    return null;
-            }
-        }
+        WINDOWS
     }
-
 }
