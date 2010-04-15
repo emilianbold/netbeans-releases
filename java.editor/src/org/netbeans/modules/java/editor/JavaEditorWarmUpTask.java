@@ -237,21 +237,24 @@ public class JavaEditorWarmUpTask implements Runnable {
                 break;
 
             case STATUS_RENDER_FRAME:
+                JEditorPane p = pane;
                 frame = new JFrame();
-                EditorUI ui = Utilities.getEditorUI(pane);
+                EditorUI ui = Utilities.getEditorUI(p);
                 JComponent mainComp = null;
                 if (ui != null) {
                     mainComp = ui.getExtComponent();
                 }
                 if (mainComp == null) {
-                    mainComp = new javax.swing.JScrollPane(pane);
+                    mainComp = new javax.swing.JScrollPane(p);
                 }
                 frame.getContentPane().add(mainComp);
                 frame.pack();
                 frame.paint(bGraphics);
                 frame.getContentPane().removeAll();
                 frame.dispose();
-                pane.setEditorKit(null);
+                if (p != null) {
+                    p.setEditorKit(null);
+                }
 
                 // Candidates Annotations.getLineAnnotations()
 
