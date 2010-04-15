@@ -195,7 +195,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
     private static Timer starterThread = new Timer(true);
 
     /** logger */
-    private static Logger logger;
+    private static final Logger logger = Logger.getLogger("org.openide.util.RequestProcessor"); // NOI18N
 
     /** the static instance for users that do not want to have own processor */
     private static final RequestProcessor UNLIMITED;
@@ -402,6 +402,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
      * @param command the runnable to execute
      * @since 7.16
      */
+    @Override
     public void execute(Runnable command) {
         post(command);
     }
@@ -579,13 +580,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
     /** Logger for the error manager.
      */
     static Logger logger() {
-        synchronized (UNLIMITED) {
-            if (logger == null) {
-                logger = Logger.getLogger("org.openide.util.RequestProcessor"); // NOI18N
-            }
-
-            return logger;
-        }
+        return logger;
     }
 
     //------------------------------------------------------------------------------
@@ -618,9 +613,9 @@ public final class RequestProcessor implements ScheduledExecutorService {
         }
         if (loggable) {
             if (wasNull) {
-                em.fine("Null task for item " + item); // NOI18N
+                em.log(Level.FINE, "Null task for item {0}", item); // NOI18N
             } else {
-                em.fine("Item enqueued: " + item.action + " status: " + item.enqueued); // NOI18N
+                em.log(Level.FINE, "Item enqueued: {0} status: {1}", new Object[]{item.action, item.enqueued}); // NOI18N
             }
         }
     }
@@ -1367,6 +1362,7 @@ outer:  do {
             this.itm = itm;
         }
         
+        @Override
         public void run() {
             try {
                 enqueue(itm);
@@ -1506,6 +1502,7 @@ outer:  do {
         * @return true if the task has been removed from the queue,
         *   false it the task has already been processed
         */
+        @Override
         public boolean cancel() {
             synchronized (processorLock) {
                 boolean success;
@@ -1625,7 +1622,7 @@ outer:  do {
                 boolean loggable = em.isLoggable(Level.FINE);
                 
                 if (loggable) {
-                    em.fine("Task.waitFinished on " + this + " from other task in RP: " + Thread.currentThread().getName()); // NOI18N
+                    em.log(Level.FINE, "Task.waitFinished on {0} from other task in RP: {1}", new Object[]{this, Thread.currentThread().getName()}); // NOI18N
                 }
                 
 
@@ -1635,8 +1632,8 @@ outer:  do {
                     runAtAll = !isFinished();
                     toRun = runAtAll && ((item == null) || item.clear(null));
                     if (loggable) {
-                        em.fine("    ## finished: " + isFinished()); // NOI18N
-                        em.fine("    ## item: " + item); // NOI18N
+                        em.log(Level.FINE, "    ## finished: {0}", isFinished()); // NOI18N
+                        em.log(Level.FINE, "    ## item: {0}", item); // NOI18N
                     }
                 }
 
@@ -1653,7 +1650,7 @@ outer:  do {
 
                     if (runAtAll && lastThread != Thread.currentThread()) {
                         if (loggable) {
-                            em.fine("    ## waiting for it to be finished: " + lastThread + " now: " + Thread.currentThread()); // NOI18N
+                            em.log(Level.FINE, "    ## waiting for it to be finished: {0} now: {1}", new Object[]{lastThread, Thread.currentThread()}); // NOI18N
                         }
                         super.waitFinished();
                     }
@@ -1935,7 +1932,7 @@ outer:  do {
                 boolean loggable = em.isLoggable(Level.FINE);
 
                 if (loggable) {
-                    em.fine("Begining work " + getName()); // NOI18N
+                    em.log(Level.FINE, "Begining work {0}", getName()); // NOI18N
                 }
 
                 // while we have something to do
@@ -1984,7 +1981,7 @@ outer:  do {
                 }
 
                 if (loggable) {
-                    em.fine("Work finished " + getName()); // NOI18N
+                    em.log(Level.FINE, "Work finished {0}", getName()); // NOI18N
                 }
             }
         }
@@ -2049,6 +2046,7 @@ outer:  do {
          */
         static ThreadGroup getTopLevelThreadGroup() {
             java.security.PrivilegedAction<ThreadGroup> run = new java.security.PrivilegedAction<ThreadGroup>() {
+                    @Override
                     public ThreadGroup run() {
                         ThreadGroup current = Thread.currentThread().getThreadGroup();
 

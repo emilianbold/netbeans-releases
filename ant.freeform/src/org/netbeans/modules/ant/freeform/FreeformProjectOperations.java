@@ -49,7 +49,7 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
-import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -60,7 +60,7 @@ import org.w3c.dom.Element;
  *
  * @author Jan Lahoda
  */
-public class FreeformProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
+public class FreeformProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOrRenameOperationImplementation {
     
     private FreeformProject project;
     
@@ -155,6 +155,13 @@ public class FreeformProjectOperations implements DeleteOperationImplementation,
         } else {
             project.helper().notifyDeleted();
         }
+    }
+
+    public @Override void notifyRenaming() throws IOException {
+    }
+
+    public @Override void notifyRenamed(String nueName) throws IOException {
+        project.setName(nueName);
     }
     
 }

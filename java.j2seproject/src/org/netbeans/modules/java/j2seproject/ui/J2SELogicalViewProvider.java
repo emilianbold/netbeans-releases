@@ -57,6 +57,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -272,14 +273,15 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         compileOnSaveDisabledBadge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(COMPILE_ON_SAVE_DISABLED_BADGE_PATH), compileOnSaveDisabledTP); // NOI18N
     }
 
-    private final class J2SELogicalViewRootNode extends AbstractNode implements ChangeListener {
+    private final class J2SELogicalViewRootNode extends AbstractNode implements ChangeListener, PropertyChangeListener {
+
+        private final ProjectInformation info = ProjectUtils.getInformation(project);
         
         @SuppressWarnings("LeakingThisInConstructor")
         public J2SELogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-java-j2seproject/Nodes"), 
                   Lookups.singleton(project));
             setIconBaseWithExtension("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png");
-            super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
             if (hasBrokenLinks()) {
                 broken = true;
             }
@@ -288,6 +290,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
             }
             compileOnSaveDisabled = isCompileOnSaveDisabled();
             addChangeListener(WeakListeners.change(this, J2SELogicalViewProvider.this));
+            info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
         }
 
         @Override
@@ -337,6 +340,12 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         }
 
         @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            fireNameChange(null, null);
+            fireDisplayNameChange(null, null);
+        }
+
+        @Override
         public Action[] getActions( boolean context ) {
             return CommonProjectActions.forType("org-netbeans-modules-java-j2seproject"); // NOI18N
         }
@@ -346,6 +355,10 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
             return true;
         }
         
+        public @Override String getName() {
+            return info.getDisplayName();
+        }
+
         @Override
         public void setName(String s) {
             DefaultProjectOperations.performDefaultRenameOperation(project, s);

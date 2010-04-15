@@ -66,7 +66,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.DeleteOperationImplementation;
-import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -88,7 +88,7 @@ import org.openide.util.lookup.Lookups;
  * @author Martin Krauskopf
  */
 public final class SuiteOperations implements DeleteOperationImplementation,
-        MoveOperationImplementation {
+        MoveOrRenameOperationImplementation {
     
     private static final Map<String,Set<NbModuleProject>> TEMPORARY_CACHE = new HashMap<String,Set<NbModuleProject>>();
     
@@ -167,6 +167,13 @@ public final class SuiteOperations implements DeleteOperationImplementation,
         }
     }
     
+    public @Override void notifyRenaming() throws IOException {
+    }
+
+    public @Override void notifyRenamed(String nueName) throws IOException {
+        setDisplayName(nueName);
+    }
+
     public List<FileObject> getMetadataFiles() {
         List<FileObject> files = new ArrayList<FileObject>();
         addFile(GeneratedFilesHelper.BUILD_XML_PATH, files);
@@ -204,7 +211,6 @@ public final class SuiteOperations implements DeleteOperationImplementation,
                         props.setProperty(BasicBrandingModel.TITLE_PROPERTY, nueName);
                         suite.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                     }
-                    ProjectManager.getDefault().saveProject(suite);
                     return null;
                 }
             });

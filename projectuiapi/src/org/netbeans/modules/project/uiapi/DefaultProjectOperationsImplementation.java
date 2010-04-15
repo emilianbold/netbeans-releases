@@ -53,6 +53,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -73,6 +75,7 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -372,6 +375,39 @@ public final class DefaultProjectOperationsImplementation {
     }
 
     private static void doRenameProject(ProgressHandle handle, Project project, String nueName) throws Exception {
+        Collection<? extends MoveOperationImplementation> operations = project.getLookup().lookupAll(MoveOperationImplementation.class);
+        for (MoveOperationImplementation o : operations) {
+            if (!(o instanceof MoveOrRenameOperationImplementation)) {
+                Logger.getLogger(DefaultProjectOperationsImplementation.class.getName()).log(Level.WARNING,
+                        "{0} should implement MoveOrRenameOperationImplementation", o.getClass().getName());
+                doRenameProjectOld(handle, project, nueName, operations);
+                return;
+            }
+        }
+        // Better new style.
+        try {
+            handle.switchToDeterminate(4);
+            int currentWorkDone = 0;
+            handle.progress(++currentWorkDone);
+            for (MoveOperationImplementation o : operations) {
+                ((MoveOrRenameOperationImplementation) o).notifyRenaming();
+            }
+            handle.progress(++currentWorkDone);
+            for (MoveOperationImplementation o : operations) {
+                ((MoveOrRenameOperationImplementation) o).notifyRenamed(nueName);
+            }
+            handle.progress(++currentWorkDone);
+            ProjectManager.getDefault().saveProject(project);
+            handle.progress(++currentWorkDone);
+            handle.finish();
+        } catch (Exception e) {
+            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Rename", e.getLocalizedMessage()));
+            throw e;
+        }
+    }
+
+    private static void doRenameProjectOld(ProgressHandle handle, Project project, String nueName,
+            Collection<? extends MoveOperationImplementation> operations) throws Exception {
         boolean originalOK = true;
         Project main = OpenProjects.getDefault().getMainProject();
         boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
@@ -382,7 +418,6 @@ public final class DefaultProjectOperationsImplementation {
             int currentWorkDone = 0;
             FileObject projectDirectory = project.getProjectDirectory();
             File projectDirectoryFile = FileUtil.toFile(project.getProjectDirectory());
-            Collection<? extends MoveOperationImplementation> operations = project.getLookup().lookupAll(MoveOperationImplementation.class);
             close(project);
             handle.progress(++currentWorkDone);
             for (MoveOperationImplementation o : operations) {

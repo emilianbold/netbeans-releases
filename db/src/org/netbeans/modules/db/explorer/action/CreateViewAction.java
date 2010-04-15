@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.db.explorer.action;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
@@ -113,6 +115,7 @@ public class CreateViewAction extends BaseAction {
                 SystemAction.get(RefreshAction.class).performAction(new Node[]{node});
             }
         } catch(Exception exc) {
+            Logger.getLogger(CreateViewAction.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
             DbUtilities.reportError(NbBundle.getMessage (CreateViewAction.class, "ERR_UnableToCreateView"), exc.getMessage()); // NOI18N
         }
      }
