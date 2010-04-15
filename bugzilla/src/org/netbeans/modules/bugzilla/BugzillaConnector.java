@@ -70,16 +70,19 @@ public class BugzillaConnector extends BugtrackingConnector {
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return getConnectorName();
     }
 
+    @Override
     public String getTooltip() {
         return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorTooltip");        // NOI18N
     }
     
     @Override
     public Repository createRepository() {
+        Bugzilla.init();
         return new BugzillaRepository();
     }
 
@@ -100,6 +103,7 @@ public class BugzillaConnector extends BugtrackingConnector {
         return issueFinder;
     }
 
+    @Override
     public Lookup getLookup() {
         return Lookups.singleton(Bugzilla.getInstance().getKenaiSupport());
     }
@@ -108,6 +112,5 @@ public class BugzillaConnector extends BugtrackingConnector {
     public void fireRepositoriesChanged() {
         super.fireRepositoriesChanged();
     }
-
 
 }

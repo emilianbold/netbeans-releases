@@ -318,6 +318,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                 }
                 // save snapshot
                 File outFile = File.createTempFile("selfsampler", SamplesOutputStream.FILE_EXT);
+                outFile = FileUtil.normalizeFile(outFile);
                 writeToFile(outFile);
                 // open snapshot
                 FileObject fo = FileUtil.toFileObject(outFile);

@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
-import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 
 /**
  *
@@ -217,11 +216,11 @@ public class TypeFactory {
         } else {
             if(classifier != null) {
                 type._setClassifier(classifier);
-                type.classifierText = classifier.getName();
+                type.setClassifierText(classifier.getName());
             } else if( typeStart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
                 CsmClassifier cls = BuiltinTypes.getBuiltIn(typeStart);
                 type._setClassifier(cls);
-                type.classifierText = cls.getName();
+                type.setClassifierText(cls.getName());
             } else { // tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                 AST tokFirstId;
                 try {
@@ -261,8 +260,8 @@ public class TypeFactory {
                                 if( templateDepth == 0) {
                                     if (namePart.getType() == CPPTokenTypes.SCOPE) {
                                         // We're done here, start filling nested type
-                                        type.classifierText = QualifiedNameCache.getManager().getString(sb);
-                                        type.qname = l.toArray(new CharSequence[l.size()]);
+                                        type.setClassifierText(NameCache.getManager().getString(sb));
+                                        type.setQName(l.toArray(new CharSequence[l.size()]));
                                         type = createType(namePart.getNextSibling(), file, ptrOperator, arrayDepth, TemplateUtils.checkTemplateType(type, scope), scope);
                                         break;
                                     } else {
@@ -293,9 +292,9 @@ public class TypeFactory {
                                 }
                             }
                         }
-                        if (type.classifierText == TypeImpl.NON_INITIALIZED_CLASSIFIER_TEXT) {
-                            type.classifierText = QualifiedNameCache.getManager().getString(sb);
-                            type.qname = l.toArray(new CharSequence[l.size()]);
+                        if (!type.isInitedClassifierText()) {
+                            type.setClassifierText(NameCache.getManager().getString(sb));
+                            type.setQName(l.toArray(new CharSequence[l.size()]));
                         }
                     }
                 } catch( Exception e ) {
@@ -359,74 +358,92 @@ public class TypeFactory {
             this._const = _const;
         }
 
+        @Override
         public CsmClassifier getClassifier() {
             return type.getClassifier();
         }
 
+        @Override
         public CharSequence getClassifierText() {
             return type.getClassifierText();
         }
 
+        @Override
         public boolean isInstantiation() {
             return type.isInstantiation();
         }
 
+        @Override
         public List<CsmSpecializationParameter> getInstantiationParams() {
             return type.getInstantiationParams();
         }
 
+        @Override
         public int getArrayDepth() {
             return arrayDepth;
         }
 
+        @Override
         public boolean isPointer() {
             return pointerDepth > 0;
         }
 
+        @Override
         public int getPointerDepth() {
             return pointerDepth;
         }
 
+        @Override
         public boolean isReference() {
             return reference;
         }
 
+        @Override
         public boolean isConst() {
             return _const;
         }
 
+        @Override
         public boolean isBuiltInBased(boolean resolveTypeChain) {
             return type.isBuiltInBased(resolveTypeChain);
         }
 
+        @Override
         public boolean isTemplateBased() {
             return type.isTemplateBased();
         }
 
+        @Override
         public CharSequence getCanonicalText() {
             return getText();
         }
 
+        @Override
         public CsmFile getContainingFile() {
             return type.getContainingFile();
         }
 
+        @Override
         public int getStartOffset() {
             return type.getStartOffset();
         }
 
+        @Override
         public int getEndOffset() {
             return type.getEndOffset();
         }
 
+        @Override
         public Position getStartPosition() {
             return type.getStartPosition();
         }
 
+        @Override
         public Position getEndPosition() {
             return type.getEndPosition();
         }
 
+        @Override
         public CharSequence getText() {
             return format();
         }

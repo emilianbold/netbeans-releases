@@ -159,9 +159,9 @@ public class NestedType extends TypeImpl {
     @Override
     public CharSequence getClassifierText() {
         if (parentType != null) {
-            return parentType.getClassifierText().toString() + getInstantiationText(parentType) + "::" + classifierText; // NOI18N
+            return parentType.getClassifierText().toString() + getInstantiationText(parentType) + "::" + super.getClassifierText(); // NOI18N
         } else {
-            return "::" + classifierText; // NOI18N
+            return "::" + super.getClassifierText(); // NOI18N
         }
     }
 
