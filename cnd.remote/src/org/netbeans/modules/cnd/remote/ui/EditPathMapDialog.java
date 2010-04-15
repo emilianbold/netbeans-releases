@@ -267,6 +267,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
             enableControls(false, NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Loading"));
             handleProgress(true);
             tableModel = new PathMapTableModel();
+            cache.put(host, tableModel);
             RequestProcessor.getDefault().post(new Runnable() {
 
                 @Override
@@ -277,16 +278,13 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
 
                         @Override
                         public void run() {
-                            if (tblPathMappings != null) {
-                                handleProgress(false);
-                                updatePathMappingsTable(tm, host.getExecutionEnvironment());
-                                enableControls(true, "");
-                            }
+                            handleProgress(false);
+                            updatePathMappingsTable(tm, host.getExecutionEnvironment());
+                            enableControls(true, "");
                         }
                     });
                 }
-            });            
-            cache.put(host, tableModel);
+            });
         }
         updatePathMappingsTable(tableModel, host.getExecutionEnvironment());
     }
