@@ -458,6 +458,9 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
     }
 
     private static StringBuilder dumpHighlight(HighlightsSequence seq, StringBuilder sb) {
+        if (sb == null) {
+            sb = new StringBuilder();
+        }
         sb.append("<"); //NOI18N
         sb.append(seq.getStartOffset());
         sb.append(", "); //NOI18N
