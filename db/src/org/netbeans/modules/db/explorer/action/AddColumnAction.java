@@ -44,7 +44,6 @@ import java.util.logging.Logger;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dlg.AddTableColumnDialog;
-import org.netbeans.modules.db.explorer.dlg.ColumnItem;
 import org.netbeans.modules.db.explorer.node.TableNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -76,6 +75,7 @@ public class AddColumnAction extends BaseAction {
     protected void performAction(final Node[] activatedNodes) {
         RequestProcessor.getDefault().post(
             new Runnable() {
+            @Override
                 public void run() {
                     final TableNode node = activatedNodes[0].getLookup().lookup(TableNode.class);
                     final DatabaseConnection connection = node.getLookup().lookup(DatabaseConnection.class);

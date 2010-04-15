@@ -48,7 +48,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -190,9 +192,10 @@ public class ConnectUsingDriverAction extends BaseAction {
             schemaPanel = new SchemaPanel(this, cinfo);
 
             PropertyChangeListener argumentListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent event) {
                     if (event.getPropertyName().equals("argumentChanged")) { //NOI18N
-                        schemaPanel.setSchemas(new Vector(), ""); //NOI18N
+                        schemaPanel.setSchemas(Collections.EMPTY_LIST, ""); //NOI18N
                         schemaPanel.resetProgress();
                         try {
                             Connection conn = cinfo.getConnection();
@@ -209,6 +212,7 @@ public class ConnectUsingDriverAction extends BaseAction {
             basePanel.addPropertyChangeListener(argumentListener);
 
             final PropertyChangeListener connectionListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent event) {
                     if (event.getPropertyName().equals("connecting")) { // NOI18N
                         fireConnectionStarted();
@@ -268,6 +272,7 @@ public class ConnectUsingDriverAction extends BaseAction {
             };
 
             final ExceptionListener excListener = new ExceptionListener() {
+                @Override
                 public void exceptionOccurred(Exception exc) {
                     if (exc instanceof DDLException) {
                         LOGGER.log(Level.INFO, null, exc.getCause());
@@ -279,12 +284,12 @@ public class ConnectUsingDriverAction extends BaseAction {
                     if (exc instanceof ClassNotFoundException) {
                         message = MessageFormat.format(NbBundle.getMessage (ConnectUsingDriverAction.class, "EXC_ClassNotFound"), exc.getMessage()); //NOI18N
                     } else {
-                        StringBuffer buffer = new StringBuffer();
+                        StringBuilder buffer = new StringBuilder();
                         buffer.append(DbUtilities.formatError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToAddConnection"), exc.getMessage())); // NOI18N
                         if (exc instanceof DDLException && exc.getCause() instanceof SQLException) {
                             SQLException sqlEx = ((SQLException)exc.getCause()).getNextException();
                             while (sqlEx != null) {
-                                buffer.append("\n\n" + sqlEx.getMessage()); // NOI18N
+                                buffer.append("\n\n").append(sqlEx.getMessage()); // NOI18N
                                 sqlEx = sqlEx.getNextException();
                             }
                         }
@@ -299,6 +304,7 @@ public class ConnectUsingDriverAction extends BaseAction {
 
             ActionListener actionListener = new ActionListener() {
                 
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
                         okPressed = true;
@@ -332,6 +338,7 @@ public class ConnectUsingDriverAction extends BaseAction {
             };
 
             ChangeListener changeTabListener = new ChangeListener() {
+                @Override
                 public void stateChanged (ChangeEvent e) {
                     if (((JTabbedPane) e.getSource()).getSelectedComponent().equals(schemaPanel)) {
                         advancedPanel = true;
@@ -406,9 +413,10 @@ public class ConnectUsingDriverAction extends BaseAction {
             return activeTask;
         }
         
+        @Override
         protected boolean retrieveSchemas(SchemaPanel schemaPanel, DatabaseConnection dbcon, String defaultSchema) {
             fireConnectionStep(NbBundle.getMessage (ConnectUsingDriverAction.class, "ConnectionProgress_Schemas")); // NOI18N
-            Vector<String> schemas = new Vector<String>();
+            List<String> schemas = new ArrayList<String>();
             try {
                 DatabaseMetaData dbMetaData = dbcon.getConnection().getMetaData();
                 if (dbMetaData.supportsSchemasInTableDefinitions()) {

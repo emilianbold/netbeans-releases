@@ -54,9 +54,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -304,7 +304,7 @@ public class CreateTableDialog {
                         try {
                             final String tablename = getTableName();
                             final DataModel dataModel = (DataModel)table.getModel();
-                            final Vector<Object> data = dataModel.getData();
+                            final List<ColumnItem> data = dataModel.getData();
 
                             boolean wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
                                 @Override

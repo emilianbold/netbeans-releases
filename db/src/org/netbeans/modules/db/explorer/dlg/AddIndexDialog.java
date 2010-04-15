@@ -65,7 +65,7 @@ public class AddIndexDialog {
     JTextField namefld;
     CheckBoxListener cbxlistener;
     JCheckBox cbx_uq;
-    private static Logger LOGGER = Logger.getLogger(AddIndexDialog.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AddIndexDialog.class.getName());
     
     public AddIndexDialog(Collection columns, final Specification spec, final String tablename, final String schemaName) {
         try {
@@ -173,11 +173,13 @@ public class AddIndexDialog {
             pane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AddIndexDialog.class, "ACS_AddIndexDialogA11yDesc"));  // NOI18N
             
             ActionListener listener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
                         try {
                             result = false;
                             boolean wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
+                                @Override
                                 public Boolean call() throws Exception {
                                     AddIndexDDL ddl = new AddIndexDDL(spec, schemaName, tablename);
 
@@ -211,7 +213,7 @@ public class AddIndexDialog {
             dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setResizable(true);
         } catch (MissingResourceException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.INFO, e.getLocalizedMessage(), e);
         }
     }
 
@@ -245,6 +247,7 @@ public class AddIndexDialog {
             set = new HashSet<String> ();
         }
 
+        @Override
         public void actionPerformed(ActionEvent event)
         {
             JCheckBox cbx = (JCheckBox)event.getSource();

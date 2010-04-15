@@ -73,6 +73,7 @@ import org.openide.windows.WindowManager;
 public class RecreateTableAction extends BaseAction {
     private static final Logger LOGGER = Logger.getLogger(RecreateTableAction.class.getName());
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
 
@@ -87,6 +88,7 @@ public class RecreateTableAction extends BaseAction {
         return enabled;
     }
 
+    @Override
     public void performAction (Node[] activatedNodes) {
 
         final BaseNode node = activatedNodes[0].getLookup().lookup(BaseNode.class);
@@ -96,6 +98,7 @@ public class RecreateTableAction extends BaseAction {
         //final DatabaseNodeInfo info = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
         final java.awt.Component par = WindowManager.getDefault().getMainWindow();
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     //TableListNodeInfo nfo = (TableListNodeInfo) info.getParent(nodename);
@@ -106,10 +109,12 @@ public class RecreateTableAction extends BaseAction {
                     FileChooserBuilder chooser = new FileChooserBuilder(RecreateTableAction.class);
                     chooser.setTitle(NbBundle.getMessage (RecreateTableAction.class, "RecreateTableFileOpenDialogTitle")); //NOI18N
                     chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+                        @Override
                         public boolean accept(File f) {
                             return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
                         }
 
+                        @Override
                         public String getDescription() {
                             return NbBundle.getMessage (RecreateTableAction.class, "GrabTableFileTypeDescription"); //NOI18N
                         }
@@ -237,6 +242,7 @@ public class RecreateTableAction extends BaseAction {
             this.dlg = dlg;
         }
 
+        @Override
         public void run() {
             try {
                 win = new DataViewWindow(connection, dlg.getEditedCommand());
