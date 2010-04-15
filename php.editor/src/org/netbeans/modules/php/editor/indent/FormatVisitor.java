@@ -811,8 +811,9 @@ public class FormatVisitor extends DefaultVisitor {
 	if (node.getBody() != null && (node.getBody() instanceof Block && !((Block) node.getBody()).isCurly())) {
 	    addAllUntilOffset(node.getBody().getStartOffset());
 	    formatTokens.add(new FormatToken.IndentToken(node.getBody().getStartOffset(), options.indentSize));
-	    scan(node.getBody());
+
 	    if (node.getBody().getStatements().size() > 0) {
+                scan(node.getBody());
 		Statement lastOne = node.getBody().getStatements().get(node.getBody().getStatements().size() - 1);
 		while (lastOne.getEndOffset() < formatTokens.get(formatTokens.size() - 1).getOffset()) {
 		    formatTokens.remove(formatTokens.size() - 1);
@@ -820,8 +821,15 @@ public class FormatVisitor extends DefaultVisitor {
 		while (lastOne.getEndOffset() < ts.offset()) {
 		    ts.movePrevious();
 		}
-		formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
 	    }
+            else {
+                while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ENDSWITCH
+                        && ts.offset() < node.getBody().getEndOffset()) {
+                    addFormatToken(formatTokens);
+                }
+                ts.movePrevious();
+            }
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
 	    addAllUntilOffset(node.getEndOffset());
 	} else {
 	    scan(node.getBody());

@@ -118,6 +118,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/switch_stmt.php");
     }
 
+    public void testSwitchStmt01() throws Exception {
+        reformatFileContents("testfiles/formatting/switch_stmt01.php");
+    }
+    
     public void testArrays1() throws Exception {
         reformatFileContents("testfiles/formatting/arrays1.php");
     }
