@@ -95,12 +95,12 @@ public final class JschSupport {
                     }
                 } else if ("channel is not opened.".equals(message)) { // NOI18N
                     log.log(Level.INFO, "JSch exception", ex);
-                    log.log(Level.FINE, "RETRY to open jsch channel in 0.5 seconds [{0}]...", retry); // NOI18N
                     // Looks like in this case an attempt to
                     // just re-attempt to open a channel
                     // will fail - so do disconnect/connect...
                     ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
                     cmAccess.reconnect(env);
+                    log.log(Level.FINE, "RETRY to open jsch channel in 0.5 seconds [{0}]...", retry); // NOI18N
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException ex1) {

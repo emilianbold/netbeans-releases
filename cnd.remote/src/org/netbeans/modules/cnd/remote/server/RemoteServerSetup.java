@@ -39,34 +39,19 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -80,7 +65,6 @@ public class RemoteServerSetup {
     private final Map<String, String> binarySetupMap;
     private final Map<ExecutionEnvironment, List<String>> updateMap;
     private final ExecutionEnvironment executionEnvironment;
-    private final Set<String> checkedDirs = new HashSet<String>();
     private boolean cancelled;
     private boolean failed;
     private String reason;
@@ -150,162 +134,11 @@ public class RemoteServerSetup {
     }
 
     private boolean copyTo(File file, String remoteFilePath) throws InterruptedException, ExecutionException {
-        int slashPos = remoteFilePath.lastIndexOf('/'); //NOI18N
-        if (slashPos >= 0) {
-            String remoteDir = remoteFilePath.substring(0, slashPos);
-            if (!checkedDirs.contains(remoteDir)) {
-                checkedDirs.add(remoteDir);
-                String cmd = String.format("sh -c \"if [ ! -d %s ]; then mkdir -p %s; fi\"", remoteDir, remoteDir); // NOI18N
-                RemoteCommandSupport.run(executionEnvironment, cmd);
-            }
-        }
-        return CommonTasksSupport.uploadFile(file.getAbsolutePath(), executionEnvironment, remoteFilePath, 0775, null).get() == 0;
+        return CommonTasksSupport.uploadFile(file.getAbsolutePath(), executionEnvironment, remoteFilePath, 0775, null, true).get() == 0;
     }
 
     private List<String> getBinaryUpdates() {
-        try {
-            return getBinaryUpdatesByChecksum();
-            // getBinaryUpdatesByExistence(list);
-        } catch (CancellationException ex) {
-            cancelled = true;
-            return Collections.<String>emptyList();
-        } catch (NoSuchAlgorithmException ex) {
-            RemoteUtil.LOGGER.warning(ex.getMessage());
-        } catch (IOException ex) {
-            RemoteUtil.LOGGER.log(Level.WARNING, ex.getMessage(), ex);
-        } catch (CheckSumException ex) {
-            RemoteUtil.LOGGER.warning(ex.getMessage());
-        }
-        // can't check md5 sums => update them all!
         return new ArrayList<String>(binarySetupMap.keySet());
-    }
-
-    private static class CheckSumException extends Exception {
-        public CheckSumException(String message) {
-            super(message);
-        }
-    }
-
-    private String getMd5command(List<String> paths2check) 
-            throws NoSuchAlgorithmException, IOException, CheckSumException {
-
-        StringBuilder sb;
-
-        HostInfo hostIinfo = HostInfoUtils.getHostInfo(executionEnvironment);
-        if (hostIinfo == null) {
-            throw new CheckSumException("Can not get HostInfo for " + executionEnvironment); // NOI18N
-        }
-        final OSFamily oSFamily = hostIinfo.getOSFamily();
-        switch (oSFamily) {
-            case LINUX:
-                sb = new StringBuilder("/usr/bin/md5sum -b"); // NOI18N
-                for (String path : paths2check) {
-                    sb.append(' ');
-                    sb.append(path); // NOI18N
-                }
-                return sb.toString();
-            case SUNOS:
-                sb = new StringBuilder("sh -c \""); // NOI18N
-                for (String path : paths2check) {
-                    sb.append("/usr/bin/digest -a md5 "); // NOI18N
-                    sb.append(path);
-                    sb.append(";"); // NOI18N
-                }
-                sb.append("\""); // NOI18N
-                return sb.toString();
-            default:
-                throw new NoSuchAlgorithmException("Unexpected OS: " + oSFamily); // NOI18N
-        }
-    }
-
-    private List<String> getBinaryUpdatesByChecksum() throws NoSuchAlgorithmException, CancellationException, IOException, CheckSumException {
-        // gather 
-        // 1) file list separated by spaces
-        // 2) an array of paths in the same order
-        List<String> paths2check = new ArrayList<String>(binarySetupMap.size());
-        for (String path : binarySetupMap.keySet()) {
-            paths2check.add(path);
-        }
-        String cmd = getMd5command(paths2check);
-
-        RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, cmd);
-        support.run();
-        RemoteUtil.LOGGER.log(Level.FINE, "RSS.getBinaryUpdatesByChecksum: RC {0}", support.getExitStatus());
-        if (support.isFailed() || support.getExitStatus() != 0) {
-            RemoteUtil.LOGGER.log(Level.FINE, "Running {0} failed on remote host: {1}", new Object[]{cmd, support.getFailureReason()}); //NOI18N
-            return new ArrayList<String>(paths2check);
-        }
-
-        if (support.isCancelled()) {
-            throw new CancellationException();
-        } 
-        String val = support.getOutput();
-        List<String> result = new ArrayList<String>();
-        int idx = 0;
-        String[] lines = val.split("\n"); // NOI18N
-        if (lines[lines.length-1].equals("")) { // the last one is usuall empthy, throw it away
-            String[] corrected = new String[lines.length-1];
-            System.arraycopy(lines, 0, corrected, 0, corrected.length);
-            lines = corrected;
-        }
-        if (paths2check.size() != lines.length) {
-            throw new CheckSumException(String.format("Incorrect line count: %d, should equal to the amount of files to check: %d", lines.length, paths2check.size())); //NOI18N
-        }
-        for (String line : lines) { // NOI18N
-            // in Linux, it has form ﻿34f1cc1cefbded98edae74d9690a7c44 */usr/include/stdio.h
-            if (line.length() > 0) {
-                String[] parts = line.split(" "); // NOI18N
-                if (parts.length == 0) {
-                    throw new CheckSumException("Line shouldn't be empty"); // NOI18N
-                }
-                String path = paths2check.get(idx++);
-                String remoteCheckSum = parts[0];
-                String localCheckSum = getLocalChecksum(path);
-                RemoteUtil.LOGGER.fine(String.format("Checking %s: remote: %s local: %s", path, localCheckSum, remoteCheckSum));
-                if (!remoteCheckSum.equals(localCheckSum)) {
-                    result.add(path);
-                }
-            }
-        }
-        return result;
-    }
-
-    private String getLocalChecksum(String remotePath) throws NoSuchAlgorithmException, FileNotFoundException, IOException {
-        String localFileName = binarySetupMap.get(remotePath);
-        File file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
-        if (file != null && file.exists()) {
-            MessageDigest md5 = MessageDigest.getInstance("MD5"); // NOI18N
-            InputStream is = new BufferedInputStream(new FileInputStream(file));
-            try {
-                byte[] buf = new byte[8192];
-                int read;
-                while ((read = is.read(buf)) != -1) {
-                    md5.update(buf, 0, read);
-                }
-            } finally {
-                is.close();
-            }
-            byte[] checkSum = md5.digest();
-            return toHexString(checkSum);
-        } else {
-            return null;
-        }
-    }
-
-    private static String toHexString(byte[] data) {
-        char[] result = new char[data.length*2];
-        for (int i = 0; i < data.length; i++) {
-            //buf.append(String.format("%x", data[i]));
-            for (int j = 0; j < 2; j++) {
-                int half = (j == 0) ? (data[i] & 0x0F0) >>> 4 : data[i] & 0x0F;
-                if (0 <= half && half <= 9) {
-                    result[2*i+j] = (char) ('0' + half);
-                } else {
-                    result[2*i+j] = (char) ('a' + (half - 10));
-                }
-            }
-        }
-        return new String(result);
     }
 
     /**
