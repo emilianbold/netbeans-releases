@@ -104,6 +104,28 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="MoveOrRenameOperationImplementation">
+            <api name="general"/>
+            <summary>Added <code>MoveOrRenameOperationImplementation</code></summary>
+            <version major="1" minor="31"/>
+            <date day="15" month="4" year="2010"/>
+            <author login="jglick"/>
+            <compatibility addition="yes">
+                <p>
+                    Existing implementations of <code>MoveOperationImplementation</code>
+                    should be revised to implement the extended interface.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    Extended interface giving projects the ability to implement
+                    a simple display name change more safely and efficiently.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project" name="MoveOrRenameOperationImplementation"/>
+            <issue number="183680"/>
+        </change>
+
         <change id="ProjectUtils.getCacheDirectory">
             <api name="general"/>
             <summary>API complement to <code>CacheDirectoryProvider</code></summary>
