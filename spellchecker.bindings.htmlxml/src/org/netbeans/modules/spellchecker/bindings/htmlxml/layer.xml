@@ -120,6 +120,7 @@ made subject to such option by the copyright holder.
         </file>
         <file name="XML">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spellchecker.bindings.htmlxml.Bundle"/>
+            <attr name="Hidden" boolvalue="true"/>
         </file>
     </folder>
 </filesystem>
