@@ -810,7 +810,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
 
     <target name="generate-netbeans-bundles" if="do.build.netbeans">
-        <for-each list="javase java ruby cpp php javafx full javafx-full" separator=" " property="bundle.type">
+        <for-each list="javase java ruby cpp php javafx javafx-full" separator=" " property="bundle.type">
 	     <antcall target="generate-netbeans-${bundle.type}-bundles"/>
         </for-each>
     </target>
@@ -1754,7 +1754,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
     <target name="generate-netbeans-javafx-full-bundle">
 	<property name="bundle.prefix" 
-             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javafx-full-${bundle.platform}"/>
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-${bundle.platform}"/>
 
         <condition property="is.mac.platform" value="true" else="false">
             <contains string="${bundle.platform}" substring="macosx"/>
