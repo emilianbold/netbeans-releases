@@ -101,6 +101,7 @@ public final class JschSupport {
                     // will fail - so do disconnect/connect...
                     ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
                     cmAccess.reconnect(env);
+                    log.log(Level.FINE, "RETRY to open jsch channel in 0.5 seconds [{0}]...", retry); // NOI18N
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException ex1) {
