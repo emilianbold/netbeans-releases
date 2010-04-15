@@ -76,16 +76,21 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
             public void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                     List<PathResourceImplementation> newValues = getPath();
+                    List<PathResourceImplementation> oldvalue;
+                    boolean hasChanged;
                     synchronized (AbstractProjectClassPathImpl.this) {
-                        List<PathResourceImplementation> oldvalue = resources;
+                        oldvalue = resources;
+                        hasChanged = hasChanged(oldvalue, newValues);
 //                        System.out.println("checking=" + AbstractProjectClassPathImpl.this.getClass());
-                        if (hasChanged(oldvalue, newValues)) {
+                        if (hasChanged) {
                             resources = newValues;
 //                            System.out.println("old=" + oldvalue);
 //                            System.out.println("new=" + newValues);
 //                            System.out.println("firing change=" + AbstractProjectClassPathImpl.this.getClass());
-                            support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, oldvalue, resources);
                         }
+                    }
+                    if (hasChanged) {
+                        support.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, oldvalue, newValues);
                     }
                 }
             }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,40 +34,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.pbuild;
+package org.netbeans.modules.remote.ui;
 
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.openide.util.NbBundle;
+
 /**
  *
- * @author Vladimir Kvashin
+ * @author Alexey Vladykin
  */
-public class RemoteBuildSamplesTest extends RemoteBuildTestBase {
+/*package*/ final class AddToolchainAction extends AbstractAction {
 
-    public RemoteBuildSamplesTest(String testName) {
-        super(testName);
+    private final ExecutionEnvironment execEnv;
+
+    public AddToolchainAction(ExecutionEnvironment execEnv) {
+        super(NbBundle.getMessage(AddToolchainAction.class, "AddToolchainMenuItem")); // NOI18N
+        this.execEnv = execEnv;
     }
 
-    public RemoteBuildSamplesTest(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
-    }
-
-    @ForAllEnvironments
-    public void testBuildSample_Rfs_Gnu_Arguments_Once() throws Exception {        
-        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_01", 1);
-    }
-
-    @ForAllEnvironments
-    public void testBuildSample_Rfs_Gnu_Arguments_Multy() throws Exception {
-        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_02", 3, getSampleBuildTimeout(), getSampleBuildTimeout()/3);
-    }
-
-    public static Test suite() {
-        return new RemoteDevelopmentTestSuite(RemoteBuildSamplesTest.class);
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        ToolsPanelSupport.invokeNewCompilerSetWizard(execEnv);
     }
 }

@@ -241,7 +241,7 @@ public class ProjectsRootNode extends AbstractNode {
     // However project rename is currently disabled so it is not a big deal
     static class ProjectChildren extends Children.Keys<ProjectChildren.Pair> implements ChangeListener, PropertyChangeListener {
 
-        private static final RequestProcessor RP = new RequestProcessor(ProjectChildren.class);
+        static final RequestProcessor RP = new RequestProcessor(ProjectChildren.class);
         
         private java.util.Map <Sources,Reference<Project>> sources2projects = new WeakHashMap<Sources,Reference<Project>>();
         

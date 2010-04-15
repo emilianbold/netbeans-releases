@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,47 +34,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote;
+package org.netbeans.modules.cnd.remote.pbuild;
 
-import java.util.Collection;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
-
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 /**
  *
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
-public class RemoteDevelopmentTestSuite extends CndBaseTestSuite {
+public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
 
-    public static final String PLATFORMS_SECTION = "remote.platforms";
-    public static final String DEFAULT_SECTION = "remote";
-
-    public RemoteDevelopmentTestSuite(Class testClass) {
-        this(testClass.getName(), testClass);
+    public RemoteBuildSamplesTestCase(String testName) {
+        super(testName);
     }
 
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RemoteDevelopmentTestSuite(String name, Test... tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
+    public RemoteBuildSamplesTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
     }
 
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RemoteDevelopmentTestSuite(String name, Collection<Test> tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
+    @ForAllEnvironments
+    public void testBuildSample_Rfs_Gnu_Arguments_Once() throws Exception {        
+        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_01", 1);
     }
 
-    private RemoteDevelopmentTestSuite(String name, Class... testClasses) {
-        super(name, PLATFORMS_SECTION, testClasses);
+    @ForAllEnvironments
+    public void testBuildSample_Rfs_Gnu_Arguments_Multy() throws Exception {
+        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_02", 3, getSampleBuildTimeout(), getSampleBuildTimeout()/3);
+    }
+
+    public static Test suite() {
+        return new RemoteDevelopmentTest(RemoteBuildSamplesTestCase.class);
     }
 }

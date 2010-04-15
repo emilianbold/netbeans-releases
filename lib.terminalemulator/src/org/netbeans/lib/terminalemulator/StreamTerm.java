@@ -51,6 +51,7 @@ import java.io.PipedReader;
 import java.io.PipedWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -403,10 +404,26 @@ public class StreamTerm extends Term {
         }
 
         @Override
-        public void write(char[] cbuf, int off, int len) throws IOException {
+        public void write(final char[] cbuf, final int off, final int len) throws IOException {
             if (closed)
                 throw new IOException();
-            putChars(cbuf, off, len);
+
+	    if (SwingUtilities.isEventDispatchThread()) {
+		putChars(cbuf, off, len);
+	    } else {
+		try {
+		    SwingUtilities.invokeAndWait(new Runnable() {
+			@Override
+			public void run() {
+			    putChars(cbuf, off, len);
+			}
+		    });
+		} catch (InterruptedException ex) {
+		    Logger.getLogger(StreamTerm.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (InvocationTargetException ex) {
+		    Logger.getLogger(StreamTerm.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	    }
         }
 
         @Override

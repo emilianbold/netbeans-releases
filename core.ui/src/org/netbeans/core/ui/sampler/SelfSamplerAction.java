@@ -215,6 +215,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
         private long samples, laststamp;
         private double max, min = Long.MAX_VALUE, sum, devSquaresSum;
         private volatile boolean stopped;
+        private volatile boolean running;
 
         static {
             try {
@@ -244,7 +245,10 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
         }
 
         @Override
-        public void run() {
+        public synchronized void run() {
+            assert !running;
+            running = true;
+
             final ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 
             out = new ByteArrayOutputStream(64 * 1024);
@@ -280,9 +284,11 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
         @Override
         public synchronized void actionPerformed(ActionEvent e) {
             try {
+                assert running;
+                assert !stopped;
                 stopped = true;
                 timer.cancel();
-                if ("cancel".equals(e.getActionCommand())) {    // NOI18N
+                if ("cancel".equals(e.getActionCommand()) || samples < 1) {    // NOI18N
                     return;
                 }
                 double average = sum / samples;

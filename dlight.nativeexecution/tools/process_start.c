@@ -59,6 +59,11 @@
 
 static pid_t pty_fork();
 
+#ifdef __CYGWIN__
+//added for compatibility with cygwin 1.5
+#define WCONTINUED 0
+#endif
+
 int main(int argc, char* argv[]) {
     pid_t pid, w;
     int status;
@@ -176,4 +181,3 @@ int main(int argc, char* argv[]) {
 
     exit(EXIT_FAILURE);
 }
-

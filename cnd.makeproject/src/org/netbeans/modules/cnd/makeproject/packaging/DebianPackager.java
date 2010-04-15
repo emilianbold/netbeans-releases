@@ -59,18 +59,22 @@ public class DebianPackager implements PackagerDescriptor {
 
     public static final String PACKAGER_NAME = "Debian"; // NOI18N
 
+    @Override
     public String getName() {
         return PACKAGER_NAME; // NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         return getString("Debian");
     }
 
+    @Override
     public boolean hasInfoList() {
         return true;
     }
 
+    @Override
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         String defArch;
         if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_SOLARIS_INTEL) {
@@ -90,6 +94,7 @@ public class DebianPackager implements PackagerDescriptor {
         return infoList;
     }
 
+    @Override
     public List<String> getOptionalInfoList() {
         List<String> entryComboBox = new ArrayList<String>();
 
@@ -103,40 +108,49 @@ public class DebianPackager implements PackagerDescriptor {
         return entryComboBox;
     }
 
+    @Override
     public String getDefaultOptions() {
         return ""; // NOI18N
     }
 
+    @Override
     public String getDefaultTool() {
         return "dpkg-deb"; // NOI18N
     }
 
+    @Override
     public boolean isOutputAFolder() {
         return false;
     }
 
+    @Override
     public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return packagingConfiguration.getOutputName();
     }
 
+    @Override
     public String getOutputFileSuffix() {
         return "deb";  // NOI18N
     }
 
+    @Override
     public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return "/usr"; // NOI18N
     }
 
+    @Override
     public boolean supportsGroupAndOwner() {
         return true;
     }
 
+    @Override
     public ShellSciptWriter getShellFileWriter() {
         return new ScriptWriter();
     }
 
     public static class ScriptWriter implements ShellSciptWriter {
 
+        @Override
         public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException {
             writePackagingScriptBodyDebian(bw, makeConfiguration);
         }
@@ -151,7 +165,7 @@ public class DebianPackager implements PackagerDescriptor {
                 if (elem.getType() == PackagerFileElement.FileType.FILE) {
                     String toDir = CndPathUtilitities.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
                     if (toDir != null && toDir.length() >= 0) {
-                        bw.write("makeDirectory " + "${NBTMPDIR}/" + toDir + "\n"); // NOI18N
+                        bw.write("makeDirectory \"" + "${NBTMPDIR}/" + toDir + "\"\n"); // NOI18N
                     }
                     bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${NBTMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {

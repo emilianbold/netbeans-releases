@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -261,11 +263,21 @@ public class HostUpdates {
                 NbBundle.getMessage(getClass(), "RemoteUpdatesProgress_Title", RemoteUtil.getDisplayName(env)));
         handle.start();
         handle.switchToDeterminate(infos.size());
+
         int cnt = 0;
+        Set<File> refreshDirs = new HashSet<File>();
         for (FileDownloadInfo info : infos) {
             handle.progress(NbBundle.getMessage(getClass(), "RemoteUpdatesProgress_Message", info.getLocalFile().getName()), cnt++);
             info.download();
+            if (info.getState() == FileDownloadInfo.State.DONE) {
+                // Refreshing the file itself does not work.
+                // Need to refresh containing directory.
+                refreshDirs.add(info.getLocalFile().getParentFile());
+            }
         }
+        // Bug 183353 - Files tab is not updated when downloading completes
+        FileUtil.refreshFor(refreshDirs.toArray(new File[refreshDirs.size()]));
+
         handle.finish();
 
         final AtomicReference<Notification> notRef = new AtomicReference<Notification>();

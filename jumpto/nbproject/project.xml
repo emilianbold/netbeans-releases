@@ -215,6 +215,7 @@ Contributor(s): Andrei Badea
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
+                <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.csl.api</friend>
                 <friend>org.netbeans.modules.gsf</friend>
                 <friend>org.netbeans.modules.java.sourceui</friend>

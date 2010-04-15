@@ -267,7 +267,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                 Collection<VariableTree> vals = vars.values();
                                 for (VariableTree var : varList) {
                                     if (!vals.contains(var)) {
-                                        int start = (int) sp.getStartPosition(cInfo.getCompilationUnit(), var.getType()) - caretOffset;
+                                        int start = (int) sp.getStartPosition(cInfo.getCompilationUnit(), var) - caretOffset;
                                         int end = (int) sp.getEndPosition(cInfo.getCompilationUnit(), var.getType()) - caretOffset;
                                         selectionText.delete(start, end);
                                     }

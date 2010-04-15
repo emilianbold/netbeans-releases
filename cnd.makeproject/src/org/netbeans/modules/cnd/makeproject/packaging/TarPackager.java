@@ -57,46 +57,57 @@ public class TarPackager implements PackagerDescriptor {
 
     public static final String PACKAGER_NAME = "Tar"; // NOI18N
 
+    @Override
     public String getName() {
         return PACKAGER_NAME;
     }
 
+    @Override
     public String getDisplayName() {
         return getString("Tar");
     }
 
+    @Override
     public boolean hasInfoList() {
         return false;
     }
 
+    @Override
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return null;
     }
 
+    @Override
     public List<String> getOptionalInfoList() {
         return null;
     }
 
+    @Override
     public String getDefaultOptions() {
         return "-v"; // NOI18N
     }
 
+    @Override
     public String getDefaultTool() {
         return "tar"; // NOI18N
     }
 
+    @Override
     public boolean isOutputAFolder() {
         return false;
     }
 
+    @Override
     public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return packagingConfiguration.getOutputName();
     }
 
+    @Override
     public String getOutputFileSuffix() {
         return "tar";  // NOI18N
     }
 
+    @Override
     public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         String topDir = CndPathUtilitities.getBaseName(packagingConfiguration.getOutputValue());
 
@@ -107,16 +118,19 @@ public class TarPackager implements PackagerDescriptor {
         return topDir;
     }
 
+    @Override
     public boolean supportsGroupAndOwner() {
         return false;
     }
 
+    @Override
     public ShellSciptWriter getShellFileWriter() {
         return new ScriptWriter();
     }
 
     public static class ScriptWriter implements ShellSciptWriter {
 
+        @Override
         public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException {
             writePackagingScriptBodyTarZip(bw, makeConfiguration);
         }
@@ -133,7 +147,7 @@ public class TarPackager implements PackagerDescriptor {
                 if (elem.getType() == PackagerFileElement.FileType.FILE) {
                     String toDir = CndPathUtilitities.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
                     if (toDir != null && toDir.length() >= 0) {
-                        bw.write("makeDirectory " + "${NBTMPDIR}/" + toDir + "\n"); // NOI18N
+                        bw.write("makeDirectory \"" + "${NBTMPDIR}/" + toDir + "\"\n"); // NOI18N
                     }
                     bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${NBTMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {

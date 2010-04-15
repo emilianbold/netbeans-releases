@@ -255,7 +255,7 @@ import org.openide.util.NbBundle;
                 long unzipStart = System.currentTimeMillis();
 
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-                pb.setCommandLine("unzip -o " + remoteFile + " > /dev/null"); // NOI18N
+                pb.setCommandLine("unzip -oqq " + remoteFile + " > /dev/null"); // NOI18N
                 //pb.setExecutable("unzip");
                 //pb.setArguments("-o", remoteFile);
                 pb.setWorkingDirectory(remoteRoot);
@@ -288,6 +288,8 @@ import org.openide.util.NbBundle;
             // NB: we aren't waining for completion,
             // since the name of the file made my File.createTempFile is new each time
             filter.flush();
+        } catch (IOException ex) {
+            throw ex;
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
