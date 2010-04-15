@@ -460,8 +460,12 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                     Collection<String> targetFileElements = usedNames.get(selectorType).get(targetStylesheet);
                     //the call to getFirstFreeSelectorName also updates the given collections -
                     //adds the new free element name into all of them
+
+                    //replace the namespace postfix by something allowed in css selector name
+                    String tagName = si.getTag().replaceAll(":", "_"); //NOI18N
+
                     String generatedSelectorName = getFirstFreeSelectorName(
-                            selectorType, si.getTag(), editedFileElements, targetFileElements);
+                            selectorType, tagName, editedFileElements, targetFileElements);
 
                     //delete the inlined style - attribute name, equal sign, whitespaces and the value
                     //and replace with id selector reference
