@@ -217,7 +217,6 @@ public class ToolchainListRootNode extends AbstractNode {
             return tool.getDisplayName() + "  <font color='!controlShadow'> [" + tool.getPath() + ']'; //NOI18N
         }
 
-
         @Override
         public Image getIcon(int type) {
             return ImageUtilities.loadImage("org/netbeans/modules/remote/ui/tool.png"); // NOI18N
@@ -226,6 +225,11 @@ public class ToolchainListRootNode extends AbstractNode {
         @Override
         public String getShortDescription() {
             return tool.getPath();
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
         }
     }
 
