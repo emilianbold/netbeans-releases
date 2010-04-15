@@ -570,6 +570,7 @@ public class JavacParser extends Parser {
             return currentPhase;
         } catch (CancelAbort ca) {
             currentPhase = Phase.MODIFIED;
+            invalidate();
         } catch (Abort abort) {
             parserError = currentPhase;
         } catch (IOException ex) {
