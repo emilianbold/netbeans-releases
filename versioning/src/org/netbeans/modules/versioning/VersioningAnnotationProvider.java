@@ -446,6 +446,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                 return false;
             }
         };
+        private final Object writeLock = new Object();
         private final WeakHashMap<FileObject, Set<ItemKey<T, KEY>>> index = new WeakHashMap<FileObject, Set<ItemKey <T, KEY>>>(CACHE_SIZE);
         private final LinkedHashSet<ItemKey<T, KEY>> filesToAnnotate;
         private final RequestProcessor.Task annotationRefreshTask;
@@ -497,7 +498,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
          * @return true if the event should be fired - it means the old cached value differs from the new one
          */
         private boolean setValue (ItemKey<T, KEY> key, T value) {
-            synchronized (cachedValues) {
+            synchronized (writeLock) {
                 if (allCleared) {
                     return false;
                 }
@@ -507,7 +508,9 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                         return false;
                     }
                 }
-                cachedValues.put(key, new Item(value));
+                synchronized (cachedValues) {
+                    cachedValues.put(key, new Item(value));
+                }
                 // reference to the key must be added to index for every file in the set and every parent
                 // so the key can be quickly found when refresh annotations event comes
                 for (FileObject fo : files) {
@@ -530,11 +533,14 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         }
 
         private void removeOldValues () {
+            assert Thread.holdsLock(writeLock);
             for (Iterator<Map.Entry<ItemKey<T, KEY>, Item<T>>> it = cachedValues.entrySet().iterator(); it.hasNext(); ) {
                 Map.Entry<ItemKey<T, KEY>, Item<T>> e = it.next();
                 if (!e.getValue().isValid()) {
                     removeFromIndex(e.getKey());
-                    it.remove();
+                    synchronized (cachedValues) {
+                        it.remove();
+                    }
                 } else {
                     // do not search on, next entries are newer
                     break;
@@ -622,13 +628,15 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         }
 
         private void removeAllFor (FileObject fo) {
-            synchronized (cachedValues) {
+            synchronized (writeLock) {
                 refreshedFiles.add(fo);
                 LOG.log(Level.FINER, "{0}.removeAllFor(): {1}", new Object[] {type, fo.getPath()}); //NOI18N
                 Set<ItemKey<T, KEY>> keys = index.get(fo);
                 if (keys != null) {
                     for (ItemKey<T, KEY> key : keys) {
-                        cachedValues.remove(key);
+                        synchronized (cachedValues) {
+                            cachedValues.remove(key);
+                        }
                     }
                     ItemKey<T, KEY>[] keysArray = keys.toArray(new ItemKey[keys.size()]);
                     for (ItemKey<T, KEY> key : keysArray) {
@@ -639,6 +647,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         }
 
         private void removeFromIndex (ItemKey<T, KEY> key) {
+            assert Thread.holdsLock(writeLock);
             Set<? extends FileObject> files = key.getFiles();
             Set<FileObject> removedFor = new HashSet<FileObject>();
             // remove all references for every file and it's parents from the index
@@ -658,9 +667,11 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         }
 
         private void removeAll() {
-            synchronized (cachedValues) {
+            synchronized (writeLock) {
                 allCleared = true;
-                cachedValues.clear();
+                synchronized (cachedValues) {
+                    cachedValues.clear();
+                }
                 index.clear();
             }
         }
@@ -695,7 +706,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         }
 
         private void clearEvents() {
-            synchronized (cachedValues) {
+            synchronized (writeLock) {
                 refreshedFiles.clear();
                 allCleared = false;
             }
