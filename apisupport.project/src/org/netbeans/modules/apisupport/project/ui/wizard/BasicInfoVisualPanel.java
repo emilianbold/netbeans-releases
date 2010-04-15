@@ -98,6 +98,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel
         initPlatformCombo(suitePlatformValue);
         initPanels();
         setComponentsVisibility();
+        mainProject.setSelected(!isLibraryWizard() && ModuleUISettings.getDefault().getSetAsMain());
         switch (data.getWizardType()) {
             case SUITE:
             case APPLICATION:
@@ -210,8 +211,6 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel
         manageSuitePlatform.setVisible(isSuiteWizard);
         mainProject.setVisible(!isLibraryWizard);
         
-        mainProject.setSelected(!isLibraryWizard);
-        
         if (typeChooserPanel != null){
             typeChooserPanel.setComponentsVisibility(isSuiteComponentWizard, isLibraryWizard);
         }
@@ -303,6 +302,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel
         getData().setProjectLocation(getLocationValue());
         getData().setProjectFolder(folderValue.getText());
         getData().setMainProject(mainProject.isSelected());
+        ModuleUISettings.getDefault().setSetAsMain(mainProject.isSelected());
         getData().setNetBeansOrg(isNetBeansOrgFolder());
         getData().setStandalone(ModuleTypePanel.isStandalone(getSettings()));
         getData().setSuiteRoot(ModuleTypePanel.getSuiteRoot(getSettings()));
@@ -567,7 +567,6 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(infoPanel, gridBagConstraints);
 
-        mainProject.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(mainProject, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_SetAsMainProject")); // NOI18N
         mainProject.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
