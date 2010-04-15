@@ -50,9 +50,11 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -81,6 +83,7 @@ public class Hacks {
      */
     static void keepCurrentProjectNameUpdated() {
         final TopComponent.Registry r = TopComponent.getRegistry();
+        final AtomicReference<PropertyChangeListener> displayNameListener = new AtomicReference<PropertyChangeListener>();
         final RequestProcessor.Task task = RP.create(new Runnable() {
             String lastKnownTitle; // #134802
             public void run() {
@@ -111,26 +114,24 @@ public class Hacks {
                 final String pname;
                 if (projects.size() == 1) {
                     Project p = projects.iterator().next();
-                    pname = ProjectUtils.getInformation(p).getDisplayName();
+                    ProjectInformation info = ProjectUtils.getInformation(p);
+                    info.removePropertyChangeListener(displayNameListener.get());
+                    info.addPropertyChangeListener(displayNameListener.get());
+                    pname = info.getDisplayName();
                     assert pname != null : p;
                 } else if (projects.isEmpty()) {
                     pname = null;
                 } else {
                     pname = NbBundle.getMessage(Hacks.class, "LBL_MultipleProjects");
                 }
-                Project p = OpenProjectList.getDefault().getMainProject();
-                final String mname = p != null? 
-                    ProjectUtils.getInformation(p).getDisplayName():
-                    NbBundle.getMessage(Hacks.class, "LBL_NoMainProject");
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         // depends on exported keys in core/windows
                         String format = NbBundle.getBundle("org.netbeans.core.windows.view.ui.Bundle").
                                 getString(pname != null ? "CTL_MainWindow_Title" : "CTL_MainWindow_Title_No_Project");
                         String title = pname != null?
-                            // Note that currently mname is ignored.
-                            MessageFormat.format(format, BUILD_NUMBER, pname, mname) :
-                            MessageFormat.format(format, BUILD_NUMBER, mname);
+                            MessageFormat.format(format, BUILD_NUMBER, pname) :
+                            MessageFormat.format(format, BUILD_NUMBER);
                         Frame mainWindow = WindowManager.getDefault().getMainWindow();
                         if (lastKnownTitle == null || lastKnownTitle.equals(mainWindow.getTitle())) {
                             lastKnownTitle = title;
@@ -138,6 +139,14 @@ public class Hacks {
                         }
                     }
                 });
+            }
+        });
+        displayNameListener.set(new PropertyChangeListener() {
+            public @Override void propertyChange(PropertyChangeEvent ev) {
+                String prop = ev.getPropertyName();
+                if (prop == null || prop.equals(ProjectInformation.PROP_DISPLAY_NAME)) {
+                    task.schedule(0);
+                }
             }
         });
         r.addPropertyChangeListener(new PropertyChangeListener() {
