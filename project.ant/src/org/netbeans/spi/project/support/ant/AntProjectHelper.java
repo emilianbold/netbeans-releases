@@ -848,7 +848,8 @@ public final class AntProjectHelper {
                     path = PRIVATE_XML_PATH;
                     privateXmlValid = false;
                 } else {
-                    throw new AssertionError("Unexpected file change in " + f); // NOI18N
+                    LOG.log(Level.WARNING, "#184132: unexpected file change in {0}; possibly deleted project?", f);
+                    return;
                 }
             }
             fireExternalChange(path);
