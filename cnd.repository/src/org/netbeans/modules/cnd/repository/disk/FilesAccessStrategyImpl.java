@@ -74,7 +74,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
 
     private static final class Lock {}
     private final Object cacheLock = new Lock();
-    private RepositoryCacheMap<String, ConcurrentFileRWAccess> nameToFileCache;
+    private final RepositoryCacheMap<String, ConcurrentFileRWAccess> nameToFileCache;
     
     private static final int OPEN_FILES_LIMIT = Integer.getInteger("cnd.repository.files.cache", 20); // NOI18N
     
@@ -97,10 +97,11 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         }
     }
     
-    public static final FilesAccessStrategy getInstance() {
+    public static FilesAccessStrategy getInstance() {
         return instance;
     }
 
+    @Override
     public Persistent read(Key key) throws IOException {
         readCnt++; // always increment counters
         if( Stats.multyFileStatistics ) {
@@ -123,6 +124,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         return null;
     }
 
+    @Override
     public void write(Key key, Persistent object) throws IOException {
         writeCnt++; // always increment counters
         if( Stats.multyFileStatistics ) {
@@ -231,6 +233,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         }
     }    
     
+    @Override
     public void remove(Key id) throws IOException{
         
         String fileName = resolveFileName(id);
@@ -258,8 +261,10 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         
     }
     
+    @Override
     public void closeUnit(final String unitName) throws IOException {
         Filter<ConcurrentFileRWAccess> filter = new Filter<ConcurrentFileRWAccess>() {
+            @Override
             public boolean accept(ConcurrentFileRWAccess value) {
                 return value.unit.equals(unitName);
             }

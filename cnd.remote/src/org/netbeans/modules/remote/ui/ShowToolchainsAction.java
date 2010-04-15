@@ -64,7 +64,7 @@ public class ShowToolchainsAction extends AbstractAction {
     private final CompilerSet compilerSet;
 
     public ShowToolchainsAction(ExecutionEnvironment env, CompilerSet compilerSet) {
-        super(NbBundle.getMessage(ToolchainListRootNode.class, "PropertirsMenuItem"));
+        super(NbBundle.getMessage(ToolchainListRootNode.class, "PropertiesMenuItem"));
         this.env = env;
         this.compilerSet = compilerSet;
     }
