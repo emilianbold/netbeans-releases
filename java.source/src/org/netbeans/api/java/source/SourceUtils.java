@@ -932,11 +932,12 @@ out:                    for (URL e : roots) {
             js.runUserActionTask(new Task<CompilationController>() {
 
                 public void run(CompilationController control) throws Exception {
-                    TypeElement type = ((JavacElements)control.getElements()).getTypeElementByBinaryName(qualifiedName);
+                    final JavacElements elms = (JavacElements)control.getElements();
+                    TypeElement type = elms.getTypeElementByBinaryName(qualifiedName);
                     if (type == null) {
                         return;
                     }
-                    List<? extends ExecutableElement> methods = ElementFilter.methodsIn(type.getEnclosedElements());
+                    List<? extends ExecutableElement> methods = ElementFilter.methodsIn(elms.getAllMembers(type));
                     for (ExecutableElement method : methods) {
                         if (SourceUtils.isMainMethod(method)) {
                             result[0] = true;
