@@ -376,4 +376,11 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         return false;
     }
 
+    /**
+     * @return the indexedElement
+     */
+    public ElementHandle getIndexedElement() {
+        return indexedElement;
+    }
+
 }
