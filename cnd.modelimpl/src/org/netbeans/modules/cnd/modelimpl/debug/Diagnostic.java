@@ -88,7 +88,7 @@ public class Diagnostic {
     }
 
     public static class ProjectStat {
-        private static final int SLOW_FILE_NUMBER = Math.max(1, Integer.getInteger("cnd.modelimpl.slow.file.number", 5));
+        private static final int SLOW_FILE_NUMBER = Math.max(1, Integer.getInteger("cnd.modelimpl.slow.file.number", 5)); // NOI18N
         private final ConcurrentMap<CsmUID<CsmProject>, SlowFilesCollection> projectStats = new ConcurrentHashMap<CsmUID<CsmProject>, SlowFilesCollection>();
         public void addParseFileStatistics(ProjectBase project, FileImpl file, long parseTime) {
             if (project != null && !project.isArtificial()) {

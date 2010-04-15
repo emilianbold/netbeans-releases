@@ -62,15 +62,16 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
     public FilesAccessStrategyUnitClosureTest(String testName) {
         super(testName);
     }
+
+    private static final boolean TRACE = true;
     
     public void testClosure() throws Exception {
         
         final FilesAccessStrategyImpl strategy = (FilesAccessStrategyImpl) FilesAccessStrategyImpl.getInstance();
                 
-        Collection<String> setZero = strategy.testGetCacheFileNames();
-        assertTrue("Cache should be empty at that time", setZero.isEmpty());
+        assertTrue("Cache should be empty at that time", getFileNames(strategy).isEmpty());
         
-	final TraceModelBase traceModel = new  TraceModelBase(true);
+	final TraceModelBase traceModel = new TraceModelBase(true);
 	traceModel.setUseSysPredefined(true);
         
         long waitAfterParseTimeout = 20000;
@@ -80,20 +81,23 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
         waitCondition(new Condition("Cache should not be empty at that time") {
             @Override
             boolean check() {
-                return ! strategy.testGetCacheFileNames().isEmpty();
+                return !getFileNames(strategy).isEmpty();
             }
         }, waitAfterParseTimeout);
         
         // Close the project, make sure cache IS empty
         traceModel.getModel().closeProjectBase(projectRoot1);
-        assertTrue("Cache should be empty after project closure", strategy.testGetCacheFileNames().isEmpty());
+        if (TRACE) {
+            System.out.println("Closed project " + projectRoot1.getName());
+        }
+        assertTrue("Cache should be empty after project closure", getFileNames(strategy).isEmpty());
 
         // Open the 2-nd project, make sure cache is NOT empty
         ProjectBase projectRoot2 = createProject(traceModel, "project-2", "file2.cpp", "int foo2");
         waitCondition(new Condition("Cache should not be empty at that time") {
             @Override
             boolean check() {
-                return ! strategy.testGetCacheFileNames().isEmpty();
+                return !getFileNames(strategy).isEmpty();
             }
         }, waitAfterParseTimeout);
         final Collection<String> setTwo = strategy.testGetCacheFileNames();
@@ -103,14 +107,17 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
         waitCondition(new Condition("Cache should change at that time") {
             @Override
             boolean check() {
-                Collection<String> newKeys = strategy.testGetCacheFileNames();
+                Collection<String> newKeys = getFileNames(strategy);
                 return !newKeys.equals(setTwo) && newKeys.containsAll(setTwo);
             }
         }, waitAfterParseTimeout);
         
         // Close the 3-rd project, make sure cache is the same as befor it was open
         traceModel.getModel().closeProjectBase(projectRoot3);
-        assertTrue("The set of the cached files should be the same as before", strategy.testGetCacheFileNames().equals(setTwo));
+        if (TRACE) {
+            System.out.println("Closed project " + projectRoot3.getName());
+        }
+        assertTrue("The set of the cached files should be the same as before", getFileNames(strategy).equals(setTwo));
     }
     
     private ProjectBase createProject(TraceModelBase traceModel, String projectName, String fileName, String fileContent) throws Exception {
@@ -120,7 +127,18 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
         writeFile(sourceFile, fileContent);
         ProjectBase project = createExtraProject(traceModel, projectRoot, projectName);
         project.waitParse();
+        if (TRACE) {
+            System.out.println("Created project " + projectName);
+        }
         return project;
+    }
+
+    private Collection<String> getFileNames(FilesAccessStrategyImpl strategy) {
+        Collection<String> res = strategy.testGetCacheFileNames();
+        if (TRACE) {
+            System.out.println(res);
+        }
+        return res;
     }
 
     private abstract class Condition {
@@ -132,10 +150,14 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
     }
 
     private void waitCondition(Condition condition, long timeout) throws Exception {
-        long time = System.currentTimeMillis();
-        while (!condition.check() && System.currentTimeMillis() < time + timeout) {
-            sleep(100);
+        long now = System.currentTimeMillis();
+        long end = now + timeout;
+        while (now < end && !condition.check()) {
+            sleep(1000);
+            now = System.currentTimeMillis();
         }
-        assertTrue(condition.failureMessage, condition.check());
+        if (now >= end) {
+            fail(condition.failureMessage);
+        }
     }
 }
