@@ -796,8 +796,13 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
         public void run() {
             computeDiff();
-            repaint();
-            markProvider.refresh();
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    repaint();
+                    markProvider.refresh();
+                }
+            });
         }
 
         private void computeDiff() {
