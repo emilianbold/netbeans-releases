@@ -52,6 +52,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
+import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
@@ -81,6 +82,9 @@ public class Bugzilla {
     private BugzillaConnector connector;
 
     private Bugzilla() {
+
+        BugtrackingRuntime.init();
+
         ModuleLifecycleManager.instantiated = true;
         bcp = new BugzillaCorePlugin();
         try {
@@ -108,6 +112,10 @@ public class Bugzilla {
             instance = new Bugzilla();
         }
         return instance;
+    }
+
+    static synchronized void init() {
+        getInstance();
     }
 
     void shutdown() {

@@ -374,7 +374,7 @@ class DiskMapTurboProvider implements TurboProvider {
                 }
             }
         }
-        index.add(dir, set);
+        index.add(dir, newSet);
         conflictedIndex.add(dir, conflictedSet);
     }
 
