@@ -57,46 +57,57 @@ public class ZipPackager implements PackagerDescriptor {
 
     public static final String PACKAGER_NAME = "Zip"; // NOI18N
 
+    @Override
     public String getName() {
         return PACKAGER_NAME;
     }
 
+    @Override
     public String getDisplayName() {
         return getString("Zip");
     }
 
+    @Override
     public boolean hasInfoList() {
         return false;
     }
 
+    @Override
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return null;
     }
 
+    @Override
     public List<String> getOptionalInfoList() {
         return null;
     }
 
+    @Override
     public String getDefaultOptions() {
         return ""; // NOI18N
     }
 
+    @Override
     public String getDefaultTool() {
         return "zip"; // NOI18N
     }
 
+    @Override
     public boolean isOutputAFolder() {
         return false;
     }
 
+    @Override
     public String getOutputFileName(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         return packagingConfiguration.getOutputName();
     }
 
+    @Override
     public String getOutputFileSuffix() {
         return "zip";  // NOI18N
     }
 
+    @Override
     public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         String topDir = CndPathUtilitities.getBaseName(packagingConfiguration.getOutputValue());
 
@@ -107,16 +118,19 @@ public class ZipPackager implements PackagerDescriptor {
         return topDir;
     }
 
+    @Override
     public boolean supportsGroupAndOwner() {
         return false;
     }
 
+    @Override
     public ShellSciptWriter getShellFileWriter() {
         return new ScriptWriter();
     }
 
     public static class ScriptWriter implements ShellSciptWriter {
 
+        @Override
         public void writeShellScript(BufferedWriter bw, MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) throws IOException {
             writePackagingScriptBodyTarZip(bw, makeConfiguration);
         }
