@@ -231,6 +231,24 @@ public class Util {
         return (providerSupplier != null && providerSupplier.supportsDefaultProvider()) ? providerSupplier.getSupportedProviders().get(0) : null;
     }
 
+    public static ArrayList<Provider> getProviders(Project project) {
+        PersistenceProviderSupplier aProviderSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
+
+        if (aProviderSupplier == null) {
+            // a java se project
+            aProviderSupplier = new DefaultPersistenceProviderSupplier();
+        }
+
+        ArrayList<Provider> providers = new ArrayList<Provider>(aProviderSupplier.getSupportedProviders());
+        if (providers.size() == 0 && aProviderSupplier.supportsDefaultProvider()) {
+            providers.add(ProviderUtil.DEFAULT_PROVIDER);
+        }
+
+        addProvidersFromLibraries(providers);
+        //
+        return providers;
+    }
+
     public static boolean isDefaultProvider(Project project, Provider provider) {
         return provider != null && provider.equals(getDefaultProvider(project));
     }
@@ -384,21 +402,10 @@ public class Util {
             String preselectedDB, TableGeneration tableGeneration, Provider provider) {
 
         boolean isContainerManaged = Util.isContainerManaged(project);
-        PersistenceProviderSupplier aProviderSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
-
-        if (aProviderSupplier == null) {
-            // a java se project
-            aProviderSupplier = new DefaultPersistenceProviderSupplier();
-        }
 
         if (provider == null) {
             //choose default/first provider
-            ArrayList<Provider> providers = new ArrayList<Provider>(aProviderSupplier.getSupportedProviders());
-            if (providers.size() == 0 && aProviderSupplier.supportsDefaultProvider()) {
-                providers.add(ProviderUtil.DEFAULT_PROVIDER);
-            }
-
-            addProvidersFromLibraries(providers);
+            ArrayList<Provider> providers = getProviders(project);
             //
             provider = providers.get(0);
         }
