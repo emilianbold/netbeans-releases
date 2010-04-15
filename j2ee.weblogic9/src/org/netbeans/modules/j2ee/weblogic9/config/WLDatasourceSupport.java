@@ -67,6 +67,7 @@ import javax.swing.text.StyledDocument;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -121,7 +122,7 @@ public class WLDatasourceSupport {
         this.resourceDir = FileUtil.normalizeFile(resourceDir);
     }
 
-    public static Set<WLDatasource> getDatasources(FileObject inputFile) throws ConfigurationException {
+    public static Set<WLDatasource> getDatasources(File domain, FileObject inputFile) throws ConfigurationException {
         if (inputFile == null || !inputFile.isValid() || !inputFile.canRead()) {
             LOGGER.log(Level.WARNING, NbBundle.getMessage(WLDatasourceManager.class, "ERR_WRONG_CONFIG_DIR"));
             return Collections.emptySet();
@@ -130,25 +131,21 @@ public class WLDatasourceSupport {
             try {
                 SAXParserFactory factory = SAXParserFactory.newInstance();
                 SAXParser parser = factory.newSAXParser();
-                JdbcSystemResourceHandler handler = new JdbcSystemResourceHandler();
+                JdbcHandler handler = new JdbcHandler(domain);
                 parser.parse(new BufferedInputStream(inputFile.getInputStream()), handler);
 
-                File folder = FileUtil.toFile(inputFile.getParent());
                 List<File> confs = new ArrayList<File>();
                 Set<String> nameOnly = new HashSet<String>();
 
                 // load by path in config.xml
-                for (JdbcSystemResource resource : handler.getResources()) {
+                for (JdbcResource resource : handler.getResources()) {
                     // FIXME check target
                     if (resource.getFile() != null) {
-                        File config = new File(resource.getFile());
-                        if (!config.isAbsolute()) {
-                            config = new File(folder, resource.getFile());
-                        }
-                        if (config.exists() && config.isFile() && config.canRead()) {
+                        File config = resource.resolveFile();
+                        if (config != null) {
                             confs.add(config);
                         }
-                    } else if (resource.getName() != null) {
+                    } else if (resource.getName() != null && resource.isSystem()) {
                         nameOnly.add(resource.getName());
                     }
                 }
@@ -158,7 +155,7 @@ public class WLDatasourceSupport {
 
                 // load those in config/jdbc by name
                 if (!nameOnly.isEmpty()) {
-                    Set<WLDatasource> configDatasources = getDatasources(inputFile.getParent().getFileObject("jdbc")); // NOI18N
+                    Set<WLDatasource> configDatasources = getDatasources(domain, inputFile.getParent().getFileObject("jdbc")); // NOI18N
                     for (WLDatasource ds : configDatasources) {
                         if (nameOnly.contains(ds.getName())) {
                             result.add(ds);
@@ -232,7 +229,7 @@ public class WLDatasourceSupport {
     public Set<WLDatasource> getDatasources() throws ConfigurationException {
         FileObject resource = FileUtil.toFileObject(resourceDir);
 
-        return getDatasources(resource);
+        return getDatasources(null, resource);
     }
 
     public Datasource createDatasource(final String jndiName, final String  url, final String username,
@@ -594,29 +591,35 @@ public class WLDatasourceSupport {
 
     private static class JdbcSystemResourceHandler extends DefaultHandler {
 
-        private final List<JdbcSystemResource> resources = new ArrayList<JdbcSystemResource>();
+        private final List<JdbcResource> resources = new ArrayList<JdbcResource>();
 
-        private JdbcSystemResource resource;
+        private final File configDir;
+
+        private JdbcResource resource;
 
         private String value;
 
+        public JdbcSystemResourceHandler(File configDir) {
+            this.configDir = configDir;
+        }
+
         @Override
-        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        public void startElement(String uri, String localName, String qName, Attributes attributes) {
             value = null;
             if ("jdbc-system-resource".equals(qName)) { // NOI18N
-                resource = new JdbcSystemResource();
+                resource = new JdbcResource(configDir, true);
             }
         }
 
         @Override
-        public void endElement(String uri, String localName, String qName) throws SAXException {
+        public void endElement(String uri, String localName, String qName) {
             if (resource == null) {
                 return;
             }
 
             if ("jdbc-system-resource".equals(qName)) { // NOI18N
                 resources.add(resource);
-                resource = null;
+                resource = null; 
             } else if("name".equals(qName)) { // NOI18N
                 resource.setName(value);
             } else if ("taget".equals(qName)) { // NOI18N
@@ -627,26 +630,147 @@ public class WLDatasourceSupport {
         }
 
         @Override
-        public void characters(char[] ch, int start, int length) throws SAXException {
+        public void characters(char[] ch, int start, int length) {
             value = new String(ch, start, length);
         }
 
-        public List<JdbcSystemResource> getResources() {
+        public List<JdbcResource> getResources() {
             return resources;
         }
-
     }
 
-    private static class JdbcSystemResource {
+    private static class JdbcApplicationHandler extends DefaultHandler {
 
+        private final List<JdbcResource> resources = new ArrayList<JdbcResource>();
+
+        private final File domainDir;
+
+        private JdbcResource resource;
+
+        private String value;
+
+        private boolean isJdbc;
+
+        public JdbcApplicationHandler(File domainDir) {
+            this.domainDir = domainDir;
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) {
+            value = null;
+            if ("app-deployment".equals(qName)) { // NOI18N
+                resource = new JdbcResource(domainDir, false);
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) {
+            if (resource == null) {
+                return;
+            }
+
+            if ("app-deployment".equals(qName)) { // NOI18N
+                if (isJdbc) {
+                    resources.add(resource);
+                }
+                isJdbc = false;
+                resource = null;
+            } else if("name".equals(qName)) { // NOI18N
+                resource.setName(value);
+            } else if ("taget".equals(qName)) { // NOI18N
+                resource.setTarget(value);
+            } else if ("source-path".equals(qName)) { // NOI18N
+                resource.setFile(value);
+            } else if ("module-type".equals(qName)) { // NOI18N
+                if ("jdbc".equals(value)) {
+                    isJdbc = true;
+                }
+            }
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) {
+            value = new String(ch, start, length);
+        }
+
+        public List<JdbcResource> getResources() {
+            return resources;
+        }
+    }
+
+    private static class JdbcHandler extends DefaultHandler {
+
+        private final JdbcSystemResourceHandler system;
+
+        private final JdbcApplicationHandler application;
+
+        public JdbcHandler(File domainDir) {
+            File configDir = domainDir != null ? new File(domainDir, "config") : null;
+            system = new JdbcSystemResourceHandler(configDir);
+            application = new JdbcApplicationHandler(domainDir);
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) {
+            system.startElement(uri, localName, qName, attributes);
+            application.startElement(uri, localName, qName, attributes);
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            system.endElement(uri, localName, qName);
+            application.endElement(uri, localName, qName);
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            system.characters(ch, start, length);
+            application.characters(ch, start, length);
+        }
+
+        public List<JdbcResource> getResources() {
+            List<JdbcResource> resources = new ArrayList<JdbcResource>();
+            resources.addAll(system.getResources());
+            resources.addAll(application.getResources());
+            return resources;
+        }
+    }
+
+    private static class JdbcResource {
+
+        private final File baseFile;
+
+        private final boolean system;
+        
         private String name;
 
         private String target;
 
         private String file;
 
-        public JdbcSystemResource() {
-            super();
+        public JdbcResource(File baseFile, boolean system) {
+            this.baseFile = baseFile;
+            this.system = system;
+        }
+
+        @CheckForNull
+        public File resolveFile() {
+            if (file == null) {
+                return null;
+            }
+
+            File config = new File(file);
+            if (!config.isAbsolute()) {
+                if (baseFile != null) {
+                    config = new File(baseFile, file);
+                } else {
+                    return null;
+                }
+            }
+            if (config.exists() && config.isFile() && config.canRead()) {
+                return config;
+            }
+            return null;
         }
 
         public String getFile() {
@@ -671,6 +795,10 @@ public class WLDatasourceSupport {
 
         public void setTarget(String target) {
             this.target = target;
+        }
+
+        public boolean isSystem() {
+            return system;
         }
 
     }
