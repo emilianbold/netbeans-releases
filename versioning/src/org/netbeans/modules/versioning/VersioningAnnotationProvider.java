@@ -89,6 +89,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         return file == null ? null : VersioningManager.getInstance().getOwner(file);
     }
 
+    @Override
     public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
         Image annotatedIcon;
         if (ANNOTATOR_ASYNC) {
@@ -105,11 +106,13 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         return annotatedIcon;
     }
 
+    @Override
     public String annotateNameHtml(String name, Set<? extends FileObject> files) {
         String annotatedName = labelCache.getValue(labelCache.new ItemKey<String, String>(files, name, name));
         return annotatedName == null ? htmlEncode(name) : annotatedName;
     }
 
+    @Override
     public Action[] actions(Set files) {
         if (files.isEmpty()) return new Action[0];
 
@@ -172,18 +175,22 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         
         private VersioningSystem system;
 
+        @Override
         public String getName() {
             return Utils.getDisplayName(system);
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(system.getClass());
         }
 
+        @Override
         public void actionPerformed(ActionEvent ev) {
             // this item does nothing, this is not a real action
         }
 
+        @Override
         public Action createContextAwareInstance(Lookup actionContext) {
             return new RealVersioningSystemActions(system, Utils.contextForLookup(actionContext));
         }
@@ -204,10 +211,12 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             this.context = context;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             // this item does also nothing, it displays a popup ;)
         }
 
+        @Override
         public JMenuItem getPopupPresenter() {
             return new VersioningSystemMenuItem();
         }
@@ -220,6 +229,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                 Mnemonics.setLocalizedText(this, Utils.getDisplayName(system));
             }
 
+            @Override
             public void setSelected(boolean selected) {
                 if (selected && popupContructed == false) {
                     // lazy submenu construction
@@ -240,10 +250,12 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         }
     }
 
+    @Override
     public InterceptionListener getInterceptionListener() {
         return VersioningManager.getInstance().getInterceptionListener();
     }
 
+    @Override
     public String annotateName(String name, Set files) {
         return name;    // do not support 'plain' annotations
     }
@@ -307,6 +319,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
      * Refreshes all annotations and clears the maps holding all files and their parents which have to be refreshed
      */
     private RequestProcessor.Task refreshAllAnnotationsTask = rp.create(new Runnable() {        
+        @Override
         public void run() {            
             clearMap(filesToRefresh);
             clearMap(parentsToRefresh);
@@ -322,6 +335,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
      * Refreshes all files stored in filesToRefresh and parentsToRefresh
      */ 
     private RequestProcessor.Task fireFileStatusChangedTask = rp.create(new Runnable() {        
+        @Override
         public void run() {
             
             // create and fire for all files which have to be refreshed
@@ -330,7 +344,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
 
             synchronized(filesToRefresh) {
                 Set<FileSystem> fileSystems = filesToRefresh.keySet();                
-                if(fileSystems == null || fileSystems.size() == 0) {
+                if(fileSystems == null || fileSystems.isEmpty()) {
                     return;
                 }
                 for (FileSystem fs : fileSystems) {
@@ -657,7 +671,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                     Set<ItemKey<T, KEY>> sets = index.get(fo);
                     if (sets != null) {
                         sets.remove(key);
-                        if (sets.size() == 0) {
+                        if (sets.isEmpty()) {
                             // remove the whole entry
                             index.remove(fo);
                         }
@@ -677,6 +691,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         }
 
         private class AnnotationRefreshTask implements Runnable {
+            @Override
             public void run() {
                 ItemKey<T, KEY> refreshCandidate;
                 while ((refreshCandidate = getNextFilesToAnnotate()) != null) {
