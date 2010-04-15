@@ -71,6 +71,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
@@ -237,6 +238,7 @@ import org.openide.util.NbBundle;
         final String variableName = entitySimpleName.toLowerCase().charAt(0) + entitySimpleName.substring(1);
 
         //create the abstract facade class
+        Future<Void> waiter = null;
         final String afName = pkg + "." + FACADE_ABSTRACT;
         FileObject afFO = targetFolder.getFileObject(FACADE_ABSTRACT, "java");
         if (afFO == null){
@@ -314,6 +316,10 @@ import org.openide.util.NbBundle;
                 }
             }).commit();
 
+            waiter = source.runWhenScanFinished(new Task<CompilationController>(){
+                public void run(CompilationController cc) throws Exception {
+                }
+            }, true);
         }
 
         // create the facade
@@ -353,13 +359,12 @@ import org.openide.util.NbBundle;
 
         // add the @stateless annotation
         // add implements and extends clauses to the facade
-        JavaSource source = JavaSource.forFileObject(facade);
-        source.runModificationTask(new Task<WorkingCopy>(){
+        Task<WorkingCopy> modificationTask = new Task<WorkingCopy>(){
             @Override
             public void run(WorkingCopy wc) throws Exception {
                 wc.toPhase(Phase.RESOLVED);
-                TypeElement classElement = wc.getElements().getTypeElement(pkg + "." + entitySimpleName + FACADE_SUFFIX); //SourceUtils.getPublicTopLevelElement(wc);
-                ClassTree classTree = wc.getTrees().getTree(classElement); //SourceUtils.getPublicTopLevelTree(wc);
+                TypeElement classElement = wc.getElements().getTypeElement(pkg + "." + entitySimpleName + FACADE_SUFFIX);
+                ClassTree classTree = wc.getTrees().getTree(classElement);
                 assert classTree != null;
                 GenerationUtils genUtils = GenerationUtils.newInstance(wc);
                 TreeMaker maker = wc.getTreeMaker();
@@ -383,13 +388,25 @@ import org.openide.util.NbBundle;
                         maker.addModifiersAnnotation(classTree.getModifiers(), genUtils.createAnnotation(EJB_STATELESS)),
                         classTree.getSimpleName(),
                         classTree.getTypeParameters(),
-                        genUtils.createType(afName + "<" + entityFQN + ">", classElement),
+                        maker.Type(wc.getTypes().getDeclaredType(
+                            wc.getElements().getTypeElement(afName),
+                            wc.getElements().getTypeElement(entityFQN).asType())),
                         implementsClause,
                         members);
 
                 wc.rewrite(classTree, newClassTree);
             }
-        }).commit();
+        };
+
+        JavaSource source = JavaSource.forFileObject(facade);
+        if (waiter != null){
+            try {
+                waiter.get();
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+            }
+        }
+        source.runModificationTask(modificationTask).commit();
 
         return createdFiles;
     }
