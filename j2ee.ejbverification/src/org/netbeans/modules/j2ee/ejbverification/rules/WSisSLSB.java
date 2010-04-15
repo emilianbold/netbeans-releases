@@ -44,7 +44,11 @@ import com.sun.source.tree.ClassTree;
 import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.element.AnnotationMirror;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
 import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
@@ -63,7 +67,21 @@ import org.openide.util.NbBundle;
 public class WSisSLSB extends EJBVerificationRule {
     
     public Collection<ErrorDescription> check(EJBProblemContext ctx) {
-        
+        boolean isEJB = false;
+        Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
+        if (project != null){
+            J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+            if (provider != null){
+                J2eeModule module = provider.getJ2eeModule();
+                isEJB = module != null && J2eeModule.Type.EJB.equals(module.getType());
+            }
+        }
+
+        //disable this rule for non ejb project
+        if (!isEJB){
+            return null;
+        }
+
         AnnotationMirror annWebService = JavaUtils.findAnnotation(ctx.getClazz(),
                 EJBAPIAnnotations.WEB_SERVICE);
         

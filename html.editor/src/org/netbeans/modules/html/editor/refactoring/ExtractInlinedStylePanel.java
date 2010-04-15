@@ -103,7 +103,16 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
 
     private void initUI() {
 
-        setSectionMode(HtmlPreferences.extractInlinedStylePanelSectionMode());
+        Mode mode = HtmlPreferences.extractInlinedStylePanelSectionMode();
+        if(mode == Mode.refactorToExistingEmbeddedSection) {
+            if(context.getExistingEmbeddedCssSections().isEmpty()) {
+                //there isn't any existing embedded section
+                //switch the mode the the new embedded section,
+                //but do not store the mode in the settings
+                mode = Mode.refactorToNewEmbeddedSection;
+            }
+        }
+        setSectionMode(mode);
 
         ItemListener embeddedSectionsItemListener = new ItemListener() {
 
