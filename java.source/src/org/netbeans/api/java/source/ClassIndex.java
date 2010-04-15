@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -634,8 +635,7 @@ public final class ClassIndex {
 
         private boolean containsNewRoot (final ClassPath cp, final Set<? extends URL> roots,
                 final List<? super URL> newRoots, final List<? super URL> removedRoots,
-                final boolean[] attachListener, final boolean translate) throws IOException {
-            assert attachListener != null && attachListener.length == 1;
+                final Set<? super URL> attachListener, final boolean translate) throws IOException {
             final List<ClassPath.Entry> entries = cp.entries();
             final PathRegistry preg = PathRegistry.getDefault();
             final ClassIndexManager mgr = ClassIndexManager.getDefault();
@@ -652,7 +652,7 @@ public final class ClassIndex {
                             newRoots.add (url);
                             result = true;
                         } else {
-                            attachListener[0]=true;
+                            attachListener.add(url);
                         }
                     }
                 }
@@ -663,7 +663,7 @@ public final class ClassIndex {
                                 newRoots.add (_url);
                                 result = true;
                             } else {
-                                attachListener[0]=true;
+                                attachListener.add(_url);
                             }
                         }
                     }
@@ -675,6 +675,7 @@ public final class ClassIndex {
             return result;
         }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
         public void propertyChange(PropertyChangeEvent evt) {
             if (ClassPath.PROP_ENTRIES.equals (evt.getPropertyName())) {
                 final List<URL> newRoots = new LinkedList<URL>();
@@ -683,30 +684,40 @@ public final class ClassIndex {
                 boolean dirtyDeps = false;
                 try {
                     Object source = evt.getSource();
-                    final boolean [] attachListener = new boolean[]{false};
+                    final Set<URL> unknownRoots = new HashSet<URL>();
                     if (source == ClassIndex.this.sourcePath) {
                         Set<URL> copy;
                         synchronized (ClassIndex.this) {
                             copy = new HashSet<URL>(oldSources);
                         }
-                        dirtySource = containsNewRoot(sourcePath, copy, newRoots, removedRoots, attachListener, false);
+                        dirtySource = containsNewRoot(sourcePath, copy, newRoots, removedRoots, unknownRoots, false);
                     }
                     else if (source == ClassIndex.this.classPath) {
                         Set<URL> copy;
                         synchronized (ClassIndex.this) {
                             copy = new HashSet<URL>(oldCompile);
                         }
-                        dirtyDeps = containsNewRoot(classPath, copy, newRoots, removedRoots, attachListener, true);
+                        dirtyDeps = containsNewRoot(classPath, copy, newRoots, removedRoots, unknownRoots, true);
                     }
                     else if (source == ClassIndex.this.bootPath) {
                         Set<URL> copy;
                         synchronized (ClassIndex.this) {
                             copy = new HashSet<URL>(oldBoot);
                         }
-                        dirtyDeps = containsNewRoot(bootPath, copy, newRoots, removedRoots, attachListener, true);
+                        dirtyDeps = containsNewRoot(bootPath, copy, newRoots, removedRoots, unknownRoots, true);
                     }
-                    if (attachListener[0]) {
+                    if (!unknownRoots.isEmpty()) {
                         attachClassIndexManagerListener();
+                        final ClassIndexManager mgr = ClassIndexManager.getDefault();
+                        for (Iterator<URL> it = unknownRoots.iterator(); it.hasNext();) {
+                            final URL url = it.next();
+                            if (mgr.getUsagesQuery(url)==null) {
+                                it.remove();
+                            }
+                        }
+                        if (!unknownRoots.isEmpty()) {
+                            classIndexAdded(new ClassIndexManagerEvent(mgr, unknownRoots));
+                        }
                     }
                     if (dirtySource || dirtyDeps) {
                         ClassIndex.this.reset(dirtySource, dirtyDeps);

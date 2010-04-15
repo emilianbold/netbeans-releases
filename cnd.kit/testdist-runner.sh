@@ -12,7 +12,7 @@ unzip -qo netbeans.zip
 unzip -qo testdist.zip
 
 cd unit
-MODULES=`ls -d dlight/* cnd/* ide/*terminal* ide/*nativeex* | paste -s -d : -`
+MODULES=${MODULES:-`ls -d dlight/* cnd/* ide/*terminal* ide/*nativeex* | paste -s -d : -`}
 cd ..
 ${ANT:-ant} -f all-tests.xml \
 -Dbasedir="${WORKSPACE}/unit" \

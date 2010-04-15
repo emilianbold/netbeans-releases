@@ -86,6 +86,8 @@ public class Jira {
     private JiraConnector connector;
     
     private Jira() {
+        BugtrackingRuntime.init();
+
         ModuleLifecycleManager.instantiated = true;
         jcp = new JiraCorePlugin();
         try {
@@ -118,6 +120,10 @@ public class Jira {
             });
         }
         return instance;
+    }
+
+    static void init() {
+        getInstance();
     }
 
     public void storeTaskData(JiraRepository repository, TaskData data) throws CoreException {

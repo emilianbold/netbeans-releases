@@ -47,7 +47,7 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery.Trigger;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -113,9 +114,13 @@ final class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryIm
             evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
         }
 
-        public boolean annotationProcessingEnabled() {
-            return    TRUE.contains(evaluator.getProperty(annotationProcessingEnabledProperty))
-                   && TRUE.contains(evaluator.getProperty(annotationProcessingEnabledInEditorProperty));
+        public Set<? extends Trigger> annotationProcessingEnabled() {
+            EnumSet<Trigger> set = EnumSet.noneOf(Trigger.class);
+            if (TRUE.contains(evaluator.getProperty(annotationProcessingEnabledProperty)))
+                set.add(Trigger.ON_SCAN);
+            if (TRUE.contains(evaluator.getProperty(annotationProcessingEnabledInEditorProperty)))
+                set.add(Trigger.IN_EDITOR);
+            return set;
         }
 
         public Iterable<? extends String> annotationProcessorsToRun() {
