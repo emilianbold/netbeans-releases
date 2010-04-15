@@ -41,7 +41,7 @@ var NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG = "NetBeans IDE Download Bundles in 
 var NETBEANS_PACKS_MSG 		  = "Supported&nbsp;technologies";
 
 var JDK_DOWNLOAD_LINK    = "http://java.sun.com/javase/downloads/index.jsp";
-var NBJDK_DOWNLOAD_LINK  = "http://java.sun.com/javase/downloads/netbeans.html";
+var NBJDK_DOWNLOAD_LINK  = "http://java.sun.com/javase/downloads/widget/jdk_netbeans.jsp";
 
 var JAVA_COM_LINK        = "http://java.com/";
 
