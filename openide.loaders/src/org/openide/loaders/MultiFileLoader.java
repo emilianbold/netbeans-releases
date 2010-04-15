@@ -109,9 +109,9 @@ public abstract class MultiFileLoader extends DataLoader {
             if (willLog) {
                 ERR.log(Level.FINE, "checking correctness: primary is different than provided file: {0} fo: {1}", new Object[]{primary, fo}); // NOI18N
             }
-            Enumeration en = DataLoaderPool.getDefault().allLoaders(primary);
+            Enumeration<DataObject.Factory> en = DataLoaderPool.getDefault().allLoaders(primary);
             for (;;) {
-                DataLoader l = (DataLoader)en.nextElement();
+                DataObject.Factory l = en.nextElement();
                 if (l == this) {
                     ERR.fine("ok, consistent"); // NOI18N
                     break;
