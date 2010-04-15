@@ -461,7 +461,6 @@ No emulator found at ${emulator.executable}]]>
                 <xsl:if test="$classicappletproject or $extendedappletproject or $webproject">
                     <jc-delete failonerror="no"/>
                 </xsl:if>
-                <jc-unload failonerror="no"/>
                 <jc-load failonerror="yes"/>
             </target>
 
@@ -487,8 +486,8 @@ No emulator found at ${emulator.executable}]]>
                 <waitfor>
                     <http url="${{javacard.device.cardmanagerurl}}"/>
                 </waitfor>
-                <antcall target="unload-dependencies"/>
                 <jc-unload  failonerror="yes"/>
+                <antcall target="unload-dependencies"/>
             </target>
 
             <xsl:choose>
@@ -662,7 +661,7 @@ run   - Builds and deploys the application and starts the browser.
                 </copy>
             </target>
 
-            <target name="load-dependencies" depends="build-dependencies,pack">
+            <target name="load-dependencies" depends="build-dependencies">
                 <xsl:call-template name="load-dependencies"/>
             </target>
 
@@ -670,7 +669,7 @@ run   - Builds and deploys the application and starts the browser.
                 <xsl:call-template name="unload-dependencies"/>
             </target>
 
-            <target name="unpack-dependencies" depends="-init">
+            <target name="unpack-dependencies" depends="-init,build-dependencies">
                 <mkdir dir="${{build.classes.dir}}"/>
                 <xsl:call-template name="unpack-dependencies"/>
             </target>
@@ -689,6 +688,7 @@ run   - Builds and deploys the application and starts the browser.
     </xsl:template>
 
     <xsl:template name="load-dependencies">
+        <jc-unload failonerror="no"/>
         <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:dependencies/jcproj:dependency">
             <xsl:if test="@deployment = 'DEPLOY_TO_CARD'">
                 <xsl:element name="echo">
@@ -702,50 +702,14 @@ run   - Builds and deploys the application and starts the browser.
                         <xsl:text>)</xsl:text>
                     </xsl:attribute>
                 </xsl:element>
-                <xsl:element name="property">
-                    <xsl:attribute name="name">
-                        <xsl:text>dependency.</xsl:text>
-                        <xsl:value-of select="@id"/>
-                        <xsl:text>.sigfile</xsl:text>
-                    </xsl:attribute>
-                    <xsl:attribute name="value">
-                         <xsl:text>${dependency.</xsl:text>
-                         <xsl:value-of select="@id"/>
-                         <xsl:text>.origin}/dist/</xsl:text>
-                         <xsl:value-of select="@id"/>
-                         <xsl:text>.signature</xsl:text>
-                    </xsl:attribute>
-                </xsl:element>
-                <xsl:element name="property">
-                    <xsl:attribute name="name">
-                        <xsl:text>dependency.</xsl:text>
-                        <xsl:value-of select="@id"/>
-                        <xsl:text>.expfile</xsl:text>
-                    </xsl:attribute>
-                    <xsl:attribute name="value">
-                         <xsl:text>${dependency.</xsl:text>
-                         <xsl:value-of select="@id"/>
-                         <xsl:text>.origin}/dist/</xsl:text>
-                    </xsl:attribute>
-                </xsl:element>
-                <xsl:element name="echo">
-                    <xsl:attribute name="message">
-                        <xsl:text>Dependency sigfile set to ${</xsl:text>
-                        <xsl:text>dependency.</xsl:text>
-                        <xsl:value-of select="@id"/>
-                        <xsl:text>.sigfile}</xsl:text>
-                    </xsl:attribute>
-                </xsl:element>
-                <xsl:element name="echo">
-                    <xsl:attribute name="message">
-                        <xsl:text>Dependency expfile set to ${</xsl:text>
-                        <xsl:text>dependency.</xsl:text>
-                        <xsl:value-of select="@id"/>
-                        <xsl:text>.expfile}</xsl:text>
-                    </xsl:attribute>
-                </xsl:element>
                 <!-- Project root dependencies -->
                 <xsl:if test="@kind = 'CLASSIC_LIB' or @kind = 'EXTENSION_LIB'">
+
+                    <!-- Setting dependency.*.sigfile for each dependency -->
+                    <fileset id="dependency.{@id}.sigset" dir="${{dependency.{@id}.origin}}/dist" includes="**/*.signature"/>
+                    <pathconvert property="dependency.{@id}.sigfile" pathsep="" refid="dependency.{@id}.sigset"/>
+                    <echo message="Dependency sigfile set to ${{dependency.{@id}.sigfile}}"/>
+
                     <xsl:element name="ant">
                         <xsl:attribute name="target">
                             <xsl:text>load-bundle</xsl:text>
@@ -810,18 +774,23 @@ run   - Builds and deploys the application and starts the browser.
                 </xsl:if>
                 <!-- deploying JAR files dependencies -->
                 <xsl:if test="@kind = 'EXTENSION_LIB_JAR' or @kind = 'CLASSIC_LIB_JAR'">
-                    <xsl:element name="jc-load">
-                        <xsl:attribute name="bundlefile">
-                            <xsl:text>${dependency.</xsl:text>
-                            <xsl:value-of select="@id"/>
-                            <xsl:text>.origin}</xsl:text>
-                        </xsl:attribute>
-                        <xsl:attribute name="signaturefile">
-                            <xsl:text>${dependency.</xsl:text>
-                            <xsl:value-of select="@id"/>
-                            <xsl:text>.sigfile}</xsl:text>
-                        </xsl:attribute>
-                    </xsl:element>
+                    <!-- Setting dependency.*.sigfile for each dependency -->
+                    <xsl:choose>
+                    <xsl:when test="@kind = 'CLASSIC_LIB_JAR'">
+                        <basename property="dependency.{@id}.bundleName" file="${{dependency.{@id}.origin}}" suffix=".cap"/>
+                        <property name="dependency.{@id}.type" value="classic-lib"/>
+                     </xsl:when>
+                     <xsl:otherwise>
+                        <basename property="dependency.{@id}.bundleName" file="${{dependency.{@id}.origin}}" suffix=".jar"/>
+                        <property name="dependency.{@id}.type" value="extension-lib"/>
+                     </xsl:otherwise>
+                     </xsl:choose>
+                    <dirname property="dependency.{@id}.basedir" file="${{dependency.{@id}.origin}}"/>
+                    <fileset id="dependency.{@id}.sigset" dir="${{dependency.{@id}.basedir}}" includes="**/*.signature"/>
+                    <pathconvert property="dependency.{@id}.sigfile" pathsep="" refid="dependency.{@id}.sigset"/>
+                    <echo message="Dependency sigfile set to ${{dependency.{@id}.sigfile}}"/>
+                    <jc-unload bundlename="${{dependency.{@id}.bundleName}}" failonerror="no"/>
+                    <jc-load type="${{dependency.{@id}.type}}" bundlename="${{dependency.{@id}.bundleName}}" bundlefile="${{dependency.{@id}.origin}}" signaturefile="${{dependency.{@id}.sigfile}}" failonerror="yes"/>
                 </xsl:if>
             </xsl:if>
         </xsl:for-each>
@@ -833,7 +802,7 @@ run   - Builds and deploys the application and starts the browser.
                 <xsl:if test="@kind = 'CLASSIC_LIB' or @kind = 'EXTENSION_LIB' or @kind = 'JAVA_PROJECT'">
                     <xsl:element name="echo">
                         <xsl:attribute name="message">
-                            <xsl:text>Building dependency</xsl:text>
+                            <xsl:text>Building dependency </xsl:text>
                             <xsl:value-of select="@id"/>
                             <xsl:text> (type:</xsl:text>
                             <xsl:value-of select="@kind"/>
@@ -913,6 +882,27 @@ run   - Builds and deploys the application and starts the browser.
                         </xsl:if>
                     </xsl:element>
                 </xsl:if>
+        </xsl:for-each>
+
+        <!-- Setting export.path for "CLASSIC_LIB" dependencies -->
+        <xsl:element name="property">
+            <xsl:attribute name="name">
+                <xsl:text>export.path</xsl:text>
+            </xsl:attribute>
+            <xsl:attribute name="value">
+                <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:dependencies/jcproj:dependency[@kind='CLASSIC_LIB']">
+                    <xsl:text>${dependency.</xsl:text>
+                    <xsl:value-of select="@id"/>
+                    <xsl:text>.origin}/dist</xsl:text>
+                    <xsl:if test="position()!=last()">;</xsl:if>
+                </xsl:for-each>
+            </xsl:attribute>
+        </xsl:element>
+
+        <!-- Setting dependency.*.expfile for each of "CLASSIC_LIB_JAR" dependencies -->
+        <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:dependencies/jcproj:dependency[@kind='CLASSIC_LIB_JAR']">
+            <dirname property="dependency.{@id}.expfile" file="${{dependency.{@id}.origin}}"/>
+            <echo message="Dependency expfile set to ${{dependency.{@id}.expfile}}"/>
         </xsl:for-each>
     </xsl:template>
 
@@ -1082,16 +1072,15 @@ run   - Builds and deploys the application and starts the browser.
                 </xsl:if>
                 <!-- deploying JAR files dependencies -->
                 <xsl:if test="@kind = 'EXTENSION_LIB_JAR' or @kind = 'CLASSIC_LIB_JAR'">
-                    <xsl:element name="jc-unload">
-                        <xsl:attribute name="bundlefile">
-                            <xsl:text>${dependency.</xsl:text>
-                            <xsl:value-of select="@id"/>
-                            <xsl:text>.origin}</xsl:text>
-                        </xsl:attribute>
-                        <xsl:attribute name="force">
-                            <xsl:text>true</xsl:text>
-                        </xsl:attribute>
-                    </xsl:element>
+                    <xsl:choose>
+                    <xsl:when test="@kind = 'CLASSIC_LIB_JAR'">
+                        <basename property="dependency.{@id}.bundleName" file="${{dependency.{@id}.origin}}" suffix=".cap"/>
+                     </xsl:when>
+                     <xsl:otherwise>
+                        <basename property="dependency.{@id}.bundleName" file="${{dependency.{@id}.origin}}" suffix=".jar"/>
+                     </xsl:otherwise>
+                     </xsl:choose>
+                     <jc-unload bundlename="${{dependency.{@id}.bundleName}}" failonerror="no" force="true"/>
                 </xsl:if>
             </xsl:if>
         </xsl:for-each>
