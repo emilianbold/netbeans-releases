@@ -749,7 +749,7 @@ public class FormatVisitor extends DefaultVisitor {
 	formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_NAMESPACE, node.getStartOffset()));
 	scan(node.getName());
 	addRestOfLine();
-	formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_NAMESPACE, node.getStartOffset()));
+	formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_NAMESPACE, ts.offset() + ts.token().length()));
 	scan(node.getBody());
     }
 
@@ -1148,7 +1148,7 @@ public class FormatVisitor extends DefaultVisitor {
 	    addFormatToken(formatTokens);
 	}
 	if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
-		|| (ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) > 0)) {
+		|| (ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) == 0)) {
 	    addFormatToken(formatTokens);
 	    if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
 		addFormatToken(formatTokens);
