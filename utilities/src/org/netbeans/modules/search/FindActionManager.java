@@ -91,7 +91,19 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
     
     /** */
     private Object findActionMapKey;
-    
+
+    /**
+     * Holds class {@code SearchScopeNodeSelection.LookupSensitive}.
+     * See Bug #183434.
+     */
+    private Class<SearchScopeNodeSelection.LookupSensitive> ssnslsClass;
+
+    /**
+     * Holds class {@code FindInFilesAction.LookupSensitive}.
+     * See Bug #183434.
+     */
+    private Class<FindInFilesAction.LookupSensitive> fifalsClass;
+
     /**
      */
     private FindActionManager() {
@@ -111,9 +123,13 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
     /**
      */
     void init() {
-        TopComponent.getRegistry().addPropertyChangeListener(this);
-        
+        TopComponent.getRegistry().addPropertyChangeListener(this);       
         Mutex.EVENT.writeAccess(this);
+
+        // Fix of the Bug #183434 - caching of the classes to avoid their 
+        // loading during execution of the action
+        ssnslsClass = SearchScopeNodeSelection.LookupSensitive.class;
+        fifalsClass = FindInFilesAction.LookupSensitive.class;
     }
 
     /**
@@ -137,6 +153,10 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
                 return null;
             }
         });
+
+        // cleaning up classes that have been cached
+        ssnslsClass = null;
+        fifalsClass = null;
     }
     
     /**
