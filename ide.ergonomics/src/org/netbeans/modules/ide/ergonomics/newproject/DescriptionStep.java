@@ -90,21 +90,24 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     private static FindComponentModules finder = null;
     private FeatureInfo info;
     private WizardDescriptor wd;
-    private final ConfigurationPanel configPanel;
+    private ConfigurationPanel configPanel;
+    private final boolean autoEnable;
 
     public DescriptionStep(boolean autoEnable) {
-        configPanel = new ConfigurationPanel(new Callable<JComponent>() {
-
-            public JComponent call() throws Exception {
-                FoDFileSystem.getInstance().refresh();
-                    waitForDelegateWizard ();
-                return new JLabel(" ");
-            }
-        }, autoEnable);
+        this.autoEnable = autoEnable;
     }
 
+    @Override
     public Component getComponent () {
         if (panel == null) {
+            configPanel = new ConfigurationPanel(new Callable<JComponent>() {
+                @Override
+                public JComponent call() throws Exception {
+                    FoDFileSystem.getInstance().refresh();
+                    waitForDelegateWizard();
+                    return new JLabel(" ");
+                }
+            }, autoEnable);
             panel = new ContentPanel (getBundle ("DescriptionPanel_Name"));
             panel.addPropertyChangeListener (findModules);
         }

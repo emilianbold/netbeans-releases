@@ -41,6 +41,7 @@ package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.Callable;
@@ -85,6 +86,7 @@ public class ConfigurationPanel extends JPanel implements Runnable {
     }
     
     public ConfigurationPanel(final Callable<JComponent> callable, Boolean auto) {
+        assert EventQueue.isDispatchThread();
         initComponents();
         this.featureInfo = null;
         this.callable = callable;
