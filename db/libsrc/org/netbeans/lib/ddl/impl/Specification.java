@@ -48,6 +48,8 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.util.NbBundle;
 
@@ -109,33 +111,39 @@ public class Specification implements DatabaseSpecification {
     }
 
     /** Returns all database properties */
+    @Override
     public Map getProperties()
     {
         return (Map)desc;
     }
 
     /** Returns command description */
+    @Override
     public Map getCommandProperties(String command)
     {
         return (Map)desc.get(command);
     }
 
     /** Returns used connection */
+    @Override
     public DBConnection getConnection()
     {
         return (DBConnection)desc.get("connection"); // NOI18N
     }
 
+    @Override
     public DatabaseSpecificationFactory getSpecificationFactory()
     {
         return factory;
     }
 
+    @Override
     public void setSpecificationFactory(DatabaseSpecificationFactory fac)
     {
         factory = (SpecificationFactory)fac;
     }
 
+    @Override
     public String getMetaDataAdaptorClassName()
     {
         if (adaptorClass == null || adaptorClass.length() == 0) {
@@ -145,6 +153,7 @@ public class Specification implements DatabaseSpecification {
         return adaptorClass;
     }
 
+    @Override
     public void setMetaDataAdaptorClassName(String name)
     {
         if (name.startsWith("Database.Adaptors.")) // NOI18N
@@ -156,6 +165,7 @@ public class Specification implements DatabaseSpecification {
     }
 
     /** Returns database metadata */
+    @Override
     public DatabaseMetaData getMetaData() throws SQLException
     {
         try {
@@ -176,7 +186,7 @@ public class Specification implements DatabaseSpecification {
             return dmdAdaptor;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(Specification.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             throw new SQLException(ex.getMessage());
         }
     }
@@ -186,6 +196,7 @@ public class Specification implements DatabaseSpecification {
     * But you can call it explicitly and leave connection open until last
     * command gets executed. Don't forget to close it.
     */
+    @Override
     public Connection openJDBCConnection()
     throws DDLException
     {
@@ -207,11 +218,13 @@ public class Specification implements DatabaseSpecification {
     * a DDLException throws. This is a self-checking mechanism; you must always
     * close used connection.
     */ 
+    @Override
     public Connection getJDBCConnection()
     {
         return jdbccon;
     }
 
+    @Override
     public void closeJDBCConnection()
     throws DDLException
     {
@@ -230,6 +243,7 @@ public class Specification implements DatabaseSpecification {
     * system allows developers to extend db-specification files and simply 
     * address new commands (everybody can implement createXXXCommand()).
     */
+    @Override
     public DDLCommand createCommand(String commandName)
     throws CommandNotSupportedException
     {
@@ -251,13 +265,13 @@ public class Specification implements DatabaseSpecification {
         if (cprops != null) classname = (String)cprops.get("Class"); // NOI18N
         //else throw new CommandNotSupportedException(commandName, "command "+commandName+" is not supported by system");
         else throw new CommandNotSupportedException(commandName,
-            MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_CommandNotSupported"), new String[] {commandName})); // NOI18N
+            MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_CommandNotSupported"), commandName)); // NOI18N
         try {
             cmdclass = Class.forName(classname);
             cmd = (AbstractCommand)cmdclass.newInstance();
         } catch (Exception e) {
             throw new CommandNotSupportedException(commandName,
-                MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableFindOrInitCommand"), new String[] {classname, commandName, e.getMessage()})); // NOI18N
+                MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableFindOrInitCommand"), classname, commandName, e.getMessage())); // NOI18N
         }
 
         cmd.setObjectName(tableName);
@@ -482,6 +496,7 @@ public class Specification implements DatabaseSpecification {
     }
 
     /** Returns DBType where maps specified java type */
+    @Override
     public String getType(int type)
     {
         String typestr = "";
