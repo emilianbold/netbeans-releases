@@ -391,7 +391,7 @@ public class TokenFormatter {
                             boolean wasARule = false;
                             boolean indentLine = false;
                             boolean indentRule = false;
-                            boolean addWithSemi = false;
+                            boolean afterSemi = false;
                             boolean wsBetweenBraces = false;
 
                             changeOffset = formatToken.getOffset();
@@ -526,7 +526,9 @@ public class TokenFormatter {
                                         countSpaces = ws.spaces;
                                         break;
                                     case WHITESPACE_BEFORE_FUNCTION:
+                                        indentRule = true;
                                         newLines = docOptions.blankLinesBeforeFunction + 1 > newLines ? docOptions.blankLinesBeforeFunction + 1 : newLines;
+                                        countSpaces = indent;
                                         break;
                                     case WHITESPACE_AFTER_FUNCTION:
                                         newLines = docOptions.blankLinesAfterFunction + 1 > newLines ? docOptions.blankLinesAfterFunction + 1 : newLines;
@@ -541,21 +543,28 @@ public class TokenFormatter {
                                         newLines = docOptions.blankLinesBeforeField + 1 > newLines ? docOptions.blankLinesBeforeField + 1 : newLines;
                                         break;
                                     case WHITESPACE_BETWEEN_FIELDS:
+                                        indentRule = true;
                                         newLines = 1;
+                                        countSpaces = indent;
                                         break;
                                     case WHITESPACE_BEFORE_NAMESPACE:
+                                        indentRule = true;
                                         newLines = docOptions.blankLinesBeforeNamespace + 1;
                                         break;
                                     case WHITESPACE_AFTER_NAMESPACE:
+                                        indentRule = true;
                                         newLines = docOptions.blankLinesAfterNamespace + 1;
                                         break;
                                     case WHITESPACE_BEFORE_USE:
+                                        indentRule = true;
                                         newLines = docOptions.blankLinesBeforeUse + 1;
                                         break;
                                     case WHITESPACE_BETWEEN_USE:
+                                        indentRule = true;
                                         newLines = 1;
                                         break;
                                     case WHITESPACE_AFTER_USE:
+                                        indentRule = true;
                                         newLines = docOptions.blankLinesAfterUse + 1;
                                         break;
                                     case WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS:
@@ -687,8 +696,8 @@ public class TokenFormatter {
                                         countSpaces = docOptions.spaceBeforeSemi ? 1 : 0;
                                         break;
                                     case WHITESPACE_AFTER_SEMI:
-                                        countSpaces = docOptions.spaceAfterSemi ? 1 : 0;
-                                        addWithSemi = true;
+//                                        countSpaces = docOptions.spaceAfterSemi ? 1 : 0;
+                                        afterSemi = true;
                                         break;
                                     case WHITESPACE_WITHIN_ARRAY_DECL_PARENS:
                                         int hIndex = index - 1;
@@ -956,8 +965,6 @@ public class TokenFormatter {
                                 boolean isBeforeLineComment = isBeforeLineComment(formatTokens, index-1);
                                 if (wasARule) {
                                     if ((!indentRule || newLines == -1) && indentLine) {
-                                        if (addWithSemi && docOptions.spaceAfterSemi)
-                                            countSpaces -= 1;
                                         boolean handlingSpecialCases = false;
                                         if (FormatToken.Kind.TEXT == formatToken.getId()
                                                 && ")".equals(formatToken.getOldText())) {
@@ -1018,6 +1025,34 @@ public class TokenFormatter {
                                 }
                                 if (wsBetweenBraces && newLines > 1) {
                                     newLines = 1;
+                                }
+                                if (afterSemi) {
+                                    if (oldText == null || (oldText != null && countOfNewLines(oldText) == 0)) {
+                                        if (formatToken.getId() == FormatToken.Kind.TEXT) {
+                                            if (docOptions.wrapStatementsOnTheSameLine) {
+                                                if (docOptions.wrapBlockBrace || !"}".equals(formatToken.getOldText())) {
+                                                    newLines = Math.max(1, newLines);
+                                                    countSpaces = indent;
+                                                }
+                                            } else {
+                                                if (!indentRule) {
+                                                    countSpaces = docOptions.spaceAfterSemi ? 1 : 0;
+                                                }
+                                            }
+                                        } else if (formatToken.getId() == FormatToken.Kind.LINE_COMMENT
+                                                || formatToken.getId() == FormatToken.Kind.COMMENT_START) {
+                                            if (oldText == null || oldText.length() == 0) {
+                                                countSpaces = docOptions.spaceAfterSemi ? 1 : 0;
+                                            } else {
+                                                countSpaces = oldText.length();
+                                            }
+                                        }
+                                    } else {
+                                        if (!indentRule) {
+                                            newLines = countOfNewLines(oldText);
+                                        }
+                                    }
+                                    afterSemi = false;
                                 }
 
                                 newText = createWhitespace(newLines, countSpaces);
