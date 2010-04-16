@@ -537,6 +537,9 @@ public class Specification implements DatabaseSpecification {
         case java.sql.Types.TINYINT: typestr = "TINYINT"; break; // NOI18N
         case java.sql.Types.VARBINARY: typestr = "VARBINARY"; break; // NOI18N
         case java.sql.Types.VARCHAR: typestr = "VARCHAR"; break; // NOI18N
+        default:
+            Logger.getLogger(Specification.class.getName()).log(Level.INFO, "Unknown type {0}", type);
+            assert false : "Unknown type " + type;
         }
 
         ret = (String) typemap.get("java.sql.Types." + typestr); // NOI18N
@@ -554,6 +557,7 @@ public class Specification implements DatabaseSpecification {
         if (type.equals("java.sql.Types.BINARY")) return java.sql.Types.BINARY; // NOI18N
         if (type.equals("java.sql.Types.BIT")) return java.sql.Types.BIT; // NOI18N
         if (type.equals("java.sql.Types.BLOB")) return java.sql.Types.BLOB; // NOI18N
+        if (type.equals("java.sql.Types.BOOLEAN")) return java.sql.Types.BOOLEAN; // NOI18N
         if (type.equals("java.sql.Types.CHAR")) return java.sql.Types.CHAR; // NOI18N
         if (type.equals("java.sql.Types.CLOB")) return java.sql.Types.CLOB; // NOI18N
         if (type.equals("java.sql.Types.DATE")) return java.sql.Types.DATE; // NOI18N
@@ -564,18 +568,25 @@ public class Specification implements DatabaseSpecification {
         if (type.equals("java.sql.Types.INTEGER")) return java.sql.Types.INTEGER; // NOI18N
         if (type.equals("java.sql.Types.JAVA_OBJECT")) return java.sql.Types.JAVA_OBJECT; // NOI18N
         if (type.equals("java.sql.Types.LONGVARBINARY")) return java.sql.Types.LONGVARBINARY; // NOI18N
+        if (type.equals("java.sql.Types.LONGNVARCHAR")) return java.sql.Types.LONGNVARCHAR; // NOI18N
         if (type.equals("java.sql.Types.LONGVARCHAR")) return java.sql.Types.LONGVARCHAR; // NOI18N
         if (type.equals("java.sql.Types.NUMERIC")) return java.sql.Types.NUMERIC; // NOI18N
+        if (type.equals("java.sql.Types.NCHAR")) return java.sql.Types.NCHAR; // NOI18N
+        if (type.equals("java.sql.Types.NCLOB")) return java.sql.Types.NCLOB; // NOI18N
+        if (type.equals("java.sql.Types.NVARCHAR")) return java.sql.Types.NVARCHAR; // NOI18N
         if (type.equals("java.sql.Types.OTHER")) return java.sql.Types.OTHER; // NOI18N
         if (type.equals("java.sql.Types.REAL")) return java.sql.Types.REAL; // NOI18N
         if (type.equals("java.sql.Types.REF")) return java.sql.Types.REF; // NOI18N
+        if (type.equals("java.sql.Types.ROWID")) return java.sql.Types.ROWID; // NOI18N
         if (type.equals("java.sql.Types.SMALLINT")) return java.sql.Types.SMALLINT; // NOI18N
+        if (type.equals("java.sql.Types.SQLXML")) return java.sql.Types.SQLXML; // NOI18N
         if (type.equals("java.sql.Types.TIME")) return java.sql.Types.TIME; // NOI18N
         if (type.equals("java.sql.Types.TIMESTAMP")) return java.sql.Types.TIMESTAMP; // NOI18N
         if (type.equals("java.sql.Types.TINYINT")) return java.sql.Types.TINYINT; // NOI18N
         if (type.equals("java.sql.Types.VARBINARY")) return java.sql.Types.VARBINARY; // NOI18N
         if (type.equals("java.sql.Types.VARCHAR")) return java.sql.Types.VARCHAR; // NOI18N
-
+        Logger.getLogger(Specification.class.getName()).log(Level.INFO, "Unknown type name {0}, so return -1", type);
+        assert false : "Unknown type name " + type;
         return -1;
     }
 }
