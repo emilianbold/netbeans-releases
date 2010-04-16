@@ -120,12 +120,12 @@ public final class ProjectImpl extends ProjectBase {
             }
             APTDriver.getInstance().invalidateAPT(buf);
             APTFileCacheManager.invalidate(buf);
-            schedule(buf, impl);
+            scheduleParseOnEditing(buf, impl);
             buf.addChangeListener(new ChangeListener() {
 
                 @Override
                 public void stateChanged(ChangeEvent e) {
-                    schedule(buf, impl);
+                    scheduleParseOnEditing(buf, impl);
                 }
             });
         }
@@ -155,7 +155,7 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
 
-    private void addToQueue(FileBuffer buf, FileImpl file) {
+    private void addToQueueOnEditing(FileBuffer buf, FileImpl file) {
         if (isDisposing()) {
             return;
         }
@@ -382,7 +382,9 @@ public final class ProjectImpl extends ProjectBase {
     ////////////////////////////////////////////////////////////////////////////
     private RequestProcessor.Task task = null;
     private final static RequestProcessor RP = new RequestProcessor("ProjectImpl RP", 50); // NOI18N
-    public synchronized void schedule(final FileBuffer buf, final FileImpl file) {
+    private synchronized void scheduleParseOnEditing(final FileBuffer buf, final FileImpl file) {
+        // FIXME: It looks we can cancel task started for another file
+        // there should be not one task, but task associated with file => it make sense to cancel file's task
         if (task != null) {
             task.cancel();
         }
@@ -391,7 +393,7 @@ public final class ProjectImpl extends ProjectBase {
             @Override
             public void run() {
                 try {
-                    addToQueue(buf, file);
+                    addToQueueOnEditing(buf, file);
                 } catch (AssertionError ex) {
                     DiagnosticExceptoins.register(ex);
                 } catch (Exception ex) {
