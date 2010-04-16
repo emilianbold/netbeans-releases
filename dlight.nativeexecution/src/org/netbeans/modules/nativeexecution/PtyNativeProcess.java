@@ -49,7 +49,6 @@ import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.PtyProcessStartUtility;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
-import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.openide.util.Exceptions;
 
 /**
@@ -117,17 +116,24 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         info.setExecutable(executable);
         info.setArguments(newArgs.toArray(new String[0]));
 
+        // Listeners...
+        // listeners are copied already in super()
+        // and never accessed via info anymore...
+        // so when we change listeners here,
+        // this change has effect on delegate only...
+
+        info.getListeners().clear();
+//        info.getListeners().add(new DelegateListener());
+
         if (env.isLocal()) {
             delegate = new LocalNativeProcess(info);
         } else {
             delegate = new RemoteNativeProcess(info);
         }
 
-        delegate.create();
+        delegate.createAndStart();
 
         readPID(delegate.getInputStream());
-
-        NativeTaskExecutorService.submit(new Reaper(), "Reaper for " + info.getExecutable()); // NOI18N
     }
 
     @Override
@@ -152,20 +158,13 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         return delegate.waitResult();
     }
 
-    private final class Reaper implements Runnable {
-
-        @Override
-        public void run() {
-            try {
-                waitFor();
-            } catch (InterruptedException ex) {
-            }
-
-            try {
+    public void closePty() {
+        try {
+            if (ptyImpl != null) {
                 ptyImpl.close();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 }

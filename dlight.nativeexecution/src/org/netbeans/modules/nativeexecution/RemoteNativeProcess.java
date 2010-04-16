@@ -5,11 +5,14 @@
 package org.netbeans.modules.nativeexecution;
 
 import com.jcraft.jsch.ChannelExec;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelParams;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 
 public final class RemoteNativeProcess extends AbstractNativeProcess {
@@ -120,6 +123,19 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             }
         }
 
-        ProcessUtils.destroy(this);
+//        int pid = 0;
+//
+//        try {
+//            pid = getPID();
+//        } catch (IOException ex) {
+//        }
+//
+//        if (pid > 0) {
+//            try {
+//                CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.SIGKILL, null).get();
+//            } catch (InterruptedException ex) {
+//            } catch (ExecutionException ex) {
+//            }
+//        }
     }
 }

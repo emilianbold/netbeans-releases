@@ -70,6 +70,7 @@ import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -141,7 +142,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             FileOutputStream shfos = new FileOutputStream(shFileFile);
 
-            BufferedWriter shWriter = new BufferedWriter(new OutputStreamWriter(shfos, Charset.forName("UTF-8")));
+            BufferedWriter shWriter = new BufferedWriter(new OutputStreamWriter(shfos, Charset.defaultCharset()));
 
             shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
             shWriter.write(". \"" + envFile + "\" 2>/dev/null\n"); // NOI18N
@@ -286,7 +287,16 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     public synchronized void cancel() {
-        ProcessUtils.destroy(this);
+        int pid = getPIDNoException();
+        if (pid > 0) {
+            try {
+                CommonTasksSupport.sendSignal(ExecutionEnvironmentFactory.getLocal(), pid, Signal.SIGKILL, null).get();
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            } catch (ExecutionException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     @Override

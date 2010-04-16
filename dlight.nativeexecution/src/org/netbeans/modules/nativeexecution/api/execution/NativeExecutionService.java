@@ -128,8 +128,15 @@ public final class NativeExecutionService {
                     }
 
                     PtySupport.connect(descriptor.inputOutput, process);
-                    return process.waitFor();
 
+                    try {
+                        return process.waitFor();
+                    } finally {
+                        // TODO: Workaround!!!
+                        // TODO: The problem with the lost output is not solved yet
+                        Thread.sleep(500);
+                        PtySupport.closePty(process);
+                    }
                 } finally {
                     if (descriptor.postExecution != null) {
                         synchronized (processRef) {
@@ -160,7 +167,16 @@ public final class NativeExecutionService {
     }
 
     private Future<Integer> runRegular() {
-        ExecutionDescriptor descr = new ExecutionDescriptor().controllable(descriptor.controllable).frontWindow(descriptor.frontWindow).inputVisible(descriptor.inputVisible).inputOutput(descriptor.inputOutput).outLineBased(descriptor.outLineBased).showProgress(descriptor.showProgress).postExecution(descriptor.postExecution).noReset(descriptor.noReset).errConvertorFactory(descriptor.errConvertorFactory).outConvertorFactory(descriptor.outConvertorFactory);
+        ExecutionDescriptor descr = new ExecutionDescriptor().controllable(descriptor.controllable).
+                frontWindow(descriptor.frontWindow).
+                inputVisible(descriptor.inputVisible).
+                inputOutput(descriptor.inputOutput).
+                outLineBased(descriptor.outLineBased).
+                showProgress(descriptor.showProgress).
+                postExecution(descriptor.postExecution).
+                noReset(descriptor.noReset).
+                errConvertorFactory(descriptor.errConvertorFactory).
+                outConvertorFactory(descriptor.outConvertorFactory);
 
         ExecutionService es = ExecutionService.newService(processBuilder, descr, displayName);
         return es.run();

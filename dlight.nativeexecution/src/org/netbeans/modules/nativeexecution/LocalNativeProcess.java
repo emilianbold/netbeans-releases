@@ -227,54 +227,12 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             return -1;
         }
 
-        /*
-         * Why not just process.waitResult()...
-         * This is to avoid a problem with short-running tasks, when
-         * this Thread (that waits for process' termination) doesn't see
-         * that it has been interrupted....
-         * TODO: describe situation in details...
-         */
-
-        int result = -1;
-
-//        // Get lock on process not to take it on every itteration
-//        // (in process.exitValue())
-//
-//        synchronized (process) {
-        // Why this synchronized is commented-out..
-        // This is because ProcessReaper is also synchronized on this...
-        // And it should be able to react on process' termination....
-
-        while (true) {
-            // This sleep is to avoid lost interrupted exception...
-            try {
-                Thread.sleep(200);
-                // 200 - to make this check not so often...
-                // actually, to avoid the problem, 1 is OK.
-            } catch (InterruptedException ex) {
-                throw ex;
-            }
-
-            try {
-                result = process.exitValue();
-            } catch (IllegalThreadStateException ex) {
-                continue;
-            }
-
-            break;
-        }
-//        }
-
-        if (getState() == State.CANCELLED) {
-            throw new InterruptedException();
-        }
-
-        return result;
+        return process.waitFor();
     }
 
     @Override
     protected final synchronized void cancel() {
-        ProcessUtils.destroy(this);
+        ProcessUtils.destroy(process);
     }
 
     private static String loc(String key, String... params) {

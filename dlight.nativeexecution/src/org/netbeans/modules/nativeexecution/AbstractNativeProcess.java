@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -86,10 +87,10 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private final Object stateLock;
     private volatile State state;
     private volatile int pid = 0;
-    private volatile Integer exitValue = null;
     private volatile boolean isInterrupted;
     private boolean cancelled = false;
     private Future<ProcessInfoProvider> infoProviderSearchTask;
+    private Future<Integer> result = null;
     private InputStream inputStream;
     private InputStream errorStream;
     private OutputStream outputStream;
@@ -142,6 +143,13 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             create();
             setState(State.RUNNING);
             findInfoProvider();
+            result = NativeTaskExecutorService.submit(new Callable<Integer>() {
+
+                @Override
+                public Integer call() throws Exception {
+                    return waitResult();
+                }
+            }, "Waiting for " + info.getExecutable()); // NOI18N
         } catch (Throwable ex) {
             LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex.toString()); // NOI18N
             setState(State.ERROR);
@@ -237,14 +245,19 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             if (cancelled) {
                 return;
             }
-
             cancelled = true;
         }
 
-        synchronized (stateLock) {
-            cancel();
-            setState(State.CANCELLED);
+
+        cancel();
+
+        try {
+            result.get();
+        } catch (InterruptedException ex) {
+        } catch (ExecutionException ex) {
         }
+        
+        setState(State.CANCELLED);
     }
 
     /**
@@ -263,14 +276,24 @@ public abstract class AbstractNativeProcess extends NativeProcess {
      */
     @Override
     public final int waitFor() throws InterruptedException {
-        setExitValue(waitResult());
+        int exitStatus = -1;
 
-        if (exitValue == null) {
-            throw new InterruptedException(
-                    "Process has been cancelled."); // NOI18N
+        try {
+            exitStatus = result.get();
+            setState(State.FINISHED);
+        } catch (InterruptedException ex) {
+            setState(State.CANCELLED);
+            throw ex;
+        } catch (ExecutionException ex) {
+            if (ex.getCause() instanceof InterruptedException) {
+                setState(State.CANCELLED);
+                throw (InterruptedException) ex.getCause();
+            }
+            setState(State.ERROR);
+            Exceptions.printStackTrace(ex);
         }
 
-        return exitValue.intValue();
+        return exitStatus;
     }
 
     /**
@@ -286,36 +309,18 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     @Override
     public final int exitValue() {
         synchronized (stateLock) {
-            if (exitValue == null) {
-                if (state == State.CANCELLED) {
-                    // TODO: ??
-                    // Removed CancellationException because it is not proceeded
-                    // in ExecutionService...
-                    // throw new CancellationException("Process has been cancelled");
-                    return -1;
-                } else {
-                    // Process not started yet...
-                    throw new IllegalThreadStateException();
-                }
+            if (result == null || !result.isDone()) {
+                // Process not started yet...
+                throw new IllegalThreadStateException();
             }
-        }
-
-        return exitValue;
-    }
-
-    private void setExitValue(int exitValue) {
-        synchronized (stateLock) {
-            if (this.exitValue != null) {
-                return;
+            try {
+                return result.get();
+            } catch (InterruptedException ex) {
+                // cancelled
+                return -1;
+            } catch (ExecutionException ex) {
+                return -1;
             }
-
-            this.exitValue = Integer.valueOf(exitValue);
-
-            if (state == State.CANCELLED || state == State.ERROR) {
-                return;
-            }
-
-            setState(State.FINISHED);
         }
     }
 

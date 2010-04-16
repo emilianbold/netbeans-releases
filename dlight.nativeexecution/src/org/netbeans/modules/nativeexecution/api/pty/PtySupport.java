@@ -216,6 +216,13 @@ public final class PtySupport {
         }
     }
 
+    public static void closePty(NativeProcess process) {
+        if (process instanceof PtyNativeProcess) {
+            PtyNativeProcess p = (PtyNativeProcess) process;
+            p.closePty();
+        }
+    }
+
     private final static class Accessor extends PtyImplAccessor {
 
         @Override
