@@ -814,7 +814,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
     private boolean ignoreIndexerCacheEvents = false;
 
-    private final RootsListeners rootsListeners = new RootsListeners();
+    /* test */ final RootsListeners rootsListeners = new RootsListeners();
     private final FileChangeListener sourceRootsListener = new FCL(true);
     private final FileChangeListener binaryRootsListener = new FCL(false);
     private final ThreadLocal<Boolean> inIndexer = new ThreadLocal<Boolean>();
@@ -1591,7 +1591,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 long [] recursiveListenersTime
         ) throws IOException {
             long tm = System.currentTimeMillis();
-            if (!RepositoryUpdater.getDefault().rootsListeners.add(root, true, getShuttdownRequest())) {
+            if (!RepositoryUpdater.getDefault().rootsListeners.add(root, true)) {
                 //Do not call the expensive recursive listener if exiting
                 return false;
             }
@@ -1775,7 +1775,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         protected final boolean indexBinary(URL root, BinaryIndexers indexers, Map<BinaryIndexerFactory, Boolean> votes) throws IOException {
             LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
 
-            if (!RepositoryUpdater.getDefault().rootsListeners.add(root, false, getShuttdownRequest())) {
+            if (!RepositoryUpdater.getDefault().rootsListeners.add(root, false)) {
                 return false;
             }
             
@@ -3875,7 +3875,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
     } // End of LexicographicComparator class
 
-    private static final class RootsListeners {
+    /* test */ static final class RootsListeners {
 
         private FileChangeListener sourcesListener = null;
         private FileChangeListener binariesListener = null;
@@ -3918,13 +3918,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
 
-        public synchronized boolean add(final URL root, final boolean sourceRoot, CancelRequest shuttdownRequest) {
+        public synchronized boolean add(final URL root, final boolean sourceRoot) {
             if (sourceRoot) {
                 if (sourcesListener != null) {
                     if (!sourceRoots.containsKey(root) && root.getProtocol().equals("file")) { //NOI18N
                         try {
                             File f = new File(root.toURI());
-                            safeAddRecursiveListener(sourcesListener, f, shuttdownRequest);
+                            safeAddRecursiveListener(sourcesListener, f);
                             sourceRoots.put(root, f);
                         } catch (URISyntaxException use) {
                             LOGGER.log(Level.INFO, null, use);
@@ -3948,14 +3948,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 FileUtil.addFileChangeListener(binariesListener, f);
                             } else {
                                 // listening on a folder
-                                safeAddRecursiveListener(binariesListener, f, shuttdownRequest);
+                                safeAddRecursiveListener(binariesListener, f);
                             }
                             binaryRoots.put(root, Pair.of(f, archiveUrl != null));
                         }
                     }
                 }
             }
-            return !shuttdownRequest.isRaised();
+            return sourcesListener != null && binariesListener != null;
         }
 
         public synchronized void remove(final Iterable<? extends URL> roots, final boolean sourceRoot) {
@@ -3982,7 +3982,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
 
-        private void safeAddRecursiveListener(FileChangeListener listener, File path, final CancelRequest shuttdownRequest) {
+        private void safeAddRecursiveListener(FileChangeListener listener, File path) {
             if (noRecursiveListener) {
                 if (!noRecursiveListenerLogged.getAndSet(true)) {
                     LOGGER.info("Recursive listeners are disabled"); //NOI18N
@@ -3992,7 +3992,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     FileUtil.addRecursiveListener(listener, path, new Callable<Boolean>() {
                         @Override
                         public Boolean call() throws Exception {
-                            return shuttdownRequest.isRaised();
+                            synchronized (RootsListeners.this) {
+                                return sourcesListener == null || binariesListener == null;
+                            }
                         }
                     });
                 } catch (Exception e) {

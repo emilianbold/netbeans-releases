@@ -195,7 +195,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 //        buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, unit);
 //    }
 
-    protected void buildProject(MakeProject makeProject, String command, long timeout, TimeUnit unit) throws InterruptedException, IllegalArgumentException, TimeoutException {
+    protected void buildProject(MakeProject makeProject, String command, long timeout, TimeUnit unit) throws Exception {
 
         final CountDownLatch done = new CountDownLatch(1);
         final AtomicInteger build_rc = new AtomicInteger(-1);
