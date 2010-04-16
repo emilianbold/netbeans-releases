@@ -315,7 +315,7 @@ public final class CompilerSetImpl extends CompilerSet {
     @Override
     public Charset getEncoding() {
         if (charset == null) {
-            charset = Charset.forName("UTF-8");
+            charset = Charset.forName("UTF-8"); //NOI18N
             if (charset == null) {
                 charset = Charset.defaultCharset();
             }

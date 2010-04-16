@@ -156,7 +156,7 @@ public final class NativeExecutionService {
     private Future<Integer> runRegular() {
         Charset charset = descriptor.charset;
         if (charset == null) {
-            charset = Charset.forName("UTF-8");
+            charset = Charset.forName("UTF-8"); //NOI18N
             if (charset == null) {
                 charset = Charset.defaultCharset();
             }

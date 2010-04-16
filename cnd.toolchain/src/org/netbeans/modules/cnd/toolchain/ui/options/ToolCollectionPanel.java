@@ -106,7 +106,7 @@ import org.openide.util.Utilities;
     public ToolCollectionPanel(ToolsPanel manager) {
         this.manager = manager;
         initComponents();
-        encodingComboBox.setModel(encodingModel("UTF-8"));
+        encodingComboBox.setModel(encodingModel("UTF-8")); //NOI18N
         encodingComboBox.setRenderer(encodingRenderer());
         tpInstall.setContentType("text/html"); // NOI18N
         btInstall.setVisible(isUrl);
@@ -1214,7 +1214,6 @@ import org.openide.util.Utilities;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel2.add(jLabel1, gridBagConstraints);
 
-        encodingComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         encodingComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 encodingComboBoxActionPerformed(evt);
