@@ -45,15 +45,27 @@
 
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.IllegalCharsetNameException;
 import java.util.List;
+import java.util.logging.Logger;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
+import javax.swing.JList;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -94,6 +106,8 @@ import org.openide.util.Utilities;
     public ToolCollectionPanel(ToolsPanel manager) {
         this.manager = manager;
         initComponents();
+        encodingComboBox.setModel(encodingModel("UTF-8"));
+        encodingComboBox.setRenderer(encodingRenderer());
         tpInstall.setContentType("text/html"); // NOI18N
         btInstall.setVisible(isUrl);
         scrollPane.setVisible(isUrl);
@@ -121,12 +135,14 @@ import org.openide.util.Utilities;
             cbFortranRequired.setEnabled(true);
             cbQMakeRequired.setEnabled(true);
             cbAsRequired.setEnabled(true);
+            encodingComboBox.setEnabled(true);
         } else {
             cbCRequired.setEnabled(false);
             cbCppRequired.setEnabled(false);
             cbFortranRequired.setEnabled(false);
             cbQMakeRequired.setEnabled(false);
             cbAsRequired.setEnabled(false);
+            encodingComboBox.setEnabled(false);
         }
 
         // Initialize Required tools. Can't do it in constructor because there is no model then.
@@ -137,6 +153,7 @@ import org.openide.util.Utilities;
         cbFortranRequired.setSelected(manager.getModel().isFortranRequired());
         cbQMakeRequired.setSelected(manager.getModel().isQMakeRequired());
         cbAsRequired.setSelected(manager.getModel().isAsRequired());
+
     }
 
     void updateUI(boolean doInitialize, CompilerSet selectedCS){
@@ -188,6 +205,10 @@ import org.openide.util.Utilities;
             APIAccessor.get().setToolPath(cs.findTool(PredefinedToolKind.DebuggerTool),tfDebuggerPath.getText());
             APIAccessor.get().setToolPath(cs.findTool(PredefinedToolKind.QMakeTool),tfQMakePath.getText());
             APIAccessor.get().setToolPath(cs.findTool(PredefinedToolKind.CMakeTool),tfCMakePath.getText());
+        }
+        if (encodingComboBox.getSelectedItem() instanceof Charset) {
+
+            APIAccessor.get().setCharset((Charset) encodingComboBox.getSelectedItem(),cs);
         }
     }
 
@@ -331,6 +352,7 @@ import org.openide.util.Utilities;
         } else {
             tfDebuggerPath.setText(""); // NOI18N
         }
+        encodingComboBox.setSelectedItem(cs.getEncoding());
     }
 
     private void setMakePathField(String path) {
@@ -770,11 +792,14 @@ import org.openide.util.Utilities;
         tfCMakePath.getDocument().addDocumentListener(this);
         btQMakeBrowse = new javax.swing.JButton();
         btCMakeBrowse = new javax.swing.JButton();
-        lbFamilyValue = new javax.swing.JLabel();
         btInstall = new javax.swing.JButton();
         scrollPane = new javax.swing.JScrollPane();
         tpInstall = new javax.swing.JTextPane();
         jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        lbFamilyValue = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        encodingComboBox = new javax.swing.JComboBox();
 
         setMinimumSize(new java.awt.Dimension(300, 300));
         setPreferredSize(new java.awt.Dimension(300, 300));
@@ -942,7 +967,7 @@ import org.openide.util.Utilities;
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
         add(lbFamily, gridBagConstraints);
 
@@ -1134,16 +1159,6 @@ import org.openide.util.Utilities;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btCMakeBrowse, gridBagConstraints);
 
-        lbFamilyValue.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.lbFamilyValue.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
-        add(lbFamilyValue, gridBagConstraints);
-
         btInstall.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolsPanel.UpdateCenterInstallButton")); // NOI18N
         btInstall.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1177,6 +1192,47 @@ import org.openide.util.Utilities;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
+
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        lbFamilyValue.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.lbFamilyValue.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
+        jPanel2.add(lbFamilyValue, gridBagConstraints);
+
+        jLabel1.setLabelFor(encodingComboBox);
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "EncodingLabelText")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        jPanel2.add(jLabel1, gridBagConstraints);
+
+        encodingComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        encodingComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                encodingComboBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        jPanel2.add(encodingComboBox, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(jPanel2, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btMakeBrowseActionPerformed
@@ -1216,6 +1272,10 @@ import org.openide.util.Utilities;
         DownloadUtils.downloadCompilerSet(cs);
     }//GEN-LAST:event_btInstallActionPerformed
 
+    private void encodingComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encodingComboBoxActionPerformed
+        manager.setChanged(true);
+    }//GEN-LAST:event_encodingComboBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAsBrowse;
@@ -1234,7 +1294,10 @@ import org.openide.util.Utilities;
     private javax.swing.JCheckBox cbFortranRequired;
     private javax.swing.JCheckBox cbMakeRequired;
     private javax.swing.JCheckBox cbQMakeRequired;
+    private javax.swing.JComboBox encodingComboBox;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel lbAsCommand;
     private javax.swing.JLabel lbBaseDirectory;
     private javax.swing.JLabel lbCCommand;
@@ -1261,4 +1324,82 @@ import org.openide.util.Utilities;
     private javax.swing.JTextPane tpInstall;
     // End of variables declaration//GEN-END:variables
 
+
+
+    public static ListCellRenderer encodingRenderer() {
+        return new EncodingRenderer();
+    }
+
+    public static ComboBoxModel encodingModel(String initialCharset) {
+        return new EncodingModel(initialCharset);
+    }
+
+    private static final class EncodingRenderer extends DefaultListCellRenderer {
+        EncodingRenderer() {
+            //Needed for synth?
+            setName("ComboBox.listRenderer"); //NOI18N
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean isLeadSelection) {
+            if (value instanceof Charset) {
+                value = ((Charset) value).displayName();
+            }
+            return super.getListCellRendererComponent(list, value, index,
+                    isSelected, isLeadSelection);
+        }
+    }
+
+    private static final class EncodingModel extends DefaultComboBoxModel {
+
+        EncodingModel (String originalEncoding) {
+            Charset defEnc = null;
+            for (Charset c : Charset.availableCharsets().values()) {
+                if (c.name().equals(originalEncoding)) {
+                    defEnc = c;
+                } else if (c.aliases().contains(originalEncoding)) { //Mobility - can have hand-entered encoding
+                    defEnc = c;
+                }
+                addElement(c);
+            }
+            if (originalEncoding != null && defEnc == null) {
+                //Create artificial Charset to keep the original value
+                //May happen when the project was set up on the platform
+                //which supports more encodings
+                try {
+                    defEnc = new UnknownCharset (originalEncoding);
+                    addElement(defEnc);
+                } catch (IllegalCharsetNameException e) {
+                    //The source.encoding property is completely broken
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, "IllegalCharsetName: {0}", originalEncoding); //NOI18N
+                }
+            }
+            if (defEnc == null) {
+                defEnc = Charset.defaultCharset();
+            }
+            setSelectedItem(defEnc);
+        }
+
+        private static final class UnknownCharset extends Charset {
+            UnknownCharset (String name) {
+                super (name, new String[0]);
+            }
+
+            @Override
+            public boolean contains(Charset c) {
+                return false;
+            }
+
+            @Override
+            public CharsetDecoder newDecoder() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public CharsetEncoder newEncoder() {
+                throw new UnsupportedOperationException();
+            }
+        }
+    }
 }

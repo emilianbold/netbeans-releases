@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.api.execution;
 
+import java.nio.charset.Charset;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.openide.windows.InputOutput;
@@ -63,6 +64,7 @@ public final class NativeExecutionDescriptor {
     LineConvertorFactory errConvertorFactory;
     LineConvertorFactory outConvertorFactory;
     boolean noReset;
+    Charset charset;
 
     public NativeExecutionDescriptor controllable(boolean controllable) {
         this.controllable = controllable;
@@ -111,6 +113,11 @@ public final class NativeExecutionDescriptor {
 
     public NativeExecutionDescriptor noReset(boolean noReset) {
         this.noReset = noReset;
+        return this;
+    }
+
+    public NativeExecutionDescriptor charset(Charset charset) {
+        this.charset = charset;
         return this;
     }
 }

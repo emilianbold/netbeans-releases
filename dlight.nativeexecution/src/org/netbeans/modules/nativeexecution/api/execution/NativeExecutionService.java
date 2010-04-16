@@ -38,10 +38,12 @@
  */
 package org.netbeans.modules.nativeexecution.api.execution;
 
+import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
@@ -49,6 +51,7 @@ import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.terminal.api.IOTerm;
 
@@ -57,7 +60,7 @@ import org.netbeans.modules.terminal.api.IOTerm;
  * NativeProcesses in a terminal output window.
  *
  * It also can be used for running in an output windows - in this case it just
- * delegares execution to the <tt>ExecutionService</tt>
+ * delegates execution to the <tt>ExecutionService</tt>
  *
  * @see ExecutionService
  * @see NativeExecutionDescriptor
@@ -151,18 +154,26 @@ public final class NativeExecutionService {
     }
 
     private Future<Integer> runRegular() {
-            ExecutionDescriptor descr = new ExecutionDescriptor()
-                    .controllable(descriptor.controllable)
-                    .frontWindow(descriptor.frontWindow)
-                    .inputVisible(descriptor.inputVisible)
-                    .inputOutput(descriptor.inputOutput)
-                    .outLineBased(descriptor.outLineBased)
-                    .showProgress(descriptor.showProgress)
-                    .postExecution(descriptor.postExecution)
-                    .noReset(descriptor.noReset)
-                    .errConvertorFactory(descriptor.errConvertorFactory)
-                    .outConvertorFactory(descriptor.outConvertorFactory);
-
+        Charset charset = descriptor.charset;
+        if (charset == null) {
+            charset = Charset.forName("UTF-8");
+            if (charset == null) {
+                charset = Charset.defaultCharset();
+            }
+        }
+        Logger.getInstance().log(Level.FINE, "Input stream charset: {0}", charset);
+        ExecutionDescriptor descr = new ExecutionDescriptor()
+                .controllable(descriptor.controllable)
+                .frontWindow(descriptor.frontWindow)
+                .inputVisible(descriptor.inputVisible)
+                .inputOutput(descriptor.inputOutput)
+                .outLineBased(descriptor.outLineBased)
+                .showProgress(descriptor.showProgress)
+                .postExecution(descriptor.postExecution)
+                .noReset(descriptor.noReset)
+                .errConvertorFactory(descriptor.errConvertorFactory)
+                .outConvertorFactory(descriptor.outConvertorFactory)
+                .charset(charset);
         ExecutionService es = ExecutionService.newService(processBuilder, descr, displayName);
         return es.run();
     }
