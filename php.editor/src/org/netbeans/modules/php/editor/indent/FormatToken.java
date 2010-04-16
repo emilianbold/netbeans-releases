@@ -152,7 +152,10 @@ public class FormatToken {
 	
 	LINE_COMMENT,
 	COMMENT,
+        COMMENT_START,
+        COMMENT_END,
 	DOC_COMMENT,
+        DOC_COMMENT_START,
 	DOC_COMMENT_END;
     }
 
@@ -200,7 +203,10 @@ public class FormatToken {
 		&& kind != Kind.UNBREAKABLE_SEQUENCE_END
 		&& kind != Kind.INDENT && kind != Kind.LINE_COMMENT
 		&& kind != Kind.COMMENT
+                && kind != Kind.COMMENT_START
+                && kind != Kind.COMMENT_END
 		&& kind != Kind.DOC_COMMENT
+                && kind != Kind.DOC_COMMENT_START
 		&& kind != Kind.DOC_COMMENT_END
 		&& kind != Kind.OPEN_TAG
 		&& kind != Kind.CLOSE_TAG

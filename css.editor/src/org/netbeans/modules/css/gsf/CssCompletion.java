@@ -289,10 +289,12 @@ public class CssCompletion implements CodeCompletionHandler {
         } else if (node.kind() == CssParserTreeConstants.JJTMEDIARULE) {
             return new DefaultCompletionResult(completeHtmlSelectors(prefix, caretOffset), false);
 
-        } else if (node.kind() == CssParserTreeConstants.JJTSKIP) {
+        } else if (node.kind() == CssParserTreeConstants.JJTSKIP || node.kind() == CssParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE) {
             //complete at keywords with prefix - parse tree broken
             SimpleNode parent = (SimpleNode) node.jjtGetParent();
-            if (parent != null && parent.kind() == CssParserTreeConstants.JJTUNKNOWNRULE) {  //test the parent node
+            if (parent != null && 
+                    (parent.kind() == CssParserTreeConstants.JJTUNKNOWNRULE ||
+                    parent.kind() == CssParserTreeConstants.JJTRULE)) {  //test the parent node
                 Collection<String> possibleValues = filterStrings(AT_RULES, prefix);
                 return wrapRAWValues(possibleValues, CssCompletionItem.Kind.VALUE, snapshot.getOriginalOffset(parent.startOffset()));
             }

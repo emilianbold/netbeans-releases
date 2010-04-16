@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -450,6 +451,9 @@ public class ProvidedExtensionsTest extends NbTestCase {
     }
     
     public static class ProvidedExtensionsImpl extends ProvidedExtensions  {
+        private static File refreshCallForDir;
+        private static long refreshCallRetValue;
+        private static List<File> refreshCallToAdd;
         private int implsMoveCalls;
         private int moveImplCalls;
         private int implsRenameCalls;
@@ -522,7 +526,26 @@ public class ProvidedExtensionsTest extends NbTestCase {
         public void beforeChange(FileObject f) {
             assertNotNull(FileUtil.toFile(f));
             implsBeforeChangeCalls++;
-        }    
+        }
+        
+        public static void nextRefreshCall(File forDir, long retValue, File... toAdd) {
+            refreshCallForDir = forDir;
+            refreshCallRetValue = retValue;
+            refreshCallToAdd = Arrays.asList(toAdd);
+        }
+
+        @Override
+        public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+            if (dir.equals(refreshCallForDir)) {
+                children.addAll(refreshCallToAdd);
+                long r = refreshCallRetValue;
+                refreshCallForDir = null;
+                refreshCallToAdd = null;
+                refreshCallRetValue = -1;
+                return r;
+            }
+            return -1;
+        }
         
         @Override
         public ProvidedExtensions.DeleteHandler getDeleteHandler(File f) {

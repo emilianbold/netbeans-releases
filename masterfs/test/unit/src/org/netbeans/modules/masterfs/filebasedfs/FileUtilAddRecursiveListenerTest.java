@@ -44,25 +44,38 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.test.TestFileUtils;
 import org.netbeans.modules.masterfs.filebasedfs.FileUtilTest.EventType;
 import org.netbeans.modules.masterfs.filebasedfs.FileUtilTest.TestFileChangeListener;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.TestUtils;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensionsTest;
 
 /**
  * @author Jiri Skrivanek
  */
 public class FileUtilAddRecursiveListenerTest extends NbTestCase {
+    static {
+        MockServices.setServices(ProvidedExtensionsTest.AnnotationProviderImpl.class);
+    }
+
     private final Logger LOG;
 
     public FileUtilAddRecursiveListenerTest(String name) {
         super(name);
         LOG = Logger.getLogger("TEST." + name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
     }
 
     @Override
@@ -275,5 +288,42 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
         assertEquals("Wrong number of events when folder deleted.", 1, fcl.check(EventType.DELETED));
 
         LOG.info("OK");
+    }
+
+    public void testProvideExtensionsRefreshRecursively() throws Exception {
+        File root = new File(getWorkDir(), "root");
+        final File sub = new File(root, "sub");
+        final File subsub = new File(sub, "subsub");
+        File subsubdir = new File(subsub, "dir");
+        subsubdir.mkdirs();
+        File subfile = new File(sub, "file");
+        subfile.createNewFile();
+        File deepfile = new File(subsubdir, "deep");
+        deepfile.createNewFile();
+
+        ProvidedExtensionsTest.ProvidedExtensionsImpl.nextRefreshCall(
+            sub,
+            Long.MAX_VALUE - 10,
+            subfile
+        );
+
+
+        TestFileChangeListener fcl = new TestFileChangeListener();
+        FileObject rf = FileUtil.toFileObject(root);
+        rf.addRecursiveListener(fcl);
+
+        BaseFileObj noFO = FileObjectFactory.getInstance(root).getCachedOnly(subsubdir);
+        assertNull("subsub directory has been skipped", noFO);
+
+        assertEquals("No events", 0, fcl.checkAll());
+        LOG.log(Level.INFO, "Touching subfile: {0}", deepfile);
+        TestFileUtils.touch(deepfile, null);
+        LOG.log(Level.INFO, "Will do refresh, lastModified: {0}", deepfile.lastModified());
+        FileUtil.refreshFor(root);
+        LOG.info("Refresh done");
+        fcl.check(EventType.ATTRIBUTE_CHANGED); // ignore if any
+
+        fcl.printAll(LOG);
+        assertEquals("No other events", 0, fcl.checkAll());
     }
 }

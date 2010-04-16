@@ -46,6 +46,22 @@ made subject to such option by the copyright holder.
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
+    <change id="IndexedNode.LookupConstr">
+        <api name="nodes"/>
+        <summary>New constructor of IndexedNode</summary>
+        <version major="7" minor="16"/>
+        <date day="16" month="4" year="2010"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+        <description>
+            <p>
+            <a href="@TOP@/org/openide/nodes/IndexedNode.html">IndexedNode</a> has
+            new constructor that accepts <code>Lookup</code>.
+            </p>
+        </description>
+        <class package="org.openide.nodes" name="IndexedNode"/>
+        <issue number="163258"/>
+    </change>
     <change id="NodeOp.factory">
         <api name="nodes"/>
         <summary>Support for declarative Node registrations</summary>
@@ -56,7 +72,7 @@ made subject to such option by the copyright holder.
         <description>
             <p>
             <a href="@TOP@/org/openide/nodes/NodeOp.html">NodeOp.factory</a>
-            is new 
+            is new
             <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">layer</a>
             based factory method
             to allow declarative definition of a root node into the UI.

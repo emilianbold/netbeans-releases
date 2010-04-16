@@ -43,8 +43,11 @@ package org.netbeans.modules.j2ee.ejbcore;
 
 import java.util.ArrayList;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -74,7 +77,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -370,21 +372,39 @@ public class Utils {
         return result.toString();
     }
 
-    public static Project getProject(final EjbReference ejbReference) throws IOException {
+    public static Project getProject(final EjbReference ejbReference, final EjbReference.EjbRefIType refIType) throws IOException {
+        FileObject[] javaSources = ejbReference.getEjbModule().getJavaSources();
+        ClasspathInfo cpInfo = javaSources.length > 0 ? ClasspathInfo.create(
+            ClassPath.getClassPath(javaSources[0], ClassPath.BOOT),
+            ClassPath.getClassPath(javaSources[0], ClassPath.COMPILE),
+            ClassPath.getClassPath(javaSources[0], ClassPath.SOURCE)
+            ) : null;
+        if (cpInfo != null){
+            FileObject ejbReferenceEjbClassFO = findFileObject(ejbReference.getComponentName(refIType), cpInfo);
+            return ejbReferenceEjbClassFO != null ? FileOwnerQuery.getOwner(ejbReferenceEjbClassFO) : null;
+        }
 
-        MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
-        FileObject ejbReferenceEjbClassFO = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
-            public FileObject run(EjbJarMetadata metadata) throws Exception {
-                return metadata.findResource(toResourceName(ejbReference.getEjbClass()));
-            }
-        });
+        return null;
+    }
 
-        if (ejbReferenceEjbClassFO == null) {
+    public static FileObject findFileObject(final String className, ClasspathInfo cpInfo) throws IOException{
+        if (cpInfo == null){
             return null;
         }
-        return FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
+        final FileObject[] result = new FileObject[1];
+        JavaSource.create(cpInfo).runUserActionTask(new Task<CompilationController>() {
+            @Override
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = controller.getElements().getTypeElement(className);
+                if (typeElement != null) {
+                    result[0] = SourceUtils.getFile(ElementHandle.create(typeElement), controller.getClasspathInfo());
+                }
+            }
+        }, true);
+        return result[0];
     }
- 
+
     /**
      * Creates resource name from fully-qualified class name by
      * replacing '.' with '/' and appending ".java"
