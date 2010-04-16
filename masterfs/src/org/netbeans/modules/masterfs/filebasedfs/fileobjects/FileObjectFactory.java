@@ -687,12 +687,19 @@ public final class FileObjectFactory {
         stopWatch.stop();
 
         // print refresh stats unconditionally in trunk
-        LOG_REFRESH.fine(
-                "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
-                Statistics.REFRESH_FS.toString() + "\n  " +
-                Statistics.LISTENERS_CALLS.toString() + "\n  " +
-                Statistics.REFRESH_FOLDER.toString() + "\n  " +
-                Statistics.REFRESH_FILE.toString() + "\n");
+        if (LOG_REFRESH.isLoggable(Level.FINE)) {
+            LOG_REFRESH.log(
+                Level.FINE,
+                "FS.refresh statistics ({0}FileObjects):\n  {1}\n  {2}\n  {3}\n  {4}\n",
+                new Object[]{
+                    Statistics.fileObjects(),
+                    Statistics.REFRESH_FS.toString(),
+                    Statistics.LISTENERS_CALLS.toString(),
+                    Statistics.REFRESH_FOLDER.toString(),
+                    Statistics.REFRESH_FILE.toString()
+                }
+            );
+        }
 
         Statistics.REFRESH_FS.reset();
         Statistics.LISTENERS_CALLS.reset();
@@ -727,12 +734,19 @@ public final class FileObjectFactory {
         stopWatch.stop();
 
         // print refresh stats unconditionally in trunk
-        LOG_REFRESH.fine(
-                "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
-                Statistics.REFRESH_FS.toString() + "\n  " +
-                Statistics.LISTENERS_CALLS.toString() + "\n  " +
-                Statistics.REFRESH_FOLDER.toString() + "\n  " +
-                Statistics.REFRESH_FILE.toString() + "\n");
+        if (LOG_REFRESH.isLoggable(Level.FINE)) {
+            LOG_REFRESH.log(
+                Level.FINE,
+                "FS.refresh statistics ({0}FileObjects):\n  {1}\n  {2}\n  {3}\n  {4}\n",
+                new Object[]{
+                    Statistics.fileObjects(),
+                    Statistics.REFRESH_FS.toString(),
+                    Statistics.LISTENERS_CALLS.toString(),
+                    Statistics.REFRESH_FOLDER.toString(),
+                    Statistics.REFRESH_FILE.toString()
+                }
+            );
+        }
 
         Statistics.REFRESH_FS.reset();
         Statistics.LISTENERS_CALLS.reset();
