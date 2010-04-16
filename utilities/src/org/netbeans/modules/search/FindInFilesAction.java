@@ -413,7 +413,7 @@ public class FindInFilesAction extends CallableSystemAction
         return false;
     }
 
-    private static final class LookupSensitive implements Action,
+    static final class LookupSensitive implements Action,
             ChangeListener, Presenter.Menu, Presenter.Popup, Presenter.Toolbar {
 
         private static int counter = 0;

@@ -373,7 +373,7 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
     /**
      * Lookup-sensitive variant of {@code SearchScopeNodeSelection}.
      */
-    private static final class LookupSensitive extends AbstractSearchScope
+    static final class LookupSensitive extends AbstractSearchScope
                                                implements LookupListener {
 
         private static final Node[] emptyNodesArray = new Node[0];
