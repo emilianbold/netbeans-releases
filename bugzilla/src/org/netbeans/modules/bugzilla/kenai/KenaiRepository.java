@@ -283,6 +283,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return TextUtils.encodeURL(url) + ":" + name;                           // NOI18N
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(KenaiAccessor.PROP_LOGIN)) {
 
