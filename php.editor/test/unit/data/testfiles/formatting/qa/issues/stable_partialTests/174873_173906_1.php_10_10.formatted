@@ -3,7 +3,9 @@
 try {
           if ($foo== 'bar') {
                     
-          } else { return false;          }
+          } else {
+                    return false;
+          }
 } catch (InvalidArgumentException $e) {
           echo "an exception";
           return false;
