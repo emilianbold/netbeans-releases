@@ -127,11 +127,13 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         }
         String bKey = bundleKeyForLabel();
         final Set<Modifier> modifiers = usage.getModifiers();
-        final String lblText;
-        if (clsName != null) {
-            lblText = NbBundle.getMessage(WhereUsedPanel.class, bKey, name, clsName);
-        } else {
-            lblText = NbBundle.getMessage(WhereUsedPanel.class, bKey, name);
+        String lblText = name;
+        if (bKey != null) {
+            if (clsName != null) {
+                lblText = NbBundle.getMessage(WhereUsedPanel.class, bKey, name, clsName);
+            } else {
+                lblText = NbBundle.getMessage(WhereUsedPanel.class, bKey, name);
+            }
         }
 
         handleElementsCombo(usage.getModelElements());
@@ -213,8 +215,9 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 break;
             case TYPE_CONSTANT:
                 bundleKey = "DSC_ClassConstantUsages"; //NOI18N
-
                 break;
+                default:
+                    assert false : usage.getKind();
         }
 
         return bundleKey;
