@@ -173,11 +173,23 @@ public abstract class ResolvedDependencies {
                 return d;
             }
         }
+        List<ResolvedDependency> old = new ArrayList<ResolvedDependency>(deps);
         //Dependencies may have changed - recompute them
         deps.clear();
         ResolvedDependency result = null;
         for (Dependency dep : dependencies.all()) {
-            ResolvedDependency rd = new ResolvedDependency(dep, resolver);
+            ResolvedDependency rd = null;
+            //XXX hotfix for losing dep info when adding multiple dependencies.  We may have
+            //cached path info for as-yet-unsaved dependencies
+            for (ResolvedDependency oldRd : old) {
+                if (dep.getID().equals(oldRd.dep().getID())) {
+                    rd = oldRd;
+                    break;
+                }
+            }
+            if (rd == null) {
+                rd = new ResolvedDependency(dep, resolver);
+            }
             if (id.equals(dep.getID())) {
                 result = rd;
             }
