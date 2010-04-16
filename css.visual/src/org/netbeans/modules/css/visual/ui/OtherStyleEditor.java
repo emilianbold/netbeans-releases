@@ -59,8 +59,11 @@ public class OtherStyleEditor extends StyleEditor {
 
     /** Creates new form FontStyleEditor */
     public OtherStyleEditor() {
-        setName("otherStyleEditor"); //NOI18N
-        setDisplayName(NbBundle.getMessage(OtherStyleEditor.class, "OTHER_EDITOR_DISPNAME"));
+        super("otherStyleEditor", NbBundle.getMessage(OtherStyleEditor.class, "OTHER_EDITOR_DISPNAME")); //NOI18N
+    }
+
+    @Override
+    protected void lazyInitializePanel() {
         initComponents();
     }
 
