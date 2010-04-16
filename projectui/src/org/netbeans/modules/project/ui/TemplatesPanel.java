@@ -128,7 +128,7 @@ public class TemplatesPanel implements WizardDescriptor.Panel<WizardDescriptor> 
 
         TemplatesPanelGUI gui = (TemplatesPanelGUI)this.getComponent();
         FileObject fo = gui.getSelectedTemplate();
-        if (fo != null) {
+        if (fo != null && fo.isValid()) {
             try {
                 wd.setTemplate (DataObject.find(fo));
             } catch (DataObjectNotFoundException e) {

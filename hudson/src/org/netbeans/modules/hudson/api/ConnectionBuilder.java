@@ -52,9 +52,11 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.HostnameVerifier;
@@ -77,6 +79,8 @@ public final class ConnectionBuilder {
 
     private static final Logger LOG = Logger.getLogger(ConnectionBuilder.class.getName());
     private static final RequestProcessor TIMER = new RequestProcessor(ConnectionBuilder.class.getName() + ".TIMER"); // NOI18N
+    /** Do not prompt for authentication for the same server more than once in a given session. */
+    private static final Set</*URL*/String> authenticationRejected = new HashSet<String>();
 
     /**
      * Session cookies set by home.
@@ -209,10 +213,7 @@ public final class ConnectionBuilder {
             throw new IllegalArgumentException("You must call the url method!"); // NOI18N
         }
         if (url.getProtocol().matches("https?") && EventQueue.isDispatchThread()) {
-            LOG.log(Level.FINER, "opening " + url, new IllegalStateException("Avoid connecting from EQ"));
-            if (timeout == 0) {
-                timeout = 3000;
-            }
+            throw new IOException("#184196: refusing to open " + url + " from EQ");
         }
         if (timeout == 0) {
             return doConnection();
@@ -317,12 +318,17 @@ public final class ConnectionBuilder {
                 continue RETRY;
             case HttpURLConnection.HTTP_FORBIDDEN:
                 if (auth && home != null) {
-                    for (ConnectionAuthenticator authenticator : Lookup.getDefault().lookupAll(ConnectionAuthenticator.class)) {
-                        URLConnection retry = authenticator.forbidden(conn, home);
-                        if (retry != null) {
-                            LOG.log(Level.FINER, "Retrying after auth from {0}", authenticator);
-                            conn = retry;
-                            continue RETRY;
+                    synchronized (authenticationRejected) {
+                        if (!authenticationRejected.contains(home.toString())) {
+                            for (ConnectionAuthenticator authenticator : Lookup.getDefault().lookupAll(ConnectionAuthenticator.class)) {
+                                URLConnection retry = authenticator.forbidden(conn, home);
+                                if (retry != null) {
+                                    LOG.log(Level.FINER, "Retrying after auth from {0}", authenticator);
+                                    conn = retry;
+                                    continue RETRY;
+                                }
+                            }
+                            authenticationRejected.add(home.toString());
                         }
                     }
                 }
