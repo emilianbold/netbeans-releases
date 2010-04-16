@@ -124,8 +124,11 @@ public class FontStyleEditor extends StyleEditor {
     
     /** Creates new form FontStyleEditor */
     public FontStyleEditor() {
-        setName("fontStyleEditor"); //NOI18N
-        setDisplayName(NbBundle.getMessage(FontStyleEditor.class, "FONT_EDITOR_DISPNAME"));
+        super("fontStyleEditor", NbBundle.getMessage(FontStyleEditor.class, "FONT_EDITOR_DISPNAME")); //NOI18N
+    }
+    
+    @Override
+    protected void lazyInitializePanel() {
         initComponents();
         colorSelectionPanel.add(colorField,BorderLayout.CENTER);
         colorField.addPropertyChangeListener("color", new PropertyChangeListener() {

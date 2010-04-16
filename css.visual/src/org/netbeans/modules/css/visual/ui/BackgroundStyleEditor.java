@@ -76,8 +76,11 @@ public class BackgroundStyleEditor extends StyleEditor {
 
     /** Creates new form FontStyleEditor */
     public BackgroundStyleEditor() {
-        setName("backgroundStyleEditor"); //NOI18N
-        setDisplayName(NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_EDITOR_DISPNAME"));
+        super("backgroundStyleEditor", NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_EDITOR_DISPNAME")); //NOI18N
+    }
+
+    @Override
+    protected void lazyInitializePanel() {
         initComponents();
         colorSelectionPanel.add(colorField,BorderLayout.CENTER);
         colorField.addPropertyChangeListener("color", new PropertyChangeListener() {
