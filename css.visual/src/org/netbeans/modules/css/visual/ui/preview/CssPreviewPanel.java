@@ -122,12 +122,30 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
 
                 @Override
                 public void run() {
-                    try {
-                        xhtmlPanel.setDocument(is, url);
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    //call it in non-AWT thread, it may take some time
+                    RequestProcessor.getDefault().post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            try {
+                                xhtmlPanel.setDocument(is, url);
+                                //repaing the panel in AWT then
+                                SwingUtilities.invokeLater(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        xhtmlPanel.revalidate();
+                                        xhtmlPanel.repaint();
+                                    }
+                                    
+                                });
+                            } catch (Exception ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
                 }
+
             };
         } else {
             //and set the document to he renderer
