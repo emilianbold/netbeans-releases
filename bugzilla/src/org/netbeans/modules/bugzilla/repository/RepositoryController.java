@@ -55,6 +55,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
@@ -320,28 +321,28 @@ public class RepositoryController extends BugtrackingController implements Docum
                         isLocalUserEnabled());
 
                 ValidateCommand cmd = new ValidateCommand(taskRepo);
-                repository.getExecutor().execute(cmd, false, false);
+                repository.getExecutor().execute(cmd, false, false, false);
                 if(cmd.hasFailed()) {
                     if(cmd.getErrorMessage() == null) {
-                        logValidateMessage("validate for [{0},{1},{2},****{3},****] has failed, yet the returned error message is null.", // NOI18N
-                                           Level.WARNING, name, url, user, httpUser);
+                        logValidateMessage("validate for [{0},{1},{2},{3},{4},{5}] has failed, yet the returned error message is null.", // NOI18N
+                                           Level.WARNING, name, url, user, getPassword(), httpUser, getHttpPassword());
                         errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_VALIDATION_FAILED"); // NOI18N
                     } else {
                         errorMessage = cmd.getErrorMessage();
-                        logValidateMessage("validate for [{0},{1},{2},****{3},****] has failed: " + errorMessage, // NOI18N
-                                           Level.WARNING, name, url, user, httpUser);
+                        logValidateMessage("validate for [{0},{1},{2},{3},{4},{5}] has failed: " + errorMessage, // NOI18N
+                                           Level.WARNING, name, url, user, getPassword(), httpUser, getHttpPassword());
                     }
                     validateError = true;
                 } else {
                     panel.connectionLabel.setVisible(true);
-                    logValidateMessage("validate for [{0},{1},{2},****{3},****] ok.", // NOI18N
-                                       Level.INFO, name, url, user, httpUser);
+                    logValidateMessage("validate for [{0},{1},{2},{3},{4},{5}] ok.", // NOI18N
+                                       Level.INFO, name, url, user, getPassword(), httpUser, getHttpPassword());
                 }
                 fireDataChanged();
             }
 
-            private void logValidateMessage(String msg, Level level, String name, String url, String user, String httpUser) {
-                Bugzilla.LOG.log(level, msg, new Object[] {name, url, user, httpUser});
+            private void logValidateMessage(String msg, Level level, String name, String url, String user, String psswd, String httpUser, String httpPsswd) {
+                Bugzilla.LOG.log(level, msg, new Object[] {name, url, user, BugtrackingUtil.getPasswordLog(psswd), httpUser, BugtrackingUtil.getPasswordLog(httpPsswd)});
             }
         };
         taskRunner.startTask();
