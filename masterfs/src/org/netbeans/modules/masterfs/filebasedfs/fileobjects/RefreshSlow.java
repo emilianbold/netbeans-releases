@@ -40,15 +40,17 @@ package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.openide.filesystems.FileObject;
 
-final class RefreshSlow implements Runnable {
+final class RefreshSlow extends AtomicBoolean implements Runnable {
     private ActionEvent ref;
     private boolean ignoreIO;
 
     public RefreshSlow() {
         super();
+        set(true);
     }
 
     @Override
@@ -57,7 +59,7 @@ final class RefreshSlow implements Runnable {
             ignoreIO = true;
             ActionEvent r = this.ref;
             Runnable goingIdle = r instanceof Runnable ? (Runnable) r : null;
-            FileChangedManager.idleIO(50, this, goingIdle);
+            FileChangedManager.idleIO(50, this, goingIdle, this);
         } else {
             RootObj.invokeRefreshFor(this, File.listRoots());
             ignoreIO = false;
@@ -66,7 +68,7 @@ final class RefreshSlow implements Runnable {
 
     void progress(int index, int size, FileObject obj) {
         if (ref != null) {
-            ref.setSource(new Object[] { index, size, obj });
+            ref.setSource(new Object[] { index, size, obj, this });
         }
     }
 

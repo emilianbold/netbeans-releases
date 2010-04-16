@@ -50,6 +50,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -135,8 +136,10 @@ public final class MenuWarmUpTask implements Runnable {
     private static class NbWindowsAdapter extends WindowAdapter
     implements Runnable, Cancellable {
         private static final RequestProcessor rp = new RequestProcessor ("Refresh-After-WindowActivated", 1, true);//NOI18N
-        private RequestProcessor.Task task = null;
-        private static final Logger LOG = Logger.getLogger("org.netbeans.ui.focus"); // NOI18N
+        private RequestProcessor.Task task;
+        private AtomicBoolean goOn;
+        private static final Logger UILOG = Logger.getLogger("org.netbeans.ui.focus"); // NOI18N
+        private static final Logger LOG = Logger.getLogger("org.netbeans.core.ui.focus"); // NOI18N
 
         @Override
         public void windowActivated(WindowEvent e) {
@@ -144,8 +147,11 @@ public final class MenuWarmUpTask implements Runnable {
             if (e.getOppositeWindow() == null) {
                 synchronized (rp) {
                     if (task != null) {
+                        LOG.fine("Scheduling task after activation");
                         task.schedule(1500);
                         task = null;
+                    } else {
+                        LOG.fine("Activation without prepared refresh task");
                     }
                 }
             }
@@ -161,22 +167,26 @@ public final class MenuWarmUpTask implements Runnable {
                     } else {
                         task = rp.create(this);
                     }
+                    LOG.fine("Window deactivated, preparing refresh task");
                 }
                 LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_DEACTIVATED"); // NOI18N
                 r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
                 r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
-                r.setLoggerName(LOG.getName());
-                LOG.log(r);
+                r.setLoggerName(UILOG.getName());
+                UILOG.log(r);
             }
         }
 
         @Override
         public void run() {
             if (Boolean.getBoolean("netbeans.indexing.noFileRefresh") == true) { // NOI18N
+                LOG.fine("Refresh disabled, aborting");
                 return; // no file refresh
             }
             final ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh"), this, null);
-            h.setInitialDelay(10000);
+            if (!LOG.isLoggable(Level.FINE)) {
+                h.setInitialDelay(10000);
+            }
             h.start();
             Runnable run = null;
             class HandleBridge extends ActionEvent implements Runnable {
@@ -191,13 +201,14 @@ public final class MenuWarmUpTask implements Runnable {
                 public void setSource(Object newSource) {
                     if (newSource instanceof Object[]) {
                         Object[] arr = (Object[])newSource;
-                        if (arr.length == 3 &&
+                        if (arr.length >= 3 &&
                             arr[0] instanceof Integer &&
                             arr[1] instanceof Integer &&
                             arr[2] instanceof FileObject
                         ) {
                             if (! (getSource() instanceof Object[])) {
                                 h.switchToDeterminate((Integer)arr[1]);
+                                LOG.log(Level.FINE, "First refresh progress event delivered: {0}/{1} where {2}, goOn: {3}", arr);
                             }
                             h.progress((Integer)arr[0]);
                             FileObject fo = (FileObject)arr[2];
@@ -210,6 +221,9 @@ public final class MenuWarmUpTask implements Runnable {
                                 next = now + 500;
                             }
                             super.setSource(newSource);
+                        }
+                        if (arr.length >= 4 && arr[3] instanceof AtomicBoolean) {
+                            goOn = (AtomicBoolean)arr[3];
                         }
                     }
                 }
@@ -233,27 +247,41 @@ public final class MenuWarmUpTask implements Runnable {
                 Exceptions.printStackTrace(ex);
             }
             long now = System.currentTimeMillis();
-            if (run == null) {
-                FileUtil.refreshAll();
-            } else {
-                // connect the bridge with the masterfs's RefreshSlow
-                run.equals(handleBridge);
-                run.run();
-            }
-            long took = System.currentTimeMillis() - now;
             try {
-                FileUtil.getConfigRoot().getFileSystem().refresh(true);
+                if (run == null) {
+                    LOG.fine("Starting classical refresh");
+                    FileUtil.refreshAll();
+                } else {
+                    // connect the bridge with the masterfs's RefreshSlow
+                    if (run instanceof AtomicBoolean) {
+                        goOn = (AtomicBoolean) run;
+                        LOG.fine("goOn controller registered");
+                    }
+                    LOG.fine("Starting slow refresh");
+                    run.equals(handleBridge);
+                    run.run();
+                }
+                long took = System.currentTimeMillis() - now;
+                LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_ACTIVATED"); // NOI18N
+                r.setParameters(new Object[] { took });
+                r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
+                r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
+                r.setLoggerName(UILOG.getName());
+                UILOG.log(r);
+                LOG.log(Level.FINE, "Refresh done in {0} ms", took);
+                AtomicBoolean ab = goOn;
+                if (ab == null || ab.get()) {
+                    long sfs = System.currentTimeMillis();
+                    FileUtil.getConfigRoot().getFileSystem().refresh(true);
+                    LOG.log(Level.FINE, "SystemFileSystem refresh done {0} ms", (System.currentTimeMillis() - sfs));
+                } else {
+                    LOG.fine("Skipping SystemFileSystem refresh");
+                }
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
                 h.finish();
             }
-            LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_ACTIVATED"); // NOI18N
-            r.setParameters(new Object[] { took });
-            r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
-            r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
-            r.setLoggerName(LOG.getName());
-            LOG.log(r);
         }
         private int counter;
         @Override
@@ -261,6 +289,12 @@ public final class MenuWarmUpTask implements Runnable {
             synchronized(rp) {
                 if (task != null) {
                     task.cancel();
+                }
+                if (goOn != null) {
+                    goOn.set(false);
+                    LOG.log(Level.FINE, "Signaling cancel to {0}", System.identityHashCode(goOn));
+                } else {
+                    LOG.log(Level.FINE, "Cannot signal cancel, goOn is null");
                 }
             }
 
@@ -270,8 +304,8 @@ public final class MenuWarmUpTask implements Runnable {
             r.setParameters(new Object[]{counter});
             r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
             r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
-            r.setLoggerName(LOG.getName());
-            LOG.log(r);
+            r.setLoggerName(UILOG.getName());
+            UILOG.log(r);
 
             if (counter >= 3) {
                 FileObject action = FileUtil.getConfigFile("Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"); // NOI18N
