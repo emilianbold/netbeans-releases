@@ -244,7 +244,7 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
         }
     } // End of Listener class
 
-    private final class ProxySeq implements HighlightsSequence {
+    private final class ProxySeq implements HighlightsSequenceEx {
         
         private final Sequence2Marks [] marks;
         private int index1 = -2;
@@ -331,7 +331,14 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
                 return compositeAttributes;
             }
         }
-        
+
+        @Override
+        public boolean isStale() {
+            synchronized (ProxyHighlightsContainer.this.LOCK) {
+                return !checkVersion();
+            }
+        }
+
         private int findLowest() {
             int lowest = Integer.MAX_VALUE;
             int idx = -1;
