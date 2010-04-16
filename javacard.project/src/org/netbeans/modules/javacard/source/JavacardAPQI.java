@@ -39,11 +39,14 @@
 package org.netbeans.modules.javacard.source;
 import java.net.URL;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery.Trigger;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -76,8 +79,8 @@ public class JavacardAPQI implements AnnotationProcessingQueryImplementation {
         }
 
         @Override
-        public boolean annotationProcessingEnabled() {
-            return true;
+        public Set<? extends Trigger> annotationProcessingEnabled() {
+            return EnumSet.allOf(Trigger.class);
         }
 
         @Override
