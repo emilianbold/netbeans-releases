@@ -109,7 +109,8 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         return 0;
     }
 
-    public CharSequence getName() {
+    @Override
+    public final CharSequence getName() {
         return name;
     }
 
@@ -173,6 +174,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         // so registering is a descendant class' responsibility
     }
 
+    @Override
     abstract public Kind getKind();
 
     protected final void register(CsmScope scope, boolean registerUnnamedInNamespace) {
@@ -227,10 +229,12 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         return (scope instanceof NamespaceImpl) ? (NamespaceImpl) scope : null;
     }
 
+    @Override
     public CharSequence getQualifiedName() {
         return qualifiedName;
     }
 
+    @Override
     public CsmScope getScope() {
         return _getScope();
     }
@@ -268,11 +272,13 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         return isValid && getContainingFile().isValid();
     }
 
+    @Override
     public CsmClass getContainingClass() {
         CsmScope scope = getScope();
         return CsmKindUtilities.isClass(scope) ? (CsmClass) scope : null;
     }
 
+    @Override
     public CsmVisibility getVisibility() {
         return visibility;
     }
@@ -281,6 +287,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         this.visibility = visibility;
     }
 
+    @Override
     public boolean isStatic() {
         return _static;
     }
@@ -347,6 +354,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         UIDObjectFactory.getDefaultFactory().readUIDCollection(enclosingTypdefs, input, collSize);
     }
 
+    @Override
     public Collection<CsmTypedef> getEnclosingTypedefs() {
         return UIDCsmConverter.UIDsToDeclarations(enclosingTypdefs);
     }
