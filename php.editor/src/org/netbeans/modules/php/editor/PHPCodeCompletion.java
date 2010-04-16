@@ -460,6 +460,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     private void autoCompleteNewClass(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
+        if (request.prefix.isEmpty()) {
+            autoCompleteClassNames(completionResult, request, false);
+            return;
+        }
         final QualifiedName prefix = QualifiedName.create(request.prefix).toNotFullyQualified();
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         
