@@ -83,7 +83,7 @@ public class UploadWithMd5CheckTest extends NativeExecutionBaseTestCase {
         for (int pass = 0; pass < 8; pass++) {
             if (pass % 3 == 1) {
                 if (pass == 1) {
-                    CommonTasksSupport.rmFile(env, remotePath, null);
+                    CommonTasksSupport.rmFile(env, remotePath, null).get();
                 } else {
                     ProcessUtils.execute(env, "cp", "/bin/ls", remotePath);
                 }
