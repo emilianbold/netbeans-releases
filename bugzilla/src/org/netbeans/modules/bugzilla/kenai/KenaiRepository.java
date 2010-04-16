@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
@@ -322,14 +323,13 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
             if(ownerInfo.getOwner().equals(product)) {
                 return ownerInfo;
             } else {
-                Bugzilla.LOG.warning(
-                        " returned owner [" +               // NOI18N
-                        ownerInfo.getOwner() +
-                        "] for " +                          // NOI18N
-                        nodes[0] +
-                        " is different then product [" +    // NOI18N
-                        product +
-                        "]");                               // NOI18N
+                Bugzilla.LOG.log(
+                        Level.WARNING,
+                        " returned owner [{0}] for {1} is different then product [{2}]",
+                        new Object[]{
+                            ownerInfo.getOwner(),
+                            nodes[0],
+                            product});                               // NOI18N
                 return null;
             }
         }
