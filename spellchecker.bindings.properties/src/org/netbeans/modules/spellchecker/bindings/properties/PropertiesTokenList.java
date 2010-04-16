@@ -65,7 +65,10 @@ public class PropertiesTokenList extends AbstractTokenList {
     protected int[] findNextSpellSpan(SyntaxSupport ts, int offset) throws BadLocationException {
         if (ts == null || hidden)
             return new int[] {-1, -1};
-        TokenItem item = ((ExtSyntaxSupport) ts).getTokenChain (offset, ts.getDocument ().getLength ());
+        TokenItem item = null;
+        int documentLength = ts.getDocument ().getLength ();
+        if (offset < documentLength)
+            item = ((ExtSyntaxSupport) ts).getTokenChain (offset, documentLength);
         while (item != null && item.getTokenID () != PropertiesTokenContext.VALUE)
             item = item.getNext ();
         if (item == null) return new int[] {-1, -1};

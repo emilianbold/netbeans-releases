@@ -337,7 +337,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
                 if (!isInterrupted()) {
                     if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.finest(String.format("%s: State changed: %s -> %s\n", // NOI18N
+                        LOG.finest(String.format("%s: State changed: %s -> %s", // NOI18N
                                 this.toString(), this.state, state));
                     }
                 }

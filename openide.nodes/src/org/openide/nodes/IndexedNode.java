@@ -41,6 +41,7 @@
 package org.openide.nodes;
 
 import javax.swing.JPanel;
+import org.openide.util.Lookup;
 
 
 /** An implementation of a node that has children and
@@ -69,6 +70,18 @@ public class IndexedNode extends AbstractNode {
     */
     protected IndexedNode(Children children, Index indexImpl) {
         super(children);
+        this.indexImpl = indexImpl;
+    }
+
+    /** Allows subclasses to provide their own children and
+    * index handling as well as {@link Lookup}.
+    * @param children the children implementation
+    * @param indexImpl the index implementation
+    * @param lookup lookup the node shall use
+    * @since 7.16
+    */
+    protected IndexedNode(Children children, Index indexImpl, Lookup lookup) {
+        super(children, lookup);
         this.indexImpl = indexImpl;
     }
 

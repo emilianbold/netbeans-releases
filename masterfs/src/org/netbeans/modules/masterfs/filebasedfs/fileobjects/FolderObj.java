@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.SyncFailedException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -70,7 +71,6 @@ import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 
 /**
@@ -520,22 +520,28 @@ public final class FolderObj extends BaseFileObj {
         return folderChildren;
     }
 
-    synchronized FileObjectKeeper getKeeper() {
+    synchronized FileObjectKeeper getKeeper(Collection<? super File> arr) {
         if (keeper == null) {
             keeper = new FileObjectKeeper(this);
-            keeper.init(-1, null, false);
+            List<File> ch = keeper.init(-1, null, false);
+            if (arr != null) {
+                arr.addAll(ch);
+            }
+        } else if (arr != null) {
+            List<File> ch = keeper.init(keeper.childrenLastModified(), null, false);
+            arr.addAll(ch);
         }
         return keeper;
     }
 
     @Override
     public final void addRecursiveListener(FileChangeListener fcl) {
-        getKeeper().addRecursiveListener(fcl);
+        getKeeper(null).addRecursiveListener(fcl);
     }
 
     @Override
     public final void removeRecursiveListener(FileChangeListener fcl) {
-        getKeeper().removeRecursiveListener(fcl);
+        getKeeper(null).removeRecursiveListener(fcl);
     }
 
 

@@ -75,8 +75,10 @@ public class PositionStyleEditor extends StyleEditor {
 
     /** Creates new form FontStyleEditor */
     public PositionStyleEditor() {
-        setName("positionStyleEditor"); //NOI18N
-        setDisplayName(NbBundle.getMessage(PositionStyleEditor.class, "POSITION_EDITOR_DISPNAME"));
+        super("positionStyleEditor", NbBundle.getMessage(PositionStyleEditor.class, "POSITION_EDITOR_DISPNAME")); //NOI18N
+    }
+
+    protected void lazyInitializePanel() {
         initComponents();
         initialize();
 

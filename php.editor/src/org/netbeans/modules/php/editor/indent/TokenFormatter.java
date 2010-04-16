@@ -47,11 +47,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -1055,9 +1057,9 @@ public class TokenFormatter {
                                     afterSemi = false;
                                 }
 
-                                newText = createWhitespace(newLines, countSpaces);
+                                newText = createWhitespace(doc, newLines, countSpaces);
                                 if (wsBetweenBraces) {
-                                    newText = createWhitespace(1, indent + docOptions.indentSize) + createWhitespace(1, indent);
+                                    newText = createWhitespace(doc, 1, indent + docOptions.indentSize) + createWhitespace(doc, 1, indent);
                                 }
                                 int realOffset = changeOffset + delta;
                                 if (templateEdit && !caretInTemplateSolved && oldText != null
@@ -1113,7 +1115,7 @@ public class TokenFormatter {
                                                     int phpIndent = indent - docOptions.initialIndent;
                                                     int finalIndent = lineIndent + phpIndent;
                                                     if (lineIndent < finalIndent) {
-                                                        delta = replaceString(doc, currentOffset - delta, "", createWhitespace(0, finalIndent - lineIndent), delta, false);
+                                                        delta = replaceString(doc, currentOffset - delta, "", createWhitespace(doc, 0, finalIndent - lineIndent), delta, false);
                                                     }
     //						else if (lineIndent > indent) {
     //						    delta = replaceString(doc, currentOffset - delta, createWhitespace(0, lineIndent - finalIndent), "", delta);
@@ -1323,9 +1325,9 @@ public class TokenFormatter {
 		if (comment == null || comment.length() == 0) {
 		    return "";
 		}
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		boolean indentLine = false;
-		String indentString = createWhitespace(0, indent + 1);
+		String indentString = createWhitespace(doc, 0, indent + 1);
 		if (comment.charAt(0) == '\n') {
 		    sb.append('\n');
 		    indentLine = true;
@@ -1582,14 +1584,12 @@ public class TokenFormatter {
 	return token.getId() == FormatToken.Kind.WHITESPACE_INDENT || token.getId() == FormatToken.Kind.LINE_COMMENT;
     }
 
-    private String createWhitespace(int lines, int spaces) {
-	StringBuffer sb = new StringBuffer();
+    private String createWhitespace(Document document, int lines, int spaces) {
+	StringBuilder sb = new StringBuilder();
 	for (int i = 0; i < lines; i++) {
 	    sb.append('\n');
 	}
-	for (int i = 0; i < spaces; i++) {
-	    sb.append(' ');
-	}
+	sb.append(IndentUtils.createIndentString(document, spaces));
 	return sb.toString();
     }
 }
