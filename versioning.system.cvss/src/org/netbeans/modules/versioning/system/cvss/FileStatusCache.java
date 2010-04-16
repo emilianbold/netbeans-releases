@@ -728,9 +728,9 @@ public class FileStatusCache {
     }
 
     public FileInformation getCachedStatus(File file) {
-        file = file.getParentFile();
-        if (file == null) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
-        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(file, FILE_STATUS_MAP);
+        File parent = file.getParentFile();
+        if (parent == null) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
+        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(parent, FILE_STATUS_MAP);
         return files != null ? files.get(file) : null;
     }
 

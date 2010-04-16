@@ -749,7 +749,7 @@ public class FormatVisitor extends DefaultVisitor {
 	formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_NAMESPACE, node.getStartOffset()));
 	scan(node.getName());
 	addRestOfLine();
-	formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_NAMESPACE, node.getStartOffset()));
+	formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_NAMESPACE, ts.offset() + ts.token().length()));
 	scan(node.getBody());
     }
 
@@ -811,8 +811,9 @@ public class FormatVisitor extends DefaultVisitor {
 	if (node.getBody() != null && (node.getBody() instanceof Block && !((Block) node.getBody()).isCurly())) {
 	    addAllUntilOffset(node.getBody().getStartOffset());
 	    formatTokens.add(new FormatToken.IndentToken(node.getBody().getStartOffset(), options.indentSize));
-	    scan(node.getBody());
+
 	    if (node.getBody().getStatements().size() > 0) {
+                scan(node.getBody());
 		Statement lastOne = node.getBody().getStatements().get(node.getBody().getStatements().size() - 1);
 		while (lastOne.getEndOffset() < formatTokens.get(formatTokens.size() - 1).getOffset()) {
 		    formatTokens.remove(formatTokens.size() - 1);
@@ -820,8 +821,15 @@ public class FormatVisitor extends DefaultVisitor {
 		while (lastOne.getEndOffset() < ts.offset()) {
 		    ts.movePrevious();
 		}
-		formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
 	    }
+            else {
+                while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ENDSWITCH
+                        && ts.offset() < node.getBody().getEndOffset()) {
+                    addFormatToken(formatTokens);
+                }
+                ts.movePrevious();
+            }
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
 	    addAllUntilOffset(node.getEndOffset());
 	} else {
 	    scan(node.getBody());
@@ -921,16 +929,22 @@ public class FormatVisitor extends DefaultVisitor {
 		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLOSE_PHP_TAG, ts.offset() + ts.token().length()));
 
 		break;
-	    case PHP_COMMENT:
-//	    case PHP_COMMENT_END:
-//	    case PHP_COMMENT_START:
+	    case PHP_COMMENT_START:
+                tokens.add(new FormatToken(FormatToken.Kind.COMMENT_START, ts.offset(), ts.token().text().toString()));
+                break;
+            case PHP_COMMENT_END:
+                tokens.add(new FormatToken(FormatToken.Kind.COMMENT_END, ts.offset(), ts.token().text().toString()));
+                break;
+            case PHP_COMMENT:
 		tokens.add(new FormatToken(FormatToken.Kind.COMMENT, ts.offset(), ts.token().text().toString()));
 		break;
 	    case PHPDOC_COMMENT:
 		tokens.add(new FormatToken(FormatToken.Kind.DOC_COMMENT, ts.offset(), ts.token().text().toString()));
 		break;
-	    case PHPDOC_COMMENT_END:
-//	    case PHPDOC_COMMENT_START:
+            case PHPDOC_COMMENT_START:
+		tokens.add(new FormatToken(FormatToken.Kind.DOC_COMMENT_START, ts.offset(), ts.token().text().toString()));
+		break;
+            case PHPDOC_COMMENT_END:
 		tokens.add(new FormatToken(FormatToken.Kind.DOC_COMMENT_END, ts.offset(), ts.token().text().toString()));
 		break;
 	    case PHP_OBJECT_OPERATOR:
@@ -1103,7 +1117,9 @@ public class FormatVisitor extends DefaultVisitor {
                 }
                 ts.moveNext();
 		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		//tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_SEMI, ts.offset() + ts.token().length()));
+                if (path.size() > 0 && !(path.get(0) instanceof ForStatement)) {
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_SEMI, ts.offset() + ts.token().length()));
+                }
 		break;
 	    case PHP_CATCH:
 		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH, ts.offset()));
@@ -1148,7 +1164,7 @@ public class FormatVisitor extends DefaultVisitor {
 	    addFormatToken(formatTokens);
 	}
 	if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
-		|| (ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) > 0)) {
+		|| (ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) == 0)) {
 	    addFormatToken(formatTokens);
 	    if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
 		addFormatToken(formatTokens);
