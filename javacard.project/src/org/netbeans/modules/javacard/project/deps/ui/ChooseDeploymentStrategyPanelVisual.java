@@ -153,6 +153,7 @@ final class ChooseDeploymentStrategyPanelVisual extends JPanel implements ItemLi
             desc.setBackground (ctrl);
             desc.getViewport().setBackground(ctrl);
             area.getCaret().setVisible(false);
+            area.setEditable(false);
             add (button, buttonConstraints);
             add (desc, labelConstraints);
             if (d == DeploymentStrategy.DEPLOY_TO_CARD && !kind.isProjectDependency()) {
