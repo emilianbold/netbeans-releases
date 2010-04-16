@@ -45,27 +45,16 @@
 
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
-import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.IllegalCharsetNameException;
 import java.util.List;
-import java.util.logging.Logger;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
-import javax.swing.JList;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -79,6 +68,7 @@ import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Utilities;
@@ -106,8 +96,8 @@ import org.openide.util.Utilities;
     public ToolCollectionPanel(ToolsPanel manager) {
         this.manager = manager;
         initComponents();
-        encodingComboBox.setModel(encodingModel("UTF-8")); //NOI18N
-        encodingComboBox.setRenderer(encodingRenderer());
+        encodingComboBox.setModel(ProjectCustomizer.encodingModel("UTF-8")); //NOI18N
+        encodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
         tpInstall.setContentType("text/html"); // NOI18N
         btInstall.setVisible(isUrl);
         scrollPane.setVisible(isUrl);
@@ -1323,82 +1313,4 @@ import org.openide.util.Utilities;
     private javax.swing.JTextPane tpInstall;
     // End of variables declaration//GEN-END:variables
 
-
-
-    public static ListCellRenderer encodingRenderer() {
-        return new EncodingRenderer();
-    }
-
-    public static ComboBoxModel encodingModel(String initialCharset) {
-        return new EncodingModel(initialCharset);
-    }
-
-    private static final class EncodingRenderer extends DefaultListCellRenderer {
-        EncodingRenderer() {
-            //Needed for synth?
-            setName("ComboBox.listRenderer"); //NOI18N
-        }
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value,
-                int index, boolean isSelected, boolean isLeadSelection) {
-            if (value instanceof Charset) {
-                value = ((Charset) value).displayName();
-            }
-            return super.getListCellRendererComponent(list, value, index,
-                    isSelected, isLeadSelection);
-        }
-    }
-
-    private static final class EncodingModel extends DefaultComboBoxModel {
-
-        EncodingModel (String originalEncoding) {
-            Charset defEnc = null;
-            for (Charset c : Charset.availableCharsets().values()) {
-                if (c.name().equals(originalEncoding)) {
-                    defEnc = c;
-                } else if (c.aliases().contains(originalEncoding)) { //Mobility - can have hand-entered encoding
-                    defEnc = c;
-                }
-                addElement(c);
-            }
-            if (originalEncoding != null && defEnc == null) {
-                //Create artificial Charset to keep the original value
-                //May happen when the project was set up on the platform
-                //which supports more encodings
-                try {
-                    defEnc = new UnknownCharset (originalEncoding);
-                    addElement(defEnc);
-                } catch (IllegalCharsetNameException e) {
-                    //The source.encoding property is completely broken
-                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, "IllegalCharsetName: {0}", originalEncoding); //NOI18N
-                }
-            }
-            if (defEnc == null) {
-                defEnc = Charset.defaultCharset();
-            }
-            setSelectedItem(defEnc);
-        }
-
-        private static final class UnknownCharset extends Charset {
-            UnknownCharset (String name) {
-                super (name, new String[0]);
-            }
-
-            @Override
-            public boolean contains(Charset c) {
-                return false;
-            }
-
-            @Override
-            public CharsetDecoder newDecoder() {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public CharsetEncoder newEncoder() {
-                throw new UnsupportedOperationException();
-            }
-        }
-    }
 }
