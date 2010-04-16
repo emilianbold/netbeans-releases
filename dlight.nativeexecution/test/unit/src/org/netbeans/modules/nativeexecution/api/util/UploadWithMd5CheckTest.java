@@ -68,7 +68,7 @@ public class UploadWithMd5CheckTest extends NativeExecutionBaseTestCase {
         clearRemoteTmpDir();
         String remoteTmpDir = createRemoteTmpDir();
         File localFile = getIdeUtilJar();
-        String remotePath = remoteTmpDir + "/" + localFile.getName();
+        String remotePath = remoteTmpDir + "/inexistent_subdir/" + localFile.getName();
         assertFalse("File " + env + ":" + remotePath + " should not exist at this moment", HostInfoUtils.fileExists(env, remotePath));
 
         int uploadCount = SftpSupport.getUploadCount();
@@ -80,9 +80,13 @@ public class UploadWithMd5CheckTest extends NativeExecutionBaseTestCase {
         assertEquals("Uploads count", ++uploadCount, SftpSupport.getUploadCount());
         System.err.printf("First copying %s to %s took %d ms\n", localFile.getAbsolutePath(), remotePath, firstTime);
 
-        for (int pass = 0; pass < 7; pass++) {
+        for (int pass = 0; pass < 8; pass++) {
             if (pass % 3 == 1) {
-                ProcessUtils.execute(env, "cp", "/bin/ls", remotePath);
+                if (pass == 1) {
+                    CommonTasksSupport.rmFile(env, remotePath, null);
+                } else {
+                    ProcessUtils.execute(env, "cp", "/bin/ls", remotePath);
+                }
                 uploadCount++;
             }
             long currTime = System.currentTimeMillis();
