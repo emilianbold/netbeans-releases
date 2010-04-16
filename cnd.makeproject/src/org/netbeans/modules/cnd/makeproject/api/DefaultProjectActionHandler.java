@@ -160,6 +160,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         boolean showInput = actionType == ProjectActionEvent.PredefinedType.RUN;
         boolean unbuffer = false;
         boolean runInInternalTerminal = false;
+        CompilerSet cs = null;
 
         int consoleType = pae.getProfile().getConsoleType().getValue();
 
@@ -199,7 +200,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
 
             // Append compilerset base to run path. (IZ 120836)
-            CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+            cs = conf.getCompilerSet().getCompilerSet();
             if (cs != null) {
                 String csdirs = cs.getDirectory();
                 String commands = cs.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
@@ -217,9 +218,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
         } else { // Build or Clean
             // Build or Clean
-            final CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-            String csdirs = compilerSet.getDirectory();
-            String commands = compilerSet.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
+            cs = conf.getCompilerSet().getCompilerSet();
+            String csdirs = cs.getDirectory();
+            String commands = cs.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
             if (commands != null && commands.length() > 0) {
                 // Also add msys to path. Thet's where sh, mkdir, ... are.
                 csdirs = csdirs + pi.pathSeparator() + commands;
@@ -233,8 +234,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             env.put(pi.getPathName(), path);
             // Pass QMAKE from compiler set to the Makefile (IZ 174731)
             if (conf.isQmakeConfiguration()) {
-                String qmakePath = compilerSet.getTool(PredefinedToolKind.QMakeTool).getPath();
-                qmakePath = CppUtils.normalizeDriveLetter(compilerSet, qmakePath.replace('\\', '/')); // NOI18N
+                String qmakePath = cs.getTool(PredefinedToolKind.QMakeTool).getPath();
+                qmakePath = CppUtils.normalizeDriveLetter(cs, qmakePath.replace('\\', '/')); // NOI18N
                 args.add("QMAKE=" + CndPathUtilitities.escapeOddCharacters(qmakePath)); // NOI18N
             }
         }
@@ -300,6 +301,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
         if (actionType == PredefinedType.BUILD || actionType == PredefinedType.CLEAN) {
             descr.noReset(true);
+            if (cs != null) {
+                descr.charset(cs.getEncoding());
+            }
         }
 
         NativeExecutionService es = NativeExecutionService.newService(npb, descr, pae.getActionName()); // NOI18N

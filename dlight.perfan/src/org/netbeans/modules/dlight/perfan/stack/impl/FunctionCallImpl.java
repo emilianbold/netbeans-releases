@@ -86,7 +86,7 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
         this.metrics = Collections.unmodifiableMap(metrics);
         updateDisplayedName();
     }
-
+    
     public synchronized void setSourceFileInfo(SourceFileInfo sourceInfo) {
         this.sourceInfo = sourceInfo;
         updateDisplayedName();
@@ -205,8 +205,6 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
             return null;
         }
 
-        FunctionImpl func = new FunctionImpl(m.group(1), m.group(1).hashCode());
-
         int lineNumber = -1;
 
         if (m.group(3) != null) {
@@ -215,6 +213,8 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
             } catch (NumberFormatException ex) {
             }
         }
+
+        FunctionImpl func = new FunctionImpl(m.group(1), m.group(2) != null ? m.group(2).hashCode() : (m.group(1) + lineNumber).hashCode());
 
         FunctionCallImpl call = new FunctionCallImpl(func, lineNumber, new HashMap<FunctionMetric, Object>());
         

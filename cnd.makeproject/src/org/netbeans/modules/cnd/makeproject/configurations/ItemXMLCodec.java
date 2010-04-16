@@ -85,6 +85,7 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
     // interface XMLDecoder
     @Override
     public void end() {
+        item.clearChanged();
     }
 
     // interface XMLDecoder

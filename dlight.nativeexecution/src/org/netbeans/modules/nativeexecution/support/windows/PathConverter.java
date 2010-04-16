@@ -36,55 +36,22 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.toolchain.compilerset;
-
-import java.nio.charset.Charset;
-import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.api.toolchain.ToolKind;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+package org.netbeans.modules.nativeexecution.support.windows;
 
 /**
  *
- * @author as204739
+ * @author ak119685
  */
-public abstract class APIAccessor {
+public interface PathConverter {
 
-    private static APIAccessor INSTANCE;
+    public String convert(PathType srcType, PathType trgType, String path);
 
-    public static synchronized APIAccessor get() {
-        if (INSTANCE == null) {
-            Class<?> c = Tool.class;
-            try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-            } catch (ClassNotFoundException e) {
-                // ignore
-            }
-        }
+    public String convertAll(PathType srcType, PathType trgType, String path);
 
-        assert INSTANCE != null : "There is no API package accessor available!"; //NOI18N
-        return INSTANCE;
+    public static enum PathType {
+
+        CYGWIN,
+        MSYS,
+        WINDOWS
     }
-
-    /**
-     * Register the accessor. The method can only be called once
-     * - otherwise it throws IllegalStateException.
-     *
-     * @param accessor instance.
-     */
-    public static void register(APIAccessor accessor) {
-        if (INSTANCE != null) {
-            throw new IllegalStateException("Already registered"); // NOI18N
-        }
-        INSTANCE = accessor;
-    }
-
-    public abstract Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path);
-
-    public abstract void setCompilerSet(Tool tool, CompilerSet cs);
-
-    public abstract void setToolPath(Tool tool, String p);
-
-    public abstract void setCharset(Charset charset, CompilerSet cs);
 }

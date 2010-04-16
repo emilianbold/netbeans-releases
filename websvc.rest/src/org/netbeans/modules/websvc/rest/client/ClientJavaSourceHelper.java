@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.xml.bind.JAXBException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.JavaSource;
@@ -100,6 +101,7 @@ import org.netbeans.modules.websvc.saas.model.jaxb.ServletDescriptor;
 import org.netbeans.modules.websvc.saas.model.jaxb.Sign;
 import org.netbeans.modules.websvc.saas.model.jaxb.TemplateType;
 import org.netbeans.modules.websvc.saas.model.jaxb.UseTemplates;
+import org.netbeans.modules.websvc.saas.model.oauth.Metadata;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -493,6 +495,18 @@ public class ClientJavaSourceHelper {
                     modifiedClass = Wadl2JavaHelper.addSessionAuthServlets(copy, modifiedClass, securityParams, (ddFo == null));
                 }
             }
+        } else if (saasResource != null) {
+            try {
+                Metadata oauthMetadata = saasResource.getSaas().getOauthMetadata();
+                if (oauthMetadata != null) {
+                     modifiedClass = Wadl2JavaHelper.addOAuthMethods(copy, modifiedClass, oauthMetadata);
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Cannot get metadata for oauth", ex);
+            } catch (JAXBException ex) {
+                Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Cannot get metadata for oauth", ex);
+            }
+            // ouauth authentication
         }
 
         if (security.isSSL()) {

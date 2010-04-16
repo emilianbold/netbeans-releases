@@ -64,40 +64,52 @@ public class ClassMemberPanel implements NavigatorPanel {
     public ClassMemberPanel() {
     }
 
+    @Override
     public void panelActivated(final Lookup context) {
         assert context != null;
         INSTANCE = this;
         getClassMemberPanelUI().showWaitNode();
         RP.post( new Runnable () {
+            @Override
             public void run () {
-                ClassMemberNavigatorJavaSourceFactory.getInstance().setLookup(context, getClassMemberPanelUI());
+                ClassMemberNavigatorJavaSourceFactory f = ClassMemberNavigatorJavaSourceFactory.getInstance();
+                if (f != null)
+                    f.setLookup(context, getClassMemberPanelUI());
             }
         });
     }
 
+    @Override
     public void panelDeactivated() {
         getClassMemberPanelUI().showWaitNode(); // To clear the ui
         INSTANCE = null;
         //Even the setLookup(EMPTY) is fast, has to be called in RP to keep ordering
         RP.post( new Runnable () {
+            @Override
             public void run () {
-                ClassMemberNavigatorJavaSourceFactory.getInstance().setLookup(Lookup.EMPTY, null);
+                ClassMemberNavigatorJavaSourceFactory f = ClassMemberNavigatorJavaSourceFactory.getInstance();
+                if (f != null)
+                    f.setLookup(Lookup.EMPTY, null);
             }
         });
     }
 
+    @Override
     public Lookup getLookup() {
         return this.getClassMemberPanelUI().getLookup();
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(ClassMemberPanel.class,"LBL_members");
     }
 
+    @Override
     public String getDisplayHint() {
         return NbBundle.getMessage(ClassMemberPanel.class,"HINT_members");
     }
 
+    @Override
     public JComponent getComponent() {
         return getClassMemberPanelUI();
     }

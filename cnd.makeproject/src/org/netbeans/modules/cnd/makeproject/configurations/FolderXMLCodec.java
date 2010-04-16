@@ -83,6 +83,7 @@ public class FolderXMLCodec extends XMLDecoder implements XMLEncoder {
 
     // interface XMLDecoder
     public void end() {
+        folder.clearChanged();
     }
 
     // interface XMLDecoder

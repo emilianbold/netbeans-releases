@@ -168,22 +168,30 @@ public class MakeArtifact {
     }
 
     public String getBuildCommand(String makeCommand, String makeFlags) {
-	String bc = getBuildCommand();
-	int i = bc.indexOf("${MAKE}"); // NOI18N
-	if (i == 0)
-	    bc = makeCommand + bc.substring(i + 7);
-	else if (i > 0)
-	    bc = bc.substring(0, i) + makeCommand + bc.substring(i + 7);
+        String bc = getBuildCommand();
+        int i = bc.indexOf("${MAKE}"); // NOI18N
+        if (i == 0) {
+            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) { // NOI18N
+                makeCommand = "\""+makeCommand+"\""; // NOI18N
+            }
+            bc = makeCommand + bc.substring(i + 7);
+        } else if (i > 0) {
+            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) { // NOI18N
+                makeCommand = "\""+makeCommand+"\""; // NOI18N
+            }
+            bc = bc.substring(0, i) + makeCommand + bc.substring(i + 7);
+        }
 
-	i = bc.indexOf("${MAKEFLAGS}"); // NOI18N
-	if (i == 0)
-	    bc = makeFlags + bc.substring(i + 12);
-	else if (i > 0)
-	    bc = bc.substring(0, i) + makeFlags + bc.substring(i + 12);
-        else
+        i = bc.indexOf("${MAKEFLAGS}"); // NOI18N
+        if (i == 0) {
+            bc = makeFlags + bc.substring(i + 12);
+        } else if (i > 0) {
+            bc = bc.substring(0, i) + makeFlags + bc.substring(i + 12);
+        } else {
             bc = makeFlags + bc;
+        }
 
-	return bc;
+        return bc;
     }
 
     public String getCleanCommand() {
@@ -191,22 +199,30 @@ public class MakeArtifact {
     }
 
     public String getCleanCommand(String makeCommand, String makeFlags) {
-	String cc = getCleanCommand();
-	int i = cc.indexOf("${MAKE}"); // NOI18N
-	if (i == 0)
-	    cc = makeCommand + cc.substring(i + 7);
-	else if (i > 0)
-	    cc = cc.substring(0, i) + makeCommand + cc.substring(i + 7);
+        String cc = getCleanCommand();
+        int i = cc.indexOf("${MAKE}"); // NOI18N
+        if (i == 0) {
+            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) { // NOI18N
+                makeCommand = "\""+makeCommand+"\""; // NOI18N
+            }
+            cc = makeCommand + cc.substring(i + 7);
+        } else if (i > 0) {
+            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) { // NOI18N
+                makeCommand = "\""+makeCommand+"\""; // NOI18N
+            }
+            cc = cc.substring(0, i) + makeCommand + cc.substring(i + 7);
+        }
 
-	i = cc.indexOf("${MAKEFLAGS}"); // NOI18N
-	if (i == 0)
-	    cc = makeFlags + cc.substring(i + 12);
-	else if (i > 0)
-	    cc = cc.substring(0, i) + makeFlags + cc.substring(i + 12);
-        else
+        i = cc.indexOf("${MAKEFLAGS}"); // NOI18N
+        if (i == 0) {
+            cc = makeFlags + cc.substring(i + 12);
+        } else if (i > 0) {
+            cc = cc.substring(0, i) + makeFlags + cc.substring(i + 12);
+        } else {
             cc = makeFlags + cc;
+        }
 
-	return cc;
+        return cc;
     }
 
     public String getOutput() {

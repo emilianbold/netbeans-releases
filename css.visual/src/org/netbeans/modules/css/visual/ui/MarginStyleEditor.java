@@ -74,8 +74,11 @@ public class MarginStyleEditor extends StyleEditor {
 
     /** Creates new form FontStyleEditor */
     public MarginStyleEditor() {
-        setName("marginStyleEditor"); //NOI18N
-        setDisplayName(NbBundle.getMessage(MarginStyleEditor.class, "MARGIN_EDITOR_DISPNAME"));
+        super("marginStyleEditor", NbBundle.getMessage(MarginStyleEditor.class, "MARGIN_EDITOR_DISPNAME")); //NOI18N
+    }
+
+    @Override
+    protected void lazyInitializePanel() {
         initComponents();
         marginPanel.add(marginDataTable, BorderLayout.CENTER);
     }

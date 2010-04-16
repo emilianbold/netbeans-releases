@@ -37,77 +37,84 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.rest.client;
+package org.openide.nodes;
 
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import javax.swing.event.ChangeListener;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.Lookup;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author mkuchtiak
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class Security {
+public class IndexedNodeTest implements Index {
 
-    private boolean ssl;
-    private Authentication authentization;
-    private SecurityParams securityParams;
-    private String projectType; // desktop, nb-project, web
-    private FileObject deploymentDescriptor;
-
-    public Security(boolean ssl, Authentication authentization) {
-        this.ssl = ssl;
-        this.authentization = authentization;
+    public IndexedNodeTest() {
     }
 
-    public Authentication getAuthentication() {
-        return authentization;
+
+    @Test
+    public void testConstructorWithLookup() {
+        Lookup lkp = Lookups.singleton(55);
+        Node n = new IndexedNode(Children.LEAF, this, lkp) {};
+        assertEquals(Integer.valueOf(55), n.getLookup().lookup(Integer.class));
     }
 
-    public String getProjectType() {
-        return projectType;
+    @Override
+    public int getNodesCount() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void setProjectType(String projectType) {
-        this.projectType = projectType;
-    }
-    
-    public boolean isSSL() {
-        return ssl;
+    @Override
+    public Node[] getNodes() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public SecurityParams getSecurityParams() {
-        return securityParams;
+    @Override
+    public int indexOf(Node node) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void setSecurityParams(SecurityParams securityParams) {
-        this.securityParams = securityParams;
+    @Override
+    public void reorder() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public FileObject getDeploymentDescriptor() {
-        return deploymentDescriptor;
+    @Override
+    public void reorder(int[] perm) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void setDeploymentDescriptor(FileObject deploymentDescriptor) {
-        this.deploymentDescriptor = deploymentDescriptor;
+    @Override
+    public void move(int x, int y) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public static enum Authentication {
-        NONE("auth_none"),
-        BASIC("auth_basic"),
-        OAUTH("auth_oauth"),
-        SESSION_KEY("auth_session_key");
+    @Override
+    public void exchange(int x, int y) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-        private String displayName;
+    @Override
+    public void moveUp(int x) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-        Authentication(String displayName) {
-            this.displayName = displayName;
-        }
-        
-        @Override
-        public String toString() {
-            return NbBundle.getMessage(Security.class, displayName);
-        }
+    @Override
+    public void moveDown(int x) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
+    @Override
+    public void addChangeListener(ChangeListener chl) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener chl) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

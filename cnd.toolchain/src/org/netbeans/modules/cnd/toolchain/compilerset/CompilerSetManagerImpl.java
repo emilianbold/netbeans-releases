@@ -829,13 +829,13 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         CompilerFlavor flavor = CompilerFlavorImpl.toFlavor("OracleSolarisStudio", platform); // NOI18N
         if (flavor != null && getCompilerSet("OracleSolarisStudio") == null) { // #158084 NPE // NOI18N
             CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
-                    flavor, bestCandidate.getDirectory(), "OracleSolarisStudio", true); // NOI18N
+                    flavor, bestCandidate.getDirectory(), "OracleSolarisStudio", true, bestCandidate.getEncoding()); // NOI18N
             addUnsafe(bestCandidateCopy);
         }
         flavor = CompilerFlavorImpl.toFlavor("SunStudio", platform); // NOI18N
         if (flavor != null && getCompilerSet("SunStudio") == null) { // #158084 NPE // NOI18N
             CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
-                    flavor, bestCandidate.getDirectory(), "SunStudio", true); // NOI18N
+                    flavor, bestCandidate.getDirectory(), "SunStudio", true, bestCandidate.getEncoding()); // NOI18N
             addUnsafe(bestCandidateCopy);
         }
     }

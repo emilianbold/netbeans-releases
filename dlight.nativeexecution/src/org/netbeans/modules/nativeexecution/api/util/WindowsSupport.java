@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -55,11 +54,11 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
-import org.netbeans.modules.nativeexecution.support.Computable;
 import org.netbeans.modules.nativeexecution.support.Logger;
-import org.netbeans.modules.nativeexecution.api.util.Shell.PathType;
 import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
-import org.netbeans.modules.nativeexecution.support.TasksCachedProcessor;
+import org.netbeans.modules.nativeexecution.support.windows.PathConverter;
+import org.netbeans.modules.nativeexecution.support.windows.PathConverter.PathType;
+import org.netbeans.modules.nativeexecution.support.windows.SimpleConverter;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -71,13 +70,12 @@ public final class WindowsSupport {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final WindowsSupport instance = new WindowsSupport();
-    private final TasksCachedProcessor<PathConverterParams, String> converter =
-            new TasksCachedProcessor<PathConverterParams, String>(new PathConverter(), false);
     private final boolean isWindows;
     private static final String cmd;
     private Shell activeShell = null;
     private Map<String, String> env = null;
     private String REG_EXE;
+    private PathConverter pathConverter = null;
 
     static {
         String os = System.getProperty("os.name").toLowerCase(); // NOI18N
@@ -113,7 +111,7 @@ public final class WindowsSupport {
             return;
         }
 
-        converter.resetCache();
+        pathConverter = new SimpleConverter();
         activeShell = findShell(searchDir);
     }
 
@@ -337,12 +335,9 @@ public final class WindowsSupport {
             }
         }
 
-        try {
-            return converter.compute(new PathConverterParams(from, to, path, isSinglePath));
-        } catch (InterruptedException ex) {
-        }
-
-        return null;
+        return isSinglePath
+                ? pathConverter.convert(from, to, path)
+                : pathConverter.convertAll(from, to, path);
     }
 
     public synchronized Map<String, String> getEnv() {
@@ -435,192 +430,6 @@ public final class WindowsSupport {
             }
 
             return s1.toUpperCase().compareTo(s2.toUpperCase());
-        }
-    }
-
-    private static final class PathConverterParams {
-
-        private final PathType srcType;
-        private final PathType trgType;
-        private final String path;
-        private final boolean isSinglePath;
-
-        PathConverterParams(PathType srcType, PathType trgType, String path, boolean isSinglePath) {
-            this.srcType = srcType;
-            this.trgType = trgType;
-            this.path = path;
-            this.isSinglePath = isSinglePath;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof PathConverterParams)) {
-                return false;
-            }
-
-            PathConverterParams that = (PathConverterParams) obj;
-
-            return this.srcType == that.srcType
-                    && this.trgType == that.trgType
-                    && this.isSinglePath == that.isSinglePath
-                    && ((this.path == null) ? (that.path == null) : this.path.equals(that.path));
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 43 * hash + this.srcType.hashCode();
-            hash = 43 * hash + this.trgType.hashCode();
-            hash = 43 * hash + (this.path != null ? this.path.hashCode() : 0);
-            hash = 43 * hash + (this.isSinglePath ? 1 : 0);
-            return hash;
-        }
-    }
-
-    private final class PathConverter implements Computable<PathConverterParams, String> {
-
-        @Override
-        public String compute(final PathConverterParams taskArguments) throws InterruptedException {
-            String path = taskArguments.path;
-
-            if (path == null || path.length() == 0 || !isWindows) {
-                return path;
-            }
-
-            if (taskArguments.isSinglePath) {
-                return convertSingle(taskArguments);
-            } else {
-                return convertMulty(taskArguments);
-            }
-        }
-
-        private String convertSingle(final PathConverterParams taskArguments) {
-            String result = ""; // NOI18N
-            String path = taskArguments.path;
-
-            if (taskArguments.trgType == PathType.WINDOWS) {
-                switch (taskArguments.srcType) {
-                    case CYGWIN:
-                        List<String> paths = cygpath("-w", Arrays.asList(path)); // NOI18N
-                        return (paths == null) ? null : paths.get(0);
-                    case MSYS:
-                        if (path.startsWith("/") && path.charAt(2) == '/') { // NOI18N
-                            result = path.charAt(1) + ":"; // NOI18N
-                            path = path.substring(2);
-                        }
-
-                        result = (result + path).replaceAll("/", "\\\\"); // NOI18N
-                        break;
-                    default:
-                        result = path;
-                }
-            } else {
-                switch (taskArguments.trgType) {
-                    case CYGWIN:
-                        List<String> paths = cygpath("-u", Arrays.asList(path)); // NOI18N
-                        return (paths == null) ? null : paths.get(0);
-                    case MSYS:
-                        result = path;
-
-                        if (result.length() > 2 && result.charAt(1) == ':') {
-                            result = "/" + result.replaceFirst(":", ""); // NOI18N
-                        }
-
-                        result = result.replaceAll("\\\\", "/"); // NOI18N
-                        break;
-                    default:
-                        result = path;
-                }
-            }
-
-            return result;
-        }
-
-        private String convertMulty(final PathConverterParams taskArguments) {
-            String result = ""; // NOI18N
-            String paths = taskArguments.path;
-
-            if (taskArguments.srcType == PathType.WINDOWS) {
-                String[] origPaths = paths.split(";"); // NOI18N
-                List<String> convertedPaths = new ArrayList<String>();
-
-                switch (taskArguments.trgType) {
-                    case CYGWIN:
-                        // Will start cygpath only once...
-                        List<String> res = cygpath("-u", Arrays.asList(origPaths)); // NOI18N
-
-                        if (res == null) {
-                            return null;
-                        }
-
-                        convertedPaths.addAll(res);
-                        break;
-                    case MSYS:
-                        for (String path : origPaths) {
-                            if (path.trim().length() > 0) {
-                                String p = convertSingle(new PathConverterParams(PathType.WINDOWS, PathType.MSYS, path.trim(), true));
-                                if (p != null) {
-                                    convertedPaths.add(p);
-                                }
-                            }
-                        }
-                        break;
-                    default:
-                }
-
-                StringBuilder sb = new StringBuilder();
-
-                for (String path : convertedPaths) {
-                    sb.append(path).append(':');
-                }
-
-                result = sb.toString();
-            } else {
-                // NOT USED NOW
-                result = paths;
-            }
-
-            return result;
-        }
-
-        private List<String> cygpath(String opts, List<String> paths) {
-            if (activeShell == null) {
-                return null;
-            }
-
-            final File cygpath = new File(activeShell.bindir, "cygpath.exe"); // NOI18N
-
-            if (!cygpath.exists()) {
-                return null;
-            }
-
-            List<String> cmd = new ArrayList<String>();
-            cmd.add(cygpath.getAbsolutePath());
-            cmd.add(opts);
-            cmd.addAll(paths);
-
-            ProcessBuilder pb = new ProcessBuilder(cmd);
-            List<String> result = new ArrayList<String>();
-
-            try {
-                Process p = pb.start();
-                String line;
-                BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream(), getShellCharset()));
-                while ((line = br.readLine()) != null) {
-                    result.add(line);
-                }
-                int exitCode = p.waitFor();
-
-                if (exitCode == 0) {
-                    return result;
-                }
-
-                log.log(Level.FINE, "{0} failed.", cygpath.getAbsolutePath()); // NOI18N
-                ProcessUtils.logError(Level.FINE, log, p);
-            } catch (InterruptedException ex) {
-            } catch (IOException ex) {
-            }
-            return null;
         }
     }
 
