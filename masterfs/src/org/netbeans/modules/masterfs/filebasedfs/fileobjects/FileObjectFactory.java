@@ -490,10 +490,13 @@ public final class FileObjectFactory {
         int count = 0;
         for (final BaseFileObj fo : all2Refresh) {
             count++;
+            if (fo == null) {
+                continue;
+            }
             if (slow != null) {
                 slow.before();
             }
-                fo.refresh(expected);
+            fo.refresh(expected);
             if (slow != null) {
                 if (!slow.after()) {
                     return false;
