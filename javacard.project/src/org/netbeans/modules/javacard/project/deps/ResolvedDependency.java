@@ -29,8 +29,11 @@ public class ResolvedDependency {
         this.resolver = resolver;
         if (m == null) {
             for (ArtifactKind kind : dep.getKind().supportedArtifacts()) {
-                initialPaths.put(kind, getOriginalPath(kind));
-                paths.put (kind, getOriginalPath(kind));
+                String path = getOriginalPath(kind);
+                if (path != null) {
+                    initialPaths.put(kind, path);
+                    paths.put (kind, path);
+                }
             }
         } else {
             initialPaths.putAll(m);
@@ -75,7 +78,7 @@ public class ResolvedDependency {
     private String getOriginalPath(ArtifactKind kind) {
         if (!initialized) {
             File f = resolver.resolveFile(getDependency(), kind);
-            return f == null ? null : f.getAbsolutePath();
+            return f == null ? initialPaths.get(kind) : f.getAbsolutePath();
         }
         return initialPaths.get(kind);
     }
@@ -116,7 +119,16 @@ public class ResolvedDependency {
     }
 
     public File resolveFile (ArtifactKind kind) {
-        return resolver.resolveFile(getDependency(), kind);
+        File f = resolver.resolveFile(getDependency(), kind);
+        if (f == null) {
+            String initialPath = initialPaths.get(kind);
+            if (initialPath != null) {
+                if (new File(initialPath).exists()) {
+                    f = new File(initialPath);
+                }
+            }
+        }
+        return f;
     }
 
     public Set<ArtifactKind> getModifiedArtifactKinds() {
@@ -124,7 +136,9 @@ public class ResolvedDependency {
         for (Map.Entry<ArtifactKind, String> e : paths.entrySet()) {
             ArtifactKind a = e.getKey();
             String path = e.getValue();
-            if (path != null && !path.equals(initialPaths.get(a))) {
+            String origPath = initialPaths.get(a);
+            boolean unequal = ((path == null) != (origPath == null)) || (path != null && !path.equals(origPath));
+            if (unequal) {
                 result.add (a);
             }
         }
@@ -168,7 +182,7 @@ public class ResolvedDependency {
                 File f = resolveFile(k);
                 sb.append (k);
                 sb.append ("=");
-                sb.append (f.getPath());
+                sb.append (f == null ? "null" : f.getPath());
             }
         }
         sb.append ("]");
