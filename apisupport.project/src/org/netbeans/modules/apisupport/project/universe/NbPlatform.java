@@ -76,7 +76,6 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * Represents one NetBeans platform, i.e. installation of the NB platform or IDE
@@ -102,34 +101,43 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     private final SourceRootsSupport srs;
     private final JavadocRootsSupport jrs;
 
-    static {
+    private static volatile boolean inited;
+    private static Map<String,String> initBuildProperties() {
+        if (inited) {
+            return null;
+        }
         final File install = NbPlatform.defaultPlatformLocation();
-        if (install != null) {
-            class Init implements Runnable {
-                public void run() {
-                    if (ProjectManager.mutex().isWriteAccess()) {
-                        EditableProperties p = PropertyUtils.getGlobalProperties();
-                        String installS = install.getAbsolutePath();
-                        p.setProperty("nbplatform.default.netbeans.dest.dir", installS); // NOI18N
-                        if (!p.containsKey("nbplatform.default.harness.dir")) { // NOI18N
-                            p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness"); // NOI18N
+        if (install == null) {
+            inited = true;
+            return null;
+        }
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Map<String,String>>() {
+            private EditableProperties loadWithProcessing() {
+                EditableProperties p = PropertyUtils.getGlobalProperties();
+                String installS = install.getAbsolutePath();
+                p.setProperty("nbplatform.default.netbeans.dest.dir", installS); // NOI18N
+                if (!p.containsKey("nbplatform.default.harness.dir")) { // NOI18N
+                    p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness"); // NOI18N
+                }
+                return p;
+            }
+            public @Override Map<String,String> run() {
+                ProjectManager.mutex().postWriteRequest(new Runnable() {
+                    public @Override void run() {
+                        if (inited) {
+                            return;
                         }
                         try {
-                            PropertyUtils.putGlobalProperties(p);
+                            PropertyUtils.putGlobalProperties(loadWithProcessing());
                         } catch (IOException e) {
                             Util.err.notify(ErrorManager.INFORMATIONAL, e);
                         }
-                    } else {
-                        ProjectManager.mutex().postWriteRequest(this);
+                        inited = true;
                     }
-                }
+                });
+                return loadWithProcessing();
             }
-            try {
-                RequestProcessor.getDefault().post(new Init()).waitFinished(1000);
-            } catch (InterruptedException ex) {
-                // OK
-            }
-        }
+        });
     }
     
     /**
@@ -148,6 +156,23 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         Set<NbPlatform> plafs = getPlatformsInternal();
         synchronized (plafs) {
             return new HashSet<NbPlatform>(plafs);
+        }
+    }
+
+    /**
+     * Gets registered platforms, if these have already been computed for some other reason, else an empty set.
+     */
+    public static Set<NbPlatform> getPlatformsOrNot() {
+        Set<NbPlatform> plafs;
+        synchronized (lock) {
+            plafs = platforms;
+        }
+        if (plafs != null) {
+            synchronized (plafs) {
+                return new HashSet<NbPlatform>(plafs);
+            }
+        } else {
+            return Collections.emptySet();
         }
     }
 
@@ -172,7 +197,10 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
             // as it acquires PM.mutex() read lock internally and can deadlock
             // when getPlatformsInternal() is called from PM.mutex() write lock;
             // see issue #173345
-            p = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.globalPropertyProvider()).getProperties();
+            p = initBuildProperties();
+            if (p == null) {
+                p = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.globalPropertyProvider()).getProperties();
+            }
         }
         synchronized (lock) {
             if (platforms == null) {
