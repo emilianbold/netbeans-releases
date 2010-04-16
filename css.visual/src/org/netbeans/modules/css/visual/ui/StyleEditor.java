@@ -80,7 +80,7 @@ abstract public class StyleEditor extends JPanel {
     private CssRuleContext content;
 
     private final Object LOCK = new Object();
-    protected Executor EXECUTOR = Executors.newSingleThreadExecutor();
+    private Executor EXECUTOR = Executors.newSingleThreadExecutor();
 
     protected StyleEditor(String name, String dispName) {
         setName(name); //NOI18N
@@ -90,17 +90,30 @@ abstract public class StyleEditor extends JPanel {
     }
 
     /** Called by StyleBuilderPanel to set the UI panel property values. */
-    public void setContent(final CssRuleContext content) {
+    public synchronized void setContent(final CssRuleContext content) {
         this.content = content;
 
-        EXECUTOR.execute(new Runnable() {
+        Runnable task = new Runnable() {
             @Override
             public void run() {
-                setCssPropertyValues(content.selectedRuleContent());
-                //once the instance executor is used, we can release it and use some shared one
-                EXECUTOR = RequestProcessor.getDefault();
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        setCssPropertyValues(content.selectedRuleContent());
+                        //once the instance executor is used, we can release it and run the code directly
+                        EXECUTOR = null;
+                    }
+                    
+                });
             }
-        });
+        };
+
+        if(EXECUTOR != null) {
+            EXECUTOR.execute(task);
+        } else {
+            task.run();
+        }
 
     }
     
