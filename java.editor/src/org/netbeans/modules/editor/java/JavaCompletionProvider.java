@@ -2779,7 +2779,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 results.add(JavaCompletionItem.createDefaultConstructorItem((TypeElement)elem, anchorOffset, isOfSmartType(env, type, smartTypes)));
             }
             if (!isStatic && nestedClassSeen[0]) {
-                results.add(JavaCompletionItem.createKeywordItem(NEW_KEYWORD, SPACE, anchorOffset, false));
+                addKeyword(env, NEW_KEYWORD, SPACE, false);
             }
         }
         

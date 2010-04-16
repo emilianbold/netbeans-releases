@@ -1036,7 +1036,7 @@ public class FileStatusCache {
         //
         String name = file.getName();
         Matcher m = auxConflictPattern.matcher(name);
-        if (m.matches()) {
+        if (exists && m.matches()) {
             File dir = file.getParentFile();
             if (dir != null) {
                 String masterName = m.group(1);

@@ -60,6 +60,7 @@ import java.text.MessageFormat;
 import java.io.File;
 import java.util.MissingResourceException;
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 
 /**
  * Base for all context-sensitive CVS actions.
@@ -90,7 +91,8 @@ public abstract class AbstractSystemAction extends NodeAction {
     }
 
     protected boolean enable(Node[] nodes) {
-        return getContext(nodes).getRootFiles().length > 0;
+        File[] rootFiles = getCachedContext(nodes).getRootFiles();
+        return rootFiles.length > 0 && CvsVersioningSystem.isManaged(rootFiles[0]);
     }
 
     protected abstract void performCvsAction(Node[] nodes);
@@ -150,7 +152,7 @@ public abstract class AbstractSystemAction extends NodeAction {
             return NbBundle.getBundle(this.getClass()).getString(baseName);
         }
 
-        File [] nodes = Utils.getCurrentContext(activatedNodes, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
+        File [] nodes = Utils.getCurrentContext(activatedNodes, getFileEnabledStatus(), getDirectoryEnabledStatus(), true).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
@@ -214,7 +216,7 @@ public abstract class AbstractSystemAction extends NodeAction {
      */ 
     public String getContextDisplayName(Node [] activatedNodes) {
         // TODO: reuse this code in getName() 
-        File [] nodes = Utils.getCurrentContext(activatedNodes, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
+        File [] nodes = Utils.getCurrentContext(activatedNodes, getFileEnabledStatus(), getDirectoryEnabledStatus(), true).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
@@ -270,7 +272,11 @@ public abstract class AbstractSystemAction extends NodeAction {
     }
 
     protected Context getContext(Node[] nodes) {
-        return Utils.getCurrentContext(nodes, getFileEnabledStatus(), getDirectoryEnabledStatus());
+        return Utils.getCurrentContext(nodes, getFileEnabledStatus(), getDirectoryEnabledStatus(), false);
+    }
+
+    protected Context getCachedContext(Node[] nodes) {
+        return Utils.getCurrentContext(nodes, getFileEnabledStatus(), getDirectoryEnabledStatus(), true);
     }
     
     protected int getFileEnabledStatus() {

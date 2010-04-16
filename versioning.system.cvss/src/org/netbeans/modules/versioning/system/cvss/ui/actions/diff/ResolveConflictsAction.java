@@ -74,7 +74,7 @@ public class ResolveConflictsAction extends AbstractSystemAction {
 
     @Override
     protected boolean enable(Node[] nodes) {
-        return CvsVersioningSystem.getInstance().getStatusCache().listFiles(getContext(nodes), FileInformation.STATUS_VERSIONED_CONFLICT).length > 0;
+        return CvsVersioningSystem.getInstance().getStatusCache().listFiles(getCachedContext(nodes), FileInformation.STATUS_VERSIONED_CONFLICT).length > 0;
     }
 
     public void performCvsAction(Node[] nodes) {
