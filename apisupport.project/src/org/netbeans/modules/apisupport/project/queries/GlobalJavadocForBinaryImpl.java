@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery.Result;
@@ -58,9 +57,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.modules.apisupport.project.universe.JavadocRootsProvider;
-import org.netbeans.modules.apisupport.project.universe.JavadocRootsSupport;
-import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
@@ -110,7 +106,7 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
         }
         String cnbdashes = n.substring(0, n.length() - 4);
         NbPlatform supposedPlaf = null;
-        for (NbPlatform plaf : NbPlatform.getPlatforms()) {
+        for (NbPlatform plaf : NbPlatform.getPlatformsOrNot()) {
             if (binaryRootF.getAbsolutePath().startsWith(plaf.getDestDir().getAbsolutePath())) {
                 supposedPlaf = plaf;
                 break;
@@ -147,7 +143,7 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
             if (module != null) {
                 String cnb = module.getCodeNameBase();
     //  TODO C.P scan external clusters? Doesn't seem necessary, javadoc is built from source on the fly for clusters with sources
-                for (NbPlatform plaf : NbPlatform.getPlatforms()) {
+                for (NbPlatform plaf : NbPlatform.getPlatformsOrNot()) {
                     Util.err.log("Platform in " + plaf.getDestDir() + " claimed to have Javadoc roots "
                             + Arrays.asList(plaf.getJavadocRoots()));
                     Result r = findByDashedCNB(cnb.replace('.', '-'), plaf.getJavadocRoots());
