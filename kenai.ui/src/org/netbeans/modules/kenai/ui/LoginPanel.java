@@ -42,6 +42,7 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -359,7 +360,13 @@ public class LoginPanel extends javax.swing.JPanel {
     private void kenaiComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kenaiComboActionPerformed
         if (kenaiCombo.getSelectedItem() instanceof Kenai) {
             this.kenai = ((Kenai) kenaiCombo.getSelectedItem());
+            for (ActionListener l:forgotPassword.getActionListeners()) {
+                forgotPassword.removeActionListener(l);
+            }
             forgotPassword.setAction(new URLDisplayerAction("", getForgetPasswordUrl()));
+            for (ActionListener l:signUp.getActionListeners()) {
+                signUp.removeActionListener(l);
+            }
             signUp.setAction(new URLDisplayerAction("", getRegisterUrl()));
 
             forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));
@@ -379,7 +386,13 @@ public class LoginPanel extends javax.swing.JPanel {
                     LoginPanel.this.kenai = ((Kenai) kenaiCombo.getSelectedItem());
                     if (LoginPanel.this.kenai==null)
                         return;
+                    for (ActionListener l : forgotPassword.getActionListeners()) {
+                        forgotPassword.removeActionListener(l);
+                    }
                     forgotPassword.setAction(new URLDisplayerAction("", getForgetPasswordUrl()));
+                    for (ActionListener l : signUp.getActionListeners()) {
+                        signUp.removeActionListener(l);
+                    }
                     signUp.setAction(new URLDisplayerAction("", getRegisterUrl()));
 
                     forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));

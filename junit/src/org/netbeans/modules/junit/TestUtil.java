@@ -833,6 +833,16 @@ public class TestUtil {
             params.put(CreateTestParam.INC_EXCEPTION_CLASS,
                        Boolean.valueOf(settings.isGenerateExceptionClasses()));
         }
+        else {
+            // If a class is explicitly selected then corresponding test class
+            // should be generated in any cases.
+            params.put(CreateTestParam.INC_PKG_PRIVATE_CLASS,
+                       Boolean.valueOf(true));
+            params.put(CreateTestParam.INC_ABSTRACT_CLASS,
+                       Boolean.valueOf(true));
+            params.put(CreateTestParam.INC_EXCEPTION_CLASS,
+                       Boolean.valueOf(true));
+        }
         
         params.put(CreateTestParam.INC_SETUP,
                    Boolean.valueOf(settings.isGenerateSetUp()));

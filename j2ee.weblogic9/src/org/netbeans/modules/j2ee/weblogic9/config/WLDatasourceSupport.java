@@ -50,7 +50,6 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -273,7 +272,7 @@ public class WLDatasourceSupport {
                 setConnectionUrl(ds, url);
                 addJndiName(ds, jndiName);
                 setUserName(ds, username);
-                // FIXME password
+                setPassword(ds, password);
                 setDriverClass(ds, driver);
 
                 try {
@@ -552,6 +551,14 @@ public class WLDatasourceSupport {
     }
 
     private static void setUserName(JdbcDataSource ds, String username) {
+        setProperty(ds, "user", username); // NOI18N
+    }
+
+    private static void setPassword(JdbcDataSource ds, String password) {
+        setProperty(ds, "password", password); // NOI18N
+    }
+
+    private static void setProperty(JdbcDataSource ds, String key, String value) {
         JdbcDriverParamsType params = ds.getJdbcDriverParams();
         if (params == null) {
             params = new JdbcDriverParamsType();
@@ -565,15 +572,15 @@ public class WLDatasourceSupport {
         }
 
         for (JdbcPropertyType item : props.getProperty2()) {
-            if ("user".equals(item.getName())) { // NOI18N
-                item.setValue(username);
+            if (key.equals(item.getName())) {
+                item.setValue(value);
                 return;
             }
         }
 
         JdbcPropertyType item = new JdbcPropertyType();
-        item.setName("user"); // NOI18N
-        item.setValue(username);
+        item.setName(key);
+        item.setValue(value);
         props.addProperty2(item);
     }
 

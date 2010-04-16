@@ -66,6 +66,7 @@ import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery.Trigger;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -115,8 +116,12 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         return utils;
     }
 
-    public boolean aptEnabled() {
-        return aptOptions.annotationProcessingEnabled();
+    public boolean aptEnabledOnScan() {
+        return aptOptions.annotationProcessingEnabled().contains(Trigger.ON_SCAN);
+    }
+
+    public boolean aptEnabledInEditor() {
+        return aptOptions.annotationProcessingEnabled().contains(Trigger.IN_EDITOR);
     }
 
     public Collection<? extends Processor> resolveProcessors() {
@@ -205,7 +210,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 IndexingManager.getDefault().refreshIndex(url, null);
                 return true;
             }
-            if (JavaIndex.ensureAttributeValue(url, APT_ENABLED, aptOptions.annotationProcessingEnabled() ? Boolean.TRUE.toString() : null) && !allFilesIndexing) {
+            if (JavaIndex.ensureAttributeValue(url, APT_ENABLED, aptOptions.annotationProcessingEnabled().contains(Trigger.ON_SCAN) ? Boolean.TRUE.toString() : null) && !allFilesIndexing) {
                 JavaIndex.LOG.fine("forcing reindex due to change in annotation processing options"); //NOI18N
                 IndexingManager.getDefault().refreshIndex(url, null);
                 return true;

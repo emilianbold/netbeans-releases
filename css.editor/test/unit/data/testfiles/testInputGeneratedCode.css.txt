@@ -16,17 +16,17 @@ h1 {
 }
 .e.o.f.
 
-.t.e.s.t. templated source code
-h1 {
-    col@@@r: red;
-}
-.e.o.f.
+#.t.e.s.t. templated source code
+#h1 {
+#    col@@@r: red;
+#}
+#.e.o.f.
 
-.t.e.s.t. templated source code
-h1 {
-    co@@@@@@r: red;
-}
-.e.o.f.
+#.t.e.s.t. templated source code
+#h1 {
+#    co@@@@@@r: red;
+#}
+#.e.o.f.
 
 .t.e.s.t. templated source code
 @@@ h2 @@@ h4 {

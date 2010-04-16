@@ -570,6 +570,7 @@ public class JavacParser extends Parser {
             return currentPhase;
         } catch (CancelAbort ca) {
             currentPhase = Phase.MODIFIED;
+            invalidate();
         } catch (Abort abort) {
             parserError = currentPhase;
         } catch (IOException ex) {
@@ -662,7 +663,8 @@ public class JavacParser extends Parser {
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
         options.add(validatedSourceLevel.name);
-        boolean aptEnabled = aptUtils != null && aptUtils.aptEnabled() && !ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, PathKind.SOURCE).entries().isEmpty();
+        boolean aptEnabled = aptUtils != null && (backgroundCompilation ? aptUtils.aptEnabledOnScan() : aptUtils.aptEnabledInEditor())
+                && !ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, PathKind.SOURCE).entries().isEmpty();
         if (aptEnabled) {
             for (Map.Entry<? extends String, ? extends String> entry : aptUtils.processorOptions().entrySet()) {
                 StringBuilder sb = new StringBuilder();

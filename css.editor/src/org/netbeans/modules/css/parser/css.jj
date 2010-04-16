@@ -1096,7 +1096,7 @@ void pseudo() :
         |
         (
             <FUNCTION> ( ( <S> | <COMMENT> ) )*
-            ( <IDENT> | <GENERATED> ) ( ( <S> | <COMMENT> ) )*
+            ( ((<DOT>)? <IDENT>) | <GENERATED> ) ( ( <S> | <COMMENT> ) )*
             <RROUND>
         )
     )/*@bgen(jjtree)*/

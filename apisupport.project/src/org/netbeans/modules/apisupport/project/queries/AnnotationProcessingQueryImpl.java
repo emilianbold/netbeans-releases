@@ -41,9 +41,12 @@ package org.netbeans.modules.apisupport.project.queries;
 
 import java.net.URL;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery.Trigger;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -82,8 +85,8 @@ public class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryI
         }
 
         @Override
-        public boolean annotationProcessingEnabled() {
-            return true;
+        public Set<? extends Trigger> annotationProcessingEnabled() {
+            return EnumSet.allOf(Trigger.class);
         }
 
         @Override

@@ -1327,7 +1327,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             // makeproject sensitive actions
             final MakeProjectType projectKind = provider.getProject().getLookup().lookup(MakeProjectType.class);
             final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.folderActionsPath());
-            result = mergeActions(actionsForMakeProject, result);
+            result = insertAfter(result, actionsForMakeProject.toArray(new Action[actionsForMakeProject.size()]), RenameNodeAction.class);
             result = insertSyncActions(result, RenameNodeAction.class);
             return result;
         }
@@ -1547,7 +1547,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             // makeproject sensitive actions
             final MakeProjectType projectKind = provider.getProject().getLookup().lookup(MakeProjectType.class);
             final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.extFolderActionsPath());
-            result = mergeActions(actionsForMakeProject, result);
+            result = insertAfter(result, actionsForMakeProject.toArray(new Action[actionsForMakeProject.size()]), AddExternalItemAction.class);
             result = insertSyncActions(result, AddExternalItemAction.class);
             return result;
         }
@@ -2177,25 +2177,19 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    private static Action[] mergeActions(final List<? extends Action> toAdd, Action[] result) {
-        if (!toAdd.isEmpty()) {
-            List<Action> asList = Arrays.asList(result);
-            asList.addAll(toAdd);
-            result = asList.toArray(new Action[asList.size()]);
-        }
-        return result;
-    }
-
     private static Action[] insertSyncActions(Action[] actions, Class insertAfter) {
         Action[] result = actions;
         if (DOWNLOAD_ACTION) {
-            result = insertAfter(result, RemoteSyncActions.createDownloadAction(), insertAfter);
+            result = insertAfter(result, new Action[] {RemoteSyncActions.createDownloadAction()}, insertAfter);
         }
-        result = insertAfter(result, RemoteSyncActions.createUploadAction(), insertAfter);
+        result = insertAfter(result,  new Action[] {RemoteSyncActions.createUploadAction()}, insertAfter);
         return result;
     }
     
-    private static Action[] insertAfter(Action[] actions, Action actionToInsert, Class insertAfter) {
+    private static Action[] insertAfter(Action[] actions, Action[] actionsToInsert, Class insertAfter) {
+        if (actionsToInsert == null || actionsToInsert.length == 0) {
+            return actions;
+        }
         int insertPos = - 1;
         for (int i = 0; i < actions.length; i++) {
             if (actions[i] != null) {
@@ -2208,12 +2202,15 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         if (insertPos < 0) {
             return actions;
         } else {
-            Action[] newActions = new Action[actions.length+1];
+            Action[] newActions = new Action[actions.length+actionsToInsert.length];
             System.arraycopy(actions, 0, newActions, 0, insertPos);
-            newActions[insertPos] = actionToInsert;
-            int rest = newActions.length - insertPos - 1;
+            int rest = actions.length - insertPos;
+            int newIndex = insertPos;
+            for (Action action : actionsToInsert) {
+                newActions[newIndex++] = action;
+            }
             if (rest > 0) {
-                System.arraycopy(actions, insertPos, newActions, insertPos + 1, rest);
+                System.arraycopy(actions, insertPos, newActions, newIndex, rest);
             }
             return newActions;
         }
