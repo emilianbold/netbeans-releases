@@ -212,7 +212,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         StringBuilder sb = new StringBuilder();
         String line;
         while ((line = rdr.readLine()) != null) {
-            sb.append(line + "\n");
+            sb.append(line).append("\n");
         }
         rdr.close();
         return sb.toString();
