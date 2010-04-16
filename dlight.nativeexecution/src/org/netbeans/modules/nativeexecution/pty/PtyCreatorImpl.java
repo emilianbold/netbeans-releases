@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.nativeexecution.pty;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import org.netbeans.modules.nativeexecution.JschSupport;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
@@ -47,10 +49,13 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.Shell;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.PtyOpenUtility.PtyInfo;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyAllocator;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -65,25 +70,35 @@ public class PtyCreatorImpl implements PtyAllocator {
         PtyImplementation result = null;
         OutputStream output = null;
         InputStream input = null;
+        InputStream error = null;
 
-        final String ptyOpenUtilityPath = PtyOpenUtility.getInstance().getPath(env);
+        String ptyOpenUtilityPath = PtyOpenUtility.getInstance().getPath(env);
 
         if (ptyOpenUtilityPath == null) {
-            return null;
+            throw new IOException("pty_open cannot be located"); // NOI18N
         }
 
         HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
 
         if (hostInfo == null) {
-            return null;
+            throw new IOException("no hostinfo available for " + env.getDisplayName()); // NOI18N
         }
 
         try {
             if (env.isLocal()) {
-                ProcessBuilder pb = new ProcessBuilder(ptyOpenUtilityPath);
+                if (Utilities.isWindows()) {
+                    // Only works with cygwin...
+                    if (hostInfo.getShell() == null || WindowsSupport.getInstance().getActiveShell().type != Shell.ShellType.CYGWIN) {
+                        throw new IOException("terminal support requires Cygwin to be installed"); // NOI18N
+                    }
+                    ptyOpenUtilityPath = WindowsSupport.getInstance().convertToCygwinPath(ptyOpenUtilityPath);
+                }
+
+                ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
                 Process pty = pb.start();
                 output = pty.getOutputStream();
                 input = pty.getInputStream();
+                error = pty.getErrorStream();
             } else {
                 // Here I have faced with a problem that when
                 // I'm trying to start ptyOpenUtilityPath directly - I'm fail
@@ -94,15 +109,28 @@ public class PtyCreatorImpl implements PtyAllocator {
                 ChannelStreams streams = JschSupport.execCommand(env, hostInfo.getShell() + " -s", null); // NOI18N
                 output = streams.in;
                 input = streams.out;
-
-                output.write(("exec " + ptyOpenUtilityPath + "\n").getBytes()); // NOI18N
-                output.flush();
+                error = streams.err;
             }
 
+            output.write(("PATH=/usr/bin:$PATH && export PATH\n").getBytes()); // NOI18N
+            output.write(("exec " + ptyOpenUtilityPath + "\n").getBytes()); // NOI18N
+            output.flush();
+
             PtyInfo ptyInfo = PtyOpenUtility.getInstance().readSatelliteOutput(input);
+
+            if (ptyInfo == null) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(error));
+                String errorLine;
+                StringBuilder err_msg = new StringBuilder();
+                while ((errorLine = br.readLine()) != null) {
+                    err_msg.append(errorLine).append('\n');
+                }
+                throw new IOException(err_msg.toString());
+            }
+
             result = ptyInfo == null ? null : new PtyImplementation(env, ptyInfo.tty, ptyInfo.pid, input, output);
         } catch (Exception ex) {
-            throw new IOException(ex);
+            throw (ex instanceof IOException) ? (IOException) ex : new IOException(ex);
         } finally {
             if (result == null) {
                 if (input != null) {
