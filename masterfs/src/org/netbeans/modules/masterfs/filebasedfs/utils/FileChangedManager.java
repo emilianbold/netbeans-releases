@@ -122,13 +122,26 @@ public class FileChangedManager extends SecurityManager {
         if (time > 0) {
             time = System.currentTimeMillis() - time;
             if (time > 500) {
-                LOG.log(Level.WARNING, "Too much time ({0} ms) spend touching {1}", new Object[]{time, file});
+                Level l;
+                String msg;
+                if (isIdleIO()) {
+                    l = Level.FINE;
+                    msg = "{0} new File(\"{1}\").exists() in I/O mode";
+                } else {
+                    l = Level.WARNING;
+                    msg = "{0} ms in new File(\"{1}\").exists()";
+                }
+                LOG.log(l, msg, new Object[]{time, file});
             }
         }
         Integer id = getKey(file);
         remove(id);
         put(id, retval);
         return retval;
+    }
+
+    private static boolean isIdleIO() {
+        return IDLE_IO.get() != null;
     }
 
     public static void idleIO(int maximumLoad, Runnable r, Runnable goingToSleep, AtomicBoolean goOn) {
