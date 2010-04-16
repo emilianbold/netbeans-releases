@@ -46,10 +46,10 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -57,11 +57,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
-public class SlowRefreshSuspendableTest extends NbTestCase {
+public class SlowRefreshInterruptibleTest extends NbTestCase {
     private Logger LOG;
     private FileObject testFolder;
 
-    public SlowRefreshSuspendableTest(String testName) {
+    public SlowRefreshInterruptibleTest(String testName) {
         super(testName);
     }
 
@@ -86,15 +86,16 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
         System.setSecurityManager(new FileChangedManager());
     }
 
-    @RandomlyFails // NB-Core-Build #4386: Background I/O access needs to stop before we finish our task
-    public void testRefreshCanBeSuspended() throws Exception {
+    public void testRefreshCanBeInterrupted() throws Exception {
         long lm = System.currentTimeMillis();
-        LOG.info("starting testRefreshCanBeSuspended " + lm);
-        FileObject fileObject1 = testFolder.createData("fileObject1");
+        FileObject fld = testFolder;
+        for (int i = 0; i < 20; i++) {
+            fld = fld.createFolder("fld" + i);
+        }
+        FileObject fileObject1 = fld.createData("fileObject1");
         assertNotNull("Just to initialize the stamp", lm);
         FileObject[] arr = testFolder.getChildren();
         assertEquals("One child", 1, arr.length);
-        assertEquals("Right child", fileObject1, arr[0]);
 
         File file = FileUtil.toFile(fileObject1);
         assertNotNull("File found", file);
@@ -109,7 +110,7 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
 
             @Override
             public void fileChanged(FileEvent fe) {
-                LOG.info("file change " + fe.getFile());
+                LOG.log(Level.INFO, "file change {0}", fe.getFile());
                 cnt++;
                 event = fe;
             }
@@ -131,11 +132,9 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
         assertNotNull("Refresh attribute found", obj);
         assertTrue("It is instance of runnable:  " + obj, obj instanceof Runnable);
 
-        Runnable r = (Runnable)obj;
+        final Runnable r = (Runnable)obj;
         class AE extends ActionEvent implements Runnable {
             List<FileObject> files = new ArrayList<FileObject>();
-            boolean boosted;
-            boolean finished;
             int goingIdle;
             
             public AE() {
@@ -144,79 +143,48 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
 
             @Override
             public void setSource(Object newSource) {
-                LOG.log(Level.INFO, "Set source called: {0}", newSource);
+                LOG.log(Level.INFO, "Set source called: {0}", Thread.interrupted());
                 assertTrue(newSource instanceof Object[]);
                 Object[] arr = (Object[])newSource;
-                assertTrue("Three elements at leat ", 3 <= arr.length);
+                assertEquals("Three elements", 4, arr.length);
                 assertTrue("first is int", arr[0] instanceof Integer);
                 assertTrue("2nd is int", arr[1] instanceof Integer);
                 assertTrue("3rd is fileobject", arr[2] instanceof FileObject);
+                assertTrue("4th is cancel value", arr[3] instanceof AtomicBoolean);
                 files.add((FileObject)arr[2]);
                 super.setSource(newSource);
+
+                AtomicBoolean ab = (AtomicBoolean)arr[3];
+                assertTrue("The boolean is set to 'go on': ", ab.get());
+                assertSame("boolean and runnable are the same right now", ab, r);
+                LOG.info("Cancelling task");
+                ab.set(false);
             }
 
             @Override
             public void run() {
                 goingIdle++;
             }
-
-            void doWork() {
-                try {
-                    File busyFile = File.createTempFile("xyz", ".abc");
-                    LOG.log(Level.INFO, "Created {0}", busyFile);
-                    for (int i = 0; i  < 2000; i ++) {
-                        assertTrue("Can be read", busyFile.canRead());
-                        LOG.log(Level.INFO, "Touched {0}", i);
-                        if (i > 100) {
-                            synchronized (this) {
-                                boosted = true;
-                                notifyAll();
-                            }
-                        }
-                    }
-                    busyFile.delete();
-                    LOG.log(Level.INFO, "deleted {0}", busyFile);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-                finished = true;
-                LOG.info("finished");
-            }
-
-            public synchronized void waitBoosted() throws Exception {
-                while (!boosted) {
-                    wait();
-                }
-            }
         }
         final AE counter = new AE();
 
         LOG.info("Posting AE into RP");
         // starts 5s of disk checking
-        RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                counter.doWork();
-            }
-        });
+        RequestProcessor RP = new RequestProcessor("Interrupt!", 1, false);
+        RequestProcessor.Task task = RP.create(r);
 
         // connect together
         r.equals(counter);
 
-        LOG.info("Waiting for I/O boost");
-        counter.waitBoosted();
+        assertTrue("Runnable is also 'go on' identifier", r instanceof AtomicBoolean);
+
         LOG.info("Starting refresh");
         // do the refresh
-        r.run();
+        task.schedule(0);
+        task.waitFinished();
         LOG.info("Refresh finished");
 
-        assertTrue("Background I/O access needs to stop before we finish our task", counter.finished);
-
-        assertEquals("Change notified", 1, listener.cnt);
-        assertEquals("Right file", file, FileUtil.toFile(listener.event.getFile()));
-        assertEquals("Right source", file.getParentFile(), FileUtil.toFile((FileObject)listener.event.getSource()));
-        if (counter.goingIdle == 0) {
-            fail("The I/O subsystem shall notify the action that it went idle at least once");
-        }
+        assertEquals("Just one file checked: " + counter.files, 1, counter.files.size());
+        assertEquals("No change detected", 0, listener.cnt);
     }
 }

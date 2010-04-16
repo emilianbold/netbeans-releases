@@ -41,6 +41,7 @@ package org.netbeans.modules.masterfs.filebasedfs.utils;
 import java.io.File;
 import java.security.Permission;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
@@ -62,6 +63,8 @@ public class FileChangedManager extends SecurityManager {
     private static volatile long ioTime = -1;
     private static volatile int ioLoad;
     private static final ThreadLocal<Integer> IDLE_IO = new ThreadLocal<Integer>();
+    private static final ThreadLocal<Runnable> IDLE_CALL = new ThreadLocal<Runnable>();
+    private static final ThreadLocal<AtomicBoolean> IDLE_ON = new ThreadLocal<AtomicBoolean>();
     
     public FileChangedManager() {
         INSTANCE = this;
@@ -128,24 +131,40 @@ public class FileChangedManager extends SecurityManager {
         return retval;
     }
 
-    public static void idleIO(int maximumLoad, Runnable r) {
+    public static void idleIO(int maximumLoad, Runnable r, Runnable goingToSleep, AtomicBoolean goOn) {
         Integer prev = IDLE_IO.get();
+        Runnable pGoing = IDLE_CALL.get();
+        AtomicBoolean pGoOn = IDLE_ON.get();
         int prevMax = prev == null ? 0 : prev;
         try {
             IDLE_IO.set(Math.max(maximumLoad, prevMax));
+            IDLE_CALL.set(goingToSleep);
+            IDLE_ON.set(goOn);
             r.run();
         } finally {
             IDLE_IO.set(prev);
+            IDLE_CALL.set(pGoing);
+            IDLE_ON.set(pGoOn);
         }
     }
 
     public static void waitIOLoadLowerThan(int load) throws InterruptedException {
         for (;;) {
+            AtomicBoolean goOn = IDLE_ON.get();
+            if (goOn != null && !goOn.get()) {
+                final String msg = "Interrupting manually"; // NOI18N
+                LOG.fine(msg);
+                throw new InterruptedException(msg);
+            }
             int l = pingIO(0);
             if (l < load) {
                 return;
             }
             synchronized (IDLE_IO) {
+                Runnable goingToSleep = IDLE_CALL.get();
+                if (goingToSleep != null) {
+                    goingToSleep.run();
+                }
                 IDLE_IO.wait(100);
             }
         }
@@ -177,11 +196,11 @@ public class FileChangedManager extends SecurityManager {
             try {
                 waitIOLoadLowerThan(maxLoad);
             } catch (InterruptedException ex) {
-                // OK
+                LOG.log(Level.FINE, "Interrupted {0}", ex.getMessage());
             }
         } else {
             ioLoad += inc;
-            LOG.log(Level.FINE, "I/O load: {0} (+{1})", new Object[] { ioLoad, inc });
+            LOG.log(Level.FINER, "I/O load: {0} (+{1})", new Object[] { ioLoad, inc });
         }
         return ioLoad;
     }
