@@ -88,28 +88,22 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
     private static final String XML_EXT = "xml";    //NOI18N
 
     static final Logger LOG = Logger.getLogger(LibrariesStorage.class.getName());
-    
+
     //Lock to prevent FileAlreadyLocked exception.
     private static final Object TIMESTAMPS_LOCK = new Object ();
 
     // persistent storage, it may be null for before first library is store into storage
     private FileObject storage = null;
-
-    private Map<String, LibraryImplementation> libraries;
-
-    private Map<String, LibraryImplementation> librariesByFileNames;
-
+    private Libs libs;
     // Library declaraion public ID
     // i18n bundle
     private ResourceBundle bundle;
-
     private PropertyChangeSupport support;
-    
     //Flag if the storage is initialized
     //The storage needs to be lazy initialized, it is in lookup
     private boolean initialized;
-    
     private Properties timeStamps;
+    private final LibraryTypeRegistry ltRegistry;
 
 
     /**
@@ -117,14 +111,16 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
      */
     public LibrariesStorage() {
         this.support = new PropertyChangeSupport(this);
+        this.ltRegistry = LibraryTypeRegistry.getDefault();
+        this.ltRegistry.addChangeListener(this);
     }
-    
+
     /**
      * Constructor for tests
      */
     LibrariesStorage (FileObject storage) {
         this ();
-        this.storage = storage;               
+        this.storage = storage;
     }
 
 
@@ -157,13 +153,13 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,convertor);
         // parse
         for (FileObject descriptorFile : storage.getChildren()) {
-            if (XML_EXT.equalsIgnoreCase(descriptorFile.getExt())) {                          
+            if (XML_EXT.equalsIgnoreCase(descriptorFile.getExt())) {
                 try {
                     handler.setLibrary (null);
                     readLibrary (descriptorFile, parser);
                     LibraryImplementation impl = handler.getLibrary ();
                     if (impl != null) {
-                        LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
+                        LibraryTypeProvider provider = ltRegistry.getLibraryTypeProvider (impl.getType());
                         if (provider == null) {
                             LOG.warning("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
                         }
@@ -172,7 +168,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                                     +impl.getName()+"\" is already defined, skeeping the definition from: " 
                                     + FileUtil.getFileDisplayName(descriptorFile));
                         }
-                        else {                                                
+                        else {
                             if (!isUpToDate(descriptorFile)) {
                                 provider.libraryCreated (impl);
                                 updateTimeStamp(descriptorFile);
@@ -200,11 +196,10 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
             saveTimeStamps();
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
-        }       
+        }
     }
-    
-    private void initStorage () {
-        boolean reload;
+
+    private Libs initStorage () {
         synchronized (this) {
             if (!initialized) {
                 if (this.storage == null) {
@@ -213,27 +208,25 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                 if (storage != null) {
                     this.storage.addFileChangeListener (this);
                 }
-                LibraryTypeRegistry.getDefault().addChangeListener(this);
                 initialized = true;
             }
-            //For the first time or a new LibraryTypeProvider has been enabled
-            reload = libraries == null || LibraryTypeRegistry.getDefault().hasChanged();
-        }
-        if (reload) {
-            final Map<String,LibraryImplementation> libraries = new HashMap<String, LibraryImplementation>();
-            final Map<String,LibraryImplementation> librariesByFileNames = new HashMap<String, LibraryImplementation>();
-            this.loadFromStorage(libraries, librariesByFileNames);
-            synchronized (this) {
-                this.libraries = libraries;
-                this.librariesByFileNames = librariesByFileNames;
+            if (libs != null) {
+                return libs;
             }
+        }
+        final Map<String,LibraryImplementation> libraries = new HashMap<String, LibraryImplementation>();
+        final Map<String,LibraryImplementation> librariesByFileNames = new HashMap<String, LibraryImplementation>();
+        this.loadFromStorage(libraries, librariesByFileNames);
+        synchronized (this) {
+            this.libs = new Libs(libraries,librariesByFileNames);
+            return libs;
         }
     }
 
     private static LibraryImplementation readLibrary (FileObject descriptorFile) throws SAXException, ParserConfigurationException, IOException{
         return readLibrary (descriptorFile, (LibraryImplementation) null);
     }
-    
+
     private static LibraryImplementation readLibrary (FileObject descriptorFile, LibraryImplementation impl) throws SAXException, ParserConfigurationException, IOException {
         LibraryDeclarationHandlerImpl handler = new LibraryDeclarationHandlerImpl();
         LibraryDeclarationConvertorImpl convertor = new LibraryDeclarationConvertorImpl();
@@ -260,7 +253,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                 new FileSystem.AtomicAction() {
                     public void run() throws IOException {
                         String libraryType = library.getType ();
-                        LibraryTypeProvider libraryTypeProvider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (libraryType);
+                        LibraryTypeProvider libraryTypeProvider = ltRegistry.getLibraryTypeProvider (libraryType);
                         if (libraryTypeProvider == null) {
                             LOG.warning("LibrariesStorage: Cannot store library, the library type is not recognized by any of installed LibraryTypeProviders.");	//NOI18N
                             return;
@@ -326,13 +319,9 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
      * Return all libraries in memory.
      */
     public final LibraryImplementation[] getLibraries() {
-        this.initStorage();
-        synchronized (this) {
-            assert this.storage != null : "Storage is not initialized";
-            assert this.libraries != null;
-            //return a snapshot of libraries, maybe even newer
-            return libraries.values().toArray(new LibraryImplementation[libraries.size()]);
-        }
+        final Libs res = initStorage();
+        assert res != null;
+        return res.getImpls();
     } // end getLibraries
 
 
@@ -343,42 +332,37 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
     }
 
     public void removeLibrary (LibraryImplementation library) throws IOException {
-        this.initStorage();
+        final Libs data = this.initStorage();
         assert this.storage != null : "Storage is not initialized";
-        for (String key : librariesByFileNames.keySet()) {
-            LibraryImplementation lib = this.librariesByFileNames.get(key);
-            if (library.equals (lib)) {
-                FileObject fo = this.storage.getFileSystem().findResource (key);
-                if (fo != null) {
-                    fo.delete();
-                    return;
-                }
+        final String path = data.findPath(library);
+        if (path != null) {
+            final FileObject fo = this.storage.getFileSystem().findResource (path);
+            if (fo != null) {
+                fo.delete();
             }
         }
     }
 
     public void updateLibrary(final LibraryImplementation oldLibrary, final LibraryImplementation newLibrary) throws IOException {
-        this.initStorage();
+        final Libs data = this.initStorage();
         assert this.storage != null : "Storage is not initialized";
-        for (String key : librariesByFileNames.keySet()) {
-            LibraryImplementation lib = librariesByFileNames.get(key);
-            if (oldLibrary.equals(lib)) {
-                final FileObject fo = this.storage.getFileSystem().findResource(key);
-                if (fo != null) {
-                    String libraryType = newLibrary.getType ();
-                    final LibraryTypeProvider libraryTypeProvider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (libraryType);
-                    if (libraryTypeProvider == null) {
-                        LOG.warning("LibrariesStorageL Cannot store library, the library type is not recognized by any of installed LibraryTypeProviders.");	//NOI18N
-                        return;
-                    }
-                    this.storage.getFileSystem().runAtomicAction(
-                            new FileSystem.AtomicAction() {
-                                public void run() throws IOException {
-                                    writeLibraryDefinition (fo, newLibrary, libraryTypeProvider);
-                                }
-                            }
-                    );
+        final String path = data.findPath(oldLibrary);
+        if (path != null) {
+            final FileObject fo = this.storage.getFileSystem().findResource(path);
+            if (fo != null) {
+                String libraryType = newLibrary.getType ();
+                final LibraryTypeProvider libraryTypeProvider = ltRegistry.getLibraryTypeProvider (libraryType);
+                if (libraryTypeProvider == null) {
+                    LOG.warning("LibrariesStorageL Cannot store library, the library type is not recognized by any of installed LibraryTypeProviders.");	//NOI18N
+                    return;
                 }
+                this.storage.getFileSystem().runAtomicAction(
+                        new FileSystem.AtomicAction() {
+                            public void run() throws IOException {
+                                writeLibraryDefinition (fo, newLibrary, libraryTypeProvider);
+                            }
+                        }
+                );
             }
         }
     }
@@ -387,17 +371,15 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
     public void fileDataCreated(FileEvent fe) {
         FileObject fo = fe.getFile();
         try {
+            final Libs data = this.initStorage();
             final LibraryImplementation impl = readLibrary (fo);
             if (impl != null) {
-                LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
+                LibraryTypeProvider provider = ltRegistry.getLibraryTypeProvider (impl.getType());
                 if (provider == null) {
                     LOG.warning("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
                 }
                 else {
-                    synchronized (this) {                        
-                        this.libraries.put (impl.getName(), impl);
-                        this.librariesByFileNames.put (fo.getPath(), impl);
-                    }
+                    data.add (impl.getName(), fo.getPath(), impl);
                     //Has to be called outside the synchronized block,
                     // The code is provided by LibraryType implementator and can fire events -> may cause deadlocks
                     try {
@@ -410,7 +392,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                     }
                     this.fireLibrariesChanged();
                 }
-            }            
+            }
         } catch (SAXException e) {
             //The library is broken, probably edited by user or unknown provider (FoD), log as warning
             LOG.warning(String.format("Cannot load library from file %s, reason: %s", FileUtil.getFileDisplayName(fo), e.getMessage()));
@@ -423,15 +405,10 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
 
     public void fileDeleted(FileEvent fe) {
         String fileName = fe.getFile().getPath();
-        LibraryImplementation impl;
-        synchronized (this) {            
-            impl = this.librariesByFileNames.remove(fileName);
-            if (impl != null) {
-                this.libraries.remove (impl.getName());
-            }
-        }
+        final Libs data = this.initStorage();
+        LibraryImplementation impl = data.remove(fileName);
         if (impl != null) {
-            LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
+            LibraryTypeProvider provider = ltRegistry.getLibraryTypeProvider (impl.getType());
             if (provider == null) {
                 LOG.warning("LibrariesStorage: Cannot invoke LibraryTypeProvider.libraryDeleted(), the library type provider is unknown.");  //NOI18N
             }
@@ -452,26 +429,24 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
     public void fileChanged(FileEvent fe) {
         FileObject definitionFile = fe.getFile();
         String fileName = definitionFile.getPath();
-        LibraryImplementation impl;
-        synchronized (this) {
-            impl = this.librariesByFileNames.get(fileName);
-        }
+        final Libs data = this.initStorage();
+        final LibraryImplementation impl = data.get(fileName);
         if (impl != null) {
             try {
                 readLibrary (definitionFile, impl);
-                LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
+                LibraryTypeProvider provider = ltRegistry.getLibraryTypeProvider (impl.getType());
                 if (provider == null) {
                     LOG.warning("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
                 }
                 try {
-                    //TODO: LibraryTypeProvider should be extended by libraryUpdated method 
+                    //TODO: LibraryTypeProvider should be extended by libraryUpdated method
                     provider.libraryCreated (impl);
                     updateTimeStamp(definitionFile);
                     saveTimeStamps();
                 } catch (RuntimeException e) {
                     String message = NbBundle.getMessage(LibrariesStorage.class,"MSG_libraryCreatedError");
                     Exceptions.printStackTrace(Exceptions.attachMessage(e,message));
-                }                
+                }
             } catch (SAXException se) {
                 //The library is broken, probably edited by user, log as warning
                 LOG.warning(String.format("Cannot load library from file %s, reason: %s", FileUtil.getFileDisplayName(definitionFile), se.getMessage()));
@@ -489,7 +464,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         }
         return bundle;
     }
-    
+
     private boolean isUpToDate (FileObject libraryDefinition) {
         Properties timeStamps = getTimeStamps();
         String ts = (String) timeStamps.get (libraryDefinition.getNameExt());
@@ -500,8 +475,8 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         Properties timeStamps = getTimeStamps();
         timeStamps.put(libraryDefinition.getNameExt(), Long.toString(libraryDefinition.lastModified().getTime()));
     }
-    
-    private void saveTimeStamps () throws IOException {        
+
+    private void saveTimeStamps () throws IOException {
         if (this.storage != null) {
             synchronized (TIMESTAMPS_LOCK) {
                 Properties timeStamps = getTimeStamps();
@@ -518,7 +493,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                 try {
                     OutputStream out = timeStampFile.getOutputStream(lock);
                     try {
-                        timeStamps.store (out, null);    
+                        timeStamps.store (out, null);
                     } finally {
                         out.close();
                     }
@@ -527,8 +502,8 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                 }
             }
         }
-    }        
-    
+    }
+
     private synchronized Properties getTimeStamps () {
         if (this.timeStamps == null) {
             this.timeStamps = new Properties();
@@ -543,7 +518,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                             in.close();
                         }
                         String nbLoc = (String) this.timeStamps.get (NB_HOME_PROPERTY);
-                        String currNbLoc = getNBRoots ();                                                
+                        String currNbLoc = getNBRoots ();
                         if (nbLoc == null || !nbLoc.equals (currNbLoc)) {
                             this.timeStamps.clear();
                         }
@@ -555,7 +530,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         }
         return this.timeStamps;
     }
-    
+
     private static String getNBRoots () {
         Set<String> result = new TreeSet<String>();
         String currentNbLoc = System.getProperty ("netbeans.home");   //NOI18N
@@ -583,7 +558,58 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         return sb.toString();
     }
 
-    public void stateChanged(ChangeEvent e) {        
+    public void stateChanged(ChangeEvent e) {
+        synchronized (this) {
+            this.libs = null;
+        }
         fireLibrariesChanged();
+    }
+
+    private static final class Libs {
+        private final Map<String,LibraryImplementation> librariesByName;
+        private final Map<String,LibraryImplementation> librariesByPath;
+
+        Libs(final Map<String,LibraryImplementation> librariesByName, Map<String,LibraryImplementation> librariesByPath) {
+            assert librariesByName != null;
+            assert librariesByPath != null;
+            this.librariesByName = librariesByName;
+            this.librariesByPath = librariesByPath;
+        }
+
+        synchronized LibraryImplementation[] getImpls() {
+            return librariesByName.values().toArray(new LibraryImplementation[librariesByName.size()]);
+        }
+
+        synchronized String findPath(final LibraryImplementation library) {
+            for (String key : librariesByPath.keySet()) {
+                LibraryImplementation lib = librariesByPath.get(key);
+                if (library.equals (lib)) {
+                    return key;
+                }
+            }
+            return null;
+        }
+
+        synchronized void add(final String name, final String path, final LibraryImplementation impl) {
+            assert name != null;
+            assert path != null;
+            assert impl != null;
+            this.librariesByName.put(name, impl);
+            this.librariesByPath.put(path, impl);
+        }
+
+        synchronized LibraryImplementation remove(final String path) {
+            assert path != null;
+            final LibraryImplementation impl = librariesByPath.remove(path);
+            if (impl != null) {
+                librariesByName.remove (impl.getName());
+            }
+            return impl;
+        }
+
+        synchronized LibraryImplementation get(final String path) {
+            assert path != null;
+            return librariesByPath.get(path);
+        }
     }
 }
