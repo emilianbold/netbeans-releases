@@ -91,19 +91,23 @@ final class AntBasedGenericType implements AntBasedProjectType {
         return ImageUtilities.image2Icon(ImageUtilities.loadImage(iconResource, true));
     }
 
+    @Override
     public String getType() {
         return type;
     }
 
+    @Override
     public String getPrimaryConfigurationDataElementName(boolean shared) {
         return shared ? configNames[0] : configNames[1];
     }
 
+    @Override
     public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
         return shared ? configNamespaces[0] : configNamespaces[1];
     }
 
 
+    @Override
     public Project createProject(AntProjectHelper helper) throws IOException {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         if (l == null) {
@@ -128,11 +132,11 @@ final class AntBasedGenericType implements AntBasedProjectType {
             if (ex.getTargetException() instanceof RuntimeException) {
                 throw (RuntimeException)ex.getTargetException();
             }
-            throw (IllegalArgumentException)new IllegalArgumentException().initCause(ex);
+            throw new IllegalArgumentException(ex);
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw (IllegalArgumentException)new IllegalArgumentException().initCause(ex);
+            throw new IllegalArgumentException(ex);
         }
     }
 }
