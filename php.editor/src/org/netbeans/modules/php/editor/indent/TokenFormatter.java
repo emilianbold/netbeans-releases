@@ -47,11 +47,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -391,7 +393,7 @@ public class TokenFormatter {
                             boolean wasARule = false;
                             boolean indentLine = false;
                             boolean indentRule = false;
-                            boolean addWithSemi = false;
+                            boolean afterSemi = false;
                             boolean wsBetweenBraces = false;
 
                             changeOffset = formatToken.getOffset();
@@ -526,7 +528,9 @@ public class TokenFormatter {
                                         countSpaces = ws.spaces;
                                         break;
                                     case WHITESPACE_BEFORE_FUNCTION:
+                                        indentRule = true;
                                         newLines = docOptions.blankLinesBeforeFunction + 1 > newLines ? docOptions.blankLinesBeforeFunction + 1 : newLines;
+                                        countSpaces = indent;
                                         break;
                                     case WHITESPACE_AFTER_FUNCTION:
                                         newLines = docOptions.blankLinesAfterFunction + 1 > newLines ? docOptions.blankLinesAfterFunction + 1 : newLines;
@@ -541,21 +545,28 @@ public class TokenFormatter {
                                         newLines = docOptions.blankLinesBeforeField + 1 > newLines ? docOptions.blankLinesBeforeField + 1 : newLines;
                                         break;
                                     case WHITESPACE_BETWEEN_FIELDS:
+                                        indentRule = true;
                                         newLines = 1;
+                                        countSpaces = indent;
                                         break;
                                     case WHITESPACE_BEFORE_NAMESPACE:
+                                        indentRule = true;
                                         newLines = docOptions.blankLinesBeforeNamespace + 1;
                                         break;
                                     case WHITESPACE_AFTER_NAMESPACE:
+                                        indentRule = true;
                                         newLines = docOptions.blankLinesAfterNamespace + 1;
                                         break;
                                     case WHITESPACE_BEFORE_USE:
+                                        indentRule = true;
                                         newLines = docOptions.blankLinesBeforeUse + 1;
                                         break;
                                     case WHITESPACE_BETWEEN_USE:
+                                        indentRule = true;
                                         newLines = 1;
                                         break;
                                     case WHITESPACE_AFTER_USE:
+                                        indentRule = true;
                                         newLines = docOptions.blankLinesAfterUse + 1;
                                         break;
                                     case WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS:
@@ -687,8 +698,8 @@ public class TokenFormatter {
                                         countSpaces = docOptions.spaceBeforeSemi ? 1 : 0;
                                         break;
                                     case WHITESPACE_AFTER_SEMI:
-                                        countSpaces = docOptions.spaceAfterSemi ? 1 : 0;
-                                        addWithSemi = true;
+//                                        countSpaces = docOptions.spaceAfterSemi ? 1 : 0;
+                                        afterSemi = true;
                                         break;
                                     case WHITESPACE_WITHIN_ARRAY_DECL_PARENS:
                                         int hIndex = index - 1;
@@ -956,8 +967,6 @@ public class TokenFormatter {
                                 boolean isBeforeLineComment = isBeforeLineComment(formatTokens, index-1);
                                 if (wasARule) {
                                     if ((!indentRule || newLines == -1) && indentLine) {
-                                        if (addWithSemi && docOptions.spaceAfterSemi)
-                                            countSpaces -= 1;
                                         boolean handlingSpecialCases = false;
                                         if (FormatToken.Kind.TEXT == formatToken.getId()
                                                 && ")".equals(formatToken.getOldText())) {
@@ -1019,10 +1028,38 @@ public class TokenFormatter {
                                 if (wsBetweenBraces && newLines > 1) {
                                     newLines = 1;
                                 }
+                                if (afterSemi) {
+                                    if (oldText == null || (oldText != null && countOfNewLines(oldText) == 0)) {
+                                        if (formatToken.getId() == FormatToken.Kind.TEXT) {
+                                            if (docOptions.wrapStatementsOnTheSameLine) {
+                                                if (docOptions.wrapBlockBrace || !"}".equals(formatToken.getOldText())) {
+                                                    newLines = Math.max(1, newLines);
+                                                    countSpaces = indent;
+                                                }
+                                            } else {
+                                                if (!indentRule) {
+                                                    countSpaces = docOptions.spaceAfterSemi ? 1 : 0;
+                                                }
+                                            }
+                                        } else if (formatToken.getId() == FormatToken.Kind.LINE_COMMENT
+                                                || formatToken.getId() == FormatToken.Kind.COMMENT_START) {
+                                            if (oldText == null || oldText.length() == 0) {
+                                                countSpaces = docOptions.spaceAfterSemi ? 1 : 0;
+                                            } else {
+                                                countSpaces = oldText.length();
+                                            }
+                                        }
+                                    } else {
+                                        if (!indentRule) {
+                                            newLines = countOfNewLines(oldText);
+                                        }
+                                    }
+                                    afterSemi = false;
+                                }
 
-                                newText = createWhitespace(newLines, countSpaces);
+                                newText = createWhitespace(doc, newLines, countSpaces);
                                 if (wsBetweenBraces) {
-                                    newText = createWhitespace(1, indent + docOptions.indentSize) + createWhitespace(1, indent);
+                                    newText = createWhitespace(doc, 1, indent + docOptions.indentSize) + createWhitespace(doc, 1, indent);
                                 }
                                 int realOffset = changeOffset + delta;
                                 if (templateEdit && !caretInTemplateSolved && oldText != null
@@ -1078,7 +1115,7 @@ public class TokenFormatter {
                                                     int phpIndent = indent - docOptions.initialIndent;
                                                     int finalIndent = lineIndent + phpIndent;
                                                     if (lineIndent < finalIndent) {
-                                                        delta = replaceString(doc, currentOffset - delta, "", createWhitespace(0, finalIndent - lineIndent), delta, false);
+                                                        delta = replaceString(doc, currentOffset - delta, "", createWhitespace(doc, 0, finalIndent - lineIndent), delta, false);
                                                     }
     //						else if (lineIndent > indent) {
     //						    delta = replaceString(doc, currentOffset - delta, createWhitespace(0, lineIndent - finalIndent), "", delta);
@@ -1288,9 +1325,9 @@ public class TokenFormatter {
 		if (comment == null || comment.length() == 0) {
 		    return "";
 		}
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		boolean indentLine = false;
-		String indentString = createWhitespace(0, indent + 1);
+		String indentString = createWhitespace(doc, 0, indent + 1);
 		if (comment.charAt(0) == '\n') {
 		    sb.append('\n');
 		    indentLine = true;
@@ -1547,14 +1584,12 @@ public class TokenFormatter {
 	return token.getId() == FormatToken.Kind.WHITESPACE_INDENT || token.getId() == FormatToken.Kind.LINE_COMMENT;
     }
 
-    private String createWhitespace(int lines, int spaces) {
-	StringBuffer sb = new StringBuffer();
+    private String createWhitespace(Document document, int lines, int spaces) {
+	StringBuilder sb = new StringBuilder();
 	for (int i = 0; i < lines; i++) {
 	    sb.append('\n');
 	}
-	for (int i = 0; i < spaces; i++) {
-	    sb.append(' ');
-	}
+	sb.append(IndentUtils.createIndentString(document, spaces));
 	return sb.toString();
     }
 }

@@ -118,6 +118,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/switch_stmt.php");
     }
 
+    public void testSwitchStmt01() throws Exception {
+        reformatFileContents("testfiles/formatting/switch_stmt01.php");
+    }
+    
     public void testArrays1() throws Exception {
         reformatFileContents("testfiles/formatting/arrays1.php");
     }
@@ -1130,14 +1134,14 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterSemi01.php", options);
     }
 
-    public void xxxtestSpacesBeforeAfterSemi02() throws Exception {
+    public void testSpacesBeforeAfterSemi02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.spaceBeforeSemi, false);
 	options.put(FmtOptions.spaceAfterSemi, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterSemi02.php", options);
     }
 
-    public void xxxtestSpacesBeforeAfterSemi03() throws Exception {
+    public void testSpacesBeforeAfterSemi03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.spaceBeforeSemi, true);
 	options.put(FmtOptions.spaceAfterSemi, false);
@@ -1531,6 +1535,30 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/wrapping/block06.php", options);
     }
 
+    public void testWrappingStatements01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/wrapping/statements01.php", options);
+    }
+
+    public void testWrappingStatements02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapStatementsOnTheLine, false);
+        options.put(FmtOptions.spaceAfterSemi, true);
+        reformatFileContents("testfiles/formatting/wrapping/statements02.php", options);
+    }
+
+    public void testWrappingStatements03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapStatementsOnTheLine, false);
+        options.put(FmtOptions.spaceAfterSemi, false);
+        reformatFileContents("testfiles/formatting/wrapping/statements03.php", options);
+    }
+
+    public void testWrappingStatements04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/wrapping/statements04.php", options);
+    }
+    
     public void testTernaryOp01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
 	options.put(FmtOptions.wrapTernaryOps, CodeStyle.WrapStyle.WRAP_NEVER);

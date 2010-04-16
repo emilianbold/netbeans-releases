@@ -40,16 +40,20 @@
 package org.netbeans.modules.cnd.remote.sync.download;
 
 import java.io.File;
-import java.lang.String;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import junit.framework.AssertionFailedError;
 import org.netbeans.modules.cnd.remote.pbuild.*;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.sync.download.FileDownloadInfo.State;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileUtil;
@@ -79,7 +83,7 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
     @ForAllEnvironments
     public void test_LexYacc_BuildLocalAndRemote() throws Exception {
         MakeProject makeProject = prepareSampleProject(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_Build");
-        int timeout = getSampleBuildTimeout();
+        int timeout = 1; // getSampleBuildTimeout();
         changeProjectHost(makeProject, ExecutionEnvironmentFactory.getLocal());
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, TimeUnit.SECONDS);
         changeProjectHost(makeProject, getTestExecutionEnvironment());
@@ -103,6 +107,31 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
         sleep(2000); // workaround for #182824 program run under pty in Internal Terminal writes incorrect status and writes it incorrectly
         updates = HostUpdates.testGetUpdates(getTestExecutionEnvironment());
         checkInfo(updates, filesToCheck);
+    }
+
+    @Override
+    protected void buildProject(MakeProject makeProject, String command, long timeout, TimeUnit unit) throws Exception {
+        try {
+            super.buildProject(makeProject, command, timeout, unit);
+        } catch (AssertionFailedError ex) {
+            String localProjectDir = makeProject.getProjectDirectory().getPath();
+            String remoteProjectDir = RemotePathMap.getPathMap(getTestExecutionEnvironment()).getRemotePath(localProjectDir, false);
+            String zipName = "__rfs_remote_project__.zip";
+            String remoteZip = remoteProjectDir + "/" + zipName;
+            String localZip = localProjectDir + "/" + zipName;
+            ExitStatus res = ProcessUtils.executeInDir(remoteProjectDir, getTestExecutionEnvironment(), "zip", "-r", "-q", remoteZip, ".");
+            if (res.isOK()) {
+                int rc = CommonTasksSupport.downloadFile(remoteZip, getTestExecutionEnvironment(), localZip, null).get();
+                if (rc == 0) {
+                    System.err.printf("Remote project content copied to %s\n", localZip);
+                } else {
+                    System.err.printf("Error downloading remote project content\n");
+                }
+            } else {
+                System.err.printf("Can not download remote project: rc=%d err=%s\n", res.exitCode, res.error);
+            }            
+            throw ex;
+        }
     }
 
     private void checkInfo(List<FileDownloadInfo> updates, NameStatePair[] pairsToCheck) {
