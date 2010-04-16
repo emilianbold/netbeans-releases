@@ -366,7 +366,8 @@ public class DebugSession extends SingleThread {
     }
 
     private void processStoppingStatus() {
-        sendStopCommand();
+        detachRequest.set(true);
+        processStoppedStatus();
     }
 
     private void processStoppedStatus() {
@@ -376,12 +377,15 @@ public class DebugSession extends SingleThread {
     }
 
     private void sendStopCommand() {
-        Thread currentThread = Thread.currentThread();
-        final StopCommand stopCommand = new StopCommand(getTransactionId());
-        if (currentThread == getSessionThread()) {
-            sendSynchronCommand(stopCommand);
-        } else {
-            sendCommandLater(stopCommand);
+        final boolean isDetached = detachRequest.get();
+        if (!isDetached) {
+            Thread currentThread = Thread.currentThread();
+            final StopCommand stopCommand = new StopCommand(getTransactionId());
+            if (currentThread == getSessionThread()) {
+                sendSynchronCommand(stopCommand);
+            } else {
+                sendCommandLater(stopCommand);
+            }
         }
     }
 
