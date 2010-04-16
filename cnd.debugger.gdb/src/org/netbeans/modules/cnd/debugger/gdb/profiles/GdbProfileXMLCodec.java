@@ -83,6 +83,7 @@ class GdbProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 
     // interface XMLDecoder
     public void end() {
+        profile.clearChanged();
     }
 
     // interface XMLDecoder
