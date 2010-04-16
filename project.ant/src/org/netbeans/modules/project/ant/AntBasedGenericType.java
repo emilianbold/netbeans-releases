@@ -88,7 +88,7 @@ final class AntBasedGenericType implements AntBasedProjectType {
     }
 
     public Icon getIcon() {
-        return ImageUtilities.image2Icon(ImageUtilities.loadImage(iconResource, true));
+        return ImageUtilities.loadImageIcon(iconResource, true);
     }
 
     @Override
