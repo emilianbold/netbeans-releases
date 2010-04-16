@@ -110,8 +110,9 @@ public class FileObj extends BaseFileObj {
                 public void close() throws IOException {
                     if (!closable.isClosed()) {
                         super.close();
-                        closable.close();
+                        LOGGER.log(Level.FINEST, "getOutputStream-close");
                         setLastModified(f.lastModified(), f);
+                        closable.close();
                         fireFileChangedEvent(false);
                     }
                 }
@@ -283,7 +284,9 @@ public class FileObj extends BaseFileObj {
             );
         }
         if (fire && oldLastModified != -1 && lastModified != -1 && lastModified != 0 && isModified) {
-            fireFileChangedEvent(expected);
+            if (!MutualExclusionSupport.getDefault().isBeingWritten(this)) {
+                fireFileChangedEvent(expected);
+            }
         }
         if (fire && lastModified != 0) {
             // #129178 - event consumed in org.openide.text.DataEditorSupport and used to change editor read-only state
