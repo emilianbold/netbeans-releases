@@ -159,11 +159,7 @@ public final class ProjectImpl extends ProjectBase {
         if (isDisposing()) {
             return;
         }
-        try {
-            file.scheduleParsing(true);
-        } catch (InterruptedException ex) {
-            DiagnosticExceptoins.register(ex);
-        }
+        DeepReparsingUtils.reparseOnEditingFile(this, file, buf);
     }
 
     @Override
