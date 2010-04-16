@@ -154,7 +154,7 @@ public class CallEjbGenerator {
         }
 
         if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(referencingFO, referencingClassName)) {
-            addProjectToClassPath(enterpriseProject, ejbReference, referencingFO);
+            addProjectToClassPath(enterpriseProject, ejbReference, referencingFO, refIType);
         } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
             switch(refIType){
                 case REMOTE: {
@@ -577,9 +577,9 @@ public class CallEjbGenerator {
         return caps.toString();
     }
     
-    private static void addProjectToClassPath(final Project enterpriseProject, final EjbReference ref, FileObject refFO) throws IOException {
+    private static void addProjectToClassPath(final Project enterpriseProject, final EjbReference ref, FileObject refFO, EjbRefIType refIType) throws IOException {
         
-        Project target = Utils.getProject(ref);
+        Project target = Utils.getProject(ref, refIType);
         
         boolean differentProject = target != null && !enterpriseProject.equals(target);
         if (differentProject) {

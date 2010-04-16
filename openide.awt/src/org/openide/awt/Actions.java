@@ -283,6 +283,10 @@ public class Actions {
      */
     public static String cutAmpersand(String text) {
         // XXX should this also be deprecated by something in Mnemonics?
+
+        if( null == text )
+            return null;
+
         int i;
         String result = text;
 

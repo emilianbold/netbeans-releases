@@ -317,13 +317,23 @@ public final class Startup {
         }
         
     }
+    
+    private static ClassLoader loader;
+    /**
+     * Set a class loader to be used in place of {@link Thread#getContextClassLoader}.
+     * @param loader a system-wide class loader
+     * @since org.netbeans.swing.plaf 1.15
+     */
+    public static void setClassLoader(ClassLoader loader) {
+        Startup.loader = loader;
+    }
 
     /** Gets the value of system class loader and returns it.
      */
     private static final class CLValue implements UIDefaults.ActiveValue {
-        public Object createValue (UIDefaults defs) {
-            return Thread.currentThread().getContextClassLoader();
-        }
+        public @Override ClassLoader createValue(UIDefaults defs) {
+            return loader != null ? loader : Thread.currentThread().getContextClassLoader();
+         }
     }
 
     /** Finds and returns instance of LF customizer which is suitable for

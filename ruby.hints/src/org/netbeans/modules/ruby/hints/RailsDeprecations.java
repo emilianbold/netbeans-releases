@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.jrubyparser.ast.CallNode;
+import org.jrubyparser.ast.ClassNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.INameNode;
@@ -87,6 +88,7 @@ public class RailsDeprecations extends RubyAstRule {
     //XXX these constants defined in other modules too, need to consolidate
     private static final String ACTIVE_RECORD_BASE = "ActiveRecord::Base"; //NOI18N
     private static final String ACTION_CONTROLLER_BASE = "ActionController::Base"; //NOI18N
+    private static final String APPLICATION_CONTROLLER = "ApplicationController";
 
     static Set<String> deprecatedFields = new HashSet<String>();
     static Map<String,String> deprecatedMethods = new HashMap<String,String>();
@@ -125,16 +127,19 @@ public class RailsDeprecations extends RubyAstRule {
     public RailsDeprecations() {
     }
 
+    @Override
     public boolean appliesTo(RuleContext context) {
         ParserResult info = context.parserResult;
         // Only perform these checks in Rails projects
         return RubyHints.isInRailsProject(RubyUtils.getFileObject(info));
     }
 
+    @Override
     public Set<NodeType> getKinds() {
         return Collections.singleton(NodeType.ROOTNODE);
     }
 
+    @Override
     public void run(RubyRuleContext context, List<Hint> result) {
         Node root = context.node;
         ParserResult info = context.parserResult;
@@ -154,14 +159,17 @@ public class RailsDeprecations extends RubyAstRule {
         // Does nothing
     }
 
+    @Override
     public String getId() {
         return "Rails_Deprecations"; // NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(RailsDeprecations.class, "RailsDeprecation");
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(RailsDeprecations.class, "RailsDeprecationDesc");
     }
@@ -238,7 +246,7 @@ public class RailsDeprecations extends RubyAstRule {
         if (!fo.getPath().contains("/app/controllers")) {
             return false;
         }
-        return isChildOf(info, node, ACTION_CONTROLLER_BASE, rule);
+        return isChildOf(info, node, rule, ACTION_CONTROLLER_BASE, APPLICATION_CONTROLLER);//NOI18N
     }
 
     /**
@@ -252,10 +260,10 @@ public class RailsDeprecations extends RubyAstRule {
         if (!fo.getPath().contains("/app/models")) {
             return false;
         }
-        return isChildOf(info, node, ACTIVE_RECORD_BASE, rule);
+        return isChildOf(info, node, rule, ACTIVE_RECORD_BASE);
     }
 
-    private static boolean isChildOf(ParserResult info, Node node, String superClassName, RubyAstRule rule) {
+    private static boolean isChildOf(ParserResult info, Node node, RubyAstRule rule, String... superClassNames) {
         Node root = AstUtilities.getRoot(info);
         if (root == null) {
             return false;
@@ -265,12 +273,27 @@ public class RailsDeprecations extends RubyAstRule {
         if (clazz == null) {
             return false;
         }
+        // try the closest parent first
+        if (clazz instanceof ClassNode){
+            String superClass = AstUtilities.getSuperclass((ClassNode) clazz);
+            if (superClass == null) {
+                return false;
+            }
+            for (String each : superClassNames) {
+                if (each.equals(superClass)) {
+                    return true;
+                }
+            }
+        }
+        // check index for super classes
         String className = AstUtilities.getClassOrModuleName(clazz);
         RubyIndex index = rule.getIndex(info);
         List<IndexedClass> superClasses = index.getSuperClasses(className);
         for (IndexedClass superClass : superClasses) {
-            if (superClassName.equals(superClass.getName())) {
-                return true;
+            for (String each : superClassNames) {
+                if (each.equals(superClass.getName())) {
+                    return true;
+                }
             }
         }
         return false;
@@ -286,18 +309,22 @@ public class RailsDeprecations extends RubyAstRule {
         }
     }
 
+    @Override
     public boolean getDefaultEnabled() {
         return true;
     }
 
+    @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
     }
 
+    @Override
     public boolean showInTasklist() {
         return true;
     }
 
+    @Override
     public JComponent getCustomizer(Preferences node) {
         return null;
     }

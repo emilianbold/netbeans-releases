@@ -377,7 +377,7 @@ public class Annotator {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context));
                 if (!onlyProjects) {
                     actions.add(SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
-                                                                ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes) == IgnoreAction.UNIGNORING ? 
+                                                                ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes, true) == IgnoreAction.UNIGNORING ?
                                                                         loc.getString("CTL_PopupMenuItem_Unignore") : 
                                                                         loc.getString("CTL_PopupMenuItem_Ignore"), context));
                 }
