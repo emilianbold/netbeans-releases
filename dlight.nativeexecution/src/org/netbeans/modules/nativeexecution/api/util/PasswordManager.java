@@ -186,6 +186,8 @@ public final class PasswordManager {
             }
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (Throwable ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
