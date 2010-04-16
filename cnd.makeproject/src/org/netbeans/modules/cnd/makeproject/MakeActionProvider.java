@@ -1403,9 +1403,9 @@ public final class MakeActionProvider implements ActionProvider {
     }
 
     private String removeQuotes(String command){
-        if (command.startsWith("\"") && command.endsWith("\"")) {
+        if (command.startsWith("\"") && command.endsWith("\"")) { // NOI18N
             return command.substring(1,command.length()-1);
-        } else if (command.startsWith("'") && command.endsWith("'")) {
+        } else if (command.startsWith("'") && command.endsWith("'")) { // NOI18N
             return command.substring(1,command.length()-1);
         }
         return command;

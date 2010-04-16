@@ -171,13 +171,13 @@ public class MakeArtifact {
         String bc = getBuildCommand();
         int i = bc.indexOf("${MAKE}"); // NOI18N
         if (i == 0) {
-            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) {
-                makeCommand = "\""+makeCommand+"\"";
+            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) { // NOI18N
+                makeCommand = "\""+makeCommand+"\""; // NOI18N
             }
             bc = makeCommand + bc.substring(i + 7);
         } else if (i > 0) {
-            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) {
-                makeCommand = "\""+makeCommand+"\"";
+            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) { // NOI18N
+                makeCommand = "\""+makeCommand+"\""; // NOI18N
             }
             bc = bc.substring(0, i) + makeCommand + bc.substring(i + 7);
         }
@@ -202,13 +202,13 @@ public class MakeArtifact {
         String cc = getCleanCommand();
         int i = cc.indexOf("${MAKE}"); // NOI18N
         if (i == 0) {
-            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) {
-                makeCommand = "\""+makeCommand+"\"";
+            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) { // NOI18N
+                makeCommand = "\""+makeCommand+"\""; // NOI18N
             }
             cc = makeCommand + cc.substring(i + 7);
         } else if (i > 0) {
-            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) {
-                makeCommand = "\""+makeCommand+"\"";
+            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) { // NOI18N
+                makeCommand = "\""+makeCommand+"\""; // NOI18N
             }
             cc = cc.substring(0, i) + makeCommand + cc.substring(i + 7);
         }
