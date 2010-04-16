@@ -203,6 +203,11 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     @Override
+    public void refreshAllQueries() {
+        super.refreshAllQueries(false);
+    }
+
+    @Override
     public boolean authenticate(String errroMsg) {
         PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
         if(pa == null) {
