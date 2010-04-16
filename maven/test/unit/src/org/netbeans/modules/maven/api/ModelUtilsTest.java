@@ -37,94 +37,96 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven;
+package org.netbeans.modules.maven.api;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 import junit.framework.TestCase;
 
 /**
  *
  * @author mkleint
  */
-public class CPExtenderTest extends TestCase {
+public class ModelUtilsTest extends TestCase {
     
-    public CPExtenderTest(String testName) {
+    public ModelUtilsTest(String testName) {
         super(testName);
     }
 
     public void testCheckLibrary() throws MalformedURLException {
         System.out.println("checkLibrary");
-        URL[] repos = new URL[] {
-            new URL("http://repo1.maven.org/maven2/"),
-            new URL("http://download.java.net/maven/1/")
-        };
+        Set<String> repos = new HashSet<String>();
+        repos.add("http://repo1.maven.org/maven2/");
+        repos.add("http://download.java.net/maven/1/");
+
         URL pom = new URL("http://repo1.maven.org/maven2/junit/junit/3.8.2/junit-3.8.2.pom");
-        String[] result = CPExtender.checkLibrary(pom, repos);
+        ModelUtils.LibraryDescriptor result = ModelUtils.checkLibrary(pom, repos);
         assertNotNull(result);
-        assertEquals("default", result[0]);
-        assertEquals("http://repo1.maven.org/maven2/", result[1]);
-        assertEquals("junit", result[2]);
-        assertEquals("junit", result[3]);
-        assertEquals("3.8.2", result[4]);
+        assertEquals("default", result.getRepoType());
+        assertEquals("http://repo1.maven.org/maven2/", result.getRepoRoot());
+        assertEquals("junit", result.getGroupId());
+        assertEquals("junit", result.getArtifactId());
+        assertEquals("3.8.2", result.getVersion());
         pom = new URL("http://download.java.net/maven/1/toplink.essentials/poms/toplink-essentials-agent-2.0-36.pom");
-        result = CPExtender.checkLibrary(pom, repos);
+        result = ModelUtils.checkLibrary(pom, repos);
         assertNotNull(result);
-        assertEquals("legacy", result[0]);
-        assertEquals("http://download.java.net/maven/1/", result[1]);
-        assertEquals("toplink.essentials", result[2]);
-        assertEquals("toplink-essentials-agent", result[3]);
-        assertEquals("2.0-36", result[4]);
+        assertEquals("legacy", result.getRepoType());
+        assertEquals("http://download.java.net/maven/1/", result.getRepoRoot());
+        assertEquals("toplink.essentials", result.getGroupId());
+        assertEquals("toplink-essentials-agent", result.getArtifactId());
+        assertEquals("2.0-36", result.getVersion());
 
         pom = new URL("http://download.java.net/maven/1/javax.jws/poms/jsr181-api-1.0-MR1.pom");
-        result = CPExtender.checkLibrary(pom, repos);
+        result = ModelUtils.checkLibrary(pom, repos);
         assertNotNull(result);
-        assertEquals("legacy", result[0]);
-        assertEquals("http://download.java.net/maven/1/", result[1]);
-        assertEquals("javax.jws", result[2]);
-        assertEquals("jsr181-api", result[3]);
-        assertEquals("1.0-MR1", result[4]);
+        assertEquals("legacy", result.getRepoType());
+        assertEquals("http://download.java.net/maven/1/", result.getRepoRoot());
+        assertEquals("javax.jws", result.getGroupId());
+        assertEquals("jsr181-api", result.getArtifactId());
+        assertEquals("1.0-MR1", result.getVersion());
 
 
         pom = new URL("http://repo1.maven.org/maven2/org/codehaus/mevenide/netbeans-deploy-plugin/1.2.3/netbeans-deploy-plugin-1.2.3.pom");
-        result = CPExtender.checkLibrary(pom, repos);
+        result = ModelUtils.checkLibrary(pom, repos);
         assertNotNull(result);
-        assertEquals("default", result[0]);
-        assertEquals("http://repo1.maven.org/maven2/", result[1]);
-        assertEquals("org.codehaus.mevenide", result[2]);
-        assertEquals("netbeans-deploy-plugin", result[3]);
-        assertEquals("1.2.3", result[4]);
+        assertEquals("default", result.getRepoType());
+        assertEquals("http://repo1.maven.org/maven2/", result.getRepoRoot());
+        assertEquals("org.codehaus.mevenide", result.getGroupId());
+        assertEquals("netbeans-deploy-plugin", result.getArtifactId());
+        assertEquals("1.2.3", result.getVersion());
         
         pom = new URL("http://repository.jboss.org/maven2/junit/junit/3.8.2/junit-3.8.2.pom");
-        result = CPExtender.checkLibrary(pom, repos);
+        result = ModelUtils.checkLibrary(pom, repos);
         assertNotNull(result);
-        assertEquals("default", result[0]);
-        assertEquals("http://repository.jboss.org/maven2", result[1]);
-        assertEquals("junit", result[2]);
-        assertEquals("junit", result[3]);
-        assertEquals("3.8.2", result[4]);
+        assertEquals("default", result.getRepoType());
+        assertEquals("http://repository.jboss.org/maven2", result.getRepoRoot());
+        assertEquals("junit", result.getGroupId());
+        assertEquals("junit", result.getArtifactId());
+        assertEquals("3.8.2", result.getVersion());
 
 
         pom = new URL("http://repo1.maven.org/maven2/org/testng/testng/5.8/testng-5.8.pom#jdk15");
-        result = CPExtender.checkLibrary(pom, repos);
+        result = ModelUtils.checkLibrary(pom, repos);
         assertNotNull(result);
-        assertEquals("default", result[0]);
-        assertEquals("http://repo1.maven.org/maven2/", result[1]);
-        assertEquals("org.testng", result[2]);
-        assertEquals("testng", result[3]);
-        assertEquals("5.8", result[4]);
-        assertEquals("jdk15", result[5]);
+        assertEquals("default", result.getRepoType());
+        assertEquals("http://repo1.maven.org/maven2/", result.getRepoRoot());
+        assertEquals("org.testng", result.getGroupId());
+        assertEquals("testng", result.getArtifactId());
+        assertEquals("5.8", result.getVersion());
+        assertEquals("jdk15", result.getClassifier());
 
 
 
         pom = new URL("http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/org/eclipse/persistence/javax.persistence/2.0.0-M12/javax.persistence-2.0.0-M12.pom");
-        result = CPExtender.checkLibrary(pom, repos);
+        result = ModelUtils.checkLibrary(pom, repos);
         assertNotNull(result);
-        assertEquals("default", result[0]);
-        assertEquals("http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo", result[1]);
-        assertEquals("org.eclipse.persistence", result[2]);
-        assertEquals("javax.persistence", result[3]);
-        assertEquals("2.0.0-M12", result[4]);
+        assertEquals("default", result.getRepoType());
+        assertEquals("http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo", result.getRepoRoot());
+        assertEquals("org.eclipse.persistence", result.getGroupId());
+        assertEquals("javax.persistence", result.getArtifactId());
+        assertEquals("2.0.0-M12", result.getVersion());
     }
     
 }
