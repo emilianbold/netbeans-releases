@@ -179,9 +179,13 @@ public final class MenuWarmUpTask implements Runnable {
             h.setInitialDelay(10000);
             h.start();
             Runnable run = null;
-            ActionEvent handleBridge = new ActionEvent(this, 0, "") {
+            class HandleBridge extends ActionEvent implements Runnable {
                 private FileObject previous;
                 private long next;
+
+                public HandleBridge(Object source) {
+                    super (source, 0, "");
+                }
 
                 @Override
                 public void setSource(Object newSource) {
@@ -209,7 +213,14 @@ public final class MenuWarmUpTask implements Runnable {
                         }
                     }
                 }
-            };
+
+                @Override
+                public void run() {
+                    h.progress(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh_Suspend"));
+                }
+            }
+            ActionEvent handleBridge = new HandleBridge(this);
+
             try {
                 File[] roots = File.listRoots();
                 if( null != roots && roots.length > 0 ) {
@@ -234,8 +245,9 @@ public final class MenuWarmUpTask implements Runnable {
                 FileUtil.getConfigRoot().getFileSystem().refresh(true);
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
+            } finally {
+                h.finish();
             }
-            h.finish();
             LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_ACTIVATED"); // NOI18N
             r.setParameters(new Object[] { took });
             r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
@@ -252,7 +264,16 @@ public final class MenuWarmUpTask implements Runnable {
                 }
             }
 
-            if (++counter >= 3) {
+            ++counter;
+
+            LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_REFRESH_CANCEL"); // NOI18N
+            r.setParameters(new Object[]{counter});
+            r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
+            r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
+            r.setLoggerName(LOG.getName());
+            LOG.log(r);
+
+            if (counter >= 3) {
                 FileObject action = FileUtil.getConfigFile("Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"); // NOI18N
                 Object obj = action == null ? null : action.getAttribute("instanceCreate"); // NOI18N
                 if (obj instanceof Action) {

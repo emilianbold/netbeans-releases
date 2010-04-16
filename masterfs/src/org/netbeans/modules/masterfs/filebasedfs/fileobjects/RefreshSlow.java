@@ -55,7 +55,9 @@ final class RefreshSlow implements Runnable {
     public void run() {
         if (!ignoreIO) {
             ignoreIO = true;
-            FileChangedManager.idleIO(50, this);
+            ActionEvent r = this.ref;
+            Runnable goingIdle = r instanceof Runnable ? (Runnable) r : null;
+            FileChangedManager.idleIO(50, this, goingIdle);
         } else {
             RootObj.invokeRefreshFor(this, File.listRoots());
             ignoreIO = false;

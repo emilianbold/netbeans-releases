@@ -136,6 +136,7 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
             List<FileObject> files = new ArrayList<FileObject>();
             boolean boosted;
             boolean finished;
+            int goingIdle;
             
             public AE() {
                 super("", 0, "");
@@ -156,6 +157,10 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
 
             @Override
             public void run() {
+                goingIdle++;
+            }
+
+            void doWork() {
                 try {
                     File busyFile = File.createTempFile("xyz", ".abc");
                     LOG.log(Level.INFO, "Created {0}", busyFile);
@@ -184,11 +189,16 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
                 }
             }
         }
-        AE counter = new AE();
+        final AE counter = new AE();
 
         LOG.info("Posting AE into RP");
         // starts 5s of disk checking
-        RequestProcessor.Task task = RequestProcessor.getDefault().post(counter);
+        RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                counter.doWork();
+            }
+        });
 
         // connect together
         r.equals(counter);
@@ -205,5 +215,8 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
         assertEquals("Change notified", 1, listener.cnt);
         assertEquals("Right file", file, FileUtil.toFile(listener.event.getFile()));
         assertEquals("Right source", file.getParentFile(), FileUtil.toFile((FileObject)listener.event.getSource()));
+        if (counter.goingIdle == 0) {
+            fail("The I/O subsystem shall notify the action that it went idle at least once");
+        }
     }
 }

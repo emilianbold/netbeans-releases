@@ -62,6 +62,7 @@ public class FileChangedManager extends SecurityManager {
     private static volatile long ioTime = -1;
     private static volatile int ioLoad;
     private static final ThreadLocal<Integer> IDLE_IO = new ThreadLocal<Integer>();
+    private static final ThreadLocal<Runnable> IDLE_CALL = new ThreadLocal<Runnable>();
     
     public FileChangedManager() {
         INSTANCE = this;
@@ -128,14 +129,17 @@ public class FileChangedManager extends SecurityManager {
         return retval;
     }
 
-    public static void idleIO(int maximumLoad, Runnable r) {
+    public static void idleIO(int maximumLoad, Runnable r, Runnable goingToSleep) {
         Integer prev = IDLE_IO.get();
+        Runnable pGoing = IDLE_CALL.get();
         int prevMax = prev == null ? 0 : prev;
         try {
             IDLE_IO.set(Math.max(maximumLoad, prevMax));
+            IDLE_CALL.set(goingToSleep);
             r.run();
         } finally {
             IDLE_IO.set(prev);
+            IDLE_CALL.set(pGoing);
         }
     }
 
@@ -146,6 +150,10 @@ public class FileChangedManager extends SecurityManager {
                 return;
             }
             synchronized (IDLE_IO) {
+                Runnable goingToSleep = IDLE_CALL.get();
+                if (goingToSleep != null) {
+                    goingToSleep.run();
+                }
                 IDLE_IO.wait(100);
             }
         }
@@ -177,11 +185,11 @@ public class FileChangedManager extends SecurityManager {
             try {
                 waitIOLoadLowerThan(maxLoad);
             } catch (InterruptedException ex) {
-                // OK
+                LOG.log(Level.FINE, "Interrupted", ex);
             }
         } else {
             ioLoad += inc;
-            LOG.log(Level.FINE, "I/O load: {0} (+{1})", new Object[] { ioLoad, inc });
+            LOG.log(Level.FINER, "I/O load: {0} (+{1})", new Object[] { ioLoad, inc });
         }
         return ioLoad;
     }
