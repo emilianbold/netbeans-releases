@@ -519,10 +519,10 @@ public final class MakeActionProvider implements ActionProvider {
             String buildCommand;
             buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " test", ""); // NOI18N
             String args = "";
-            int index = buildCommand.indexOf(' ');
+            int index = getArgsIndex(buildCommand);
             if (index > 0) {
                 args = buildCommand.substring(index + 1);
-                buildCommand = buildCommand.substring(0, index);
+                buildCommand = removeQuotes(buildCommand.substring(0, index));
             }
             RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
             profile.setArgs(args);
@@ -723,10 +723,10 @@ public final class MakeActionProvider implements ActionProvider {
             buildCommand = makeArtifact.getBuildCommand(makeCommand, ""); // NOI18N
         }
         String args = "";
-        int index = makeCommand.length();
+        int index = getArgsIndex(buildCommand);
         if (index > 0) {
             args = buildCommand.substring(index + 1);
-            buildCommand = buildCommand.substring(0, index);
+            buildCommand = removeQuotes(buildCommand.substring(0, index));
         }
         RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
         profile.setArgs(args);
@@ -764,10 +764,10 @@ public final class MakeActionProvider implements ActionProvider {
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
         String buildCommand = makeArtifact.getCleanCommand(getMakeCommand(pd, conf), ""); // NOI18N
         String args = ""; // NOI18N
-        int index = buildCommand.indexOf(' '); // NOI18N
+        int index = getArgsIndex(buildCommand);
         if (index > 0) {
             args = buildCommand.substring(index + 1);
-            buildCommand = buildCommand.substring(0, index);
+            buildCommand = removeQuotes(buildCommand.substring(0, index));
         }
         RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
         profile.setArgs(args);
@@ -886,10 +886,10 @@ public final class MakeActionProvider implements ActionProvider {
                 String buildCommand;
                 buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " test TEST=" + target, ""); // NOI18N
                 String args = "";
-                int index = buildCommand.indexOf(' ');
+                int index = getArgsIndex(buildCommand);
                 if (index > 0) {
                     args = buildCommand.substring(index + 1);
-                    buildCommand = buildCommand.substring(0, index);
+                    buildCommand = removeQuotes(buildCommand.substring(0, index));
                 }
                 RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
                 profile.setArgs(args);
@@ -1400,6 +1400,43 @@ public final class MakeActionProvider implements ActionProvider {
             }
         }
         return result;
+    }
+
+    private String removeQuotes(String command){
+        if (command.startsWith("\"") && command.endsWith("\"")) {
+            return command.substring(1,command.length()-1);
+        } else if (command.startsWith("'") && command.endsWith("'")) {
+            return command.substring(1,command.length()-1);
+        }
+        return command;
+    }
+
+    private int getArgsIndex(String command) {
+        boolean inQuote = false;
+        int quote = 0;
+        for(int i = 0; i < command.length(); i++){
+            char c = command.charAt(i);
+            switch(c){
+                case ' ':
+                    if (!inQuote) {
+                        return i;
+                    }
+                    break;
+                case '\'':
+                case '"':
+                    if (inQuote) {
+                        if (quote == c) {
+                            quote = 0;
+                            inQuote = false;
+                        }
+                    } else {
+                        quote = c;
+                        inQuote = true;
+                    }
+                    break;
+            }
+        }
+        return -1;
     }
 
     // Private methods -----------------------------------------------------
