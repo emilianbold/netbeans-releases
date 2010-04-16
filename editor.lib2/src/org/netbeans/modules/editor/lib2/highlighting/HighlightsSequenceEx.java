@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,66 +34,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.editor.lib2.highlighting;
 
-final class RefreshSlow extends AtomicBoolean implements Runnable {
-    private ActionEvent ref;
-    private boolean ignoreIO;
+import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 
-    public RefreshSlow() {
-        super();
-        set(true);
-    }
+/**
+ *
+ * @author vita
+ */
+public interface HighlightsSequenceEx extends HighlightsSequence {
 
-    @Override
-    public void run() {
-        if (!ignoreIO) {
-            ignoreIO = true;
-            ActionEvent r = this.ref;
-            Runnable goingIdle = r instanceof Runnable ? (Runnable) r : null;
-            FileChangedManager.idleIO(50, this, goingIdle, this);
-        } else {
-            RootObj.invokeRefreshFor(this, File.listRoots());
-            ignoreIO = false;
-        }
-    }
-
-    void progress(int index, int size, FileObject obj) {
-        if (ref != null) {
-            ref.setSource(new Object[] { index, size, obj, this });
-        }
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof ActionEvent) {
-            this.ref = (ActionEvent)obj;
-        }
-        return super.equals(obj);
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    void before() {
-    }
-
-    boolean after() {
-        try {
-            FileChangedManager.waitIOLoadLowerThan(50);
-            return true;
-        } catch (InterruptedException ex) {
-            return false;
-        }
-    }
+    boolean isStale();
+    
 }
