@@ -549,7 +549,7 @@ public class ConfigurationMakefileWriter {
         String output = CppUtils.normalizeDriveLetter(compilerSet, getOutput(conf));
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS} nbproject/qt-${CND_CONF}.mk\n"); // NOI18N
-        bw.write("\t${MAKE} -f nbproject/qt-${CND_CONF}.mk " + output + "\n\n"); // NOI18N
+        bw.write("\t\"${MAKE}\" -f nbproject/qt-${CND_CONF}.mk " + output + "\n\n"); // NOI18N
 
         // #179140 compile single file (qt project)
         // redirect any request for building an object file to the qmake-generated makefile
@@ -562,7 +562,7 @@ public class ConfigurationMakefileWriter {
         String output = CppUtils.normalizeDriveLetter(compilerSet, getOutput(conf));
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
-        bw.write("\t${MAKE} " // NOI18N
+        bw.write("\t\"${MAKE}\" " // NOI18N
                 + " -f nbproject/Makefile-" + conf.getName() + ".mk " // NOI18N
                 + output + "\n\n"); // NOI18N
     }

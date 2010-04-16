@@ -257,7 +257,7 @@ public final class ConnectionManager {
         }
 
         if (connectionTask.cancelled) {
-            throw new CancellationException("Connection cancelled"); // NOI18N
+            throw new CancellationException("Connection cancelled for " + env); // NOI18N
         }
 
         if (connectionTask.problem != null) {
