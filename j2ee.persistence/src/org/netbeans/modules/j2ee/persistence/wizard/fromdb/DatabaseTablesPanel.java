@@ -938,10 +938,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         @Override
         public boolean isValid() {
-            if (!ProviderUtil.isValidServerInstanceOrNone(project)) {
-                setErrorMessage(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_MissingServer"));
-                return false;
-            }
+
 
             // TODO: RETOUCHE
             //            if (JavaMetamodel.getManager().isScanInProgress()) {
@@ -987,6 +984,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             }
 
             setErrorMessage(" "); // NOI18N
+
+            if (!ProviderUtil.isValidServerInstanceOrNone(project)) {
+                setWarningMessage(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_MissingServer"));
+                //return false;
+            }
+
             return true;
         }
 
