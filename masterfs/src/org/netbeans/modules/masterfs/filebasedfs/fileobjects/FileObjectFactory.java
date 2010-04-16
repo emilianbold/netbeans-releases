@@ -372,7 +372,7 @@ public final class FileObjectFactory {
         return (state == 1) ? true : false;
     }
 
-    private final BaseFileObj getOrCreate(final FileInfo fInfo) {
+    private BaseFileObj getOrCreate(final FileInfo fInfo) {
         BaseFileObj retVal = null;
         File f = fInfo.getFile();
 
@@ -426,7 +426,7 @@ public final class FileObjectFactory {
         return null;
     }
 
-    public final void refreshAll(RefreshSlow slow, final boolean expected) {
+    final void refreshAll(RefreshSlow slow, final boolean expected) {
         Set<BaseFileObj> all2Refresh = collectForRefresh();
         refresh(all2Refresh, slow, expected);
     }
@@ -666,9 +666,13 @@ public final class FileObjectFactory {
         return (retVal != null && retVal.isValid()) ? retVal : null;
     }
 
-    public final void refresh(final RefreshSlow slow, final boolean expected) {
+    public void refresh(boolean expected) {
+        refresh(null, expected);
+    }
+    final void refresh(final RefreshSlow slow, final boolean expected) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         final Runnable r = new Runnable() {
+            @Override
             public void run() {
                 refreshAll(slow, expected);
             }            
@@ -677,6 +681,7 @@ public final class FileObjectFactory {
         stopWatch.start();
         try {
             FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
+                @Override
                 public void run() throws IOException {
                     FileBasedFileSystem.runAsInconsistent(r);
                 }
@@ -707,9 +712,10 @@ public final class FileObjectFactory {
         Statistics.REFRESH_FILE.reset();
     }
 
-    public final void refreshFor(final RefreshSlow slow, final File... files) {
+    final void refreshFor(final RefreshSlow slow, final File... files) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         final Runnable r = new Runnable() {
+            @Override
             public void run() {
                 Set<BaseFileObj> all2Refresh = collectForRefresh();
                 refresh(all2Refresh, slow, files);
@@ -724,6 +730,7 @@ public final class FileObjectFactory {
         stopWatch.start();
         try {
             FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
+                @Override
                 public void run() throws IOException {
                     FileBasedFileSystem.runAsInconsistent(r);
                 }
@@ -759,6 +766,7 @@ public final class FileObjectFactory {
         AsyncRefreshAtomicAction(FileObject fo) {
             this.fo = fo;
         }
+        @Override
         public void run() throws IOException {
             this.fo.refresh();
         }
