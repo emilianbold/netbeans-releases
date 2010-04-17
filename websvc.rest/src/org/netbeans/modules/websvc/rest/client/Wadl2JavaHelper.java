@@ -87,6 +87,7 @@ import org.netbeans.modules.websvc.saas.model.oauth.DynamicUrlType;
 import org.netbeans.modules.websvc.saas.model.oauth.FlowType;
 import org.netbeans.modules.websvc.saas.model.oauth.Metadata;
 import org.netbeans.modules.websvc.saas.model.oauth.MethodType;
+import org.netbeans.modules.websvc.saas.model.oauth.ParamType;
 import org.netbeans.modules.websvc.saas.model.oauth.SignatureMethodType;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
@@ -1059,7 +1060,7 @@ class Wadl2JavaHelper {
         paramList.add(paramTree);
         paramTree = maker.Variable(paramModifier, "consumer_secret", stringType, null); //NOI18N
         paramList.add(paramTree);
-        if (oauthRequestTokenMethod.isCallback()) {
+        if (isCallback(oauthAccessTokenMethod)) {
             paramTree = maker.Variable(paramModifier, "callback_page_url", stringType, null); //NOI18N
             paramList.add(paramTree);
         }
@@ -1305,7 +1306,7 @@ class Wadl2JavaHelper {
     private static String getBodyForLogin(Metadata oauthMetadata) {
         MethodType requestTokenMethod = oauthMetadata.getFlow().getRequestToken();
         MethodType accessTokenMethod = oauthMetadata.getFlow().getAccessToken();
-        String callbackParam = requestTokenMethod.isCallback() ? ", callback_page_url": ""; //NOI18N
+        String callbackParam = isCallback(requestTokenMethod) ? ", callback_page_url": ""; //NOI18N
         String verifierPrefix = accessTokenMethod.isVerifier() ? "String oauth_verifier = " : ""; //NOI18N
         String verifierPostfix = accessTokenMethod.isVerifier() ? ", oauth_verifier" : ""; //NOI18N
         StringBuffer bodyBuf = new StringBuffer();
@@ -1343,7 +1344,25 @@ class Wadl2JavaHelper {
     private static String getAuthorizationUrl(Metadata oauthMetadata) {
         AuthorizeConsumerType auth = oauthMetadata.getFlow().getAuthorizeConsumer();
         if (auth.getFixedUrl() != null) {
-            return auth.getFixedUrl().getUrl();
+            StringBuffer buf = new StringBuffer(auth.getFixedUrl().getUrl());
+            List<ParamType> params =  auth.getParam();
+            if (params.size() > 0) {
+                buf.append("?"); //NOI18N
+            }
+            int i=0;
+            for (ParamType p : auth.getParam()) {
+                if (i++ > 0) {
+                    buf.append("+\"&"); //NOI18N
+                }
+                String paramName = p.getParamName();
+                String oauthName = p.getOauthName();
+                if (oauthName == null) {
+                    oauthName = paramName;
+                }
+                String paramValue = getParamFromResponse(oauthMetadata.getFlow().getRequestToken().getResponseStyle(), "requestTokenResponse", oauthName); //NOI18N
+                buf.append(paramName+"=\"+"+paramValue);
+            }
+            return "\""+buf.toString()+(params.size() == 0 ? "\"" : ""); //NOI18N
         } else {
             DynamicUrlType dynamicUrl = auth.getDynamicUrl();
             return getParamFromResponse(oauthMetadata.getFlow().getRequestToken().getResponseStyle(), "requestTokenResponse", dynamicUrl.getCallbackParamName()); //NOI18N

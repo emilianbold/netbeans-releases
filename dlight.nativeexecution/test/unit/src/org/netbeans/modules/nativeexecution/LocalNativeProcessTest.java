@@ -112,7 +112,7 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
     public void testDestroyInfiniteTasks() throws Exception {
         final BlockingQueue<NativeProcess> processQueue = new LinkedBlockingQueue<NativeProcess>();
         final Counters counters = new Counters();
-        int count = 50;
+        int count = 25;
 
         final TaskFactory infiniteTaskFactory = new TaskFactory() {
 

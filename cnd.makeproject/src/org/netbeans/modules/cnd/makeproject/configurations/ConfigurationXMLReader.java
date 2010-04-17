@@ -252,7 +252,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
             }
         });
         // Refresh disk folders in background process
-        //task.waitFinished();
+        task.waitFinished(); // See IZ https://netbeans.org/bugzilla/show_bug.cgi?id=184260
     }
 
 

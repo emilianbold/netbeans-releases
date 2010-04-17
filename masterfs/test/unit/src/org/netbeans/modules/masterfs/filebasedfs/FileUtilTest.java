@@ -175,7 +175,7 @@ public class FileUtilTest extends NbTestCase {
 
         // atomic action
         FileUtil.runAtomicAction(new Runnable() {
-
+            @Override
             public void run() {
                 FileObject dirFO;
                 try {
@@ -311,7 +311,7 @@ public class FileUtilTest extends NbTestCase {
 
         // atomic action
         FileUtil.runAtomicAction(new Runnable() {
-
+            @Override
             public void run() {
                 FileObject dirFO;
                 try {
@@ -514,7 +514,7 @@ public class FileUtilTest extends NbTestCase {
 
         // atomic action
         FileUtil.runAtomicAction(new Runnable() {
-
+            @Override
             public void run() {
                 FileObject dirFO;
                 try {
@@ -584,12 +584,12 @@ public class FileUtilTest extends NbTestCase {
         assertGC("FileChangeListener not collected.", ref);
     }
 
-    static enum EventType {
+    public static enum EventType {
 
         DATA_CREATED, FOLDER_CREATED, DELETED, CHANGED, RENAMED, ATTRIBUTE_CHANGED
     };
 
-    static class TestFileChangeListener implements FileChangeListener {
+    public static class TestFileChangeListener implements FileChangeListener {
         boolean disabled;
 
         private final Map<EventType, List<FileEvent>> type2Event = new HashMap<EventType, List<FileEvent>>();
@@ -638,31 +638,37 @@ public class FileUtilTest extends NbTestCase {
             }
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             assertFalse("No changes expected", disabled);
             type2Event.get(EventType.FOLDER_CREATED).add(fe);
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             assertFalse("No changes expected", disabled);
             type2Event.get(EventType.DATA_CREATED).add(fe);
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             assertFalse("No changes expected", disabled);
             type2Event.get(EventType.CHANGED).add(fe);
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             assertFalse("No changes expected", disabled);
             type2Event.get(EventType.DELETED).add(fe);
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             assertFalse("No changes expected", disabled);
             type2Event.get(EventType.RENAMED).add(fe);
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             assertFalse("No changes expected", disabled);
             type2Event.get(EventType.ATTRIBUTE_CHANGED).add(fe);

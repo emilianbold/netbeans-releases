@@ -3,7 +3,7 @@
 <!--
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  
- Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  
  The contents of this file are subject to the terms of either the GNU
  General Public License Version 2 only ("GPL") or the Common
@@ -41,15 +41,24 @@
  made subject to such option by the copyright holder.
 -->
 
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-<filesystem>
+<saas-services xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
+               xmlns:tns="http://xml.netbeans.org/websvc/saas/services/1.0/twitter"
+               xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
+               xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
+               type="http://research.sun.com/wadl/2006/10"
+               api-doc="http://apiwiki.twitter.com/REST+API+Documentation"
+               url="org/netbeans/modules/websvc/saas/services/twitter/resources/TwitterWadlOAuth.xml">
+
+    <description>What Are You Doing Service (OAuth)</description>
     
-    <folder name="SaaSServices">
-        <folder name="Twitter">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.twitter.Bundle"/>
-            <file name="Twitter.xml" url="/org/netbeans/modules/websvc/saas/services/twitter/resources/Twitter.xml"/>
-            <file name="TwitterOAuth.xml" url="/org/netbeans/modules/websvc/saas/services/twitter/resources/TwitterOAuth.xml"/>
-        </folder>
-    </folder>
-    
-</filesystem>
+    <display-name>Twitter OAuth</display-name>
+
+    <saas-metadata>
+        <localizing-bundle>org.netbeans.modules.websvc.saas.services.twitter.Bundle</localizing-bundle>
+        <group name="Twitter">
+        </group>
+    </saas-metadata>
+
+    <methods/>
+</saas-services>

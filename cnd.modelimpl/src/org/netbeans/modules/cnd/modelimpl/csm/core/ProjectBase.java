@@ -1502,7 +1502,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             for (PreprocessorStatePair pair : entryStatePairs) {
                 assert pair != null : "can not be null element in " + entryStatePairs;
                 assert pair.state != null: "state can not be null in pair " + pair + " for file " + csmFile;
-                if ((pair.pcState == FilePreprocessorConditionState.PARSING) && pair.state.equals(ppState)) {
+                if ((pair.pcState == FilePreprocessorConditionState.PARSING) &&
+                        // there coud be invalidated state which is in parsing phase now
+                        APTHandlersSupport.equalsIgnoreInvalid(pair.state, ppState)) {
                     assert !entryFound;
                     entryFound = true;
                 } else {

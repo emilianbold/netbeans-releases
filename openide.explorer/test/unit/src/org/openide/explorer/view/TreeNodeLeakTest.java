@@ -45,6 +45,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyVetoException;
 import java.lang.ref.WeakReference;
 import javax.swing.JFrame;
+import javax.swing.tree.TreeNode;
 import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
@@ -115,6 +116,37 @@ public final class TreeNodeLeakTest extends NbTestCase {
         WeakReference wr = new WeakReference(toSelect[0]);
         toSelect = null;
         assertGC("Node freed", wr);
+    }
+
+    public void testDestroyedNodesAreNotHeldByVisualizers() {
+        class K extends Children.Keys<String> {
+            @Override
+            protected Node[] createNodes(String key) {
+                AbstractNode an = new AbstractNode(Children.LEAF);
+                an.setName(key);
+                return new Node[] { an };
+            }
+
+            void keys(String... arr) {
+                setKeys(arr);
+            }
+        }
+        K keys = new K();
+        AbstractNode root = new AbstractNode(keys);
+        keys.keys("A");
+
+        TreeNode v = Visualizer.findVisualizer(root);
+        assertEquals("One child", 1, v.getChildCount());
+        TreeNode ch0 = v.getChildAt(0);
+
+        Node n0 = Visualizer.findNode(ch0);
+        assertNotNull("Node for visualizer " + ch0, n0);
+        assertEquals("Name is OK", "A", n0.getName());
+        WeakReference wr = new WeakReference(n0);
+        n0 = null;
+
+        keys.keys();
+        assertGC("Node freed in spite we have a reference to visualizer", wr);
     }
     
     void clearAWTQueue() throws Exception {
