@@ -51,7 +51,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -81,6 +80,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -113,8 +113,10 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         CodeEvaluator.addResultListener(evalListener);
         prefListener = new VariablesPreferenceChangeListener();
         preferences.addPreferenceChangeListener(prefListener);
+        preferences.addPreferenceChangeListener(WeakListeners.create(
+                PreferenceChangeListener.class, prefListener, preferences));
         Properties properties = Properties.getDefault().getProperties("debugger.options.JPDA"); // NOI18N
-        properties.addPropertyChangeListener(prefListener);
+        properties.addPropertyChangeListener(WeakListeners.propertyChange(prefListener, properties));
     }
 
     /** 
