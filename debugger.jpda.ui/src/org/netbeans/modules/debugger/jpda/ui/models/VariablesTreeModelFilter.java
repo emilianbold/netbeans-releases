@@ -51,7 +51,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -114,6 +113,8 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         CodeEvaluator.addResultListener(evalListener);
         prefListener = new VariablesPreferenceChangeListener();
         preferences.addPreferenceChangeListener(prefListener);
+        preferences.addPreferenceChangeListener(WeakListeners.create(
+                PreferenceChangeListener.class, prefListener, preferences));
         Properties properties = Properties.getDefault().getProperties("debugger.options.JPDA"); // NOI18N
         properties.addPropertyChangeListener(WeakListeners.propertyChange(prefListener, properties));
     }
