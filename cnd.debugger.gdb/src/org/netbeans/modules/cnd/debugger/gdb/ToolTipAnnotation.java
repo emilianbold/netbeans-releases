@@ -42,12 +42,16 @@
 package org.netbeans.modules.cnd.debugger.gdb;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
 import org.netbeans.modules.cnd.debugger.gdb.models.ValuePresenter;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
@@ -71,6 +75,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
     private Part lp;
     private EditorCookie ec;
     
+    @Override
     public String getShortDescription() {
         GdbDebugger debugger = GdbDebugger.getGdbDebugger();
         if (debugger == null) {
@@ -96,11 +101,12 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         return null;
     }
         
+    @Override
     public void run() {
         if (lp == null || ec == null) {
             return;
         }
-        StyledDocument doc;
+        final StyledDocument doc;
         try {
             doc = ec.openDocument();
         } catch (IOException ex) {
@@ -112,6 +118,29 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         }
 
         final int offset = NbDocument.findLineOffset(doc, lp.getLine().getLineNumber()) + lp.getColumn();
+
+        // do not evaluate comments etc. (see 166207)
+        final AtomicBoolean skip = new AtomicBoolean(false);
+
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                TokenItem<CppTokenId> token = CndTokenUtilities.getToken(doc, offset, true);
+                String category = token.id().primaryCategory();
+                if (CppTokenId.WHITESPACE_CATEGORY.equals(category) ||
+                        CppTokenId.COMMENT_CATEGORY.equals(category) ||
+                        CppTokenId.SEPARATOR_CATEGORY.equals(category) ||
+                        CppTokenId.STRING_CATEGORY.equals(category) ||
+                        CppTokenId.NUMBER_CATEGORY.equals(category) ||
+                        CppTokenId.OPERATOR_CATEGORY.equals(category)) {
+                    skip.set(true);
+                }
+            }
+        });
+
+        if (skip.get()) {
+            return;
+        }
         
         String expression = getIdentifier(doc, ep, offset);
         
@@ -143,6 +172,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         firePropertyChange(PROP_SHORT_DESCRIPTION, null, res);
     }
 
+    @Override
     public String getAnnotationType () {
         return null; // Currently return null annotation type
     }

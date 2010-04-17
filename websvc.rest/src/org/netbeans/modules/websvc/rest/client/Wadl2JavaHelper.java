@@ -82,6 +82,13 @@ import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
 import org.netbeans.modules.websvc.saas.model.jaxb.FieldDescriptor;
 import org.netbeans.modules.websvc.saas.model.jaxb.MethodDescriptor;
 import org.netbeans.modules.websvc.saas.model.jaxb.ServletDescriptor;
+import org.netbeans.modules.websvc.saas.model.oauth.AuthorizeConsumerType;
+import org.netbeans.modules.websvc.saas.model.oauth.DynamicUrlType;
+import org.netbeans.modules.websvc.saas.model.oauth.FlowType;
+import org.netbeans.modules.websvc.saas.model.oauth.Metadata;
+import org.netbeans.modules.websvc.saas.model.oauth.MethodType;
+import org.netbeans.modules.websvc.saas.model.oauth.ParamType;
+import org.netbeans.modules.websvc.saas.model.oauth.SignatureMethodType;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Request;
@@ -1004,5 +1011,382 @@ class Wadl2JavaHelper {
         }
         return modifiedClass;
     }
-    
+
+    static ClassTree addOAuthMethods(WorkingCopy copy, ClassTree originalClass, Metadata oauthMetadata) {
+        ClassTree modifiedClass = originalClass;
+        TreeMaker maker = copy.getTreeMaker();
+        
+        // create fields
+        ModifiersTree privateModif =  maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
+        Set<Modifier> modifiersSet = new HashSet<Modifier>();
+        modifiersSet.add(Modifier.PRIVATE);
+        modifiersSet.add(Modifier.STATIC);
+        modifiersSet.add(Modifier.FINAL);
+        ModifiersTree privateStaticFinalModif =  maker.Modifiers(modifiersSet);
+
+        ExpressionTree stringType = maker.Identifier("String"); //NOI18N
+        String oauthBaseUrl = oauthMetadata.getBaseUrl();
+        VariableTree fieldTree = maker.Variable(privateStaticFinalModif, "OAUTH_BASE_URL", stringType, maker.Literal(oauthBaseUrl)); //NOI18N
+        modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
+
+        Tree typeTree = JavaSourceHelper.createTypeTree(copy, "com.sun.jersey.oauth.signature.OAuthParameters"); //NOI18N
+        fieldTree = maker.Variable(privateModif, "oauth_params", typeTree, null); //NOI18N
+        modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
+
+        typeTree = JavaSourceHelper.createTypeTree(copy, "com.sun.jersey.oauth.signature.OAuthSecrets"); //NOI18N
+        fieldTree = maker.Variable(privateModif, "oauth_secrets", typeTree, null); //NOI18N
+        modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
+
+        typeTree = JavaSourceHelper.createTypeTree(copy, "com.sun.jersey.oauth.client.OAuthClientFilter"); //NOI18N
+        fieldTree = maker.Variable(privateModif, "oauth_filter", typeTree, null); //NOI18N
+        modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
+
+        fieldTree = maker.Variable(privateModif, "oauth_access_token", stringType, null); //NOI18N
+        modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
+
+        fieldTree = maker.Variable(privateModif, "oauth_access_token_secret", stringType, null); //NOI18N
+        modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
+
+        FlowType flow = oauthMetadata.getFlow();
+        MethodType oauthRequestTokenMethod = flow.getRequestToken();
+        MethodType oauthAccessTokenMethod = flow.getAccessToken();
+        ExpressionTree uniformInterfaceEx = JavaSourceHelper.createTypeTree(copy, "com.sun.jersey.api.client.UniformInterfaceException"); //NOI18N
+        ExpressionTree iOEx = JavaSourceHelper.createTypeTree(copy, "java.io.IOException"); //NOI18N
+
+        // login method
+        ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+        List<VariableTree> paramList = new ArrayList<VariableTree>();
+        VariableTree paramTree = maker.Variable(paramModifier, "consumer_key", stringType, null); //NOI18N
+        paramList.add(paramTree);
+        paramTree = maker.Variable(paramModifier, "consumer_secret", stringType, null); //NOI18N
+        paramList.add(paramTree);
+        if (isCallback(oauthAccessTokenMethod)) {
+            paramTree = maker.Variable(paramModifier, "callback_page_url", stringType, null); //NOI18N
+            paramList.add(paramTree);
+        }
+
+        List<ExpressionTree> throwList = new ArrayList<ExpressionTree>();
+        throwList.add(iOEx); throwList.add(uniformInterfaceEx);
+
+        MethodTree methodTree = maker.Method (
+            maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)),
+            "login", //NOI18N
+            maker.Identifier("void"), //NOI18N
+            Collections.<TypeParameterTree>emptyList(),
+            paramList,
+            throwList,
+            getBodyForLogin(oauthMetadata),
+            null);
+
+        modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+
+        // getRequestToken method
+        ExpressionTree requestTokenReturnTree = getResponseType(copy, oauthRequestTokenMethod);
+
+        methodTree = maker.Method (
+            privateModif,
+            "getOAuthRequestToken", //NOI18N
+            requestTokenReturnTree,
+            Collections.<TypeParameterTree>emptyList(),
+            paramList,
+            Collections.<ExpressionTree>singletonList(uniformInterfaceEx),
+            getRequestTokenBody(oauthMetadata),
+            null);
+
+        modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+        
+        // getAccessToken method
+        ExpressionTree accessTokenReturnTree = getResponseType(copy, oauthAccessTokenMethod);
+
+        paramList = new ArrayList<VariableTree>();
+        paramTree = maker.Variable(paramModifier, "requestTokenResponse", requestTokenReturnTree, null); //NOI18N
+        paramList.add(paramTree);
+        if (oauthAccessTokenMethod.isVerifier()) {
+            paramTree = maker.Variable(paramModifier, "oauth_verifier", stringType, null); //NOI18N
+            paramList.add(paramTree);
+        }
+
+        methodTree = maker.Method (
+            privateModif,
+            "getOAuthAccessToken", //NOI18N
+            accessTokenReturnTree,
+            Collections.<TypeParameterTree>emptyList(),
+            paramList,
+            Collections.<ExpressionTree>singletonList(uniformInterfaceEx),
+            getAccessTokenBody(oauthMetadata),
+            null);
+
+        modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+
+        // setAccessToken method
+        methodTree = maker.Method (
+            privateModif,
+            "setOAuth", //NOI18N
+            maker.Identifier("void"), //NOI18N
+            Collections.<TypeParameterTree>emptyList(),
+            Collections.<VariableTree>emptyList(),
+            Collections.<ExpressionTree>emptyList(),
+            getBodyForSetOAuth(oauthMetadata),
+            null);
+
+        modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+
+        // authorizeConsumer method
+        VariableTree var = maker.Variable(paramModifier, "requestTokenResponse", requestTokenReturnTree, null); //NOI18N
+        methodTree = maker.Method (
+            privateModif,
+            "authorizeConsumer", //NOI18N
+            oauthAccessTokenMethod.isVerifier() ? maker.Identifier("java.lang.String") : maker.Identifier("void"), //NOI18N
+            Collections.<TypeParameterTree>emptyList(),
+            Collections.<VariableTree>singletonList(var),
+            Collections.<ExpressionTree>singletonList(iOEx),
+            getBodyForAuthorizeConsumer(oauthMetadata),
+            null);
+
+        modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+
+        return modifiedClass;
+    }
+
+    private static String getSignatureMethod(Metadata oauthMetadata, MethodType oauthMethod) {
+        String signatureMethod = null;
+        if (oauthMethod == null) {
+            signatureMethod = oauthMetadata.getSignatureMethod().value();
+        } else {
+            SignatureMethodType sigMethod = oauthMethod.getSignatureMethod();
+            if (sigMethod == null) {
+                signatureMethod = oauthMetadata.getSignatureMethod().value();
+            } else {
+                signatureMethod = sigMethod.value();
+            }
+        }
+        return "com.sun.jersey.oauth.signature."+signatureMethod+".NAME"; //NOI18N
+    }
+
+    private static String getVersion(MethodType oauthMethod) {
+        String version = oauthMethod.getVersion();
+        return version == null ? "1.0" : version; //NOI18N
+    }
+
+    private static boolean isNonce(Metadata oauthMetadata) {
+        Boolean nounce = oauthMetadata.isNonce();
+        return !Boolean.FALSE.equals(nounce);
+    }
+
+    private static boolean isNonce(MethodType oauthMethod) {
+        Boolean nounce = oauthMethod.isNonce();
+        return !Boolean.FALSE.equals(nounce);
+    }
+
+    private static boolean isTimestamp(Metadata oauthMetadata) {
+        Boolean timestamp = oauthMetadata.isTimestamp();
+        return !Boolean.FALSE.equals(timestamp);
+    }
+
+    private static boolean isTimestamp(MethodType oauthMethod) {
+        Boolean timestamp = oauthMethod.isTimestamp();
+        return !Boolean.FALSE.equals(timestamp);
+    }
+
+    private static boolean isCallback(MethodType oauthMethod) {
+        Boolean callback = oauthMethod.isCallback();
+        return Boolean.TRUE.equals(callback);
+    }
+
+    private static boolean isVerifier(MethodType oauthMethod) {
+        Boolean verifier = oauthMethod.isVerifier();
+        return Boolean.TRUE.equals(verifier);
+    }
+
+    private static String getRequestTokenBody(Metadata oauthMetadata) {
+        MethodType oauthMethod = oauthMetadata.getFlow().getRequestToken();
+        StringBuffer bodyBuf = new StringBuffer();
+        bodyBuf.append("{"); //NOI18N
+        String webResourceMethod=getWebResourceMethod( oauthMethod.getRequestStyle());
+        bodyBuf.append("WebResource resource = client.resource(OAUTH_BASE_URL)."+webResourceMethod+"(\""+oauthMethod.getMethodName()+"\")"); //NOI18N
+        bodyBuf.append("oauth_params = new OAuthParameters().consumerKey(consumer_key)"); //NOI18N
+        bodyBuf.append(".signatureMethod("+getSignatureMethod(oauthMetadata, oauthMethod)+")"); //NOI18N
+        bodyBuf.append(".version(\""+getVersion(oauthMethod)+"\")"); //NOI18N
+        if (isNonce(oauthMethod)) {
+            bodyBuf.append(".nonce()"); //NOI18N
+        }
+        if (isTimestamp(oauthMethod)) {
+            bodyBuf.append(".timestamp()"); //NOI18N
+        }
+        if (isCallback(oauthMethod)) {
+            bodyBuf.append(".callback(callback_page_url)"); //NOI18N
+        }
+        bodyBuf.append(";"); //NOI18N
+        bodyBuf.append("oauth_secrets = new OAuthSecrets().consumerSecret(consumer_secret);"); //NOI18N
+        bodyBuf.append("oauth_filter = new OAuthClientFilter(client.getProviders(), oauth_params, oauth_secrets);"); //NOI18N
+        bodyBuf.append("resource.addFilter(oauth_filter);"); //NOI18N
+        bodyBuf.append("return resource.get("+getResponseClass(oauthMethod.getResponseStyle(), true)+");"); //NOI18N
+        bodyBuf.append("}"); //NOI18N
+        return bodyBuf.toString();
+    }
+    private static String getAccessTokenBody(Metadata oauthMetadata) {
+        MethodType requestTokenMethod = oauthMetadata.getFlow().getRequestToken();
+        MethodType accessTokenMethod = oauthMetadata.getFlow().getAccessToken();
+        StringBuffer bodyBuf = new StringBuffer();
+        bodyBuf.append("{"); //NOI18N
+        String webResourceMethod=getWebResourceMethod( accessTokenMethod.getRequestStyle());
+        bodyBuf.append("WebResource resource = client.resource(OAUTH_BASE_URL)."+webResourceMethod+"(\""+accessTokenMethod.getMethodName()+"\")"); //NOI18N
+        bodyBuf.append("oauth_params.token("+getParamFromResponse(requestTokenMethod.getResponseStyle(), "requestTokenResponse", "oauth_token")+")"); //NOI18N
+        bodyBuf.append(".signatureMethod("+getSignatureMethod(oauthMetadata, accessTokenMethod)+")"); //NOI18N
+        bodyBuf.append(".version(\""+getVersion(accessTokenMethod)+"\")"); //NOI18N
+        if (isNonce(accessTokenMethod)) {
+            bodyBuf.append(".nonce()"); //NOI18N
+        }
+        if (isTimestamp(accessTokenMethod)) {
+            bodyBuf.append(".timestamp()"); //NOI18N
+        }
+        if (isCallback(requestTokenMethod)) {
+            bodyBuf.append(".callback(null)"); //NOI18N
+        }
+        if (isVerifier(accessTokenMethod)) {
+            bodyBuf.append(".verifier(oauth_verifier)"); //NOI18N
+        }
+        bodyBuf.append(";"); //NOI18N
+
+
+        bodyBuf.append("oauth_secrets.tokenSecret("+getParamFromResponse(requestTokenMethod.getResponseStyle(), "requestTokenResponse", "oauth_token_secret")+");"); //NOI18N
+        bodyBuf.append("resource.addFilter(oauth_filter);"); //NOI18N
+        bodyBuf.append("return resource.get("+getResponseClass(accessTokenMethod.getResponseStyle(), true)+");"); //NOI18N
+        bodyBuf.append("}"); //NOI18N
+        return bodyBuf.toString();
+    }
+
+    private static String getBodyForSetOAuth(Metadata oauthMetadata) {
+        MethodType accessTokenMethod = oauthMetadata.getFlow().getAccessToken();
+        StringBuffer bodyBuf = new StringBuffer();
+        bodyBuf.append("{"); //NOI18N
+        bodyBuf.append("oauth_params.token(oauth_access_token)"); //NOI18N
+        bodyBuf.append(".signatureMethod("+getSignatureMethod(oauthMetadata, null)+")"); //NOI18N
+        if (isNonce(oauthMetadata)) {
+            bodyBuf.append(".nonce()"); //NOI18N
+        }
+        if (isTimestamp(oauthMetadata)) {
+            bodyBuf.append(".timestamp()"); //NOI18N
+        }
+        if (isVerifier(accessTokenMethod)) {
+            bodyBuf.append(".verifier(null)"); //NOI18N
+        }
+        bodyBuf.append(";"); //NOI18N
+        bodyBuf.append("oauth_secrets.tokenSecret(oauth_access_token_secret);"); //NOI18N
+        bodyBuf.append("webResource.addFilter(oauth_filter);"); //NOI18N
+        bodyBuf.append("}"); //NOI18N
+        return bodyBuf.toString();
+    }
+
+    private static String getBodyForAuthorizeConsumer(Metadata oauthMetadata) {
+        MethodType accessTokenMethod = oauthMetadata.getFlow().getAccessToken();
+        StringBuffer bodyBuf = new StringBuffer();
+        bodyBuf.append("{"); //NOI18N
+        bodyBuf.append("try {"); //NOI18N
+        bodyBuf.append("java.awt.Desktop.getDesktop().browse(new java.net.URI("+getAuthorizationUrl(oauthMetadata)+"));"); //NOI18N
+        bodyBuf.append("} catch (java.net.URISyntaxException ex) {"); //NOI18N
+        bodyBuf.append("ex.printStackTrace();"); //NOI18N
+        bodyBuf.append("}"); //NOI18N
+        if (accessTokenMethod.isVerifier()) {
+            bodyBuf.append("java.io.BufferedReader br = null;"); //NOI18N
+            bodyBuf.append("String oauth_verifier = null;"); //NOI18N
+            bodyBuf.append("try {"); //NOI18N
+            bodyBuf.append("br = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));"); //NOI18N
+            bodyBuf.append("System.out.print(\"Type oauth_verifier string (taken from callback page url):\");"); //NOI18N
+            bodyBuf.append("oauth_verifier=br.readLine();"); //NOI18N
+            bodyBuf.append("} finally { br.close(); }"); //NOI18N
+            bodyBuf.append("return oauth_verifier;"); //NOI18N
+        } else {
+            bodyBuf.append("System.out.print(\"After you authorize the application press <Enter>:\");System.in.read();"); //NOI18N
+        }
+        bodyBuf.append("}"); //NOI18N
+        return bodyBuf.toString();
+    }
+
+    private static String getBodyForLogin(Metadata oauthMetadata) {
+        MethodType requestTokenMethod = oauthMetadata.getFlow().getRequestToken();
+        MethodType accessTokenMethod = oauthMetadata.getFlow().getAccessToken();
+        String callbackParam = isCallback(requestTokenMethod) ? ", callback_page_url": ""; //NOI18N
+        String verifierPrefix = accessTokenMethod.isVerifier() ? "String oauth_verifier = " : ""; //NOI18N
+        String verifierPostfix = accessTokenMethod.isVerifier() ? ", oauth_verifier" : ""; //NOI18N
+        StringBuffer bodyBuf = new StringBuffer();
+        bodyBuf.append("{"); //NOI18N
+        bodyBuf.append(getResponseClass(requestTokenMethod.getResponseStyle(), false)+" requestTokenResponse = getOAuthRequestToken(consumer_key, consumer_secret"+callbackParam+");"); //NOI18N
+        bodyBuf.append(verifierPrefix+"authorizeConsumer(requestTokenResponse);"); //NOI18N
+        bodyBuf.append(getResponseClass(accessTokenMethod.getResponseStyle(), false)+" accessTokenResponse = getOAuthAccessToken(requestTokenResponse"+verifierPostfix+");"); //NOI18N
+        bodyBuf.append("oauth_access_token_secret = "+getParamFromResponse(accessTokenMethod.getResponseStyle(), "accessTokenResponse", "oauth_token_secret")+";"); //NOI18N
+        bodyBuf.append("oauth_access_token  = "+getParamFromResponse(accessTokenMethod.getResponseStyle(), "accessTokenResponse", "oauth_token")+";"); //NOI18N
+        bodyBuf.append("setOAuth();"); //NOI18N
+        bodyBuf.append("}"); //NOI18N
+        return bodyBuf.toString();
+    }
+
+    private static String getWebResourceMethod(String requestStyle) {
+        String webResourceMethod=null;
+        if ("PATH".equals(requestStyle)) { //NOI18N
+            webResourceMethod = "path"; //NOI18N
+        } else if ("HEADER".equals(requestStyle)) { //NOI18N
+            webResourceMethod = "header"; //NOI18N
+        } else {
+            webResourceMethod = "query"; //NOI18N
+        }
+        return webResourceMethod;
+    }
+
+    private static String getResponseClass(String responseStyle, boolean extension) {
+        String responseClass="String"; //NOI18N
+        if ("FORM".equals(responseStyle)) { //NOI18N
+            responseClass = "Form"; //NOI18N
+        }
+        return (extension ? responseClass+".class" : responseClass); //NOI18N
+    }
+
+    private static String getAuthorizationUrl(Metadata oauthMetadata) {
+        AuthorizeConsumerType auth = oauthMetadata.getFlow().getAuthorizeConsumer();
+        if (auth.getFixedUrl() != null) {
+            StringBuffer buf = new StringBuffer(auth.getFixedUrl().getUrl());
+            List<ParamType> params =  auth.getParam();
+            if (params.size() > 0) {
+                buf.append("?"); //NOI18N
+            }
+            int i=0;
+            for (ParamType p : auth.getParam()) {
+                if (i++ > 0) {
+                    buf.append("+\"&"); //NOI18N
+                }
+                String paramName = p.getParamName();
+                String oauthName = p.getOauthName();
+                if (oauthName == null) {
+                    oauthName = paramName;
+                }
+                String paramValue = getParamFromResponse(oauthMetadata.getFlow().getRequestToken().getResponseStyle(), "requestTokenResponse", oauthName); //NOI18N
+                buf.append(paramName+"=\"+"+paramValue);
+            }
+            return "\""+buf.toString()+(params.size() == 0 ? "\"" : ""); //NOI18N
+        } else {
+            DynamicUrlType dynamicUrl = auth.getDynamicUrl();
+            return getParamFromResponse(oauthMetadata.getFlow().getRequestToken().getResponseStyle(), "requestTokenResponse", dynamicUrl.getCallbackParamName()); //NOI18N
+        }
+    }
+
+    private static String getParamFromResponse(String responseStyle, String responseFieldName, String paramName) {
+        if ("FORM".equals(responseStyle)) { //NOI18N
+            return responseFieldName+".getFirst(\""+paramName+"\")"; //NOI18N
+        } else if ("XML".equals(responseStyle)) { //NOI18N
+            int end = paramName.length() + 2;
+            return responseFieldName+".substring("+responseFieldName+".indexOf(\"<"+paramName+">\") + "+String.valueOf(end)+", "+responseFieldName+".indexOf(\"</"+paramName+">\"))"; //NOI18N
+        } else {
+            return ""; //NOI18N
+        }
+    }
+
+    private static ExpressionTree getResponseType(WorkingCopy copy, MethodType method) {
+        String responseStyle = method.getResponseStyle();
+        if ("FORM".equals(responseStyle)) { //NOI18N
+            return JavaSourceHelper.createTypeTree(copy, "com.sun.jersey.api.representation.Form"); //NOI18N
+        } else {
+            return copy.getTreeMaker().Identifier("java.lang.String"); //NOI18N
+        }
+    }
+
 }

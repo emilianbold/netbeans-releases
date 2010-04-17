@@ -45,9 +45,11 @@
 
 package org.netbeans.modules.websvc.rest.client;
 
+import java.io.IOException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.xml.bind.JAXBException;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
@@ -242,28 +244,42 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
     private void resourceChanged() {
         WadlSaasResource saasResource = resourceNode.getLookup().lookup(WadlSaasResource.class);
         if (saasResource != null) {
-            Authentication auth = saasResource.getSaas().getSaasMetadata().getAuthentication();
-            if (auth != null) {
-                if (auth.getSessionKey().size() > 0) {
-                    jComboBox1.setModel(new DefaultComboBoxModel(new Object[] {Security.Authentication.SESSION_KEY}));
+            boolean isOauth = false;
+            try {
+                if (saasResource.getSaas().getOauthMetadata() != null) {
+                    jComboBox1.setModel(new DefaultComboBoxModel(new Object[] {Security.Authentication.OAUTH}));
                     securityDefault = false;
-                } else if (auth.getHttpBasic() != null) {
-                    if (!securityDefault) {
-                        jComboBox1.setModel(new DefaultComboBoxModel(cbDefault));
-                        securityDefault = true;
-                    }
-                    jComboBox1.setSelectedItem(Security.Authentication.BASIC);
+                    isOauth = true;
+                }
+            } catch (IOException ex) {
 
+            } catch (JAXBException ex) {
+
+            }
+            if (!isOauth) {
+                Authentication auth = saasResource.getSaas().getSaasMetadata().getAuthentication();
+                if (auth != null) {
+                    if (auth.getSessionKey().size() > 0) {
+                        jComboBox1.setModel(new DefaultComboBoxModel(new Object[] {Security.Authentication.SESSION_KEY}));
+                        securityDefault = false;
+                    } else if (auth.getHttpBasic() != null) {
+                        if (!securityDefault) {
+                            jComboBox1.setModel(new DefaultComboBoxModel(cbDefault));
+                            securityDefault = true;
+                        }
+                        jComboBox1.setSelectedItem(Security.Authentication.BASIC);
+
+                    } else {
+                        if (!securityDefault) {
+                            jComboBox1.setModel(new DefaultComboBoxModel(cbDefault));
+                            securityDefault = true;
+                        }
+                    }
                 } else {
                     if (!securityDefault) {
                         jComboBox1.setModel(new DefaultComboBoxModel(cbDefault));
                         securityDefault = true;
                     }
-                }
-            } else {
-                if (!securityDefault) {
-                    jComboBox1.setModel(new DefaultComboBoxModel(cbDefault));
-                    securityDefault = true;
                 }
             }
         } else {

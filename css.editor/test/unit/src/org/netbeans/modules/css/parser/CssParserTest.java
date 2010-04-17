@@ -56,9 +56,9 @@ public class CssParserTest extends TestBase {
         super(testName);
     }
 
-    public static Test suite(){
+    public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new CssParserTest("testIssue183601"));
+        suite.addTest(new CssParserTest("testIssue182434"));
         return suite;
     }
 
@@ -134,6 +134,22 @@ public class CssParserTest extends TestBase {
     public void testIssue183601() throws ParseException {
         String code = "table tbody tr:not(.Current):hover { }";
         check(code);
+    }
+
+    public void testAtSymbol() throws ParseException {
+        String code = "@a ";
+        dumpTokens(code);
+        dumpParseTree(code);
+        check(code);
+    }
+
+    public void testIssue182434() throws ParseException {
+        //css3
+        check("A[href^=\"https://\"] {}");
+        check("IMG[src*=\"icon\"] {}");
+        check("A[href$=\".pdf\"] {} ");
+
+        check("div { quotes: '\"' '\"' \"'\" \"'\"; } ");
     }
 
     public void testMSSyntax() throws ParseException {

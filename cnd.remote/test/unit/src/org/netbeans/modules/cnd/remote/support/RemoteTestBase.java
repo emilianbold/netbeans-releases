@@ -42,14 +42,18 @@ package org.netbeans.modules.cnd.remote.support;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
@@ -94,12 +98,18 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         }
     }
 
-    private final static String successLine = "BUILD SUCCESSFUL";
-    private final static String failureLine = "BUILD FAILED";
-    private final static String[] errorLines = new String[] {
-            "Error copying project files",
-            "CLEAN FAILED"
-        };
+    private static final List<String> SUCCESS_PREFIXES = Collections.unmodifiableList(Arrays.asList(
+        "BUILD SUCCESSFUL",
+        "CLEAN SUCCESSFUL"
+    ));
+
+    private static final List<String> ERROR_PREFIXES = Collections.unmodifiableList(Arrays.asList(
+        "Error copying project files",
+        "CLEAN FAILED",
+        "BUILD FAILED"
+    ));
+
+    private static final Pattern EXIT_VALUE_PATTERN = Pattern.compile("\\(exit value (\\d+),");
 
     static {
         System.setProperty("jsch.connection.timeout", "30000");
@@ -206,21 +216,17 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
             @Override
             public void linePrinted(String line) {
                 if (line != null) {
-                    if (line.startsWith(successLine)) {
+                    if (isSuccessLine(line)) {
                         build_rc.set(0);
                         done.countDown();
                     } else if (isFailureLine(line)) {
                         int rc = -1;
-                        if (line.startsWith(failureLine)) {
-                            // message is:
-                            // BUILD FAILED (exit value 1, total time: 326ms)
-                            String[] tokens = line.split("[ ,]");
-                            if (tokens.length > 4) {
-                                try {
-                                    rc = Integer.parseInt(tokens[4]);
-                                } catch (NumberFormatException nfe) {
-                                    nfe.printStackTrace();
-                                }
+                        Matcher m = EXIT_VALUE_PATTERN.matcher(line);
+                        if (m.find()) {
+                            try {
+                                rc = Integer.parseInt(m.group(1));
+                            } catch (NumberFormatException nfe) {
+                                nfe.printStackTrace();
                             }
                         }
                         build_rc.set(rc);
@@ -229,12 +235,18 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                 }
             }
 
-            private boolean isFailureLine(String line) {
-                if (line.startsWith(failureLine)) {
-                    return true;
+            private boolean isSuccessLine(String line) {
+                for (String successLine : SUCCESS_PREFIXES) {
+                    if (line.startsWith(successLine)) {
+                        return true;
+                    }
                 }
-                for (int i = 0; i < errorLines.length; i++) {
-                    if (line.startsWith(errorLines[i])) {
+                return false;
+            }
+
+            private boolean isFailureLine(String line) {
+                for (String errorLine : ERROR_PREFIXES) {
+                    if (line.startsWith(errorLine)) {
                         return true;
                     }
                 }

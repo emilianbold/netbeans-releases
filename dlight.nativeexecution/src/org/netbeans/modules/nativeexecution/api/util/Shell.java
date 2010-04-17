@@ -40,6 +40,7 @@ package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.File;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
+import org.netbeans.modules.nativeexecution.support.windows.PathConverter.PathType;
 
 /**
  *
@@ -88,13 +89,6 @@ public class Shell {
                     return null;
             }
         }
-    }
-
-    public enum PathType {
-
-        CYGWIN,
-        MSYS,
-        WINDOWS
     }
 
 }

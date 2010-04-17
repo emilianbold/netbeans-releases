@@ -115,6 +115,9 @@ PARSER_END(CssParser)
   < CDO: "<!--" >
 | < CDC: "-->" >
 | < INCLUDES: "~=" >
+| < CSS3_BEGINS: "^=" >
+| < CSS3_ENDS: "$=" >
+| < CSS3_CONTAINS: "*=" >
 | < DASHMATCH: "|=" >
 | < IMPORT_SYM: "@import" >
 | < PAGE_SYM: "@page" >
@@ -477,6 +480,12 @@ void attrib() :
             <INCLUDES>
             |
             <DASHMATCH>
+            |
+            <CSS3_BEGINS>
+            |
+            <CSS3_ENDS>
+            |
+            <CSS3_CONTAINS>
         )
         ( ( <S> | <COMMENT> ) )*
         (

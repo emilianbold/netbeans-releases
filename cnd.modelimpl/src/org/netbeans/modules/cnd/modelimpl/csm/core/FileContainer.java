@@ -750,21 +750,30 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 boolean alarm = false;
 
                 State firstState = null;
+                FilePreprocessorConditionState firstPCState = null;
                 boolean first = true;
                 for (PreprocessorStatePair pair : getStatePairs()) {
                     if (first) {
                         first = false;
                         firstState = pair.state;
+                        firstPCState = pair.pcState;
                     } else {
                         if ((firstState == null) != (pair.state == null)) {
                             alarm = true;
                             break;
                         }
                         if (firstState != null) {
-                            if ((firstState.isValid() != pair.state.isValid()) ||
-                                (firstState.isCompileContext() != pair.state.isCompileContext())) {
+                            if (firstState.isCompileContext() != pair.state.isCompileContext()) {
                                 alarm = true;
                                 break;
+                            }
+                            if (firstState.isValid() != pair.state.isValid()) {
+                                // there coud be invalidated state which is in parsing phase now
+                                alarm = !firstState.isValid() && (firstPCState != FilePreprocessorConditionState.PARSING);
+                                alarm |= !pair.state.isValid() && (pair.pcState != FilePreprocessorConditionState.PARSING);
+                                if (alarm) {
+                                    break;
+                                }
                             }
                         }
                     }

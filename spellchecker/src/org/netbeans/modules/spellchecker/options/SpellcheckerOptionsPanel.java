@@ -189,7 +189,6 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
 
             @Override
             public void mouseClicked (MouseEvent e) {
-                if (e.getClickCount () != 2) return;
                 int i = lUseIn.getSelectedIndex ();
                 if (i < 0) return;
                 String name = (String) lUseIn.getModel ().getElementAt (i);
@@ -538,24 +537,5 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
             return o1.toString().compareTo(o2.toString());
         }
         
-    }
-
-    private static class AListRenderrer implements ListCellRenderer {
-
-        private JCheckBox comboBox = new JCheckBox ();
-
-        public Component getListCellRendererComponent (
-            JList               list,
-            Object              value,
-            int                 index,
-            boolean             isSelected,
-            boolean             cellHasFocus
-        ) {
-            String name = (String) value;
-            comboBox.setText (name.substring (1));
-            comboBox.setSelected (name.charAt (0) == '+');
-            return comboBox;
-        }
-
     }
 }

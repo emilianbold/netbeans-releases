@@ -59,8 +59,11 @@ public class ListStyleEditor extends StyleEditor {
 
     /** Creates new form FontStyleEditor */
     public ListStyleEditor() {
-        setName("listStyleEditor"); //NOI18N
-        setDisplayName(NbBundle.getMessage(ListStyleEditor.class, "LIST_EDITOR_DISPNAME"));
+        super("listStyleEditor", NbBundle.getMessage(ListStyleEditor.class, "LIST_EDITOR_DISPNAME")); //NOI18N
+    }
+
+    @Override
+    protected void lazyInitializePanel() {
         initComponents();
     }
 

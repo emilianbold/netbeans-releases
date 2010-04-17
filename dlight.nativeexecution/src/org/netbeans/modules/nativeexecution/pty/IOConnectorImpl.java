@@ -41,7 +41,6 @@ package org.netbeans.modules.nativeexecution.pty;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
@@ -50,11 +49,9 @@ import org.netbeans.modules.nativeexecution.pty.PtyCreatorImpl.PtyImplementation
 import org.netbeans.modules.nativeexecution.spi.pty.IOConnector;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
-import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOTerm;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.ServiceProvider;
@@ -94,9 +91,6 @@ public class IOConnectorImpl implements IOConnector {
             if (IOResizable.isSupported(io)) {
                 IONotifier.addPropertyChangeListener(io, new ResizeListener(impl));
             }
-
-            NativeTaskExecutorService.submit(new Reaper(io, process, impl),
-                    "IOConnectorImpl reaper for " + pty.getSlaveName()); // NOI18N
         }
 
         return true;
@@ -134,7 +128,7 @@ public class IOConnectorImpl implements IOConnector {
         private Dimension cells;
         private Dimension pixels;
 
-        public ResizeListener(final PtyImplementation pty) {
+        ResizeListener(final PtyImplementation pty) {
             this.task = rp.create(new Runnable() {
 
                 @Override
@@ -175,38 +169,5 @@ public class IOConnectorImpl implements IOConnector {
         }
     }
 
-    private final static class Reaper implements Runnable {
 
-        private final NativeProcess process;
-        private final PtyImplementation pty;
-        private final InputOutput io;
-
-        public Reaper(final InputOutput io, final NativeProcess process, final PtyImplementation pty) {
-            this.process = process;
-            this.pty = pty;
-            this.io = io;
-        }
-
-        @Override
-        public void run() {
-            try {
-                process.waitFor();
-            } catch (InterruptedException ex) {
-            }
-
-            try {
-                pty.close();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-//            SwingUtilities.invokeLater(new Runnable() {
-//
-//                @Override
-//                public void run() {
-//                    io.closeInputOutput();
-//                }
-//            });
-        }
-    }
 }

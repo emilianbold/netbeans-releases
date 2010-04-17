@@ -92,8 +92,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
 import org.openide.windows.TopComponent;
 
-
-/** XML Navigator UI component containing a tree of XML elements.
+/**
+ *  XML Navigator UI component containing a tree of XML elements.
  *
  * @author Marek Fukala
  * @version 1.0
@@ -175,8 +175,9 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
         } else
             cachedPanel = null;
         
-        //get the model and create the new UI on background
-        RequestProcessor.getDefault().post(new Runnable() {
+        // get the model and create the new UI on background
+
+        RP.post(new Runnable() {
             public void run() {
                 //get document model for the file
                 try {
@@ -185,7 +186,6 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                         model = DocumentModel.getDocumentModel(bdoc);
                     else
                         model = null; //if the panel is cached it holds a refs to the model - not need to init it again
-                    
                     
                     if(cachedPanel != null || model != null) {
                         
@@ -244,7 +244,6 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
     public void release() {
         removeAll();
         repaint();
-        
         closeDocument(peerDO);
     }
     
@@ -300,7 +299,6 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
     }
     
     private class NavigatorContentPanel extends JPanel implements FiltersManager.FilterChangeListener {
-        
         private JTree tree;
         private FiltersManager filters;
         private Document doc;
@@ -437,7 +435,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
         }
         
         private void selectElementInPane(final JEditorPane pane, final TreeNodeAdapter tna, final boolean focus) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     pane.setCaretPosition(tna.getDocumentElement().getStartOffset());
                 }
@@ -512,8 +510,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
         
         public static final String ATTRIBUTES_FILTER = "attrs";
         public static final String CONTENT_FILTER = "content";
-        
     }
-        
+   
+    private static final RequestProcessor RP = new RequestProcessor(NavigatorContent.class);
 }
-

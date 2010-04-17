@@ -94,6 +94,7 @@ public class Security {
     public static enum Authentication {
         NONE("auth_none"),
         BASIC("auth_basic"),
+        OAUTH("auth_oauth"),
         SESSION_KEY("auth_session_key");
 
         private String displayName;
