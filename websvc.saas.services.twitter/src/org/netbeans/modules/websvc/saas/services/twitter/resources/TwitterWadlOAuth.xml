@@ -1,0 +1,568 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ 
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ 
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common
+ Development and Distribution License("CDDL") (collectively, the
+ "License"). You may not use this file except in compliance with the
+ License. You can obtain a copy of the License at
+ http://www.netbeans.org/cddl-gplv2.html
+ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ specific language governing permissions and limitations under the
+ License.  When distributing the software, include this License Header
+ Notice in each file and include the License file at
+ nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ particular file as subject to the "Classpath" exception as provided
+ by Sun in the GPL Version 2 section of the License file that
+ accompanied this code. If applicable, add the following below the
+ License Header, with the fields enclosed by brackets [] replaced by
+ your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ Contributor(s):
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+ 
+ If you wish your version of this file to be governed by only the CDDL
+ or only the GPL Version 2, indicate your decision by adding
+ "[Contributor] elects to include this software in this distribution
+ under the [CDDL or GPL Version 2] license." If you do not indicate a
+ single choice of license, a recipient has the option to distribute
+ your version of this file under either the CDDL, the GPL Version 2 or
+ to extend the choice of license to its licensees as provided above.
+ However, if you add GPL Version 2 code and therefore, elected the GPL
+ Version 2 license, then the option applies only if the new code is
+ made subject to such option by the copyright holder.
+-->
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
+                    https://wadl.dev.java.net/wadl20061109.xsd
+                    http://netbeans.org/ns/oauth/metadata/1
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/oauth-metadata.xsd"
+	     xmlns="http://research.sun.com/wadl/2006/10"
+             xmlns:t="urn:twitter:twitterresponse" >
+    <grammars>
+        <include href="TwitterResponse.xsd"/>
+        <oauth:metadata xmlns:oauth="http://netbeans.org/ns/oauth/metadata/1" base-url="http://twitter.com/oauth" signature-method="HMAC_SHA1">
+            <oauth:flow>
+                <oauth:request-token method-name="request_token" request-style="PATH" response-style="FORM"/>
+                <oauth:authorize-consumer>
+                    <oauth:fixed-url url="http://twitter.com/oauth/authorize"/>
+                    <oauth:param param-name="oauth_token"/>
+                </oauth:authorize-consumer>
+                <oauth:access-token method-name="access_token" request-style="PATH" response-style="FORM" verifier="true"/>
+            </oauth:flow>
+        </oauth:metadata>
+    </grammars>
+    <resources base="http://twitter.com">
+        <resource path="statuses">
+            <resource path="public_timeline.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="getPublicTimeline">
+                    <request/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="friends_timeline.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="getFriendsTimeline">
+                    <request>
+                        <param name="since" type="xsd:string" style="query" required="false"/>
+                        <param name="since_id" type="xsd:integer" style="query" required="false"/>
+                        <param name="page" type="xsd:integer" style="query" required="false"/>
+                        <param name="count" type="xsd:integer" style="query" required="false"/>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+            <!--
+            <resource path="friends_timeline">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="GET" id="getFriendsTimelineById">
+                        <request>
+                            <param name="since" type="xsd:string" style="query" required="false"/>
+                            <param name="since_id" type="xsd:integer" style="query" required="false"/>
+                            <param name="page" type="xsd:integer" style="query" required="false"/>
+                            <param name="count" type="xsd:integer" style="query" required="false"/>
+                        </request>
+                        <response>
+                            <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/></response>
+                    </method>
+                </resource>
+            </resource>
+            -->
+            <resource path="user_timeline.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="getUserTimeline">
+                    <request>
+                        <param name="since" type="xsd:string" style="query" required="false"/>
+                        <param name="since_id" type="xsd:integer" style="query" required="false"/>
+                        <param name="page" type="xsd:integer" style="query" required="false"/>
+                        <param name="count" type="xsd:integer" style="query" required="false"/>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="user_timeline">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="GET" id="getUserTimelineById">
+                        <request>
+                            <param name="since" type="xsd:string" style="query" required="false"/>
+                            <param name="since_id" type="xsd:integer" style="query" required="false"/>
+                            <param name="page" type="xsd:integer" style="query" required="false"/>
+                            <param name="count" type="xsd:integer" style="query" required="false"/>
+                        </request>
+                        <response>
+                            <representation mediaType="text/xml" element="t:statuses"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+            <resource path="show">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="GET" id="showStatusById">
+                        <request/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:statusType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+            <resource path="destroy">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="POST" id="destroyStatusById">
+                        <request/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:statusType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+            <resource path="replies.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="getReplies">
+                    <request>
+                        <param name="since" type="xsd:string" style="query" required="false"/>
+                        <param name="since_id" type="xsd:integer" style="query" required="false"/>
+                        <param name="page" type="xsd:integer" style="query" required="false"/>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="update.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="POST" id="updateStatus">
+                    <request>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="status" type="xsd:string" style="query" required="true"/>
+                            <param name="in_reply_to_status_id" type="xsd:string" style="query" required="false"/>
+                        </representation>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statusType"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="friends.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="getFriendsStatuses">
+                    <request>
+                        <param name="lite" type="xsd:string" style="query" required="false"/>
+                        <param name="page" type="xsd:integer" style="query" required="false"/>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="friends">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="GET" id="getFriendsStatusesById">
+                        <request>
+                            <param name="lite" type="xsd:string" style="query" required="false"/>
+                            <param name="page" type="xsd:integer" style="query" required="false"/>
+                            <param name="since" type="xsd:string" style="query" required="false"/>
+                        </request>
+                        <response>
+                            <representation mediaType="text/xml" element="t:statuses"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+            <resource path="followers.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="getFollowersStatuses">
+                    <request>
+                        <param name="lite" type="xsd:string" style="query" required="false"/>
+                        <param name="page" type="xsd:integer" style="query" required="false"/>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="featured.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="getFeaturedStatuses">
+                    <request/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+        </resource>
+        <resource path="users">
+            <resource path="show">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="GET" id="showUsersById">
+                        <request>
+                            <param name="email" type="xsd:string" style="query" required="false"/>
+                        </request>
+                        <response>
+                            <representation mediaType="text/xml" element="t:userType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+        </resource>
+        <resource path="direct_messages.{format}">
+            <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+            <method name="GET" id="getDirectMessagesToMe">
+                <request>
+                    <param name="since" type="xsd:string" style="query" required="false"/>
+                    <param name="since_id" type="xsd:integer" style="query" required="false"/>
+                    <param name="page" type="xsd:integer" style="query" required="false"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="t:direct-messages"/>
+                    <fault mediaType="text/xml" element="t:nil-classes"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="direct_messages">
+            <resource path="new.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="POST" id="sendNewDirectMessageFromMe">
+                    <request>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="user" type="xsd:string" style="query" required="true"/>
+                            <param name="text" type="xsd:string" style="query" required="true"/>
+                        </representation>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml" element="t:directMessageType"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="sent.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="getSentDirectMessagesFromMe">
+                    <request>
+                        <param name="since" type="xsd:string" style="query" required="false"/>
+                        <param name="since_id" type="xsd:integer" style="query" required="false"/>
+                        <param name="page" type="xsd:integer" style="query" required="false"/>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml" element="t:direct-messages"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="destroy">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="POST" id="destroyDirectMessageById">
+                        <request/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:directMessageType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+        </resource>
+        <resource path="friendships">
+            <resource path="create">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="POST" id="createFriendshipById">
+                        <request/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:userType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+            <resource path="destroy">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="POST" id="destryFriendshipById">
+                        <request/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:userType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+            <resource path="exists.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="friendshipExists">
+                    <request>
+                        <param name="user_a" type="xsd:string" style="query" required="true"/>
+                        <param name="user_b" type="xsd:string" style="query" required="true"/>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml" element="t:boolean"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+        </resource>
+        <resource path="account">
+            <resource path="verify_credentials.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="verifyCredentials">
+                    <request/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:boolean"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="end_session">
+                <method name="POST" id="endSession">
+                    <request/>
+                    <response/>
+                </method>
+            </resource>
+            <resource path="update_location.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="POST" id="updateLocation">
+                    <request>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="location" type="xsd:string" style="query" required="true"/>
+                        </representation>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml" element="t:userType"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="update_delivery_device.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="POST" id="updateDeliveryDevice">
+                    <request>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="device" type="xsd:string" style="query" required="true" default="sms"/>
+                        </representation>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml" element="t:userType"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="rate_limit_status.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="rateLimitStatus">
+                    <request/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:hash"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="archive.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="getArchives">
+                    <request>
+                        <param name="page" type="xsd:integer" style="query" required="false"/>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+        </resource>
+        <resource path="favorites.{format}">
+            <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+            <method name="GET" id="getFavorites">
+                <request>
+                    <param name="page" type="xsd:integer" style="query" required="false"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="t:statuses"/>
+                    <fault mediaType="text/xml" element="t:nil-classes"/>
+                </response>
+            </method>
+        </resource>
+        <resource path="favorites">
+            <resource path="{id}.{format}">
+                <param name="id" type="xsd:string" style="template" required="true"/>
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="getFavoritesById">
+                    <request>
+                        <param name="page" type="xsd:integer" style="query" required="false"/>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml" element="t:statuses"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="create">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="POST" id="createFavoritesById">
+                        <request/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:statusType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+            <resource path="destroy">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="POST" id="destroyFavoritesById">
+                        <request/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:statusType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+        </resource>
+        <resource path="notifications">
+            <resource path="leave">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="POST" id="leaveById">
+                        <request/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:userType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+            <resource path="follow">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="POST" id="followById">
+                        <request/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:userType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+        </resource>
+        <resource path="blocks">
+            <resource path="create">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="POST" id="blockUser">
+                        <request/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:userType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+            <resource path="destroy">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="POST" id="unblockUser">
+                        <request/>
+                        <response>
+                            <representation mediaType="text/xml" element="t:userType"/>
+                            <fault mediaType="text/xml" element="t:nil-classes"/>
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+        </resource>
+        <resource path="help">
+            <resource path="test.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="test">
+                    <request/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:boolean"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="downtime_schedule.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="downtimeSchedule">
+                    <request/>
+                    <response>
+                        <representation mediaType="text/xml" element="t:hash"/>
+                        <fault mediaType="text/xml" element="t:nil-classes"/>
+                    </response>
+                </method>
+            </resource>
+        </resource>
+    </resources>
+</application>

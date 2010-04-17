@@ -201,6 +201,25 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             return retValue.toString();
         }
 
+        boolean equalsIgnoreInvalidFlag(State obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || (obj.getClass() != this.getClass())) {
+                return false;
+            }
+            StateImpl other = (StateImpl) obj;
+            // we do not compare macroStates because in case of
+            // parsing from the same include sequence they are equal
+            if (this.isCompileContext() != other.isCompileContext()) {
+                return false;
+            }
+            if (this.inclState != other.inclState && (this.inclState == null || !this.inclState.equals(other.inclState))) {
+                return false;
+            }
+            return true;
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {

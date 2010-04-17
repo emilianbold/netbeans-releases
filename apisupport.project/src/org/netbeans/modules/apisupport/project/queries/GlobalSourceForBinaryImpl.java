@@ -112,7 +112,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                 }
             }
             NbPlatform supposedPlaf = null;
-            for (NbPlatform plaf : NbPlatform.getPlatforms()) {
+            for (NbPlatform plaf : NbPlatform.getPlatformsOrNot()) {
                 // XXX more robust condition?
                 if (binaryRoot.toExternalForm().indexOf(plaf.getDestDir().toURI().toURL().toExternalForm()) != -1) {
                     supposedPlaf = plaf;

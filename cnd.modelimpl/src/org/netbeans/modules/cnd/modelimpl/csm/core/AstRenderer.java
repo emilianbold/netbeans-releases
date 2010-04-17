@@ -109,7 +109,7 @@ public class AstRenderer {
                     break;
                 }
                 case CPPTokenTypes.CSM_ENUM_DECLARATION: {
-                    CsmEnum csmEnum = EnumImpl.create(token, currentNamespace, file, !isRenderingLocalContext());
+                    EnumImpl csmEnum = EnumImpl.create(token, currentNamespace, file, !isRenderingLocalContext());
                     container.addDeclaration(csmEnum);
                     renderVariableInClassifier(token, csmEnum, currentNamespace, container);
                     break;
@@ -653,7 +653,7 @@ public class AstRenderer {
     }
 
     @SuppressWarnings("fallthrough")
-    protected void renderVariableInClassifier(AST ast, CsmClassifier classifier,
+    protected void renderVariableInClassifier(AST ast, ClassEnumBase classifier,
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
         AST token = ast.getFirstChild();
         boolean unnamedStaticUnion = false;

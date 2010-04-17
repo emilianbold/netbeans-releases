@@ -1161,10 +1161,10 @@ public final class CsmProjectContentResolver {
             it = CsmSelect.getClassMembers(csmClass, nestedClassifierFilter);
             while (it.hasNext()) {
                 CsmMember member = it.next();
-                if (isKindOf(member.getKind(), memberKinds) &&
-                        matchVisibility(member, minVisibility)) {
-                    CharSequence memberName = member.getName();
-                    if (memberName.length() == 0) {
+                CharSequence memberName = member.getName();
+                if (memberName.length() == 0) {
+                    if (isKindOf(member.getKind(), memberKinds) &&
+                            matchVisibility(member, minVisibility)) {
                         Map<CharSequence, CsmMember> set = getClassMembers((CsmClass) member, contextDeclaration, kinds, strPrefix, staticOnly, match,
                                 handledClasses, CsmVisibility.PUBLIC, INIT_INHERITANCE_LEVEL, inspectParentClasses, inspectOuterClasses, returnUnnamedMembers);
                         // replace by own elements in nested set
