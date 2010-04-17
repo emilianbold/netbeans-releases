@@ -81,6 +81,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -114,7 +115,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         prefListener = new VariablesPreferenceChangeListener();
         preferences.addPreferenceChangeListener(prefListener);
         Properties properties = Properties.getDefault().getProperties("debugger.options.JPDA"); // NOI18N
-        properties.addPropertyChangeListener(prefListener);
+        properties.addPropertyChangeListener(WeakListeners.propertyChange(prefListener, properties));
     }
 
     /** 
