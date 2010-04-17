@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -65,6 +66,16 @@ import org.openide.filesystems.FileObject;
 public final class DeepReparsingUtils {
 
     private DeepReparsingUtils() {
+    }
+
+    /**
+     * Reparse one file when fileImpl content changed.
+     */
+    static void reparseOnEditingFile(ProjectImpl project, FileImpl fileImpl, FileBuffer buf) {
+        project.invalidatePreprocState(buf.getFile());
+        fileImpl.markReparseNeeded(false);
+        ParserQueue.instance().add(fileImpl, Collections.singleton(FileImpl.DUMMY_STATE),
+                ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
     }
 
     /**
