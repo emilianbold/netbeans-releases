@@ -40,13 +40,15 @@
  */
 package org.netbeans.modules.css.editor;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
+import org.netbeans.modules.css.parser.CssParserTreeConstants;
+import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -112,25 +114,46 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
         if(event == null) {
             return ;
         }
-        
-        List<? extends Error> errors = result.getDiagnostics();
-        List<Error> onlyErrors = new ArrayList<Error>(errors.size());
-        //filter out warnings
-        for(Error e : errors) {
-            if(e.getSeverity() == Severity.ERROR) {
-                onlyErrors.add(e);
+
+        if(!(event instanceof CursorMovedSchedulerEvent)) {
+            return ;
+        }
+
+        int caretOffset = ((CursorMovedSchedulerEvent)event).getCaretOffset();
+
+        SimpleNode root = result.root();
+        if(root != null) {
+            //find the rule scope and check if there is an error inside it
+            SimpleNode leaf = SimpleNodeUtil.findDescendant(root, caretOffset);
+            if(leaf != null) {
+                SimpleNode ruleNode = leaf.kind() == CssParserTreeConstants.JJTSTYLERULE ?
+                    leaf :
+                    SimpleNodeUtil.getAncestorByType(leaf, CssParserTreeConstants.JJTSTYLERULE);
+                if(ruleNode != null) {
+                    //filter out warnings
+                    List<? extends Error> errors = result.getDiagnostics();
+                    for(Error e : errors) {
+
+                        if(e.getSeverity() == Severity.ERROR) {
+                            if(ruleNode.startOffset() <= e.getStartPosition() &&
+                                    ruleNode.endOffset() >= e.getEndPosition()) {
+                                //there is an error in the selected rule
+                                CssEditorSupport.getDefault().parsedWithError(result);
+                                return ;
+                            }
+                        }
+                    }
+
+                    //no errors found in the node
+                    CssEditorSupport.getDefault().parsed(result, ((CursorMovedSchedulerEvent)event).getCaretOffset());
+                    return ;
+                }
             }
         }
 
-        if(onlyErrors.size() > 0) {
-            //filter out warnings if present here!?!?
-            CssEditorSupport.getDefault().parsedWithError(result);
-        } else {
-            CssEditorSupport.getDefault().parsed(result, ((CursorMovedSchedulerEvent)event).getCaretOffset());
-        }
- 
+        //some error
+        CssEditorSupport.getDefault().parsedWithError(result);
 
-//        forDocument(result.getSnapshot().getSource().getDocument(true)).parsed(result, event);
     }
 
 //    public static class Source {
