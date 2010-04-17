@@ -91,6 +91,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     /** Creates new model.
     * @param root the root of the model
     */
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public NodeListModel(Node root) {
         this();
         setNode(root);
@@ -100,32 +101,31 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     * @param root the root of the model
     */
     public void setNode(final Node root) {
-        Mutex.EVENT.readAccess(
-            new Runnable() {
-                public void run() {
-                    if (!Children.MUTEX.isReadAccess() && !Children.MUTEX.isWriteAccess()) {
-                        Children.MUTEX.readAccess(this);
-                        return;
-                    }
-                    VisualizerNode v = VisualizerNode.getVisualizer(null, root);
-
-                    if (v == parent) {
-                        // no change
-                        return;
-                    }
-
-                    removeAll();
-                    parent.removeNodeModel(listener());
-
-                    parent = v;
-                    selectedObject = v;
-                    clearChildrenCount();
-
-                    addAll();
-                    parent.addNodeModel(listener());
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                if (!Children.MUTEX.isReadAccess() && !Children.MUTEX.isWriteAccess()) {
+                    Children.MUTEX.readAccess(this);
+                    return;
                 }
+                VisualizerNode v = VisualizerNode.getVisualizer(null, root);
+
+                if (v == parent) {
+                    // no change
+                    return;
+                }
+
+                removeAll();
+                parent.removeNodeModel(listener());
+
+                parent = v;
+                selectedObject = v;
+                clearChildrenCount();
+
+                addAll();
+                parent.addNodeModel(listener());
             }
-        );
+        });
     }
 
     /** Depth of nodes to display.
@@ -138,6 +138,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
 
             Mutex.EVENT.readAccess(
                 new Runnable() {
+                @Override
                     public void run() {
                         removeAll();
                         addAll();
@@ -169,6 +170,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
 
     /** Number of elements in the model.
     */
+    @Override
     public int getSize() {
         int s = findSize(parent, -1, depth);
         return s;
@@ -176,6 +178,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
 
     /** Child at given index.
     */
+    @Override
     public Object getElementAt(int i) {
         return findElementAt(parent, i, -1, depth);
     }
@@ -186,12 +189,14 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     */
     public int getIndex(Object o) {
         getSize();
+        @SuppressWarnings("element-type-mismatch")
         Info i = childrenCount.get(o);
         return (i == null) ? (-1) : i.index;
     }
 
     /** Currently selected item.
     */
+    @Override
     public void setSelectedItem(Object anObject) {
         if (selectedObject != anObject) {
             selectedObject = anObject;
@@ -199,6 +204,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
         }
     }
 
+    @Override
     public Object getSelectedItem() {
         return selectedObject;
     }
@@ -224,7 +230,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
         }
 
         // only my children
-        int size = 0;
+        int tmp = 0;
 
         info = new Info();
         info.depth = depth;
@@ -239,15 +245,15 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
             while (it.hasMoreElements()) {
                 VisualizerNode v = (VisualizerNode) it.nextElement();
                 // count node v
-                size++;
+                tmp++;
                 // now count children of node v
-                size += findSize(v, index + size, depth);
+                tmp += findSize(v, index + tmp, depth);
             }
         }
 
-        info.childrenCount = size;
+        info.childrenCount = tmp;
         childrenCount.put(vis, info);
-        return size;
+        return tmp;
     }
 
     /** Finds the child with requested index.
@@ -416,6 +422,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
         /** Notification of children addded event. Modifies the list of nodes
         * and fires info to all listeners.
         */
+        @Override
         public void added(VisualizerEvent.Added ev) {
             NodeListModel m = get(ev);
 
@@ -429,6 +436,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
         /** Notification that children has been removed. Modifies the list of nodes
         * and fires info to all listeners.
         */
+        @Override
         public void removed(VisualizerEvent.Removed ev) {
             NodeListModel m = get(ev);
 
@@ -442,6 +450,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
         /** Notification that children has been reordered. Modifies the list of nodes
         * and fires info to all listeners.
         */
+        @Override
         public void reordered(VisualizerEvent.Reordered ev) {
             NodeListModel m = get(ev);
 
@@ -454,6 +463,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
 
         /** Update a visualizer (change of name, icon, description, etc.)
         */
+        @Override
         public void update(VisualizerNode v) {
             NodeListModel m = get(null);
 
@@ -466,6 +476,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
 
         /** Notification about big change in children
         */
+        @Override
         public void structuralChange(VisualizerNode v) {
             NodeListModel m = get(null);
 
