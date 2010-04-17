@@ -51,6 +51,7 @@ import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -89,12 +90,14 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
     @Override
     public int getSharability(final File file) {
         init();
-        //ConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-        //if (configurationDescriptor != null && configurationDescriptor.getModified()) {
-        //    // Make sure all sharable files are saved on disk
-        //    // See IZ http://www.netbeans.org/issues/show_bug.cgi?id=153504
-        //    configurationDescriptor.save();
-        //}
+        if (projectDescriptorProvider.gotDescriptor()) {
+            ConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+            if (configurationDescriptor != null && configurationDescriptor.getModified()) {
+                // Make sure all sharable files are saved on disk
+                // See IZ http://www.netbeans.org/issues/show_bug.cgi?id=153504
+                configurationDescriptor.save();
+            }
+        }
         Integer ret = ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
 
             @Override
