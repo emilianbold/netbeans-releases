@@ -40,9 +40,16 @@
  */
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.filebasedfs.FileUtilTest.EventType;
+import org.netbeans.modules.masterfs.filebasedfs.FileUtilTest.TestFileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -90,4 +97,56 @@ public class FileObjTest extends NbTestCase {
             // OK - fileObject1 is invalid
         }
     }
+
+    /** #165406 - tests that only one event is fired for single change. */
+    public void testChangeEvents165406() throws Exception {
+        clearWorkDir();
+        File workdir = getWorkDir();
+        File file = new File(workdir, "testfile");
+        file.createNewFile();
+        final FileObject fo = FileUtil.toFileObject(file);
+        fo.refresh(); // to set lastModified field
+        final long beforeModification = fo.lastModified().getTime();
+        Thread.sleep(1000);
+        Handler handler = new Handler() {
+
+            @Override
+            public void publish(LogRecord record) {
+                if (record.getMessage().equals("getOutputStream-close")) {
+                    // wait for physical change of timestamp after stream was closed
+                    while (beforeModification == fo.lastModified().getTime()) {
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                    // call concurrent refresh
+                    fo.refresh();
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+
+        Logger logger = Logger.getLogger(FileObj.class.getName());
+        logger.addHandler(handler);
+        logger.setLevel(Level.FINEST);
+
+        TestFileChangeListener listener = new TestFileChangeListener();
+        fo.addFileChangeListener(listener);
+        
+        OutputStream os = fo.getOutputStream();
+        os.write("Ahoj everyone!\n".getBytes("UTF-8"));
+        os.close();
+
+        assertEquals("Only one change event should be fired.", 1, listener.check(EventType.CHANGED));
+    }
+
 }

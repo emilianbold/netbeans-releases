@@ -372,7 +372,7 @@ public final class FileObjectFactory {
         return (state == 1) ? true : false;
     }
 
-    private final BaseFileObj getOrCreate(final FileInfo fInfo) {
+    private BaseFileObj getOrCreate(final FileInfo fInfo) {
         BaseFileObj retVal = null;
         File f = fInfo.getFile();
 
@@ -426,7 +426,7 @@ public final class FileObjectFactory {
         return null;
     }
 
-    public final void refreshAll(RefreshSlow slow, final boolean expected) {
+    final void refreshAll(RefreshSlow slow, final boolean expected) {
         Set<BaseFileObj> all2Refresh = collectForRefresh();
         refresh(all2Refresh, slow, expected);
     }
@@ -490,10 +490,13 @@ public final class FileObjectFactory {
         int count = 0;
         for (final BaseFileObj fo : all2Refresh) {
             count++;
+            if (fo == null) {
+                continue;
+            }
             if (slow != null) {
                 slow.before();
             }
-                fo.refresh(expected);
+            fo.refresh(expected);
             if (slow != null) {
                 if (!slow.after()) {
                     return false;
@@ -666,9 +669,13 @@ public final class FileObjectFactory {
         return (retVal != null && retVal.isValid()) ? retVal : null;
     }
 
-    public final void refresh(final RefreshSlow slow, final boolean expected) {
+    public void refresh(boolean expected) {
+        refresh(null, expected);
+    }
+    final void refresh(final RefreshSlow slow, final boolean expected) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         final Runnable r = new Runnable() {
+            @Override
             public void run() {
                 refreshAll(slow, expected);
             }            
@@ -677,6 +684,7 @@ public final class FileObjectFactory {
         stopWatch.start();
         try {
             FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
+                @Override
                 public void run() throws IOException {
                     FileBasedFileSystem.runAsInconsistent(r);
                 }
@@ -687,12 +695,19 @@ public final class FileObjectFactory {
         stopWatch.stop();
 
         // print refresh stats unconditionally in trunk
-        LOG_REFRESH.fine(
-                "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
-                Statistics.REFRESH_FS.toString() + "\n  " +
-                Statistics.LISTENERS_CALLS.toString() + "\n  " +
-                Statistics.REFRESH_FOLDER.toString() + "\n  " +
-                Statistics.REFRESH_FILE.toString() + "\n");
+        if (LOG_REFRESH.isLoggable(Level.FINE)) {
+            LOG_REFRESH.log(
+                Level.FINE,
+                "FS.refresh statistics ({0}FileObjects):\n  {1}\n  {2}\n  {3}\n  {4}\n",
+                new Object[]{
+                    Statistics.fileObjects(),
+                    Statistics.REFRESH_FS.toString(),
+                    Statistics.LISTENERS_CALLS.toString(),
+                    Statistics.REFRESH_FOLDER.toString(),
+                    Statistics.REFRESH_FILE.toString()
+                }
+            );
+        }
 
         Statistics.REFRESH_FS.reset();
         Statistics.LISTENERS_CALLS.reset();
@@ -700,9 +715,10 @@ public final class FileObjectFactory {
         Statistics.REFRESH_FILE.reset();
     }
 
-    public final void refreshFor(final RefreshSlow slow, final File... files) {
+    final void refreshFor(final RefreshSlow slow, final File... files) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         final Runnable r = new Runnable() {
+            @Override
             public void run() {
                 Set<BaseFileObj> all2Refresh = collectForRefresh();
                 refresh(all2Refresh, slow, files);
@@ -717,6 +733,7 @@ public final class FileObjectFactory {
         stopWatch.start();
         try {
             FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
+                @Override
                 public void run() throws IOException {
                     FileBasedFileSystem.runAsInconsistent(r);
                 }
@@ -727,12 +744,19 @@ public final class FileObjectFactory {
         stopWatch.stop();
 
         // print refresh stats unconditionally in trunk
-        LOG_REFRESH.fine(
-                "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
-                Statistics.REFRESH_FS.toString() + "\n  " +
-                Statistics.LISTENERS_CALLS.toString() + "\n  " +
-                Statistics.REFRESH_FOLDER.toString() + "\n  " +
-                Statistics.REFRESH_FILE.toString() + "\n");
+        if (LOG_REFRESH.isLoggable(Level.FINE)) {
+            LOG_REFRESH.log(
+                Level.FINE,
+                "FS.refresh statistics ({0}FileObjects):\n  {1}\n  {2}\n  {3}\n  {4}\n",
+                new Object[]{
+                    Statistics.fileObjects(),
+                    Statistics.REFRESH_FS.toString(),
+                    Statistics.LISTENERS_CALLS.toString(),
+                    Statistics.REFRESH_FOLDER.toString(),
+                    Statistics.REFRESH_FILE.toString()
+                }
+            );
+        }
 
         Statistics.REFRESH_FS.reset();
         Statistics.LISTENERS_CALLS.reset();
@@ -745,6 +769,7 @@ public final class FileObjectFactory {
         AsyncRefreshAtomicAction(FileObject fo) {
             this.fo = fo;
         }
+        @Override
         public void run() throws IOException {
             this.fo.refresh();
         }
