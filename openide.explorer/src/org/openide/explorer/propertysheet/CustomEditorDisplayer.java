@@ -52,12 +52,14 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 
 import java.lang.reflect.InvocationTargetException;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -141,10 +143,14 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
         try {
             if (editor != null) {
                 if (!editor.supportsCustomEditor()) {
+                    Class<?> type = prop.getValueType();
                     throw new IllegalArgumentException(
-                        "Property editor " + editor + " for property " + getProperty() +
-                        " does not support a custom editor."
-                    ); //NOI18N
+                        "#177688: property editor " + editor + " for property " + prop +
+                        " does not support a custom editor; valueType=" + type.getName() +
+                        "; PropertyEditorManager says: " + PropertyEditorManager.findEditor(type) +
+                        "; search path is: " + Arrays.toString(PropertyEditorManager.getEditorSearchPath()) +
+                        "; CCL: " + Thread.currentThread().getContextClassLoader()
+                    );
                 }
 
                 try {
