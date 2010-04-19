@@ -63,17 +63,17 @@ import org.netbeans.modules.editor.lib2.view.ViewHierarchyRandomTesting;
  */
 public class JavaViewHierarchyRandomTest extends NbTestCase {
 
-    private static final int OP_COUNT = 1000;
-
-    private static final boolean LOG_OP = false;
-    private static final boolean LOG_DOC = false;
+    private static final int OP_COUNT = 10000;
 
     private static final Level LOG_LEVEL = Level.FINE;
 
     public JavaViewHierarchyRandomTest(String testName) {
         super(testName);
         Filter filter = new Filter();
-        filter.setIncludes(new Filter.IncludeExclude[] { new Filter.IncludeExclude("testRandomModsPlainText", "")});
+//        filter.setIncludes(new Filter.IncludeExclude[] { new Filter.IncludeExclude("testGap", "")});
+//        filter.setIncludes(new Filter.IncludeExclude[] { new Filter.IncludeExclude("testNPEInRedo", "")});
+//        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testRandomModsPlainText", "")});
+        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testInsertRemoveSingleChar", "")});
 //        setFilter(filter);
     }
 
@@ -82,15 +82,95 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         return Level.INFO;
     }
 
-    public void testNewlineLineOne() throws Exception {
+    private static void loggingOn() {
         Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(LOG_LEVEL);
         Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewUpdates").setLevel(LOG_LEVEL);
         // FINEST throws ISE for integrity error
         Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINEST);
-        RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit()); // no problem for plain mime-type
+        // Check gap-storage correctness
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorBoxViewChildren").setLevel(Level.FINE);
+    }
+
+    private RandomTestContainer createContainer() throws Exception {
+        RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit()); // no problem for both java and plain mime-types
         container.setName(this.getName());
-        container.setLogOp(LOG_OP);
-        DocumentTesting.setLogDoc(container, LOG_DOC);
+        container.setLogOp(true);
+        DocumentTesting.setLogDoc(container, true);
+        return container;
+    }
+
+    public void testInsertRemoveSingleChar() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        RandomTestContainer.Context context = container.context();
+        ViewHierarchyRandomTesting.initUndoManager(container);
+        ViewHierarchyRandomTesting.disableHighlighting(container);
+        DocumentTesting.insert(context, 0, "a");
+        DocumentTesting.remove(context, 0, 1);
+        DocumentTesting.insert(context, 0, "b");
+        DocumentTesting.undo(context, 1);
+    }
+
+    public void testGap() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        ViewHierarchyRandomTesting.initUndoManager(container);
+        ViewHierarchyRandomTesting.initRandomText(container);
+        ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
+
+        RandomTestContainer.Context context = container.context();
+        // Clear document contents
+        DocumentTesting.insert(context, 0, "a\tb\tc\td\te\tf\n");
+        EditorPaneTesting.setCaretOffset(context, 1);
+        DocumentTesting.insert(context, 1, "x");
+        EditorPaneTesting.setCaretOffset(context, 5);
+        EditorPaneTesting.typeChar(context, 'y');
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, true);
+        EditorPaneTesting.typeChar(context, 'z');
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, true);
+        EditorPaneTesting.typeChar(context, 'u');
+//        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, true);
+//        EditorPaneTesting.typeChar(context, 'y');
+//        EditorPaneTesting.performAction(context, pane, DefaultEditorKit.deleteNextCharAction);
+        DocumentTesting.undo(context, 1);
+        DocumentTesting.redo(context, 1);
+        DocumentTesting.undo(context, 2);
+    }
+
+    public void testViewReplaceLineBoundary() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        ViewHierarchyRandomTesting.initUndoManager(container);
+        ViewHierarchyRandomTesting.initRandomText(container);
+        ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
+
+        RandomTestContainer.Context context = container.context();
+        // Clear document contents
+        DocumentTesting.insert(context, 0,
+               //012 345 6 789 012 
+                "ab\ncd\n\nef\ngh\n");
+        EditorPaneTesting.setCaretOffset(context, 0);
+        DocumentTesting.remove(context, 6, 4);
+        DocumentTesting.undo(context, 1);
+        DocumentTesting.redo(context, 1);
+        DocumentTesting.undo(context, 2);
+        DocumentTesting.redo(context, 2);
+    }
+
+    public void testNewlineLineOne() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty("mimeType", "text/plain");
@@ -110,14 +190,8 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
     }
 
     public void testNPEInRedo() throws Exception {
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(LOG_LEVEL);
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewUpdates").setLevel(LOG_LEVEL);
-        // FINEST throws ISE for integrity error
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINEST);
-        RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit());
-        container.setName(this.getName());
-        container.setLogOp(LOG_OP);
-        DocumentTesting.setLogDoc(container, LOG_DOC);
+        loggingOn();
+        RandomTestContainer container = createContainer();
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty("mimeType", "text/plain");
@@ -164,14 +238,8 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
     }
 
     public void testRandomModsPlainText() throws Exception {
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(LOG_LEVEL);
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewUpdates").setLevel(LOG_LEVEL);
-        // FINEST throws ISE for integrity error
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINEST);
-        RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit());
-        container.setName(this.getName());
-        container.setLogOp(LOG_OP);
-        DocumentTesting.setLogDoc(container, LOG_DOC);
+        loggingOn();
+        RandomTestContainer container = createContainer();
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty("mimeType", "text/plain");
@@ -182,6 +250,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
 //        container.run(1270806278503L);
 //        container.run(1270806786819L);
         container.run(1270806387223L);
+        container.run(1271372510390L);
 
 //        RandomTestContainer.Context context = container.context();
 //        DocumentTesting.undo(context, 2);
@@ -190,14 +259,8 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
     }
 
     public void testRandomModsJava() throws Exception {
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(LOG_LEVEL);
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewUpdates").setLevel(LOG_LEVEL);
-        // FINEST throws ISE for integrity error
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINEST);
-        RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit());
-        container.setName(this.getName());
-        container.setLogOp(LOG_OP);
-        DocumentTesting.setLogDoc(container, LOG_DOC);
+        loggingOn();
+        RandomTestContainer container = createContainer();
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty(Language.class, JavaTokenId.language());

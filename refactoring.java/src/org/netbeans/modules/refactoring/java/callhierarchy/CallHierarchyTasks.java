@@ -40,6 +40,9 @@
 package org.netbeans.modules.refactoring.java.callhierarchy;
 
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree.Kind;
@@ -323,6 +326,15 @@ final class CallHierarchyTasks {
                 if (elm == null) {
                     // XXX log unknown path
                     continue;
+                }
+
+                if (elmDesc.declaration != null && elm == elmDesc.declaration.resolveElement(javac)) {
+                    if (treePath.getLeaf().getKind() == Kind.MEMBER_SELECT) {
+                        ExpressionTree exp = ((MemberSelectTree) treePath.getLeaf()).getExpression();
+                        if (exp.getKind() == Kind.IDENTIFIER && "super".contentEquals(((IdentifierTree)exp).getName())) { //NOI18N
+                            continue;
+                        }
+                    }
                 }
 
                 OccurrencesDesc occurDesc = refs.get(elm);
