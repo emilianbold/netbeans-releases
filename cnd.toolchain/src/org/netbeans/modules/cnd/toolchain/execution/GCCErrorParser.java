@@ -175,7 +175,7 @@ public final class GCCErrorParser extends ErrorParser {
             }
         }
         if (m.pattern() == GCC_DIRECTORY_CD) {
-            String directory = m.group(1);
+            String directory = trimQuotes(m.group(1));
             if (!ToolUtils.isPathAbsolute(directory)) {
                 if (relativeTo != null) {
                     if (relativeTo.isFolder()) {
@@ -285,6 +285,17 @@ public final class GCCErrorParser extends ErrorParser {
             return res;
         }
         throw new IllegalArgumentException("Unknown pattern: " + m.pattern().pattern()); // NOI18N
+    }
+
+    private String trimQuotes(String s){
+        if (s.length() > 2) {
+            if (s.startsWith("\"") && s.endsWith("\"")) { // NOI18N
+                return s.substring(1, s.length()-1);
+            }else if (s.startsWith("'") && s.endsWith("'")) { // NOI18N
+                return s.substring(1, s.length()-1);
+            }
+        }
+        return s;
     }
 
     private static class StackIncludeItem {
