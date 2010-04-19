@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema targetNamespace="http://xmlns.oracle.com/weblogic/jdbc-data-source" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0" xmlns:wls="http://xmlns.oracle.com/weblogic/jdbc-data-source" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:j2ee="http://java.sun.com/xml/ns/j2ee">
   <include schemaLocation="http://xmlns.oracle.com/weblogic/weblogic-javaee/1.0/weblogic-javaee.xsd"/>
-  <import namespace="http://java.sun.com/xml/ns/j2ee" schemaLocation="j2ee/ejb-jar_2_1.xsd"/>
+  <import namespace="http://java.sun.com/xml/ns/j2ee" schemaLocation="ejb-jar_2_1.xsd"/>
   <element name="jdbc-data-source" type="wls:jdbc-data-sourceType"/>
   <complexType name="jdbc-data-sourceType">
     <sequence>
