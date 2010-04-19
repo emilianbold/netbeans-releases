@@ -85,6 +85,10 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         final File sourceFile = getDataFile("fileWithoutDeadCode.cc");
         final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
         assertNotNull(fileImpl);
+        final BaseDocument doc = getBaseDocument(sourceFile);
+        assertNotNull(doc);
+        assertTrue(doc.getLength() > 0);
+        project.waitParse();
         final CsmProgressListener listener = new CsmProgressAdapter() {
             @Override
             public void fileParsingFinished(CsmFile file) {
@@ -97,9 +101,6 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         CsmListeners.getDefault().addProgressListener(listener);
         try {
 
-            final BaseDocument doc = getBaseDocument(sourceFile);
-            assertNotNull(doc);
-            project.waitParse();
             List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
             assertEquals("File must have no dead code blocks " + fileImpl.getAbsolutePath(), 0, unusedCodeBlocks.size());
 
@@ -150,6 +151,10 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         final File sourceFile = getDataFile("fileWithDeadCode.cc");
         final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
         assertNotNull(fileImpl);
+        final BaseDocument doc = getBaseDocument(sourceFile);
+        assertNotNull(doc);
+        assertTrue(doc.getLength() > 0);
+        project.waitParse();
         final CsmProgressListener listener = new CsmProgressAdapter() {
 
             @Override
@@ -163,9 +168,6 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         CsmListeners.getDefault().addProgressListener(listener);
         try {
 
-            final BaseDocument doc = getBaseDocument(sourceFile);
-            assertNotNull(doc);
-            project.waitParse();
             List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
             assertEquals("File must have one dead code block " + fileImpl.getAbsolutePath(), 1, unusedCodeBlocks.size());
             final CsmOffsetable block = unusedCodeBlocks.iterator().next();

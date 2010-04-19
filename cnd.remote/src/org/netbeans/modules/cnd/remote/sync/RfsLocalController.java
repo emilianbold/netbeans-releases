@@ -182,9 +182,17 @@ class RfsLocalController implements Runnable {
     }
 
     private void shutdown() {
-        fileData.store();
-        if (!remoteUpdates.isEmpty()) {
-            HostUpdates.register(remoteUpdates, execEnv, privProjectStorageDir);
+        // this try-catch is only for investigation of the instable test failures
+        try {
+            RemoteUtil.LOGGER.log(Level.FINEST, "{0}.shutdown", getClass().getSimpleName());
+            fileData.store();
+            if (!remoteUpdates.isEmpty()) {
+                RemoteUtil.LOGGER.log(Level.FINE, "Registering {0} updated files", remoteUpdates.size());
+                HostUpdates.register(remoteUpdates, execEnv, privProjectStorageDir);
+                RemoteUtil.LOGGER.log(Level.FINE, "Registered  {0} updated files", remoteUpdates.size());
+            }
+        } catch (Throwable thr) {
+            thr.printStackTrace();
         }
     }
 

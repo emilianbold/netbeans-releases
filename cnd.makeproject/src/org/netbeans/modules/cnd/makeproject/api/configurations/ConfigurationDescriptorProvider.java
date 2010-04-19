@@ -278,8 +278,9 @@ public class ConfigurationDescriptorProvider {
                     family = buffer.toString();
                 }                
                 String platform;
-                if (Platforms.getPlatform(makeConfiguration.getCompilerSet().getPlatform()) != null) {
-                    platform = Platforms.getPlatform(makeConfiguration.getCompilerSet().getPlatform()).getName();
+                int platformID = makeConfiguration.getDevelopmentHost().getBuildPlatform();
+                if (Platforms.getPlatform(platformID) != null) {
+                    platform = Platforms.getPlatform(platformID).getName();
                 } else {
                     platform = "UNKNOWN_PLATFORM"; // NOI18N
                 }

@@ -812,9 +812,10 @@ public abstract class CommonConfigurationXMLCodec
         }
         if(linkerConfiguration.getLibrariesConfiguration().getModified()) {
             writeLibrariesConfiguration(xes, linkerConfiguration.getLibrariesConfiguration());
-            if (linkerConfiguration.getCommandLineConfiguration().getModified()) {
+        }
+        if (linkerConfiguration.getCommandLineConfiguration().getModified()) {
                 xes.element(COMMAND_LINE_ELEMENT, "" + linkerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
-            }	//xes.element(DEBUGGING_ELEMENT, "" + linkerConfiguration.getTool().getValue() + " " + linkerConfiguration.getOptions()); // NOI18N
+             	//xes.element(DEBUGGING_ELEMENT, "" + linkerConfiguration.getTool().getValue() + " " + linkerConfiguration.getOptions()); // NOI18N
         }
         xes.elementClose(LINKERTOOL_ELEMENT);
     }

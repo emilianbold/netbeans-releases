@@ -276,7 +276,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         }
     }
 
-    /*package-local test method*/ void resetStatistic() {
+    /*package-local test method*/ final void resetStatistic() {
         this.dirSyncCount = 0;
         this.fileCopyCount = 0;
     }
@@ -307,11 +307,13 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         }
     }
 
+    @Override
     public List<String> getPendingFiles() {
         return pendingFilesQueue.getPendingFiles();
     }
 
     // NB: it is always called in a specially created thread
+    @Override
     public void connected() {
         ProgressHandle handle = ProgressHandleFactory.createHandle(
                 NbBundle.getMessage(getClass(), "Progress_Title", RemoteUtil.getDisplayName(execEnv)));
