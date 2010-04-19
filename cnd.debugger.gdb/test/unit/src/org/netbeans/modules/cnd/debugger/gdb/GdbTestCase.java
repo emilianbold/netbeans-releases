@@ -120,34 +120,34 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         waitForState(State.STOPPED);
     }
 
-    protected void startDebuggerOld(String testproj, String executable, String args) {
-        this.testproj = testproj;
-        this.executable = testapp_dir + '/' + executable;
-        debugger = new GdbDebugger(this);
-        debugger.addPropertyChangeListener(GdbDebugger.PROP_STATE, stateListener);
-        debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, stackListener);
-        String[] denv = new String[] { "GDBUnitTest=True" };
-        try {
-            // TODO: need to get gdb command from the toolchain or environment
-            gdb = new GdbProxy(debugger, "/opt/csw/bin/gdb", denv, testapp_dir, null, "");
-        } catch (Exception ex) {
-            gdb = null;
-        }
-        assert gdb != null;
-
-        try {
-            debugger.testSuiteInit(gdb);
-            gdb.gdb_show("language"); // NOI18N
-            gdb.gdb_set("print repeat", "10"); // NOI18N
-            gdb.file_exec_and_symbols(executable);
-            gdb.break_insert_temporary("main"); // NOI18N
-            debugger.setRunning();
-            gdb.exec_run(args);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        waitForState(State.STOPPED);
-    }
+//    protected void startDebuggerOld(String testproj, String executable, String args) {
+//        this.testproj = testproj;
+//        this.executable = testapp_dir + '/' + executable;
+//        debugger = new GdbDebugger(this);
+//        debugger.addPropertyChangeListener(GdbDebugger.PROP_STATE, stateListener);
+//        debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, stackListener);
+//        String[] denv = new String[] { "GDBUnitTest=True" };
+//        try {
+//            // TODO: need to get gdb command from the toolchain or environment
+//            gdb = new GdbProxy(debugger, "/opt/csw/bin/gdb", denv, testapp_dir, null, "");
+//        } catch (Exception ex) {
+//            gdb = null;
+//        }
+//        assert gdb != null;
+//
+//        try {
+//            debugger.testSuiteInit(gdb);
+//            gdb.gdb_show("language"); // NOI18N
+//            gdb.gdb_set("print repeat", "10"); // NOI18N
+//            gdb.file_exec_and_symbols(executable);
+//            gdb.break_insert_temporary("main"); // NOI18N
+//            debugger.setRunning();
+//            gdb.exec_run(args);
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+//        waitForState(State.STOPPED);
+//    }
 
     @Override
     protected void setUp() throws Exception {
