@@ -1288,6 +1288,7 @@ public final class WebProject implements Project, AntProjectListener {
         "XML",                  // NOI18N
         "ant-script",           // NOI18N
         "ant-task",             // NOI18N
+        "REST-clients",         // NOI18N
         "servlet-types",        // NOI18N
         "web-types",            // NOI18N
         "web-types-server",     // NOI18N

@@ -39,14 +39,16 @@
 package org.netbeans.modules.css.editor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.css.editor.CssPropertyValue.ResolveContext.ResolveType;
 import org.netbeans.modules.css.editor.PropertyModel.Element;
 import org.netbeans.modules.css.editor.PropertyModel.GroupElement;
@@ -70,10 +72,27 @@ public class CssPropertyValue {
     private final String propertyDefinition;
     Stack<String> originalStack;
     final StringBuffer log = new StringBuffer();
+    private static final Pattern FILTER_COMMENTS_PATTERN = Pattern.compile("/\\*.*?\\*/");//NOI18N
+
+    private static String filterComments(String text) {
+        Matcher m = FILTER_COMMENTS_PATTERN.matcher(text);
+        StringBuilder b = new StringBuilder(text);
+        while (m.find()) {
+            int from = m.start();
+            int to = m.end();
+            if (from != to) {
+                char[] spaces = new char[to-from];
+                Arrays.fill(spaces, ' ');
+                String replacement = new String(spaces);
+                b.replace(from, to, replacement);
+            }
+        }
+        return b.toString();
+    }
 
     public CssPropertyValue(Property property, String textOfTheValue) {
         this.groupElement = property.values();
-        this.text = textOfTheValue;
+        this.text = filterComments(textOfTheValue);
         this.propertyDefinition = null;
         consume();
     }

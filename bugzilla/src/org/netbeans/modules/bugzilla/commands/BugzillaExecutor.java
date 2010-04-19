@@ -92,6 +92,10 @@ public class BugzillaExecutor {
     }
 
     public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion) {
+        execute(cmd, handleExceptions, checkVersion, true);
+    }
+
+    public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion, boolean ensureCredentials) {
         try {
             cmd.setFailed(true);
 
@@ -99,7 +103,9 @@ public class BugzillaExecutor {
                 checkAutoupdate();
             }
 
-            ensureCredentials();
+            if(ensureCredentials) {
+                ensureCredentials();
+            }
 
             Bugzilla.LOG.log(Level.FINE, "execute {0}", cmd);
             cmd.execute();

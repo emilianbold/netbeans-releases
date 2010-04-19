@@ -1005,6 +1005,7 @@ public final class NbModuleProject implements Project {
             "java-forms",           // NOI18N
             "java-beans",           // NOI18N
             "oasis-XML-catalogs",   // NOI18N
+            "REST-clients",         // NOI18N
             "XML",                  // NOI18N
             "ant-script",           // NOI18N
             "ant-task",             // NOI18N

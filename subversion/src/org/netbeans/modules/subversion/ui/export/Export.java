@@ -100,7 +100,7 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
                     new Object[]{okButton, cancelButton},
                     okButton,
                     DialogDescriptor.DEFAULT_ALIGN,
-                    new HelpCtx(this.getClass()),
+                    null,
                     null);
         okButton.setEnabled(false);
 
