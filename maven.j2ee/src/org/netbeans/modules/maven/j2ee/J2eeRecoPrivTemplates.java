@@ -141,6 +141,7 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
                 "web-types-server",     // NOI18N
                 "web-services",         // NOI18N
                 "web-service-clients",  // NOI18N
+                "REST-clients",  // NOI18N
     };
 
     private static final String[] WEB_TYPES_6 = WEB_TYPES_5;
