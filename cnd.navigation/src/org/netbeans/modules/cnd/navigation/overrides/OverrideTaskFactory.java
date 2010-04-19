@@ -71,9 +71,11 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
 
     private static boolean isEnabled() {
         NamedEntity namedEntity = new NamedEntity() {
+            @Override
             public String getName() {
                 return "overrides-annotations"; //NOI18N
             }
+            @Override
             public boolean isEnabledByDefault() {
                 return true;
             }
