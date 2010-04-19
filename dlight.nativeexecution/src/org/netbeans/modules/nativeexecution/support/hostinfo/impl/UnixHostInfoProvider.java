@@ -135,7 +135,8 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         return hostInfo;
     }
 
-    private Properties getRemoteHostInfo(ExecutionEnvironment execEnv) throws IOException {
+    // synchronized = attempt to workaround bug #184421 - random connection failures in jsch
+    private synchronized Properties getRemoteHostInfo(ExecutionEnvironment execEnv) throws IOException {
         final ConnectionManager cm = ConnectionManager.getInstance();
 
         if (!cm.isConnectedTo(execEnv)) {

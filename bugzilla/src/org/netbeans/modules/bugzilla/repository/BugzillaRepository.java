@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugzilla.repository;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
 import java.io.IOException;
@@ -609,12 +610,24 @@ public class BugzillaRepository extends Repository {
     }
 
     public void refreshAllQueries() {
-        Query[] qs = getQueries();
-        for (Query q : qs) {
-            Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
-            QueryController qc = ((BugzillaQuery) q).getController();
-            qc.onRefresh();
-        }
+        refreshAllQueries(true);
+    }
+
+    protected void refreshAllQueries(final boolean onlyOpened) {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Query[] qs = getQueries();
+                for (Query q : qs) {
+                    if(!onlyOpened || !BugtrackingUtil.isOpened(q)) {
+                        continue;
+                    }
+                    Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
+                    QueryController qc = ((BugzillaQuery) q).getController();
+                    qc.onRefresh();
+                }
+            }
+        });
     }
 
     private class IssuesCollector extends TaskDataCollector {

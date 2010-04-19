@@ -462,35 +462,48 @@ public final class FileObjectFactory {
     }
 
     private boolean refresh(final Set<BaseFileObj> all2Refresh, RefreshSlow slow, File... files) {
-        final int size = all2Refresh.size();
-        int count = 0;
-        for (final BaseFileObj fo : all2Refresh) {
-            count++;
-            for (File file : files) {
-                if (isParentOf(file, fo.getFileName().getFile())) {
-                    if (slow != null) {
-                        slow.before();
-                    }
-                    fo.refresh(true);
-                    if (slow != null) {
-                        if (!slow.after()) {
-                            return false;
-                        }
-                        slow.progress(count, size, fo);
-                    }
-                    break;
-                }                
+        return refresh(all2Refresh, slow, true, files);
+    }
+
+    private static boolean isInFiles(BaseFileObj fo, File[] files) {
+        if (fo == null) {
+            return false;
+        }
+        if (files == null) {
+            return true;
+        }
+        for (File file : files) {
+            if (isParentOf(file, fo.getFileName().getFile())) {
+                return true;
             }
         }
-        return true;
-    }    
-    
+        return false;
+    }
+
     private boolean refresh(final Set<BaseFileObj> all2Refresh, RefreshSlow slow, final boolean expected) {
+        return refresh(all2Refresh, slow, expected, null);
+    }
+
+    private boolean refresh(final Set<BaseFileObj> all2Refresh, RefreshSlow slow, final boolean expected, File[] files) {
         final int size = all2Refresh.size();
         int count = 0;
-        for (final BaseFileObj fo : all2Refresh) {
-            count++;
+        Iterator<BaseFileObj> it = all2Refresh.iterator();
+        while (it.hasNext()) {
+            BaseFileObj fo = null;
+            if (slow != null) {
+                BaseFileObj pref = slow.preferrable();
+                if (pref != null && all2Refresh.remove(pref)) {
+                    LOG_REFRESH.log(Level.FINER, "Preferring {0}", pref);
+                    fo = pref;
+                    it = all2Refresh.iterator();
+                }
+            }
             if (fo == null) {
+                fo = it.next();
+                it.remove();
+            }
+            count++;
+            if (!isInFiles(fo, files)) {
                 continue;
             }
             if (slow != null) {
@@ -683,12 +696,16 @@ public final class FileObjectFactory {
         
         stopWatch.start();
         try {
-            FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
-                @Override
-                public void run() throws IOException {
-                    FileBasedFileSystem.runAsInconsistent(r);
-                }
-            });
+            if (slow != null) {
+                FileBasedFileSystem.runAsInconsistent(r);
+            } else {
+                FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
+                    @Override
+                    public void run() throws IOException {
+                        FileBasedFileSystem.runAsInconsistent(r);
+                    }
+                });
+            }
         } catch (IOException iex) {/*method refreshAll doesn't throw IOException*/
 
         }
@@ -732,12 +749,16 @@ public final class FileObjectFactory {
         };        
         stopWatch.start();
         try {
-            FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
-                @Override
-                public void run() throws IOException {
-                    FileBasedFileSystem.runAsInconsistent(r);
-                }
-            });
+            if (slow != null) {
+                FileBasedFileSystem.runAsInconsistent(r);
+            } else {
+                FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
+                    @Override
+                    public void run() throws IOException {
+                        FileBasedFileSystem.runAsInconsistent(r);
+                    }
+                });
+            }
         } catch (IOException iex) {/*method refreshAll doesn't throw IOException*/
 
         }

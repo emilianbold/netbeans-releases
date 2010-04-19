@@ -40,6 +40,7 @@ package org.netbeans.modules.web.common.api;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -47,8 +48,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -87,15 +87,17 @@ public abstract class FileReferenceCompletion<T> implements ValueCompletion<T> {
         int anchor = offset - valuePart.length() + lastSlash + 1;  // works even with -1
 
         try {
-            Project project = FileOwnerQuery.getOwner(orig);
-            FileObject documentBase = project != null ? project.getProjectDirectory() : orig;
-
-//                FileObject documentBase = JspUtils.guessWebModuleRoot(orig);
+            FileObject documentBase = ProjectWebRootQuery.getWebRoot(orig);
             // need to normalize fileNamePart with respect to orig
             String ctxPath = resolveRelativeURL("/" + orig.getPath(), path);  // NOI18N
             //is this absolute path?
             if (path.startsWith("/")) {
-                ctxPath = documentBase.getPath() + path;
+                if(documentBase == null) {
+                    //abosolute path but no web root, cannot complete
+                    return Collections.emptyList();
+                } else {
+                    ctxPath = documentBase.getPath() + path;
+                }
             } else {
                 ctxPath = ctxPath.substring(1);
             }
@@ -108,7 +110,7 @@ public abstract class FileReferenceCompletion<T> implements ValueCompletion<T> {
                 result.addAll(files(anchor, folder, fileNamePart));
 
                 //add go up in the directories structure item
-                if (!folder.equals(documentBase) && !path.startsWith("/") // NOI18N
+                if (!(documentBase != null && folder.equals(documentBase)) && !path.startsWith("/") // NOI18N
                         && (path.length() == 0 || (path.lastIndexOf("../") + 3 == path.length()))) { // NOI18N
 //                        result.add(HtmlCompletionItem.createGoUpFileCompletionItem(anchor, java.awt.Color.BLUE, PACKAGE_ICON)); // NOI18N
                     result.add(createGoUpItem(anchor, Color.BLUE, PACKAGE_ICON)); // NOI18N

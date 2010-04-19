@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -120,15 +119,20 @@ public class OverridableMethodCallInConstructor {
         if (!invocationOnThis(mit)) {
             return null;
         }
+
+        TreePath methodDeclaration = ctx.getInfo().getTrees().getPath(methodInvocationElement);
+
+        if (methodDeclaration == null || ctx.getInfo().getTreeUtilities().isSynthetic(methodDeclaration)) return null;
+
         return ErrorDescriptionFactory.forName(ctx, mit,
                 NbBundle.getMessage(
                     OverridableMethodCallInConstructor.class,
                     "MSG_org.netbeans.modules.java.hints.OverridableMethodCallInConstructor"),
-                    computeFixes((ExecutableElement)methodInvocationElement,
+                    computeFixes((MethodTree) methodDeclaration.getLeaf(),
                         classElement, ctx));
     }
 
-    private static Fix[] computeFixes(ExecutableElement ee, Element classElement, HintContext ctx) {
+    private static Fix[] computeFixes(MethodTree mt, Element classElement, HintContext ctx) {
         List<Fix> result = new ArrayList<Fix>();
         ClassTree ct = ctx.getInfo().getTrees().getTree((TypeElement)classElement);
         result.add(FixFactory.addModifiersFix(
@@ -140,7 +144,6 @@ public class OverridableMethodCallInConstructor {
             Collections.singleton(Modifier.FINAL),
             NbBundle.getMessage(OverridableMethodCallInConstructor.class,
                 "FIX_MakeClass", "final", ct.getSimpleName())));
-        MethodTree mt = ctx.getInfo().getTrees().getTree(ee);
         Set<Modifier> flags = mt.getModifiers().getFlags();
         result.add(FixFactory.addModifiersFix(
             ctx.getInfo(),
