@@ -82,8 +82,8 @@ import org.openide.util.Mutex.ExceptionAction;
  */
 public class TaskCache {
     
-    private static final String ERR_EXT = "err";
-    private static final String WARN_EXT = "warn";
+    private static final String ERR_EXT = "err"; //NOI18N
+    private static final String WARN_EXT = "warn"; //NOI18N
 
     private static final int VERSION = 1;
     
@@ -126,12 +126,12 @@ public class TaskCache {
     }
     
     private List<Task> getErrors(FileObject file, String ext) {
-        LOG.log(Level.FINE, "getErrors, file={0}, ext={1}", new Object[] {FileUtil.getFileDisplayName(file), ext});
+        LOG.log(Level.FINE, "getErrors, file={0}, ext={1}", new Object[] {FileUtil.getFileDisplayName(file), ext}); //NOI18N
         
         try {
             File input = computePersistentFile(file, ext);
             
-            LOG.log(Level.FINE, "getErrors, error file={0}", input == null ? "null" : input.getAbsolutePath());
+            LOG.log(Level.FINE, "getErrors, error file={0}", input == null ? "null" : input.getAbsolutePath()); //NOI18N
             
             if (input == null || !input.canRead())
                 return Collections.<Task>emptyList();
@@ -140,7 +140,7 @@ public class TaskCache {
             
             return loadErrors(input, file);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.log(Level.FINE, null, e);
         }
         
         return Collections.<Task>emptyList();
@@ -150,21 +150,22 @@ public class TaskCache {
         if (errors.iterator().hasNext()) {
             boolean existed = interestedInReturnValue && output.exists();
             output.getParentFile().mkdirs();
-            PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(output), "UTF-8"));
+            PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(output), "UTF-8")); //NOI18N
             
             for (T err : errors) {
                 pw.print(convertor.getKind(err));
-                pw.print(':');
+                pw.print(':'); //NOI18N
                 pw.print(convertor.getLineNumber(err));
-                pw.print(':');
+                pw.print(':'); //NOI18N
                 
                 String description = convertor.getMessage(err);
-                
-                description = description.replaceAll("\\\\", "\\\\\\\\");
-                description = description.replaceAll("\n", "\\\\n");
-                description = description.replaceAll(":", "\\\\d");
-                
-                pw.println(description);
+                if (description != null && description.length() > 0) {
+                    description = description.replaceAll("\\\\", "\\\\\\\\"); //NOI18N
+                    description = description.replaceAll("\n", "\\\\n"); //NOI18N
+                    description = description.replaceAll(":", "\\\\d"); //NOI18N
+
+                    pw.println(description);
+                }
             }
             
             pw.close();
@@ -188,7 +189,7 @@ public class TaskCache {
     public <T> void dumpErrors(final URL root, final Indexable i, final Iterable<? extends T> errors, final Convertor<T> convertor) {
         try {
             refreshTransaction(new ExceptionAction<Void>() {
-                public Void run() throws Exception {
+                public @Override Void run() throws Exception {
                     dumpErrors(q.get(), root, i, errors, convertor);
                     return null;
                 }
@@ -216,10 +217,10 @@ public class TaskCache {
         c.toRefresh.add(currentFile);
 
         if (modified) {
-            c.toRefresh.add(currentFile = new URL(currentFile, "."));
+            c.toRefresh.add(currentFile = new URL(currentFile, ".")); //NOI18N
             final String relativePath = i.getRelativePath();
             for (int depth = relativePath.split("/").length-1; depth>0; depth--) {  //NOI18N
-                currentFile = new URL(currentFile, "..");
+                currentFile = new URL(currentFile, ".."); //NOI18N
                 c.toRefresh.add(currentFile);
             }
 
@@ -250,11 +251,11 @@ public class TaskCache {
 
     private List<Task> loadErrors(File input, FileObject file) throws IOException {
         List<Task> result = new LinkedList<Task>();
-        BufferedReader pw = new BufferedReader(new InputStreamReader(new FileInputStream(input), "UTF-8"));
+        BufferedReader pw = new BufferedReader(new InputStreamReader(new FileInputStream(input), "UTF-8")); //NOI18N
         String line;
 
         while ((line = pw.readLine()) != null) {
-            String[] parts = line.split(":");
+            String[] parts = line.split(":"); //NOI18N
 
             ErrorKind kind = ErrorKind.valueOf(parts[0]);
 
@@ -265,9 +266,9 @@ public class TaskCache {
             int lineNumber = Integer.parseInt(parts[1]);
             String message = parts[2];
 
-            message = message.replaceAll("\\\\d", ":");
-            message = message.replaceAll("\\\\n", " ");
-            message = message.replaceAll("\\\\\\\\", "\\\\");
+            message = message.replaceAll("\\\\d", ":"); //NOI18N
+            message = message.replaceAll("\\\\n", " "); //NOI18N
+            message = message.replaceAll("\\\\\\\\", "\\\\"); //NOI18N
 
             String severity = getTaskType(kind);
 
@@ -308,13 +309,13 @@ public class TaskCache {
                     if (f.getName().endsWith(ERR_EXT)) {
                         String relative = cacheRootURI.relativize(f.toURI()).getRawPath();
                         
-                        relative = relative.replaceAll("." + ERR_EXT + "$", "");
+                        relative = relative.replaceAll("." + ERR_EXT + "$", ""); //NOI18N
                         result.add(rootURI.resolve(relative).toURL());
                     }
                     if (!onlyErrors && f.getName().endsWith(WARN_EXT)) {
                         String relative = cacheRootURI.relativize(f.toURI()).getRawPath();
                         
-                        relative = relative.replaceAll("." + WARN_EXT + "$", "");
+                        relative = relative.replaceAll("." + WARN_EXT + "$", ""); //NOI18N
                         result.add(rootURI.resolve(relative).toURL());
                     }
                 } else {
@@ -329,7 +330,7 @@ public class TaskCache {
             
             return result;
         } catch (URISyntaxException e) {
-            throw (IOException) new IOException().initCause(e);
+            throw new IOException(e);
         }
     }
     
@@ -338,7 +339,7 @@ public class TaskCache {
     }
     
     public boolean isInError(FileObject file, boolean recursive) {
-        LOG.log(Level.FINE, "file={0}, recursive={1}", new Object[] {file, Boolean.valueOf(recursive)});
+        LOG.log(Level.FINE, "file={0}, recursive={1}", new Object[] {file, Boolean.valueOf(recursive)}); //NOI18N
         
         if (file.isData()) {
             return !getErrors(file, ERR_EXT).isEmpty();
@@ -353,7 +354,7 @@ public class TaskCache {
                 FileObject root = cp.findOwnerRoot(file);
                 
                 if (root == null) {
-                    LOG.log(Level.FINE, "file={0} does not have a root on its own source classpath", file);
+                    LOG.log(Level.FINE, "file={0} does not have a root on its own source classpath", file); //NOI18N
                     return false;
                 }
                 
@@ -369,7 +370,7 @@ public class TaskCache {
                 
                 return folderContainsErrors(folder, recursive);
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.WARNING, null, e);
+                LOG.log(Level.WARNING, null, e); //NOI18N
                 return false;
             }
         }
@@ -377,8 +378,8 @@ public class TaskCache {
     
     private boolean folderContainsErrors(File folder, boolean recursively) throws IOException {
         File[] errors = folder.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".err");
+            public @Override boolean accept(File dir, String name) {
+                return name.endsWith(".err"); //NOI18N
             }
         });
         
@@ -409,8 +410,8 @@ public class TaskCache {
     private File[] computePersistentFile(URL root, Indexable i) throws IOException {
         String resourceName = i.getRelativePath();
         File cacheRoot = getCacheRoot(root);
-        File errorCacheFile = new File(cacheRoot, resourceName + "." + ERR_EXT);
-        File warningCacheFile = new File(cacheRoot, resourceName + "." + WARN_EXT);
+        File errorCacheFile = new File(cacheRoot, resourceName + "." + ERR_EXT); //NOI18N
+        File warningCacheFile = new File(cacheRoot, resourceName + "." + WARN_EXT); //NOI18N
 
         return new File[] {errorCacheFile, warningCacheFile};
     }
@@ -424,13 +425,13 @@ public class TaskCache {
         FileObject root = cp.findOwnerRoot(file);
         
         if (root == null) {
-            LOG.log(Level.FINE, "file={0} does not have a root on its own source classpath", file);
+            LOG.log(Level.FINE, "file={0} does not have a root on its own source classpath", file); //NOI18N
             return null;
         }
         
         String resourceName = cp.getResourceName(file, File.separatorChar, true);
         File cacheRoot = getCacheRoot(root.getURL());
-        File cacheFile = new File(cacheRoot, resourceName + "." + extension);
+        File cacheFile = new File(cacheRoot, resourceName + "." + extension); //NOI18N
         
         return cacheFile;
     }
@@ -451,7 +452,7 @@ public class TaskCache {
         } catch (IOException ioe) { //???
             throw ioe;
         } catch (Exception ex) {
-            throw (IOException) new IOException(ex.getMessage()).initCause(ex);
+            throw new IOException(ex);
         } finally {
             if (--c.depth == 0) {
                 doRefresh(c);
@@ -489,7 +490,7 @@ public class TaskCache {
             return null;
         }
         
-        File cache = FileUtil.toFile(FileUtil.createFolder(dataFolder, "errors/" + VERSION));
+        File cache = FileUtil.toFile(FileUtil.createFolder(dataFolder, "errors/" + VERSION)); //NOI18N
 
         return cache;
     }
