@@ -548,10 +548,17 @@ void declaration() :
 }
 {
     try {
-        property()
-        <COLON> ( ( <S> | <COMMENT> ) )*
-        expr()
-        ( prio() )?
+        (
+        LOOKAHEAD( <GENERATED> ( <S> | <COMMENT> )* (<SEMICOLON> | <RBRACE>))
+            <GENERATED> ( <S> | <COMMENT> )*
+            |
+            (
+                property()
+                <COLON> ( ( <S> | <COMMENT> ) )*
+                expr()
+                ( prio() )?
+            )
+        )
     } catch (ParseException e) {
         reportError(e);
         error_skipdecl(); //recovery

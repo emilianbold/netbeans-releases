@@ -179,7 +179,9 @@ public class CssParserTest extends TestBase {
         check("h1 { color: rgb(@@@,@@@,@@@); }");
         check("h1 { color: rgb(0,0,@@@); }");
 
-//        check("h1 { @@@ }"); //fails
+        check("h1 { @@@ ; }");
+        check("h1 { @@@; }");
+        check("h1 { @@@ }");
 
         //selectors are generated
         check("@@@ { }");
