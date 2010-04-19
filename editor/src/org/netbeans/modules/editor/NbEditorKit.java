@@ -444,7 +444,11 @@ public class NbEditorKit extends ExtKit implements Callable {
                 if (item instanceof DynamicMenuContent) {
                     Component[] cmps = ((DynamicMenuContent)item).getMenuPresenters();
                     for (int i = 0; i < cmps.length; i++) {
-                        popupMenu.add(cmps[i]);
+                        if(cmps[i] != null) {
+                            popupMenu.add(cmps[i]);
+                        } else {
+                            popupMenu.addSeparator();
+                        }
                     }
                 } else {
                     item.setEnabled(action.isEnabled());
