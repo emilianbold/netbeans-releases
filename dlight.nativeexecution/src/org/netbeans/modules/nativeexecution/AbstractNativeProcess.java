@@ -251,12 +251,15 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
         cancel();
 
-        try {
-            result.get();
-        } catch (InterruptedException ex) {
-        } catch (ExecutionException ex) {
+        // result == null if createAndStart() failed
+        if (result != null) {
+            try {
+                result.get();
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+            }
         }
-        
+
         setState(State.CANCELLED);
     }
 
@@ -277,6 +280,11 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     @Override
     public final int waitFor() throws InterruptedException {
         int exitStatus = -1;
+
+        if (result == null) {
+            // createAndStart() failed
+            return exitStatus;
+        }
 
         try {
             exitStatus = result.get();

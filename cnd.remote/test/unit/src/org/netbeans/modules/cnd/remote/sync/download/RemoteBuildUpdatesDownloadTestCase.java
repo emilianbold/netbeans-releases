@@ -42,12 +42,14 @@ package org.netbeans.modules.cnd.remote.sync.download;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import junit.framework.AssertionFailedError;
 import org.netbeans.modules.cnd.remote.pbuild.*;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.sync.download.FileDownloadInfo.State;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -78,7 +80,26 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
             this.file = file;
             this.state = state;
         }
+    
     }
+
+    private Level oldLevel;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        oldLevel = RemoteUtil.LOGGER.getLevel();
+        RemoteUtil.LOGGER.setLevel(Level.ALL);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        if (oldLevel != null) {
+            RemoteUtil.LOGGER.setLevel(oldLevel);
+        }
+    }
+
 
     @ForAllEnvironments
     public void test_LexYacc_BuildLocalAndRemote() throws Exception {

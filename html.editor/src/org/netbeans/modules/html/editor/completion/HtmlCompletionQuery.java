@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
+import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.util.*;
@@ -236,6 +237,21 @@ public class HtmlCompletionQuery extends UserTask {
         int documentItemOffset = snapshot.getOriginalOffset(itemOffset);
         String preText = item.text().toString();
         String itemText = preText;
+
+        // Bug 182267 -  StringIndexOutOfBoundsException: String index out of range: -1
+        // debug>>>
+        if((astOffset - itemOffset) < 0) {
+            StringBuilder b = new StringBuilder();
+            b.append("just happened Bug 182267 -  StringIndexOutOfBoundsException: String index out of range: -1\n"); //NOI18N
+            b.append("current's snapshot token sequence:\n"); //NOI18N
+            b.append(ts.toString()); //dump token seuquence
+            b.append(String.format("astOffset = %1$s, itemOffset = %2$s\n", astOffset, itemOffset)); //NOI18N
+            Logger.getAnonymousLogger().warning(b.toString());
+
+            //and let the original exception to be thrown so the item is properly bound to the original report
+        }
+        //<<<debug
+
         if (diff < preText.length()) {
             preText = preText.substring(0, astOffset - itemOffset);
         }

@@ -719,4 +719,15 @@ public class PropertyModelTest extends TestBase {
         assertTrue(csspv.success());
 
     }
+
+    public void testCommnetsInValue() {
+        Property p = PropertyModel.instance().getProperty("border-color");
+        String text = "red /* comment */ yellow black yellow";
+
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+
+        dumpResult(csspv);
+
+        assertTrue(csspv.success());
+    }
 }

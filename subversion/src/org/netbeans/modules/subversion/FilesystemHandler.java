@@ -384,6 +384,15 @@ class FilesystemHandler extends VCSInterceptor {
         NotificationsManager.getInstance().scheduleFor(file);
     }
 
+    @Override
+    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        long retval = -1;
+        if (SvnUtils.isAdministrative(dir.getName())) {
+            retval = 0;
+        }
+        return retval;
+    }
+
     private String getRemoteRepository(File file) {
         if(file == null) return null;
         SVNUrl url = null;
