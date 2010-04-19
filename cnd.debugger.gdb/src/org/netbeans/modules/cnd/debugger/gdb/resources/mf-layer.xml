@@ -401,6 +401,7 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Groups">
             <folder name="debugger">
+                <file name="watchesView.wstcgrp" url="watches.wstcgrp"/>
                 <file name="RegistersTopComponent.wstcgrp" url="RegistersTopComponentWstcgrp.xml"/>
                 <file name="MemoryViewTopComponent.wstcgrp" url="MemoryViewTopComponentWstcgrp.xml"/>
             </folder>
