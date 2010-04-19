@@ -492,7 +492,7 @@ public final class FileObjectFactory {
             BaseFileObj fo = null;
             if (slow != null) {
                 BaseFileObj pref = slow.preferrable();
-                if (all2Refresh.remove(pref)) {
+                if (pref != null && all2Refresh.remove(pref)) {
                     LOG_REFRESH.log(Level.FINER, "Preferring {0}", pref);
                     fo = pref;
                     it = all2Refresh.iterator();
