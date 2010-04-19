@@ -83,11 +83,6 @@ final class ReferenceHelper {
 //out("myProject: " + myProject);
         myCatalog = getCatalog(project);
 //out("myCatalog: " + myCatalog);
-        if (ourChooser == null) {
-            ourChooser = new JFileChooser();
-            ourChooser.setCurrentDirectory(FileUtil.toFile(myProject.getProjectDirectory().getParent()));
-            ourChooser.setMultiSelectionEnabled(true);
-        }
     }
 
     List<ReferenceChild> getReferencedResources(String extension) {
@@ -213,7 +208,18 @@ final class ReferenceHelper {
         return null;
     }
 
+    private void checkFileChooser() {
+        if (ourChooser != null) {
+            return;
+        }
+        ourChooser = new JFileChooser();
+        ourChooser.setCurrentDirectory(FileUtil.toFile(myProject.getProjectDirectory().getParent()));
+        ourChooser.setMultiSelectionEnabled(true);
+    }
+
     URI addFileAction() {
+        checkFileChooser();
+
         if (ourChooser.showOpenDialog(WindowManager.getDefault().getMainWindow()) != JFileChooser.APPROVE_OPTION) {
             return null;
         }

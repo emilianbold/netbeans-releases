@@ -66,6 +66,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.gems.Gem;
@@ -271,7 +272,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         
         if (subdir == null || (dir.getName().equals(subdir))) {
             for (FileObject child : subdirs) {
-                if (child.isFolder()) {
+                if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child)) {
                     generatorDirs.add(child);
                 }
             }
@@ -297,7 +298,6 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         if (dir == null) {
             return;
         }
-
         List<FileObject> generatorDirs = new ArrayList<FileObject>();
         findGeneratorDirs(generatorDirs, dir, subdir);
         for (FileObject generatorDir : generatorDirs) {

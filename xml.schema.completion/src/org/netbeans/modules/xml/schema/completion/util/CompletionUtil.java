@@ -313,14 +313,14 @@ public class CompletionUtil {
            ((Datatype)type).getEnumerations() == null)
             return null;                
         for(Object value: ((Datatype)type).getEnumerations()) {
+            String str = (value != null) ? value.toString() : null;
             if(context.getTypedChars() == null || context.getTypedChars().equals("")) {
-                ValueResultItem item = new ValueResultItem(attr, (String)value, context);
+                ValueResultItem item = new ValueResultItem(attr, str, context);
                 result.add(item);
                 continue;
             }
-            String str = (String)value;
-            if(str.startsWith(context.getTypedChars())) {
-                ValueResultItem item = new ValueResultItem(attr, (String)value, context);
+            if (str != null && str.startsWith(context.getTypedChars())) {
+                ValueResultItem item = new ValueResultItem(attr, str, context);
                 result.add(item);
             }
         }
