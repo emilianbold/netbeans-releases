@@ -227,7 +227,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private final Collection<CsmUID<CsmVariable>> staticVariableUIDs;
     private final ReadWriteLock staticLock = new ReentrantReadWriteLock();
     private Reference<List<CsmReference>> lastMacroUsages = null;
-    private ChangeListener fileBufferChangeListener = new ChangeListener() {
+    private final ChangeListener fileBufferChangeListener = new ChangeListener() {
 
         @Override
         public void stateChanged(ChangeEvent e) {

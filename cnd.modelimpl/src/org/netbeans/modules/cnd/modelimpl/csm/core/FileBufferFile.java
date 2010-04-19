@@ -65,10 +65,12 @@ public class FileBufferFile extends AbstractFileBuffer {
         super(absPath);
     }
     
+    @Override
     public String getText() throws IOException {
         return asString();
     }
     
+    @Override
     public String getText(int start, int end) {
         try {
             String b = asString();
@@ -172,18 +174,22 @@ public class FileBufferFile extends AbstractFileBuffer {
         return tgtOffset;
     }
     
+    @Override
     public InputStream getInputStream() throws IOException {
         return new BufferedInputStream(CndFileUtils.getInputStream(getAbsolutePath()), TraceFlags.BUF_SIZE);
     }
     
+    @Override
     public int getLength() {
         return (int) getFile().length();
     }
     
+    @Override
     public boolean isFileBased() {
         return true;
     }
     
+    @Override
     public long lastModified() {
 	return getFile().lastModified();
     }
