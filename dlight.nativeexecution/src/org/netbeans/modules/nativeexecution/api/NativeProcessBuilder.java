@@ -126,7 +126,9 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * command line it not escaped before execution.
      * @param commandLine
      * @return
+     * @deprecated as doesn't uniquely works on all platforms...
      */
+    @Deprecated
     public NativeProcessBuilder setCommandLine(String commandLine) {
         info.setCommandLine(commandLine);
         return this;

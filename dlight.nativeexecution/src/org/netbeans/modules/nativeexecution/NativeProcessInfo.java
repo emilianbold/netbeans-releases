@@ -101,6 +101,7 @@ public final class NativeProcessInfo {
         this.executable = executable;
     }
 
+    @Deprecated
     public void setCommandLine(String commandLine) {
         if (isWindows) {
             // Until we use java ProcessBuilder on Windows,
@@ -162,8 +163,10 @@ public final class NativeProcessInfo {
 
         this.arguments.clear();
 
-        for (String arg : arguments) {
-            this.arguments.add(arg.trim());
+        if (arguments != null) {
+            for (String arg : arguments) {
+                this.arguments.add(arg.trim());
+            }
         }
     }
 
