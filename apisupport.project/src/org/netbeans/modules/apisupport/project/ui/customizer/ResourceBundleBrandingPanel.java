@@ -40,8 +40,11 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.Component;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -54,6 +57,9 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
@@ -88,14 +94,22 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         implements ExplorerManager.Provider {
 
     private final ExplorerManager manager;
+    private RootNode rootNode;
     private final AbstractNode waitRoot;
     private static final String WAIT_ICON_PATH =
             "org/netbeans/modules/apisupport/project/suite/resources/wait.png"; // NOI18N
+
     private RequestProcessor.Task refreshTask = null;
-    private RequestProcessor RP = new RequestProcessor(ResourceBundleBrandingPanel.class.getName(), 1);
+    private RequestProcessor RPforRefresh = new RequestProcessor(ResourceBundleBrandingPanel.class.getName() + " - refresh", 1); // NOI18N
+
     private EditRBAction editRBAction = SystemAction.get (EditRBAction.class);
     private OpenRBAction openRBAction = SystemAction.get (OpenRBAction.class);
     private ExpandAllAction expandAllAction = SystemAction.get (ExpandAllAction.class);
+
+    private String searchString = null;
+    private SearchListener searchListener = new SearchListener();
+    private RequestProcessor.Task searchTask = null;
+    private RequestProcessor RPforSearch = new RequestProcessor(ResourceBundleBrandingPanel.class.getName() + " - search", 1); // NOI18N
 
     private BasicBrandingModel branding;
     private Project prj;
@@ -105,7 +119,11 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         
         initComponents();
 
+        searchField.getDocument().addDocumentListener(searchListener);
+        searchField.addFocusListener(searchListener);
+
         manager = new ExplorerManager();
+        rootNode = null;
         waitRoot = getWaitRoot();
         waitRoot.setName(getMessage("LBL_ResourceBundlesList")); // NOI18N
         waitRoot.setDisplayName(getMessage("LBL_ResourceBundlesList")); // NOI18N
@@ -125,16 +143,47 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
     private void initComponents() {
 
         view = new org.openide.explorer.view.BeanTreeView();
+        searchLabel = new javax.swing.JLabel();
+        searchField = new javax.swing.JTextField();
 
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
                 formComponentShown(evt);
             }
         });
-        setLayout(new java.awt.BorderLayout());
 
         view.setUseSubstringInQuickSearch(true);
-        add(view, java.awt.BorderLayout.CENTER);
+
+        searchLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        searchLabel.setLabelFor(searchField);
+        org.openide.awt.Mnemonics.setLocalizedText(searchLabel, org.openide.util.NbBundle.getMessage(ResourceBundleBrandingPanel.class, "ResourceBundleBrandingPanel.searchLabel.text")); // NOI18N
+
+        searchField.setText(org.openide.util.NbBundle.getMessage(ResourceBundleBrandingPanel.class, "ResourceBundleBrandingPanel.searchField.text")); // NOI18N
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(view, javax.swing.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(searchLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 179, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, 209, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(searchLabel))
+                .addGap(12, 12, 12)
+                .addComponent(view, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE))
+        );
+
+        searchLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ResourceBundleBrandingPanel.class, "ResourceBundleBrandingPanel.searchLabel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private boolean initialized = false;
@@ -149,7 +198,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
 
     private void refresh() {
         if (refreshTask == null) {
-            refreshTask = RP.create(new Runnable() {
+            refreshTask = RPforRefresh.create(new Runnable() {
                 @Override
                 public void run() {
                     prepareTree();
@@ -160,16 +209,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
     }
 
     private void prepareTree() {
-        final List<Node> resourcebundlenodes = new LinkedList<Node>();
-        RootNode rootNode = new RootNode(new Children.SortedArray() {
-            @Override
-            protected Collection<Node> initCollection() {
-                return resourcebundlenodes;
-            }
-        });
-        rootNode.setName(getMessage("LBL_ResourceBundlesList")); // NOI18N
-        rootNode.setDisplayName(getMessage("LBL_ResourceBundlesList")); // NOI18N
-        rootNode.setShortDescription(getMessage("LBL_ResourceBundlesDesc")); // NOI18N
+        List<BundleNode> resourcebundlenodes = new LinkedList<BundleNode>();
 
         Set<File> jars;
         if (prj instanceof SuiteProject) {
@@ -192,7 +232,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
                             FileObject fo = URLMapper.findFileObject(url);
                             DataObject dobj = DataObject.find(fo);
                             Node dobjnode = dobj.getNodeDelegate();
-                            Node filternode = new BundleNode(dobjnode, fo.getPath(), codeNameBase);
+                            BundleNode filternode = new BundleNode(dobjnode, fo.getPath(), codeNameBase);
                             resourcebundlenodes.add(filternode);
                         } catch (Exception e) {
                             Exceptions.printStackTrace(e);
@@ -204,18 +244,84 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
             }
         }
 
+        rootNode = new RootNode(resourcebundlenodes);
+        rootNode.setName(getMessage("LBL_ResourceBundlesList")); // NOI18N
+        rootNode.setDisplayName(getMessage("LBL_ResourceBundlesList")); // NOI18N
+        rootNode.setShortDescription(getMessage("LBL_ResourceBundlesDesc")); // NOI18N
         manager.setRootContext(rootNode);
     }//GEN-LAST:event_formComponentShown
 
+    private void searchStringUpdated() {
+        if (null != rootNode) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        searchString = retrieveSearchField();
+                        // replace root node with waitRoot
+                        manager.setRootContext(waitRoot);
+                    }
+                });
+
+                // refresh lists of children based on the filter
+                rootNode.refreshChildren();
+
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        // quit immediately if search field value changed
+                        if (!searchFieldEquals(searchString))
+                            return;
+                        // replace waitRoot with the real root
+                        manager.setRootContext(rootNode);
+                        // expand/collapse all bundle nodes
+                        if (null == searchString) {
+                            Node[] nodes = rootNode.getChildren().getNodes();
+                            for (Node node : nodes) {
+                                view.collapseNode(node);
+                            }
+                        } else {
+                            view.expandAll();
+                        }
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    private String retrieveSearchField () {
+        String value = searchField.getText().trim().toLowerCase();
+        if (value.equalsIgnoreCase("")) {
+            value = null;
+        }
+        return value;
+    }
+
+    private boolean searchFieldEquals (String value1) {
+        String value2 = retrieveSearchField();
+        if (null==value1 && null==value2)
+            return true;
+        if (null!=value1 && null!=value2 && value1.equals(value2))
+            return true;
+        return false;
+    }
+    
     private class RootNode extends AbstractNode implements OpenCookie {
 
-        public RootNode(Children children) {
-            this(children, new InstanceContent());
+        private RootChildren rootChildren;
+
+        public RootNode(List<BundleNode> resourceBundleNodes) {
+            this(resourceBundleNodes, new InstanceContent());
         }
 
-        private RootNode(Children children, InstanceContent content) {
-            super (children, new AbstractLookup(content));
+        private RootNode(List<BundleNode> resourceBundleNodes, InstanceContent content) {
+            super (new RootChildren(resourceBundleNodes), new AbstractLookup(content));
             content.add(this);
+            this.rootChildren = (RootChildren) getChildren();
         }
 
         @Override
@@ -228,6 +334,10 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
             view.expandAll();
             view.requestFocusInWindow();
         }
+
+        public void refreshChildren() {
+            rootChildren.refreshChildren();
+        }
     }
 
     static final class ExpandAllAction extends OpenAction {
@@ -238,10 +348,54 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
     }
 
+    private class RootChildren extends Children.Keys<Node> {
+
+        List<BundleNode> resourceBundleNodes;
+
+        public RootChildren(List<BundleNode> resourceBundleNodes) {
+            super();
+            this.resourceBundleNodes = resourceBundleNodes;
+        }
+
+        @Override
+        protected Node[] createNodes(Node key) {
+            // filter out BundleNodes without visible KeyNodes
+            if (key.getChildren().getNodesCount()>0)
+                return new Node[] { key };
+            return null;
+        }
+
+        @Override
+        protected void addNotify() {
+            refreshList();
+        }
+
+        @Override
+        protected void removeNotify() {
+            setKeys(Collections.EMPTY_SET);
+        }
+
+        private void refreshList() {
+            List keys = new ArrayList();
+            for (Node node : resourceBundleNodes) {
+                keys.add(node);
+            }
+            setKeys(keys);
+        }
+
+        private void refreshChildren() {
+            for (BundleNode node : resourceBundleNodes) {
+                node.refreshChildren();
+                refreshKey(node);
+            }
+        }
+    }
+
     private class BundleNode extends FilterNode implements OpenCookie, Comparable<BundleNode> {
 
         private String bundlepath;
         private String codenamebase;
+        private BundleChildren bundleChildren;
 
         public BundleNode(Node orig, String bundlepath, String codenamebase) {
             this (orig, bundlepath, codenamebase, new InstanceContent());
@@ -260,6 +414,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
 
             this.bundlepath = bundlepath;
             this.codenamebase = codenamebase;
+            this.bundleChildren = (BundleChildren) getChildren();
         }
 
         @Override
@@ -300,6 +455,10 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         public int compareTo(BundleNode o) {
             return getDisplayName().compareTo(o.getDisplayName());
         }
+
+        private void refreshChildren() {
+            bundleChildren.refreshChildren();
+        }
     }
 
     private class BundleChildren extends Children.Keys<Node> {
@@ -318,8 +477,13 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         @Override
         protected Node[] createNodes(Node key) {
             // filter out all keys related to module metadata
-            if (!key.getDisplayName().toUpperCase().startsWith("OPENIDE-MODULE")) // NOI18N
-                return new Node[] { new KeyNode(key, bundlepath, codenamebase) };
+            if (!key.getDisplayName().toUpperCase().startsWith("OPENIDE-MODULE")) { // NOI18N
+                KeyNode keyNode = new KeyNode(key, bundlepath, codenamebase);
+                // filter out according to searchString
+                if (null == searchString || keyNode.getDisplayName().toLowerCase().indexOf(searchString) != -1) {
+                    return new Node[]{keyNode};
+                }
+            }
             return null;
         }
 
@@ -341,6 +505,13 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
             }
             setKeys(keys);
         }
+
+        private void refreshChildren() {
+            Node[] origChildren = original.getChildren().getNodes();
+            for (Node node : origChildren) {
+                refreshKey(node);
+            }
+        }
     }
 
     private class KeyNode extends FilterNode implements EditCookie, OpenCookie {
@@ -348,6 +519,8 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         private String key;
         private String bundlepath;
         private String codenamebase;
+        private String cachedDisplayName;
+        private String cachedHtmlDisplayName;
 
         public KeyNode(Node orig, String bundlepath, String codenamebase) {
             this (orig, bundlepath, codenamebase, new InstanceContent());
@@ -364,24 +537,34 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
             this.key = orig.getDisplayName();
             this.bundlepath = bundlepath;
             this.codenamebase = codenamebase;
+
+            cachedDisplayName = null;
+            cachedHtmlDisplayName = null;
         }
 
         @Override
         public String getDisplayName() {
-            return key + " = " + getKeyValue (bundlepath, codenamebase, key); // NOI18N
+            if (null == cachedDisplayName) {
+                cachedDisplayName = key + " = " + getKeyValue(bundlepath, codenamebase, key); // NOI18N
+            }
+            return cachedDisplayName;
         }
 
         @Override
         public String getHtmlDisplayName() {
-            if (isKeyBranded(bundlepath, codenamebase, key))
-                return "<b>" + key + "</b>" + // NOI18N
-                        " = <font color=\"#ce7b00\">" + // NOI18N
-                        escapeTagDefinitions(getKeyValue (bundlepath, codenamebase, key)) + // NOI18N
-                        "</font>"; // NOI18N
-            else
-                return key + " = <font color=\"#ce7b00\">" + // NOI18N
-                        escapeTagDefinitions(getKeyValue (bundlepath, codenamebase, key)) + // NOI18N
-                        "</font>"; // NOI18N
+            if (null == cachedHtmlDisplayName) {
+                if (isKeyBranded(bundlepath, codenamebase, key)) {
+                    cachedHtmlDisplayName = "<b>" + key + "</b>" + // NOI18N
+                            " = <font color=\"#ce7b00\">" + // NOI18N
+                            escapeTagDefinitions(getKeyValue(bundlepath, codenamebase, key)) + // NOI18N
+                            "</font>"; // NOI18N
+                } else {
+                    cachedHtmlDisplayName = key + " = <font color=\"#ce7b00\">" + // NOI18N
+                            escapeTagDefinitions(getKeyValue(bundlepath, codenamebase, key)) + // NOI18N
+                            "</font>"; // NOI18N
+                }
+            }
+            return cachedHtmlDisplayName;
         }
 
         private String escapeTagDefinitions (String text) {
@@ -389,6 +572,8 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
 
         public void refresh() {
+            cachedDisplayName = null;
+            cachedHtmlDisplayName = null;
             fireDisplayNameChange(null, null);
         }
 
@@ -441,6 +626,43 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         public String getName() {
             return getMessage ("LBL_ResourceBundlesViewOriginal"); // NOI18N
         }
+    }
+
+    private class SearchListener implements DocumentListener, FocusListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            if (searchTask == null) {
+                searchTask = RPforSearch.create(new Runnable() {
+                    @Override
+                    public void run() {
+                        searchStringUpdated();
+                    }
+                });
+            }
+            searchTask.schedule(500);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            insertUpdate(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            insertUpdate(e);
+        }
+
+        @Override
+        public void focusGained(FocusEvent e) {
+            searchField.selectAll();
+        }
+
+        @Override
+        public void focusLost(FocusEvent e) {
+            searchField.select(0, 0);
+        }
+
     }
 
     private boolean addKeyToBranding (String bundlepath, String codenamebase, String key) {
@@ -505,6 +727,8 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField searchField;
+    private javax.swing.JLabel searchLabel;
     private org.openide.explorer.view.BeanTreeView view;
     // End of variables declaration//GEN-END:variables
 
