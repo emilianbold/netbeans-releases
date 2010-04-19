@@ -39,9 +39,27 @@
 
 package org.netbeans.modules.bugtracking.util;
 
+import java.awt.AWTKeyStroke;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.EventQueue;
+import java.awt.FontMetrics;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 import org.openide.windows.WindowManager;
 
 /**
@@ -69,5 +87,105 @@ public class UIUtils {
         } else {
             EventQueue.invokeLater(r);
         }
+    }
+
+    public static void keepFocusedComponentVisible(JScrollPane scrollPane) {
+        keepFocusedComponentVisible(scrollPane.getViewport().getView());
+    }
+
+    public static void keepFocusedComponentVisible(Component component) {
+        FocusListener listener= getScrollingFocusListener();
+        component.removeFocusListener(listener); // Making sure that it is not added twice
+        component.addFocusListener(listener);
+        if (component instanceof Container) {
+            for (Component subComponent : ((Container)component).getComponents()) {
+                keepFocusedComponentVisible(subComponent);
+            }
+        }
+    }
+
+    private static FocusListener scrollingFocusListener;
+    private static FocusListener getScrollingFocusListener() {
+        if (scrollingFocusListener == null) {
+            scrollingFocusListener = new FocusAdapter() {
+                @Override
+                public void focusGained(FocusEvent e) {
+                    if (!e.isTemporary()) {
+                        Component comp = e.getComponent();
+                        Container cont = comp.getParent();
+                        if (cont instanceof JViewport) {
+                            // comp is JViewport's view;
+                            // we want the viewport itself to be shown in this case
+                            comp = cont;
+                            cont = cont.getParent();
+                        }
+                        if (cont instanceof JComponent) {
+                            ((JComponent)cont).scrollRectToVisible(comp.getBounds());
+                        }
+                    }
+                }
+            };
+        }
+        return scrollingFocusListener;
+    }
+
+    // A11Y - Issues 163597 and 163598
+    public static void fixFocusTraversalKeys(JComponent component) {
+        Set<AWTKeyStroke> set = component.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        set = new HashSet<AWTKeyStroke>(set);
+        set.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
+        component.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
+    }
+
+    public static void issue163946Hack(final JScrollPane scrollPane) {
+        MouseWheelListener listener = new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (scrollPane.getVerticalScrollBar().isShowing()) {
+                    if (e.getSource() != scrollPane) {
+                        e.setSource(scrollPane);
+                        scrollPane.dispatchEvent(e);
+                    }
+                } else {
+                    scrollPane.getParent().dispatchEvent(e);
+                }
+            }
+        };
+        scrollPane.addMouseWheelListener(listener);
+        scrollPane.getViewport().getView().addMouseWheelListener(listener);
+    }
+
+    public static int getColumnWidthInPixels(int widthInLeters, JComponent comp) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < widthInLeters; i++, sb.append("w"));                // NOI18N
+        return getColumnWidthInPixels(sb.toString(), comp);
+    }
+
+    public static int getColumnWidthInPixels(String str, JComponent comp) {
+        FontMetrics fm = comp.getFontMetrics(comp.getFont());
+        return fm.stringWidth(str);
+    }
+
+    public static int getLongestWordWidth(String header, List<String> values, JComponent comp) {
+        return getLongestWordWidth(header, values, comp, false);
+    }
+
+    public static int getLongestWordWidth(String header, List<String> values, JComponent comp, boolean regardIcon) {
+        String[] valuesArray = values.toArray(new String[values.size()]);
+        return getLongestWordWidth(header, valuesArray, comp, regardIcon);
+    }
+
+    public static int getLongestWordWidth(String header, String[] values, JComponent comp) {
+        return getLongestWordWidth(header, values, comp, false);
+    }
+
+    public static int getLongestWordWidth(String header, String[] values, JComponent comp, boolean regardIcon) {
+        int size = header.length();
+        for (String s : values) {
+            if(size < s.length()) {
+                size = s.length();
+            }
+        }
+        return getColumnWidthInPixels(size, comp) + (regardIcon ? 16 : 0);
     }
 }
