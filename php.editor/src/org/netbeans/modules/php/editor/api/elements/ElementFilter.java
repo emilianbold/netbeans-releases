@@ -271,6 +271,14 @@ public abstract class ElementFilter {
 
     }
 
+    public static ElementFilter forMembersOfTypes(final Set<TypeElement> typeElements) {
+        List<ElementFilter> filters = new ArrayList<ElementFilter>();
+        for (TypeElement typeElement : typeElements) {
+            filters.add(ElementFilter.forMembersOfType(typeElement));
+        }
+        return ElementFilter.anyOf(filters);
+    }
+    
     public static ElementFilter forMembersOfType(final TypeElement typeElement) {
         return new ElementFilter() {
             private ElementFilter filterDelegate = null;

@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
@@ -22,11 +23,14 @@ import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.ElementTransformation;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenWay;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -141,15 +145,20 @@ public class CGSInfo {
                         if (info != null && className != null) {
                             FileObject fileObject = info.getSnapshot().getSource().getFileObject();
                             Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
-                            Set<ClassElement> classes = ElementFilter.forFiles(fileObject).filter(index.getClasses(NameKind.exact(className)));
+                            final ElementFilter forFilesFilter = ElementFilter.forFiles(fileObject);
+                            Set<ClassElement> classes = forFilesFilter.filter(index.getClasses(NameKind.exact(className)));
                             for (ClassElement classElement : classes) {
                                 ElementFilter forNotDeclared = ElementFilter.forExcludedElements(index.getDeclaredMethods(classElement));
-                                Set<MethodElement> accessibleMethods = new HashSet<MethodElement>();
+                                final Set<MethodElement> accessibleMethods = new HashSet<MethodElement>();
                                 accessibleMethods.addAll(forNotDeclared.filter(index.getAccessibleMethods(classElement, classElement)));
                                 accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getConstructors(classElement))));
                                 accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getAccessibleMagicMethods(classElement))));
-                                List<MethodProperty> properties = new ArrayList<MethodProperty>();
-                                for (final MethodElement methodElement : accessibleMethods) {
+                                final Set<TypeElement> preferedTypes = forFilesFilter.prefer(ElementTransformation.toMemberTypes().transform(accessibleMethods));
+                                //final LinkedHashSet<TypeElement> sortedTypes = new LinkedHashSet<TypeElement>();
+                                //sortByHierarchy(classElement, preferedTypes, sortedTypes);
+                                final List<MethodProperty> properties = new ArrayList<MethodProperty>();
+                                final Set<MethodElement> methods = ElementFilter.forMembersOfTypes(preferedTypes).filter(accessibleMethods);
+                                for (final MethodElement methodElement : methods) {
                                     if (!methodElement.isFinal()) {
                                         properties.add(new MethodProperty(methodElement, classElement));
                                     }
@@ -205,6 +214,31 @@ public class CGSInfo {
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+    private static final void sortByHierarchy(final TypeElement startingTypeElement, final Set<TypeElement> inheritedTypes, final LinkedHashSet<TypeElement> result) {
+        if (!result.contains(startingTypeElement)) {
+            result.add(startingTypeElement);
+            LinkedHashSet<TypeElement> directInheritedTypes = getDirectInheritedTypes(startingTypeElement, inheritedTypes);
+            //System.out.println(String.format("%s -> %s\n", startingTypeElement.getFullyQualifiedName(), directInheritedTypes));
+            for (TypeElement te : directInheritedTypes) {
+                sortByHierarchy(te, inheritedTypes, result);
+            }
+        }
+    }
+    private static final LinkedHashSet<TypeElement> getDirectInheritedTypes(final TypeElement typeElement, Set<TypeElement> inheritedTypes) {
+        final LinkedHashSet<TypeElement> directTypes = new LinkedHashSet<TypeElement>();
+        if ((typeElement instanceof ClassElement)) {
+            QualifiedName superClassName = ((ClassElement) typeElement).getSuperClassName();
+            if (superClassName != null) {
+                ElementFilter forName = ElementFilter.forName(NameKind.exact(superClassName));
+                directTypes.addAll(forName.filter(inheritedTypes));
+            }
+        }
+        for (QualifiedName iface : typeElement.getSuperInterfaces()) {
+            ElementFilter forName = ElementFilter.forName(NameKind.exact(iface));
+            directTypes.addAll(forName.filter(inheritedTypes));
+        }
+        return directTypes;
     }
 
     /**
