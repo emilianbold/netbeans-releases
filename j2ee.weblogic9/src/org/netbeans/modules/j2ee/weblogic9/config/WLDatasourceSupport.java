@@ -200,16 +200,17 @@ public class WLDatasourceSupport {
                 }
 
                 // FIXME multi datasources
-                // FIXME password
                 String[] names = getJndiNames(ds);
                 if (names != null) {
                     String name = getName(ds);
                     String connectionURl = getConnectionUrl(ds);
                     String userName = getUserName(ds);
                     String driverClass = getDriverClass(ds);
+                    String password = getPassword(ds);
+
                     for (String jndiName : names) {
                         datasources.add(new WLDatasource(name, connectionURl,
-                                jndiName, userName, "", driverClass, dsFile));
+                                jndiName, userName, password, driverClass, dsFile));
                     }
                 }
             } catch (IOException ioe) {
@@ -238,7 +239,7 @@ public class WLDatasourceSupport {
         WLDatasource ds = modifyDatasource(new DatasourceModifier() {
 
             @Override
-            public JdbcDataSource modify(Set<JdbcDataSource> datasources) throws DatasourceAlreadyExistsException {
+            public ModifiedDatasource modify(Set<JdbcDataSource> datasources) throws DatasourceAlreadyExistsException {
                 for (JdbcDataSource ds : datasources) {
                     String[] names = getJndiNames(ds);
                     if (names != null) {
@@ -246,7 +247,7 @@ public class WLDatasourceSupport {
                             if (name.equals(jndiName)) {
                                 WLDatasource existing = new WLDatasource(
                                         getName(ds), getConnectionUrl(ds), name,
-                                        getUserName(ds), "", getDriverClass(ds), null);
+                                        getUserName(ds), getPassword(ds), getDriverClass(ds), null);
                                 throw new DatasourceAlreadyExistsException(existing);
                             }
                         }
@@ -277,7 +278,7 @@ public class WLDatasourceSupport {
                 } catch (ConfigurationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                return ds;
+                return new ModifiedDatasource(candidate, ds);
             }
         });
 
@@ -339,11 +340,11 @@ public class WLDatasourceSupport {
                 }
             }
 
-            JdbcDataSource modifiedSource = modifier.modify(datasources.keySet());
+            ModifiedDatasource modifiedSource = modifier.modify(datasources.keySet());
 
             // TODO for now this code won't be called probably as there is no
             // real modify in our code just create
-            DataObject datasourceDO = datasources.get(modifiedSource);
+            DataObject datasourceDO = datasources.get(modifiedSource.getDatasource());
             if (datasourceDO != null) {
                 boolean modified = datasourceDO.isModified();
                 EditorCookie editor = (EditorCookie) datasourceDO.getCookie(EditorCookie.class);
@@ -351,7 +352,7 @@ public class WLDatasourceSupport {
                 if (doc == null) {
                     doc = editor.openDocument();
                 }
-                replaceDocument(doc, modifiedSource);
+                replaceDocument(doc, modifiedSource.getDatasource());
 
                 if (!modified) {
                     SaveCookie cookie = (SaveCookie) datasourceDO.getCookie(SaveCookie.class);
@@ -360,16 +361,17 @@ public class WLDatasourceSupport {
             }
 
             // FIXME multi datasources
-            // FIXME password
             // FIXME null file
-            String[] names = getJndiNames(modifiedSource);
+            String[] names = getJndiNames(modifiedSource.getDatasource());
             if (names != null && names.length > 0) {
-                String name = getName(modifiedSource);
-                String connectionURl = getConnectionUrl(modifiedSource);
-                String userName = getUserName(modifiedSource);
-                String driverClass = getDriverClass(modifiedSource);
+                String name = getName(modifiedSource.getDatasource());
+                String connectionURl = getConnectionUrl(modifiedSource.getDatasource());
+                String userName = getUserName(modifiedSource.getDatasource());
+                String driverClass = getDriverClass(modifiedSource.getDatasource());
+                String password = getPassword(modifiedSource.getDatasource());
+
                 return new WLDatasource(name, connectionURl,
-                            names[0], userName, "", driverClass, null);
+                            names[0], userName, password, driverClass, modifiedSource.getFile());
             }
         } catch(DataObjectNotFoundException donfe) {
             Exceptions.printStackTrace(donfe);
@@ -551,6 +553,29 @@ public class WLDatasourceSupport {
         setProperty(ds, "user", username); // NOI18N
     }
 
+    // FIXME we return empty string for encrypted passwords
+    private static String getPassword(JdbcDataSource ds) {
+        JdbcDriverParamsType params = ds.getJdbcDriverParams();
+        if (params != null) {
+            String encrypted = params.getPasswordEncrypted();
+            if (encrypted != null) {
+                return "";
+            } else {
+                JdbcPropertiesType props = params.getProperties();
+                if (props != null) {
+                    for (JdbcPropertyType item : props.getProperty2()) {
+                        if ("password".equals(item.getName())) { // NOI18N
+                            return item.getValue();
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    // we set it only as plain text property - this is allowed in weblogic's
+    // development mode only
     private static void setPassword(JdbcDataSource ds, String password) {
         setProperty(ds, "password", password); // NOI18N
     }
@@ -584,10 +609,29 @@ public class WLDatasourceSupport {
     private interface DatasourceModifier {
 
         @NonNull
-        JdbcDataSource modify(Set<JdbcDataSource> datasources) throws DatasourceAlreadyExistsException;
+        ModifiedDatasource modify(Set<JdbcDataSource> datasources) throws DatasourceAlreadyExistsException;
 
     }
 
+    private static class ModifiedDatasource {
+
+        private final File file;
+
+        private final JdbcDataSource datasource;
+
+        public ModifiedDatasource(File file, JdbcDataSource datasource) {
+            this.file = file;
+            this.datasource = datasource;
+        }
+
+        public JdbcDataSource getDatasource() {
+            return datasource;
+        }
+
+        public File getFile() {
+            return file;
+        }
+    }
 
     private static class JdbcSystemResourceHandler extends DefaultHandler {
 
