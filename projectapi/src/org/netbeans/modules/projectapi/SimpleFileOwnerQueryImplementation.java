@@ -226,6 +226,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                 URI ownerURI = externalOwners.get(uri);
                 p.put(uri.toString(), ownerURI.toString());
             }
+            p.sync(); // #184310
         } catch (Exception ex) {
             LOG.log(Level.WARNING, null, ex);
         }
