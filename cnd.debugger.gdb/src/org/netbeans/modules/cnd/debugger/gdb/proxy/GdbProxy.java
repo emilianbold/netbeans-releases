@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 
 /**
  * Class GdbProxy is a Controller component of gdb driver
@@ -93,7 +94,7 @@ public class GdbProxy {
      * @param workingDirectory The directory to start the debugger from
      * @throws IOException Pass this on to the caller
      */
-    public GdbProxy(GdbDebugger debugger, String debuggerCommand, String[] debuggerEnvironment,
+    public GdbProxy(GdbDebugger debugger, String debuggerCommand, MacroMap debuggerEnvironment,
             String workingDirectory, String tty, String cspath) throws IOException {
         this.debugger = debugger;
 

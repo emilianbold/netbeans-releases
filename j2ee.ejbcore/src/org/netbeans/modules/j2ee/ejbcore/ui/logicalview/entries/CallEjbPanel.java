@@ -443,8 +443,8 @@ public class CallEjbPanel extends javax.swing.JPanel {
         String name = "";
 
         final ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(selectedNode);
-        FileObject nodeFO = selectedNode.getLookup().lookup(FileObject.class);
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(nodeFO);
+        assert elementHandle != null : "ElementHandle not found for the node: " + selectedNode;
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = ejbReference.getEjbModule();
         if (ejbModule != null) {
             Map<String, String> names = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Map<String, String>>() {
                 public Map<String, String> run(EjbJarMetadata metadata) throws Exception {

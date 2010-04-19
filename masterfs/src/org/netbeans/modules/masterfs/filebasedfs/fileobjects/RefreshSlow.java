@@ -47,6 +47,7 @@ import org.openide.filesystems.FileObject;
 final class RefreshSlow extends AtomicBoolean implements Runnable {
     private ActionEvent ref;
     private boolean ignoreIO;
+    private BaseFileObj preferrable;
 
     public RefreshSlow() {
         super();
@@ -68,7 +69,14 @@ final class RefreshSlow extends AtomicBoolean implements Runnable {
 
     void progress(int index, int size, FileObject obj) {
         if (ref != null) {
-            ref.setSource(new Object[] { index, size, obj, this });
+            final Object[] arr = new Object[]{index, size, obj, this, null};
+            if (preferrable != null) {
+                arr[4] = preferrable.getExistingParent();
+            }
+            ref.setSource(arr);
+            if (arr[4] instanceof BaseFileObj) {
+                preferrable = (BaseFileObj)arr[4];
+            }
         }
     }
 
@@ -95,5 +103,9 @@ final class RefreshSlow extends AtomicBoolean implements Runnable {
         } catch (InterruptedException ex) {
             return false;
         }
+    }
+
+    BaseFileObj preferrable() {
+        return preferrable;
     }
 }
