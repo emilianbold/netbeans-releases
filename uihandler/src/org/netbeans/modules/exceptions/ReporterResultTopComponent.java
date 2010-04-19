@@ -42,7 +42,6 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -261,11 +260,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
 
     private void loadPage(URL url, boolean show) {
         assert (EventQueue.isDispatchThread());
-        try {
-            dataDisplayer.setPage(getLoadingPageURL(url));
-        } catch (IOException ex) {
-            handleIOException(url, ex);
-        }
+        dataDisplayer.setText(getLoadingPage(url));
         RP.post(new PageUploader(url, show));
     }
 
@@ -345,19 +340,13 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         });
     }
 
-    private static URL getLoadingPageURL(URL url) throws IOException {
-        File tmpFile = File.createTempFile("loading", ".html");        //NOI18N
-        tmpFile.deleteOnExit();
-        FileWriter fw = new FileWriter(tmpFile);
-        try{
-            fw.write("<html><head><title></title></head><body>");
-            fw.write(NbBundle.getMessage(ReporterResultTopComponent.class, "LoadingMessage"));
-            fw.write("<a href=\"" + url.toString() + "\">" + url + "</a>");
-            fw.write("</body></html>");
-        }finally{
-            fw.close();
-        }
-        return tmpFile.toURI().toURL();
+    private static String getLoadingPage(URL url) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><head><title></title></head><body>");
+        sb.append(NbBundle.getMessage(ReporterResultTopComponent.class, "LoadingMessage"));
+        sb.append("<a href=\"").append(url.toString()).append("\">").append(url).append("</a>");
+        sb.append("</body></html>");
+        return sb.toString();
     }
 
     @Override
