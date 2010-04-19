@@ -130,6 +130,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                     exRef.compareAndSet(null, new TimeoutException("not finished await"));
                 } else {
                     project.waitParse();
+                    System.err.println("text after inserting dead block: " + doc.getText());
                     unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
                     assertEquals("File must have one dead code block " + fileImpl.getAbsolutePath(), 1, unusedCodeBlocks.size());
                 }
@@ -193,6 +194,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                     exRef.compareAndSet(null, new TimeoutException("not finished await"));
                 } else {
                     project.waitParse();
+                    System.err.println("text after deleting dead block: " + doc.getText());
                     unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
                     assertEquals("File must have no dead code blocks " + fileImpl.getAbsolutePath(), 0, unusedCodeBlocks.size());
                 }
