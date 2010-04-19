@@ -487,7 +487,21 @@ public final class FileObjectFactory {
     private boolean refresh(final Set<BaseFileObj> all2Refresh, RefreshSlow slow, final boolean expected, File[] files) {
         final int size = all2Refresh.size();
         int count = 0;
-        for (final BaseFileObj fo : all2Refresh) {
+        Iterator<BaseFileObj> it = all2Refresh.iterator();
+        while (it.hasNext()) {
+            BaseFileObj fo = null;
+            if (slow != null) {
+                BaseFileObj pref = slow.preferrable();
+                if (all2Refresh.remove(pref)) {
+                    LOG_REFRESH.log(Level.FINER, "Preferring {0}", pref);
+                    fo = pref;
+                    it = all2Refresh.iterator();
+                }
+            }
+            if (fo == null) {
+                fo = it.next();
+                it.remove();
+            }
             count++;
             if (!isInFiles(fo, files)) {
                 continue;
