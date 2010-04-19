@@ -129,6 +129,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 if (!parse1.await(10, TimeUnit.SECONDS)) {
                     exRef.compareAndSet(null, new TimeoutException("not finished await"));
                 } else {
+                    project.waitParse();
                     unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
                     assertEquals("File must have one dead code block " + fileImpl.getAbsolutePath(), 1, unusedCodeBlocks.size());
                 }
