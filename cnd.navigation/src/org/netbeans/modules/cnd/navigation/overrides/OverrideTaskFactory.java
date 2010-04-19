@@ -60,7 +60,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position=30)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position=50)
 public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
 
     private static final int TASK_DELAY = getInt("cnd.overrides.delay", 500); // NOI18N
