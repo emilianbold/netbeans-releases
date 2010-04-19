@@ -291,6 +291,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         final DataShadow[] arr = new DataShadow[1];
 
         DataObjectPool.getPOOL().runAtomicAction(fo, new FileSystem.AtomicAction() {
+            @Override
             public void run() throws IOException {
                 FileObject file = writeOriginal(name, ext, fo, original);
                 final DataObject obj = DataObject.find(file);
@@ -299,11 +300,13 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                 } else {
                     // wrong instance => shadow was not found
                     throw new DataObjectNotFoundException(obj.getPrimaryFile()) {
+                        @Override
                         public String getMessage() {
                             return super.getMessage() + ": " + obj.getClass().getName(); // NOI18N
                         }
                     };
                 }
+                FolderList.changedDataSystem(fo);
             }
         });
 
