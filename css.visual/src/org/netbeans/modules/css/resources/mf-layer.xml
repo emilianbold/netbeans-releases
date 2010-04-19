@@ -119,5 +119,20 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
+
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-css">
+                <folder name="Actions">
+                    <file name="aftercheckseparator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="870"/>
+                    </file>
+                    <file name="org-netbeans-modules-css-actions-CheckStyleAction.instance">
+                        <attr name="position" intvalue="880"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
