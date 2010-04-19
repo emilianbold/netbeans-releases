@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.actions;
 
-import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common.actions.CndDebuggerActionHandler;
@@ -51,6 +50,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 public class GdbActionHandler extends CndDebuggerActionHandler {
@@ -62,7 +62,7 @@ public class GdbActionHandler extends CndDebuggerActionHandler {
             if (gdb != null) {
                 executionStarted();
                 if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG || pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO) {
-                    SwingUtilities.invokeLater(new Runnable() {
+                    new RequestProcessor("GDB Debugger Starting").post(new Runnable() { //NOI18N
                         @Override
                         public void run() {
                             DebuggerManager.getDebuggerManager().startDebugging(
