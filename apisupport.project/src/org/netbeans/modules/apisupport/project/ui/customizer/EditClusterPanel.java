@@ -37,12 +37,6 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-/*
- * EditClusterPanel.java
- *
- * Created on 15.1.2009, 19:20:07
- */
-
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
@@ -69,7 +63,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author Richard Michalsky
  */
 public final class EditClusterPanel extends javax.swing.JPanel implements DocumentListener {
@@ -155,8 +148,6 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
         dlg.dispose();
         return retVal;
     }
-
-    private ClusterInfo clusterInfo;
     private File prjDir;
     private Project prj;
 
@@ -192,16 +183,14 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
         javadocPanel = new NbPlatformCustomizerJavadoc();
         javadocPanelContainer.add(javadocPanel);
 
-        jLabel1.setDisplayedMnemonic('C');
         jLabel1.setLabelFor(clusterDirText);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.jLabel1.text")); // NOI18N
 
         clusterDirText.setEditable(false);
         clusterDirText.setText(org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "MSG_BrowseForCluster")); // NOI18N
         clusterDirText.getDocument().addDocumentListener(this);
 
-        browseButton.setMnemonic('B');
-        browseButton.setText(org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -220,13 +209,13 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(clusterDirText, javax.swing.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
-                        .addGap(10, 10, 10)
-                        .addComponent(browseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(clusterDirText, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(browseButton))
                     .addComponent(jLabel1))
                 .addContainerGap())
-            .addComponent(javadocPanelContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
-            .addComponent(sourcesPanelContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
+            .addComponent(javadocPanelContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE)
+            .addComponent(sourcesPanelContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -266,15 +255,15 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
         }
     }//GEN-LAST:event_browseButtonActionPerformed
 
-    public void changedUpdate(DocumentEvent e) {
+    public @Override void changedUpdate(DocumentEvent e) {
         updateDialog();
     }
 
-    public void insertUpdate(DocumentEvent e) {
+    public @Override void insertUpdate(DocumentEvent e) {
         updateDialog();
     }
 
-    public void removeUpdate(DocumentEvent e) {
+    public @Override void removeUpdate(DocumentEvent e) {
         updateDialog();
     }
 
