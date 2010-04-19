@@ -462,38 +462,40 @@ public final class FileObjectFactory {
     }
 
     private boolean refresh(final Set<BaseFileObj> all2Refresh, RefreshSlow slow, File... files) {
-        final int size = all2Refresh.size();
-        int count = 0;
-        for (final BaseFileObj fo : all2Refresh) {
-            count++;
-            for (File file : files) {
-                if (isParentOf(file, fo.getFileName().getFile())) {
-                    if (slow != null) {
-                        slow.before();
-                    }
-                    fo.refresh(true);
-                    if (slow != null) {
-                        if (!slow.after()) {
-                            return false;
-                        }
-                        slow.progress(count, size, fo);
-                    }
-                    break;
-                }                
+        return refresh(all2Refresh, slow, true, files);
+    }
+
+    private static boolean isInFiles(BaseFileObj fo, File[] files) {
+        if (fo == null) {
+            return false;
+        }
+        if (files == null) {
+            return true;
+        }
+        for (File file : files) {
+            if (isParentOf(file, fo.getFileName().getFile())) {
+                return true;
             }
         }
-        return true;
-    }    
-    
+        return false;
+    }
+
     private boolean refresh(final Set<BaseFileObj> all2Refresh, RefreshSlow slow, final boolean expected) {
+        return refresh(all2Refresh, slow, expected, null);
+    }
+
+    private boolean refresh(final Set<BaseFileObj> all2Refresh, RefreshSlow slow, final boolean expected, File[] files) {
         final int size = all2Refresh.size();
         int count = 0;
         for (final BaseFileObj fo : all2Refresh) {
             count++;
+            if (!isInFiles(fo, files)) {
+                continue;
+            }
             if (slow != null) {
                 slow.before();
             }
-                fo.refresh(expected);
+            fo.refresh(expected);
             if (slow != null) {
                 if (!slow.after()) {
                     return false;
