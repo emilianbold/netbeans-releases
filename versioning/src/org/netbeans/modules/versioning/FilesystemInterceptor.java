@@ -142,6 +142,12 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         getInterceptor(FileUtil.toFile(fo), fo.isFolder(), "beforeChange").beforeChange(); // NOI18N
     }
 
+    @Override
+    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        DelegatingInterceptor interceptor = getRefreshInterceptor(dir);
+        return interceptor.refreshRecursively(dir, lastTimeStamp, children);
+    }
+
     private boolean needsLH(String... methodNames) {
         for (String methodName : methodNames) {
             if(master.needsLocalHistory(methodName)) {
@@ -314,6 +320,13 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getVCSInterceptor() : nullVCSInterceptor;
 
         return new DelegatingInterceptor(vsInterceptor, localHistoryInterceptor, from, to, false);
+    }
+
+    private DelegatingInterceptor getRefreshInterceptor (File dir) {
+        if (dir == null) return nullDelegatingInterceptor;
+        VersioningSystem vs = master.getOwner(dir);
+        VCSInterceptor vcsInterceptor = vs != null ? vs.getVCSInterceptor() : nullVCSInterceptor;
+        return new DelegatingInterceptor(vcsInterceptor, nullVCSInterceptor, dir, null, true);
     }
 
     private final DelegatingInterceptor nullDelegatingInterceptor = new DelegatingInterceptor() {
@@ -501,9 +514,10 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
                 return false;
             }
         }
-//        VCSInterceptor getInterceptor() {
-//            return interceptor;
-//        }
+
+        public long refreshRecursively (File dir, long lastTimeStamp, List<? super File> children) {
+            return interceptor.refreshRecursively(dir, lastTimeStamp, children);
+        }
     }
 
     private class FileEx {

@@ -924,6 +924,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     StreamSource ss2 = prepareSetups[fi].getSecondSource();
                     final DiffController view = DiffController.createEnhanced(ss1, ss2);  // possibly executing slow external diff
                     view.addPropertyChangeListener(MultiDiffPanel.this);
+                    if (Thread.interrupted()) {
+                        return;
+                    }
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {

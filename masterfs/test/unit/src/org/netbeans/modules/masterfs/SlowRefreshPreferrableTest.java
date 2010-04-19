@@ -57,11 +57,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
-public class SlowRefreshInterruptibleTest extends NbTestCase {
+public class SlowRefreshPreferrableTest extends NbTestCase {
     private Logger LOG;
     private FileObject testFolder;
 
-    public SlowRefreshInterruptibleTest(String testName) {
+    public SlowRefreshPreferrableTest(String testName) {
         super(testName);
     }
 
@@ -86,16 +86,20 @@ public class SlowRefreshInterruptibleTest extends NbTestCase {
         System.setSecurityManager(new FileChangedManager());
     }
 
-    public void testRefreshCanBeInterrupted() throws Exception {
+    public void testRefreshPrefersSuggestedFolders() throws Exception {
         long lm = System.currentTimeMillis();
+        List<FileObject> all = new ArrayList<FileObject>();
         FileObject fld = testFolder;
         for (int i = 0; i < 20; i++) {
+            all.add(fld.createData("text" + i + ".txt"));
             fld = fld.createFolder("fld" + i);
+            all.add(fld);
         }
-        FileObject fileObject1 = fld.createData("fileObject1");
+        final FileObject parent = fld;
+        FileObject fileObject1 = parent.createData("fileObject1");
         assertNotNull("Just to initialize the stamp", lm);
         FileObject[] arr = testFolder.getChildren();
-        assertEquals("One child", 1, arr.length);
+        assertEquals("Two children", 2, arr.length);
 
         File file = FileUtil.toFile(fileObject1);
         assertNotNull("File found", file);
@@ -136,6 +140,7 @@ public class SlowRefreshInterruptibleTest extends NbTestCase {
         class AE extends ActionEvent implements Runnable {
             List<FileObject> files = new ArrayList<FileObject>();
             int goingIdle;
+            int cnt;
             
             public AE() {
                 super("", 0, "");
@@ -143,10 +148,11 @@ public class SlowRefreshInterruptibleTest extends NbTestCase {
 
             @Override
             public void setSource(Object newSource) {
+                cnt++;
                 LOG.log(Level.INFO, "Set source called: {0}", Thread.interrupted());
                 assertTrue(newSource instanceof Object[]);
                 Object[] arr = (Object[])newSource;
-                assertTrue("At least three elements", 3 <= arr.length);
+                //assertEquals("At least five", 4 < arr.length);
                 assertTrue("first is int", arr[0] instanceof Integer);
                 assertTrue("2nd is int", arr[1] instanceof Integer);
                 assertTrue("3rd is fileobject", arr[2] instanceof FileObject);
@@ -154,11 +160,18 @@ public class SlowRefreshInterruptibleTest extends NbTestCase {
                 files.add((FileObject)arr[2]);
                 super.setSource(newSource);
 
-                AtomicBoolean ab = (AtomicBoolean)arr[3];
-                assertTrue("The boolean is set to 'go on': ", ab.get());
-                assertSame("boolean and runnable are the same right now", ab, r);
-                LOG.info("Cancelling task");
-                ab.set(false);
+                if (cnt == 1 && arr.length > 4) {
+                    // prefer refresh of parent
+                    arr[4] = parent;
+                }
+
+                if (cnt == 2) {
+                    AtomicBoolean ab = (AtomicBoolean)arr[3];
+                    assertTrue("The boolean is set to 'go on': ", ab.get());
+                    assertSame("boolean and runnable are the same right now", ab, r);
+                    LOG.info("Cancelling task");
+                    ab.set(false);
+                }
             }
 
             @Override
@@ -184,7 +197,7 @@ public class SlowRefreshInterruptibleTest extends NbTestCase {
         task.waitFinished();
         LOG.info("Refresh finished");
 
-        assertEquals("Just one file checked: " + counter.files, 1, counter.files.size());
-        assertEquals("No change detected", 0, listener.cnt);
+        assertEquals("Two files checked: " + counter.files, 2, counter.files.size());
+        assertEquals("Change in preferred file detected", 1, listener.cnt);
     }
 }

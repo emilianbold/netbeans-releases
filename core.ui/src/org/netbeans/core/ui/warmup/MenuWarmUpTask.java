@@ -73,6 +73,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * A menu preheating task. It is referenced from the layer and may be performed
@@ -200,6 +201,8 @@ public final class MenuWarmUpTask implements Runnable {
                 @Override
                 public void setSource(Object newSource) {
                     if (newSource instanceof Object[]) {
+                        long now = System.currentTimeMillis();
+                        boolean again = now > next;
                         Object[] arr = (Object[])newSource;
                         if (arr.length >= 3 &&
                             arr[0] instanceof Integer &&
@@ -212,8 +215,7 @@ public final class MenuWarmUpTask implements Runnable {
                             }
                             h.progress((Integer)arr[0]);
                             FileObject fo = (FileObject)arr[2];
-                            long now = System.currentTimeMillis();
-                            if (previous != fo.getParent() && now > next) {
+                            if (previous != fo.getParent() && again) {
                                 previous = fo.getParent();
                                 if (previous != null) {
                                     h.progress(previous.getPath());
@@ -224,6 +226,10 @@ public final class MenuWarmUpTask implements Runnable {
                         }
                         if (arr.length >= 4 && arr[3] instanceof AtomicBoolean) {
                             goOn = (AtomicBoolean)arr[3];
+                        }
+                        if (arr.length >= 5 && arr[4] == null && again) {
+                            arr[4] = Utilities.actionsGlobalContext().lookup(FileObject.class);
+                            LOG.log(Level.FINE, "Preferring {0}", arr[4]);
                         }
                     }
                 }

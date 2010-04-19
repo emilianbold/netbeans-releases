@@ -1,0 +1,206 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.cnd.modelimpl.csm.core;
+
+import java.io.File;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
+import org.netbeans.modules.cnd.api.model.CsmProgressListener;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
+import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
+
+/**
+ * Test for reaction on editor modifications
+ * @author Vladimir Voskresensky
+ */
+public class ModifyDocumentTest extends ProjectBasedTestCase {
+    public ModifyDocumentTest(String testName) {
+        super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        ModelSupport.instance().startup();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        ModelSupport.instance().shutdown();
+    }
+
+    public void testInsertDeadBlock() throws Exception {
+        final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
+        final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
+        final CsmProject project = super.getProject();
+        final File sourceFile = getDataFile("fileWithoutDeadCode.cc");
+        final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
+        assertNotNull(fileImpl);
+        final CsmProgressListener listener = new CsmProgressAdapter() {
+            @Override
+            public void fileParsingFinished(CsmFile file) {
+                if (file.equals(fileImpl)) {
+                    CountDownLatch cond = condRef.get();
+                    cond.countDown();
+                }
+            }
+        };
+        CsmListeners.getDefault().addProgressListener(listener);
+        try {
+
+            final BaseDocument doc = getBaseDocument(sourceFile);
+            assertNotNull(doc);
+            project.waitParse();
+            List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
+            assertEquals("File must have no dead code blocks " + fileImpl.getAbsolutePath(), 0, unusedCodeBlocks.size());
+
+            // insert dead code block
+            // create barier
+            CountDownLatch parse1 = new CountDownLatch(1);
+            condRef.set(parse1);
+            // modify document
+            final String ifdefTxt = "#ifdef AAA\n"
+                                  + "    dead code text\n"
+                                  + "#endif\n";
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        doc.insertString(0,
+                                        ifdefTxt,
+                                        null);
+                    } catch (BadLocationException ex) {
+                        exRef.compareAndSet(null, ex);
+                    }
+                }
+            });
+            try {
+                if (!parse1.await(10, TimeUnit.SECONDS)) {
+                    exRef.compareAndSet(null, new TimeoutException("not finished await"));
+                } else {
+                    unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
+                    assertEquals("File must have one dead code block " + fileImpl.getAbsolutePath(), 1, unusedCodeBlocks.size());
+                }
+            } catch (InterruptedException ex) {
+                exRef.compareAndSet(null, ex);
+            }
+        } finally {
+            CsmListeners.getDefault().removeProgressListener(listener);
+            Exception ex = exRef.get();
+            if (ex != null) {
+                throw ex;
+            }
+        }
+    }
+
+    public void testRemoveDeadBlock() throws Exception {
+        final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
+        final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
+        final CsmProject project = super.getProject();
+        final File sourceFile = getDataFile("fileWithDeadCode.cc");
+        final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
+        assertNotNull(fileImpl);
+        final CsmProgressListener listener = new CsmProgressAdapter() {
+
+            @Override
+            public void fileParsingFinished(CsmFile file) {
+                if (file.equals(fileImpl)) {
+                    CountDownLatch cond = condRef.get();
+                    cond.countDown();
+                }
+            }
+        };
+        CsmListeners.getDefault().addProgressListener(listener);
+        try {
+
+            final BaseDocument doc = getBaseDocument(sourceFile);
+            assertNotNull(doc);
+            project.waitParse();
+            List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
+            assertEquals("File must have one dead code block " + fileImpl.getAbsolutePath(), 1, unusedCodeBlocks.size());
+            final CsmOffsetable block = unusedCodeBlocks.iterator().next();
+            // insert dead code block
+            // create barier
+            CountDownLatch parse1 = new CountDownLatch(1);
+            condRef.set(parse1);
+            // modify document
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        doc.remove(block.getStartOffset(), block.getEndOffset() - block.getStartOffset());
+                    } catch (BadLocationException ex) {
+                        exRef.compareAndSet(null, ex);
+                    }
+                }
+            });
+            try {
+                if (!parse1.await(10, TimeUnit.SECONDS)) {
+                    exRef.compareAndSet(null, new TimeoutException("not finished await"));
+                } else {
+                    unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
+                    assertEquals("File must have no dead code blocks " + fileImpl.getAbsolutePath(), 0, unusedCodeBlocks.size());
+                }
+            } catch (InterruptedException ex) {
+                exRef.compareAndSet(null, ex);
+            }
+        } finally {
+            CsmListeners.getDefault().removeProgressListener(listener);
+            Exception ex = exRef.get();
+            if (ex != null) {
+                throw ex;
+            }
+        }
+    }
+}

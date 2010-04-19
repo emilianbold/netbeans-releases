@@ -46,14 +46,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.netbeans.modules.versioning.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.util.Lookup;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCSInterceptor;
-import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileChangeAdapter;
 
 /**
  * Versioning SPI unit tests of VCSInterceptor.
@@ -131,6 +130,15 @@ public class VCSInterceptorTest extends TestCase {
         battr = (Boolean) fo.getAttribute("ProvidedExtensions.VCSManaged");
         assertNotNull(battr);
         assertFalse(battr);
+    }
+
+    public void testRefreshRecursively() throws IOException {
+        File f = new File(dataRootDir, "workdir/root-test-versioned");
+        f.mkdirs();
+        FileObject fo = FileUtil.toFileObject(f);
+        fo = fo.createFolder("folder");
+        fo.addRecursiveListener(new FileChangeAdapter());
+        assertTrue(inteceptor.getRefreshRecursivelyFiles().contains(FileUtil.toFile(fo)));     
     }
 
     public void testChangedFile() throws IOException {
