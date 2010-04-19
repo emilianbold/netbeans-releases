@@ -3417,8 +3417,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     final List<Runnable> tasks = followupTasks;
 
                     // delaying of these tasks was just copied from the old java.source RepositoryUpdater
-                    RequestProcessor.getDefault().create(new Runnable() {
-                        public void run() {
+                    RP.create(new Runnable() {
+                        public @Override void run() {
                             schedule(new Work(false, false, false, true) {
                                 protected @Override boolean getDone() {
                                     if (tasks != null) {
@@ -3548,6 +3548,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private boolean cancelled = false;
         private List<Long> protectedOwners = new LinkedList<Long>();
         private List<Runnable> followupTasks = null;
+
+        private static final RequestProcessor RP = new RequestProcessor("RepositoryUpdater.exitProtextedMode.delay"); //NOI18N
 
         private void _run() {
             ProgressHandle progressHandle = null;
