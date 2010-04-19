@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.terminal.ioprovider;
+package org.netbeans.modules.terminal.iocontainer;
 
 
 
@@ -51,16 +51,18 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
-import org.netbeans.lib.terminalemulator.support.FindBar;
-import org.netbeans.lib.terminalemulator.support.FindState;
-import org.netbeans.modules.terminal.api.IOVisibilityControl;
-import org.netbeans.modules.terminal.api.TerminalContainer;
 
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOContainer.CallBacks;
 import org.openide.windows.TopComponent;
 
-abstract class TerminalContainerCommonImpl extends TerminalContainer implements IOContainer.Provider {
+import org.netbeans.lib.terminalemulator.support.FindBar;
+import org.netbeans.lib.terminalemulator.support.FindState;
+
+import org.netbeans.modules.terminal.api.IOVisibilityControl;
+import org.netbeans.modules.terminal.api.TerminalContainer;
+
+abstract class TerminalContainerCommon extends TerminalContainer implements IOContainer.Provider {
 
     private final static String PROP_ATTRIBUTES =
 	    "TerminalContainerCommonImpl.ATTRBUTES";	// NOI18N
@@ -90,7 +92,7 @@ abstract class TerminalContainerCommonImpl extends TerminalContainer implements 
 	// public boolean isClosable;
     }
 
-    public TerminalContainerCommonImpl(TopComponent owner, String originalName) {
+    public TerminalContainerCommon(TopComponent owner, String originalName) {
         super();
         this.owner = owner;
         this.originalName = originalName;

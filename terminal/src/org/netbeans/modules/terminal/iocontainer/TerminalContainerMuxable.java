@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.terminal.ioprovider;
+package org.netbeans.modules.terminal.iocontainer;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -50,7 +50,7 @@ import org.openide.windows.TopComponent;
  * Corresponds to core.io.ui...IOWindow.
  * @author ivan
  */
-final public class TerminalContainerMuxableImpl extends TerminalContainerCommonImpl {
+final public class TerminalContainerMuxable extends TerminalContainerCommon {
 
     private final JPanel cardContainer = new JPanel();
     private final CardLayout cardLayout = new CardLayout();
@@ -59,7 +59,7 @@ final public class TerminalContainerMuxableImpl extends TerminalContainerCommonI
 
     private volatile JComponent currentComponent;
 
-    public TerminalContainerMuxableImpl(TopComponent owner, String originalName) {
+    public TerminalContainerMuxable(TopComponent owner, String originalName) {
         super(owner, originalName);
         initComponents();
     }

@@ -124,7 +124,7 @@ import org.openide.windows.OutputListener;
  * </pre>
  * @author ivan
  */
-public final class Terminal extends JComponent {
+/* package */ final class Terminal extends JComponent {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 

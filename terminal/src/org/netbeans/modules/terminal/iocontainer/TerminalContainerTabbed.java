@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.terminal.ioprovider;
+package org.netbeans.modules.terminal.iocontainer;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -52,12 +52,12 @@ import org.openide.windows.TopComponent;
  * Corresponds to core.io.ui...IOWindow.
  * @author ivan
  */
-final public class TerminalContainerImpl extends TerminalContainerCommonImpl {
+final public class TerminalContainerTabbed extends TerminalContainerCommon {
 
     private JTabbedPane tabbedPane;
     private JComponent soleComponent;
 
-    public TerminalContainerImpl(TopComponent owner, String originalName) {
+    public TerminalContainerTabbed(TopComponent owner, String originalName) {
         super(owner, originalName);
         initComponents();
     }

@@ -43,8 +43,8 @@ import javax.swing.JComponent;
 import org.openide.windows.IOContainer;
 import org.openide.windows.TopComponent;
 
-import org.netbeans.modules.terminal.ioprovider.TerminalContainerImpl;
-import org.netbeans.modules.terminal.ioprovider.TerminalContainerMuxableImpl;
+import org.netbeans.modules.terminal.iocontainer.TerminalContainerTabbed;
+import org.netbeans.modules.terminal.iocontainer.TerminalContainerMuxable;
 
 /**
  * Help a {@link org.openide.windows.TopComponent} be a an
@@ -95,11 +95,11 @@ import org.netbeans.modules.terminal.ioprovider.TerminalContainerMuxableImpl;
 public abstract class TerminalContainer extends JComponent {
 
     public static TerminalContainer create(TopComponent tc, String name) {
-	return new TerminalContainerImpl(tc, name);
+	return new TerminalContainerTabbed(tc, name);
     }
 
     public static TerminalContainer createMuxable(TopComponent tc, String name) {
-	return new TerminalContainerMuxableImpl(tc, name);
+	return new TerminalContainerMuxable(tc, name);
     }
 
     public abstract IOContainer ioContainer();
