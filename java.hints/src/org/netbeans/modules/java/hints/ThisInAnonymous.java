@@ -82,7 +82,8 @@ public class ThisInAnonymous {
         
         TreePath anonClassTP = getParentClass(ctx.getPath());
         Element annonClass = ctx.getInfo().getTrees().getElement(anonClassTP);
-        if (isAnonymousClass(annonClass)) {
+        String key = getKey(annonClass);
+        if (key != null) {
             Element parent = ctx.getInfo().getTrees().getElement(getParentClass(anonClassTP.getParentPath()));
 
             if (parent == null || (!parent.getKind().isClass() && !parent.getKind().isInterface())) {
@@ -93,7 +94,7 @@ public class ThisInAnonymous {
                                   ElementHandle.create((TypeElement) parent),
                                   ctx.getInfo().getFileObject());
 
-            String displayName = NbBundle.getMessage(ThisInAnonymous.class, "ERR_ThisInAnonymous");
+            String displayName = NbBundle.getMessage(ThisInAnonymous.class, key);
             return ErrorDescriptionFactory.forName(ctx, thisVariable, displayName, fix);
         }
 
@@ -107,13 +108,14 @@ public class ThisInAnonymous {
         return tp;
     }
 
-    private static boolean isAnonymousClass(Element e) {
+    private static final Set<ElementKind> LOCAL_CLASS_CONTAINERS = EnumSet.of(ElementKind.METHOD, ElementKind.CONSTRUCTOR);
+    private static String getKey(Element e) {
         ElementKind enclosingKind = e.getKind();
-        Set<ElementKind> fm = EnumSet.of(ElementKind.METHOD, ElementKind.FIELD);
-        if (enclosingKind == ElementKind.CLASS && (e.getSimpleName().length() == 0 || fm.contains(e.getEnclosingElement().getKind()))) {
-            return true;
+        if (enclosingKind == ElementKind.CLASS) {
+            if (e.getSimpleName().length() == 0) return "ERR_ThisInAnonymous";
+            if (LOCAL_CLASS_CONTAINERS.contains(e.getEnclosingElement().getKind())) return "ERR_ThisInAnonymousLocal";
         }
-        return false;
+        return null;
     }
 
     private static final class FixImpl implements Fix, Task<WorkingCopy> {

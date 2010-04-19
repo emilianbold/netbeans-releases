@@ -84,6 +84,23 @@ public class ThisInAnonymousTest extends TestBase {
                             "}\n");
     }
 
+    public void testLocalClass() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private void m() {\n" +
+                       "         class L extends Runnable {\n" +
+                       "             public void run() {\n" +
+                       "                 synchronized(this) {}\n" +
+                       "             }\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "}\n",
+                       "5:30-5:34:verifier:ERR_ThisInAnonymousLocal",
+                       "FIX_ThisInAnonymous",
+                       "package test; public class Test { private void m() { class L extends Runnable { public void run() { synchronized(Test.this) {} } } } } ");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();
