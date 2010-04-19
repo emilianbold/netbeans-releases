@@ -207,6 +207,7 @@ public final class ViewUpdates implements DocumentListener {
                     // So with paragraphView==null do a full rebuild of the first paragraph view.
                     paragraphViewIndex = 0;
                     paragraphView = null;
+                    rebuildNecessary = true;
                 } else {
                     paragraphViewIndex = documentView.getViewIndex(rStartOffset);
                     assert (paragraphViewIndex >= 0) : "paragraphViewIndex=" + paragraphViewIndex + // NOI18N

@@ -131,6 +131,7 @@ final class ViewBuilder {
         Document doc = documentView.getDocument();
         docTextLength = doc.getLength() + 1;
         assert (startOffset >= 0) : "startOffset=" + startOffset + " < 0"; // NOI18N
+        assert (endOffset >= endModOffset) : "endOffset=" + endOffset + " < endModOffset=" + endModOffset; // NOI18N
         if (paragraphView != null) {
             fReplace = new ViewReplace<ParagraphView, EditorView>(
                     paragraphView, paragraphView.getViewIndex(startOffset));
@@ -139,10 +140,12 @@ final class ViewBuilder {
         }
         dReplace = new ViewReplace<DocumentView, ParagraphView>(documentView, paragraphViewIndex);
         // Search for the views that need to be removed.
-        // Must search in original offsets to after-insert offsets by using both childView.getLength()
+        // Must search in original offsets to after-mod offsets by using both childView.getLength()
         // and paragraphView.getLength() which return textual span of existing views
         // (unaffected by possibly just performed modification(s)).
-        int endAffectedOffset = Math.max(endModOffset, endOffset);
+        // First project endOffset to original offset space.
+        int origEndOffset = (offsetDelta < 0) ? endOffset + (-offsetDelta) : endOffset;
+        int endAffectedOffset = Math.max(endModOffset, origEndOffset);
         if (fReplace != null) {
             int paragraphViewStartOffset = paragraphView.getStartOffset();
             assert (paragraphViewStartOffset <= startOffset) : "paragraphViewStartOffset=" + // NOI18N
