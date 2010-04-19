@@ -49,6 +49,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -101,19 +102,24 @@ public class QueryAction extends SystemAction {
             @Override
             public void run() {
                 BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery start. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
-                QueryTopComponent tc = null;
-                if(query != null) {
-                    tc = QueryTopComponent.find(query);
+                UIUtils.setWaitCursor(true);
+                try {
+                    QueryTopComponent tc = null;
+                    if(query != null) {
+                        tc = QueryTopComponent.find(query);
+                    }
+                    if(tc == null) {
+                        tc = new QueryTopComponent();
+                        tc.init(query, repository, context, suggestedSelectionOnly);
+                    }
+                    if(!tc.isOpened()) {
+                        tc.open();
+                    }
+                    tc.requestActive();
+                    BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery finnish. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
+                } finally {
+                    UIUtils.setWaitCursor(false);
                 }
-                if(tc == null) {
-                    tc = new QueryTopComponent();
-                    tc.init(query, repository, context, suggestedSelectionOnly);
-                }
-                if(!tc.isOpened()) {
-                    tc.open();
-                }
-                tc.requestActive();
-                BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery finnish. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
             }
         });
     }

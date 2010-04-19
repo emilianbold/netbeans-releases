@@ -52,6 +52,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -89,6 +90,7 @@ public class IssueAction extends SystemAction {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                UIUtils.setWaitCursor(true);
                 IssueTopComponent tc = IssueTopComponent.find(issue);
                 tc.open();
                 tc.requestActive();
@@ -103,6 +105,7 @@ public class IssueAction extends SystemAction {
                             }
                             IssueCacheUtils.setSeen(issue, true);
                         } finally {
+                            UIUtils.setWaitCursor(false);
                             if(handle != null) handle.finish();
                         }
                     }
@@ -124,10 +127,15 @@ public class IssueAction extends SystemAction {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                IssueTopComponent tc = new IssueTopComponent();
-                tc.initNewIssue(repository, !repositoryGiven, context);
-                tc.open();
-                tc.requestActive();
+                UIUtils.setWaitCursor(true);
+                try {
+                    IssueTopComponent tc = new IssueTopComponent();
+                    tc.initNewIssue(repository, !repositoryGiven, context);
+                    tc.open();
+                    tc.requestActive();
+                } finally {
+                    UIUtils.setWaitCursor(false);
+                }
             }
         });
     }
@@ -147,6 +155,7 @@ public class IssueAction extends SystemAction {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                UIUtils.setWaitCursor(true);
                 final IssueTopComponent tc = IssueTopComponent.find(issueId);
                 final boolean tcOpened = tc.isOpened();
                 final Issue[] issue = new Issue[1];
@@ -205,6 +214,7 @@ public class IssueAction extends SystemAction {
                             }
                         } finally {
                             if(handle != null) handle.finish();
+                            UIUtils.setWaitCursor(false);
                         }
                     }
 
