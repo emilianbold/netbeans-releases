@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.gizmo.actions;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -165,6 +166,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
         targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER, compilerSet.getCompilerFlavor().isGnuCompiler() ? CppSymbolDemanglerFactoryImpl.CPPCompiler.GNU.toString() : CppSymbolDemanglerFactoryImpl.CPPCompiler.SS.toString());
         targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER_BIN_PATH, binDir);
+        targetConf.putInfo(Charset.class.getName(), compilerSet.getEncoding().name());
         targetConf.setWorkingDirectory(runDirectory);
         int consoleType = pae.getProfile().getConsoleType().getValue();
         if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {

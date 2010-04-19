@@ -39,6 +39,7 @@
 package org.netbeans.modules.nativeexecution.api;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import javax.swing.event.ChangeListener;
@@ -374,5 +375,10 @@ public final class NativeProcessBuilder implements Callable<Process> {
         }
 
         return false;
+    }
+
+    public NativeProcessBuilder setCharset(Charset charset) {
+        info.setCharset(charset);
+        return this;
     }
 }
