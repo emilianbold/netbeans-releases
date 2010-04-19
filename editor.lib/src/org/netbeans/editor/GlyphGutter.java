@@ -333,20 +333,23 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     
    
     protected void resize() {
-        Dimension dim = new Dimension();
-        glyphGutterWidth = getWidthDimension();
-        dim.width = glyphGutterWidth;
-        dim.height = getHeightDimension();
-        
-        
-        // enlarge the gutter so that inserting new lines into 
-        // document does not cause resizing too often
-        dim.height += ENLARGE_GUTTER_HEIGHT * editorUI.getLineHeight();
-        
-        setPreferredSize(dim);
+        EditorUI eui = editorUI;
+        if (eui != null) {
+            Dimension dim = new Dimension();
+            glyphGutterWidth = getWidthDimension();
+            dim.width = glyphGutterWidth;
+            dim.height = getHeightDimension();
 
-        revalidate();
-        putDimensionForPrinting();
+
+            // enlarge the gutter so that inserting new lines into
+            // document does not cause resizing too often
+            dim.height += ENLARGE_GUTTER_HEIGHT * eui.getLineHeight();
+
+            setPreferredSize(dim);
+
+            revalidate();
+            putDimensionForPrinting();
+        }
     }
 
     /** Return number of lines in the document */
