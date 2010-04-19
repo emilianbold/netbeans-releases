@@ -56,7 +56,6 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -128,6 +127,17 @@ public final class ProjectXMLManager {
     private static final String TEST_DEPENDENCY_COMPILE = "compile-dependency"; // NOI18N
     private static final String TEST_DEPENDENCY_TEST = "test"; // NOI18N
     private static final String TEST_TYPE = "test-type"; //NOI18N
+    private static final String[] ORDER = {
+        CODE_NAME_BASE,
+        SUITE_COMPONENT,
+        STANDALONE,
+        MODULE_DEPENDENCIES,
+        TEST_DEPENDENCIES,
+        PUBLIC_PACKAGES,
+        FRIEND_PACKAGES,
+        CLASS_PATH_EXTENSION,
+        EXTRA_COMPILATION_UNIT,
+    };
     private final NbModuleProject project;
     private NbPlatform customPlaf;
     private String cnb;
@@ -463,16 +473,7 @@ public final class ProjectXMLManager {
         Element moduleDependencies = findModuleDependencies(_confData);
         _confData.removeChild(moduleDependencies);
         moduleDependencies = createModuleElement(doc, ProjectXMLManager.MODULE_DEPENDENCIES);
-        Element before = findTestDependenciesElement(_confData);
-        if (before == null) {
-            before = findPublicPackagesElement(_confData);
-        }
-        if (before == null) {
-            before = findFriendsElement(_confData);
-        }
-        assert before != null : "There must be " + PUBLIC_PACKAGES + " or " // NOI18N
-                + FRIEND_PACKAGES + " element according to XSD"; // NOI18N
-        _confData.insertBefore(moduleDependencies, before);
+        XMLUtil.appendChildElement(_confData, moduleDependencies, ORDER);
         SortedSet<ModuleDependency> sortedDeps = new TreeSet<ModuleDependency>(newDeps);
         for (ModuleDependency md : sortedDeps) {
             createModuleDependencyElement(moduleDependencies, md, null);
@@ -560,14 +561,8 @@ public final class ProjectXMLManager {
                 final Document doc = confData.getOwnerDocument();
                 Element testModuleDependenciesEl = findTestDependenciesElement(confData);
                 if (testModuleDependenciesEl == null) {      // test dependencies element does not exist, create it
-                    Element before = findPublicPackagesElement(confData);
-                    if (before == null) {
-                        before = findFriendsElement(confData);
-                    }
-                    assert before != null : "There must be " + PUBLIC_PACKAGES + " or " // NOI18N
-                            + FRIEND_PACKAGES + " element according to XSD"; // NOI18N
                     testModuleDependenciesEl = createModuleElement(doc, TEST_DEPENDENCIES);
-                    confData.insertBefore(testModuleDependenciesEl, before);
+                    XMLUtil.appendChildElement(confData, testModuleDependenciesEl, ORDER);
                 }
                 Element testTypeEl = null;
                 //iterate through test types to determine if testType exist
@@ -757,11 +752,7 @@ public final class ProjectXMLManager {
 
     /** Position public-packages or friend-packages according to XSD. */
     private void insertPublicOrFriend(Element packagesEl) {
-        Element beforeEl = findElement(getConfData(), ProjectXMLManager.CLASS_PATH_EXTENSION);
-        if (beforeEl == null) {
-            beforeEl = findElement(getConfData(), ProjectXMLManager.EXTRA_COMPILATION_UNIT);
-        }
-        getConfData().insertBefore(packagesEl, beforeEl);
+        XMLUtil.appendChildElement(getConfData(), packagesEl, ORDER);
     }
 
     /**
