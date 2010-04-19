@@ -48,6 +48,7 @@ import javax.swing.text.*;
 import java.io.StringReader;
 import java.io.IOException;
 import java.awt.*;
+import org.netbeans.editor.EditorUI;
 
 /**
  * @author Maros Sandor
@@ -56,6 +57,7 @@ class DiffTooltipContentPanel extends JComponent {
     private JEditorPane originalTextPane;
     private final Color color;
     private int maxWidth;
+    private final JScrollPane jsp;
 
     public DiffTooltipContentPanel(final JTextComponent parentPane, final String mimeType, final Difference diff) {
         
@@ -83,8 +85,11 @@ class DiffTooltipContentPanel extends JComponent {
         originalTextPane.setDocument(doc);
         originalTextPane.setEditable(false);
         color = getBackgroundColor(diff.getType());
+        originalTextPane.setBackground(color);
+        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(originalTextPane);
         Element rootElement = org.openide.text.NbDocument.findLineRootElement(doc);
         int lineCount = rootElement.getElementCount();
+        int height = eui.getLineHeight() * lineCount;
         maxWidth = 0;
         for (int line = 0; line < lineCount; line++) {
             Element lineElement = rootElement.getElement(line);
@@ -102,12 +107,13 @@ class DiffTooltipContentPanel extends JComponent {
         }
         if (maxWidth < 50) maxWidth = 50;   // too thin component causes repaint problems
         else if (maxWidth < 150) maxWidth += 10;
+        originalTextPane.setPreferredSize(new Dimension(maxWidth * 7 / 6, height));
 
         if (!originalTextPane.isEditable()) {
             originalTextPane.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
         }
 
-        JScrollPane jsp = new JScrollPane(originalTextPane);
+        jsp = new JScrollPane(originalTextPane);
         jsp.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
 
         setLayout(new BorderLayout());
@@ -130,7 +136,10 @@ class DiffTooltipContentPanel extends JComponent {
         } catch (BadLocationException ex) {
         }
         if (height > 0) {
-            originalTextPane.setPreferredSize(new Dimension(maxWidth * 7 / 6, height));
+            Dimension size = originalTextPane.getPreferredSize();
+            Dimension scrollpaneSize = jsp.getPreferredSize();
+
+            jsp.setPreferredSize(new Dimension(maxWidth * 7 / 6 + Math.max(0, scrollpaneSize.width - size.width), height + Math.max(0, scrollpaneSize.height - size.height)));
             SwingUtilities.getWindowAncestor(originalTextPane).pack();
         }
         originalTextPane = null;
