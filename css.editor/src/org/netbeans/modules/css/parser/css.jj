@@ -773,7 +773,7 @@ void property() :
 {/*@bgen(jjtree) property */
     try {
 /*@egen*/
-    (<IDENT> | <GENERATED>) ( ( <S> | <COMMENT> ) )*/*@bgen(jjtree)*/
+    (<HASH> | <IDENT> | <GENERATED>) ( ( <S> | <COMMENT> ) )*/*@bgen(jjtree)*/
     } finally {
       if (jjtc000) {
         jjtree.closeNodeScope(jjtn000, true);

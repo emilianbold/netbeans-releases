@@ -350,7 +350,7 @@ void property() :
 {
 }
 {
-    (<IDENT> | <GENERATED>) ( ( <S> | <COMMENT> ) )*
+    (<HASH> | <IDENT> | <GENERATED>) ( ( <S> | <COMMENT> ) )*
 }
 
 //

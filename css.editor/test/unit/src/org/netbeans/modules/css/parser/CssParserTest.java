@@ -161,6 +161,9 @@ public class CssParserTest extends TestBase {
 
         //IE8
         check("h1 { -ms-filter:\"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)\"; }");
+
+        check("h1 { #width: 400px }");
+
     }
 
     // @@@ represents a gap from the css perspective in reality filled with 
