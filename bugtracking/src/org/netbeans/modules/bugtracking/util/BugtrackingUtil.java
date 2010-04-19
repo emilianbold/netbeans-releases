@@ -86,7 +86,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
@@ -95,6 +94,7 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.issue.PatchContextChooser;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
+import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
 import org.openide.DialogDescriptor;
@@ -188,7 +188,7 @@ public class BugtrackingUtil {
     }
 
     /**
-     * Determines if the gives issue opened in the editor area
+     * Determines if the gives issue is opened in the editor area
      * @param issue
      * @return true in case the given issue is opened in the editor are, otherwise false
      */
@@ -198,7 +198,7 @@ public class BugtrackingUtil {
     }
 
     /**
-     * Determines if the gives issue opened in the editor area and
+     * Determines if the gives issue is opened in the editor area and
      * showing on the screen
      * @param issue
      * @return true in case the given issue is opened in the editor area
@@ -206,6 +206,27 @@ public class BugtrackingUtil {
      */
     public static boolean isShowing(Issue issue) {
         IssueTopComponent tc = IssueTopComponent.find(issue, false);
+        return tc != null ? tc.isShowing() : false;
+    }
+
+    /**
+     * Determines if the gives query is opened in the editor area
+     * @param query
+     * @return
+     */
+    public static boolean isOpened(Query query) {
+        QueryTopComponent tc = QueryTopComponent.find(query);
+        return tc != null ? tc.isOpened() : false;
+    }
+
+    /**
+     * Determines if the gives query is opened in the editor area and
+     * showing on the screen
+     * @param query
+     * @return
+     */
+    public static boolean isShowing(Query query) {
+        QueryTopComponent tc = QueryTopComponent.find(query);
         return tc != null ? tc.isShowing() : false;
     }
 

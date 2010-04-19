@@ -108,6 +108,21 @@ is the proper place.
         
         <change>
             <api name="versioning_spi"/>
+            <summary>refreshRecursively() method added to VCSInterceptor</summary>
+            <version major="1" minor="17"/>
+            <date day="19" month="4" year="2010"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <code>VCSInterceptor.refreshRecursively</code> allows a version control system to get better control on behavior of recursive listener.
+                With this method a versioning system can disable recursive listening on specific folders (e.g. versioning system metadata) and on the other hand 
+                learn about and handle external changes inside the folder in its own way.
+            </description>
+            <class package="org.netbeans.modules.versioning.spi" name="VCSInterceptor"/>
+            <issue number="181684"/>
+        </change>
+        <change>
+            <api name="versioning_spi"/>
             <summary>Added getVisibilityQueryImplementation() method to VersioningSystem</summary>
             <version major="1" minor="10"/>
             <date day="8" month="12" year="2009"/>

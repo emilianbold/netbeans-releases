@@ -49,19 +49,18 @@ import org.openide.util.RequestProcessor;
 import java.util.logging.Level;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.WeakHashMap;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.mercurial.util.HgSearchHistorySupport;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileUtil;
 
 
@@ -152,6 +151,17 @@ public class MercurialInterceptor extends VCSInterceptor {
             Mercurial.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace()); // NOI18N
         }
         hgMoveImplementation(from, to);
+    }
+
+    @Override
+    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        long retval = -1;
+        if (HgUtils.HG_FOLDER_NAME.equals(dir.getName())) {
+            Mercurial.STATUS_LOG.log(Level.FINE, "Interceptor.refreshRecursively: {0}", dir.getAbsolutePath()); //NOI18N
+            children.clear();
+            retval = hgFolderEventsHandler.handleHgFolderEvent(dir);
+        }
+        return retval;
     }
 
     private void hgMoveImplementation(final File srcFile, final File dstFile) throws IOException {
@@ -278,12 +288,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private void reScheduleRefresh(int delayMillis, File fileToRefresh) {
         // refresh all at once
         Mercurial.STATUS_LOG.fine("reScheduleRefresh: adding " + fileToRefresh.getAbsolutePath());
-        if (HgUtils.isPartOfMercurialMetadata(fileToRefresh)) {
-            if (HgUtils.HG_FOLDER_NAME.equals(fileToRefresh.getParentFile().getName())
-                    && isHandledHgFolderFile(fileToRefresh)) {
-                hgFolderEventsHandler.handleHgFolderEvent(fileToRefresh);
-            }
-        } else {
+        if (!HgUtils.isPartOfMercurialMetadata(fileToRefresh)) {
             filesToRefresh.add(fileToRefresh);
         }
         refreshTask.schedule(delayMillis);
@@ -298,7 +303,6 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     /**
      * Checks if administrative folder for a repository with the file is registered.
-     * If it is not yet registered, this creates a fileobject for the .hg and keeps a reference to it.
      * @param file
      */
     void pingRepositoryRootFor(final File file) {
@@ -346,21 +350,10 @@ public class MercurialInterceptor extends VCSInterceptor {
         }
     }
 
-    private static final HashSet<String> HANDLED_HGFOLDER_FILES = new HashSet<String>(Arrays.asList(new String[] {
-        "branch",                                                       //NOI18N
-        "dirstate",                                                     //NOI18N
-        "undo.branch",                                                  //NOI18N
-        "undo.dirstate"                                                 //NOI18N
-    }));
-
-    private static boolean isHandledHgFolderFile (File file) {
-        return HANDLED_HGFOLDER_FILES.contains(file.getName());
-    }
-
     private class HgFolderEventsHandler {
         private final HashMap<File, Long> hgFolders = new HashMap<File, Long>(5);
+        private final HashMap<File, FileChangeListener> hgFolderRLs = new HashMap<File, FileChangeListener>(5);
         private final HashMap<File, Set<File>> seenRoots = new HashMap<File, Set<File>>(5);
-        private final WeakHashMap<File, FileObject[]> hgFolderChildren = new WeakHashMap<File, FileObject[]>(5);
 
         private final HashSet<File> filesToInitialize = new HashSet<File>();
         private RequestProcessor rp = new RequestProcessor("MercurialInterceptorEventsHandlerRP", 1); //NOI18N
@@ -393,34 +386,30 @@ public class MercurialInterceptor extends VCSInterceptor {
                     return;
                 }
             }
-            FileObject hgFolderFO = exists ? FileUtil.toFileObject(hgFolder) : null;
             synchronized (hgFolders) {
                 hgFolders.remove(hgFolder);
+                FileChangeListener list = hgFolderRLs.remove(hgFolder);
                 if (exists) {
                     hgFolders.put(hgFolder, Long.valueOf(timestamp));
-                    // must also keep references to children, so they are refreshed, too
-                    // and FS events are fired for them
-                    Set<FileObject> children = new HashSet<FileObject>();
-                    for (FileObject fo : hgFolderFO.getChildren()) {
-                        if (fo.isValid() && fo.isData()) {
-                            children.add(fo);
-                        }
+                    if (list == null) {
+                        FileUtil.addRecursiveListener(list = new FileChangeAdapter(), hgFolder);
                     }
-                    // also add the .hg folder itself - needed when there is not yet a dirstate file (e.g. right after hg init)
-                    // and to fire an event when a file is added to .hg folder
-                    children.add(hgFolderFO);
-                    hgFolderChildren.put(hgFolder, children.toArray(new FileObject[children.size()]));
+                    hgFolderRLs.put(hgFolder, list);
                 } else {
+                    if (list != null) {
+                        FileUtil.removeRecursiveListener(list, hgFolder);
+                    }
                     Mercurial.STATUS_LOG.fine("refreshHgFolderTimestamp: " + hgFolder.getAbsolutePath() + " no longer exists"); //NOI18N
                 }
             }
         }
 
-        private void handleHgFolderEvent(File hgFolderFile) {
+        private long handleHgFolderEvent(File hgFolder) {
+            long lastModified = 0;
             if (AUTOMATIC_REFRESH_ENABLED && !"false".equals(System.getProperty("mercurial.handleDirstateEvents", "true"))) { //NOI18N
-                File hgFolder = FileUtil.normalizeFile(hgFolderFile.getParentFile());
-                Mercurial.STATUS_LOG.fine("handleHgFolderEvent: special FS event handling for " + hgFolderFile.getAbsolutePath()); //NOI18N
-                long lastModified = hgFolder.lastModified();
+                hgFolder = FileUtil.normalizeFile(hgFolder);
+                Mercurial.STATUS_LOG.fine("handleHgFolderEvent: special FS event handling for " + hgFolder.getAbsolutePath()); //NOI18N
+                lastModified = hgFolder.lastModified();
                 Long lastCachedModified = null;
                 synchronized (hgFolders) {
                     lastCachedModified = hgFolders.get(hgFolder);
@@ -436,6 +425,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                     refreshOpenFilesTask.schedule(3000);
                 }
             }
+            return lastModified;
         }
 
         public void initializeFor (File file) {
@@ -500,7 +490,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 // select repository root for the file and finds it's .hg folder
                 File repositoryRoot = Mercurial.getInstance().getRepositoryRoot(file);
                 if (repositoryRoot != null) {
-                    File hgFolder = HgUtils.getHgFolderForRoot(repositoryRoot);
+                    File hgFolder = FileUtil.normalizeFile(HgUtils.getHgFolderForRoot(repositoryRoot));
                     if (!addSeenRoot(repositoryRoot, file)) {
                         synchronized (hgFolders) {
                             // this means the repository has not yet been scanned, so scan it

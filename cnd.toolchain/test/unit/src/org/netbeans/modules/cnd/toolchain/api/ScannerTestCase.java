@@ -141,6 +141,60 @@ public class ScannerTestCase extends NbTestCase {
         assertTrue(find);
     }
 
+    public void testGNUpatterns_04() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+	ScannerDescriptor scanner = toolchain.getScanner();
+        ArrayList<String> testPatterns = new ArrayList<String>();
+        testPatterns.add("cd ../Quote_7 && /usr/sfw/bin/gmake -f Makefile");
+      	testPatterns.add("cd ../Quote_7&& /usr/sfw/bin/gmake -f Makefile");
+      	testPatterns.add("cd ../Quote_7 ; /usr/sfw/bin/gmake -f Makefile");
+      	testPatterns.add("cd ../Quote_7; /usr/sfw/bin/gmake -f Makefile");
+      	testPatterns.add("cd ../Quote_7");
+        String p = scanner.getChangeDirectoryPattern();
+        String p2 = "cd\\s+((\"[^\"]*\"|'[^']*'|\\.|[^\\s;&])+)";
+        assertEquals(p, p2);
+        Pattern pattern = Pattern.compile(p);
+        for (String s : testPatterns) {
+            Matcher m = pattern.matcher(s);
+            if (m.find()){
+                assertEquals(trimQuotes(m.group(1)), "../Quote_7");
+            } else {
+                assertTrue("String "+s+" does not match pattern "+p, false);
+            }
+        }
+    }
+
+    public void testGNUpatterns_05() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+	ScannerDescriptor scanner = toolchain.getScanner();
+        ArrayList<String> testPatterns = new ArrayList<String>();
+      	testPatterns.add("cd \"../Quote 7\"");
+      	testPatterns.add("cd '../Quote 7'");
+        String p = scanner.getChangeDirectoryPattern();
+        String p2 = "cd\\s+((\"[^\"]*\"|'[^']*'|\\.|[^\\s;&])+)";
+        assertEquals(p, p2);
+        Pattern pattern = Pattern.compile(p);
+        for (String s : testPatterns) {
+            Matcher m = pattern.matcher(s);
+            if (m.find()){
+                assertEquals(trimQuotes(m.group(1)), "../Quote 7");
+            } else {
+                assertTrue("String "+s+" does not match pattern "+p, false);
+            }
+        }
+    }
+
+    private String trimQuotes(String s){
+        if (s.length()>2) {
+            if (s.startsWith("\"") && s.endsWith("\"")) {
+                return s.substring(1, s.length()-1);
+            }else if (s.startsWith("'") && s.endsWith("'")) {
+                return s.substring(1, s.length()-1);
+            }
+        }
+        return s;
+    }
+
     public void testSUNpatterns() throws Exception {
         ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
 	ScannerDescriptor scanner = toolchain.getScanner();

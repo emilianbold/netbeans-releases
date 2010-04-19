@@ -101,6 +101,7 @@
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.rest.client.JerseyClientWizardIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="REST-clients"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/JerseyClientWizard.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/restservice.png"/>
             </file>

@@ -161,6 +161,9 @@ public class CssParserTest extends TestBase {
 
         //IE8
         check("h1 { -ms-filter:\"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)\"; }");
+
+        check("h1 { #width: 400px }");
+
     }
 
     // @@@ represents a gap from the css perspective in reality filled with 
@@ -179,7 +182,9 @@ public class CssParserTest extends TestBase {
         check("h1 { color: rgb(@@@,@@@,@@@); }");
         check("h1 { color: rgb(0,0,@@@); }");
 
-//        check("h1 { @@@ }"); //fails
+        check("h1 { @@@ ; }");
+        check("h1 { @@@; }");
+        check("h1 { @@@ }");
 
         //selectors are generated
         check("@@@ { }");

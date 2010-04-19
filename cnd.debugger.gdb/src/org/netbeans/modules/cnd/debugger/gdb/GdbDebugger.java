@@ -308,21 +308,13 @@ public class GdbDebugger implements PropertyChangeListener {
             } else if (gdbCommand.toLowerCase().contains("mingw")) { // NOI18N
                 mingw = true;
             }
-            String cspath = getCompilerSetPath(pae);
-            // see IZ 158224, gdb should be run with the default environment
-            // see IZ 170287, PATH should be set on Windows
-            // see IZ 166812, on windows we should add all defined env variables
-            String[] debuggerEnv = new String[0];
-            if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-               debuggerEnv = pae.getProfile().getEnvironment().getenv();
-            }
             
             String tty = null;
             if (pae.getType() != DEBUG_ATTACH) {
                 if (platform != PlatformTypes.PLATFORM_WINDOWS && conType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
                     String termpath = pae.getProfile().getTerminalPath();
                     if (termpath != null) {
-                        tty = ExternalTerminal.create(this, termpath, debuggerEnv);
+                        tty = ExternalTerminal.create(this, termpath, new String[0]);
                     }
                 } else if (conType == RunProfile.CONSOLE_TYPE_INTERNAL) {
                     pty = PtySupport.allocate(execEnv);
@@ -331,7 +323,20 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
             }
 
-            gdb = new GdbProxy(this, gdbCommand, debuggerEnv, runDirectory, tty, cspath);
+            // see IZ 158224, gdb should be run with the default environment
+            // see IZ 170287, PATH should be set on Windows
+            // see IZ 166812, on windows we should add all defined env variables
+            // see IZ 174474,  on Windows we should also add unbuffer to env
+            MacroMap debuggerEnvMap = MacroMap.forExecEnv(execEnv);
+            debuggerEnvMap.putAll(pae.getProfile().getEnvironment().getenvAsMap());
+            if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                UnbufferSupport.initUnbuffer(execEnv, debuggerEnvMap);
+            }
+
+            String cspath = getCompilerSetPath(pae);
+            gdb = new GdbProxy(this, gdbCommand, 
+                    platform == PlatformTypes.PLATFORM_WINDOWS && pae.getType() != DEBUG_ATTACH ? debuggerEnvMap : null,
+                    runDirectory, tty, cspath);
             // we should not continue until gdb version is initialized
             initGdbVersion();
 
@@ -449,12 +454,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 gdb.file_exec_and_symbols(pathMap.getRemotePath(pae.getExecutable().replace("\\", "/"), true)); // NOI18N
                 //gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
 
-                MacroMap macroMap = MacroMap.forExecEnv(execEnv);
-                macroMap.putAll(pae.getProfile().getEnvironment().getenvAsMap());
-                
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    UnbufferSupport.initUnbuffer(execEnv, macroMap);
-                    
                     // disabled on windows because of the issue 148204
                     if (platform != PlatformTypes.PLATFORM_WINDOWS && !isUnitTest()) {
                         ioProxy = IOProxy.create(execEnv, iotab);
@@ -462,7 +462,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
 
                 // set project environment
-                for (Map.Entry<String, String> entry : macroMap.entrySet()) {
+                for (Map.Entry<String, String> entry : debuggerEnvMap.entrySet()) {
                     gdb.gdb_set("environment", entry.getKey() + '=' + entry.getValue()); // NOI18N
                 }
 
