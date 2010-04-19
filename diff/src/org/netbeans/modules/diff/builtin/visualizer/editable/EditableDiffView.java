@@ -231,6 +231,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
         final String f1 = mimeType1;
         final String f2 = mimeType2;
+        boolean canceled = Thread.interrupted();
         try {
             Runnable awtTask = new Runnable() {
                 public void run() {
@@ -303,7 +304,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         } catch (InterruptedException e) {
             Logger.getLogger(EditableDiffView.class.getName()).log(Level.FINE, ".colorLines:" + colorLines + ", .jviewPort2:" + jViewport2
                     + ", editableDocument:" + editableDocument + ", editableCookie:" + editableCookie + ", editorUndoRedo:" + editorUndoRedo, e);
-            return;
+            canceled = true;
         } catch (InvocationTargetException e) {
             Logger.getLogger(EditableDiffView.class.getName()).log(Level.SEVERE, ".colorLines:" + colorLines + ", .jviewPort2:" + jViewport2
                     + ", editableDocument:" + editableDocument + ", editableCookie:" + editableCookie + ", editorUndoRedo:" + editorUndoRedo, e);
@@ -317,7 +318,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
         manager = new DiffViewManager(this);
         manager.init();
-        refreshDiff(0);
+        if (canceled) {
+            Thread.currentThread().interrupt();
+        } else {
+            refreshDiff(0);
+        }
     }
 
     private void initializeTabPane (StreamSource ss1, StreamSource ss2) {

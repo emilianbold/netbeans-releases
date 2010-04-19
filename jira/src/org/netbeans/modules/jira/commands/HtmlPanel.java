@@ -67,7 +67,8 @@ public class HtmlPanel extends javax.swing.JPanel {
                 String desc = e.getDescription();
                 URL url = null;
                 try {
-                    url = new URL(baseUrl + "/" + desc);                        // NOI18N
+                    desc = desc.trim();
+                    url = new URL(desc.startsWith("http") ? desc : baseUrl + "/" + desc);                        // NOI18N
                 } catch (MalformedURLException mue) {
                     Jira.LOG.log(Level.WARNING, null, mue);
                     return;

@@ -149,7 +149,7 @@ class RfsLocalController implements Runnable {
                                     int rc = task.get();
                                     fileTime = System.currentTimeMillis() - fileTime;
                                     totalCopyingTime += fileTime;
-                                    System.err.printf("LC: uploading %s to %s finished; rc=%d time =%d total time = %d ms \n", localFile, remoteFile, rc, fileTime, totalCopyingTime);
+                                    RemoteUtil.LOGGER.log(Level.FINEST, "LC: uploading {0} to {1} finished; rc={2} time = {3} total time = {4} ms", new Object[] {localFile, remoteFile, rc, fileTime, totalCopyingTime});
                                     if (rc == 0) {
                                         fileData.setState(localFile, FileState.COPIED);
                                         respond_ok();

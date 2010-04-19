@@ -42,6 +42,7 @@ package org.netbeans.modules.versioning.spi;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Versioning systems that need to intercept or listen to file system operations implement this class.  
@@ -225,5 +226,26 @@ public abstract class VCSInterceptor {
      * @param file file that was just locked and is expected to change
      */
     public void beforeEdit(File file) {
+    }
+
+    /** Allows versioning system to exclude some children from recursive
+     * listening check. Also notifies the versioning whenever a refresh
+     * is required and allows the versiniong to provide special timestamp
+     * for a directory.
+     * <p>
+     * Default implementation of this method returns -1.
+     *
+     * @param dir the directory to check timestamp for
+     * @param lastTimeStamp the previously known timestamp or -1
+     * @param children add subfiles that shall be iterated into this array
+     * @return the timestamp that shall represent this directory, it will
+     *   be compared with timestamps of all children and the newest
+     *   one will be kept and next time passed as lastTimeStamp. Return
+     *   0 if the directory does not have any special timestamp. Return
+     *   -1 if you are not providing any special implementation
+     * @since 1.17
+     */
+    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        return -1;
     }
 }
