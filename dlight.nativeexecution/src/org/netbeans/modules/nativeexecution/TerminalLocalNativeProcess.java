@@ -70,7 +70,6 @@ import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -142,7 +141,19 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             FileOutputStream shfos = new FileOutputStream(shFileFile);
 
-            BufferedWriter shWriter = new BufferedWriter(new OutputStreamWriter(shfos, Charset.defaultCharset()));
+            Charset scriptCharset = null;
+
+            if (info.getCharset() != null) {
+                scriptCharset = info.getCharset();
+            } else {
+                if (osFamily == OSFamily.WINDOWS) {
+                    scriptCharset = WindowsSupport.getInstance().getShellCharset();
+                } else {
+                    scriptCharset = Charset.defaultCharset();
+                }
+            }
+
+            BufferedWriter shWriter = new BufferedWriter(new OutputStreamWriter(shfos, scriptCharset));
 
             shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
             shWriter.write(". \"" + envFile + "\" 2>/dev/null\n"); // NOI18N
