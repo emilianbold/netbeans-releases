@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,97 +34,70 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import org.netbeans.api.java.source.CompilationInfo;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
+import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
- * Detects usage of this in annonymous class
+ * Detects usage of this in anonymous class
  * @author Max Sauer
  */
-public class ThisInAnonymous extends AbstractHint {
+@Hint(category="bugs")
+public class ThisInAnonymous {
     private static final String THIS_KEYWORD = "this"; // NOI18N
-    private static final String DOT_THIS = ".this"; // NOI18N
 
-    public ThisInAnonymous() {
-        super(true, true, HintSeverity.WARNING);
-    }
+    @TriggerPattern(value="synchronized ($this) { $stmts$; }")
+    public static ErrorDescription hint(HintContext ctx) {
+        TreePath thisVariable = ctx.getVariables().get("$this");
+        if (thisVariable.getLeaf().getKind() != Kind.IDENTIFIER || !((IdentifierTree) thisVariable.getLeaf()).getName().contentEquals(THIS_KEYWORD)) {
+            return null;
+        }
+        
+        TreePath anonClassTP = getParentClass(ctx.getPath());
+        Element annonClass = ctx.getInfo().getTrees().getElement(anonClassTP);
+        if (isAnonymousClass(annonClass)) {
+            Element parent = ctx.getInfo().getTrees().getElement(getParentClass(anonClassTP.getParentPath()));
 
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(ThisInAnonymous.class, "DESC_TestInAnonymous"); // NOI18N
-    }
-
-    public Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.IDENTIFIER);
-    }
-
-    public List<ErrorDescription> run(CompilationInfo compilationInfo,
-            TreePath treePath) {
-        Element e = compilationInfo.getTrees().getElement(treePath);
-        if (e != null && e.getSimpleName().contentEquals(THIS_KEYWORD)) {
-            TreePath anonClassTP = getParentClass(treePath);
-            Element annonClass = compilationInfo.getTrees().getElement(anonClassTP);
-            if (isAnonymousClass(annonClass)) {
-                CompilationUnitTree compilationUnit = compilationInfo.getCompilationUnit();
-                Tree leaf = treePath.getLeaf();
-
-                List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
-                        TreePathHandle.create(treePath, compilationInfo),
-                        ElementHandle.create(compilationInfo.getTrees().getElement(getParentClass(anonClassTP.getParentPath()))),
-                        compilationInfo.getFileObject()));
-                
-                return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(
-                        getSeverity().toEditorSeverity(),
-                        getDisplayName(),
-                        fixes,
-                        compilationInfo.getFileObject(),
-                        (int) compilationInfo.getTrees().getSourcePositions().getStartPosition(compilationUnit, leaf),
-                        (int) compilationInfo.getTrees().getSourcePositions().getStartPosition(compilationUnit, leaf)));
+            if (parent == null || (!parent.getKind().isClass() && !parent.getKind().isInterface())) {
+                return null;
             }
+            
+            Fix fix = new FixImpl(TreePathHandle.create(thisVariable, ctx.getInfo()),
+                                  ElementHandle.create((TypeElement) parent),
+                                  ctx.getInfo().getFileObject());
+
+            String displayName = NbBundle.getMessage(ThisInAnonymous.class, "ERR_ThisInAnonymous");
+            return ErrorDescriptionFactory.forName(ctx, thisVariable, displayName, fix);
         }
 
         return null;
-    }
-
-    public String getId() {
-        return getClass().getName();
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(ThisInAnonymous.class, "DN_TestInAnonymous"); // NOI18N
-    }
-
-    public void cancel() {
-        //TODO: add canacel boolean and use in run
     }
 
     private static TreePath getParentClass(TreePath tp) {
@@ -146,17 +119,17 @@ public class ThisInAnonymous extends AbstractHint {
     private static final class FixImpl implements Fix, Task<WorkingCopy> {
 
         private final TreePathHandle thisHandle;
-        private final ElementHandle parentClassElementHandle;
+        private final ElementHandle<TypeElement> parentClassElementHandle;
         private final FileObject file;
 
-        public FixImpl(TreePathHandle thisHandle, ElementHandle parentClassElementHandle, FileObject file) {
+        public FixImpl(TreePathHandle thisHandle, ElementHandle<TypeElement> parentClassElementHandle, FileObject file) {
             this.thisHandle = thisHandle;
             this.parentClassElementHandle = parentClassElementHandle;
             this.file = file;
         }
 
         public String getText() {
-            return NbBundle.getMessage(ThisInAnonymous.class, "FIX_TestInAnonymous"); // NOI18N
+            return NbBundle.getMessage(ThisInAnonymous.class, "FIX_ThisInAnonymous"); // NOI18N
         }
 
         public ChangeInfo implement() throws Exception {
@@ -168,13 +141,14 @@ public class ThisInAnonymous extends AbstractHint {
         public void run(WorkingCopy wc) throws Exception {
             wc.toPhase(Phase.RESOLVED);
             TreePath tp = thisHandle.resolve(wc);
-            Element parentClass = parentClassElementHandle.resolve(wc);
+            TypeElement parentClass = parentClassElementHandle.resolve(wc);
 
             assert tp != null;
             assert parentClass != null;
+            
+            TreeMaker make = wc.getTreeMaker();
 
-            IdentifierTree newT = wc.getTreeMaker().Identifier(parentClass.getSimpleName().toString() + DOT_THIS);
-            wc.rewrite(tp.getLeaf(), newT);
+            wc.rewrite(tp.getLeaf(), make.MemberSelect(make.QualIdent(parentClass), THIS_KEYWORD));
         }
 
     }
