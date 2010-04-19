@@ -692,11 +692,16 @@ public final class FileObjectFactory {
         
         stopWatch.start();
         try {
-            FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
-                public void run() throws IOException {
-                    FileBasedFileSystem.runAsInconsistent(r);
-                }
-            });
+            if (slow != null) {
+                FileBasedFileSystem.runAsInconsistent(r);
+            } else {
+                FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
+                    @Override
+                    public void run() throws IOException {
+                        FileBasedFileSystem.runAsInconsistent(r);
+                    }
+                });
+            }
         } catch (IOException iex) {/*method refreshAll doesn't throw IOException*/
 
         }
@@ -719,6 +724,7 @@ public final class FileObjectFactory {
     public final void refreshFor(final RefreshSlow slow, final File... files) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         final Runnable r = new Runnable() {
+            @Override
             public void run() {
                 Set<BaseFileObj> all2Refresh = collectForRefresh();
                 refresh(all2Refresh, slow, files);
@@ -732,11 +738,16 @@ public final class FileObjectFactory {
         };        
         stopWatch.start();
         try {
-            FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
-                public void run() throws IOException {
-                    FileBasedFileSystem.runAsInconsistent(r);
-                }
-            });
+            if (slow != null) {
+                FileBasedFileSystem.runAsInconsistent(r);
+            } else {
+                FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
+                    @Override
+                    public void run() throws IOException {
+                        FileBasedFileSystem.runAsInconsistent(r);
+                    }
+                });
+            }
         } catch (IOException iex) {/*method refreshAll doesn't throw IOException*/
 
         }
