@@ -83,9 +83,11 @@ abstract class TerminalContainerCommonImpl extends TerminalContainer implements 
 	public String toolTipText;
 	public Icon icon;
 
+	// semi-LATER
+	public FindState findState;
+
 	// LATER
 	// public boolean isClosable;
-	// public FindState findState;
     }
 
     public TerminalContainerCommonImpl(TopComponent owner, String originalName) {
@@ -494,6 +496,8 @@ abstract class TerminalContainerCommonImpl extends TerminalContainer implements 
     }
 
     private void setButtons(Action[] actions) {
+	if (actions == null)
+	    actions = new Action[0];
         JButton[] buttons = new JButton[actions.length];
         for (int ax = 0; ax < actions.length; ax++) {
             Action a = actions[ax];
@@ -514,17 +518,18 @@ abstract class TerminalContainerCommonImpl extends TerminalContainer implements 
         actionBar.repaint();
     }
 
-    private void updateBars(Component component) {
-	if (component instanceof Terminal) {
-	    Terminal terminal = (Terminal) component;
-	    setButtons(terminal.getActions());
-	    setFindBar(terminal.getFindState());
+    private void updateBars(JComponent comp) {
+	if (comp != null) {
+	    Attributes attrs = attributesFor(comp);
+	    setButtons(attrs.toolbarActions);
+	    setFindBar(attrs.findState);
 	} else {
-	    setButtons(new Action[0]);
+	    setButtons(null);
 	    setFindBar(null);
 	}
     }
 
+    /* OLD
     void find(Terminal who) {
         FindState findState = who.getFindState();
         if (findState.isVisible()) {
@@ -535,5 +540,6 @@ abstract class TerminalContainerCommonImpl extends TerminalContainer implements 
         add(findBar, BorderLayout.SOUTH);
         validate();
     }
+     */
 
 }

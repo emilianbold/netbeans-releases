@@ -176,9 +176,11 @@ import org.openide.windows.OutputListener;
 
 
     static class Add extends Task {
+	private final Action[] actions;
 
-	public Add(IOContainer container, Terminal terminal) {
+	public Add(IOContainer container, Terminal terminal, Action[] actions) {
 	    super(container, terminal);
+	    this.actions = actions;
 	}
 
 	@Override
@@ -187,7 +189,7 @@ import org.openide.windows.OutputListener;
 	    // container impl will assert.
 	    container().add(terminal(), terminal().callBacks());
 
-	    container().setToolbarActions(terminal(), terminal().getActions());
+	    container().setToolbarActions(terminal(), actions);
 	    terminal().setVisibleInContainer(true);
 	    /* OLD bug #181064
 	    container().open();
@@ -213,7 +215,6 @@ import org.openide.windows.OutputListener;
 		return;
 	    if (!terminal().isVisibleInContainer()) {
 		container().add(terminal(), terminal().callBacks());
-		container().setToolbarActions(terminal(), terminal().getActions());
 		terminal().setVisibleInContainer(true);
 	    }
 	    container().select(terminal());
