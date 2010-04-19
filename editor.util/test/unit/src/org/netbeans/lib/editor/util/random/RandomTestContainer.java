@@ -337,7 +337,8 @@ public final class RandomTestContainer extends PropertyProvider {
                 }
                 LOG.info(container.name() + " finished successfully.");
             } catch (Exception e) {
-                LOG.info("Error occurred during op=" + context.opCount() + " (SEED=" + container.seed + "L)\n");
+                LOG.info("ERROR: " + container.name() + // NOI18N
+                        " during TESTOP[" + context.opCount() + "] (SEED=" + container.seed + "L)\n"); // NOI18N
                 throw e;
             } finally {
                 context.setCurrentRound(null);

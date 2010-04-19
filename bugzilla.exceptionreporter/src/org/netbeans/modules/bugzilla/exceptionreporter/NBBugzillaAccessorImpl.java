@@ -50,9 +50,11 @@ import org.openide.util.RequestProcessor;
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.lib.uihandler.NBBugzillaAccessor.class)
 public class NBBugzillaAccessorImpl extends NBBugzillaAccessor {
 
+    private RequestProcessor rp;
+
     @Override
     public void openIssue(final String issueID) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
                 NBBugzillaUtils.openIssue(issueID);
@@ -78,6 +80,13 @@ public class NBBugzillaAccessorImpl extends NBBugzillaAccessor {
     @Override
     public void saveNBPassword(char[] password) {
         NBBugzillaUtils.saveNBPassword(password);
+    }
+
+    private RequestProcessor getRequestProcessor() {
+        if(rp == null) {
+            rp = new RequestProcessor("NBBugzilaReports"); // NOI18N
+        }
+        return rp;
     }
 
 }
