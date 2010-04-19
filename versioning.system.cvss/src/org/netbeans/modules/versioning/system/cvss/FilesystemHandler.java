@@ -250,6 +250,15 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
+    @Override
+    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        long retval = -1;
+        if (org.netbeans.modules.versioning.system.cvss.util.Utils.isPartOfCVSMetadata(dir)) {
+            retval = 0;
+        }
+        return retval;
+    }
+
     // private methods ---------------------------
 
     private void fileCreatedImpl(File file) {
