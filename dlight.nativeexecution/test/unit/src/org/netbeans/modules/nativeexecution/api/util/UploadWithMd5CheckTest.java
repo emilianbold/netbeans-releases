@@ -40,6 +40,7 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.File;
+import java.io.PrintWriter;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -66,14 +67,17 @@ public class UploadWithMd5CheckTest extends NativeExecutionBaseTestCase {
         ExecutionEnvironment env = getTestExecutionEnvironment();
         ConnectionManager.getInstance().connectTo(env);
         clearRemoteTmpDir();
-        String remoteTmpDir = createRemoteTmpDir();
+        String remoteTmpDir = createRemoteTmpDir()  + "/inexistent_subdir";
         File localFile = getIdeUtilJar();
-        String remotePath = remoteTmpDir + "/inexistent_subdir/" + localFile.getName();
+        String remotePath = remoteTmpDir + "/" + localFile.getName();
+        int rc = CommonTasksSupport.rmDir(env, remoteTmpDir, true, new PrintWriter(System.err)).get();
+        assertEquals("Can not delete directory " + remoteTmpDir, 0, rc);
+        assertFalse("File " + env + ":" + remoteTmpDir + " should not exist at this moment", HostInfoUtils.fileExists(env, remotePath));
         assertFalse("File " + env + ":" + remotePath + " should not exist at this moment", HostInfoUtils.fileExists(env, remotePath));
-
         int uploadCount = SftpSupport.getUploadCount();
         long firstTime = System.currentTimeMillis();
-        int rc = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0777, null, true).get().intValue();
+        rc = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0777, new PrintWriter(System.err), true).get().intValue();
+        assertEquals("Error uploading file " + localFile.getAbsolutePath() + " to " + getTestExecutionEnvironment() + ":" + remotePath, 0, rc);
         firstTime = System.currentTimeMillis() - firstTime;
         assertEquals("Error copying " + localFile + " file to " + env + ":" + remotePath, 0, rc);
         assertTrue("File " + env + ":" + remotePath + " should exist at this moment", HostInfoUtils.fileExists(env, remotePath));
@@ -90,7 +94,7 @@ public class UploadWithMd5CheckTest extends NativeExecutionBaseTestCase {
                 uploadCount++;
             }
             long currTime = System.currentTimeMillis();
-            rc = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0777, null, true).get().intValue();
+            rc = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0777, new PrintWriter(System.err), true).get().intValue();
             firstTime = System.currentTimeMillis() - currTime;
             assertEquals("Error copying " + localFile + " file to " + env + ":" + remotePath, 0, rc);
             assertTrue("File " + env + ":" + remotePath + " should exist at this moment", HostInfoUtils.fileExists(env, remotePath));
