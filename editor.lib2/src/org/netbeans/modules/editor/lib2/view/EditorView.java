@@ -485,6 +485,7 @@ public abstract class EditorView extends View {
             // Also append raw visual offset value
             sb.append("(R").append(getRawVisualOffset()).append(')');
         }
+        // Do not getPreferredSpan() since it may be expensive (for HighlightsView calls getTextLayout())
         return sb;
     }
 
