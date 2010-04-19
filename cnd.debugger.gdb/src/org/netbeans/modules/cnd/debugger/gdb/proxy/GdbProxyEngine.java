@@ -110,7 +110,7 @@ public class GdbProxyEngine {
      * @param stepIntoProject - a flag to stop at first source line
      */
     public GdbProxyEngine(GdbDebugger debugger, GdbProxy gdbProxy, List<String> debuggerCommand,
-                    String[] debuggerEnvironment, String workingDirectory, String tty,
+                    MacroMap debuggerEnvironment, String workingDirectory, String tty,
                     String cspath) throws IOException {
         inferiorTty = (tty != null);
         if (inferiorTty) {
@@ -122,8 +122,7 @@ public class GdbProxyEngine {
         active = true;
         
         getLogger().logMessage("Debugger Command: " + debuggerCommand); // NOI18N
-        getLogger().logMessage("Env[" + debuggerEnvironment.length + "]: " + // NOI18N
-                Arrays.asList(debuggerEnvironment));
+        getLogger().logMessage("Env: " + debuggerEnvironment); // NOI18N
         getLogger().logMessage("workingDirectory: " + workingDirectory); // NOI18N
         getLogger().logMessage("NB version: " + System.getProperty("netbeans.buildnumber")); // NOI18N
         getLogger().logMessage("================================================"); // NOI18N
@@ -133,7 +132,7 @@ public class GdbProxyEngine {
     
     private void startDebugger(List<String> debuggerCommand,
                                String workingDirectory,
-                               String[] debuggerEnvironment,
+                               MacroMap debuggerEnvironment,
                                String cspath) throws IOException {
         ExecutionEnvironment execEnv = debugger.getHostExecutionEnvironment();
         String[] args = debuggerCommand.subList(1, debuggerCommand.size()).toArray(new String[debuggerCommand.size()-1]);
