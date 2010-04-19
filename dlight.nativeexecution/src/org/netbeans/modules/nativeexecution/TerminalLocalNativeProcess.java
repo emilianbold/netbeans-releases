@@ -223,7 +223,11 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 // Problem here is that this is done for PATH env. variable only!
 
                 if (osFamily == OSFamily.WINDOWS) {
-                    env.put("PATH", "/bin:/usr/bin:" + WindowsSupport.getInstance().convertToAllShellPaths(env.get("PATH"))); // NOI18N
+                    // Make sure that path in upper case
+                    // [for external terminal only]
+                    String path = env.get("PATH"); // NOI18N
+                    env.remove("PATH"); // NOI18N
+                    env.put("PATH", "/bin:/usr/bin:" + WindowsSupport.getInstance().convertToAllShellPaths(path)); // NOI18N
                 }
 
                 OutputStream fos = new FileOutputStream(envFileFile);
