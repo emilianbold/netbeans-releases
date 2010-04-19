@@ -146,7 +146,7 @@ public class SlowRefreshInterruptibleTest extends NbTestCase {
                 LOG.log(Level.INFO, "Set source called: {0}", Thread.interrupted());
                 assertTrue(newSource instanceof Object[]);
                 Object[] arr = (Object[])newSource;
-                assertEquals("Three elements", 4, arr.length);
+                assertTrue("At least three elements", 3 <= arr.length);
                 assertTrue("first is int", arr[0] instanceof Integer);
                 assertTrue("2nd is int", arr[1] instanceof Integer);
                 assertTrue("3rd is fileobject", arr[2] instanceof FileObject);
