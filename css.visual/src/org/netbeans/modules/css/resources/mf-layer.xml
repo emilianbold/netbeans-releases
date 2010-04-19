@@ -128,11 +128,23 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="870"/>
                     </file>
-                    <file name="org-netbeans-modules-css-actions-CheckStyleAction.instance">
-                        <attr name="position" intvalue="880"/>
-                    </file>
+                    <file name="org-netbeans-modules-css-actions-CheckStyleAction.shadow">
+			<attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-css-actions-CheckStyleAction.instance"/>
+			<attr name="position" intvalue="880"/>
+		    </file>
                 </folder>
             </folder>
         </folder>
     </folder>
+
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-css-actions-CheckStyleAction.instance"/>
+            <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.html.editor.refactoring.actions.HtmlRefactoringActionsFactory.extractInlinedStyleAction"/>
+            </file>
+	</folder>
+    </folder>
+
+
 </filesystem>
