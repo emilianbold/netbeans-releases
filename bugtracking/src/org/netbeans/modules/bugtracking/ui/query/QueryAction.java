@@ -65,14 +65,17 @@ public class QueryAction extends SystemAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(QueryAction.class, "CTL_QueryAction"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(QueryAction.class);
     }
 
+    @Override
     public void actionPerformed(ActionEvent ev) {
         openQuery(null, WindowManager.getDefault().getRegistry().getActivatedNodes());
     }
@@ -95,6 +98,7 @@ public class QueryAction extends SystemAction {
 
     private static void openQuery(final Query query, final Repository repository, final Node[] context, final boolean suggestedSelectionOnly) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery start. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
                 QueryTopComponent tc = null;
@@ -116,6 +120,7 @@ public class QueryAction extends SystemAction {
 
     public static void closeQuery(final Query query) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 TopComponent tc = null;
                 if(query != null) {
