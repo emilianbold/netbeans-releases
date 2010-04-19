@@ -68,6 +68,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
@@ -129,6 +130,7 @@ public final class View implements LogicalViewProvider {
         
         private final FreeformProject p;
         private final ProjectInformation info;
+        private static final RequestProcessor RP = new RequestProcessor(RootNode.class);
         
         @SuppressWarnings("LeakingThisInConstructor")
         public RootNode(FreeformProject p) {
@@ -189,10 +191,14 @@ public final class View implements LogicalViewProvider {
         }
 
         public @Override void propertyChange(PropertyChangeEvent evt) {
-            fireNameChange(null, null);
-            fireDisplayNameChange(null, null);
-            fireIconChange();
-            fireOpenedIconChange();
+            RP.post(new Runnable() {
+                public @Override void run() {
+                    fireNameChange(null, null);
+                    fireDisplayNameChange(null, null);
+                    fireIconChange();
+                    fireOpenedIconChange();
+                }
+            });
         }
         
     }
