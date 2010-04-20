@@ -172,8 +172,45 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/ifelse_alternative_syntax.php");
     }
 
-    public void xtestNamespaces1() throws Exception {
-        reformatFileContents("testfiles/formatting/namespaces1.php");
+    public void testNamespaces1() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/namespaces1.php", options);
+    }
+
+    public void testNamespaces02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/namespaces_02.php", options);
+    }
+
+    public void testNamespaces03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/namespaces_03.php", options);
+    }
+
+    public void testNamespaces04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        reformatFileContents("testfiles/formatting/namespaces_04.php", options);
+    }
+
+    public void testNamespaces05() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/namespaces_05.php", options);
     }
 
     public void xtest161049() throws Exception {

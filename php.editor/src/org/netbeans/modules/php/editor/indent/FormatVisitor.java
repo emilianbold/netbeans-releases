@@ -201,7 +201,7 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Block node) {
-	if (path.size() > 1 && path.get(1) instanceof NamespaceDeclaration) {
+	if (path.size() > 1 && (path.get(1) instanceof NamespaceDeclaration && !node.isCurly())) {
 	    // dont process blok for namespace
 	    super.visit(node);
 	    return;
