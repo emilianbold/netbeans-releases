@@ -117,6 +117,12 @@ public final class ProjectImpl extends ProjectBase {
         if (impl != null) {
             APTDriver.getInstance().invalidateAPT(buf);
             APTFileCacheManager.invalidate(buf);
+            synchronized (editedFiles) {
+                if (!editedFiles.containsKey(impl)) {
+                    // register edited file
+                    editedFiles.put(impl, null);
+                }
+            }
 //            scheduleParseOnEditing(buf, impl);
             buf.addChangeListener(new ChangeListener() {
 
