@@ -144,7 +144,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     }
 
     public void testRemoveDeadBlock() throws Exception {
-        TraceFlags.TRACE_182342_BUG = true;
+        TraceFlags.TRACE_182342_BUG = false;
         final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
         final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
         final CsmProject project = super.getProject();
