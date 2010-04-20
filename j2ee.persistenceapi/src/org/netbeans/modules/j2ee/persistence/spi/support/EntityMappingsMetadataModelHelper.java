@@ -77,11 +77,11 @@ public class EntityMappingsMetadataModelHelper {
     }
 
     public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(String puName) {
-        File persistenceXml;
+        File pXml;
         synchronized (this) {
-            persistenceXml = this.persistenceXml;
+            pXml = this.persistenceXml;
         }
-        if (persistenceXml == null || FileUtil.toFileObject(persistenceXml) == null) {
+        if (pXml == null || FileUtil.toFileObject(pXml) == null) {
             return null;
         }
         // XXX trivial implementation which is not affected by the contents of
