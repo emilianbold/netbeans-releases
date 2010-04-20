@@ -63,6 +63,7 @@ import org.netbeans.modules.j2ee.weblogic9.deploy.WLCommandDeployer;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -93,20 +94,30 @@ public class WLDatasourceManager implements DatasourceManager {
         LinkedList<Datasource> conflictDS = new LinkedList<Datasource>();
         for (Datasource datasource : datasources) {
             if (!(datasource instanceof WLDatasource)) {
+                LOGGER.log(Level.INFO, "Unable to deploy {0}", datasource);
                 continue;
             }
 
-            String jndiName = datasource.getJndiName();
+            WLDatasource wlDatasource = (WLDatasource) datasource;
+            String jndiName = wlDatasource.getJndiName();
             if (deployed.keySet().contains(jndiName)) { // conflicting ds found
-                if (!deployed.get(jndiName).equals(datasource)) { // found ds is not equal
-                    conflictDS.add(deployed.get(jndiName)); // NOI18N
+                Datasource deployedDatasource = deployed.get(jndiName);
+                
+                // jndi name is same, but DS differs
+                if (!deployed.get(jndiName).equals(wlDatasource)) {
+                    // they differ, but both are app modules - ok to redeploy
+                    if (!((WLDatasource)deployedDatasource).isSystem() && !wlDatasource.isSystem()) {
+                        toDeploy.put(jndiName, wlDatasource);
+                    } else {
+                        conflictDS.add(deployed.get(jndiName));
+                    }
+                } else {
+                    // TODO try to start it
                 }
             } else if (jndiName != null) {
-                if (datasource instanceof WLDatasource) {
-                    toDeploy.put(jndiName, (WLDatasource) datasource);
-                } else {
-                    LOGGER.log(Level.INFO, "Unable to deploy {0}", datasource);
-                }
+                toDeploy.put(jndiName, wlDatasource);
+            } else {
+                LOGGER.log(Level.INFO, "JNDI name was null for {0}", datasource);
             }
         }
         
@@ -116,7 +127,12 @@ public class WLDatasourceManager implements DatasourceManager {
 
         WLCommandDeployer deployer = new WLCommandDeployer(WLDeploymentFactory.getInstance(),
                 manager.getInstanceProperties());
-        waitFor(deployer.deployDatasource(toDeploy.values()));
+        ProgressObject po = deployer.deployDatasource(toDeploy.values());
+        waitFor(po);
+        if (po.getDeploymentStatus().isFailed()) {
+            String msg = NbBundle.getMessage(WLDatasourceManager.class, "MSG_FailedToDeployDatasource");
+            throw new ConfigurationException(msg);
+        }
     }
 
     @Override
@@ -129,7 +145,7 @@ public class WLDatasourceManager implements DatasourceManager {
             domainConfig = domain.getFileObject("config/config.xml"); // NOI18N
         }
 
-        return new HashSet<Datasource>(WLDatasourceSupport.getDatasources(domainPath, domainConfig));
+        return new HashSet<Datasource>(WLDatasourceSupport.getDatasources(domainPath, domainConfig, true));
     }
 
     private Map<String, Datasource> createMap(Set<Datasource> datasources) {
