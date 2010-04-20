@@ -188,11 +188,21 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
     /** Returns a classpath where the JDBC drivers could be placed */
     private Collection<File> getJDBCDriverClasspath() {
         // FIXME server/lib as well
+        List<File> cp = new ArrayList<File>();
         File domainLib = WLPluginProperties.getDomainLibDirectory(manager);
         if (domainLib != null) {
-            return Arrays.asList(domainLib.listFiles());
+            File[] files = domainLib.listFiles();
+            if (files != null) {
+                cp.addAll(Arrays.asList(files));
+            }
         }
-
-        return Collections.emptyList();
+        File serverLib = WLPluginProperties.getServerLibDirectory(manager);
+        if (serverLib != null) {
+            File[] files = serverLib.listFiles();
+            if (files != null) {
+                cp.addAll(Arrays.asList(files));
+            }
+        }
+        return cp;
     }
 }

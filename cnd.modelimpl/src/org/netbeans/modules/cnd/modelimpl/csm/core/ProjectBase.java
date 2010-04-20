@@ -1496,6 +1496,19 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         synchronized (entry.getLock()) {
             List<PreprocessorStatePair> statesToKeep = new ArrayList<PreprocessorStatePair>(4);
             Collection<PreprocessorStatePair> entryStatePairs = entry.getStatePairs();
+            if (TraceFlags.TRACE_182342_BUG) {
+                if (csmFile.getAbsolutePath().toString().endsWith("fileWithDeadCode.cc")) {// NOI18N
+                    System.err.printf("original states for file: %s \n with new state: %s\n and pcState: %s\n", csmFile, ppState, pcState);
+                    if (entryStatePairs.isEmpty()) {
+                        System.err.println("NO ORIGINAL STATES");
+                    } else {
+                        int i = 0;
+                        for (PreprocessorStatePair preprocessorStatePair : entryStatePairs) {
+                            System.err.printf("State %d from original %s\n", i++, preprocessorStatePair);
+                        }
+                    }
+                }
+            }
             List<PreprocessorStatePair> copy = new ArrayList<PreprocessorStatePair>();
             entryFound = false;
             // put into copy array all except ourself
@@ -1509,6 +1522,19 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     entryFound = true;
                 } else {
                     copy.add(pair);
+                }
+            }
+            if (TraceFlags.TRACE_182342_BUG) {
+                if (csmFile.getAbsolutePath().toString().endsWith("fileWithDeadCode.cc")) { // NOI18N
+                    System.err.printf("%s found PARSING entry for file: %s \n", entryFound ? "" : "NOT", csmFile);
+                    if (copy.isEmpty()) {
+                        System.err.println("NO KEPT STATES");
+                    } else {
+                        int i = 0;
+                        for (PreprocessorStatePair preprocessorStatePair : copy) {
+                            System.err.printf("State %d from copy %s\n", i++, preprocessorStatePair);
+                        }
+                    }
                 }
             }
             if (entryFound) {

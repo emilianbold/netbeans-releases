@@ -44,6 +44,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
+import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  * {@link OpenCookie} implementation that launches external program
@@ -58,12 +60,8 @@ import org.openide.loaders.DataObject;
     private final String failmsg;
 
     public ExternalProgramOpenCookie(DataObject dao, String program, String failmsg) {
-        if (dao == null) {
-            throw new NullPointerException("dao can't be null"); // NOI18N
-        }
-        if (program == null) {
-            throw new NullPointerException("program can't be null"); // NOI18N
-        }
+        Parameters.notNull("dao", dao);
+        Parameters.notNull("program", program);
         this.dao = dao;
         this.program = program;
         this.failmsg = failmsg;
@@ -71,14 +69,28 @@ import org.openide.loaders.DataObject;
 
     @Override
     public void open() {
+        boolean success = false;
         ProcessBuilder pb = new ProcessBuilder(program, dao.getPrimaryFile().getPath());
         try {
             pb.start();
+            success = true;
         } catch (IOException ex) {
-            if (failmsg != null) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        MessageFormat.format(failmsg, program)));
+        }
+
+        if (!success && Utilities.isMac()) {
+            // On Mac the built-in "open" command can open standard file types.
+            // This fixes bug #178742 - NetBeans can't launch Qt Designer
+            pb = new ProcessBuilder("open", dao.getPrimaryFile().getPath()); // NOI18N
+            try {
+                pb.start();
+                success = true;
+            } catch (IOException ex) {
             }
+        }
+
+        if (!success && failmsg != null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    MessageFormat.format(failmsg, program)));
         }
     }
 }
