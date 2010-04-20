@@ -79,7 +79,7 @@ public abstract class CheckNode extends DefaultMutableTreeNode {
 
     public static class CGSPropertyNode extends CheckNode {
 
-        private final Property property;
+        protected final Property property;
 
         public CGSPropertyNode(Property property) {
             super(property.getName(), false, property.isSelected());
@@ -98,21 +98,33 @@ public abstract class CheckNode extends DefaultMutableTreeNode {
             final boolean isPublic = BodyDeclaration.Modifier.isPublic(modifier);
             final boolean isProtected = isPublic ? false : BodyDeclaration.Modifier.isProtected(modifier);
             final boolean isStatic = BodyDeclaration.Modifier.isStatic(modifier);
-            String name = "fieldPrivate";           //NOI18N
-            if (property.getKind().equals(PhpElementKind.METHOD)) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(isStatic? "methodStatic" : "method");//NOI18N
-                sb.append(isPublic ? "Public" : "Protected");//NOI18N
-                name = sb.toString();
-            } else {
-                name = "fieldPrivate";
-                if (isPublic) {
-                    name = "fieldPublic";               //NOI18N
-                } else if (isProtected) {
-                    name = "fieldProtected";               //NOI18N
-                }
+            return ImageUtilities.loadImage(ICON_BASE + getName(isPublic, isProtected, isStatic) + ICON_EXTENSION);
+        }
+
+        protected String getName(boolean isPublic, boolean isProtected, boolean isStatic) {
+            String name = "fieldPrivate"; // NOI18N
+            if (isPublic) {
+                name = "fieldPublic"; // NOI18N
+            } else if (isProtected) {
+                name = "fieldProtected"; // NOI18N
             }
-            return ImageUtilities.loadImage(ICON_BASE + name + ICON_EXTENSION);
+            return name;
+        }
+    }
+
+    public static class MethodPropertyNode extends CGSPropertyNode {
+
+        public MethodPropertyNode(Property property) {
+            super(property);
+            assert PhpElementKind.METHOD.equals(property.getKind()) : property.getKind();
+        }
+
+        @Override
+        protected String getName(boolean isPublic, boolean isProtected, boolean isStatic) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(isStatic ? "methodStatic" : "method"); // NOI18N
+            sb.append(isPublic ? "Public" : "Protected"); // NOI18N
+            return sb.toString();
         }
     }
 }
