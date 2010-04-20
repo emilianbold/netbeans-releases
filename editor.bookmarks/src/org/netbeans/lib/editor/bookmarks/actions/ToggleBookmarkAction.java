@@ -49,9 +49,7 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ButtonModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JEditorPane;
 import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -64,6 +62,7 @@ import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
 import org.openide.awt.Actions;
 import org.openide.cookies.EditorCookie;
+import org.openide.text.NbDocument;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -143,13 +142,7 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
 
     private static JTextComponent findComponent(Lookup lookup) {
         EditorCookie ec = (EditorCookie) lookup.lookup(EditorCookie.class);
-        if (ec != null) {
-            JEditorPane panes[] = ec.getOpenedPanes();
-            if (panes != null && panes.length > 0) {
-                return panes[0];
-            }
-        }
-        return null;
+        return ec == null ? null : NbDocument.findRecentEditorPane(ec);
     }
     
     private static void actionPerformed(JTextComponent target) {
