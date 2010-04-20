@@ -109,7 +109,7 @@ public class CompileLineService {
         int i = 0;
         while ((line=out.readLine())!= null){
             line = line.trim();
-            if (line.isEmpty()) {
+            if (line.length() == 0) {
                 continue;
             }
             switch (i%3) {

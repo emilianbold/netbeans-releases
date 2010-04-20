@@ -72,7 +72,7 @@ public class RemoteUtil {
         public void log(Level level, String format, Object... args) {
             if (LOGGER.isLoggable(level)) {
                 String text = String.format(format, args);
-                text = prefix + ": " + text;
+                text = prefix + ": " + text; // NOI18N
                 LOGGER.log(level, text);
             }
         }

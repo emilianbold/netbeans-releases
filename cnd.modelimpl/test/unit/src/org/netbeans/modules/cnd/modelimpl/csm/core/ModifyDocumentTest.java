@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -91,12 +92,14 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         assertNotNull(doc);
         assertTrue(doc.getLength() > 0);
         project.waitParse();
+        final AtomicInteger parseCounter = new AtomicInteger(0);
         final CsmProgressListener listener = new CsmProgressAdapter() {
             @Override
             public void fileParsingFinished(CsmFile file) {
                 if (file.equals(fileImpl)) {
                     CountDownLatch cond = condRef.get();
                     cond.countDown();
+                    parseCounter.incrementAndGet();
                 }
             }
         };
@@ -130,6 +133,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                     exRef.compareAndSet(null, new TimeoutException("not finished await"));
                 } else {
                     checkDeadBlocks(project, fileImpl, "2. text after inserting dead block:", doc, "File must have one dead code block ", 1);
+                    assertEquals("must be exactly one parse event", 1, parseCounter.get());
                 }
             } catch (InterruptedException ex) {
                 exRef.compareAndSet(null, ex);
@@ -144,7 +148,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     }
 
     public void testRemoveDeadBlock() throws Exception {
-        TraceFlags.TRACE_182342_BUG = false;
+        TraceFlags.TRACE_182342_BUG = true;
         final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
         final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
         final CsmProject project = super.getProject();
@@ -155,16 +159,18 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         assertNotNull(doc);
         assertTrue(doc.getLength() > 0);
         project.waitParse();
+        final AtomicInteger parseCounter = new AtomicInteger(0);
         final CsmProgressListener listener = new CsmProgressAdapter() {
 
             @Override
             public void fileParsingFinished(CsmFile file) {
+                if (TraceFlags.TRACE_182342_BUG) {
+                    new Exception("fileParsingFinished " + file).printStackTrace(System.err);// NOI18N
+                }
                 if (file.equals(fileImpl)) {
-                    if (TraceFlags.TRACE_182342_BUG) {
-                        new Exception("fileParsingFinished ").printStackTrace(System.err);// NOI18N
-                    }
                     CountDownLatch cond = condRef.get();
                     cond.countDown();
+                    parseCounter.incrementAndGet();
                 }
             }
         };
@@ -194,6 +200,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                     exRef.compareAndSet(null, new TimeoutException("not finished await"));
                 } else {
                     checkDeadBlocks(project, fileImpl, "2. text after deleting dead block:", doc, "File must have no dead code blocks ", 0);
+                    assertEquals("must be exactly one parse event", 1, parseCounter.get());
                 }
             } catch (InterruptedException ex) {
                 exRef.compareAndSet(null, ex);

@@ -143,6 +143,9 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 model.addElement(rec);
             }
             defaultRecord = cache.getDefaultRecord();
+            if (defaultRecord == null) {
+                defaultRecord = ServerList.getDefaultRecord();
+            }
         }
         lstDevHosts.setModel(model);
         lstDevHosts.setSelectedValue(defaultRecord, false);

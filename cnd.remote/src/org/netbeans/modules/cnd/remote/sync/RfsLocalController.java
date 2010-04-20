@@ -75,7 +75,7 @@ class RfsLocalController extends NamedRunnable {
         this.remoteUpdates = new HashSet<File>();
         this.privProjectStorageDir = privProjectStorageDir;
         this.fileData = new FileData(privProjectStorageDir, executionEnvironment);
-        this.logger = new RemoteUtil.PrefixedLogger("LC[" + executionEnvironment + "]");
+        this.logger = new RemoteUtil.PrefixedLogger("LC[" + executionEnvironment + "]"); // NOI18N
     }
 
     private void respond_ok() {
