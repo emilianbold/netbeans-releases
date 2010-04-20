@@ -306,6 +306,12 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
         }
 
+        if (actionType == PredefinedType.RUN) {
+            if (cs != null) {
+                descr.charset(cs.getEncoding());
+            }
+        }
+
         NativeExecutionService es = NativeExecutionService.newService(npb, descr, pae.getActionName()); // NOI18N
         executorTask = es.run();
     }

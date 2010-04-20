@@ -59,7 +59,7 @@ public class ATTx86SyntaxProvider implements AsmSyntaxProvider {
         
         public AntlrScanner createScanner(Reader input, Object state) {
             ATTScanner scanner = new ATTScanner(input);
-            scanner.setCommentLiterals(";/!"); // NOI18N
+            scanner.setCommentLiterals(";/!#"); // NOI18N
             scanner.setIntState(state);
             
             return scanner;

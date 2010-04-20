@@ -50,14 +50,12 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.security.acl.NotOwnerException;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
+import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner.BufferedLineProcessor;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -83,44 +81,30 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
             return pid;
         }
 
-        NativeProcess pidFetchProcess = null;
+        BufferedLineProcessor blp = new BufferedLineProcessor();
+        ShellScriptRunner scriptRunner = new ShellScriptRunner(execEnv, "/bin/ptree $$", blp); // NOI18N
 
         try {
-            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setCommandLine("/bin/ptree $$"); // NOI18N
-            pidFetchProcess = npb.call();
-
-            int result = pidFetchProcess.waitFor();
-
-            if (result != 0) {
+            if (scriptRunner.execute() != 0) {
                 throw new IOException("Unable to get sshd pid"); // NOI18N
             }
-
-            List<String> out = ProcessUtils.readProcessOutput(pidFetchProcess);
-            String pidCandidate = null;
-
-            for (String line : out) {
-                line = line.trim();
-                if (line.endsWith("sshd")) { // NOI18N
-                    try {
-                        pidCandidate = line.substring(0, line.indexOf(' '));
-                    } catch (NumberFormatException ex) {
-                    }
-                }
-            }
-
-            pid = pidCandidate;
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
         } catch (IOException ex) {
             Logger.getInstance().fine(ex.toString());
-            try {
-                ProcessUtils.logError(Level.FINE, Logger.getInstance(), pidFetchProcess);
-            } catch (IOException ioex) {
-                Logger.getInstance().log(Level.FINE, "", ioex); // NOI18N
+        }
+
+        String pidCandidate = null;
+
+        for (String line : blp.getBuffer()) {
+            line = line.trim();
+            if (line.endsWith("sshd")) { // NOI18N
+                try {
+                    pidCandidate = line.substring(0, line.indexOf(' '));
+                } catch (NumberFormatException ex) {
+                }
             }
         }
 
+        pid = pidCandidate;
         return pid;
     }
 
@@ -192,7 +176,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
             Logger.getInstance().log(Level.FINE, "", ex); // NOI18N
         } finally {
             if (status != 0) {
-                if (!Boolean.getBoolean("nativeexecution.mode.unittest")){
+                if (!Boolean.getBoolean("nativeexecution.mode.unittest")) {
                     NotifyDescriptor dd =
                             new NotifyDescriptor.Message(NbBundle.getMessage(SPSRemoteImpl.class, "TaskPrivilegesSupport_GrantPrivileges_Failed"));
                     DialogDisplayer.getDefault().notify(dd);

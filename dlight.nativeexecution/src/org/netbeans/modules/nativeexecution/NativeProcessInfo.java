@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -73,6 +74,7 @@ public final class NativeProcessInfo {
     private Pty pty = null;
     private boolean runInPty;
     private boolean expandMacros = true;
+    private Charset charset;
 
     public NativeProcessInfo(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
@@ -101,6 +103,7 @@ public final class NativeProcessInfo {
         this.executable = executable;
     }
 
+    @Deprecated
     public void setCommandLine(String commandLine) {
         if (isWindows) {
             // Until we use java ProcessBuilder on Windows,
@@ -162,8 +165,10 @@ public final class NativeProcessInfo {
 
         this.arguments.clear();
 
-        for (String arg : arguments) {
-            this.arguments.add(arg.trim());
+        if (arguments != null) {
+            for (String arg : arguments) {
+                this.arguments.add(arg.trim());
+            }
         }
     }
 
@@ -368,5 +373,13 @@ public final class NativeProcessInfo {
      */
     public void setExpandMacros(boolean expandMacros) {
         this.expandMacros = expandMacros;
+    }
+
+    public void setCharset(Charset charset) {
+        this.charset = charset;
+    }
+
+    public Charset getCharset() {
+        return charset;
     }
 }
