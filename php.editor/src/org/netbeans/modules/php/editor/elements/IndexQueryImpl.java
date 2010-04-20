@@ -73,6 +73,7 @@ import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeTreeElement;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -1346,5 +1347,15 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             }
         }
         return query;
+    }
+
+    @Override
+    public TypeTreeElement getInheritedTypesAsTree(TypeElement typeElement) {
+        return new TypeTreeElementImpl(typeElement);
+    }
+
+    @Override
+    public TypeTreeElement getInheritedTypesAsTree(TypeElement typeElement, Set<TypeElement> preferredTypes) {
+        return new TypeTreeElementImpl(typeElement, preferredTypes);
     }
 }

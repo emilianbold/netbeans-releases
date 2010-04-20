@@ -1463,6 +1463,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                             case SCOPE:
                             case PARENTHESIS:
                             case UNARY_OPERATOR:
+                            case TERNARY_OPERATOR:
                             case MEMBER_POINTER:
                                 CsmCompletionExpression opExp = createTokenExp(OPERATOR);
                                 pushExp(opExp);

@@ -54,6 +54,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 public class GdbActionHandler extends CndDebuggerActionHandler {
+    private static final RequestProcessor RP = new RequestProcessor("GDB Debugger Starting", 50); //NOI18N
     @Override
     public void execute(final InputOutput io) {
         GdbProfile profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
@@ -62,7 +63,7 @@ public class GdbActionHandler extends CndDebuggerActionHandler {
             if (gdb != null) {
                 executionStarted();
                 if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG || pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO) {
-                    new RequestProcessor("GDB Debugger Starting").post(new Runnable() { //NOI18N
+                    RP.post(new Runnable() {
                         @Override
                         public void run() {
                             DebuggerManager.getDebuggerManager().startDebugging(

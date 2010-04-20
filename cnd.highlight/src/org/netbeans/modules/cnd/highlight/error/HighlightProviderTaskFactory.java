@@ -69,9 +69,10 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
 
     public HighlightProviderTaskFactory(){
         super();
-        SemanticHighlightingOptions.instance().addPropertyChangeListener(this);
+        SemanticHighlightingOptions.instance().addPropertyChangeListener(HighlightProviderTaskFactory.this);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         for (FileObject file : OpenedEditors.getDefault().getVisibleEditorsFiles()){
             reschedule(file);
@@ -120,6 +121,7 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
             }
         }
 
+        @Override
         public void run(Phase phase) {
             Document doc = getDocument();
             if (doc != null) {
@@ -141,6 +143,7 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
             return weakDoc != null ? weakDoc.get() : null;
         }
 
+        @Override
         public boolean isValid() {
             return true;
         }
@@ -157,6 +160,7 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
             }
         }
 
+        @Override
         public void cancel() {
             synchronized(listeners) {
                 for(Cancellable interruptor : listeners) {
@@ -165,15 +169,18 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
             }
         }
 
+        @Override
         public boolean isHighPriority() {
             return false;
         }
 
         protected static class MyInterruptor implements Interrupter, Cancellable {
             private boolean canceled = false;
+            @Override
             public boolean cancelled() {
                 return canceled;
             }
+            @Override
             public boolean cancel() {
                 canceled = true;
                 return true;

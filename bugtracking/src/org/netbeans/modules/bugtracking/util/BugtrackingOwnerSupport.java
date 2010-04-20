@@ -63,6 +63,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -124,7 +125,7 @@ public abstract class BugtrackingOwnerSupport {
             case ALL_PROJECTS:
                 return getRepository(OpenProjects.getDefault().getOpenProjects());
             case SELECTED_FILE_AND_ALL_PROJECTS:
-                File contextFile = BugtrackingUtil.getLargerContext();
+                File contextFile = getLargerContext();
                 if (contextFile != null) {
                     return getRepositoryForContext(contextFile, false);
                 }
@@ -229,13 +230,13 @@ public abstract class BugtrackingOwnerSupport {
         }
 
         FileToRepoMappingStorage.getInstance().setFirmAssociation(
-                BugtrackingUtil.getLargerContext(files[0]),
+                getLargerContext(files[0]),
                 repository);
     }
 
     public void setFirmAssociation(File file, Repository repository) {
         FileToRepoMappingStorage.getInstance().setFirmAssociation(
-                BugtrackingUtil.getLargerContext(file),
+                getLargerContext(file),
                 repository);
     }
 
@@ -248,20 +249,20 @@ public abstract class BugtrackingOwnerSupport {
             case MAIN_PROJECT_ONLY:
                 Project mainProject = projects.getMainProject();
                 if (mainProject != null) {
-                    context = BugtrackingUtil.getLargerContext(mainProject);
+                    context = getLargerContext(mainProject);
                 }
                 break;
             case MAIN_OR_SINGLE_PROJECT:
                 Project mainOrSingleProject = getMainOrSingleProject();
                 if (mainOrSingleProject != null) {
-                    context = BugtrackingUtil.getLargerContext(mainOrSingleProject);
+                    context = getLargerContext(mainOrSingleProject);
                 }
                 break;
             case ALL_PROJECTS:
-                context = BugtrackingUtil.getContextFromProjects();
+                context = getContextFromProjects();
                 break;
             case SELECTED_FILE_AND_ALL_PROJECTS:
-                context = BugtrackingUtil.getLargerContext();
+                context = getLargerContext();
                 break;
             default:
                 assert false;
@@ -277,7 +278,7 @@ public abstract class BugtrackingOwnerSupport {
 
     public void setLooseAssociation(File file, Repository repository) {
         FileToRepoMappingStorage.getInstance().setLooseAssociation(
-                BugtrackingUtil.getLargerContext(file),
+                getLargerContext(file),
                 repository);
     }
 
@@ -287,6 +288,128 @@ public abstract class BugtrackingOwnerSupport {
      */
     public final Collection<String> getAllAssociatedUrls() {
         return FileToRepoMappingStorage.getInstance().getAllFirmlyAssociatedUrls();
+    }
+
+    private static File getLargerContext() {
+        FileObject openFile = getOpenFileObj();
+        if (openFile != null) {
+            File largerContext = getLargerContext(openFile);
+            if (largerContext != null) {
+                return largerContext;
+            }
+        }
+
+        return getContextFromProjects();
+    }
+
+    private static File getContextFromProjects() {
+        final OpenProjects projects = OpenProjects.getDefault();
+
+        Project mainProject = projects.getMainProject();
+        if (mainProject != null) {
+            return getLargerContext(mainProject);       //null or non-null
+        }
+
+        Project[] openProjects = projects.getOpenProjects();
+        if ((openProjects != null) && (openProjects.length == 1)) {
+            return getLargerContext(openProjects[0]);
+        }
+
+        return null;
+    }
+
+    private static File getLargerContext(File file) {
+        return getLargerContext(file, null);
+    }
+
+    private static File getLargerContext(FileObject fileObj) {
+        return getLargerContext(null, fileObj);
+    }
+
+    private static File getLargerContext(File file, FileObject fileObj) {
+        if ((file == null) && (fileObj == null)) {
+            throw new IllegalArgumentException(
+                    "both File and FileObject are null");               //NOI18N
+        }
+
+        assert (file == null)
+               || (fileObj == null)
+               || FileUtil.toFileObject(file).equals(fileObj);
+
+        if (fileObj == null) {
+            fileObj = getFileObjForFileOrParent(file);
+        } else if (file == null) {
+            file = FileUtil.toFile(fileObj);
+        }
+
+        if (fileObj == null) {
+            return null;
+        }
+        if (!fileObj.isValid()) {
+            return null;
+        }
+
+        Project parentProject = FileOwnerQuery.getOwner(fileObj);
+        if (parentProject != null) {
+            FileObject parentProjectFolder = parentProject.getProjectDirectory();
+            if (parentProjectFolder.equals(fileObj) && (file != null)) {
+                return file;
+            }
+            File folder = FileUtil.toFile(parentProjectFolder);
+            if (folder != null) {
+                return folder;
+            }
+        }
+
+        if (fileObj.isFolder()) {
+            return file;                        //whether it is null or non-null
+        } else {
+            fileObj = fileObj.getParent();
+            assert fileObj != null;      //every non-folder should have a parent
+            return FileUtil.toFile(fileObj);    //whether it is null or non-null
+        }
+    }
+
+
+    private static FileObject getFileObjForFileOrParent(File file) {
+        FileObject fileObj = FileUtil.toFileObject(file);
+        if (fileObj != null) {
+            return fileObj;
+        }
+
+        File closestParentFile = file.getParentFile();
+        while (closestParentFile != null) {
+            fileObj = FileUtil.toFileObject(closestParentFile);
+            if (fileObj != null) {
+                return fileObj;
+            }
+            closestParentFile = closestParentFile.getParentFile();
+        }
+
+        return null;
+    }
+
+    private static File getLargerContext(Project project) {
+        FileObject projectFolder = project.getProjectDirectory();
+        assert projectFolder != null;
+
+        return FileUtil.toFile(projectFolder);
+    }
+
+    private static FileObject getOpenFileObj() {
+        TopComponent activatedTopComponent = TopComponent.getRegistry()
+                                             .getActivated();
+        if (activatedTopComponent == null) {
+            return null;
+        }
+
+        DataObject dataObj = activatedTopComponent.getLookup()
+                             .lookup(DataObject.class);
+        if ((dataObj == null) || !dataObj.isValid()) {
+            return null;
+        }
+
+        return dataObj.getPrimaryFile();
     }
 
     //--------------------------------------------------------------------------
@@ -333,7 +456,7 @@ public abstract class BugtrackingOwnerSupport {
                 return null;
             }
 
-            File context = BugtrackingUtil.getLargerContext(project);
+            File context = getLargerContext(project);
             if (context != null) {
                 return getRepositoryForContext(context, null, askIfUnknown);
             } else {
@@ -362,7 +485,7 @@ public abstract class BugtrackingOwnerSupport {
                 }
             }
 
-            File context = BugtrackingUtil.getLargerContext(file, fileObject);
+            File context = getLargerContext(file, fileObject);
             if (context == null) {
                 context = file;
             }

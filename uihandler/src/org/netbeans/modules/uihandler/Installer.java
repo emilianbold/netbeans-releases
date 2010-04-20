@@ -175,11 +175,11 @@ public class Installer extends ModuleInstall implements Runnable {
     /** Flag to store status of last metrics upload */
     private static boolean logMetricsUploadFailed = false;
     
-    private static String USAGE_STATISTICS_ENABLED          = "usageStatisticsEnabled"; // NOI18N
-    private static String USAGE_STATISTICS_SET_BY_IDE       = "usageStatisticsSetByIde"; // NOI18N
-    private static String USAGE_STATISTICS_NB_OF_IDE_STARTS = "usageStatisticsNbOfIdeStarts"; // NOI18N
-    private static String CORE_PREF_NODE = "org/netbeans/core"; // NOI18N
-    private static Preferences corePref = NbPreferences.root().node (CORE_PREF_NODE);
+    private static final  String USAGE_STATISTICS_ENABLED          = "usageStatisticsEnabled"; // NOI18N
+    private static final String USAGE_STATISTICS_SET_BY_IDE       = "usageStatisticsSetByIde"; // NOI18N
+    private static final String USAGE_STATISTICS_NB_OF_IDE_STARTS = "usageStatisticsNbOfIdeStarts"; // NOI18N
+    private static final String CORE_PREF_NODE = "org/netbeans/core"; // NOI18N
+    private static final Preferences corePref = NbPreferences.root().node (CORE_PREF_NODE);
 
     private JButton metricsEnable = new JButton();
     private JButton metricsCancel = new JButton();
@@ -1391,6 +1391,11 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     private static abstract class Submit implements ActionListener, Runnable {
+
+        private enum DialogState {
+
+            NON_CREATED, CREATED, FAILED
+        };
         private AtomicBoolean isSubmiting;// #114505 , report is sent two times
         protected String exitMsg;
         protected DialogDescriptor dd;
@@ -1399,7 +1404,7 @@ public class Installer extends ModuleInstall implements Runnable {
         protected boolean okToExit;
         protected ReportPanel reportPanel;
         private URL url;
-        private boolean dialogCreated = false;
+        private DialogState dialogState = DialogState.NON_CREATED;
         private boolean checkingResult, refresh = false;
         protected boolean errorPage = false;
         protected DataType dataType = DataType.DATA_UIGESTURE;
@@ -1461,7 +1466,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
             synchronized (this) {
                 RP_UI.post(this);
-                while (!dialogCreated) {
+                while (dialogState.equals(DialogState.NON_CREATED)) {
                     try {
                         wait();
                     } catch (InterruptedException ex) {
@@ -1469,6 +1474,9 @@ public class Installer extends ModuleInstall implements Runnable {
                     }
                 }
                 notifyAll();
+            }
+            if (dialogState.equals(DialogState.FAILED)){
+                return;
             }
 
             LOG.log(Level.FINE, "doShow, dialog has been created"); // NOI18N
@@ -1543,7 +1551,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 assignInternalURL(url);
                 refresh = false;
                 synchronized (this) {
-                    while (dialogCreated && !refresh) {
+                    while (dialogState.equals(DialogState.CREATED) && !refresh) {
                         try {
                             wait();
                         } catch (InterruptedException ex) {
@@ -1561,7 +1569,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         protected synchronized final void doCloseDialog() {
-            dialogCreated = false;
+            dialogState = DialogState.NON_CREATED;
             closeDialog();
             notifyAll();
             LOG.log(Level.FINE, "doCloseDialog");
@@ -1584,21 +1592,27 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         public void run() {
-            createDialog();
-            synchronized (this) {
-                dialogCreated = true;
-                // dialog created let the code go on
-                notifyAll();
+            DialogState newState = DialogState.CREATED;
+            try{
+                createDialog();
+            }catch (RuntimeException e){
+                newState = DialogState.FAILED;
+                throw e;
+            } finally {
+                synchronized (this) {
+                    dialogState = newState;
+                    // dialog created let the code go on
+                    notifyAll();
 
 
-                try {
-                    // wait till the other code runs
-                    wait();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
+                    try {
+                        // wait till the other code runs
+                        wait();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
-
             LOG.log(Level.FINE, "run, showDialogAndGetValue");
             Object res = showDialogAndGetValue(dd);
             LOG.log(Level.FINE, "run, showDialogAndGetValue, res = {0}", res);

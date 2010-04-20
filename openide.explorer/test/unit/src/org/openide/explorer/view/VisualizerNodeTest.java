@@ -42,7 +42,10 @@
 package org.openide.explorer.view;
 
 import java.awt.Image;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.Icon;
 import javax.swing.tree.TreeNode;
 import org.netbeans.junit.NbTestCase;
@@ -118,6 +121,25 @@ public class VisualizerNodeTest extends NbTestCase {
         
         assertEquals("Child check", "c", ta.getChildAt(2).toString());
         assertEquals("Counter should be 1", 1, lch.cnt);
+    }
+
+    public void testLazyVisDestroy() throws Exception {
+        LazyChildren lch = new LazyChildren();
+        AbstractNode a = new AbstractNode(lch);
+        List<String> arr = Collections.nCopies(100, "A");
+        lch.keys(arr.toArray(new String[0]));
+
+        TreeNode ta = Visualizer.findVisualizer(a);
+        final TreeNode snd = ta.getChildAt(2);
+
+        Reference<Node> sndNode = new WeakReference<Node>(Visualizer.findNode(snd));
+
+        assertEquals("Child check", "A", snd.toString());
+        assertEquals("Counter should be 1", 1, lch.cnt);
+
+        a.destroy();
+
+        assertGC("Whole subtree under a can be GCed now", sndNode);
     }
     
     public void testLazyFilterGet() throws Exception {

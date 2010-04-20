@@ -481,9 +481,9 @@ fi
 # See:
 # [1] http://standards.freedesktop.org/startup-notification-spec
 # [2] http://netbeans.org/bugzilla/show_bug.cgi?id=76970
-if [ ! -z $DESKTOP_STARTUP_ID ] ; then
+if [ ! -z "$DESKTOP_STARTUP_ID" ] ; then
     # Save a value for later using
-    NB_DESKTOP_STARTUP_ID=$DESKTOP_STARTUP_ID; export NB_DESKTOP_STARTUP_ID
+    NB_DESKTOP_STARTUP_ID="$DESKTOP_STARTUP_ID"; export NB_DESKTOP_STARTUP_ID
 
     unset DESKTOP_STARTUP_ID
 fi
