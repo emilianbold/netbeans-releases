@@ -517,7 +517,7 @@ public final class MakeActionProvider implements ActionProvider {
             }
             MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
             String buildCommand;
-            buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " test", ""); // NOI18N
+            buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), "test"); // NOI18N
             String args = "";
             int index = getArgsIndex(buildCommand);
             if (index > 0) {
@@ -718,7 +718,7 @@ public final class MakeActionProvider implements ActionProvider {
         String buildCommand;
         String makeCommand = getMakeCommand(pd, conf);
         if(actionEvent == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
-            buildCommand = makeArtifact.getBuildCommand(makeCommand + " build-tests", ""); // NOI18N
+            buildCommand = makeArtifact.getBuildCommand(makeCommand,  "build-tests"); // NOI18N
         } else {
             buildCommand = makeArtifact.getBuildCommand(makeCommand, ""); // NOI18N
         }
@@ -884,7 +884,7 @@ public final class MakeActionProvider implements ActionProvider {
 
                 MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
                 String buildCommand;
-                buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " test TEST=" + target, ""); // NOI18N
+                buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), "test TEST=" + target); // NOI18N
                 String args = "";
                 int index = getArgsIndex(buildCommand);
                 if (index > 0) {
