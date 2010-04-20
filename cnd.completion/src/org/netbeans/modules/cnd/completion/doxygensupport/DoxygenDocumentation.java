@@ -125,8 +125,10 @@ public class DoxygenDocumentation {
                 case COMMAND:
                     CommandDescription cd = commands.get(t.image);
                     if (cd == null) {
-                        System.err.println("unknown command: " + t.image); // NOI18N
-                        break;
+                        // Unknown/unimplemented command. Use generic formatting.
+                        cd = new CommandDescription(EndsOn.PAR, "<strong>" + t.image.substring(1) + ":</strong><br>&nbsp; ", ""); // NOI18N
+//                        System.err.println("unknown command: " + t.image); // NOI18N
+//                        break;
                     }
                     output.append(cd.htmlStart);
                     switch (cd.end) {
