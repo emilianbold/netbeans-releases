@@ -518,6 +518,7 @@ made subject to such option by the copyright holder.
             <folder name="x-cmake">
                 <folder name="Factories">
                     <file name="CMakeDataLoader.instance">
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CMakefileDataIcon.gif"/>
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.cnd.loaders.CMakeDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="text/x-cmake"/>

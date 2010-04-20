@@ -116,6 +116,7 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
@@ -173,7 +174,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         attachHideStatusListener();
 
         // A11Y - Issues 163597 and 163598
-        BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
+        UIUtils.fixFocusTraversalKeys(addCommentArea);
 
         // Comments panel
         commentsPanel = new CommentsPanel();
@@ -193,7 +194,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         initSpellChecker();
         initDefaultButton();
 
-        BugtrackingUtil.issue163946Hack(scrollPane1);
+        UIUtils.issue163946Hack(scrollPane1);
     }
 
     private void initDefaultButton() {
@@ -557,8 +558,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             commentsPanel.setIssue(issue, attachments);
         }
         attachmentsPanel.setAttachments(attachments);
-        BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
-        BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
+        UIUtils.keepFocusedComponentVisible(commentsPanel);
+        UIUtils.keepFocusedComponentVisible(attachmentsPanel);
         if (force && !isNew) {
             addCommentArea.setText(""); // NOI18N
         }
@@ -1202,8 +1203,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         comp = scrollPane;
                         editor = textArea;
                         label.setVerticalAlignment(SwingConstants.TOP);
-                        BugtrackingUtil.fixFocusTraversalKeys(textArea);
-                        BugtrackingUtil.issue163946Hack(scrollPane);
+                        UIUtils.fixFocusTraversalKeys(textArea);
+                        UIUtils.issue163946Hack(scrollPane);
                         break;
                     case FreeText:
                         comp = editor = new JTextField();
@@ -1221,7 +1222,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         editor = list;
                         label.setVerticalAlignment(SwingConstants.TOP);
                         rigid = true;
-                        BugtrackingUtil.issue163946Hack(scrollPane);
+                        UIUtils.issue163946Hack(scrollPane);
                         break;
                     case DropDown:
                         comp = editor = new JComboBox();

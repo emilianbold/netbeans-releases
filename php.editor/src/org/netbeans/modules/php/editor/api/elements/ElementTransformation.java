@@ -37,17 +37,41 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.api;
+package org.netbeans.modules.php.editor.api.elements;
 
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * @author Radek Matous
+ *
+ * @author rmatous
  */
-public final class ElementQueryFactory {
-    private ElementQueryFactory() {};
-    public static ElementQuery.Index getIndexQuery(final QuerySupport querySupport)  {
-        return IndexQueryImpl.get(querySupport);
+public abstract class ElementTransformation<S extends PhpElement> {
+    public abstract S transform(PhpElement element);
+
+    public final <T extends PhpElement> Set<S> transform(Set<T> original) {
+        Set<S> retval = new HashSet<S>();
+        for (T baseElement : original) {
+            final S transformed = transform(baseElement);
+            if (transformed != null) {
+                retval.add(transformed);
+            }
+        }
+        return Collections.unmodifiableSet(retval);
     }
+
+    public static ElementTransformation<TypeElement> toMemberTypes() {
+        return new ElementTransformation<TypeElement>() {
+            @Override
+            public TypeElement transform(PhpElement element) {
+                if (element instanceof TypeMemberElement) {
+                    TypeMemberElement typeMemberElement = (TypeMemberElement) element;
+                    return typeMemberElement.getType();
+                }
+                return null;
+            }
+        };
+    }
+
 }

@@ -39,9 +39,11 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -76,6 +78,7 @@ public final class WindowsSupport {
     private Map<String, String> env = null;
     private String REG_EXE;
     private PathConverter pathConverter = null;
+    private Charset charset;
 
     static {
         String os = System.getProperty("os.name").toLowerCase(); // NOI18N
@@ -113,6 +116,7 @@ public final class WindowsSupport {
 
         pathConverter = new SimpleConverter();
         activeShell = findShell(searchDir);
+        initCharset();
     }
 
     private Shell findShell(String searchDir) {
@@ -352,7 +356,7 @@ public final class WindowsSupport {
      * @return charset to be used when 'communicating' with a shell
      */
     public Charset getShellCharset() {
-        return Charset.defaultCharset();
+        return charset;
     }
 
     private static Map<String, String> readEnv() {
@@ -408,6 +412,54 @@ public final class WindowsSupport {
 
     public Shell getActiveShell() {
         return activeShell;
+    }
+
+    private void initCharset() {
+        charset = Charset.defaultCharset();
+
+        if (activeShell == null || activeShell.type != ShellType.CYGWIN) {
+            return;
+        }
+
+        // 1. is LANG defined?
+        try {
+            ProcessBuilder shellBuilder = new ProcessBuilder(activeShell.shell, "--login", "-s"); // NOI18N
+            Process shellProcess = shellBuilder.start();
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(shellProcess.getOutputStream()));
+            writer.write("echo $LANG\n"); // NOI18N
+            writer.close();
+            String shellOutput = ProcessUtils.readProcessOutputLine(shellProcess);
+
+            if (shellOutput.length() > 0) {
+                if (shellOutput.contains(".")) { // NOI18N
+                    shellOutput = shellOutput.substring(shellOutput.indexOf('.') + 1);
+                }
+                try {
+                    charset = Charset.forName(shellOutput);
+                    return;
+                } catch (Exception ex) {
+                }
+            }
+
+            String cygwinVersion = null;
+            ProcessBuilder pb = new ProcessBuilder(activeShell.bindir + "\\uname.exe", "-r"); // NOI18N
+            Process process = pb.start();
+            process.waitFor();
+            String output = ProcessUtils.readProcessOutputLine(process);
+            Pattern p = Pattern.compile("^([0-9\\.]*).*"); // NOI18N
+            Matcher m = p.matcher(output);
+            if (m.matches()) {
+                cygwinVersion = m.group(1);
+            }
+            if (cygwinVersion == null) {
+                return;
+            }
+
+            if (cygwinVersion.startsWith("1.7")) { // NOI18N
+                charset = Charset.forName("UTF-8"); // NOI18N
+            }
+        } catch (Exception ex) {
+        }
     }
 
     private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {
