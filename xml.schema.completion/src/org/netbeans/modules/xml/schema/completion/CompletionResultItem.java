@@ -286,8 +286,11 @@ public abstract class CompletionResultItem implements CompletionItem {
 
     @Override
     public void defaultAction(JTextComponent component) {
-        int charsToRemove = (typedChars==null)?0:typedChars.length();
-        int substOffset = component.getCaretPosition() - charsToRemove;
+        String selectedText = component.getSelectedText();
+        int charsToRemove = selectedText != null ? selectedText.length() :
+                            (typedChars == null ? 0 : typedChars.length()),
+            substOffset   = selectedText != null ? component.getSelectionStart() :
+                            component.getCaretPosition() - charsToRemove;
         if(!shift) Completion.get().hideAll();
         if(getReplacementText().equals(typedChars))
             return;
