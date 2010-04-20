@@ -187,7 +187,7 @@ public class MakeArtifact {
         int startFlags = template.indexOf("${MAKEFLAGS}"); // NOI18N
         if (startCommand >= 0) {
             if (makeFlags.length() > 0 && startFlags < 0) {
-                makeCommand = makeCommand + " "+makeFlags;
+                makeCommand = makeCommand + " "+makeFlags; // NOI18N
             }
             template = template.substring(0, startCommand) + makeCommand + template.substring(startCommand + 7);
         }
@@ -197,7 +197,7 @@ public class MakeArtifact {
             template = template.substring(0, startFlags) + makeFlags + template.substring(startFlags + 12);
         } else {
             if (startCommand < 0) {
-                template = template + " " + makeFlags;
+                template = template + " " + makeFlags; // NOI18N
             }
         }
 
