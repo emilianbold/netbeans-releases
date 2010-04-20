@@ -207,7 +207,7 @@ public class ArchetypeWizardUtils {
 
         OSGI_ARCH = new Archetype();
         OSGI_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        OSGI_ARCH.setVersion("1.0-SNAPSHOT"); //NOI18N
+        OSGI_ARCH.setVersion("1.0-beta-2-SNAPSHOT"); //NOI18N
         OSGI_ARCH.setArtifactId("osgi-archetype"); //NOI18N
         OSGI_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
     }

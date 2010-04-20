@@ -135,7 +135,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                         inited = true;
                     }
                 });
-                return loadWithProcessing();
+                return PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.fixedPropertyProvider(loadWithProcessing())).getProperties();
             }
         });
     }
