@@ -115,10 +115,9 @@ public final class ProjectImpl extends ProjectBase {
         }
         final FileImpl impl = createOrFindFileImpl(buf, nativeFile);
         if (impl != null) {
-            impl.setBuffer(buf);
             APTDriver.getInstance().invalidateAPT(buf);
             APTFileCacheManager.invalidate(buf);
-            scheduleParseOnEditing(buf, impl);
+//            scheduleParseOnEditing(buf, impl);
             buf.addChangeListener(new ChangeListener() {
 
                 @Override
@@ -126,6 +125,7 @@ public final class ProjectImpl extends ProjectBase {
                     scheduleParseOnEditing(buf, impl);
                 }
             });
+            impl.setBuffer(buf);
         }
     }
 
