@@ -89,7 +89,9 @@ public final class ModuleOperations implements DeleteOperationImplementation,
     
     private void notifyDeleting(boolean temporary) throws IOException {
         FileObject buildXML = projectDir.getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-        ActionUtils.runTarget(buildXML, new String[] { ActionProvider.COMMAND_CLEAN }, null).waitFinished();
+        if (buildXML != null) {
+            ActionUtils.runTarget(buildXML, new String[] { ActionProvider.COMMAND_CLEAN }, null).waitFinished();
+        }
         
         SuiteProject suite = SuiteUtils.findSuite(project);
         if (suite != null) {
