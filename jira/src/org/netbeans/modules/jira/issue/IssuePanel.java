@@ -126,6 +126,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -172,13 +173,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         customFieldPanelLeft.setBackground(getBackground());
         customFieldPanelRight.setBackground(getBackground());
         parentHeaderPanel.setBackground(getBackground());
-        BugtrackingUtil.fixFocusTraversalKeys(environmentArea);
-        BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
-        BugtrackingUtil.issue163946Hack(componentScrollPane);
-        BugtrackingUtil.issue163946Hack(affectsVersionScrollPane);
-        BugtrackingUtil.issue163946Hack(fixVersionScrollPane);
-        BugtrackingUtil.issue163946Hack(environmentScrollPane);
-        BugtrackingUtil.issue163946Hack(addCommentScrollPane);
+        UIUtils.fixFocusTraversalKeys(environmentArea);
+        UIUtils.fixFocusTraversalKeys(addCommentArea);
+        UIUtils.issue163946Hack(componentScrollPane);
+        UIUtils.issue163946Hack(affectsVersionScrollPane);
+        UIUtils.issue163946Hack(fixVersionScrollPane);
+        UIUtils.issue163946Hack(environmentScrollPane);
+        UIUtils.issue163946Hack(addCommentScrollPane);
         summaryField.setPreferredSize(summaryField.getMinimumSize());
         initAttachmentsPanel();
         initIssueLinksPanel();
@@ -699,14 +700,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
             // Comments
             commentsPanel.setIssue(issue);
-            BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
+            UIUtils.keepFocusedComponentVisible(commentsPanel);
             if (force) {
                 addCommentArea.setText(""); // NOI18N
             }
 
             // Attachments
             attachmentsPanel.setIssue(issue);
-            BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
+            UIUtils.keepFocusedComponentVisible(attachmentsPanel);
 
             // Issue-links
             boolean anyLink = (issue.getLinkedIssues().length != 0);

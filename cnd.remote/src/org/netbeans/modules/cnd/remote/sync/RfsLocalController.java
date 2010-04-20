@@ -26,8 +26,10 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil.PrefixedLogger;
 import org.netbeans.modules.cnd.remote.sync.download.HostUpdates;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -36,7 +38,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
-class RfsLocalController implements Runnable {
+class RfsLocalController extends NamedRunnable {
 
     private final BufferedReader requestReader;
     private final PrintWriter responseStream;
@@ -47,6 +49,7 @@ class RfsLocalController implements Runnable {
     private final RemotePathMap mapper;
     private final Set<File> remoteUpdates;
     private final File privProjectStorageDir;
+    private final PrefixedLogger logger;
     /**
      * Maps remote canonical remote path remote controller operates with
      * to the absolute remote path local controller uses
@@ -62,7 +65,7 @@ class RfsLocalController implements Runnable {
     public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] files,
             BufferedReader requestStreamReader, PrintWriter responseStreamWriter, PrintWriter err,
             File privProjectStorageDir) {
-        super();
+        super("RFS local controller thread " + executionEnvironment); //NOI18N
         this.execEnv = executionEnvironment;
         this.files = files;
         this.requestReader = requestStreamReader;
@@ -72,6 +75,7 @@ class RfsLocalController implements Runnable {
         this.remoteUpdates = new HashSet<File>();
         this.privProjectStorageDir = privProjectStorageDir;
         this.fileData = new FileData(privProjectStorageDir, executionEnvironment);
+        this.logger = new RemoteUtil.PrefixedLogger("LC[" + executionEnvironment + "]");
     }
 
     private void respond_ok() {
@@ -108,18 +112,18 @@ class RfsLocalController implements Runnable {
     }
 
     @Override
-    public void run() {
+    protected void runImpl() {
         long totalCopyingTime = 0;
         while (true) {
             try {
                 String request = requestReader.readLine();
-                RemoteUtil.LOGGER.log(Level.FINEST, "LC: REQ {0}", request);
+                logger.log(Level.FINEST, "REQ %s", request);
                 if (request == null) {
                     break;
                 }
                 RequestKind kind = getRequestKind(request);
                 if (kind == RequestKind.PING) {
-                    RemoteUtil.LOGGER.finest("PING from remote controller");
+                    logger.log(Level.FINEST, "PING from remote controller");
                     // no response needed
                     // respond_ok();
                 } else {                
@@ -137,19 +141,20 @@ class RfsLocalController implements Runnable {
                         if (kind == RequestKind.WRITTEN) {
                             fileData.setState(localFile, FileState.UNCONTROLLED);
                             remoteUpdates.add(localFile);
-                            RemoteUtil.LOGGER.log(Level.FINEST, "LC: uncontrolled {0}", localFile);
+                            logger.log(Level.FINEST, "uncontrolled %s", localFile);
                         } else {
                             CndUtils.assertTrue(kind == RequestKind.REQUEST, "kind should be RequestKind.REQUEST, but is " + kind);
                             if (localFile.exists() && !localFile.isDirectory()) {
                                 //FileState state = fileData.getState(localFile);
-                                RemoteUtil.LOGGER.log(Level.FINEST, "LC: uploading {0} to {1} started", new Object[]{localFile, remoteFile});
+                                logger.log(Level.FINEST, "uploading %s to %s started", localFile, remoteFile);
                                 long fileTime = System.currentTimeMillis();
                                 Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0777, err);
                                 try {
                                     int rc = task.get();
                                     fileTime = System.currentTimeMillis() - fileTime;
                                     totalCopyingTime += fileTime;
-                                    RemoteUtil.LOGGER.log(Level.FINEST, "LC: uploading {0} to {1} finished; rc={2} time = {3} total time = {4} ms", new Object[] {localFile, remoteFile, rc, fileTime, totalCopyingTime});
+                                    logger.log(Level.FINEST, "uploading %s to %s finished; rc=%d time = %d total time = %d ms",
+                                            localFile, remoteFile, rc, fileTime, totalCopyingTime);
                                     if (rc == 0) {
                                         fileData.setState(localFile, FileState.COPIED);
                                         respond_ok();
@@ -184,12 +189,12 @@ class RfsLocalController implements Runnable {
     private void shutdown() {
         // this try-catch is only for investigation of the instable test failures
         try {
-            RemoteUtil.LOGGER.log(Level.FINEST, "{0}.shutdown", getClass().getSimpleName());
+            logger.log(Level.FINEST, "shutdown");
             fileData.store();
+            logger.log(Level.FINE, "registering %d updated files", remoteUpdates.size());
             if (!remoteUpdates.isEmpty()) {
-                RemoteUtil.LOGGER.log(Level.FINE, "Registering {0} updated files", remoteUpdates.size());
                 HostUpdates.register(remoteUpdates, execEnv, privProjectStorageDir);
-                RemoteUtil.LOGGER.log(Level.FINE, "Registered  {0} updated files", remoteUpdates.size());
+                logger.log(Level.FINE, "registered  %d updated files", remoteUpdates.size());
             }
         } catch (Throwable thr) {
             thr.printStackTrace();
@@ -241,6 +246,7 @@ class RfsLocalController implements Runnable {
      */
     void feedFiles(SharabilityFilter filter) {
         long time = System.currentTimeMillis();
+        long timeTotal = System.currentTimeMillis();
         List<FileGatheringInfo> filesToFeed = new ArrayList<FileGatheringInfo>(512);
 
         // the set of top-level dirs 
@@ -276,9 +282,13 @@ class RfsLocalController implements Runnable {
             String toRemoteFilePathName = mapper.getRemotePath(file.getAbsolutePath());
             addFileGatheringInfo(filesToFeed, file, toRemoteFilePathName);
         }
+        logger.log(Level.FINE, "gathered %d files in %d ms", filesToFeed.size(), System.currentTimeMillis() - time);
 
+        time = System.currentTimeMillis();
         checkLinks(filesToFeed);
-        
+        logger.log(Level.FINE, "checking links took %d ms", System.currentTimeMillis() - time);
+
+        time = System.currentTimeMillis();
         Collections.sort(filesToFeed, new Comparator<FileGatheringInfo>() {
             @Override
             public int compare(FileGatheringInfo f1, FileGatheringInfo f2) {
@@ -294,23 +304,25 @@ class RfsLocalController implements Runnable {
                 }
             }
         });
-        RemoteUtil.LOGGER.log(Level.FINE, "RFS_LC: gathered {0} files", filesToFeed.size());
-        RemoteUtil.LOGGER.log(Level.FINE, "RFS_LC: gathering files took {1} ms", (System.currentTimeMillis() - time));
+        logger.log(Level.FINE, "sorting file list took %d ms", System.currentTimeMillis() - time);
+
         time = System.currentTimeMillis();
         for (FileGatheringInfo info : filesToFeed) {
             sendFileInitRequest(info);
         }
         responseStream.printf("\n"); // NOI18N
         responseStream.flush();
-        RemoteUtil.LOGGER.log(Level.FINE, "RFS_LC: sorting file list took {0} ms", (System.currentTimeMillis() - time));
+        logger.log(Level.FINE, "sending file list took %d ms", System.currentTimeMillis() - time);
+        
         try {
             time = System.currentTimeMillis();
             readFileInitResponse();
-            RemoteUtil.LOGGER.log(Level.FINE, "RFS_LC: reading initial response took {0} ms", (System.currentTimeMillis() - time));
+            logger.log(Level.FINE, "reading initial response took %d ms", System.currentTimeMillis() - time);
         } catch (IOException ex) {
             err.printf("%s\n", ex.getMessage());
         }
         fileData.store();
+        logger.log(Level.FINE, "the entire initialization took %d ms", System.currentTimeMillis() - timeTotal);
     }
 
     private Collection<File> gatherParents(Collection<File> files) {
@@ -339,7 +351,7 @@ class RfsLocalController implements Runnable {
         do {
             filesToCheck = checkLinks(filesToFeed, filesToFeed);
         } while (!filesToCheck.isEmpty() && cnt++ < max);
-        RemoteUtil.LOGGER.log(Level.FINE, "checkLinks done in {0} passes", cnt);
+        logger.log(Level.FINE, "checkLinks done in %d passes", cnt);
         if (!filesToCheck.isEmpty()) {
             RemoteUtil.LOGGER.info("checkLinks exited by count. Cyclic symlinks?");
         }
@@ -354,7 +366,7 @@ class RfsLocalController implements Runnable {
         try {
             process = pb.call();
         } catch (IOException ex) {
-            RemoteUtil.LOGGER.log(Level.INFO, "Error when checking links: {0}", ex.getMessage());
+            logger.log(Level.INFO, "Error when checking links: %s", ex.getMessage());
             return addedInfos;
         }
         
@@ -386,7 +398,7 @@ class RfsLocalController implements Runnable {
             public void run() {
                 try {
                     for (String errLine = errorReader.readLine(); errLine != null; errLine = errorReader.readLine()) {
-                        RemoteUtil.LOGGER.info(errLine);
+                        logger.log(Level.INFO, errLine);
                     }
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -415,7 +427,7 @@ class RfsLocalController implements Runnable {
                 if (parts.length <= 4) {
                     if (!errorReported) {
                         errorReported = true;
-                        RemoteUtil.LOGGER.log(Level.WARNING, "Unexpected ls output: {0}", line);
+                        logger.log(Level.WARNING, "Unexpected ls output: %s", line);
                     }
                 }
                 String linkTarget = parts[parts.length - 1];
@@ -426,7 +438,7 @@ class RfsLocalController implements Runnable {
                 FileGatheringInfo info = map.get(linkPath);
                 CndUtils.assertNotNull(info, "Null FileGatheringInfo for " + linkPath); //NOI18N
                 if (info != null) {
-                    RemoteUtil.LOGGER.log(Level.FINEST, "\tcheckLinks: {0} -> {1}", new Object[] { linkPath, linkTarget });
+                    logger.log(Level.FINEST, "\tcheckLinks: %s -> %s", linkPath, linkTarget);
                     info.setLinkTarget(linkTarget);
                     File linkParentFile = new File(linkPath).getParentFile();
                     File linkTargetFile = new File(linkParentFile, linkTarget);
@@ -483,7 +495,7 @@ class RfsLocalController implements Runnable {
                     File localFile = new File(localFilePath);
                     fileData.setState(localFile, state);
                 } else {
-                    RemoteUtil.LOGGER.log(Level.FINEST, "LC: ERROR no local file for {0}", remotePath);
+                    logger.log(Level.FINEST, "ERROR no local file for %s", remotePath);
                 }
             } else {
                 // OLD protocol (temporarily)
@@ -498,7 +510,7 @@ class RfsLocalController implements Runnable {
                     File localFile = new File(localFilePath);
                     fileData.setState(localFile, FileState.TOUCHED);
                 } else {
-                    RemoteUtil.LOGGER.log(Level.FINEST, "LC: ERROR no local file for {0}", remoteFile);
+                    logger.log(Level.FINEST, "ERROR no local file for %s", remoteFile);
                 }
             }
         }

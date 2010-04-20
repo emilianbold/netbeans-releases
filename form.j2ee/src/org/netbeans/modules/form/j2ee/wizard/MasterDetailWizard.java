@@ -64,6 +64,9 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressRunnable;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.j2ee.J2EEUtils;
@@ -303,6 +306,28 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
      */
     @Override
     public Set instantiate() throws IOException {
+        final IOException[] ex = new IOException[1];
+        String msgKey = (delegateIterator==null) ? "MSG_DBAppCreate" : "MSG_MasterDetailCreate"; // NOI18N
+        String msg = NbBundle.getMessage(MasterDetailWizard.class, msgKey);
+        Set set = ProgressUtils.showProgressDialogAndRun(new ProgressRunnable<Set>() {
+            @Override
+            public Set run(ProgressHandle handle) {
+                Set innerSet = null;
+                try {
+                    innerSet = instantiate0();
+                } catch (IOException ioex) {
+                    ex[0] = ioex;
+                }
+                return innerSet;
+            }
+        }, msg, false);
+        if (ex[0] != null) {
+            throw ex[0];
+        }
+        return set;
+    }
+
+    public Set instantiate0() throws IOException {
         needClassPathInit = (delegateIterator == null);
         Set resultSet = null;
         try {

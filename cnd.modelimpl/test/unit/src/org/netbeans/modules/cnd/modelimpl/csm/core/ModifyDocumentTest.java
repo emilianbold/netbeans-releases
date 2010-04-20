@@ -100,9 +100,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         };
         CsmListeners.getDefault().addProgressListener(listener);
         try {
-
-            List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
-            assertEquals("File must have no dead code blocks " + fileImpl.getAbsolutePath(), 0, unusedCodeBlocks.size());
+            checkDeadBlocks(project, fileImpl, "1. text before inserting dead block:", doc, "File must have no dead code blocks ", 0);
 
             // insert dead code block
             // create barier
@@ -129,8 +127,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 if (!parse1.await(10, TimeUnit.SECONDS)) {
                     exRef.compareAndSet(null, new TimeoutException("not finished await"));
                 } else {
-                    unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
-                    assertEquals("File must have one dead code block " + fileImpl.getAbsolutePath(), 1, unusedCodeBlocks.size());
+                    checkDeadBlocks(project, fileImpl, "2. text after inserting dead block:", doc, "File must have one dead code block ", 1);
                 }
             } catch (InterruptedException ex) {
                 exRef.compareAndSet(null, ex);
@@ -168,8 +165,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         CsmListeners.getDefault().addProgressListener(listener);
         try {
 
-            List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
-            assertEquals("File must have one dead code block " + fileImpl.getAbsolutePath(), 1, unusedCodeBlocks.size());
+            List<CsmOffsetable> unusedCodeBlocks = checkDeadBlocks(project, fileImpl, "1. text before deleting dead block:", doc, "File must have one dead code block ", 1);
             final CsmOffsetable block = unusedCodeBlocks.iterator().next();
             // insert dead code block
             // create barier
@@ -191,8 +187,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 if (!parse1.await(10, TimeUnit.SECONDS)) {
                     exRef.compareAndSet(null, new TimeoutException("not finished await"));
                 } else {
-                    unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
-                    assertEquals("File must have no dead code blocks " + fileImpl.getAbsolutePath(), 0, unusedCodeBlocks.size());
+                    checkDeadBlocks(project, fileImpl, "2. text after deleting dead block:", doc, "File must have no dead code blocks ", 0);
                 }
             } catch (InterruptedException ex) {
                 exRef.compareAndSet(null, ex);
@@ -204,5 +199,21 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 throw ex;
             }
         }
+    }
+
+    private List<CsmOffsetable> checkDeadBlocks(final CsmProject project, final FileImpl fileImpl, String docMsg, final BaseDocument doc, String msg, int expectedDeadBlocks) throws BadLocationException {
+        project.waitParse();
+        List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
+        System.err.printf("%s\n==============\n%s\n===============\n", docMsg, doc.getText(0, doc.getLength()));
+        if (unusedCodeBlocks.isEmpty()) {
+            System.err.println("NO DEAD BLOCKS");
+        } else {
+            int i = 0;
+            for (CsmOffsetable csmOffsetable : unusedCodeBlocks) {
+                System.err.printf("DEAD BLOCK %d: [%d-%d]\n", i++, csmOffsetable.getStartOffset(), csmOffsetable.getEndOffset());
+            }
+        }
+        assertEquals(msg + fileImpl.getAbsolutePath(), expectedDeadBlocks, unusedCodeBlocks.size());
+        return unusedCodeBlocks;
     }
 }

@@ -364,28 +364,6 @@ public class BugtrackingUtil {
         }
         return context;
     }
-//
-//    public static void applyPatch(File patch, File context) {
-//        try {
-//            ContextualPatch cp = ContextualPatch.create(patch, context);
-//            cp.patch(false);
-//        } catch (PatchException ex) {
-//            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-//        } catch (IOException ex) {
-//            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-//        }
-//    }
-//
-//    public static boolean isPatch(FileObject fob) throws IOException {
-//        boolean isPatch = false;
-//        Reader reader = new BufferedReader(new InputStreamReader(fob.getInputStream()));
-//        try {
-//            isPatch = (Patch.parse(reader).length > 0);
-//        } finally {
-//            reader.close();
-//        }
-//        return isPatch;
-//    }
 
     /**
      * Recursively deletes all files and directories under a given file/directory.
@@ -400,167 +378,6 @@ public class BugtrackingUtil {
             }
         }
         file.delete();
-    }
-
-    public static File getLargerContext() {
-        FileObject openFile = getOpenFileObj();
-        if (openFile != null) {
-            File largerContext = getLargerContext(openFile);
-            if (largerContext != null) {
-                return largerContext;
-            }
-        }
-
-        return getContextFromProjects();
-    }
-
-    public static File getContextFromProjects() {
-        final OpenProjects projects = OpenProjects.getDefault();
-
-        Project mainProject = projects.getMainProject();
-        if (mainProject != null) {
-            return getLargerContext(mainProject);       //null or non-null
-        }
-
-        Project[] openProjects = projects.getOpenProjects();
-        if ((openProjects != null) && (openProjects.length == 1)) {
-            return getLargerContext(openProjects[0]);
-        }
-
-        return null;
-    }
-
-    public static File getLargerContext(File file) {
-        return getLargerContext(file, null);
-    }
-
-    public static File getLargerContext(FileObject fileObj) {
-        return getLargerContext(null, fileObj);
-    }
-
-    public static File getLargerContext(File file, FileObject fileObj) {
-        if ((file == null) && (fileObj == null)) {
-            throw new IllegalArgumentException(
-                    "both File and FileObject are null");               //NOI18N
-        }
-
-        assert (file == null)
-               || (fileObj == null)
-               || FileUtil.toFileObject(file).equals(fileObj);
-
-        if (fileObj == null) {
-            fileObj = getFileObjForFileOrParent(file);
-        } else if (file == null) {
-            file = FileUtil.toFile(fileObj);
-        }
-
-        if (fileObj == null) {
-            return null;
-        }
-        if (!fileObj.isValid()) {
-            return null;
-        }
-
-        Project parentProject = FileOwnerQuery.getOwner(fileObj);
-        if (parentProject != null) {
-            FileObject parentProjectFolder = parentProject.getProjectDirectory();
-            if (parentProjectFolder.equals(fileObj) && (file != null)) {
-                return file;
-            }
-            File folder = FileUtil.toFile(parentProjectFolder);
-            if (folder != null) {
-                return folder;
-            }
-        }
-
-        if (fileObj.isFolder()) {
-            return file;                        //whether it is null or non-null
-        } else {
-            fileObj = fileObj.getParent();
-            assert fileObj != null;      //every non-folder should have a parent
-            return FileUtil.toFile(fileObj);    //whether it is null or non-null
-        }
-    }
-
-    private static FileObject getFileObjForFileOrParent(File file) {
-        FileObject fileObj = FileUtil.toFileObject(file);
-        if (fileObj != null) {
-            return fileObj;
-        }
-
-        File closestParentFile = file.getParentFile();
-        while (closestParentFile != null) {
-            fileObj = FileUtil.toFileObject(closestParentFile);
-            if (fileObj != null) {
-                return fileObj;
-            }
-            closestParentFile = closestParentFile.getParentFile();
-        }
-
-        return null;
-    }
-
-    public static File getLargerContext(Project project) {
-        FileObject projectFolder = project.getProjectDirectory();
-        assert projectFolder != null;
-
-        return FileUtil.toFile(projectFolder);
-    }
-
-    private static FileObject getOpenFileObj() {
-        TopComponent activatedTopComponent = TopComponent.getRegistry()
-                                             .getActivated();
-        if (activatedTopComponent == null) {
-            return null;
-        }
-
-        DataObject dataObj = activatedTopComponent.getLookup()
-                             .lookup(DataObject.class);
-        if ((dataObj == null) || !dataObj.isValid()) {
-            return null;
-        }
-
-        return dataObj.getPrimaryFile();
-    }
-
-    public static void keepFocusedComponentVisible(JScrollPane scrollPane) {
-        keepFocusedComponentVisible(scrollPane.getViewport().getView());
-    }
-
-    public static void keepFocusedComponentVisible(Component component) {
-        FocusListener listener= getScrollingFocusListener();
-        component.removeFocusListener(listener); // Making sure that it is not added twice
-        component.addFocusListener(listener);
-        if (component instanceof Container) {
-            for (Component subComponent : ((Container)component).getComponents()) {
-                keepFocusedComponentVisible(subComponent);
-            }
-        }
-    }
-
-    private static FocusListener scrollingFocusListener;
-    private static FocusListener getScrollingFocusListener() {
-        if (scrollingFocusListener == null) {
-            scrollingFocusListener = new FocusAdapter() {
-                @Override
-                public void focusGained(FocusEvent e) {
-                    if (!e.isTemporary()) {
-                        Component comp = e.getComponent();
-                        Container cont = comp.getParent();
-                        if (cont instanceof JViewport) {
-                            // comp is JViewport's view;
-                            // we want the viewport itself to be shown in this case
-                            comp = cont;
-                            cont = cont.getParent();
-                        }
-                        if (cont instanceof JComponent) {
-                            ((JComponent)cont).scrollRectToVisible(comp.getBounds());
-                        }
-                    }
-                }
-            };
-        }
-        return scrollingFocusListener;
     }
 
     public static void logQueryEvent(String connector, String name, int count, boolean isKenai, boolean isAutoRefresh) {
@@ -631,40 +448,6 @@ public class BugtrackingUtil {
         return null;
     }
 
-    public static int getColumnWidthInPixels(int widthInLeters, JComponent comp) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < widthInLeters; i++, sb.append("w"));                // NOI18N
-        return getColumnWidthInPixels(sb.toString(), comp);
-    }
-
-    public static int getColumnWidthInPixels(String str, JComponent comp) {
-        FontMetrics fm = comp.getFontMetrics(comp.getFont());
-        return fm.stringWidth(str);
-    }
-
-    public static int getLongestWordWidth(String header, List<String> values, JComponent comp) {
-        return getLongestWordWidth(header, values, comp, false);
-    }
-
-    public static int getLongestWordWidth(String header, List<String> values, JComponent comp, boolean regardIcon) {
-        String[] valuesArray = values.toArray(new String[values.size()]);
-        return getLongestWordWidth(header, valuesArray, comp, regardIcon);
-    }
-
-    public static int getLongestWordWidth(String header, String[] values, JComponent comp) {
-        return getLongestWordWidth(header, values, comp, false);
-    }
-
-    public static int getLongestWordWidth(String header, String[] values, JComponent comp, boolean regardIcon) {
-        int size = header.length();
-        for (String s : values) {
-            if(size < s.length()) {
-                size = s.length();
-            }
-        }
-        return getColumnWidthInPixels(size, comp) + (regardIcon ? 16 : 0);
-    }
-
     /**
      * Logs bugtracking events
      *
@@ -706,31 +489,6 @@ public class BugtrackingUtil {
             name = getMD5(name);
         }
         return name;
-    }
-
-    // A11Y - Issues 163597 and 163598
-    public static void fixFocusTraversalKeys(JComponent component) {
-        Set<AWTKeyStroke> set = component.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
-        set = new HashSet<AWTKeyStroke>(set);
-        set.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
-        component.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
-    }
-
-    public static void issue163946Hack(final JScrollPane scrollPane) {
-        MouseWheelListener listener = new MouseWheelListener() {
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                if (scrollPane.getVerticalScrollBar().isShowing()) {
-                    if (e.getSource() != scrollPane) {
-                        e.setSource(scrollPane);
-                        scrollPane.dispatchEvent(e);
-                    }
-                } else {
-                    scrollPane.getParent().dispatchEvent(e);
-                }
-            }
-        };
-        scrollPane.addMouseWheelListener(listener);
-        scrollPane.getViewport().getView().addMouseWheelListener(listener);
     }
 
     public static void openPluginManager() {

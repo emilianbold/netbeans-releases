@@ -2005,6 +2005,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             macrosLock.readLock().unlock();
         }
         factory.writeUIDCollection(this.fakeFunctionRegistrations, output, false);
+
+        factory.writeUIDCollection(FakeIncludePair.toIncludeUIDCollection(fakeIncludeRegistrations), output, false);
+        factory.writeUIDCollection(FakeIncludePair.toClassUIDCollection(fakeIncludeRegistrations), output, false);
+
         //output.writeUTF(state.toString());
         output.writeByte(fileType.ordinal());
 
@@ -2049,6 +2053,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         factory.readUIDCollection(this.brokenIncludes, input);
         this.macros = factory.readNameSortedToUIDMap(input, DefaultCache.getManager());
         factory.readUIDCollection(this.fakeFunctionRegistrations, input);
+
+        Collection<CsmUID<IncludeImpl>> fakeIncludeUIDs = new ArrayList<CsmUID<IncludeImpl>>(0);
+        Collection<CsmUID<ClassImpl>> fakeClassUIDs = new ArrayList<CsmUID<ClassImpl>>(0);
+        factory.readUIDCollection(fakeIncludeUIDs, input);
+        factory.readUIDCollection(fakeClassUIDs, input);
+        FakeIncludePair.appedToFakeCollection(fakeIncludeUIDs, fakeClassUIDs, fakeIncludeRegistrations);
+
         fileType = FileType.values()[input.readByte()];
 
         this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
@@ -2191,6 +2202,32 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         public FakeIncludePair(CsmUID<IncludeImpl> includeUid, CsmUID<ClassImpl> classUid) {
             this.includeUid = includeUid;
             this.classUid = classUid;
+        }
+
+        static Collection<CsmUID<IncludeImpl>> toIncludeUIDCollection(Collection<FakeIncludePair> fakePairs) {
+            Collection<CsmUID<IncludeImpl>> out = new ArrayList<CsmUID<IncludeImpl>>(fakePairs.size());
+            for (FakeIncludePair pair: fakePairs) {
+                out.add(pair.includeUid);
+            }
+            return out;
+        }
+
+        static Collection<CsmUID<ClassImpl>> toClassUIDCollection(Collection<FakeIncludePair> fakePairs) {
+            Collection<CsmUID<ClassImpl>> out = new ArrayList<CsmUID<ClassImpl>>(fakePairs.size());
+            for (FakeIncludePair pair: fakePairs) {
+                out.add(pair.classUid);
+            }
+            return out;
+        }
+
+        static void appedToFakeCollection(Collection<CsmUID<IncludeImpl>> fakeIncludeUIDs, Collection<CsmUID<ClassImpl>> fakeClassUIDs, Collection<FakeIncludePair> fakeRegistrationPairs) {
+            Iterator<CsmUID<IncludeImpl>> incIt = fakeIncludeUIDs.iterator();
+            Iterator<CsmUID<ClassImpl>> clsIt = fakeClassUIDs.iterator();
+            while (incIt.hasNext() && clsIt.hasNext()) {
+                CsmUID<IncludeImpl> inc = incIt.next();
+                CsmUID<ClassImpl> cls = clsIt.next();
+                fakeRegistrationPairs.add(new FakeIncludePair(inc, cls));
+            }
         }
     }
 
