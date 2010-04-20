@@ -184,7 +184,7 @@ public class ViewTest extends TestBase {
     }
     
     public static void doTestIncludesExcludes(NbTestCase test, String style, String appearanceEverything, String appearanceIncludesExcludes, String appearanceExcludes, String appearanceFloating) throws Exception {
-        FolderNodeFactory.synchronous = true;
+        FolderNodeFactory.synchronous = View.synchronous  = true;
         test.clearWorkDir();
         File d = test.getWorkDir();
         AntProjectHelper helper = FreeformProjectGenerator.createProject(d, d, "prj", null);

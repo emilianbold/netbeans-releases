@@ -40,17 +40,30 @@
 package org.netbeans.modules.j2ee.weblogic9.config;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.spi.status.ProgressEvent;
+import javax.enterprise.deploy.spi.status.ProgressListener;
+import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLCommandDeployer;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -66,8 +79,60 @@ public class WLDatasourceManager implements DatasourceManager {
         this.manager = manager;
     }
 
+    // TODO we should start required JDBC datasources on server just for case
+    // it previously failed (ie. db was not accessible at that time)
     @Override
     public void deployDatasources(Set<Datasource> datasources) throws ConfigurationException, DatasourceAlreadyExistsException {
+        Set<Datasource> deployedDatasources = getDatasources();
+        // for faster searching
+        Map<String, Datasource> deployed = createMap(deployedDatasources);
+
+        // will contain all ds which do not conflict with existing ones
+        Map<String, WLDatasource> toDeploy = new HashMap<String, WLDatasource>();
+        
+        // resolve all conflicts
+        LinkedList<Datasource> conflictDS = new LinkedList<Datasource>();
+        for (Datasource datasource : datasources) {
+            if (!(datasource instanceof WLDatasource)) {
+                LOGGER.log(Level.INFO, "Unable to deploy {0}", datasource);
+                continue;
+            }
+
+            WLDatasource wlDatasource = (WLDatasource) datasource;
+            String jndiName = wlDatasource.getJndiName();
+            if (deployed.keySet().contains(jndiName)) { // conflicting ds found
+                Datasource deployedDatasource = deployed.get(jndiName);
+                
+                // jndi name is same, but DS differs
+                if (!deployed.get(jndiName).equals(wlDatasource)) {
+                    // they differ, but both are app modules - ok to redeploy
+                    if (!((WLDatasource)deployedDatasource).isSystem() && !wlDatasource.isSystem()) {
+                        toDeploy.put(jndiName, wlDatasource);
+                    } else {
+                        conflictDS.add(deployed.get(jndiName));
+                    }
+                } else {
+                    // TODO try to start it
+                }
+            } else if (jndiName != null) {
+                toDeploy.put(jndiName, wlDatasource);
+            } else {
+                LOGGER.log(Level.INFO, "JNDI name was null for {0}", datasource);
+            }
+        }
+        
+        if (!conflictDS.isEmpty()) {
+            throw new DatasourceAlreadyExistsException(conflictDS);
+        }
+
+        WLCommandDeployer deployer = new WLCommandDeployer(WLDeploymentFactory.getInstance(),
+                manager.getInstanceProperties());
+        ProgressObject po = deployer.deployDatasource(toDeploy.values());
+        waitFor(po);
+        if (po.getDeploymentStatus().isFailed()) {
+            String msg = NbBundle.getMessage(WLDatasourceManager.class, "MSG_FailedToDeployDatasource");
+            throw new ConfigurationException(msg);
+        }
     }
 
     @Override
@@ -80,7 +145,36 @@ public class WLDatasourceManager implements DatasourceManager {
             domainConfig = domain.getFileObject("config/config.xml"); // NOI18N
         }
 
-        return new HashSet<Datasource>(WLDatasourceSupport.getDatasources(domainPath, domainConfig));
+        return new HashSet<Datasource>(WLDatasourceSupport.getDatasources(domainPath, domainConfig, true));
     }
 
+    private Map<String, Datasource> createMap(Set<Datasource> datasources) {
+        if (datasources.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, Datasource> map = new HashMap<String, Datasource>();
+        for (Datasource datasource : datasources) {
+            map.put(datasource.getJndiName(), datasource);
+        }
+        return map;
+    }
+
+    private void waitFor(ProgressObject obj) {
+        final CountDownLatch latch = new CountDownLatch(1);
+        obj.addProgressListener(new ProgressListener() {
+
+            @Override
+            public void handleProgressEvent(ProgressEvent pe) {
+                if (pe.getDeploymentStatus().isCompleted() || pe.getDeploymentStatus().isFailed()) {
+                    latch.countDown();
+                }
+            }
+        });
+        try {
+            latch.await(WLDeploymentManager.MANAGER_TIMEOUT, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+    }
 }

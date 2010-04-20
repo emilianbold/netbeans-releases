@@ -108,7 +108,9 @@ final class CompletionImplProfile {
             LOG.log(Level.FINE, "Obtaining snapshot for {0} ms.", delta);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(out);
-            ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+            if (ss != null) {
+                ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+            }
             dos.close();
             if (dos.size() > 0) {
                 Object[] params = new Object[]{out.toByteArray(), delta, "CodeCompletion"};

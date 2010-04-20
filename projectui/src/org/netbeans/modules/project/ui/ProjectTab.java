@@ -379,7 +379,7 @@ public class ProjectTab extends TopComponent
             // Sel paths missing
         }
         initValues();
-        if (Boolean.getBoolean("netbeans.keep.expansion")) { // #55701
+        if (!"false".equals(System.getProperty("netbeans.keep.expansion"))) { // #55701
             RP.post(new Runnable() {
                 public @Override void run() {
                     try {
@@ -388,6 +388,11 @@ public class ProjectTab extends TopComponent
                         Exceptions.printStackTrace(ex);
                     } catch (ExecutionException ex) {
                         Exceptions.printStackTrace(ex);
+                    }
+                    for (Node n : rootNode.getChildren().getNodes()) {
+                        if (btv.isExpanded(n)) {
+                            return;
+                        }
                     }
                     btv.expandNodes(exPaths);
                     EventQueue.invokeLater(new Runnable() {

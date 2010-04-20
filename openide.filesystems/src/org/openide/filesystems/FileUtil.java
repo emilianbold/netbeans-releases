@@ -1675,6 +1675,7 @@ public final class FileUtil extends Object {
         Parameters.notNull("file", file);  //NOI18N
         File retFile;
 
+        long now = System.currentTimeMillis();
         if ((Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))) {
             retFile = normalizeFileOnWindows(file);
         } else if (Utilities.isMac()) {
@@ -1682,8 +1683,12 @@ public final class FileUtil extends Object {
         } else {
             retFile = normalizeFileOnUnixAlike(file);
         }
-
-        return (file.getPath().equals(retFile.getPath())) ? file : retFile;
+        File ret = (file.getPath().equals(retFile.getPath())) ? file : retFile;
+        long took = System.currentTimeMillis() - now;
+        if (took > 500) {
+            LOG.log(Level.WARNING, "FileUtil.normalizeFile({0}) took {1} ms. Result is {2}", new Object[]{file, took, ret});
+        }
+        return ret;
     }
 
     private static File normalizeFileOnUnixAlike(File file) {

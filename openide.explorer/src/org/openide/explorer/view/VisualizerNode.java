@@ -399,7 +399,10 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         parent = null;
         Enumeration<VisualizerNode> ch = getChildren(false).children(false);
         while (ch.hasMoreElements()) {
-            ch.nextElement().nodeDestroyed(ev);
+            final VisualizerNode v = ch.nextElement();
+            if (v != null) {
+                v.nodeDestroyed(ev);
+            }
         }
     }
 

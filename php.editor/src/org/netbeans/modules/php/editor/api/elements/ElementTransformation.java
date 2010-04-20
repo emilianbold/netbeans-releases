@@ -37,56 +37,41 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.php.editor.api.elements;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.accessibility.AccessibleContext;
-import javax.swing.JComboBox;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiManager;
-import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
- * @author Jan Becicka
+ * @author rmatous
  */
-public class KenaiCombo extends JComboBox {
+public abstract class ElementTransformation<S extends PhpElement> {
+    public abstract S transform(PhpElement element);
 
-    private PropertyChangeListener listener;
-    public KenaiCombo(boolean alwaysVisible) {
-        super(new KenaiComboModel());
-        init(alwaysVisible);
-    }
-
-    public KenaiCombo(Kenai.Status status, boolean alwaysVisible) {
-        super(new KenaiComboModel(status));
-        init(alwaysVisible);
-    }
-
-    private void init(boolean alwaysVisible) {
-        AccessibleContext ac = getAccessibleContext();
-        String a11y = NbBundle.getMessage(KenaiCombo.class, "A11Y_TeamServer");
-        ac.setAccessibleName(a11y);
-        ac.setAccessibleDescription(a11y);
-        setRenderer(new KenaiListRenderer());
-        if (!alwaysVisible) {
-            final KenaiManager manager = KenaiManager.getDefault();
-            listener = new PropertyChangeListener() {
-
-                public void propertyChange(PropertyChangeEvent evt) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            setVisible(manager.getKenais().size()>1);
-                        }
-                    });
-                }
-            };
-            manager.addPropertyChangeListener(WeakListeners.propertyChange(listener, manager));
-            setVisible(manager.getKenais().size()>1);
+    public final <T extends PhpElement> Set<S> transform(Set<T> original) {
+        Set<S> retval = new HashSet<S>();
+        for (T baseElement : original) {
+            final S transformed = transform(baseElement);
+            if (transformed != null) {
+                retval.add(transformed);
+            }
         }
+        return Collections.unmodifiableSet(retval);
     }
+
+    public static ElementTransformation<TypeElement> toMemberTypes() {
+        return new ElementTransformation<TypeElement>() {
+            @Override
+            public TypeElement transform(PhpElement element) {
+                if (element instanceof TypeMemberElement) {
+                    TypeMemberElement typeMemberElement = (TypeMemberElement) element;
+                    return typeMemberElement.getType();
+                }
+                return null;
+            }
+        };
+    }
+
 }

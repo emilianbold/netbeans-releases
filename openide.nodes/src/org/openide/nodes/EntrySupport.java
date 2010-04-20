@@ -252,6 +252,17 @@ abstract class EntrySupport {
             // initialize parent nodes
             for (int i = 0; i < arr.length; i++) {
                 Node n = arr[i];
+                if (n == null) {
+                    LOGGER.warning("null node among children!");
+                    for (int j = 0; j < arr.length; j++) {
+                        LOGGER.log(Level.WARNING, "  {0} = {1}", new Object[]{j, arr[j]});
+                    }
+                    for (Entry entry : entries) {
+                        Info info = findInfo(entry);
+                        LOGGER.log(Level.WARNING, "  entry: {0} info {1} nodes: {2}", new Object[]{entry, info, info.nodes(false)});
+                    }
+                    throw new NullPointerException("arr[" + i + "] is null"); // NOI18N
+                }
                 n.assignTo(children, i);
                 n.fireParentNodeChange(null, children.parent);
             }

@@ -115,8 +115,12 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                     }
                 } else {
                     insideRender = true;
-                    Document doc = textComponent().getDocument();
-                    doc.render(this);
+                    try {
+                        Document doc = textComponent().getDocument();
+                        doc.render(this);
+                    } finally {
+                        insideRender = false;
+                    }
                 }
             } else {
                 try {

@@ -101,24 +101,36 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
      */
     @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
-        assert 0 <= startOffset : "offsets must be greater than or equal to zero"; //NOI18N
+        assert 0 <= startOffset : "startOffset must be greater than or equal to zero"; //NOI18N
+        assert 0 <= endOffset : "endOffset must be greater than or equal to zero"; //NOI18N
         assert startOffset <= endOffset : "startOffset must be less than or equal to endOffset; " + //NOI18N
             "startOffset = " + startOffset + " endOffset = " + endOffset; //NOI18N
         
         synchronized (LOCK) {
-            if (layers == null || layers.length == 0 || startOffset == endOffset) {
+            if (doc == null || layers == null || layers.length == 0 ||
+                startOffset < 0 || endOffset < 0 || startOffset >= endOffset || startOffset > doc.getLength()
+            ) {
                 return HighlightsSequence.EMPTY;
             }
-        
+
+            if (endOffset >= doc.getLength()) {
+                endOffset = Integer.MAX_VALUE;
+            }
+
             List<HighlightsSequence> seq = new ArrayList<HighlightsSequence>(layers.length);
 
-            for(int i = 0; i < layers.length; i++) {
+            for(int i = layers.length - 1; i >= 0; i--) {
                 if (blacklisted[i]) {
                     continue;
                 }
                 
                 try {
-                    seq.add(layers[layers.length - i - 1].getHighlights(startOffset, endOffset));
+                    seq.add(new CheckedHighlightsSequence(
+                        layers[i].getHighlights(startOffset, endOffset),
+                        startOffset,
+                        endOffset,
+                        "PHC.Layer[" + i + "]=" + layers[i] //NOI18N
+                    ));
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t) {
