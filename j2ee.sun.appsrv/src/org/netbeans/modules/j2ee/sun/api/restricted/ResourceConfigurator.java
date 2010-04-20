@@ -818,7 +818,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                         }    
                     }
                     
-                    if (url == null || url.equals("")) { //NOI18N
+                    if (!(url == null || url.equals(""))) { //NOI18N
                         if (driverClass == null || driverClass.equals("")) { //NOI18N
                             DatabaseConnection databaseConnection = ResourceUtils.getDatabaseConnection(url);
                             if (databaseConnection != null) {
