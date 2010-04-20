@@ -247,22 +247,21 @@ public class DoxygenDocumentation {
         while (i < text.length()) {
             switch (text.charAt(i)) {
                 case '\n': // NOI18N
-                    if (i < text.length()-1) {
+                    if (i < text.length() - 1) {
                         if (!verbatimMode) {
                             // skip white spaces
-                            while (i < (text.length()-1) && (text.charAt(i+1) == ' ' || text.charAt(i+1) == '\t')) { // NOI18N
+                            while (i < (text.length() - 1) && (text.charAt(i + 1) == ' ' || text.charAt(i + 1) == '\t')) { // NOI18N
                                 i++;
                             }
                         }
-                        if (text.charAt(i+1) == '@' || text.charAt(i+1) == '\\' || text.charAt(i+1) == '\n') {
+                        if (text.charAt(i + 1) == '@' || text.charAt(i + 1) == '\\' || text.charAt(i + 1) == '\n') {
                             Token last = result.getLast();
                             // Skip multiple empty lines
                             if (last.id != TokenId.LINE_END && last.id != TokenId.PAR_END) {
                                 result.add(new Token(wasContent ? TokenId.LINE_END : TokenId.PAR_END, "\n")); // NOI18N
                                 wasContent = false;
                             }
-                        }
-                        else {
+                        } else {
                             if (!verbatimMode) {
                                 // Convert to space
                                 result.add(new Token(TokenId.WHITESPACE, " ")); // NOI18N
@@ -303,8 +302,7 @@ public class DoxygenDocumentation {
                     while (i < text.length()) { // NOI18N
                         if (!verbatimMode && (text.charAt(i) == ' ' || text.charAt(i) == '\t' || text.charAt(i) == '\n')) {
                             break;
-                        }
-                        else if (text.charAt(i) == '\\' || text.charAt(i) == '@') {
+                        } else if (text.charAt(i) == '\\' || text.charAt(i) == '@') {
                             break;
                         }
                         img.append(text.charAt(i++));
@@ -348,18 +346,22 @@ public class DoxygenDocumentation {
             this.text = text;
         }
 
+        @Override
         public String getText() {
             return text;
         }
 
+        @Override
         public URL getURL() {
             return null;
         }
 
+        @Override
         public CompletionDocumentation resolveLink(String link) {
             return null;
         }
 
+        @Override
         public Action getGotoSourceAction() {
             return null;
         }
