@@ -37,60 +37,41 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions;
+package org.netbeans.modules.php.editor.api.elements;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.status.ProgressEvent;
-import javax.enterprise.deploy.spi.status.ProgressListener;
-import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
-import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.openide.util.Lookup;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
- * @author Petr Hejl
+ * @author rmatous
  */
-public final class ModuleCookieSupport {
+public abstract class ElementTransformation<S extends PhpElement> {
+    public abstract S transform(PhpElement element);
 
-    private final TargetModuleID module;
-
-    private final Lookup lookup;
-
-    public ModuleCookieSupport(TargetModuleID module, Lookup lookup) {
-        this.module = module;
-        this.lookup = lookup;
-    }
-
-    public void performAction(Action action) {
-        WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
-        if (manager != null) {
-            // TODO should we make it batch somehow (it is rare case)
-            ProgressObject obj = action.execute(manager, module);
-            final CountDownLatch latch = new CountDownLatch(1);
-            obj.addProgressListener(new ProgressListener() {
-
-                @Override
-                public void handleProgressEvent(ProgressEvent pe) {
-                    if (pe.getDeploymentStatus().isCompleted() || pe.getDeploymentStatus().isFailed()) {
-                        latch.countDown();
-                    }
-                }
-            });
-            try {
-                latch.await(WLDeploymentManager.MANAGER_TIMEOUT, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
+    public final <T extends PhpElement> Set<S> transform(Set<T> original) {
+        Set<S> retval = new HashSet<S>();
+        for (T baseElement : original) {
+            final S transformed = transform(baseElement);
+            if (transformed != null) {
+                retval.add(transformed);
             }
         }
+        return Collections.unmodifiableSet(retval);
     }
 
-    public static interface Action {
-
-        ProgressObject execute(DeploymentManager manager, TargetModuleID module);
+    public static ElementTransformation<TypeElement> toMemberTypes() {
+        return new ElementTransformation<TypeElement>() {
+            @Override
+            public TypeElement transform(PhpElement element) {
+                if (element instanceof TypeMemberElement) {
+                    TypeMemberElement typeMemberElement = (TypeMemberElement) element;
+                    return typeMemberElement.getType();
+                }
+                return null;
+            }
+        };
     }
 
 }
