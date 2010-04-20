@@ -94,10 +94,10 @@ public class CustomizerDialog {
     private static final String COMMAND_OK = "OK";          // NOI18N
     private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
 
-    private static final String CUSTOMIZER_DIALOG_X = "CustomizerDailog.dialog.x";
-    private static final String CUSTOMIZER_DIALOG_Y = "CustomizerDailog.dialog.y";
-    private static final String CUSTOMIZER_DIALOG_WIDTH = "CustomizerDailog.dialog.width";
-    private static final String CUSTOMIZER_DIALOG_HEIGHT = "CustomizerDailog.dialog.height";
+    private static final String CUSTOMIZER_DIALOG_X = "CustomizerDialog.dialog.x";
+    private static final String CUSTOMIZER_DIALOG_Y = "CustomizerDialog.dialog.y";
+    private static final String CUSTOMIZER_DIALOG_WIDTH = "CustomizerDialog.dialog.width";
+    private static final String CUSTOMIZER_DIALOG_HEIGHT = "CustomizerDialog.dialog.height";
 
     public static Dialog createDialog( ActionListener okOptionListener, ActionListener storeListener, final CustomizerPane innerPane,
             HelpCtx helpCtx, final ProjectCustomizer.Category[] categories, 

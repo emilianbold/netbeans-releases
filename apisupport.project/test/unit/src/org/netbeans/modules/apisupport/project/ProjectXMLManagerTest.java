@@ -382,6 +382,10 @@ public class ProjectXMLManagerTest extends TestBase {
     public void testReplacePublicPackages() throws Exception {
         final NbModuleProject testingProject = generateTestingProject();
         final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
+        Map<String,String> cpext = new HashMap<String,String>();
+        cpext.put("ext/a.jar", null);
+        cpext.put("ext/b.jar", null);
+        testingPXM.replaceClassPathExtensions(cpext); // exercising #184377
         ManifestManager.PackageExport[] publicPackages = testingPXM.getPublicPackages();
         assertEquals("number of public packages", 1, publicPackages.length);
         final Set<String> newPP = new HashSet<String>();

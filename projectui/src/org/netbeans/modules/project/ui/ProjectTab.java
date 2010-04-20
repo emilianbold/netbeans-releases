@@ -63,6 +63,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -380,21 +381,13 @@ public class ProjectTab extends TopComponent
         initValues();
         if (Boolean.getBoolean("netbeans.keep.expansion")) { // #55701
             RP.post(new Runnable() {
-                @SuppressWarnings("SleepWhileHoldingLock")
                 public @Override void run() {
-                    LAZY: while (true) {
-                        for (Project p : OpenProjectList.getDefault().getOpenProjects()) {
-                            if (p instanceof LazyProject) {
-                                LOG.finer("encountered lazy projects...");
-                                try {
-                                    Thread.sleep(1000);
-                                } catch (InterruptedException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                                continue LAZY;
-                            }
-                        }
-                        break;
+                    try {
+                        OpenProjects.getDefault().openProjects().get();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                     btv.expandNodes(exPaths);
                     EventQueue.invokeLater(new Runnable() {
