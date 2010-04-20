@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * Project implementation
@@ -115,9 +116,6 @@ public final class ProjectImpl extends ProjectBase {
         final FileImpl impl = createOrFindFileImpl(buf, nativeFile);
         if (impl != null) {
             impl.setBuffer(buf);
-            synchronized (editedFiles) {
-                editedFiles.add(impl);
-            }
             APTDriver.getInstance().invalidateAPT(buf);
             APTFileCacheManager.invalidate(buf);
             scheduleParseOnEditing(buf, impl);
@@ -143,7 +141,10 @@ public final class ProjectImpl extends ProjectBase {
         FileImpl file = getFile(buf.getFile(), false);
         if (file != null) {
             synchronized (editedFiles) {
-                if (!editedFiles.remove(file)) {
+                Task task = editedFiles.remove(file);
+                if (task != null) {
+                    task.cancel();
+                } else {
                     // FixUp double file edit end on mounted files
                     return;
                 }
@@ -206,7 +207,10 @@ public final class ProjectImpl extends ProjectBase {
         CndFileUtils.clearFileExistenceCache();
         if (impl != null) {
             synchronized (editedFiles) {
-                editedFiles.remove(impl);
+                Task task = editedFiles.remove(impl);
+                if (task != null) {
+                    task.cancel();
+                }
             }
             removeNativeFileItem(impl.getUID());
             impl.dispose();
@@ -288,7 +292,7 @@ public final class ProjectImpl extends ProjectBase {
     void ensureChangedFilesEnqueued() {
         synchronized (editedFiles) {
             super.ensureChangedFilesEnqueued();
-            for (Iterator iter = editedFiles.iterator(); iter.hasNext();) {
+            for (Iterator iter = editedFiles.keySet().iterator(); iter.hasNext();) {
                 FileImpl file = (FileImpl) iter.next();
                 if (!file.isParsingOrParsed()) {
                     ParserQueue.instance().add(file, getPreprocHandler(file.getBuffer().getFile()).getState(), ParserQueue.Position.TAIL);
@@ -305,7 +309,7 @@ public final class ProjectImpl extends ProjectBase {
             return false;
         }
         synchronized (editedFiles) {
-            for (Iterator iter = editedFiles.iterator(); iter.hasNext();) {
+            for (Iterator iter = editedFiles.keySet().iterator(); iter.hasNext();) {
                 FileImpl file = (FileImpl) iter.next();
                 if ((skipFile != file) && !file.isParsingOrParsed()) {
                     return true;
@@ -314,7 +318,7 @@ public final class ProjectImpl extends ProjectBase {
         }
         return false;
     }
-    private final Set<CsmFile> editedFiles = new HashSet<CsmFile>();
+    private final Map<CsmFile, RequestProcessor.Task> editedFiles = new HashMap<CsmFile, RequestProcessor.Task>();
 
     public 
     @Override
@@ -376,54 +380,63 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    private RequestProcessor.Task task = null;
     private final static RequestProcessor RP = new RequestProcessor("ProjectImpl RP", 50); // NOI18N
-    private synchronized void scheduleParseOnEditing(final FileBuffer buf, final FileImpl file) {
-        // FIXME: It looks we can cancel task started for another file
-        // there should be not one task, but task associated with file => it make sense to cancel file's task
-        if (task != null) {
-            if (TraceFlags.TRACE_182342_BUG) {
-                new Exception("cancelling previous parse on edit task " + task.hashCode()).printStackTrace(System.err);// NOI18N
-            }
-            task.cancel();
-        }
-         task = RP.create(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    if (TraceFlags.TRACE_182342_BUG) {
-                        System.err.println("stated scheduleParseOnEditing task");
-                    }
-                    addToQueueOnEditing(buf, file);
-                } catch (AssertionError ex) {
-                    DiagnosticExceptoins.register(ex);
-                } catch (Exception ex) {
-                    DiagnosticExceptoins.register(ex);
+    private void scheduleParseOnEditing(final FileBuffer buf, final FileImpl file) {
+        RequestProcessor.Task task;
+        int delay;
+        synchronized (editedFiles) {
+            task = editedFiles.get(file);
+            if (task != null) {
+                if (TraceFlags.TRACE_182342_BUG) {
+                    new Exception("cancelling previous parse on edit task " + task.hashCode()).printStackTrace(System.err);// NOI18N
                 }
+                task.cancel();
             }
-        }, true);
-        if (TraceFlags.TRACE_182342_BUG) {
-            new Exception("created new parse on edit task " + task.hashCode()).printStackTrace(System.err);// NOI18N
-        }
-        task.setPriority(Thread.MIN_PRIORITY);
-        int delay = TraceFlags.REPARSE_DELAY;
-        boolean doReparse = NamedEntityOptions.instance().isEnabled(new NamedEntity() {
-            @Override
-            public String getName() {
-                return "reparse-on-document-changed"; //NOI18N
+            if (TraceFlags.TRACE_182342_BUG) {
+                for (CsmFile csmFile : editedFiles.keySet()) {
+                    System.err.println("edited file " + csmFile);
+                }
+                System.err.println("current file " + file);
             }
-            @Override
-            public boolean isEnabledByDefault() {
-                return true;
+             task = RP.create(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        if (TraceFlags.TRACE_182342_BUG) {
+                            System.err.println("stated scheduleParseOnEditing task");
+                        }
+                        addToQueueOnEditing(buf, file);
+                    } catch (AssertionError ex) {
+                        DiagnosticExceptoins.register(ex);
+                    } catch (Exception ex) {
+                        DiagnosticExceptoins.register(ex);
+                    }
+                }
+            }, true);
+            if (TraceFlags.TRACE_182342_BUG) {
+                new Exception("created new parse on edit task " + task.hashCode()).printStackTrace(System.err);// NOI18N
             }
-        });
-        if (doReparse) {
-            if (file.getLastParseTime() / (delay+1) > 2) {
-                delay = Math.max(delay, file.getLastParseTime()+2000);
+            task.setPriority(Thread.MIN_PRIORITY);
+            delay = TraceFlags.REPARSE_DELAY;
+            boolean doReparse = NamedEntityOptions.instance().isEnabled(new NamedEntity() {
+                @Override
+                public String getName() {
+                    return "reparse-on-document-changed"; //NOI18N
+                }
+                @Override
+                public boolean isEnabledByDefault() {
+                    return true;
+                }
+            });
+            if (doReparse) {
+                if (file.getLastParseTime() / (delay+1) > 2) {
+                    delay = Math.max(delay, file.getLastParseTime()+2000);
+                }
+            } else {
+                delay = Integer.MAX_VALUE;
             }
-        } else {
-            delay = Integer.MAX_VALUE;
+            editedFiles.put(file, task);
         }
         task.schedule(delay);
     }
@@ -431,8 +444,13 @@ public final class ProjectImpl extends ProjectBase {
     @Override
     public void setDisposed() {
         super.setDisposed();
-        if (task != null) {
-            task.cancel();
+        synchronized (editedFiles) {
+            for (Task task : editedFiles.values()) {
+                if (task != null) {
+                    task.cancel();
+                }
+            }
+            editedFiles.clear();
         }
     }
 }
