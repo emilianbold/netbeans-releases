@@ -147,7 +147,7 @@ public final class ShellScriptRunner {
         RequestProcessor rp = new RequestProcessor("Shell runner", 3); // NOI18N
         countdown = new CountDownLatch(3);
 
-        Callable scriptWriter = new Callable<Integer>() {
+        Callable<Integer> scriptWriter = new Callable<Integer>() {
 
             @Override
             public Integer call() throws Exception {
@@ -165,7 +165,7 @@ public final class ShellScriptRunner {
 
                             while ((scriptLine = scriptReader.readLine()) != null) {
                                 scriptWriter.write(scriptLine);
-                                scriptWriter.newLine();
+                                scriptWriter.write('\n');
                             }
                         } finally {
                             if (scriptReader != null) {
@@ -287,7 +287,7 @@ public final class ShellScriptRunner {
 
         private final String prefix;
 
-        private LoggerLineProcessor(String prefix) {
+        public LoggerLineProcessor(String prefix) {
             this.prefix = prefix;
         }
 
