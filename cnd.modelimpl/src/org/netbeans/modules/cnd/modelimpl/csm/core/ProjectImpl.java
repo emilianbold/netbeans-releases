@@ -382,6 +382,9 @@ public final class ProjectImpl extends ProjectBase {
         // FIXME: It looks we can cancel task started for another file
         // there should be not one task, but task associated with file => it make sense to cancel file's task
         if (task != null) {
+            if (TraceFlags.TRACE_182342_BUG) {
+                new Exception("cancelling previous parse on edit task " + task.hashCode()).printStackTrace(System.err);// NOI18N
+            }
             task.cancel();
         }
          task = RP.create(new Runnable() {
@@ -389,6 +392,9 @@ public final class ProjectImpl extends ProjectBase {
             @Override
             public void run() {
                 try {
+                    if (TraceFlags.TRACE_182342_BUG) {
+                        System.err.println("stated scheduleParseOnEditing task");
+                    }
                     addToQueueOnEditing(buf, file);
                 } catch (AssertionError ex) {
                     DiagnosticExceptoins.register(ex);
@@ -397,6 +403,9 @@ public final class ProjectImpl extends ProjectBase {
                 }
             }
         }, true);
+        if (TraceFlags.TRACE_182342_BUG) {
+            new Exception("created new parse on edit task " + task.hashCode()).printStackTrace(System.err);// NOI18N
+        }
         task.setPriority(Thread.MIN_PRIORITY);
         int delay = TraceFlags.REPARSE_DELAY;
         boolean doReparse = NamedEntityOptions.instance().isEnabled(new NamedEntity() {
