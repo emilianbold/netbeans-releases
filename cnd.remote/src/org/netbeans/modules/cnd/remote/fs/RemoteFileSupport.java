@@ -215,9 +215,10 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         final String rdir = remoteDir.length() == 0 ? "/" : remoteDir; // NOI18N
         checkConnection(dir, rdir, true);
 
-        final String script = "test -d " + rdir + " && cd " + rdir + // NOI18N
-                " && for D in `ls`; do " + // NOI18N
-                "if [ -d $D ]; then echo D $D; else echo F $D; fi; done"; // NOI18N
+        final String script = "test -d \"" + rdir + "\" && " + // NOI18N
+                "cd \"" + rdir + "\" &&" + // NOI18N
+                "for D in `/bin/ls`; do " + // NOI18N
+                "if [ -d \"$D\" ]; then echo D \"$D\"; else echo F \"$D\"; fi; done"; // NOI18N
 
         final AtomicReference<IOException> ex = new AtomicReference<IOException>();
         final AtomicBoolean dirCreated = new AtomicBoolean(false);
