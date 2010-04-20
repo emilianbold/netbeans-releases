@@ -218,17 +218,20 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         return currentVisibleRange;
     }
 
+    private final Object tokenListLock = new Object();
     private TokenList tokenList;
     
-    private synchronized TokenList getTokenList() {
-        if (tokenList == null) {
-            tokenList = ACCESSOR.lookupTokenList(getDocument());
-            
-            if (tokenList != null)
-                tokenList.addChangeListener(this);
+    private TokenList getTokenList() {
+        synchronized(tokenListLock) {
+            if (tokenList == null) {
+                tokenList = ACCESSOR.lookupTokenList(getDocument());
+
+                if (tokenList != null)
+                    tokenList.addChangeListener(this);
+            }
+
+            return tokenList;
         }
-        
-        return tokenList;
     }
     
     private void process() throws BadLocationException {

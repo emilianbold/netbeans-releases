@@ -97,7 +97,7 @@ import org.openide.xml.XMLUtil;
  */
 public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     
-    private static final RequestProcessor RP = new RequestProcessor("J2SEPhysicalViewProvider.RP"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(J2SELogicalViewProvider.class);
     
     private final J2SEProject project;
     private final UpdateHelper helper;
@@ -339,10 +339,13 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
             fireDisplayNameChange(null, null);
         }
 
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            fireNameChange(null, null);
-            fireDisplayNameChange(null, null);
+        public @Override void propertyChange(PropertyChangeEvent evt) {
+            RP.post(new Runnable() {
+                public @Override void run() {
+                    fireNameChange(null, null);
+                    fireDisplayNameChange(null, null);
+                }
+            });
         }
 
         @Override

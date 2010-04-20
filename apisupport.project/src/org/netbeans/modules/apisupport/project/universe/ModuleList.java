@@ -1108,7 +1108,6 @@ public final class ModuleList {
         return PropertyUtils.fixedPropertyProvider(NbCollections.checkedMapByFilter(p, String.class, String.class, true));
     }
     
-    private static boolean PERMIT_CACHES = true;
     /**
      * Refresh any existing lists, e.g. in response to a new module being created.
      */
@@ -1117,7 +1116,6 @@ public final class ModuleList {
         synchronized (binaryLists) { binaryLists.clear(); }
         synchronized (clusterLists) { clusterLists.clear(); }
         synchronized (knownEntries) { knownEntries.clear(); }
-        PERMIT_CACHES = false; // #126524
     }
     
     /**
