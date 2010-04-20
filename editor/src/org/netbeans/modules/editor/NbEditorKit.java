@@ -452,6 +452,9 @@ public class NbEditorKit extends ExtKit implements Callable {
                         }
                     }
                 } else {
+                    if (Boolean.TRUE.equals(action.getValue(DynamicMenuContent.HIDE_WHEN_DISABLED)) && !action.isEnabled()) {
+                        return;
+                    }
                     item.setEnabled(action.isEnabled());
                     Object helpID = action.getValue ("helpID"); // NOI18N
                     if (helpID != null && (helpID instanceof String)) {
@@ -504,10 +507,17 @@ public class NbEditorKit extends ExtKit implements Callable {
                             if (item instanceof DynamicMenuContent) {
                                 Component[] cmps = ((DynamicMenuContent)item).getMenuPresenters();
                                 for (int i = 0; i < cmps.length; i++) {
-                                    popupMenu.add(cmps[i]);
+                                    if(cmps[i] != null) {
+                                        popupMenu.add(cmps[i]);
+                                    } else {
+                                        popupMenu.addSeparator();
+                                    }
                                 }
                             } else {
                                 if (!(item instanceof JMenu)) {
+                                    if (Boolean.TRUE.equals(action.getValue(DynamicMenuContent.HIDE_WHEN_DISABLED)) && !action.isEnabled()) {
+                                        return;
+                                    }
                                     assignAccelerator(
                                          (Keymap)Lookup.getDefault().lookup(Keymap.class),
                                          action,
