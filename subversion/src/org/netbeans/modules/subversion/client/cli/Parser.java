@@ -115,6 +115,7 @@ public class Parser {
     }    
     
     private LinePattern[] patterns = {
+        new LinePattern("[ADUCGE ][ADUCG ][BC ][C ] (.+)",                       0, -1),
         new LinePattern("([CGU ])([CGU ])   (.+)",                               2, -1),
         new LinePattern("D    ([^ ].+)",                                         0, -1),
         new LinePattern("A    ([^ ].+)",                                         0, -1),
