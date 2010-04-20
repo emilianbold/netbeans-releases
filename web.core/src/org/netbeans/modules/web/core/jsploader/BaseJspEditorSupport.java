@@ -55,7 +55,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
@@ -100,6 +99,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         LineCookie, CloseCookie, PrintCookie {
 
     private static final Logger LOGGER = Logger.getLogger(BaseJspEditorSupport.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(BaseJspEditorSupport.class.getSimpleName(), 4);
     private static final int AUTO_PARSING_DELAY = 2000;//ms
     private Task PARSER_RESTART_TASK;
     /** Cash of encoding of the file */
@@ -519,7 +519,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             if (dataObject instanceof JspDataObject &&
                     (mimeType.equals(JSP_MIME_TYPE) || mimeType.equals(TAG_MIME_TYPE))) {
                 //do not call palette creation in AWT, it can be quite slow
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     public void run() {
                         try {
                             PaletteController pc = JspPaletteFactory.getPalette();

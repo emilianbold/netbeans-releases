@@ -168,30 +168,7 @@ public class MakeArtifact {
     }
 
     public String getBuildCommand(String makeCommand, String makeFlags) {
-        String bc = getBuildCommand();
-        int i = bc.indexOf("${MAKE}"); // NOI18N
-        if (i == 0) {
-            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) { // NOI18N
-                makeCommand = "\""+makeCommand+"\""; // NOI18N
-            }
-            bc = makeCommand + bc.substring(i + 7);
-        } else if (i > 0) {
-            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) { // NOI18N
-                makeCommand = "\""+makeCommand+"\""; // NOI18N
-            }
-            bc = bc.substring(0, i) + makeCommand + bc.substring(i + 7);
-        }
-
-        i = bc.indexOf("${MAKEFLAGS}"); // NOI18N
-        if (i == 0) {
-            bc = makeFlags + bc.substring(i + 12);
-        } else if (i > 0) {
-            bc = bc.substring(0, i) + makeFlags + bc.substring(i + 12);
-        } else {
-            bc = makeFlags + bc;
-        }
-
-        return bc;
+        return subsituteMake(getBuildCommand(), makeCommand, makeFlags);
     }
 
     public String getCleanCommand() {
@@ -199,30 +176,32 @@ public class MakeArtifact {
     }
 
     public String getCleanCommand(String makeCommand, String makeFlags) {
-        String cc = getCleanCommand();
-        int i = cc.indexOf("${MAKE}"); // NOI18N
-        if (i == 0) {
-            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) { // NOI18N
-                makeCommand = "\""+makeCommand+"\""; // NOI18N
+        return subsituteMake(getCleanCommand(), makeCommand, makeFlags);
+    }
+
+    private String subsituteMake(String template, String makeCommand, String makeFlags) {
+        if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) { // NOI18N
+            makeCommand = "\""+makeCommand+"\""; // NOI18N
+        }
+        int startCommand = template.indexOf("${MAKE}"); // NOI18N
+        int startFlags = template.indexOf("${MAKEFLAGS}"); // NOI18N
+        if (startCommand >= 0) {
+            if (makeFlags.length() > 0 && startFlags < 0) {
+                makeCommand = makeCommand + " "+makeFlags; // NOI18N
             }
-            cc = makeCommand + cc.substring(i + 7);
-        } else if (i > 0) {
-            if (makeCommand.indexOf(' ') > 0 && !(makeCommand.indexOf('"')==0 || makeCommand.indexOf('\'')==0)) { // NOI18N
-                makeCommand = "\""+makeCommand+"\""; // NOI18N
-            }
-            cc = cc.substring(0, i) + makeCommand + cc.substring(i + 7);
+            template = template.substring(0, startCommand) + makeCommand + template.substring(startCommand + 7);
         }
 
-        i = cc.indexOf("${MAKEFLAGS}"); // NOI18N
-        if (i == 0) {
-            cc = makeFlags + cc.substring(i + 12);
-        } else if (i > 0) {
-            cc = cc.substring(0, i) + makeFlags + cc.substring(i + 12);
+        if (startFlags >= 0) {
+            startFlags = template.indexOf("${MAKEFLAGS}"); // NOI18N
+            template = template.substring(0, startFlags) + makeFlags + template.substring(startFlags + 12);
         } else {
-            cc = makeFlags + cc;
+            if (startCommand < 0) {
+                template = template + " " + makeFlags; // NOI18N
+            }
         }
 
-        return cc;
+        return template;
     }
 
     public String getOutput() {

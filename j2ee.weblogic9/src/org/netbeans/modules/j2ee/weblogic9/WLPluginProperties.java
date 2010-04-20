@@ -104,6 +104,18 @@ public class WLPluginProperties {
         return null;
     }
 
+    @CheckForNull
+    public static File getServerLibDirectory(WLDeploymentManager manager) {
+        String server = (String) manager.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+        if (server != null) {
+            File serverLib = new File(new File(server), DOMAIN_LIB_DIR);
+            if (serverLib.exists() && serverLib.isDirectory()) {
+                return serverLib;
+            }
+        }
+        return null;
+    }
+
     /** Creates a new instance of */
     private WLPluginProperties() {
         java.io.InputStream inStream = null;
