@@ -39,10 +39,8 @@
 
 package org.netbeans.modules.php.editor.model;
 
-import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
-
 /**
  * @author Radek Matous
  */
-public interface ConstantElement extends ModelElement, FullyQualifiedElement {
+public interface ConstantElement extends ModelElement {
 }

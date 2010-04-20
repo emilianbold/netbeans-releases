@@ -109,7 +109,9 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
     public File redirectScriptOutput(String command, String... arguments) {
         ExternalProcessBuilder processBuilder = createSilentCommand(command, arguments);
-        assert processBuilder != null;
+        if (processBuilder == null) {
+            return null;
+        }
 
         File output = null;
         try {

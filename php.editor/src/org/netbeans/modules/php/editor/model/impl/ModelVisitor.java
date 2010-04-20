@@ -827,7 +827,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 String value = scalar.getStringValue();
                 if (NavUtils.isQuoted(value)) {
                     ASTNodeInfo<Scalar> scalarInfo = ASTNodeInfo.create(Kind.CONSTANT, scalar);
-                    ConstantElementImpl constantImpl = modelBuilder.getCurrentNameSpace().createConstantElement(scalarInfo);
+                    ScalarConstantElementImpl constantImpl = modelBuilder.getCurrentNameSpace().createConstantElement(scalarInfo);
                     occurencesBuilder.prepare(scalarInfo, constantImpl);
                 }
             }

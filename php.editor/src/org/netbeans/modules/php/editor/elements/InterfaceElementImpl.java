@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.editor.elements;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -131,6 +130,30 @@ public class InterfaceElementImpl extends TypeElementImpl implements InterfaceEl
     @Override
     public final PhpElementKind getPhpElementKind() {
         return InterfaceElement.KIND;
+    }
+
+    @Override
+    public String asString(PrintAs as) {
+        StringBuilder retval = new StringBuilder();
+        switch (as) {
+            case NameAndSuperTypes:
+                retval.append(getName()); //NOI18N
+            case SuperTypes:
+                Set<QualifiedName> superIfaces = getSuperInterfaces();
+                if (!superIfaces.isEmpty()) {
+                    retval.append(" extends ");//NOI18N
+                }
+                StringBuilder ifacesBuffer = new StringBuilder();
+                for (QualifiedName qualifiedName : superIfaces) {
+                    if (ifacesBuffer.length() > 0) {
+                        ifacesBuffer.append(", ");//NOI18N
+                    }
+                    ifacesBuffer.append(qualifiedName.getName());
+                }
+                retval.append(ifacesBuffer);
+                break;
+        }
+        return retval.toString();
     }
 
     private void checkInterfaceSignature(StringBuilder sb) {

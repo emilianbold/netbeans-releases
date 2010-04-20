@@ -5,11 +5,8 @@
 package org.netbeans.modules.php.editor.codegen;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
@@ -22,16 +19,13 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
-import org.netbeans.modules.php.editor.api.PhpElementKind;
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
-import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.ElementTransformation;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
-import org.netbeans.modules.php.editor.api.elements.TypeResolver;
+import org.netbeans.modules.php.editor.api.elements.TypeTreeElement;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenWay;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
@@ -52,7 +46,7 @@ public class CGSInfo {
     final private List<Property> possibleGetters;
     final private List<Property> possibleSetters;
     final private List<Property> possibleGettersSetters;
-    final private List<Property> possibleMethods;
+    final private List<MethodProperty> possibleMethods;
     final private JTextComponent textComp;
     /**
      * how to generate  getters and setters method name
@@ -65,7 +59,7 @@ public class CGSInfo {
         possibleGetters = new ArrayList<Property>();
         possibleSetters = new ArrayList<Property>();
         possibleGettersSetters = new ArrayList<Property>();
-        possibleMethods = new ArrayList<Property>();
+        possibleMethods = new ArrayList<MethodProperty>();
         className = null;
         this.textComp = textComp;
         hasConstructor = false;
@@ -83,7 +77,7 @@ public class CGSInfo {
         return properties;
     }
 
-    public List<Property> getPossibleMethods() {
+    public List<MethodProperty> getPossibleMethods() {
         return possibleMethods;
     }
 
@@ -154,37 +148,16 @@ public class CGSInfo {
                                 accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getConstructors(classElement))));
                                 accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getAccessibleMagicMethods(classElement))));
                                 final Set<TypeElement> preferedTypes = forFilesFilter.prefer(ElementTransformation.toMemberTypes().transform(accessibleMethods));
-                                //TODO: change to tree view
-                                //TypeTreeElement tp = index.getInheritedTypesAsTree(classElement, preferedTypes);
-                                //Set<TypeTreeElement> directlyInherited = tp.getDirectlyInherited();
+                                final TypeTreeElement enclosingType = index.getInheritedTypesAsTree(classElement, preferedTypes);
                                 final List<MethodProperty> properties = new ArrayList<MethodProperty>();
                                 final Set<MethodElement> methods = ElementFilter.forMembersOfTypes(preferedTypes).filter(accessibleMethods);
                                 for (final MethodElement methodElement : methods) {
                                     if (!methodElement.isFinal()) {
-                                        properties.add(new MethodProperty(methodElement, classElement));
+                                        properties.add(new MethodProperty(methodElement, enclosingType));
                                     }
                                 }
-                                Collections.<MethodProperty>sort(properties, new Comparator<MethodProperty>() {
-                                    @Override
-                                    public int compare(MethodProperty o1, MethodProperty o2) {
-                                        int retval = -Boolean.valueOf(o1.getMethod().isConstructor()).compareTo(o2.getMethod().isConstructor());
-                                        if (retval == 0) {
-                                            retval = -Boolean.valueOf(o1.isSelected()).compareTo(o2.isSelected());
-                                        }
-                                        if (retval == 0) {
-                                            retval = Boolean.valueOf(o1.getMethod().isMagic()).compareTo(o2.getMethod().isMagic());
-                                        }
-                                        if (retval == 0) {
-                                            retval = o1.getMethod().getType().getName().compareTo(o2.getMethod().getType().getName());
-                                        }
-                                        if (retval == 0) {
-                                            retval = o1.getMethod().getName().compareTo(o2.getMethod().getName());
-                                        }
-                                        return retval;
-                                    }
-                                });
+                                Collections.<MethodProperty>sort(properties, MethodProperty.getComparator());
                                 getPossibleMethods().addAll(properties);
-
                             }
                         }
 
@@ -278,35 +251,6 @@ public class CGSInfo {
                     hasConstructor = true;
                 }
             }
-        }
-    }
-
-    static class MethodProperty extends Property {
-        final private MethodElement method;
-        private MethodProperty(final MethodElement method, final ClassElement enclosingClass) {
-            super(formatName(method), method.getPhpModifiers().toFlags());
-            this.method = method;
-            boolean typeIsAbstract = enclosingClass.getPhpModifiers().isAbstract();
-            final boolean methodIsAbstract = method.isAbstract() || method.getType().isInterface();
-            setSelected(!typeIsAbstract && methodIsAbstract);
-        }
-
-        private static String formatName(final MethodElement method) {
-            Collection<TypeResolver> returnTypes = method.getReturnTypes();
-            final String nameAndParams = method.asString(PrintAs.NameAndParamsDeclaration);
-            final String returntypes = method.asString(PrintAs.ReturnTypes);
-            final String[] split = nameAndParams.split("\\(");
-            return returnTypes.isEmpty() ? String.format("<html>%s&nbsp;<b>%s</b>(%s</html>", method.getType().getName(), split[0], split[1]) :
-                    String.format("<html>%s&nbsp;<b>%s</b>(%s : %s</html>", method.getType().getName(), split[0], split[1], returntypes);
-        }
-
-        MethodElement getMethod() {
-            return method;
-        }
-
-        @Override
-        public PhpElementKind getKind() {
-            return PhpElementKind.METHOD;
         }
     }
 }

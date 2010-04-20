@@ -39,25 +39,16 @@
 
 package org.netbeans.modules.php.editor.elements;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.NameKind;
-import org.netbeans.modules.php.editor.api.PhpElementKind;
-import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeTreeElement;
-import org.openide.filesystems.FileObject;
 
 /**
  * @author Radek Matous
@@ -105,103 +96,8 @@ final class TypeTreeElementImpl  implements TypeTreeElement {
     }
 
     @Override
-    public PhpElementKind getPhpElementKind() {
-        return delegate.getPhpElementKind();
-    }
-
-    @Override
-    public Set<QualifiedName> getSuperInterfaces() {
-        return delegate.getSuperInterfaces();
-    }
-
-    @Override
-    public boolean isClass() {
-        return delegate.isClass();
-    }
-
-    @Override
-    public boolean isInterface() {
-        return delegate.isInterface();
-    }
-
-    @Override
-    public QualifiedName getNamespaceName() {
-        return delegate.getNamespaceName();
-    }
-
-    @Override
-    public QualifiedName getFullyQualifiedName() {
-        return delegate.getFullyQualifiedName();
-    }
-
-    @Override
-    public ElementQuery getElementQuery() {
-        return delegate.getElementQuery();
-    }
-
-    @Override
-    public String getFilenameUrl() {
-        return delegate.getFilenameUrl();
-    }
-
-    @Override
-    public PhpModifiers getPhpModifiers() {
-        return delegate.getPhpModifiers();
-    }
-
-    @Override
-    public int getOffset() {
-        return delegate.getOffset();
-    }
-
-    @Override
-    public int getFlags() {
-        return delegate.getFlags();
-    }
-
-    @Override
-    public boolean isPlatform() {
-        return delegate.isPlatform();
-    }
-
-    @Override
-    public FileObject getFileObject() {
-        return delegate.getFileObject();
-    }
-
-    @Override
-    public String getMimeType() {
-        return delegate.getMimeType();
-    }
-
-    @Override
-    public String getName() {
-        return delegate.getName();
-    }
-
-    @Override
-    public String getIn() {
-        return delegate.getIn();
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return delegate.getKind();
-    }
-
-    @Override
-    public Set<Modifier> getModifiers() {
-        return delegate.getModifiers();
-    }
-
-    @Override
-    public boolean signatureEquals(ElementHandle handle) {
-        return delegate.signatureEquals(handle);
-    }
-
-    @Override
-    public OffsetRange getOffsetRange(ParserResult result) {
-        return delegate.getOffsetRange(result);
+    public TypeElement getType() {
+        return delegate;
     }
 
     private Index getIndex() {
