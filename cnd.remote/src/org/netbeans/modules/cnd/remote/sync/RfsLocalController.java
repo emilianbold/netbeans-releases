@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -23,18 +24,25 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil.PrefixedLogger;
 import org.netbeans.modules.cnd.remote.sync.download.HostUpdates;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -50,6 +58,10 @@ class RfsLocalController extends NamedRunnable {
     private final Set<File> remoteUpdates;
     private final File privProjectStorageDir;
     private final PrefixedLogger logger;
+    private final String prefix;
+    private final SharabilityFilter filter;
+    private String timeStampFile;
+
     /**
      * Maps remote canonical remote path remote controller operates with
      * to the absolute remote path local controller uses
@@ -75,7 +87,9 @@ class RfsLocalController extends NamedRunnable {
         this.remoteUpdates = new HashSet<File>();
         this.privProjectStorageDir = privProjectStorageDir;
         this.fileData = new FileData(privProjectStorageDir, executionEnvironment);
-        this.logger = new RemoteUtil.PrefixedLogger("LC[" + executionEnvironment + "]"); // NOI18N
+        this.prefix = "LC[" + executionEnvironment + "]"; //NOI18N
+        this.logger = new RemoteUtil.PrefixedLogger(prefix);
+        this.filter = new SharabilityFilter();
     }
 
     private void respond_ok() {
@@ -131,9 +145,9 @@ class RfsLocalController extends NamedRunnable {
                         throw new IllegalArgumentException("Protocol error: " + request); // NOI18N
                     }
                     String remoteFile = request.substring(2);
-                    String initialPath = canonicalToAbsolute.get(remoteFile);
-                    if (initialPath != null) {
-                        remoteFile = initialPath;
+                    String realPath = canonicalToAbsolute.get(remoteFile);
+                    if (realPath != null) {
+                        remoteFile = realPath;
                     }
                     String localFilePath = mapper.getLocalPath(remoteFile);
                     if (localFilePath != null) {
@@ -190,6 +204,18 @@ class RfsLocalController extends NamedRunnable {
         // this try-catch is only for investigation of the instable test failures
         try {
             logger.log(Level.FINEST, "shutdown");
+            try {
+                runNewFilesDiscovery(true);
+                shutDownNewFilesDiscovery();
+            } catch (InterruptedIOException ex) {
+                // nothing
+            } catch (InterruptedException ex) {
+                // nothing
+            } catch (IOException ex) {
+                logger.log(Level.INFO, "Error discovering newer files at remote host", ex); //NOI18N
+            } catch (ExecutionException ex) {
+                logger.log(Level.INFO, "Error discovering newer files at remote host", ex); //NOI18N
+            }
             fileData.store();
             logger.log(Level.FINE, "registering %d updated files", remoteUpdates.size());
             if (!remoteUpdates.isEmpty()) {
@@ -199,6 +225,105 @@ class RfsLocalController extends NamedRunnable {
         } catch (Throwable thr) {
             thr.printStackTrace();
         }
+    }
+
+    private void initNewFilesDiscovery() {
+        String remoteSyncRoot = RemotePathMap.getRemoteSyncRoot(execEnv);
+        ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", "-p", remoteSyncRoot);
+        if (res.isOK()) {
+           timeStampFile = res.output.trim();
+        } else {
+            timeStampFile = null;
+            logger.log(Level.INFO, "Error invoking mktemp -p %s at %s; rc=%d.", remoteSyncRoot, execEnv, res.exitCode);
+        }
+    }
+
+    private void shutDownNewFilesDiscovery() throws InterruptedException, ExecutionException {
+        if (timeStampFile != null) {
+            CommonTasksSupport.rmFile(execEnv, timeStampFile, err).get();
+        }
+    }
+
+    private void runNewFilesDiscovery(boolean srcOnly) throws IOException, InterruptedException {
+        if (timeStampFile == null) {
+            return;
+        }
+        long time = System.currentTimeMillis();
+        int oldSize = remoteUpdates.size();
+
+        StringBuilder remoteDirs = new StringBuilder();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                String rPath = mapper.getRemotePath(file.getAbsolutePath(), false);
+                if (rPath == null) {
+                    logger.log(Level.INFO, "Can't get remote path for %s at %s", file.getAbsolutePath(), execEnv);
+                } else {
+                    if (remoteDirs.length() > 0) {
+                        remoteDirs.append(' ');
+                    }
+                    remoteDirs.append(rPath);
+                }
+            }
+        }
+
+        StringBuilder extOptions = new StringBuilder();
+        if (srcOnly) {
+            Collection<Collection<String>> values = new ArrayList<Collection<String>>();
+            values.add(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
+            values.add(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
+            values.add(MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());
+            for (Collection<String> v : values) {
+                for (String ext : v) {
+                    if (extOptions.length() > 0) {
+                        extOptions.append("-o ");
+                    }
+                    extOptions.append("-name \"*.");
+                    extOptions.append(ext);
+                    extOptions.append("\"");
+                }
+            }
+        }
+        
+        String script = String.format(
+            "for F in `find %s %s -newer %s`; do test -f $F &&  echo $F;  done;",
+            remoteDirs, extOptions.toString(), timeStampFile);
+
+        final AtomicInteger lineCnt = new AtomicInteger();
+
+        LineProcessor lp = new LineProcessor() {
+            @Override
+            public void processLine(String remoteFile) {
+                lineCnt.incrementAndGet();
+                logger.log(Level.FINEST, " Updates check: %s", remoteFile);
+                String realPath = canonicalToAbsolute.get(remoteFile);
+                if (realPath != null) {
+                    remoteFile = realPath;
+                }
+                String localPath = mapper.getLocalPath(remoteFile);
+                if (localPath == null) {
+                    logger.log(Level.FINE, "Can't find local path for %s", remoteFile);
+                } else {
+                    File localFile = new File(localPath);
+                    if (fileData.getFileInfo(localFile) == null) { // this is only for files we don't control
+                        if (filter.accept(localFile)) {
+                            remoteUpdates.add(localFile);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void reset() {}
+
+            @Override
+            public void close() {}
+        };
+
+        ShellScriptRunner ssr = new ShellScriptRunner(execEnv, script, lp);
+        ssr.setErrorProcessor(new ShellScriptRunner.LoggerLineProcessor(prefix));
+        ssr.execute();
+        logger.log(Level.FINE, "New files discovery at %s took %d ms; %d lines processed; %d additional new files were discovered",
+                execEnv, System.currentTimeMillis() - time, lineCnt.get(), remoteUpdates.size() - oldSize);
     }
 
     private static class FileGatheringInfo {
@@ -244,7 +369,7 @@ class RfsLocalController extends NamedRunnable {
     /**
      * Feeds remote controller with the list of files and their lengths
      */
-    void feedFiles(SharabilityFilter filter) {
+    void init() {
         long time = System.currentTimeMillis();
         long timeTotal = System.currentTimeMillis();
         List<FileGatheringInfo> filesToFeed = new ArrayList<FileGatheringInfo>(512);
@@ -322,6 +447,7 @@ class RfsLocalController extends NamedRunnable {
             err.printf("%s\n", ex.getMessage());
         }
         fileData.store();
+        initNewFilesDiscovery();
         logger.log(Level.FINE, "the entire initialization took %d ms", System.currentTimeMillis() - timeTotal);
     }
 
@@ -353,7 +479,7 @@ class RfsLocalController extends NamedRunnable {
         } while (!filesToCheck.isEmpty() && cnt++ < max);
         logger.log(Level.FINE, "checkLinks done in %d passes", cnt);
         if (!filesToCheck.isEmpty()) {
-            RemoteUtil.LOGGER.info("checkLinks exited by count. Cyclic symlinks?");
+            logger.log(Level.INFO, "checkLinks exited by count. Cyclic symlinks?");
         }
     }
 
