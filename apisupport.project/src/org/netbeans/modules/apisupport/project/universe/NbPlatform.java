@@ -464,6 +464,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
             throw (IOException) e.getException();
         }
         getPlatformsInternal().remove(plaf);
+        ModuleList.refresh(); // #97262
         if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
             Util.err.log("NbPlatform removed: " + plaf);
         }
