@@ -318,82 +318,12 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             }
 
             try {
-                final HighlightsSequence seq = layers[i].getHighlights(startOffset, endOffset);
-                final int layerIndex = i; //saving this so we can debug corrupt layers (aka the ones that need clipping)
-                final HighlightsContainer currentLayerObject = layers[i];
-
-                bag.addAllHighlights(new HighlightsSequence() {
-                    int start = -1, end = -1;
-                    public @Override boolean moveNext() {
-                        boolean hasNext = seq.moveNext();
-                        //XXX: the problem here is if the sequence we are wrapping is sorted by startOffset.
-                        // In practice I think it is, but I cannot afford to make that assumption now.
-                        // So I have to check both boundaries, not only start and end offset separately.
-                        boolean retry = hasNext;
-                        while (retry) {
-                            start = seq.getStartOffset();
-                            end = seq.getEndOffset();
-
-                            if (start > end) {
-                                // this highlight is invalid
-                                if (LOG.isLoggable(Level.FINE)) {
-                                    LOG.log(Level.FINE, "Layer[" + layerIndex + "]=" + currentLayerObject //NOI18N
-                                        + " supplied invalid highlight " + dumpHighlight(seq, null) //NOI18N
-                                        + ", requested range <" + startOffset + ", " + endOffset + ">." //NOI18N
-                                        + " Highlight ignored."); //NOI18N
-                                }
-                                
-                                retry = hasNext = seq.moveNext();
-                            } else if (start > endOffset || end < startOffset) {
-                                // this highlight is totally outside our rage, there is nothing we can clip, we must retry
-                                if (LOG.isLoggable(Level.FINE)) {
-                                    LOG.log(Level.FINE, "Layer[" + layerIndex + "]=" + currentLayerObject //NOI18N
-                                        + " supplied highlight " + dumpHighlight(seq, null) //NOI18N
-                                        + ", which is outside of the requested range <" + startOffset + ", " + endOffset + ">." //NOI18N
-                                        + " Highlight skipped."); //NOI18N
-                                }
-
-                                retry = hasNext = seq.moveNext();
-                            } else {
-                                // highlight appears ok
-                                retry = false;
-                            }
-                        }
-
-                        if (hasNext) {
-                            // clip the highlight if neccessary
-                            boolean unclipped = false;
-                            if (start < startOffset) {
-                                start = startOffset;
-                                unclipped = true;
-                            }
-                            if (end > endOffset) {
-                                end = endOffset;
-                                unclipped = true;
-                            }
-                            if (unclipped && LOG.isLoggable(Level.FINE)) {
-                                LOG.log(Level.FINE, "Layer[" + layerIndex + "]=" + currentLayerObject //NOI18N
-                                    + " supplied unclipped highlight " + dumpHighlight(seq, null) //NOI18N
-                                    + ", requested range <" + startOffset + ", " + endOffset + ">." //NOI18N
-                                    + " Highlight clipped."); //NOI18N
-                            }
-                        }
-
-                        return hasNext;
-                    }
-
-                    public @Override int getStartOffset() {
-                        return start;
-                    }
-
-                    public @Override int getEndOffset() {
-                        return end;
-                    }
-
-                    public @Override AttributeSet getAttributes() {
-                        return seq.getAttributes();
-                    }
-                });
+                bag.addAllHighlights(new CheckedHighlightsSequence(
+                    layers[i].getHighlights(startOffset, endOffset),
+                    startOffset,
+                    endOffset,
+                    "CHC.Layer[" + i + "]=" + layers[i] //NOI18N
+                ));
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine(dumpLayerHighlights(layers[i], startOffset, endOffset));
                 }
@@ -457,7 +387,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         return sb.toString();
     }
 
-    private static StringBuilder dumpHighlight(HighlightsSequence seq, StringBuilder sb) {
+    /* package */ static StringBuilder dumpHighlight(HighlightsSequence seq, StringBuilder sb) {
         if (sb == null) {
             sb = new StringBuilder();
         }
