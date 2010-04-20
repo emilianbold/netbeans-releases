@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.Action;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.spi.ProjectNature;
@@ -68,6 +69,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
@@ -76,6 +78,9 @@ import org.openide.util.lookup.Lookups;
  * @author Jesse Glick
  */
 public final class View implements LogicalViewProvider {
+
+    static boolean synchronous;    //Used by unit test to do name loading in the event thread
+    private static final RequestProcessor RP = new RequestProcessor(View.class.getName(), 1);
     
     private final FreeformProject project;
     
@@ -129,6 +134,7 @@ public final class View implements LogicalViewProvider {
         
         private final FreeformProject p;
         private final ProjectInformation info;
+        private volatile String nameCache;
         
         @SuppressWarnings("LeakingThisInConstructor")
         public RootNode(FreeformProject p) {
@@ -140,7 +146,32 @@ public final class View implements LogicalViewProvider {
         
         @Override
         public String getName() {
-            return info.getDisplayName();
+            String cached = this.nameCache;
+            if (cached != null) {
+                return cached;
+            }
+            class Action implements Runnable {
+                private String result;
+                @Override
+                public void run() {
+                    ProjectManager.mutex().readAccess(new Runnable () {
+                        @Override
+                        public void run() {
+                            result = nameCache = info.getDisplayName();
+                            fireNameChange(null, null);
+                            fireDisplayNameChange(null, null);
+                        }
+                    });
+                }
+            };
+            if (synchronous) {
+                Action a = new Action();
+                a.run();
+                return a.result;
+            } else {
+                RP.post(new Action());
+                return NbBundle.getMessage(View.class, "View.RootNode.Loading");
+            }
         }
         
         @Override
@@ -189,6 +220,7 @@ public final class View implements LogicalViewProvider {
         }
 
         public @Override void propertyChange(PropertyChangeEvent evt) {
+            nameCache = null;
             fireNameChange(null, null);
             fireDisplayNameChange(null, null);
             fireIconChange();
