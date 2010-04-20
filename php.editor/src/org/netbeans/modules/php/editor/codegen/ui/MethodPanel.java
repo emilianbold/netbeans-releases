@@ -39,12 +39,10 @@
 
 package org.netbeans.modules.php.editor.codegen.ui;
 
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import javax.swing.JTree;
 import javax.swing.tree.MutableTreeNode;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeTreeElement;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator;
@@ -66,7 +64,6 @@ public class MethodPanel extends ConstructorPanel {
     protected MutableTreeNode getRootNode() {
         // get the enclosing type
         TypeTreeElement enclosingType = null;
-        Map<TypeElement, List<MethodProperty>> data = new LinkedHashMap<TypeElement, List<MethodProperty>>();
         for (Property property : properties) {
             MethodProperty methodProperty = (MethodProperty) property;
             enclosingType = methodProperty.getEnclosingType();
@@ -80,15 +77,18 @@ public class MethodPanel extends ConstructorPanel {
         queue.offer(enclosingType);
         while (!queue.isEmpty()) {
             TypeTreeElement type = queue.poll();
-            final CGSClassNode classNode = new CheckNode.CGSClassNode(type.getName());
+            final String nodeText = String.format("<html><b>%s</b> %s</html>",//NOI18N
+                    type.getType().getName(), type.getType().asString(TypeElement.PrintAs.SuperTypes));
+            final CGSClassNode classNode = new CheckNode.CGSClassNode(nodeText);
             for (Property property : properties) {
                 MethodProperty methodProperty = (MethodProperty) property;
-                // XXX fix this
-                if (methodProperty.getMethod().getType().equals(type)) {
+                if (!ElementFilter.forEqualTypes(type.getType()).filter(methodProperty.getMethod().getType()).isEmpty()) {
                     classNode.add(new CheckNode.MethodPropertyNode(methodProperty));
                 }
             }
-            root.add(classNode);
+            if (!classNode.isLeaf()) {
+                root.add(classNode);
+            }
 
             for (TypeTreeElement e : type.getDirectlyInherited()) {
                 queue.offer(e);
@@ -101,5 +101,15 @@ public class MethodPanel extends ConstructorPanel {
     @Override
     protected void initTree(JTree tree) {
         tree.setRootVisible(false);
+        expandAll(tree);
     }
+
+    private static void expandAll(JTree tree) {
+        int row = 0;
+        while (row < tree.getRowCount()) {
+            tree.expandRow(row);
+            row++;
+        }
+    }
+
 }
