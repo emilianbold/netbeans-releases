@@ -75,7 +75,7 @@ final class DocIndexItem extends Object {
         this.contextURL = contextURL;
         this.spec = spec;
         if (spec != null ) { // spec format ../pckg/Classname.html
-            int offset = spec.startsWith("../")? 3: 0; // NOI18N
+            int offset = spec.startsWith("../") ? 3 : spec.startsWith("./") ? 2 : 0; // NOI18N
             int length = spec.lastIndexOf('/');
             length = length < 0? spec.length(): length + 1;
             pckg = spec.substring(offset, length);
