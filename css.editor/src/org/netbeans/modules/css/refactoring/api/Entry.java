@@ -7,12 +7,13 @@ public class Entry {
     private String name;
     private OffsetRange astRange,  documentRange, bodyRange, documentBodyRange;
     private boolean isVirtual;
-    private String elementText, elementLineText;
+    //store charsequences - refering to the underlying immutable snapshot
+    private CharSequence elementText, elementLineText;
     private int lineOffset;
 
     public Entry(String name, OffsetRange astRange, OffsetRange documentRange, 
             OffsetRange bodyRange, OffsetRange documentBodyRange,
-            int lineOffset, String elementText, String elementLineText, boolean isVirtual) {
+            int lineOffset, CharSequence elementText, CharSequence elementLineText, boolean isVirtual) {
         this.name = name;
         this.astRange = astRange;
         this.documentRange = documentRange;
@@ -49,11 +50,11 @@ public class Entry {
         return lineOffset;
     }
 
-    public String getText() {
+    public CharSequence getText() {
         return elementText;
     }
 
-    public String getLineText() {
+    public CharSequence getLineText() {
         return elementLineText;
     }
 

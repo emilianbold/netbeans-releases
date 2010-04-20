@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -74,6 +75,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
+ * Instances of this class represents a css model associated with a snapshot of the file content.
  *
  * @author marekfukala
  */
@@ -81,36 +83,41 @@ public class CssFileModel {
 
     private static final Logger LOGGER = Logger.getLogger(CssIndex.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    //private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*[\\u0022]?([^\\u0022]*)[\\u0022]?\\s*\\)"); //NOI18N
-    private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)");
-    private Collection<Entry> classes, ids, htmlElements, imports, colors;
-    private CssParserResult parserResult;
+    private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
 
-    public CssFileModel(Source source) throws ParseException {
+    private Collection<Entry> classes, ids, htmlElements, imports, colors;
+    private Snapshot snapshot;
+    private SimpleNode parseTreeRoot;
+
+    private static CssParserResult getResult(Source source) throws ParseException {
+        final AtomicReference<CssParserResult> result = new AtomicReference<CssParserResult>();
         ParserManager.parse(Collections.singletonList(source), new UserTask() {
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, CssLanguage.CSS_MIME_TYPE);
-                if (cssRi != null) {
-                    parserResult = (CssParserResult)cssRi.getParserResult();
-                    init();
-                }
+                result.set(cssRi == null ? null : (CssParserResult) cssRi.getParserResult());
             }
         });
+        return result.get();
+    }
+
+    public CssFileModel(Source source) throws ParseException {
+       this(getResult(source));
     }
 
     public CssFileModel(CssParserResult parserResult) {
-        this.parserResult = parserResult;
-        init();
-    }
+        snapshot = parserResult.getSnapshot();
+        parseTreeRoot = parserResult.root();
 
-    public CssParserResult getParserResult() {
-        return parserResult;
+        if(parseTreeRoot != null) {
+            SimpleNodeUtil.visitChildren(parseTreeRoot, new AstVisitor());
+        } //else broken source, no parse tree
+
     }
 
     public Snapshot getSnapshot() {
-        return parserResult.getSnapshot();
+        return snapshot;
     }
 
     public FileObject getFileObject() {
@@ -196,13 +203,6 @@ public class CssFileModel {
             colors = new ArrayList<Entry>();
         }
         return colors;
-    }
-
-    private void init() {
-        SimpleNode root = parserResult.root();
-        if(root != null) {
-            SimpleNodeUtil.visitChildren(root, new AstVisitor());
-        } //else completely broken source, no parser result
     }
 
     @Override
@@ -343,11 +343,11 @@ public class CssFileModel {
         }
     }
 
-    public Entry createEntry(String name, OffsetRange range, boolean isVirtual) {
+    private Entry createEntry(String name, OffsetRange range, boolean isVirtual) {
         return createEntry(name, range, null, isVirtual);
     }
 
-    public Entry createEntry(String name, OffsetRange range, OffsetRange bodyRange, boolean isVirtual) {
+    private Entry createEntry(String name, OffsetRange range, OffsetRange bodyRange, boolean isVirtual) {
         //do not create entries for virtual generated code
         if(CssGSFParser.containsGeneratedCode(name)) {
             return null;
@@ -358,8 +358,8 @@ public class CssFileModel {
 
         OffsetRange documentRange = null;
         OffsetRange documentBodyRange = null;
-        String elementLineText = null;
-        String elementText = null;
+        CharSequence elementLineText = null;
+        CharSequence elementText = null;
         int lineOffset = -1;
         if (documentFrom == -1 || documentTo == -1) {
             if(LOG) {
@@ -373,12 +373,12 @@ public class CssFileModel {
             documentRange = new OffsetRange(documentFrom, documentTo);
             try {
                 //extract element text
-                elementText = getSnapshot().getText().subSequence(range.getStart(), range.getEnd()).toString();
+                elementText = getSnapshot().getText().subSequence(range.getStart(), range.getEnd());
 
                 //extract element line text
                 int astLineStart = GsfUtilities.getRowStart(getSnapshot().getText(), range.getStart());
                 int astLineEnd = GsfUtilities.getRowEnd(getSnapshot().getText(), range.getStart());
-                elementLineText = getSnapshot().getText().subSequence(astLineStart, astLineEnd).toString();
+                elementLineText = getSnapshot().getText().subSequence(astLineStart, astLineEnd);
 
                 //try to compute line number of document start offset, this "needs" to run on document.
                 final Document doc = getSnapshot().getSource().getDocument(true);
@@ -389,6 +389,7 @@ public class CssFileModel {
                 } else {
                     final AtomicInteger ret = new AtomicInteger();
                     final int offset = documentFrom;
+                    //XXX this should operate on the snapshot, not the document!
                     doc.render(new Runnable() {
 
                         @Override
