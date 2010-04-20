@@ -149,6 +149,35 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
         return sb.toString();
     }
 
+    @Override
+    public String asString(PrintAs as) {
+        StringBuilder retval = new StringBuilder();
+        switch (as) {
+            case NameAndSuperTypes:
+                retval.append(getName()); //NOI18N
+            case SuperTypes:
+                QualifiedName superClassName = getSuperClassName();
+                if (superClassName != null) {
+                    retval.append(" extends  ");//NOI18N
+                    retval.append(superClassName.getName());
+                }
+                Set<QualifiedName> superIfaces = getSuperInterfaces();
+                if (!superIfaces.isEmpty()) {
+                    retval.append(" implements ");//NOI18N
+                }
+                StringBuilder ifacesBuffer = new StringBuilder();
+                for (QualifiedName qualifiedName : superIfaces) {
+                    if (ifacesBuffer.length() > 0) {
+                        ifacesBuffer.append(", ");//NOI18N
+                    }
+                    ifacesBuffer.append(qualifiedName.getName());
+                }
+                retval.append(ifacesBuffer);
+                break;
+        }
+        return retval.toString();
+    }
+
     private void checkClassSignature(StringBuilder sb) {
         boolean checkEnabled = false;
         assert checkEnabled = true;

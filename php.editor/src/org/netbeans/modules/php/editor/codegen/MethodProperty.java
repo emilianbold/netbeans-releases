@@ -57,7 +57,7 @@ public final class MethodProperty extends Property {
         this.method = method;
         this.enclosingType = enclosingType;
 
-        boolean typeIsAbstract = enclosingType.getPhpModifiers().isAbstract();
+        boolean typeIsAbstract = enclosingType.getType().getPhpModifiers().isAbstract();
         final boolean methodIsAbstract = method.isAbstract() || method.getType().isInterface();
         setSelected(!typeIsAbstract && methodIsAbstract);
     }
@@ -90,9 +90,9 @@ public final class MethodProperty extends Property {
         final String returntypes = method.asString(PrintAs.ReturnTypes);
         final String[] split = nameAndParams.split("\\(");
         if (returnTypes.isEmpty()) {
-            return String.format("<html>%s&nbsp;<b>%s</b>(%s</html>", method.getType().getName(), split[0], split[1]); // NOI18N
+            return String.format("<html><b>%s</b>(%s</html>", split[0], split[1]); // NOI18N
         }
-        return String.format("<html>%s&nbsp;<b>%s</b>(%s : %s</html>", method.getType().getName(), split[0], split[1], returntypes); // NOI18N
+        return String.format("<html><b>%s</b>(%s : %s</html>", split[0], split[1], returntypes); // NOI18N
     }
 
     public MethodElement getMethod() {
