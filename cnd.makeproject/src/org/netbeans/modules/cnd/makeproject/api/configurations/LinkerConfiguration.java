@@ -105,7 +105,8 @@ public class LinkerConfiguration implements AllOptionsProvider {
         getNameassignOption().getModified() ||
         getAdditionalDependencies().getModified() ||
         getTool().getModified() ||
-        getLibrariesConfiguration().getModified();
+        getLibrariesConfiguration().getModified() ||
+        getCommandLineConfiguration().getModified();
     }
 
     private String getAdditionalDependenciesPredefined() {

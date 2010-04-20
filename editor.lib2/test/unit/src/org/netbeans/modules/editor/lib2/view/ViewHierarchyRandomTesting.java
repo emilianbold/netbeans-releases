@@ -72,6 +72,16 @@ public class ViewHierarchyRandomTesting {
         return container;
     }
 
+    public static void disableHighlighting(RandomTestContainer container) throws Exception {
+        final JEditorPane pane = EditorPaneTesting.getEditorPane(container);
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                pane.putClientProperty("HighlightsLayerIncludes", "");
+            }
+        });
+    }
+
     public static void initUndoManager(RandomTestContainer container) throws Exception {
         UndoManager undoManager = new UndoManager();
         Document doc = DocumentTesting.getDocument(container);

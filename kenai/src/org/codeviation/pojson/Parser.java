@@ -347,6 +347,9 @@ class Parser {
             case '\\':
                 cc = reader.read();
                 switch (cc) {
+                case '\\':
+                    sb.append('\\');
+                    break;
                 case '"':
                     sb.append('"');
                     break;

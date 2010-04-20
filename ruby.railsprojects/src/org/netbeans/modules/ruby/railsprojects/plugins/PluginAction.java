@@ -45,6 +45,7 @@ import org.netbeans.api.project.Project;
 
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
+import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -112,7 +113,9 @@ public final class PluginAction extends NodeAction {
         Lookup lookup = activatedNodes[0].getLookup();
         Project project = lookup.lookup(Project.class);
 
-        return project instanceof RailsProject;
+        // see #183538
+        return project instanceof RailsProject
+                && !RailsProjectUtil.getRailsVersion(project).isRails3OrHigher();
     }
     
     @Override

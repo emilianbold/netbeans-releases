@@ -249,6 +249,7 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
                     allocBounds.x += (boxView.getViewVisualOffset(wrapLine.endViewIndex) -
                         boxView.getViewVisualOffset(wrapLine.startViewIndex));
                 }
+                // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
                 allocBounds.width = wrapLine.endViewPart.getPreferredSpan(View.X_AXIS);
                 ret = wrapLine.endViewPart.modelToViewChecked(offset, allocBounds, bias);
             } else {
@@ -330,6 +331,7 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
                 }
             }
             assert (wrapLine.endViewPart != null) : "Null endViewPart"; // NOI18N
+            // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
             allocBounds.width = wrapLine.endViewPart.getPreferredSpan(View.X_AXIS);
             return wrapLine.endViewPart.viewToModelChecked(x, y, allocBounds, biasReturn);
         } else {
