@@ -57,6 +57,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
 
@@ -211,7 +212,7 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
         
         private URL getURL() {
             if (u == null) {
-                u = JavadocURLMapper.findURL(fsRef);
+                u = URLMapper.findURL(fsRef, URLMapper.EXTERNAL);
             }
             return u;
         }
@@ -233,7 +234,7 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
             FileObject fsRef = ReferencesPanel.showInWindow();
             URL u = null;
             if (fsRef != null) {
-                u = JavadocURLMapper.findURL(fsRef);
+                u = URLMapper.findURL(fsRef, URLMapper.EXTERNAL);
             }
             if (u != null) {
                 HtmlBrowser.URLDisplayer.getDefault().showURL(u);
