@@ -165,11 +165,22 @@ class XMLResultItem implements CompletionItem {
                 if (len == replacementLength) {
                     component.setCaretPosition(offset + len);
                 } else {
-                    //+++ fix for issues #166462, #173122
-                    if (isTextRemovingAllowable(component, doc, replaceToText, offset)) {
+                    //+++ fix for issues #166462, #173122, #173691
+                    String selectedText = component.getSelectedText(),
+                           replacingText = replaceToText;
+                    if (selectedText != null) {
+                        len = selectedText.length();
+                    } else if (! isTextRemovingAllowable(component, doc, replaceToText, offset)) {
+                        if (len > 0) {
+                            replacingText = replaceToText.substring(len);
+                            offset += len;
+                        }
+                        len = 0;
+                    }
+                    if (len > 0) {
                         doc.remove(offset, len);
                     }
-                    doc.insertString(offset, replaceToText, null);
+                    doc.insertString(offset, replacingText, null);
                 }
             } else {
                 int newCaretPos = component.getCaret().getDot() + replacementLength - len;

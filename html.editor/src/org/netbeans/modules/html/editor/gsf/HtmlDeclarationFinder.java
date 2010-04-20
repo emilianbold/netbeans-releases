@@ -373,9 +373,10 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             StringBuilder b = new StringBuilder();
             //colorize the 'current line text' a bit
             //find out if there's the opening curly bracket
-            assert entryHandle.entry().getLineText() != null;
-            int curlyBracketIndex = entryHandle.entry().getLineText().indexOf('{'); //NOI18N
-            String croppedLineText = curlyBracketIndex == -1 ? entryHandle.entry().getLineText() : entryHandle.entry().getLineText().substring(0, curlyBracketIndex);
+            String lineText = entryHandle.entry().getLineText().toString();
+            assert lineText != null;
+            int curlyBracketIndex = lineText.indexOf('{'); //NOI18N
+            String croppedLineText = curlyBracketIndex == -1 ? lineText : lineText.substring(0, curlyBracketIndex);
 
             //split the text to three parts: the element text itself, its prefix and postfix
             //then render the element test in bold

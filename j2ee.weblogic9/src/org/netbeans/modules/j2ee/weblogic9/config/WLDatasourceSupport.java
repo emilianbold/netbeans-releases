@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -122,7 +123,8 @@ public class WLDatasourceSupport {
         this.resourceDir = FileUtil.normalizeFile(resourceDir);
     }
 
-    public static Set<WLDatasource> getDatasources(File domain, FileObject inputFile) throws ConfigurationException {
+    static Set<WLDatasource> getDatasources(File domain, FileObject inputFile,
+            boolean systemDefault) throws ConfigurationException {
         if (inputFile == null || !inputFile.isValid() || !inputFile.canRead()) {
             LOGGER.log(Level.WARNING, NbBundle.getMessage(WLDatasourceManager.class, "ERR_WRONG_CONFIG_DIR"));
             return Collections.emptySet();
@@ -134,7 +136,7 @@ public class WLDatasourceSupport {
                 JdbcHandler handler = new JdbcHandler(domain);
                 parser.parse(new BufferedInputStream(inputFile.getInputStream()), handler);
 
-                List<File> confs = new ArrayList<File>();
+                Map<File, Boolean> confs = new HashMap<File, Boolean>();
                 Set<String> nameOnly = new HashSet<String>();
 
                 // load by path in config.xml
@@ -143,7 +145,7 @@ public class WLDatasourceSupport {
                     if (resource.getFile() != null) {
                         File config = resource.resolveFile();
                         if (config != null) {
-                            confs.add(config);
+                            confs.put(config, resource.isSystem());
                         }
                     } else if (resource.getName() != null && resource.isSystem()) {
                         nameOnly.add(resource.getName());
@@ -155,7 +157,8 @@ public class WLDatasourceSupport {
 
                 // load those in config/jdbc by name
                 if (!nameOnly.isEmpty()) {
-                    Set<WLDatasource> configDatasources = getDatasources(domain, inputFile.getParent().getFileObject("jdbc")); // NOI18N
+                    Set<WLDatasource> configDatasources =
+                            getDatasources(domain, inputFile.getParent().getFileObject("jdbc"), true); // NOI18N
                     for (WLDatasource ds : configDatasources) {
                         if (nameOnly.contains(ds.getName())) {
                             result.add(ds);
@@ -173,7 +176,10 @@ public class WLDatasourceSupport {
             }
         } else if (inputFile.isFolder()) {
             File file = FileUtil.toFile(inputFile);
-            List<File> confs = new ArrayList<File>(Arrays.asList(file.listFiles(JDBC_FILE_FILTER)));
+            Map<File, Boolean> confs = new HashMap<File, Boolean>();
+            for (File jdbcFile : file.listFiles(JDBC_FILE_FILTER)) {
+                confs.put(jdbcFile, systemDefault);
+            }
 
             if (confs.isEmpty()) { // nowhere to search
                 return Collections.emptySet();
@@ -184,11 +190,11 @@ public class WLDatasourceSupport {
         return Collections.emptySet();
     }
 
-    public static Set<WLDatasource> getDatasources(Collection<File> confs) throws ConfigurationException {
+    private static Set<WLDatasource> getDatasources(Map<File, Boolean> confs) throws ConfigurationException {
         Set<WLDatasource> datasources = new HashSet<WLDatasource>();
 
-        for (Iterator it = confs.iterator(); it.hasNext();) {
-            File dsFile = (File) it.next();
+        for (Map.Entry<File, Boolean> entry : confs.entrySet()) {
+            File dsFile = entry.getKey();
             try {
                 JdbcDataSource ds = null;
                 try {
@@ -210,7 +216,7 @@ public class WLDatasourceSupport {
 
                     for (String jndiName : names) {
                         datasources.add(new WLDatasource(name, connectionURl,
-                                jndiName, userName, password, driverClass, dsFile));
+                                jndiName, userName, password, driverClass, dsFile, entry.getValue()));
                     }
                 }
             } catch (IOException ioe) {
@@ -230,7 +236,7 @@ public class WLDatasourceSupport {
     public Set<WLDatasource> getDatasources() throws ConfigurationException {
         FileObject resource = FileUtil.toFileObject(resourceDir);
 
-        return getDatasources(null, resource);
+        return getDatasources(null, resource, false);
     }
 
     public Datasource createDatasource(final String jndiName, final String  url, final String username,
@@ -247,7 +253,7 @@ public class WLDatasourceSupport {
                             if (name.equals(jndiName)) {
                                 WLDatasource existing = new WLDatasource(
                                         getName(ds), getConnectionUrl(ds), name,
-                                        getUserName(ds), getPassword(ds), getDriverClass(ds), null);
+                                        getUserName(ds), getPassword(ds), getDriverClass(ds), null, false);
                                 throw new DatasourceAlreadyExistsException(existing);
                             }
                         }
@@ -361,7 +367,6 @@ public class WLDatasourceSupport {
             }
 
             // FIXME multi datasources
-            // FIXME null file
             String[] names = getJndiNames(modifiedSource.getDatasource());
             if (names != null && names.length > 0) {
                 String name = getName(modifiedSource.getDatasource());
@@ -371,7 +376,7 @@ public class WLDatasourceSupport {
                 String password = getPassword(modifiedSource.getDatasource());
 
                 return new WLDatasource(name, connectionURl,
-                            names[0], userName, password, driverClass, modifiedSource.getFile());
+                            names[0], userName, password, driverClass, modifiedSource.getFile(), false);
             }
         } catch(DataObjectNotFoundException donfe) {
             Exceptions.printStackTrace(donfe);

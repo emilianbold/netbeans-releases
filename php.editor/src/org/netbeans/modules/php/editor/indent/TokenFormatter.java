@@ -1586,10 +1586,11 @@ public class TokenFormatter {
 
     private String createWhitespace(Document document, int lines, int spaces) {
 	StringBuilder sb = new StringBuilder();
+        
+        for (int i = 0; i < lines; i++) {
+            sb.append('\n');
+        }
         if (spaces > 0) {
-            for (int i = 0; i < lines; i++) {
-                sb.append('\n');
-            }
             sb.append(IndentUtils.createIndentString(document, spaces));
         }
 	return sb.toString();

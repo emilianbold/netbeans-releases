@@ -183,7 +183,7 @@ public class CvsModuleConfig {
         defaults.extRememberPassword = false;
         defaults.extCommand = System.getenv("CVS_RSH"); // NOI18N
         defaults.extUseInternalSsh = true;
-        defaults.extPassword = null;
+        defaults.extPassword = new char[0];
         return defaults;
     }
 
@@ -253,6 +253,9 @@ public class CvsModuleConfig {
                 es.extRememberPassword = Boolean.valueOf(fields[2]);
                 es.extCommand = fields.length >= 4 ? fields[3] : ""; //NOI18N
                 es.extPassword = KeyringSupport.read(PREFIX_KEYRING_KEY, fields[0]);
+                if (es.extPassword == null) {
+                    es.extPassword = new char[0];
+                }
                 if (fields.length >= 5 && !"".equals(fields[4])) {
                     es.extPassword = fields[4].toCharArray();
                     KeyringSupport.save(PREFIX_KEYRING_KEY, fields[0], es.extPassword.clone(), null);

@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 
@@ -76,6 +77,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         ModelSupport.instance().shutdown();
+        TraceFlags.TRACE_182342_BUG = false;
     }
 
     public void testInsertDeadBlock() throws Exception {
@@ -142,6 +144,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     }
 
     public void testRemoveDeadBlock() throws Exception {
+        TraceFlags.TRACE_182342_BUG = true;
         final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
         final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
         final CsmProject project = super.getProject();
@@ -157,6 +160,9 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
             @Override
             public void fileParsingFinished(CsmFile file) {
                 if (file.equals(fileImpl)) {
+                    if (TraceFlags.TRACE_182342_BUG) {
+                        new Exception("fileParsingFinished ").printStackTrace(System.err);// NOI18N
+                    }
                     CountDownLatch cond = condRef.get();
                     cond.countDown();
                 }
@@ -204,13 +210,15 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     private List<CsmOffsetable> checkDeadBlocks(final CsmProject project, final FileImpl fileImpl, String docMsg, final BaseDocument doc, String msg, int expectedDeadBlocks) throws BadLocationException {
         project.waitParse();
         List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
-        System.err.printf("%s\n==============\n%s\n===============\n", docMsg, doc.getText(0, doc.getLength()));
-        if (unusedCodeBlocks.isEmpty()) {
-            System.err.println("NO DEAD BLOCKS");
-        } else {
-            int i = 0;
-            for (CsmOffsetable csmOffsetable : unusedCodeBlocks) {
-                System.err.printf("DEAD BLOCK %d: [%d-%d]\n", i++, csmOffsetable.getStartOffset(), csmOffsetable.getEndOffset());
+        if (TraceFlags.TRACE_182342_BUG) {
+            System.err.printf("%s\n==============\n%s\n===============\n", docMsg, doc.getText(0, doc.getLength()));
+            if (unusedCodeBlocks.isEmpty()) {
+                System.err.println("NO DEAD BLOCKS");
+            } else {
+                int i = 0;
+                for (CsmOffsetable csmOffsetable : unusedCodeBlocks) {
+                    System.err.printf("DEAD BLOCK %d: [%d-%d]\n", i++, csmOffsetable.getStartOffset(), csmOffsetable.getEndOffset());
+                }
             }
         }
         assertEquals(msg + fileImpl.getAbsolutePath(), expectedDeadBlocks, unusedCodeBlocks.size());
