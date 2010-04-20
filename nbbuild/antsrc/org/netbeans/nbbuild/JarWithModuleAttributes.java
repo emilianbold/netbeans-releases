@@ -203,6 +203,12 @@ public class JarWithModuleAttributes extends Jar {
                             versionS = one.substring(greaterThan + 1).trim();
                             codename = one.substring(0, greaterThan).trim();
                         }
+                        if (codename.equals("org.netbeans.libs.osgi")) {
+                            // #184434: do not include a dep on a NB pseudomodule.
+                            // apisupport's BundleActivator wizard anyway adds to manifest:
+                            // Import-Package: org.osgi.framework
+                            continue;
+                        }
                         int[] version = parseDecimal(versionS, 3);
                         int slash = codename.indexOf('/');
                         int hiMajor;

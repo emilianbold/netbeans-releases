@@ -296,7 +296,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
             "  <property name='buildnumber' value='BLDprivateTESTBuild'/>" +
             "  <property name='code.name.base.slashes' value='org/netbeans/modules/sendopts'/>" +
             "  <property name='spec.version.base' value='1.9'/>" +
-            "  <property name='module.dependencies' value='com.othercom.anothermodule > 2.1.3,org.netbeans.modules.applet/1 > 1.7,nospec/3'/>" +
+            "  <property name='module.dependencies' value='com.othercom.anothermodule > 2.1.3,org.netbeans.libs.osgi > 1.1,org.netbeans.modules.applet/1 > 1.7,nospec/3'/>" +
             "  <njar manifest='" + manifest + "'   destfile='" + jar + "'>" +
             "  </njar>" +
             "  <unzip src='" + jar + "' dest='" + output + "'/>" +
@@ -326,6 +326,9 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         }
         if (req.indexOf("nospec;bundle-version=\"[300,400)\"") == -1) {
             fail("Wrong dependency on nospec/3:\n" + req);
+        }
+        if (req.indexOf("org.netbeans.libs.osgi") != -1) {
+            fail("Unwanted dependency on org.netbeans.libs.osgi:\n" + req);
         }
     }
     
