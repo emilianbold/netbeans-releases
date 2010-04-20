@@ -970,7 +970,7 @@ public abstract class AbstractVariable implements LocalVariable {
         }
     }
 
-    private static class AbstractField extends AbstractVariable implements Field, PropertyChangeListener {
+    static class AbstractField extends AbstractVariable implements Field, PropertyChangeListener {
         private AbstractVariable parent;
         private final String name;
         private final String type;
