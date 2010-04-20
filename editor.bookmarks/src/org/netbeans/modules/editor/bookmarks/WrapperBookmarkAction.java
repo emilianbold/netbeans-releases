@@ -52,6 +52,7 @@ import org.netbeans.lib.editor.bookmarks.actions.ClearDocumentBookmarksAction;
 import org.netbeans.lib.editor.bookmarks.actions.GotoBookmarkAction;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
+import org.openide.text.NbDocument;
 import org.openide.util.actions.NodeAction;
 
 
@@ -99,9 +100,9 @@ public class WrapperBookmarkAction extends NodeAction {
             for (Node node : activatedNodes) {
                 EditorCookie ec = node.getCookie(EditorCookie.class);
                 if (ec != null) {
-                    JEditorPane panes[] = ec.getOpenedPanes();
-                    if (panes != null && panes.length > 0) {
-                        editors.add (panes [0]);
+                    JEditorPane pane = NbDocument.findRecentEditorPane(ec);
+                    if (pane != null) {
+                        editors.add (pane);
                     }
                 }
             }
