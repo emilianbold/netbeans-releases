@@ -287,7 +287,7 @@ public final class ShellScriptRunner {
 
         private final String prefix;
 
-        private LoggerLineProcessor(String prefix) {
+        public LoggerLineProcessor(String prefix) {
             this.prefix = prefix;
         }
 
