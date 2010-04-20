@@ -45,6 +45,7 @@ import java.util.StringTokenizer;
 import java.io.Reader;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.net.URL;
 
 import javax.swing.text.html.parser.ParserDelegator;
@@ -117,7 +118,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
         }
     }
 
-    public void stopSearch() {
+    public @Override void stopSearch() {
         Reader br;
         synchronized (LOCK) {
             stopSearch = true;
@@ -125,15 +126,15 @@ class SearchThreadJdk12 extends IndexSearchThread {
         }
         
         try {
-            if (br != null)
+            if (br != null) {
                 br.close();
-        }
-        catch ( java.io.IOException e ) {
+            }
+        } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
     }
     
-    public void run () {
+    public @Override void run() {
 
         ParserDelegator pd = new ParserDelegator();
         
@@ -192,7 +193,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
         taskFinished();
     }
     
-    void findFileObject( int direction ) {
+    private void findFileObject(int direction) {
 
         
         if ( direction < 0 ) {
@@ -285,7 +286,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
             this.splited = splited;
         }
         
-        public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
+        public @Override void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
 
             if ( t == HTML.Tag.DT ) {
                 where = IN_DT;
@@ -295,12 +296,12 @@ class SearchThreadJdk12 extends IndexSearchThread {
                 where = IN_AREF;
                 Object val = a.getAttribute( HTML.Attribute.HREF );
                 if ( val != null ) {
-                    hrefVal = (String) val.toString();
+                    hrefVal = val.toString();
                     currentDii = new DocIndexItem( null, null, contextURL, hrefVal );
                 }
             }
             else if ( t == HTML.Tag.A && (where == IN_DESCRIPTION_SUFFIX || where == IN_DESCRIPTION) ) {
-                ; // Just ignore
+                // Just ignore
             }
             else if ( t == HTML.Tag.B && where == IN_AREF ) {
                 where = IN_AREF;
@@ -310,13 +311,13 @@ class SearchThreadJdk12 extends IndexSearchThread {
             }
         }
 
-        public void handleEndTag(HTML.Tag t, int pos) {
+        public @Override void handleEndTag(HTML.Tag t, int pos) {
             if (t == HTML.Tag.DT && where != IN_BALAST) {
                 where = IN_BALAST;
             }
         }
 
-        public void handleText(char[] data, int pos) {
+        public @Override void handleText(char[] data, int pos) {
             
             if ( where == IN_AREF ) {
                 
@@ -381,8 +382,9 @@ class SearchThreadJdk12 extends IndexSearchThread {
 
                 StringTokenizer st = new StringTokenizer( text );
                 String token = st.nextToken();
-                if ( token.equals( STR_DASH ) )
+                if (token.equals(STR_DASH)) {
                     token = st.nextToken();
+                }
 
                 boolean isStatic = false;
 
@@ -391,26 +393,27 @@ class SearchThreadJdk12 extends IndexSearchThread {
                     token = st.nextToken();
                 }
 
-                if ( token.equalsIgnoreCase( STR_CLASS ) )
-                    currentDii.setIconIndex( DocSearchIcons.ICON_CLASS );
-                else if ( token.equalsIgnoreCase( STR_INTERFACE ) )
+                if (token.equalsIgnoreCase(STR_CLASS)) {
+                    currentDii.setIconIndex(DocSearchIcons.ICON_CLASS);
+                } else if (token.equalsIgnoreCase(STR_INTERFACE)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_INTERFACE );
-                else if ( token.equalsIgnoreCase( STR_ENUM ) )
+                } else if (token.equalsIgnoreCase(STR_ENUM)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_ENUM );
-                else if ( token.equalsIgnoreCase( STR_ANNTYPE ) )
+                } else if (token.equalsIgnoreCase(STR_ANNTYPE)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_ANNTYPE );
-                else if ( token.equalsIgnoreCase( STR_EXCEPTION ) )
+                } else if (token.equalsIgnoreCase(STR_EXCEPTION)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_EXCEPTION );
-                else if ( token.equalsIgnoreCase( STR_ERROR ) )
+                } else  if (token.equalsIgnoreCase(STR_ERROR)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_ERROR );
-                else if ( token.equalsIgnoreCase( STR_PACKAGE ) )
+                } else  if (token.equalsIgnoreCase(STR_PACKAGE)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_PACKAGE );
-                else if ( token.equalsIgnoreCase( STR_CONSTRUCTOR ) )
+                } else if (token.equalsIgnoreCase(STR_CONSTRUCTOR)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_CONSTRUCTOR );
-                else if ( token.equalsIgnoreCase( STR_METHOD ) )
+                } else if (token.equalsIgnoreCase(STR_METHOD)) {
                     currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_METHOD_ST : DocSearchIcons.ICON_METHOD );
-                else if ( token.equalsIgnoreCase( STR_VARIABLE ) )
+                } else if (token.equalsIgnoreCase(STR_VARIABLE)) {
                     currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE );
+                }
 
                 // Add the item when all information is available
                 //insertDocIndexItem( currentDii );
@@ -420,9 +423,9 @@ class SearchThreadJdk12 extends IndexSearchThread {
                 } else if ( text.endsWith( "." ) ) { // NOI18N
                     where = IN_DESCRIPTION_SUFFIX;
                     currentDii.setPackage( text.substring( text.lastIndexOf( ' ' ) ).trim() );
-                }
-                else
+                } else {
                     where = IN_BALAST;
+                }
             }
             else if ( where == IN_DESCRIPTION_SUFFIX ) {
                 String remark = String.valueOf(data);
@@ -432,9 +435,9 @@ class SearchThreadJdk12 extends IndexSearchThread {
                     currentDii.setDeclaringClass(declaringClass);
                     insertDocIndexItem( currentDii );
                 }
-            }
-            else
+            } else {
                 where = IN_BALAST;
+            }
 
         }
         /*
