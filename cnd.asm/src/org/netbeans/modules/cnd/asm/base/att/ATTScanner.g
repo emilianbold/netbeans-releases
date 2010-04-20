@@ -64,7 +64,7 @@ options {
 {
 
    
-    private String commentLiterals = ";/!";
+    private String commentLiterals = ";/!#";
 
     private PartState partState =  AntlrScanner.PartState.DEFAULT;
 
@@ -332,7 +332,7 @@ StringLiteralBody
 protected                      
 Ident_                 : ( ('a'..'z' | 'A'..'Z' | '_' | '.')
                            ('a'..'z' | 'A'..'Z' | '_' | '0'..'9' | '.')* 
-                         )     
+                         )
                        ;
 
 protected
@@ -358,12 +358,10 @@ Comment     :     (options{generateAmbigWarnings = false;}:
                    }: (  ~('\n' | '\r') )* )  )
             ;
 
-
-
-Ident                  : Ident_ ( {LA(1)==':'}? ':' { $setType(LabelInst); } )?
-                       ;
-
 Register               : '%' Ident_
                        ;
 
-  
+Ident                  : Ident_ ( {LA(1)==':'}? ':' { $setType(LabelInst); } )?
+                         | 
+                         ('\u0100'..'\ufffe')+
+                       ;  

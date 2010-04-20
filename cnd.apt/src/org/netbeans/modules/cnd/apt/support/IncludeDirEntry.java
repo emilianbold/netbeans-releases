@@ -72,7 +72,7 @@ public final class IncludeDirEntry {
     private final boolean isFramework;
     private final CharSequence asCharSeq;
 
-    public IncludeDirEntry(File file, boolean exists, boolean framework, CharSequence asCharSeq) {
+    private IncludeDirEntry(File file, boolean exists, boolean framework, CharSequence asCharSeq) {
         this.file = file;
         this.exists = exists;
         this.isFramework = framework;

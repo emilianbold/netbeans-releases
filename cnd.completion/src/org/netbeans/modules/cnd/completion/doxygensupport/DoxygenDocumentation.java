@@ -231,7 +231,7 @@ public class DoxygenDocumentation {
     }
 
     static Collection<Token> lex(String text) {
-        Collection<Token> result = new LinkedList<Token>();
+        LinkedList<Token> result = new LinkedList<Token>();
         StringBuilder img = new StringBuilder();
         int i = 0;
         boolean wasContent = true;
@@ -241,9 +241,28 @@ public class DoxygenDocumentation {
         while (i < text.length()) {
             switch (text.charAt(i)) {
                 case '\n': // NOI18N
-                    if (i < text.length()-1 && (text.charAt(i+1) == '@' || text.charAt(i+1) == '\\')) {
-                        result.add(new Token(wasContent ? TokenId.LINE_END : TokenId.PAR_END, "\n")); // NOI18N
-                        wasContent = false;
+                    if (i < text.length()-1) {
+                        if (!verbatimMode) {
+                            // skip white spaces
+                            while (i < (text.length()-1) && (text.charAt(i+1) == ' ' || text.charAt(i+1) == '\t')) { // NOI18N
+                                i++;
+                            }
+                        }
+                        if (text.charAt(i+1) == '@' || text.charAt(i+1) == '\\' || text.charAt(i+1) == '\n') {
+                            Token last = result.getLast();
+                            // Skip multiple empty lines
+                            if (last.id != TokenId.LINE_END && last.id != TokenId.PAR_END) {
+                                result.add(new Token(wasContent ? TokenId.LINE_END : TokenId.PAR_END, "\n")); // NOI18N
+                                wasContent = false;
+                            }
+                        }
+                        else {
+                            if (!verbatimMode) {
+                                // Convert to space
+                                result.add(new Token(TokenId.WHITESPACE, " ")); // NOI18N
+                                wasContent = false;
+                            }
+                        }
                     }
                     i++;
                     break;

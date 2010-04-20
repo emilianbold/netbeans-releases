@@ -74,6 +74,19 @@ public final class NativeExecutionService {
     private final NativeProcessBuilder processBuilder;
     private final String displayName;
     private final NativeExecutionDescriptor descriptor;
+    private static final Charset execCharset;
+
+    static {
+        String charsetName = System.getProperty("org.netbeans.modules.nativeexecution.execcharset", "UTF-8"); // NOI18N
+        Charset cs = null;
+        try {
+            cs = Charset.forName(charsetName);
+        } catch (Exception ex) {
+            cs = Charset.defaultCharset();
+        } finally {
+            execCharset = cs;
+        }
+    }
 
     private NativeExecutionService(NativeProcessBuilder processBuilder, String displayName, NativeExecutionDescriptor descriptor) {
         this.processBuilder = processBuilder;
@@ -171,13 +184,13 @@ public final class NativeExecutionService {
 
     private Future<Integer> runRegular() {
         Charset charset = descriptor.charset;
+        
         if (charset == null) {
-            charset = Charset.forName("UTF-8"); //NOI18N
-            if (charset == null) {
-                charset = Charset.defaultCharset();
-            }
+            charset = execCharset;
         }
+        
         Logger.getInstance().log(Level.FINE, "Input stream charset: {0}", charset);
+
         ExecutionDescriptor descr = new ExecutionDescriptor()
                 .controllable(descriptor.controllable)
                 .frontWindow(descriptor.frontWindow)
@@ -190,6 +203,7 @@ public final class NativeExecutionService {
                 .errConvertorFactory(descriptor.errConvertorFactory)
                 .outConvertorFactory(descriptor.outConvertorFactory)
                 .charset(charset);
+        
         ExecutionService es = ExecutionService.newService(processBuilder, descr, displayName);
         return es.run();
     }

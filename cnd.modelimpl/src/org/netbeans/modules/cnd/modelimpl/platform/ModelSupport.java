@@ -126,7 +126,7 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     public void startup() {
-
+        modifiedListener.clean();
         DataObject.getRegistry().addChangeListener(modifiedListener);
 
         if (!CndUtils.isStandalone()) {
@@ -173,6 +173,7 @@ public class ModelSupport implements PropertyChangeListener {
 
     public void shutdown() {
         DataObject.getRegistry().removeChangeListener(modifiedListener);
+        modifiedListener.clean();
         ModelImpl model = theModel;
         if (model != null) {
             model.shutdown();
@@ -447,7 +448,7 @@ public class ModelSupport implements PropertyChangeListener {
 
     private class ModifiedObjectsChangeListener implements ChangeListener {
 
-        private Map<DataObject, Collection<BufAndProj>> buffers = new HashMap<DataObject, Collection<BufAndProj>>();
+        private final Map<DataObject, Collection<BufAndProj>> buffers = new HashMap<DataObject, Collection<BufAndProj>>();
 
         private Collection<BufAndProj> getBufNP(DataObject dao) {
             Collection<BufAndProj> bufNPcoll = buffers.get(dao);
@@ -616,6 +617,10 @@ public class ModelSupport implements PropertyChangeListener {
                 }
             }
             return false;
+        }
+
+        private void clean() {
+            buffers.clear();
         }
     }
 

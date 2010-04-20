@@ -441,6 +441,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         return marksMap;
     }
 
+    @Override
     public Status computeTotalStatus() {
         Status targetStatus = Status.STATUS_OK;
         Collection<Mark> marks = getMergedMarks();
@@ -478,6 +479,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         return targetStatus;
     }
     
+    @Override
     public UpToDateStatus computeTotalStatusType() {
         if (statusProviders.isEmpty())
             return UpToDateStatus.UP_TO_DATE_DIRTY;
@@ -496,6 +498,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         return statusType;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if ("marks".equals(evt.getPropertyName())) {
             synchronized (this) {
@@ -525,8 +528,10 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
                     }
                     
                     if (currentMarks != null) {
-                        currentMarks.removeAll(removed);
-                        currentMarks.addAll(added);
+                        LinkedHashSet<Mark> copy = new LinkedHashSet<Mark>(currentMarks);
+                        copy.removeAll(removed);
+                        copy.addAll(added);
+                        currentMarks = copy;
                     }
                     
                     view.fullRepaint();
