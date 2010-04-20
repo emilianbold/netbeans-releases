@@ -154,8 +154,9 @@ public class CGSInfo {
                                 accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getConstructors(classElement))));
                                 accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getAccessibleMagicMethods(classElement))));
                                 final Set<TypeElement> preferedTypes = forFilesFilter.prefer(ElementTransformation.toMemberTypes().transform(accessibleMethods));
-                                //final LinkedHashSet<TypeElement> sortedTypes = new LinkedHashSet<TypeElement>();
-                                //sortByHierarchy(classElement, preferedTypes, sortedTypes);
+                                //TODO: change to tree view
+                                //TypeTreeElement tp = index.getInheritedTypesAsTree(classElement, preferedTypes);
+                                //Set<TypeTreeElement> directlyInherited = tp.getDirectlyInherited();
                                 final List<MethodProperty> properties = new ArrayList<MethodProperty>();
                                 final Set<MethodElement> methods = ElementFilter.forMembersOfTypes(preferedTypes).filter(accessibleMethods);
                                 for (final MethodElement methodElement : methods) {
@@ -214,31 +215,6 @@ public class CGSInfo {
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
-    private static final void sortByHierarchy(final TypeElement startingTypeElement, final Set<TypeElement> inheritedTypes, final LinkedHashSet<TypeElement> result) {
-        if (!result.contains(startingTypeElement)) {
-            result.add(startingTypeElement);
-            LinkedHashSet<TypeElement> directInheritedTypes = getDirectInheritedTypes(startingTypeElement, inheritedTypes);
-            //System.out.println(String.format("%s -> %s\n", startingTypeElement.getFullyQualifiedName(), directInheritedTypes));
-            for (TypeElement te : directInheritedTypes) {
-                sortByHierarchy(te, inheritedTypes, result);
-            }
-        }
-    }
-    private static final LinkedHashSet<TypeElement> getDirectInheritedTypes(final TypeElement typeElement, Set<TypeElement> inheritedTypes) {
-        final LinkedHashSet<TypeElement> directTypes = new LinkedHashSet<TypeElement>();
-        if ((typeElement instanceof ClassElement)) {
-            QualifiedName superClassName = ((ClassElement) typeElement).getSuperClassName();
-            if (superClassName != null) {
-                ElementFilter forName = ElementFilter.forName(NameKind.exact(superClassName));
-                directTypes.addAll(forName.filter(inheritedTypes));
-            }
-        }
-        for (QualifiedName iface : typeElement.getSuperInterfaces()) {
-            ElementFilter forName = ElementFilter.forName(NameKind.exact(iface));
-            directTypes.addAll(forName.filter(inheritedTypes));
-        }
-        return directTypes;
     }
 
     /**
