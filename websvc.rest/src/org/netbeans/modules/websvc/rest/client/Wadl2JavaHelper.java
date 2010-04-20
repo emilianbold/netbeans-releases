@@ -1060,7 +1060,7 @@ class Wadl2JavaHelper {
         paramList.add(paramTree);
         paramTree = maker.Variable(paramModifier, "consumer_secret", stringType, null); //NOI18N
         paramList.add(paramTree);
-        if (isCallback(oauthAccessTokenMethod)) {
+        if (isCallback(oauthRequestTokenMethod)) {
             paramTree = maker.Variable(paramModifier, "callback_page_url", stringType, null); //NOI18N
             paramList.add(paramTree);
         }
@@ -1356,8 +1356,8 @@ class Wadl2JavaHelper {
                 }
                 String paramName = p.getParamName();
                 String oauthName = p.getOauthName();
-                if (oauthName == null) {
-                    oauthName = paramName;
+                if (paramName == null) {
+                    paramName = oauthName;
                 }
                 String paramValue = getParamFromResponse(oauthMetadata.getFlow().getRequestToken().getResponseStyle(), "requestTokenResponse", oauthName); //NOI18N
                 buf.append(paramName+"=\"+"+paramValue);
@@ -1369,12 +1369,12 @@ class Wadl2JavaHelper {
         }
     }
 
-    private static String getParamFromResponse(String responseStyle, String responseFieldName, String paramName) {
+    private static String getParamFromResponse(String responseStyle, String responseFieldName, String oauthName) {
         if ("FORM".equals(responseStyle)) { //NOI18N
-            return responseFieldName+".getFirst(\""+paramName+"\")"; //NOI18N
+            return responseFieldName+".getFirst(\""+oauthName+"\")"; //NOI18N
         } else if ("XML".equals(responseStyle)) { //NOI18N
-            int end = paramName.length() + 2;
-            return responseFieldName+".substring("+responseFieldName+".indexOf(\"<"+paramName+">\") + "+String.valueOf(end)+", "+responseFieldName+".indexOf(\"</"+paramName+">\"))"; //NOI18N
+            int end = oauthName.length() + 2;
+            return responseFieldName+".substring("+responseFieldName+".indexOf(\"<"+oauthName+">\") + "+String.valueOf(end)+", "+responseFieldName+".indexOf(\"</"+oauthName+">\"))"; //NOI18N
         } else {
             return ""; //NOI18N
         }
