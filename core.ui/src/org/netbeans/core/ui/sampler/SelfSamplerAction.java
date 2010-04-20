@@ -62,6 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.OpenCookie;
@@ -95,6 +96,8 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
     private static final int SAMPLER_RATE = 10;
     private static final double MAX_AVERAGE = SAMPLER_RATE * 3;
     private static final double MAX_STDDEVIATION = SAMPLER_RATE * 4;
+    private static final int MAX_SAMPLING_TIME = 5*60;  // 5 minutes
+    private static final int MAX_SAMPLES = MAX_SAMPLING_TIME * (1000/SAMPLER_RATE);
     private final AtomicReference<Controller> RUNNING = new AtomicReference<Controller>();
     private Boolean debugMode;
     private String lastReason;
@@ -164,6 +167,10 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
             return new Controller(key);
         }
         return o;
+    }
+
+    private boolean isProfileMe(Controller c) {
+        return c == RUNNING.get();
     }
 
     private synchronized boolean isDebugged() {
@@ -268,6 +275,10 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                         if (stopped) {
                             return;
                         }
+                        if (samples >= MAX_SAMPLES) {
+                            cancelTimer();
+                            return;
+                        }
                         try {
                             ThreadInfo[] infos = threadBean.dumpAllThreads(false, false);
                             long timestamp = System.nanoTime();
@@ -279,6 +290,21 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                     }
                 }
             }, SAMPLER_RATE, SAMPLER_RATE);
+        }
+
+        private void cancelTimer() {
+            timer.cancel();
+            if (SelfSamplerAction.getInstance().isProfileMe(this)) {
+                // if this sampling was invoked manually via ProfileMe action
+                // stop it
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        SelfSamplerAction.getInstance().actionPerformed(null);
+                    }
+                });
+            }
         }
 
         @Override
