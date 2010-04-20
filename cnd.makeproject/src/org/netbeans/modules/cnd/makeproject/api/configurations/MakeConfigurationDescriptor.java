@@ -416,8 +416,8 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     // Project Files
     public Item[] getProjectItems() {
-        Collection<Item> collection = projectItems.values();
-        return collection.toArray(new Item[collection.size()]);
+        List<Item> res = new ArrayList<Item>(projectItems.values());
+        return res.toArray(new Item[res.size()]);
     }
 
     public Item findItemByFile(File file) {

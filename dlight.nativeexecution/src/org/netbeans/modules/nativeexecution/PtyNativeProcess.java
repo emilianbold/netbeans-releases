@@ -122,8 +122,9 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         // so when we change listeners here,
         // this change has effect on delegate only...
 
-        info.getListeners().clear();
-//        info.getListeners().add(new DelegateListener());
+        if (info.getListeners() != null) {
+            info.getListeners().clear();
+        }
 
         if (env.isLocal()) {
             delegate = new LocalNativeProcess(info);

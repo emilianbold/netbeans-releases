@@ -39,12 +39,9 @@
 
 package org.netbeans.modules.cnd.remote.fs;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -60,7 +57,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.remote.fs.ui.RemoteFileSystemNotifier;
@@ -69,10 +69,9 @@ import org.netbeans.modules.cnd.remote.support.RemoteCodeModelUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.openide.util.NbBundle;
 
 /**
@@ -208,69 +207,103 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings("RV") // it's ok to ignore File.createNewFile() return value
-    private void syncDirStruct(final File dir, String remoteDir) throws IOException, CancellationException {
+    private void syncDirStruct(final File dir, final String remoteDir) throws IOException, CancellationException {
         if (dir.exists()) {
             CndUtils.assertTrue(dir.isDirectory(), dir.getAbsolutePath() + " is not a directory"); //NOI18N
         }
-        if (remoteDir.length() == 0) {
-            remoteDir = "/"; //NOI18N
-        }
-        checkConnection(dir, remoteDir, true);
-        NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(execEnv);
-        // TODO: error processing
-        //processBuilder.setWorkingDirectory(remoteDir);
-        processBuilder.setCommandLine("sh -c 'test -d " + remoteDir + " && cd "  + remoteDir + " && for D in `ls`; do if [ -d $D ]; then echo D $D; else echo F $D; fi; done'"); // NOI18N
-        NativeProcess process = processBuilder.call();
-        final InputStream is = process.getInputStream();
-        final InputStream er = process.getErrorStream();
-        final BufferedReader rdr = new BufferedReader(new InputStreamReader(is));
-        final BufferedReader erdr = new BufferedReader(new InputStreamReader(er));
-        String inputLine;
-        RemoteUtil.LOGGER.log(Level.FINEST, "Synchronizing dir {0} with {1}{2}{3}", new Object[]{dir.getAbsolutePath(), execEnv, ':', remoteDir});
-        while ((inputLine = erdr.readLine()) != null) {
-            RemoteUtil.LOGGER.log(Level.FINEST, "Error [{0}]\n\ton Synchronizing dir {1} with {2}{3}{4}", new Object[]{inputLine, dir.getAbsolutePath(), execEnv, ':', remoteDir});
-        }
-        boolean dirCreated = false;
-        while ((inputLine = rdr.readLine()) != null) {
-            if (!dirCreated) {
-                dirCreated = true;
-                if (!dir.mkdirs() && !dir.exists()) {
-                    throw new IOException("Can not create directory " + dir.getAbsolutePath()); //NOI18N
-                }
-            }
-            CndUtils.assertTrueInConsole(inputLine.length() > 2, "unexpected file information " + inputLine); // NOI18N
-            boolean directory = inputLine.charAt(0) == 'D';
-            String fileName = inputLine.substring(2);
-            if (directory) {
-                fileName = fixCaseSensitivePathIfNeeded(fileName);
-            }
-            File file = new File(dir, fileName);
-            try {
-                RemoteUtil.LOGGER.log(Level.FINEST, "\tcreating {0}", fileName);
-                if (directory) {
-                    if (!file.mkdirs() && !file.exists()) {
-                        throw new IOException("can't create directory " + file.getAbsolutePath()); // NOI18N
+
+        final String rdir = remoteDir.length() == 0 ? "/" : remoteDir; // NOI18N
+        checkConnection(dir, rdir, true);
+
+        final String script = "test -d \"" + rdir + "\" && " + // NOI18N
+                "cd \"" + rdir + "\" &&" + // NOI18N
+                "for D in `/bin/ls`; do " + // NOI18N
+                "if [ -d \"$D\" ]; then echo D \"$D\"; else echo F \"$D\"; fi; done"; // NOI18N
+
+        final AtomicReference<IOException> ex = new AtomicReference<IOException>();
+        final AtomicBoolean dirCreated = new AtomicBoolean(false);
+
+        LineProcessor outputProcessor = new LineProcessor() {
+            @Override
+            public void processLine(String inputLine) {
+                if (!dirCreated.get()) {
+                    dirCreated.set(true);
+                    if (!dir.mkdirs() && !dir.exists()) {
+                        ex.set(new IOException("Can not create directory " + dir.getAbsolutePath())); //NOI18N
+                        return;
                     }
-                } else {
-                    file.createNewFile();
                 }
-            } catch (IOException ex) {
-                RemoteUtil.LOGGER.log(Level.WARNING, "Error creating {0}{1}{2}: {3}", new Object[]{directory ? "directory" : "file", ' ', file.getAbsolutePath(), ex.getMessage()});
-                throw ex;
+                CndUtils.assertTrueInConsole(inputLine.length() > 2, "unexpected file information " + inputLine); // NOI18N
+                boolean directory = inputLine.charAt(0) == 'D';
+                String fileName = inputLine.substring(2);
+                if (directory) {
+                    fileName = fixCaseSensitivePathIfNeeded(fileName);
+                }
+                File file = new File(dir, fileName);
+                try {
+                    RemoteUtil.LOGGER.log(Level.FINEST, "\tcreating {0}", fileName); // NOI18N
+                    if (directory) {
+                        if (!file.mkdirs() && !file.exists()) {
+                            throw new IOException("can't create directory " + file.getAbsolutePath()); // NOI18N
+                        }
+                    } else {
+                        file.createNewFile();
+                    }
+                } catch (IOException ioex) {
+                    RemoteUtil.LOGGER.log(Level.WARNING,
+                            "Error creating {0}{1}{2}: {3}", // NOI18N
+                            new Object[]{directory ? "directory" : "file", ' ', file.getAbsolutePath(), ioex.getMessage()}); // NOI18N
+                    ex.set(ioex);
+                }
             }
+
+            @Override
+            public void reset() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+
+        LineProcessor errorProcessor = new LineProcessor() {
+
+            @Override
+            public void processLine(String line) {
+                RemoteUtil.LOGGER.log(Level.FINEST,
+                        "Error [{0}]\n\ton Synchronizing dir {1} with {2}{3}{4}", // NOI18N
+                        new Object[]{line, dir.getAbsolutePath(), execEnv, ':', rdir});
+            }
+
+            @Override
+            public void reset() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+
+        ShellScriptRunner scriptRunner = new ShellScriptRunner(execEnv, script, outputProcessor);
+        scriptRunner.setErrorProcessor(errorProcessor);
+
+        RemoteUtil.LOGGER.log(Level.FINEST, "Synchronizing dir {0} with {1}{2}{3}", // NOI18N
+                new Object[]{dir.getAbsolutePath(), execEnv, ':', rdir});
+
+        scriptRunner.execute();
+
+        if (ex.get() != null) {
+            throw ex.get();
         }
-        rdr.close();
-        erdr.close();
-        is.close();
-        er.close();
-        if (dirCreated) {
+
+        if (dirCreated.get()) {
             File flag = new File(dir, FLAG_FILE_NAME);
             RemoteUtil.LOGGER.log(Level.FINEST, "Creating Flag file {0}", flag.getAbsolutePath());
             try {
                 flag.createNewFile(); // TODO: error processing
             } catch (IOException ie) {
                 RemoteUtil.LOGGER.log(Level.FINEST, "FAILED creating Flag file {0}", flag.getAbsolutePath());
-                throw ie;
+                ex.set(ie);
             }
             dirSyncCount++;
         }

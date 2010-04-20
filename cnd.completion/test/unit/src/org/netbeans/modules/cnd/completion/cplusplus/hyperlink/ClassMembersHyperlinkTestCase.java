@@ -914,6 +914,13 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz142674.cc", 6, 9, "iz142674.cc", 3, 5);
     }
 
+    public void testIZ184315() throws Exception {
+        // Bug 184315 - unresolved identifier on class method
+        performTest("iz184315.cc", 20, 26, "iz184315.cc", 9, 5);
+        performTest("iz184315.cc", 21, 26, "iz184315.cc", 9, 5);
+        performTest("iz184315.cc", 22, 26, "iz184315.cc", 9, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

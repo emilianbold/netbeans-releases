@@ -164,5 +164,7 @@ public interface Session extends EntityAndSession {
     PersistenceUnitRef newPersistenceUnitRef() throws VersionNotSupportedException;
     LifecycleCallback newLifecycleCallback() throws VersionNotSupportedException;
 
+    //EJB 3.1
+    public boolean isLocalBean();
 }
 
