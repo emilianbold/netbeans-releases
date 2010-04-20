@@ -404,7 +404,7 @@ public final class ProjectImpl extends ProjectBase {
                 public void run() {
                     try {
                         if (TraceFlags.TRACE_182342_BUG) {
-                            System.err.println("stated scheduleParseOnEditing task");
+                            System.err.printf("started scheduleParseOnEditing task for %s %s", file, buf);
                         }
                         addToQueueOnEditing(buf, file);
                     } catch (AssertionError ex) {
