@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
@@ -31,6 +32,8 @@ import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil.PrefixedLogger;
 import org.netbeans.modules.cnd.remote.sync.download.HostUpdates;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -202,12 +205,15 @@ class RfsLocalController extends NamedRunnable {
         try {
             logger.log(Level.FINEST, "shutdown");
             try {
-                runNewFilesDiscovery();
+                runNewFilesDiscovery(true);
+                shutDownNewFilesDiscovery();
             } catch (InterruptedIOException ex) {
                 // nothing
             } catch (InterruptedException ex) {
                 // nothing
             } catch (IOException ex) {
+                logger.log(Level.INFO, "Error discovering newer files at remote host", ex); //NOI18N
+            } catch (ExecutionException ex) {
                 logger.log(Level.INFO, "Error discovering newer files at remote host", ex); //NOI18N
             }
             fileData.store();
@@ -232,7 +238,13 @@ class RfsLocalController extends NamedRunnable {
         }
     }
 
-    private void runNewFilesDiscovery() throws IOException, InterruptedException {
+    private void shutDownNewFilesDiscovery() throws InterruptedException, ExecutionException {
+        if (timeStampFile != null) {
+            CommonTasksSupport.rmFile(execEnv, timeStampFile, err).get();
+        }
+    }
+
+    private void runNewFilesDiscovery(boolean srcOnly) throws IOException, InterruptedException {
         if (timeStampFile == null) {
             return;
         }
@@ -254,13 +266,34 @@ class RfsLocalController extends NamedRunnable {
             }
         }
 
+        StringBuilder extOptions = new StringBuilder();
+        if (srcOnly) {
+            Collection<Collection<String>> values = new ArrayList<Collection<String>>();
+            values.add(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
+            values.add(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
+            values.add(MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());
+            for (Collection<String> v : values) {
+                for (String ext : v) {
+                    if (extOptions.length() > 0) {
+                        extOptions.append("-o ");
+                    }
+                    extOptions.append("-name \"*.");
+                    extOptions.append(ext);
+                    extOptions.append("\"");
+                }
+            }
+        }
+        
         String script = String.format(
-            "for F in `find %s -newer %s`; do test -f $F &&  echo $F;  done; rm %s",
-            remoteDirs, timeStampFile, timeStampFile);
+            "for F in `find %s %s -newer %s`; do test -f $F &&  echo $F;  done;",
+            remoteDirs, extOptions.toString(), timeStampFile);
+
+        final AtomicInteger lineCnt = new AtomicInteger();
 
         LineProcessor lp = new LineProcessor() {
             @Override
             public void processLine(String remoteFile) {
+                lineCnt.incrementAndGet();
                 logger.log(Level.FINEST, " Updates check: %s", remoteFile);
                 String realPath = canonicalToAbsolute.get(remoteFile);
                 if (realPath != null) {
@@ -289,8 +322,8 @@ class RfsLocalController extends NamedRunnable {
         ShellScriptRunner ssr = new ShellScriptRunner(execEnv, script, lp);
         ssr.setErrorProcessor(new ShellScriptRunner.LoggerLineProcessor(prefix));
         ssr.execute();
-        logger.log(Level.FINE, "New files discovery at %s took %d ms; %d additional new files were discovered",
-                execEnv, System.currentTimeMillis() - time, remoteUpdates.size() - oldSize);
+        logger.log(Level.FINE, "New files discovery at %s took %d ms; %d lines processed; %d additional new files were discovered",
+                execEnv, System.currentTimeMillis() - time, lineCnt.get(), remoteUpdates.size() - oldSize);
     }
 
     private static class FileGatheringInfo {
