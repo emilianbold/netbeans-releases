@@ -48,13 +48,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import org.openide.util.Exceptions;
 import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /* Base class providing search for JDK1.2/1.3 documentation
  * Jdk12SearchType.java
  *
  * @author Petr Hrebejk, Petr Suchomel
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.javadoc.search.JavadocSearchType.class, position=100)
+@ServiceProvider(service=JavadocSearchType.class, position=100)
 public final class Jdk12SearchType_japan extends Jdk12SearchType {
 
     private String  japanEncoding;

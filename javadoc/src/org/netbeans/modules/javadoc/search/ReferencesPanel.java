@@ -37,12 +37,6 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-/*
- * ReferencesPanel.java
- *
- * Created on Apr 14, 2009, 4:38:39 PM
- */
-
 package org.netbeans.modules.javadoc.search;
 
 import java.awt.Dialog;
@@ -126,7 +120,7 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
                 : null;
     }
 
-    public void run() {
+    public @Override void run() {
         switch (state) {
             case 0:
                 runGetIndiciesTask();
@@ -138,21 +132,19 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
     }
 
     private void runGetIndiciesTask() {
-        final List[] data = IndexBuilder.getDefault().getIndices(true);
-        final List<String> names = data[0]; // List<String>
-        final List<FileObject> indices = data[1]; // List<FileObject>
+        final List<IndexBuilder.Index> data = IndexBuilder.getDefault().getIndices(true);
 
         synchronized (LOCK) {
 
             ItemDesc[] modelItems;
-            if (names.isEmpty()) {
+            if (data.isEmpty()) {
                 modelItems = new ItemDesc[] { ItemDesc.noItem() };
             } else {
-                modelItems = new ItemDesc[names.size()];
+                modelItems = new ItemDesc[data.size()];
                 this.items = modelItems;
                 int i = 0;
-                for (String name : names) {
-                    modelItems[i] = new ItemDesc(name, indices.get(i));
+                for (IndexBuilder.Index index : data) {
+                    modelItems[i] = new ItemDesc(index.display, index.fo);
                     i++;
                 }
             }
@@ -170,7 +162,7 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
         refList.setSelectedIndex(0);
     }
 
-    public void valueChanged(ListSelectionEvent e) {
+    public @Override void valueChanged(ListSelectionEvent e) {
         FileObject item = getSelectedItem();
         String s = item == null
                 ? EMPTY_LOCATION
@@ -293,19 +285,19 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
             this.items = items;
         }
 
-        public int getSize() {
+        public @Override int getSize() {
             return items.length;
         }
 
-        public Object getElementAt(int index) {
+        public @Override Object getElementAt(int index) {
             return items[index].name;
         }
 
-        public void addListDataListener(ListDataListener l) {
+        public @Override void addListDataListener(ListDataListener l) {
             // no op
         }
 
-        public void removeListDataListener(ListDataListener l) {
+        public @Override void removeListDataListener(ListDataListener l) {
             // no op
         }
 
