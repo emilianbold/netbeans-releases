@@ -74,10 +74,12 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.openide.NotificationLineSupport;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
@@ -584,7 +586,8 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 return false;
             }
             
-            boolean shouldEnableNoInterface = J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported();
+            boolean shouldEnableNoInterface = J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported() &&
+                                              isNoInterfaceViewExposed(ejbReference);
             boolean shouldEnableLocal = (ejbReference.getLocal() != null);
             boolean shouldEnableRemote = (ejbReference.getRemote() != null);
             noInterfaceRadioButton.setEnabled(shouldEnableNoInterface);
@@ -606,7 +609,33 @@ public class CallEjbPanel extends javax.swing.JPanel {
             statusLine.clearMessages();
             return true;
         }
-        
+
+        private boolean isNoInterfaceViewExposed(final EjbReference ejbRef){
+            if (ejbRef.getLocal() == null && ejbRef.getRemote() == null){
+                return true;
+            }
+
+            Boolean result = Boolean.FALSE;
+            try {
+                result = ejbRef.getEjbModule().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
+                    @Override
+                    public Boolean run(EjbJarMetadata metadata) throws Exception {
+                        Ejb ejb = metadata.findByEjbClass(ejbRef.getEjbClass());
+                        if (ejb instanceof Session){
+                            return ((Session)ejb).isLocalBean();
+                        }
+                        return Boolean.FALSE;
+                    }
+                });
+            } catch (MetadataModelException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
+            return result.booleanValue();
+        }
+
         private boolean hasJarArtifact() {
             Project nodeProject = FileOwnerQuery.getOwner(srcFile);
             if (nodeProject.equals(project)) {

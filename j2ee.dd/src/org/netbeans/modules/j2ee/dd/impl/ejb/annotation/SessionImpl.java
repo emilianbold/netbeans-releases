@@ -112,6 +112,7 @@ public class SessionImpl extends PersistentObject implements Session {
     private ResourceEnvRef[] resourceEnvRefs = null;
     private EnvEntry[] envEntries = null;
     private MessageDestinationRef[] messageDestinationRefs = null;
+    private boolean localBean = false;
 
     private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
@@ -143,7 +144,7 @@ public class SessionImpl extends PersistentObject implements Session {
         if (annotationMirror == null) {
             return false;
         }
-        
+
         AnnotationParser parser = AnnotationParser.create(getHelper());
         parser.expectString("name", parser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
         ParseResult parseResult = parser.parse(annotationMirror);
@@ -155,6 +156,9 @@ public class SessionImpl extends PersistentObject implements Session {
         ejbClass = typeElement.getQualifiedName().toString();
 
         initBusinessInterfaces();
+
+        localBean = annByType.get("javax.ejb.LocalBean") != null;
+
         return true;
     }
     
@@ -522,6 +526,10 @@ public class SessionImpl extends PersistentObject implements Session {
     public String getHome() {
         // TODO
         return null;
+    }
+
+    public boolean isLocalBean(){
+        return localBean;
     }
     
     // </editor-fold>

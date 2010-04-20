@@ -40,14 +40,26 @@
 package org.netbeans.modules.j2ee.weblogic9.config;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.spi.status.ProgressEvent;
+import javax.enterprise.deploy.spi.status.ProgressListener;
+import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLCommandDeployer;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -66,8 +78,45 @@ public class WLDatasourceManager implements DatasourceManager {
         this.manager = manager;
     }
 
+    // TODO we should start required JDBC datasources on server just for case
+    // it previously failed (ie. db was not accessible at that time)
     @Override
     public void deployDatasources(Set<Datasource> datasources) throws ConfigurationException, DatasourceAlreadyExistsException {
+        Set<Datasource> deployedDatasources = getDatasources();
+        // for faster searching
+        Map<String, Datasource> deployed = createMap(deployedDatasources);
+
+        // will contain all ds which do not conflict with existing ones
+        Map<String, WLDatasource> toDeploy = new HashMap<String, WLDatasource>();
+        
+        // resolve all conflicts
+        LinkedList<Datasource> conflictDS = new LinkedList<Datasource>();
+        for (Datasource datasource : datasources) {
+            if (!(datasource instanceof WLDatasource)) {
+                continue;
+            }
+
+            String jndiName = datasource.getJndiName();
+            if (deployed.keySet().contains(jndiName)) { // conflicting ds found
+                if (!deployed.get(jndiName).equals(datasource)) { // found ds is not equal
+                    conflictDS.add(deployed.get(jndiName)); // NOI18N
+                }
+            } else if (jndiName != null) {
+                if (datasource instanceof WLDatasource) {
+                    toDeploy.put(jndiName, (WLDatasource) datasource);
+                } else {
+                    LOGGER.log(Level.INFO, "Unable to deploy {0}", datasource);
+                }
+            }
+        }
+        
+        if (!conflictDS.isEmpty()) {
+            throw new DatasourceAlreadyExistsException(conflictDS);
+        }
+
+        WLCommandDeployer deployer = new WLCommandDeployer(WLDeploymentFactory.getInstance(),
+                manager.getInstanceProperties());
+        waitFor(deployer.deployDatasource(toDeploy.values()));
     }
 
     @Override
@@ -83,4 +132,33 @@ public class WLDatasourceManager implements DatasourceManager {
         return new HashSet<Datasource>(WLDatasourceSupport.getDatasources(domainPath, domainConfig));
     }
 
+    private Map<String, Datasource> createMap(Set<Datasource> datasources) {
+        if (datasources.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, Datasource> map = new HashMap<String, Datasource>();
+        for (Datasource datasource : datasources) {
+            map.put(datasource.getJndiName(), datasource);
+        }
+        return map;
+    }
+
+    private void waitFor(ProgressObject obj) {
+        final CountDownLatch latch = new CountDownLatch(1);
+        obj.addProgressListener(new ProgressListener() {
+
+            @Override
+            public void handleProgressEvent(ProgressEvent pe) {
+                if (pe.getDeploymentStatus().isCompleted() || pe.getDeploymentStatus().isFailed()) {
+                    latch.countDown();
+                }
+            }
+        });
+        try {
+            latch.await(WLDeploymentManager.MANAGER_TIMEOUT, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+    }
 }

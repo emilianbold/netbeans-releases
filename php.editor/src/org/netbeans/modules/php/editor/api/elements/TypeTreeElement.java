@@ -37,17 +37,13 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.api;
+package org.netbeans.modules.php.editor.api.elements;
 
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
+import java.util.Set;
 
 /**
  * @author Radek Matous
  */
-public final class ElementQueryFactory {
-    private ElementQueryFactory() {};
-    public static ElementQuery.Index getIndexQuery(final QuerySupport querySupport)  {
-        return IndexQueryImpl.get(querySupport);
-    }
+public interface TypeTreeElement extends TypeElement {
+    Set<TypeTreeElement> getDirectlyInherited();
 }

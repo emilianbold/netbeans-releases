@@ -1019,7 +1019,7 @@ class WebActionProvider implements ActionProvider {
             if (files != null && files.length > 0) {
                 return true;
             }
-// test for html pages
+// test for x/html pages
             files = findHtml(context);
             if (files != null && files.length > 0) {
                 return true;
@@ -1145,6 +1145,9 @@ class WebActionProvider implements ActionProvider {
         FileObject[] files = null;
         if (webDir != null) {
             files = findSelectedFilesByMimeType(context, webDir, "text/html", null, true);
+            if(files == null) {
+                files = findSelectedFilesByMimeType(context, webDir, "text/xhtml", null, true);
+            }
         }
         return files;
     }
