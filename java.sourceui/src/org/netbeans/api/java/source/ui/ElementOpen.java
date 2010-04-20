@@ -218,7 +218,7 @@ public final class ElementOpen {
                             }
                         }
                     },
-                    NbBundle.getMessage(ElementOpen.class, "TXT_OpeningDeclaration"),
+                    NbBundle.getMessage(ElementOpen.class, "TXT_CalculatingDeclPos"),
                     cancel,
                     false);
             } else {
