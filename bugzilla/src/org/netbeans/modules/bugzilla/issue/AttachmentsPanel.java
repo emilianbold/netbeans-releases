@@ -63,6 +63,7 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
 import org.openide.util.NbBundle;
 
@@ -361,7 +362,7 @@ public class AttachmentsPanel extends JPanel {
                 attachment.addPropertyChangeListener(getDeletedListener());
             }
             newAttachments.add(attachment);
-            BugtrackingUtil.keepFocusedComponentVisible(attachment);
+            UIUtils.keepFocusedComponentVisible(attachment);
             revalidate();
         }
 
