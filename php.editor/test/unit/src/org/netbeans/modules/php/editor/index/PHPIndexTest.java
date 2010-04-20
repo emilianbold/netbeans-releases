@@ -261,14 +261,20 @@ public class PHPIndexTest extends TestBase {
         Collection<TypeElement> ccInterfaces = new ArrayList<TypeElement>(index.getInterfaces(NameKind.exact("CCC")));
         assertEquals(2, ccInterfaces.size());
         TypeElement[] interfacesArray = ccInterfaces.toArray(new TypeElement[ccInterfaces.size()]);
-        final TypeElement firstCC = interfacesArray[0];
-        final TypeElement secondCC = interfacesArray[1];
+        TypeElement firstCC = interfacesArray[0];
+        TypeElement secondCC = interfacesArray[1];
         assertNotNull(firstCC);
         assertNotNull(secondCC);
         assertNotSame(secondCC, firstCC);
         assertNotNull(firstCC.getFileObject());
         assertNotNull(secondCC.getFileObject());
         assertNotSame(secondCC.getFileObject(), firstCC.getFileObject());
+        
+        if (firstCC.getFileObject().getName().endsWith("_1")) {
+            final TypeElement tmpCC = firstCC;
+            firstCC = secondCC;
+            secondCC = tmpCC;
+        }
 
         final Collection<InterfaceElement> preferredInterfaces =
                 ElementFilter.forFiles(firstCC.getFileObject()).prefer(index.getInterfaces(NameKind.exact("CCC")));
@@ -280,7 +286,7 @@ public class PHPIndexTest extends TestBase {
         final Collection<InterfaceElement> aaInterfaces =
                 ElementFilter.forFiles(preffered.getFileObject()).prefer(index.getInterfaces(NameKind.exact("AAA")));
         assertEquals(1, aaInterfaces.size());
-        assertNotSame(getFirst(aaInterfaces).getFileObject(), preffered.getFileObject());
+        assertSame(getFirst(aaInterfaces).getFileObject(), preffered.getFileObject());
     }
 
     /**
