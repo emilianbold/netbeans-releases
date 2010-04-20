@@ -162,9 +162,13 @@ public class DoxygenDocumentation {
         commands.put("\\sa", new CommandDescription(EndsOn.PAR, "<strong>See Also:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\verbatim", new CommandDescription(EndsOn.NONE, "<pre>", "")); // NOI18N
         commands.put("\\endverbatim", new CommandDescription(EndsOn.NONE, "</pre>", "")); // NOI18N
+        commands.put("\\brief", new CommandDescription(EndsOn.PAR, "", "")); // NOI18N
+        commands.put("\\date", new CommandDescription(EndsOn.PAR, "<strong>Date:</strong><br>&nbsp; ", "")); // NOI18N
+        commands.put("\\bug", new CommandDescription(EndsOn.PAR, "<strong>Bug:</strong><br>&nbsp; ", "")); // NOI18N
+        commands.put("\\warning", new CommandDescription(EndsOn.PAR, "<strong>Warning:</strong><br>&nbsp; ", "")); // NOI18N
+        commands.put("\\version", new CommandDescription(EndsOn.PAR, "<strong>Version:</strong><br>&nbsp; ", "")); // NOI18N
 
 //        commands.put("\\fn", new CommandDescription(EndsOn.LINE, "<strong>", "</strong>")); // NOI18N
-//        commands.put("\\brief", new CommandDescription(EndsOn.PAR, "", "")); // NOI18N
 //        commands.put("\\code", new CommandDescription(EndsOn.NONE, "<pre>", ""));//XXX: does not work properly - the content will still be processed, '<', '>' will not be escaped. // NOI18N
 //        commands.put("\\endcode", new CommandDescription(EndsOn.NONE, "</pre>", "")); // NOI18N
     }
