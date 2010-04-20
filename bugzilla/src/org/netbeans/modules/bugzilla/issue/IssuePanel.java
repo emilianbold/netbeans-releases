@@ -143,6 +143,7 @@ import org.openide.windows.WindowManager;
  */
 public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private static final Color HIGHLIGHT_COLOR = new Color(217, 255, 217);
+    private static final RequestProcessor RP = new RequestProcessor("Bugzilla Issue Panel", 5, false);
     private BugzillaIssue issue;
     private CommentsPanel commentsPanel;
     private AttachmentsPanel attachmentsPanel;
@@ -730,7 +731,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void initAssignedCombo() {
         assignedCombo.setRenderer(new RepositoryUserRenderer());
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 BugzillaRepository repository = issue.getBugzillaRepository();
@@ -1138,7 +1139,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void updateTasklistButton() {
         tasklistButton.setEnabled(false);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 BugzillaIssueProvider provider = BugzillaIssueProvider.getInstance();
@@ -2139,7 +2140,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         handle.switchToIndeterminate();
         skipReload = true;
         enableComponents(false);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 boolean ret = false;
@@ -2233,7 +2234,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         handle.switchToIndeterminate();
         skipReload = true;
         enableComponents(false);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -2340,7 +2341,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         handle.switchToIndeterminate();
         skipReload = true;
         enableComponents(false);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 issue.getBugzillaRepository().refreshConfiguration();
