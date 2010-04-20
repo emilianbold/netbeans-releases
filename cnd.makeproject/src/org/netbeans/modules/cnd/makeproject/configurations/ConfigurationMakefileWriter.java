@@ -399,7 +399,7 @@ public class ConfigurationMakefileWriter {
         bw.write("GREP=grep\n"); // NOI18N
         bw.write("NM=nm\n"); // NOI18N
         bw.write("CCADMIN=CCadmin\n"); // NOI18N
-        bw.write("RANLIB=ranlib\n"); // NOI18N
+        bw.write("RANLIB=" + conf.getArchiverConfiguration().getRanlibTool().getValue() + "\n"); // NOI18N
         bw.write("CC=" + getCompilerName(conf, PredefinedToolKind.CCompiler) + "\n"); // NOI18N
         bw.write("CCC=" + getCompilerName(conf, PredefinedToolKind.CCCompiler) + "\n"); // NOI18N
         bw.write("CXX=" + getCompilerName(conf, PredefinedToolKind.CCCompiler) + "\n"); // NOI18N

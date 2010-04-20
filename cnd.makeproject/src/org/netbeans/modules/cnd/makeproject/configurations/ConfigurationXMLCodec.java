@@ -767,6 +767,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentArchiverConfiguration != null) {
                 currentArchiverConfiguration.getVerboseOption().setValue(ds);
             }
+        } else if (element.equals(RANLIB_TOOL_ELEMENT)) {
+            if (currentArchiverConfiguration != null) {
+                currentArchiverConfiguration.getRanlibTool().setValue(currentText);
+            }
         } else if (element.equals(ARCHIVERTOOL_RUN_RANLIB_ELEMENT)) {
             boolean ds = currentText.equals(TRUE_VALUE);
             if (currentArchiverConfiguration != null) {

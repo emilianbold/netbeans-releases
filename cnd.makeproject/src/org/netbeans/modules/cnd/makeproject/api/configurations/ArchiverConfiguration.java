@@ -63,6 +63,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
     private OptionsConfiguration commandLineConfiguration;
     private OptionsConfiguration additionalDependencies;
     private StringConfiguration tool;
+    private StringConfiguration ranlibTool;
     
     // Constructors
     public ArchiverConfiguration(MakeConfiguration makeConfiguration) {
@@ -75,6 +76,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         commandLineConfiguration = new OptionsConfiguration();
         additionalDependencies = new OptionsConfiguration();
         tool = new StringConfiguration(null, "ar"); // NOI18N
+        ranlibTool = new StringConfiguration(null, "ranlib"); // NOI18N
     }
     
     // MakeConfiguration
@@ -148,6 +150,14 @@ public class ArchiverConfiguration implements AllOptionsProvider {
     public StringConfiguration getTool() {
         return tool;
     }
+
+    // ranlib tool
+    public void setRanlibTool(StringConfiguration ranlibTool) {
+        this.ranlibTool = ranlibTool;
+    }
+    public StringConfiguration getRanlibTool() {
+        return ranlibTool;
+    }
     
     // Clone and assign
     public void assign(ArchiverConfiguration conf) {
@@ -161,6 +171,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         getAdditionalDependencies().assign(conf.getAdditionalDependencies());
         getCommandLineConfiguration().assign(conf.getCommandLineConfiguration());
         getTool().assign(conf.getTool());
+        getRanlibTool().assign(conf.getRanlibTool());
     }
     
     @Override
@@ -175,6 +186,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         clone.setAdditionalDependencies(getAdditionalDependencies().clone());
         clone.setCommandLineConfiguration(getCommandLineConfiguration().clone());
         clone.setTool(getTool().clone());
+        clone.setRanlibTool(getRanlibTool().clone());
         return clone;
     }
     
@@ -238,6 +250,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         set4.setDisplayName(getString("ToolTxt1"));
         set4.setShortDescription(getString("ToolHint1"));
         set4.put(new StringNodeProp(getTool(), "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
+        set4.put(new StringNodeProp(getRanlibTool(), "ranlibTool", getString("RanlibToolTxt"), getString("RanlibToolHint"))); // NOI18N
         sheet.put(set4);
         
         texts = new String[] {getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
