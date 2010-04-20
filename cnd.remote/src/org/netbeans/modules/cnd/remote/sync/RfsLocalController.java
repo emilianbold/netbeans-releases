@@ -229,7 +229,7 @@ class RfsLocalController extends NamedRunnable {
 
     private void initNewFilesDiscovery() {
         String remoteSyncRoot = RemotePathMap.getRemoteSyncRoot(execEnv);
-        ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", "-p", remoteSyncRoot);
+        ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", "-p", remoteSyncRoot); // NOI18N
         if (res.isOK()) {
            timeStampFile = res.output.trim();
         } else {
@@ -275,17 +275,17 @@ class RfsLocalController extends NamedRunnable {
             for (Collection<String> v : values) {
                 for (String ext : v) {
                     if (extOptions.length() > 0) {
-                        extOptions.append("-o ");
+                        extOptions.append("-o "); // NOI18N
                     }
-                    extOptions.append("-name \"*.");
+                    extOptions.append("-name \"*."); // NOI18N
                     extOptions.append(ext);
-                    extOptions.append("\"");
+                    extOptions.append("\""); // NOI18N
                 }
             }
         }
         
         String script = String.format(
-            "for F in `find %s %s -newer %s`; do test -f $F &&  echo $F;  done;",
+            "for F in `find %s %s -newer %s`; do test -f $F &&  echo $F;  done;", // NOI18N
             remoteDirs, extOptions.toString(), timeStampFile);
 
         final AtomicInteger lineCnt = new AtomicInteger();
