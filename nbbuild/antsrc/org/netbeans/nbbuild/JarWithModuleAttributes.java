@@ -191,47 +191,54 @@ public class JarWithModuleAttributes extends Jar {
                     StringBuilder sb = new StringBuilder();
                     String sep = "";
                     for (String one : moduleDeps.split(",")) {
-                        int great = one.indexOf('>');
-                        sb.append(sep);
-                        sep = ", ";
-                        if (great == -1) {
-                            int equals = one.indexOf('=');
-                            if (equals == -1) {
-                                sb.append(one.trim());
+                        if (one.indexOf('=') != -1) {
+                           throw new BuildException("Implementation dependencies not supported in Netigso mode: " + one);
+                        }
+                        String versionS, codename;
+                        int greaterThan = one.indexOf('>');
+                        if (greaterThan == -1) {
+                            versionS = "0";
+                            codename = one.trim();
+                        } else {
+                            versionS = one.substring(greaterThan + 1).trim();
+                            codename = one.substring(0, greaterThan).trim();
+                        }
+                        if (codename.equals("org.netbeans.libs.osgi")) {
+                            // #184434: do not include a dep on a NB pseudomodule.
+                            // apisupport's BundleActivator wizard anyway adds to manifest:
+                            // Import-Package: org.osgi.framework
+                            continue;
+                        }
+                        int[] version = parseDecimal(versionS, 3);
+                        int slash = codename.indexOf('/');
+                        int hiMajor;
+                        String cnb;
+                        if (slash >= 0) {
+                            cnb = codename.substring(0, slash).trim();
+                            String range = codename.substring(slash + 1).trim();
+                            int dash = range.indexOf('-');
+                            if (dash == -1) {
+                                hiMajor = Integer.parseInt(range);
+                                version[0] += 100 * hiMajor;
                             } else {
-                                throw new BuildException("Implementation dependencies not supported in Netigso mode: " + one);
+                                hiMajor = Integer.parseInt(range.substring(dash + 1));
+                                version[0] += 100 * Integer.parseInt(range.substring(0, dash));
                             }
                         } else {
-                            int[] version = parseDecimal(one.substring(great + 1).trim(), 3);
-                            int slash = one.indexOf('/');
-                            int hiMajor;
-                            String cnb;
-                            if (slash >= 0) {
-                                cnb = one.substring(0, slash).trim();
-                                String range = one.substring(slash + 1, great).trim();
-                                int dash = range.indexOf('-');
-                                if (dash == -1) {
-                                    hiMajor = Integer.parseInt(range);
-                                    version[0] += 100 * hiMajor;
-                                } else {
-                                    hiMajor = Integer.parseInt(range.substring(dash + 1));
-                                    version[0] += 100 * Integer.parseInt(range.substring(0, dash));
-                                }
-                            } else {
-                                cnb = one.substring(0, great).trim();
-                                hiMajor = 0;
-                            }
-                            sb.append(cnb).append(";bundle-version=\"[");
-                            String conditionalDot = "";
-                            for (int i = 0; i < version.length; i++) {
-                                sb.append(conditionalDot);
-                                sb.append(version[i]);
-                                conditionalDot = ".";
-                            }
-                            sb.append(",").append((hiMajor + 1) * 100).append(")\"");
+                            cnb = codename;
+                            hiMajor = 0;
                         }
+                        sb.append(sep);
+                        sep = ", ";
+                        sb.append(cnb).append(";bundle-version=\"[");
+                        String conditionalDot = "";
+                        for (int i = 0; i < version.length; i++) {
+                            sb.append(conditionalDot);
+                            sb.append(version[i]);
+                            conditionalDot = ".";
+                        }
+                        sb.append(",").append((hiMajor + 1) * 100).append(")\"");
                     }
-
                     added.addConfiguredAttribute(new Manifest.Attribute("Require-Bundle", sb.toString())); // NOI18N
                 } else {
                     added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Module-Dependencies", moduleDeps));
