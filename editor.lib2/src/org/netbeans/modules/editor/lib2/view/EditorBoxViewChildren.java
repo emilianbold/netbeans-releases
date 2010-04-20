@@ -140,6 +140,12 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         float minorAxisChildrenSpan = getMinorAxisChildrenSpan(boxView);
         boolean minorAxisChildrenSpanChange = false;
         int majorAxis = boxView.getMajorAxis();
+        // Update offsetGapStart/Length at this point so that the childView.getStartOffset()
+        // returns proper value once childView.setRawOffset() gets called.
+        if (gapStorage != null) {
+            gapStorage.offsetGapStart += offsetDelta;
+            gapStorage.offsetGapLength -= offsetDelta;
+        }
         if (addedViews != null && addedViews.length != 0) {
             modified = true;
             gapIndexDelta += addedViews.length;
@@ -439,34 +445,50 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
 
     final void fixOffsetsAndMajorSpan(EditorBoxView boxView, int index, int offsetDelta, double visualDelta) {
         // Expects moveGap(index) was called already before calling of this method
+        int viewCount = size();
         boolean visualUpdate = (visualDelta != 0d);
         if (gapStorage != null) {
-            gapStorage.offsetGapLength -= offsetDelta;
+            // offsetGapStart/Length already had to be updated during replace()
+            gapStorage.visualGapStart += visualDelta;
             gapStorage.visualGapLength -= visualDelta;
             if (handleTabableViews()) {
                 TabExpander tabExpander = boxView.getTabExpander();
                 // Go though the rest of views and check if their span has changed
-                int viewCount = size();
+                double tabVisualDelta = 0d;
+                boolean tabVisualUpdate = false;
                 for (int i = index; i < viewCount; i++) {
                     EditorView view = get(i);
-                    if (visualUpdate) {
-                        view.setRawVisualOffset(view.getRawVisualOffset() + visualDelta);
+                    if (tabVisualUpdate) {
+                        view.setRawVisualOffset(view.getRawVisualOffset() + tabVisualDelta);
                     }
-                    if (view instanceof TabableView) {
-                        double origMajorSpan = boxView.getViewMajorAxisSpan(index);
-                        float visualOffset = (float) boxView.getViewVisualOffset(index);
-                        double majorSpan = ((TabableView)view).getTabbedSpan(visualOffset, tabExpander);
-                        if (majorSpan != origMajorSpan) {
-                            visualDelta += (majorSpan - origMajorSpan);
-                            visualUpdate = true;
+                    if (view instanceof TabableView) { // Must re-measure tab-view's span since it depends on x-coordinate.
+                        // All indices are above visual gap (index is right above gap).
+                        // visualGapLength is already updated so the x-coordinate reflects the update.
+                        // visualOffset was just shifted by tabVisualDelta (but view[i+1] not yet).
+                        double visualOffset = view.getRawVisualOffset() - gapStorage.visualGapLength;
+                        // Use difference of visual offsets since it is most precise (doubles subtracting)
+                        // and getPreferredSpan() could be expensive.
+                        double nextViewVisualOffset = (i != viewCount - 1)
+                                // all visual offsets already use the updated visualGapLength
+                                ? get(i + 1).getRawVisualOffset() - gapStorage.visualGapLength
+                                // but major-axis-children-span does not reflect visualDelta yet => add it
+                                : getMajorAxisChildrenSpan(boxView) + visualDelta;
+                        // add tabVisualDelta to nextViewVisualOffset since visualOffset already includes tabVisualDelta
+                        double origMajorSpan = (nextViewVisualOffset + tabVisualDelta) - visualOffset;
+                        double majorSpan = ((TabableView)view).getTabbedSpan((float)visualOffset, tabExpander);
+                        double majorSpanDelta = majorSpan - origMajorSpan;
+                        if (majorSpanDelta != 0d) {
+                            tabVisualDelta += majorSpanDelta;
+                            tabVisualUpdate = (tabVisualDelta != 0); // may go back to zero e.g. first tab
                         }
                     }
                 }
-
+                visualDelta += tabVisualDelta;
+                visualUpdate = (visualDelta != 0d);
             }
         } else { // Move the items one by one
             boolean offsetUpdate = rawOffsetUpdate() && (offsetDelta != 0);
-            int viewCount = size();
+            TabExpander tabExpander = boxView.getTabExpander();
             for (int i = index; i < viewCount; i++) {
                 EditorView view = get(i);
                 if (offsetUpdate) {
@@ -475,8 +497,27 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                 if (visualUpdate) {
                     view.setRawVisualOffset(view.getRawVisualOffset() + visualDelta);
                 }
+                // Must possibly re-measure tab-view's span since it depends on x-coordinate.
+                // Unlike when gap is active here both visualDelta shift and tab-remeasure shifts are joined
+                if (handleTabableViews() && view instanceof TabableView) {
+                    double visualOffset = view.getRawVisualOffset();
+                    // Use difference of visual offsets since it is most precise (doubles subtracting)
+                    // and getPreferredSpan() could be expensive.
+                    double nextViewVisualOffset = (i != viewCount - 1)
+                            ? get(i + 1).getRawVisualOffset()
+                            : getMajorAxisChildrenSpan(boxView);
+                    // add visualDelta to nextViewVisualOffset since visualOffset already includes visualDelta
+                    double origMajorSpan = (nextViewVisualOffset + visualDelta) - visualOffset;
+                    double majorSpan = ((TabableView) view).getTabbedSpan((float) visualOffset, tabExpander);
+                    double majorSpanDelta = majorSpan - origMajorSpan;
+                    if (majorSpanDelta != 0d) {
+                        visualDelta += majorSpanDelta;
+                        visualUpdate = (visualDelta != 0);
+                    }
+                }
             }
         }
+
         if (visualUpdate) {
             setMajorAxisChildrenSpan(boxView, getMajorAxisChildrenSpan(boxView) + visualDelta);
         }
@@ -534,7 +575,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
     }
     
     private void checkGap() {
-        if (LOG.isLoggable(Level.FINE)) {
+        if (LOG.isLoggable(Level.FINE) && gapStorage != null) {
             String error = null;
             int gapIndex = gapStorage.gapIndex;
             if (gapIndex > size()) {
@@ -785,9 +826,15 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
          */
         int gapIndex;
 
-        void appendInfo(StringBuilder sb) {
+        StringBuilder appendInfo(StringBuilder sb) {
             sb.append("<").append(offsetGapStart).append("|").append(offsetGapLength);
             sb.append(", vis<").append(visualGapStart).append("|").append(visualGapLength);
+            return sb;
+        }
+
+        @Override
+        public String toString() {
+            return appendInfo(new StringBuilder(100)).toString();
         }
 
     }

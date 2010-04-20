@@ -431,7 +431,7 @@ public final class WindowsSupport {
             String shellOutput = ProcessUtils.readProcessOutputLine(shellProcess);
 
             if (shellOutput.length() > 0) {
-                if (shellOutput.contains(".")) {
+                if (shellOutput.contains(".")) { // NOI18N
                     shellOutput = shellOutput.substring(shellOutput.indexOf('.') + 1);
                 }
                 try {

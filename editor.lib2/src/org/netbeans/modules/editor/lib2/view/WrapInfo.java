@@ -98,6 +98,7 @@ final class WrapInfo extends GapList<WrapLine> {
             WrapLine wrapLine = get(i);
             EditorView startViewPart = wrapLine.startViewPart;
             if (startViewPart != null) {
+                // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
                 float width = startViewPart.getPreferredSpan(View.X_AXIS);
                 allocBounds.width = width;
                 startViewPart.paint(g, allocBounds, clipBounds);
@@ -120,6 +121,7 @@ final class WrapInfo extends GapList<WrapLine> {
             }
             EditorView endViewPart = wrapLine.endViewPart;
             if (endViewPart != null) {
+                // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
                 float width = endViewPart.getPreferredSpan(View.X_AXIS);
                 allocBounds.width = width;
                 endViewPart.paint(g, allocBounds, clipBounds);

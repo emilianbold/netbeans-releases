@@ -2007,11 +2007,18 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             BugzillaRepositoryConnector connector = Bugzilla.getInstance().getRepositoryConnector();
             try {
                 connector.getTaskDataHandler().initializeTaskData(issue.getBugzillaRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
-                if (BugzillaUtil.isNbRepository(repository)) { // Issue 180467
+                if (BugzillaUtil.isNbRepository(repository)) { // Issue 180467, 184412
+                    // Default target milestone
                     List<String> milestones = repository.getConfiguration().getTargetMilestones(product);
                     String defaultMilestone = "TBD"; // NOI18N
                     if (milestones.contains(defaultMilestone)) {
                         issue.setFieldValue(IssueField.MILESTONE, defaultMilestone);
+                    }
+                    // Default version
+                    List<String> versions = repository.getConfiguration().getVersions(product);
+                    String defaultVersion = getCurrentNetBeansVersion();
+                    if (versions.contains(defaultVersion)) {
+                        issue.setFieldValue(IssueField.VERSION, defaultVersion);
                     }
                 }
                 initialValues.remove(IssueField.COMPONENT.getKey());
@@ -2583,6 +2590,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         return unitIncrement;
+    }
+
+    private String getCurrentNetBeansVersion() {
+        return "6.9"; // NOI18N
     }
 
     private void addNetbeansInfo() {
