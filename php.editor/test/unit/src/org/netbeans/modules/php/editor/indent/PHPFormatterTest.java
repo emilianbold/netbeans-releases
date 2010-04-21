@@ -1676,6 +1676,12 @@ public class PHPFormatterTest extends PHPTestBase {
 	reformatFileContents("testfiles/formatting/comment06.php", options);
     }
 
+    public void testComment07() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        // Be careful during editing the test file. The space after /*  is important.
+	reformatFileContents("testfiles/formatting/comment07.php", options);
+    }
+
     // the html tests doesn't work properly, the results are deferent then in the ide. i don't know why. 
     public void testHtml01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
@@ -1797,6 +1803,11 @@ public class PHPFormatterTest extends PHPTestBase {
     public void testIssue184481_04() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/templates/issue184481_04.php", options, true);
+    }
+
+    public void testIssue184070_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue184070_01.php", options, true);
     }
 
     private void reformatFileContents(String file) throws Exception {
