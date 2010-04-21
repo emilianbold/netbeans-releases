@@ -193,7 +193,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 public void run() {
                     try {
                         if (TraceFlags.TRACE_182342_BUG) {
-                            System.err.printf("Removing dead block [%d-%d]\n", block.getEndOffset(), block.getStartOffset());
+                            System.err.printf("Removing dead block [%d-%d]\n", block.getStartOffset(), block.getEndOffset());
                         }
                         doc.remove(block.getStartOffset(), block.getEndOffset() - block.getStartOffset());
                     } catch (BadLocationException ex) {
