@@ -940,8 +940,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
                                 // For dynamically computed strings, we have n instanceof DStrNode
                                 // but I can't handle these anyway
-                                if (n instanceof StrNode) {
-                                    String descBl = ((StrNode)n).getValue();
+                                if (n instanceof StrNode || n instanceof SymbolNode) {
+                                    String descBl = AstUtilities.getNameOrValue(n);
 
                                     if ((descBl != null) && (descBl.length() > 0)) {
                                         // No truncation? See 138259
