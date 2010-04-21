@@ -254,7 +254,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 }
             } else {
                 System.err.println("Not found item: " + path);
-            // FIXUP
+                // FIXUP
             }
         } else if (element.equals(FolderXMLCodec.FOLDER_ELEMENT)) {
             String path = getString(atts.getValue(FolderXMLCodec.PATH_ATTR));
@@ -264,7 +264,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentFolderConfiguration = folderConfiguration;
             } else {
                 System.err.println("Not found folder: " + path);
-            // FIXUP
+                // FIXUP
             }
         } else if (element.equals(COMPILERTOOL_ELEMENT)) {
         } else if (element.equals(CCOMPILERTOOL_ELEMENT2) || element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
@@ -310,7 +310,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(PACK_ELEMENT)) {
             currentPackagingConfiguration = ((MakeConfiguration) currentConf).getPackagingConfiguration();
             currentPackagingConfiguration.getFiles().getValue().clear();
-        //currentPackagingConfiguration.getHeader().getValue().clear();
+            //currentPackagingConfiguration.getHeader().getValue().clear();
         } else if (element.equals(PACK_INFOS_LIST_ELEMENT)) {
             List<PackagerInfoElement> toBeRemove = currentPackagingConfiguration.getHeaderSubList(currentPackagingConfiguration.getType().getValue());
             for (PackagerInfoElement elem : toBeRemove) {
