@@ -72,6 +72,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
@@ -498,6 +499,7 @@ public class EjbJarProjectGenerator {
         //        data.appendChild(addLibs);
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties epPriv = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         Element sourceRoots = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
         if (srcRoot != null) {
             Element root = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
@@ -544,16 +546,13 @@ public class EjbJarProjectGenerator {
         ep.setProperty(EjbJarProjectProperties.JAR_COMPRESS, "false");
         //        ep.setProperty(EjbJarProjectProperties.JAR_CONTENT_ADDITIONAL, "");
         
-        Deployment deployment = Deployment.getDefault();
-        ep.setProperty(EjbJarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
-        
         if (h.isSharableProject() && serverLibraryName != null) {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH,
                     "${libs." + serverLibraryName + "." + "classpath" + "}"); // NOI18N
-            setServerProperties(ep, serverLibraryName);
         } else {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, "");
         }
+        J2EEProjectProperties.setServerProperties(ep, epPriv, serverLibraryName, null, null, serverInstanceID, j2eeProfile, J2eeModule.Type.EJB);
 
         // deploy on save since nb 6.5
         boolean deployOnSaveEnabled = false;
@@ -634,99 +633,15 @@ public class EjbJarProjectGenerator {
             props.setProperty(EjbJarProjectProperties.LIBRARIES_DIR, ref);
             h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
         }
-        
-        ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.setProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
-        
-        // set j2ee.platform.classpath
-        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-        if (!j2eePlatform.getSupportedProfiles(J2eeModule.Type.EJB).contains(j2eeProfile)) {
-            Logger.getLogger("global").log(Level.WARNING,
-                    "J2EE level:" + j2eeProfile + " not supported by server " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID) + " for module type EJB"); // NOI18N
-        }
-        
-        if (!h.isSharableProject() || serverLibraryName == null) {
-            String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
-            ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
 
-            // set j2ee.platform.embeddableejb.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_EMBEDDABLE_EJB)) {
-                File[] ejbClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_EMBEDDABLE_EJB);
-                ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
-                        Utils.toClasspathString(ejbClasspath));
-            }
+        J2EEProjectProperties.createDeploymentScript(dirFO, ep, epPriv, serverInstanceID, J2eeModule.Type.EJB);
 
-            // set j2ee.platform.wscompile.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
-                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                        Utils.toClasspathString(wsClasspath));
-            }
-
-            // set j2ee.platform.wsimport.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
-                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                        Utils.toClasspathString(wsClasspath));
-            }
-
-            // set j2ee.platform.wsgen.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN);
-                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
-                        Utils.toClasspathString(wsClasspath));
-            }
-            
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIT);
-                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            }
-
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_JWSDP);
-                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            }            
-        }
-        
-        // ant deployment support
-        File projectFolder = FileUtil.toFile(dirFO);
-        try {
-            AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, EjbJarProjectProperties.ANT_DEPLOY_BUILD_SCRIPT),
-                    J2eeModule.EJB, serverInstanceID);
-        } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
-        }
-        File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(serverInstanceID);
-        if (deployAntPropsFile != null) {
-            ep.setProperty(EjbJarProjectProperties.DEPLOY_ANT_PROPS_FILE, deployAntPropsFile.getAbsolutePath());
-        }
-        
-        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, epPriv);
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         return h;
     }
 
-    public static void setServerProperties(EditableProperties ep, String serverLibraryName) {
-        // TODO constants
-        ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
-        ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "embeddableejb" + "}"); //NOI18N
-        ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                 "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
-        ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                 "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
-        ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
-                 "${libs." + serverLibraryName + "." + "wsgenerate" + "}"); //NOI18N
-        ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH,
-                 "${libs." + serverLibraryName + "." + "wsinterop" + "}"); //NOI18N
-        ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH,
-                 "${libs." + serverLibraryName + "." + "wsjwsdp" + "}"); //NOI18N
-    }
-    
     // AB: this method is also called from the enterprise application, so we can't pass UpdateHelper here
     // well, actually we can, but let's not expose too many classes
     public static void setPlatform(final AntProjectHelper helper, final String platformName, final String sourceLevel) {

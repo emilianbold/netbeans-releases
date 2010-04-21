@@ -89,7 +89,7 @@ public class J2eeArchiveLogicalViewProvider extends AbstractLogicalViewProvider 
 
     @Override
     protected void setServerInstance(Project project, UpdateHelper helper, String serverInstanceID) {
-        EarProjectProperties.setServerInstance(project, helper, serverInstanceID);
+        EarProjectProperties.setServerInstance((EarProject)project, helper, serverInstanceID);
     }
     
 }

@@ -721,7 +721,8 @@ public final class WebProject implements Project, AntProjectListener {
 
                             if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
                                     WebProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
-                                String classpath = Utils.toClasspathString(platform.getClasspathEntries());
+                                String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
+                                String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), root);
                                 ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                             }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

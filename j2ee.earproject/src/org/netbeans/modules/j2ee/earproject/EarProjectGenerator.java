@@ -628,13 +628,6 @@ public final class EarProjectGenerator {
         }
         ep.setProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE, Boolean.toString(deployOnSaveEnabled));
 
-        Deployment deployment = Deployment.getDefault();
-        ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
-        
-        if (h.isSharableProject() && serverLibraryName != null) {
-            ep.setProperty(J2EEProjectProperties.J2EE_PLATFORM_CLASSPATH, "${libs." + serverLibraryName + ".classpath}"); //NOI18N
-        }
-        
         String srcLevel = sourceLevel;
         if (srcLevel == null) {
             JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
@@ -669,7 +662,7 @@ public final class EarProjectGenerator {
         
         EditableProperties privateEP = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 
-        EarProjectProperties.storeJ2EEServerProperties(serverInstanceID, p, ep, privateEP, serverLibraryName);
+        J2EEProjectProperties.setServerProperties(ep, privateEP, serverLibraryName, null, null, serverInstanceID, j2eeProfile, J2eeModule.Type.EAR);
         
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateEP);
@@ -720,20 +713,6 @@ public final class EarProjectGenerator {
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
-    }
-    
-    public static String toClasspathString(File[] classpathEntries) {
-        if (classpathEntries == null) {
-            return "";
-        }
-        StringBuffer classpath = new StringBuffer();
-        for (int i = 0; i < classpathEntries.length; i++) {
-            classpath.append(classpathEntries[i].getAbsolutePath());
-            if (i + 1 < classpathEntries.length) {
-                classpath.append(':');
-            }
-        }
-        return classpath.toString();
     }
     
     private FileObject getJavaRoot(final FileObject moduleRoot) throws IOException {

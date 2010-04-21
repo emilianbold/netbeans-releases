@@ -672,7 +672,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
 
                             if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
                                     EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
-                                String classpath = Utils.toClasspathString(platform.getClasspathEntries());
+                                String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
+                                String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), root);
                                 ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                             }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

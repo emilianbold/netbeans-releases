@@ -94,7 +94,7 @@ public class EjbJarLogicalViewProvider extends AbstractLogicalViewProvider {
 
     @Override
     protected void setServerInstance(Project project, UpdateHelper helper, String serverInstanceID) {
-        EjbJarProjectProperties.setServerInstance(project, helper.getAntProjectHelper(), serverInstanceID);
+        EjbJarProjectProperties.setServerInstance((EjbJarProject)project, helper.getAntProjectHelper(), serverInstanceID);
     }
 
 }

@@ -549,23 +549,14 @@ final public class AppClientProjectProperties {
             projectProperties.remove(MAIN_CLASS); // Remove the property completely if not set
         }
 
-        // Configure new server instance
-        boolean serverLibUsed = J2EEProjectProperties.isUsingServerLibrary(projectProperties,
-                AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH); 
         if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
-                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
-            setNewServerInstanceValue(instanceId, project, projectProperties, privateProperties, !serverLibUsed);
-        }
-
-        // Configure server libraries (if any)
-        boolean configured = setServerClasspathProperties(projectProperties, privateProperties,
-                cs, javaClasspathList);
-
-        // Configure classpath from server (no server libraries)
-        if (!configured && J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()),
-                    project, projectProperties, privateProperties, true);
+            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+            Profile profile = Profile.fromPropertiesString(evaluator.getProperty(J2EE_PLATFORM));
+            J2EEProjectProperties.updateServerProperties(projectProperties, privateProperties, instanceId,
+                    cs, javaClasspathList,
+                    new CallbackImpl(project), project,
+                    profile, J2eeModule.Type.CAR);
+            updateAppClientServerProperties(instanceId, projectProperties, privateProperties);
         }
 
         projectProperties.putAll(additionalProperties);
@@ -750,16 +741,18 @@ final public class AppClientProjectProperties {
         return bm;
     }
     
-    public static void setServerInstance(final Project project, final AntProjectHelper helper, final String serverInstanceID) {
+    public static void setServerInstance(final AppClientProject project, final AntProjectHelper helper, final String serverInstanceID) {
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             @Override
             public void run() {
                 try {
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    boolean serverLibUsed = J2EEProjectProperties.isUsingServerLibrary(projectProps, J2EE_PLATFORM_CLASSPATH);
-                    setNewServerInstanceValue(serverInstanceID, project,
-                            projectProps, privateProps, !serverLibUsed);
+                    Profile profile = Profile.fromPropertiesString(project.evaluator().getProperty(J2EE_PLATFORM));
+                    J2EEProjectProperties.updateServerProperties(projectProps, privateProps, serverInstanceID,
+                            null, null, new CallbackImpl(project), project,
+                            profile, J2eeModule.Type.CAR);
+                    updateAppClientServerProperties(serverInstanceID, projectProps, privateProps);
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                     ProjectManager.getDefault().saveProject(project);
@@ -770,63 +763,23 @@ final public class AppClientProjectProperties {
         });
     }
     
-    private static void setNewServerInstanceValue(String newServInstID, Project project,
-            EditableProperties projectProps, EditableProperties privateProps, boolean setFromServer) {
+    private static void updateAppClientServerProperties(String newServInstID,
+            EditableProperties projectProps, EditableProperties privateProps) {
 
         assert newServInstID != null : "Server isntance id to set can't be null"; // NOI18N
 
-        // update j2ee.platform.classpath
-        String oldServInstID = privateProps.getProperty(J2EE_SERVER_INSTANCE);
-        if (oldServInstID != null) {
-            J2eePlatform oldJ2eePlatform = Deployment.getDefault().getJ2eePlatform(oldServInstID);
-            if (oldJ2eePlatform != null) {
-                ((AppClientProject)project).unregisterJ2eePlatformListener(oldJ2eePlatform);
-            }
-        }
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newServInstID);
         if (j2eePlatform == null) {
-            // probably missing server error
-            Logger.getLogger("global").log(Level.INFO, "J2EE platform is null."); // NOI18N
-            
-            // update j2ee.server.type (throws NPE)
-            //projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
-            // update j2ee.server.instance
-            privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
-
-            removeServerClasspathProperties(privateProps);
-
-            privateProps.remove(DEPLOY_ANT_PROPS_FILE);
             privateProps.remove(AppClientProjectProperties.APPCLIENT_TOOL_CLIENT_JAR);
             return;
         }
-        ((AppClientProject)project).registerJ2eePlatformListener(j2eePlatform);
-        if (setFromServer) {        
-            String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
-            privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
-            
-            // update j2ee.platform.wsimport.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
-                privateProps.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
-            }      
-            // update j2ee.platform.wscompile.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
-                privateProps.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
-            }            
-        }
 
-        // XXX this seems to be used in runtime only so, not part of sharable server        
+        // XXX this seems to be used in runtime only so, not part of sharable server
         // set j2ee.appclient environment
         File[] accrt = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME);
-        privateProps.setProperty(APPCLIENT_TOOL_RUNTIME, Utils.toClasspathString(accrt));
-        
+        String root = J2EEProjectProperties.extractPlatformLibrariesRoot(j2eePlatform);
+        privateProps.setProperty(APPCLIENT_TOOL_RUNTIME, J2EEProjectProperties.toClasspathString(accrt, root));
+
         String jvmOpts = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_JVM_OPTS);
         if (jvmOpts != null) {
             privateProps.setProperty(APPCLIENT_TOOL_JVMOPTS, jvmOpts);
@@ -854,27 +807,7 @@ final public class AppClientProjectProperties {
             }
             projectProps.put(CLIENT_NAME, mainClassArgs);
         }
-        
-        // update j2ee.server.type
-        projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
-        
-        // update j2ee.server.instance
-        privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
-        
-        // ant deployment support
-        File projectFolder = FileUtil.toFile(project.getProjectDirectory());
-        try {
-            AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, ANT_DEPLOY_BUILD_SCRIPT), J2eeModule.CLIENT, newServInstID); // NOI18N
-        } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
-        }
-        File antDeployPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(newServInstID);
-        if (antDeployPropsFile == null) {
-            privateProps.remove(DEPLOY_ANT_PROPS_FILE);
-        } else {
-            privateProps.setProperty(DEPLOY_ANT_PROPS_FILE, antDeployPropsFile.getAbsolutePath());
-        }
-        
+
         // WORKAROUND for --retrieve option in asadmin deploy command
         // works only for local domains
         // see also http://www.netbeans.org/issues/show_bug.cgi?id=82929
@@ -884,47 +817,7 @@ final public class AppClientProjectProperties {
         } else {
             privateProps.remove(AppClientProjectProperties.APPCLIENT_TOOL_CLIENT_JAR);
         }
-        
-    }
 
-    private static void removeServerClasspathProperties(EditableProperties props) {
-        props.remove(J2EE_PLATFORM_CLASSPATH);
-        props.remove(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
-        props.remove(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
-    }
-
-    private static boolean setServerClasspathProperties(EditableProperties props,
-            EditableProperties privateProps, ClassPathSupport cs, Iterable<ClassPathSupport.Item> items) {
-
-        List<ClassPathSupport.Item> serverItems = new ArrayList<ClassPathSupport.Item>();
-        for (ClassPathSupport.Item item : items) {
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
-                    && !item.isBroken()
-                    && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
-                serverItems.add(ClassPathSupport.Item.create(item.getLibrary(), null));
-            }
-        }
-
-        if (serverItems.isEmpty()) {
-            removeServerClasspathProperties(props);
-            return false;
-        }
-        removeServerClasspathProperties(privateProps);
-
-        props.setProperty(J2EE_PLATFORM_CLASSPATH, cs.encodeToStrings(serverItems, null, "classpath")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wscompile")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsimport")); // NOI18N
-        return true;
-    }
-
-    private static void removeReferences(Iterable<ClassPathSupport.Item> items) {
-        for (ClassPathSupport.Item item : items) {
-            item.setReference(null);
-        }
     }
 
     void loadIncludesExcludes(IncludeExcludeVisualizer v) {
@@ -947,5 +840,23 @@ final public class AppClientProjectProperties {
         excludes = v.getExcludePattern();
     }
     
-    
+    private static class CallbackImpl implements J2EEProjectProperties.Callback {
+
+        private AppClientProject project;
+
+        public CallbackImpl(AppClientProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public void registerJ2eePlatformListener(J2eePlatform platform) {
+            project.registerJ2eePlatformListener(platform);
+        }
+
+        @Override
+        public void unregisterJ2eePlatformListener(J2eePlatform platform) {
+            project.unregisterJ2eePlatformListener(platform);
+        }
+
+    }
 }

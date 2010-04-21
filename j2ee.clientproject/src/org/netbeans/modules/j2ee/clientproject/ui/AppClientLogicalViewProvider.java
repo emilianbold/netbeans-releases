@@ -88,7 +88,7 @@ public class AppClientLogicalViewProvider extends AbstractLogicalViewProvider {
 
     @Override
     protected void setServerInstance(Project project, UpdateHelper helper, String serverInstanceID) {
-        AppClientProjectProperties.setServerInstance(project, helper.getAntProjectHelper(), serverInstanceID);
+        AppClientProjectProperties.setServerInstance((AppClientProject)project, helper.getAntProjectHelper(), serverInstanceID);
     }
     
     @Override

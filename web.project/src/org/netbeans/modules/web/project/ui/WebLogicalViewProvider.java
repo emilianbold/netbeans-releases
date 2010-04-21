@@ -103,7 +103,7 @@ public class WebLogicalViewProvider extends AbstractLogicalViewProvider {
 
     @Override
     protected void setServerInstance(Project project, UpdateHelper helper, String serverInstanceID) {
-        WebProjectProperties.setServerInstance(project, helper, serverInstanceID);
+        WebProjectProperties.setServerInstance((WebProject)project, helper, serverInstanceID);
     }
 
 }
