@@ -378,8 +378,8 @@ public final class ParserQueue {
         if (TraceFlags.TRACE_182342_BUG) {
             new Exception("ParserQueue: add for " + file).printStackTrace(System.err);
             int i = 0;
-            for (APTPreprocHandler.State state : ppStates) {
-                System.err.printf("ParserQueue: State %d from original %s\n", i++, state);
+            for (APTPreprocHandler.State aState : ppStates) {
+                System.err.printf("ParserQueue: State %d from original %s\n", i++, aState);
             }
         }
         if (ppStates.isEmpty()) {
