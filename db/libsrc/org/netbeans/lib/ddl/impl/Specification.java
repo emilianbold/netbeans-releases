@@ -525,6 +525,7 @@ public class Specification implements DatabaseSpecification {
         case java.sql.Types.NUMERIC: typestr = "NUMERIC"; break; // NOI18N
         case java.sql.Types.NCHAR: typestr = "NCHAR"; break; // NOI18N
         case java.sql.Types.NCLOB: typestr = "NCLOB"; break; // NOI18N
+        case java.sql.Types.NULL: typestr = "NULL"; break; // NOI18N
         case java.sql.Types.NVARCHAR: typestr = "NVARCHAR"; break; // NOI18N
         case java.sql.Types.OTHER: typestr = "OTHER"; break; // NOI18N        
         case java.sql.Types.REAL: typestr = "REAL"; break; // NOI18N
@@ -573,6 +574,7 @@ public class Specification implements DatabaseSpecification {
         if (type.equals("java.sql.Types.NUMERIC")) return java.sql.Types.NUMERIC; // NOI18N
         if (type.equals("java.sql.Types.NCHAR")) return java.sql.Types.NCHAR; // NOI18N
         if (type.equals("java.sql.Types.NCLOB")) return java.sql.Types.NCLOB; // NOI18N
+        if (type.equals("java.sql.Types.NULL")) return java.sql.Types.NULL; // NOI18N
         if (type.equals("java.sql.Types.NVARCHAR")) return java.sql.Types.NVARCHAR; // NOI18N
         if (type.equals("java.sql.Types.OTHER")) return java.sql.Types.OTHER; // NOI18N
         if (type.equals("java.sql.Types.REAL")) return java.sql.Types.REAL; // NOI18N

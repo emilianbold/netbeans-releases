@@ -54,12 +54,13 @@ import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.Dependency;
-import org.openide.util.Exceptions;
 
 // XXX a lot of code in this method is more or less duplicated from
 // org.netbeans.core.modules.Module class. Do not forgot to refactor this as
@@ -71,6 +72,8 @@ import org.openide.util.Exceptions;
  * @author Martin Krauskopf
  */
 public final class ManifestManager {
+
+    private static final Logger LOG = Logger.getLogger(ManifestManager.class.getName());
     
     private String codeNameBase;
     private String releaseVersion;
@@ -171,8 +174,7 @@ public final class ManifestManager {
                     mis.close();
                 }
             } catch (IOException x) {
-                Exceptions.attachMessage(x, "While opening: " + manifest);
-                Exceptions.printStackTrace(x);
+                LOG.log(Level.INFO, "While opening: " + manifest, x);
             }
         }
         return NULL_INSTANCE;

@@ -54,6 +54,7 @@ import javax.swing.event.DocumentEvent;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
@@ -327,7 +328,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     }
 
     void store( WizardDescriptor d ) {
-        d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected()); // NOI18N
+        Templates.setDefinesMainProject(d, setAsMainCheckBox.isSelected());
         WizardSettings.setSetAsMain(type, setAsMainCheckBox.isSelected());
         d.putProperty( /*XXX Define somewhere */ "mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null ); // NOI18N
         d.putProperty( SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null ); // NOI18N
