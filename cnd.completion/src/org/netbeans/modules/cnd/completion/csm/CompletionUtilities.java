@@ -140,12 +140,15 @@ public class CompletionUtilities {
                 baseDoc = (BaseDocument) doc;
             }
             baseDoc = baseDoc != null ? baseDoc : (BaseDocument) target.getDocument();
+
+            boolean searchFunctionsOnly = false;
+            boolean searchSpecializationsOnly = false;
             int[] idBlk = NbEditorUtilities.getIdentifierAndMethodBlock(baseDoc, dotPos);
-            boolean searchFunctionsOnly = (idBlk != null) ? (idBlk.length == 3) : false;
+            searchFunctionsOnly = (idBlk != null) ? (idBlk.length == 3) : false;
             if (idBlk == null || idBlk.length == 2) {
                 idBlk = getIdentifierAndInstantiationBlock(baseDoc, dotPos);
-            }
-            boolean searchSpecializationsOnly = (idBlk != null) ? (idBlk.length == 3) : false;
+                searchSpecializationsOnly = (idBlk != null) ? (idBlk.length == 3) : false;
+            }            
             if (idBlk == null) {
                 idBlk = new int[]{dotPos, dotPos};
             }
