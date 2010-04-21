@@ -71,6 +71,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class ModifyDocumentTest extends ProjectBasedTestCase {
     public ModifyDocumentTest(String testName) {
         super(testName);
+        System.setProperty("cnd.modelimpl.trace182342", "true");
     }
 
     @Override
@@ -83,7 +84,6 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         ModelSupport.instance().shutdown();
-        TraceFlags.TRACE_182342_BUG = false;
     }
 
     public void testInsertDeadBlock() throws Exception {
@@ -148,19 +148,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         }
     }
 
-    private void closeDocument(final File sourceFile, final UndoManager urm, final BaseDocument doc, final CsmProject project, final CsmProgressListener listener) throws DataObjectNotFoundException {
-        CsmListeners.getDefault().removeProgressListener(listener);
-        urm.undo();
-        DataObject testDataObject = DataObject.find(FileUtil.toFileObject(sourceFile));
-        CloseCookie close = testDataObject.getLookup().lookup(CloseCookie.class);
-        if (close != null) {
-            close.close();
-        }
-        project.waitParse();
-    }
-
     public void testRemoveDeadBlock() throws Exception {
-        TraceFlags.TRACE_182342_BUG = true;
         final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
         final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
         final CsmProject project = super.getProject();
@@ -209,6 +197,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 closeDocument(sourceFile, urm, doc, project, listener);
             }
         } finally {
+            System.err.flush();
             CsmListeners.getDefault().removeProgressListener(listener);
             Exception ex = exRef.get();
             if (ex != null) {
@@ -217,6 +206,20 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         }
     }
 
+    private void closeDocument(final File sourceFile, final UndoManager urm, final BaseDocument doc, final CsmProject project, final CsmProgressListener listener) throws DataObjectNotFoundException, BadLocationException {
+        CsmListeners.getDefault().removeProgressListener(listener);
+        urm.undo();
+        DataObject testDataObject = DataObject.find(FileUtil.toFileObject(sourceFile));
+        CloseCookie close = testDataObject.getLookup().lookup(CloseCookie.class);
+        if (close != null) {
+            close.close();
+        }
+        if (TraceFlags.TRACE_182342_BUG) {
+            System.err.printf("document text after close\n==============\n%s\n===============\n", doc.getText(0, doc.getLength()));
+        }
+        project.waitParse();
+    }
+    
     private CsmProgressListener createFileParseListener(final FileImpl fileImpl, final AtomicReference<CountDownLatch> condRef, final AtomicInteger parseCounter) {
         final CsmProgressListener listener = new CsmProgressAdapter() {
 

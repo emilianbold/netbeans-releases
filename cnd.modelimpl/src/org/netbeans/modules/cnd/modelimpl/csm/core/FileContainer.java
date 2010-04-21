@@ -704,7 +704,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                             String message = "Replacing correct state to incorrect " + canonical; // NOI18N
                             Utils.LOG.log(Level.SEVERE, message, new Exception());
                         }
-                        return;
                     }
                 } else {
                     data = state;
@@ -716,6 +715,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
             
             data = new PreprocessorStatePair(state, pcState);
+            if (TraceFlags.TRACE_182342_BUG) {
+                new Exception("setState:\n"+toString()).printStackTrace(System.err);
+            }
         }        
 
         public synchronized void setStates(Collection<PreprocessorStatePair> pairs, PreprocessorStatePair yetOneMore) {
@@ -741,6 +743,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
             if (CndUtils.isDebugMode()) {
                 checkConsistency();
+            }
+            if (TraceFlags.TRACE_182342_BUG) {
+                new Exception("setStates:\n"+toString()).printStackTrace(System.err);
             }
         }
 
@@ -811,6 +816,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                     data = newData;
                 }
             }
+            if (TraceFlags.TRACE_182342_BUG) {
+                new Exception("invalidateStates:\n"+toString()).printStackTrace(System.err);
+            }
         }
         
         private static PreprocessorStatePair createInvalidState(PreprocessorStatePair pair) {
@@ -862,7 +870,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append(fileNew);
-            sb.append("states:\n"); //NOI18N
+            sb.append("\nstates:\n"); //NOI18N
             for (PreprocessorStatePair pair : getStatePairs()) {
                 sb.append(pair);
                 sb.append('\n'); //NOI18N
