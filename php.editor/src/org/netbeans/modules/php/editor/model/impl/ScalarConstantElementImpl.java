@@ -2,6 +2,7 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -26,10 +27,12 @@ class ScalarConstantElementImpl extends ModelElementImpl implements ConstantElem
     @Override
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(";");//NOI18N
-        sb.append(getName()).append(";");//NOI18N
+        final QualifiedName qualifiedName = QualifiedName.create(getName());
+        final String name = qualifiedName.getName();
+        sb.append(name.toLowerCase()).append(";");//NOI18N
+        sb.append(name).append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
-        sb.append(";");//NOI18N
+        sb.append(qualifiedName.getNamespaceName()).append(";");//NOI18N
 
         return sb.toString();
     }    
