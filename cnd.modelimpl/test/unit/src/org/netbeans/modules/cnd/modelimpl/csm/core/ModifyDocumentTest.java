@@ -120,6 +120,9 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 @Override
                 public void run() {
                     try {
+                        if (TraceFlags.TRACE_182342_BUG) {
+                            System.err.printf("Inserting dead block in position %d: \n", 0, ifdefTxt);
+                        }
                         doc.insertString(0,
                                         ifdefTxt,
                                         null);
@@ -183,6 +186,9 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 @Override
                 public void run() {
                     try {
+                        if (TraceFlags.TRACE_182342_BUG) {
+                            System.err.printf("Removing dead block [%d-%d]\n", block.getEndOffset(), block.getStartOffset());
+                        }
                         doc.remove(block.getStartOffset(), block.getEndOffset() - block.getStartOffset());
                     } catch (BadLocationException ex) {
                         exRef.compareAndSet(null, ex);
