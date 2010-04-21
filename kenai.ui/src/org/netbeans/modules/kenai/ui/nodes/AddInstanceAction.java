@@ -154,6 +154,7 @@ public class AddInstanceAction extends AbstractAction {
         kenaiInstanceCustomizer.setDialogDescriptor(dd);
 
         dialog = (JDialog) DialogDisplayer.getDefault().createDialog(dd);
+        dialog.validate();
         dialog.setVisible(true);
     }
 
