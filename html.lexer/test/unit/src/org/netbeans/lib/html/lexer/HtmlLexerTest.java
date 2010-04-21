@@ -146,9 +146,39 @@ public class HtmlLexerTest extends NbTestCase {
         
     }
 
+    public void testEmbeddedScripting() {
+        //javascript embedding w/o type specification
+        checkTokens("<script>x</script>", "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", ">|TAG_CLOSE_SYMBOL", "x|SCRIPT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE");
+
+
+        //javascript embedding w/ explicit type specification
+        checkTokens("<script type=\"text/javascript\">x</script>", 
+                "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
+                "=|OPERATOR", "\"text/javascript\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|SCRIPT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE");
+
+        //javascript embedding w/ explicit unknown type specification - no embedding
+        checkTokens("<script type=\"text/xxx\">x</script>",
+                "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
+                "=|OPERATOR", "\"text/xxx\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|TEXT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE");
+
+        //javascript embedding w/ explicit type specification of known but excluded type - no embedding
+        checkTokens("<script type=\"text/vbscript\">x</script>",
+                "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
+                "=|OPERATOR", "\"text/vbscript\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|TEXT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE");
+
+        //check also single quotes
+        //javascript embedding w/ explicit unknown type specification
+        checkTokens("<script type='text/xxx'>x</script>",
+                "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
+                "=|OPERATOR", "'text/xxx'|VALUE", ">|TAG_CLOSE_SYMBOL", "x|TEXT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE");
+
+
+    }
+
     private void checkTokens(String text, String... descriptions) {
         TokenHierarchy<String> th = TokenHierarchy.create(text, HTMLTokenId.language());
         TokenSequence<HTMLTokenId> ts = th.tokenSequence(HTMLTokenId.language());
+//        System.out.println(ts);
         checkTokens(ts, descriptions);
     }
 

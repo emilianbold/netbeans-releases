@@ -133,7 +133,10 @@ public class SimpleNodeUtil {
     
     /** @return list of children of the node with the specified kind. */
     public static SimpleNode[] getChildrenByType(SimpleNode node, int kind) {
-        int childrenCount = node.children.length;
+        int childrenCount = node.jjtGetNumChildren();
+        if(childrenCount == 0) {
+            return new SimpleNode[0];
+        }
         ArrayList<SimpleNode> list = new ArrayList<SimpleNode>(childrenCount / 4);
         for(int i = 0; i < childrenCount ; i++) {
             SimpleNode child = (SimpleNode)node.children[i];

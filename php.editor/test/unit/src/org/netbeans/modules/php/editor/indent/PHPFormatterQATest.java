@@ -79,6 +79,11 @@ public class PHPFormatterQATest extends PHPTestBase {
         }
     }
 
+
+    public void test180332_stableFixed() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/180332.php");
+    }
+
     public void testSpacesAfterObjectRefereneces_stableFixed() throws Exception {
         reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/spacesAfterObjectReferences.php");
     }

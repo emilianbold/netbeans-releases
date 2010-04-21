@@ -45,6 +45,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.javadoc.search.IndexBuilder.SimpleTitleParser;
@@ -68,7 +69,7 @@ public class IndexBuilderTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         File dataFile = getDataDir();
         assertNotNull("missing data file", dataFile);
         fs = new LocalFileSystem();
@@ -145,7 +146,7 @@ public class IndexBuilderTest extends NbTestCase {
         assertNotNull(html);
         assertNotNull(title);
 
-        Reader r = new java.io.InputStreamReader(title.getInputStream(), charset);
+        Reader r = new InputStreamReader(title.getInputStream(), charset);
 
         int ic;
         StringBuilder sb = new StringBuilder();

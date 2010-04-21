@@ -75,6 +75,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V66 - NB 6.9
+ *   ranlib tool: RANLIB_TOOL_ELEMENT
  * V65 - NB 6.9
  *   Test folders: TEST_ROOT_LIST_ELEMENT
  * V64 - NB 6.9
@@ -186,7 +188,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 65;
+    public final static int CURRENT_VERSION = 66;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -303,6 +305,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String MAKE_ARTIFACT_OP_ELEMENT = "OP"; // NOI18N
     // Archiver Tool
     protected final static String ARCHIVERTOOL_ELEMENT = "archiverTool"; // NOI18N
+    protected final static String RANLIB_TOOL_ELEMENT = "ranlibTool"; // NOI18N
     protected final static String ARCHIVERTOOL_RUN_RANLIB_ELEMENT = "runRanlib"; // NOI18N
     protected final static String ARCHIVERTOOL_VERBOSE_ELEMENT = "archiverVerbose"; // NOI18N
     protected final static String ARCHIVERTOOL_SUPRESS_ELEMENT = "archiverSupress"; // NOI18N
@@ -952,6 +955,9 @@ public abstract class CommonConfigurationXMLCodec
         }
         if (archiverConfiguration.getTool().getModified()) {
             xes.element(COMMANDLINE_TOOL_ELEMENT, "" + archiverConfiguration.getTool().getValue()); // NOI18N
+        }
+        if (archiverConfiguration.getRanlibTool().getModified()) {
+            xes.element(RANLIB_TOOL_ELEMENT, "" + archiverConfiguration.getRanlibTool().getValue()); // NOI18N
         }
         if (archiverConfiguration.getCommandLineConfiguration().getModified()) {
             xes.element(COMMAND_LINE_ELEMENT, "" + archiverConfiguration.getCommandLineConfiguration().getValue()); // NOI18N

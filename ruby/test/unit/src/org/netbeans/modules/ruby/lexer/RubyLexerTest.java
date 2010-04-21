@@ -437,6 +437,22 @@ public class RubyLexerTest extends RubyTestBase {
         assertFalse(ts.moveNext());
     }
     
+    // #167952
+    @SuppressWarnings("unchecked")
+    public void testSymbolWithEmbeddedRuby() {
+        String text = ":\"f#{0}o\"";
+        TokenHierarchy hi = TokenHierarchy.create(text, RubyTokenId.language());
+        TokenSequence<?extends RubyTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.TYPE_SYMBOL, ":\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.TYPE_SYMBOL, "f");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.TYPE_SYMBOL, "#{");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.EMBEDDED_RUBY, "0");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.TYPE_SYMBOL, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.TYPE_SYMBOL, "o");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.TYPE_SYMBOL, "\"");
+        assertFalse(ts.moveNext());
+    }
+
     @SuppressWarnings("unchecked")
     public void testQuotesInEmbeddedCode() {
         // Simplified from sqlserver_adapter's add_limit_offset! method which failed miserably:

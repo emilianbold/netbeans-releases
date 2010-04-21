@@ -48,7 +48,9 @@ package org.netbeans.modules.php.editor.codegen.ui;
 import java.awt.Dimension;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JPanel;
 import javax.swing.JTree;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator;
 import org.netbeans.modules.php.editor.codegen.CGSInfo;
@@ -59,11 +61,11 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Pisl
  */
-public class ConstructorPanel extends javax.swing.JPanel {
+public class ConstructorPanel extends JPanel {
 
-    private final String className;
-    private final List<Property> properties;
-    private final CGSInfo cgsInfo;
+    protected final String className;
+    protected final List<? extends Property> properties;
+    protected final CGSInfo cgsInfo;
 
     /** Creates new form ConstructorPanel */
     public ConstructorPanel(CGSGenerator.GenType genType, CGSInfo cgsInfo) {
@@ -138,13 +140,7 @@ public class ConstructorPanel extends javax.swing.JPanel {
     }
 
     private void initTree(){
-        CheckNode root;
-        root = new CheckNode.CGSClassNode(className);
-        JTree tree = new JTree(root);
-
-        for (Property property : properties) {
-            root.add(new CheckNode.CGSPropertyNode(property));
-        }
+        JTree tree = new JTree(getRootNode());
         tree.setCellRenderer(new CheckBoxTreeRenderer());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         tree.putClientProperty("JTree.lineStyle", "Angled");  //NOI18N
@@ -154,9 +150,25 @@ public class ConstructorPanel extends javax.swing.JPanel {
         tree.expandRow(0);
         tree.setShowsRootHandles(true);
         tree.setSelectionRow(0);
+
+        initTree(tree);
+
         scrollPane.add(tree);
         scrollPane.setViewportView(tree);
     }
+
+    protected MutableTreeNode getRootNode() {
+        CheckNode root = new CheckNode.CGSClassNode(className);
+        for (Property property : properties) {
+            root.add(new CheckNode.CGSPropertyNode(property));
+        }
+        return root;
+    }
+
+    protected void initTree(JTree tree) {
+    }
+
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

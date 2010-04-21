@@ -44,6 +44,7 @@ import java.util.Set;
 /**
  * @author Radek Matous
  */
-public interface TypeTreeElement extends TypeElement {
+public interface TypeTreeElement  {
     Set<TypeTreeElement> getDirectlyInherited();
+    TypeElement getType();
 }
