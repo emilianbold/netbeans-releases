@@ -394,7 +394,11 @@ public final class ProjectImpl extends ProjectBase {
             task = editedFiles.get(file);
             if (task != null) {
                 if (TraceFlags.TRACE_182342_BUG) {
-                    new Exception("cancelling previous parse on edit task " + task.hashCode()).printStackTrace(System.err);// NOI18N
+                    if (!task.isFinished()) {
+                        new Exception("cancelling previous parse on edit task " + task.hashCode()).printStackTrace(System.err); // NOI18N
+                    } else {
+                        new Exception("previous parse on edit task was finished " + task.hashCode()).printStackTrace(System.err); // NOI18N
+                    }
                 }
                 task.cancel();
             }
@@ -410,7 +414,7 @@ public final class ProjectImpl extends ProjectBase {
                 public void run() {
                     try {
                         if (TraceFlags.TRACE_182342_BUG) {
-                            System.err.printf("started scheduleParseOnEditing task for %s %s", file, buf);
+                            System.err.printf("started scheduleParseOnEditing task for %s %s\n", file, buf);
                         }
                         addToQueueOnEditing(buf, file);
                     } catch (AssertionError ex) {
