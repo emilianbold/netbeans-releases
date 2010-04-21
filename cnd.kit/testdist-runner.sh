@@ -20,4 +20,4 @@ ${ANT:-ant} -f all-tests.xml \
 -Dmodules.list="${MODULES}" \
 -Dtest.disable.fails=true \
 -Dtest.dist.timeout=1000000 \
--Dtest.run.args="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx512m -Djava.io.tmpdir=/var/tmp/hudson${EXECUTOR_NUMBER} -Dcnd.remote.sync.root.postfix=hudson${EXECUTOR_NUMBER}"
+-Dtest.run.args="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx512m -Djava.io.tmpdir=/var/tmp/hudson${EXECUTOR_NUMBER} -Dcnd.remote.sync.root.postfix=hudson${EXECUTOR_NUMBER} $*"

@@ -12,8 +12,11 @@
 
 #if !defined __APPLE__ && !defined __CYGWIN__
 #include <stropts.h>
+#include <sys/stream.h>
+#include <sys/termios.h>
 #else
 #include <sys/select.h>
+#include <sys/ioctl.h>
 #endif
 
 #include <stdio.h>
@@ -71,12 +74,12 @@ static int pts_open(int masterfd) {
         return -1;
     }
 #else
-/*
-    struct termios termios_p;
-    tcgetattr(slavefd, &termios_p);
-    cfmakeraw(&termios_p);
-    tcsetattr(slavefd, TCSANOW, &termios_p);
-*/
+    /*
+        struct termios termios_p;
+        tcgetattr(slavefd, &termios_p);
+        cfmakeraw(&termios_p);
+        tcsetattr(slavefd, TCSANOW, &termios_p);
+     */
 #endif
 
     return slavefd;
@@ -141,6 +144,15 @@ static void loop(int master_fd) {
     ssize_t n;
     char buf[BUFSIZ];
     struct pollfd fds[2];
+    char control_buf [BUFSIZ];
+    char data_buf [BUFSIZ];
+    int flags;
+    struct strbuf control;
+    struct strbuf data;
+    struct iocblk *ioc;
+    struct termios *term;
+    unsigned char msg_type;
+
 
     fds[0].fd = STDIN_FILENO;
     fds[0].events = POLLIN;
@@ -148,6 +160,13 @@ static void loop(int master_fd) {
     fds[1].fd = master_fd;
     fds[1].events = POLLIN;
     fds[1].revents = 0;
+
+
+    control.buf = control_buf;
+    control.maxlen = BUFSIZ;
+    data.buf = data_buf;
+    data.maxlen = BUFSIZ;
+
 
     int poll_result;
 
@@ -180,21 +199,32 @@ static void loop(int master_fd) {
         }
 
         if (fds[1].revents & POLLIN) {
-            if ((n = read(master_fd, buf, BUFSIZ)) == -1) {
-                printf("ERROR: read from master failed\n");
+            if ((n = getmsg(master_fd, &control, &data, &flags)) == -1) {
+                printf("ERROR: getmsg from master failed\n");
                 exit(1);
             }
 
-            if (n == 0) {
-                break;
+            msg_type = control.buf[0];
+
+            switch (msg_type) {
+                case M_DATA:
+                    if (write(STDOUT_FILENO, data.buf, data.len) == -1) {
+                        printf("ERROR: write to stdout failed\n");
+                        exit(1);
+                    }
+                case M_IOCTL:
+                    ioc = (struct iocblk*) &data.buf[0];
+                    switch (ioc->ioc_cmd) {
+                        case TCSBRK:
+                            goto out;
+                    }
             }
 
-            if (write(STDOUT_FILENO, buf, n) == -1) {
-                printf("ERROR: write to stdout failed\n");
-                exit(1);
-            }
+
         }
     }
+out:
+    ;
 }
 #endif
 
@@ -223,6 +253,10 @@ int main(int argc, char** argv) {
     printf("TTY: %s\n\n", name);
     fflush(stdout);
 
+#if defined _XOPEN_STREAMS && _XOPEN_STREAMS != -1
+    ioctl(master_fd, I_PUSH, "pckt");
+#endif
+    
     loop(master_fd);
 
     return (EXIT_SUCCESS);
@@ -230,6 +264,7 @@ int main(int argc, char** argv) {
 
 #ifdef __CYGWIN__
 //added for compatibility with cygwin 1.5
+
 int posix_openpt(int flags) {
     return open("/dev/ptmx", flags);
 }

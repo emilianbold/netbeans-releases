@@ -50,6 +50,7 @@ import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.MissingResourceException;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -391,7 +392,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(issue != null) {
             issue.getController().opened();
         }
-        BugtrackingManager.LOG.fine("IssueTopComponent Opened " + (issue != null ? issue.getID() : "null")); // NOI18N
+        BugtrackingManager.LOG.log(Level.FINE, "IssueTopComponent Opened {0}", (issue != null ? issue.getID() : "null")); // NOI18N
     }
 
     @Override
@@ -404,7 +405,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(prepareTask != null) {
             prepareTask.cancel();
         }
-        BugtrackingManager.LOG.fine("IssueTopComponent Closed " + (issue != null ? issue.getID() : "null")); // NOI18N
+        BugtrackingManager.LOG.log(Level.FINE, "IssueTopComponent Closed {0}", (issue != null ? issue.getID() : "null")); // NOI18N
     }
 
     /**

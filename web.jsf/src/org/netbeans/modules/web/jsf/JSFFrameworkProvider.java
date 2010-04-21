@@ -458,6 +458,12 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     } else if (faceletsEnabled && welcomeFiles == null) {
                         welcomeFileList.add(ConfigurationUtils.translateURI(facesMapping, WELCOME_XHTML));
                     }
+                    if (welcomeFiles != null && welcomeFileList.isEmpty()) {
+                        for (String fileName : welcomeFiles.getWelcomeFile()) {
+                            welcomeFileList.add(ConfigurationUtils.translateURI(facesMapping, fileName));
+                        }
+                        welcomeFiles = null;
+                    }
                     if (welcomeFiles == null && !welcomeFileList.isEmpty()) {
                         welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList"); //NOI18N
                         ddRoot.setWelcomeFileList(welcomeFiles);
