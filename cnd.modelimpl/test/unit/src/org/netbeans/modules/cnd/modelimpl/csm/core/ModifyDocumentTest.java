@@ -71,7 +71,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class ModifyDocumentTest extends ProjectBasedTestCase {
     public ModifyDocumentTest(String testName) {
         super(testName);
-        System.setProperty("cnd.modelimpl.trace182342", "true");
     }
 
     @Override
