@@ -145,7 +145,7 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap(13, Short.MAX_VALUE)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblName)
                     .add(txtDisplayName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -156,8 +156,15 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(proxy)
-                    .add(progress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(progress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(2, 2, 2))
         );
+
+        txtDisplayName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.txtDisplayName.AccessibleContext.accessibleName")); // NOI18N
+        txtDisplayName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.txtDisplayName.AccessibleContext.accessibleDescription")); // NOI18N
+        txtUrl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.txtUrl.AccessibleContext.accessibleName")); // NOI18N
+        txtUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.txtUrl.AccessibleContext.accessibleDescription")); // NOI18N
+        proxy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.proxy.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void proxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyActionPerformed
