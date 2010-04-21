@@ -79,6 +79,9 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        if (Boolean.getBoolean("cnd.modelimpl.trace182342")) {
+            TraceFlags.TRACE_182342_BUG = true;
+        }
         ModelSupport.instance().startup();
     }
 
