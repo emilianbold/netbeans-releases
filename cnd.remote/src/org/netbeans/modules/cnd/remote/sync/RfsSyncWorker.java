@@ -172,7 +172,7 @@ import org.openide.util.RequestProcessor;
                 executionEnvironment, files, rcInputStreamReader,
                 rcOutputStreamWriter, err, privProjectStorageDir);
 
-        localController.feedFiles(new SharabilityFilter());
+        localController.init();
 
         // read port
         String line = rcInputStreamReader.readLine();

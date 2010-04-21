@@ -129,8 +129,11 @@
       </xsd:simpleType>
       
       <xsd:complexType name="paramType">
-          <xsd:attribute name="param-name" type="xsd:string" use="required"/>
-          <xsd:attribute name="oauth-name" type="xsd:string"/>
+          <xsd:attribute name="oauth-name" type="xsd:string" use="required"/>
+          <xsd:attribute name="param-name" type="xsd:string"/>
+          <xsd:attribute name="oauth-prefix" type="xsd:string"/>
+          <xsd:attribute name="oauth-postfix" type="xsd:string"/>
+          <xsd:attribute name="xpath" type="xsd:string"/>
       </xsd:complexType>
 
 </xsd:schema>

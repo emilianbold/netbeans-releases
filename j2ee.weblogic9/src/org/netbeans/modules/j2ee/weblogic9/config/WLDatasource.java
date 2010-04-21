@@ -62,8 +62,10 @@ public class WLDatasource implements Datasource {
 
     private final File origin;
 
+    private final boolean system;
+
     public WLDatasource(String name, String url, String jndi, String user,
-            String password, String driver, File origin) {
+            String password, String driver, File origin, boolean system) {
         this.name = name;
         this.url = url;
         this.jndi = jndi;
@@ -71,6 +73,7 @@ public class WLDatasource implements Datasource {
         this.password = password;
         this.driver = driver;
         this.origin = origin;
+        this.system = system;
     }
 
     public String getName() {
@@ -111,6 +114,10 @@ public class WLDatasource implements Datasource {
         return origin;
     }
 
+    public boolean isSystem() {
+        return system;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -129,6 +136,9 @@ public class WLDatasource implements Datasource {
         if ((this.jndi == null) ? (other.jndi != null) : !this.jndi.equals(other.jndi)) {
             return false;
         }
+        if ((this.user == null) ? (other.user != null) : !this.user.equals(other.user)) {
+            return false;
+        }
         if ((this.driver == null) ? (other.driver != null) : !this.driver.equals(other.driver)) {
             return false;
         }
@@ -137,10 +147,11 @@ public class WLDatasource implements Datasource {
 
     @Override
     public int hashCode() {
-        int hash = 7;
+        int hash = 5;
         hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
         hash = 97 * hash + (this.url != null ? this.url.hashCode() : 0);
         hash = 97 * hash + (this.jndi != null ? this.jndi.hashCode() : 0);
+        hash = 97 * hash + (this.user != null ? this.user.hashCode() : 0);
         hash = 97 * hash + (this.driver != null ? this.driver.hashCode() : 0);
         return hash;
     }

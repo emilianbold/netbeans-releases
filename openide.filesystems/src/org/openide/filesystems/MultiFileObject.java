@@ -63,6 +63,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /** Implementation of the file object for multi file system.
@@ -1038,6 +1039,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     * @return the new folder
     * @exception IOException if the folder cannot be created (e.g. already exists)
     */
+    @Override
     public FileObject createFolder(String name) throws IOException {
         MultiFileObject fo;
 
@@ -1052,7 +1054,9 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 }
 
                 if (isReadOnly()) {
-                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_FisRO", name, fs.getDisplayName()));
+                    IOException ex = new IOException("Read only: " + leader + " delegates: " + delegates); // NOI18N
+                    Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(MultiFileObject.class, "EXC_FisRO", name, fs.getDisplayName()));
+                    throw ex;
                 }
 
                 String fullName = getPath() + PATH_SEP + name;

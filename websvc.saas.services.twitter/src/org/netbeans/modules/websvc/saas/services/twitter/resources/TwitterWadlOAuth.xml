@@ -55,7 +55,7 @@
                 <oauth:request-token method-name="request_token" request-style="PATH" response-style="FORM"/>
                 <oauth:authorize-consumer>
                     <oauth:fixed-url url="http://twitter.com/oauth/authorize"/>
-                    <oauth:param param-name="oauth_token"/>
+                    <oauth:param oauth-name="oauth_token"/>
                 </oauth:authorize-consumer>
                 <oauth:access-token method-name="access_token" request-style="PATH" response-style="FORM" verifier="true"/>
             </oauth:flow>

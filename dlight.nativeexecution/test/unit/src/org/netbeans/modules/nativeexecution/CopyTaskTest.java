@@ -139,9 +139,9 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
         System.err.printf("testUploadFile: %s to %s:%s\n", src.getAbsolutePath(), execEnv.getDisplayName(), dst); // NOI18N
         Future<Integer> upload = CommonTasksSupport.uploadFile(src.getAbsolutePath(), execEnv, dst, 0755, new PrintWriter(System.err));
         int rc = upload.get();
-        assertEquals(0, rc);
+        assertEquals("Error uploading " + src.getAbsolutePath() + " to " + execEnv + ":" + dst, 0, rc);
         assertTrue(HostInfoUtils.fileExists(execEnv, dst));
         Future<Integer> res = CommonTasksSupport.rmFile(execEnv, dst, null);
-        assertEquals(0, res.get().intValue());
+        assertEquals("Error removing " + execEnv + ":" + dst, 0, res.get().intValue());
     }
 }

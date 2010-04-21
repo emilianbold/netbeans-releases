@@ -133,7 +133,7 @@ public class ResolveDeclarationsPanel extends javax.swing.JPanel {
                 b.append(':');
                 b.append(line);
             }
-            String lineText = item.getDeclaration().entry().getLineText();
+            String lineText = item.getDeclaration().entry().getLineText().toString();
             if(lineText != null) {
                 b.append(" (");
                 b.append(lineText.trim());
