@@ -289,11 +289,8 @@ public class Installer extends ModuleInstall implements Runnable {
                 for (LogRecord rec : disabledRec) {
                     LogRecords.write(logStreamMetrics(), rec);
                 }
-                List<LogRecord> clusterRec = new ArrayList<LogRecord>();
-                getClusterList(log, clusterRec);
-                for (LogRecord rec : clusterRec) {
-                    LogRecords.write(logStreamMetrics(), rec);
-                }
+                LogRecord clusterRec = getClusterList(log);
+                LogRecords.write(logStreamMetrics(), clusterRec);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -642,18 +639,20 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
-    static void getClusterList (Logger logger, List<LogRecord> clusterRec) {
+    static LogRecord getClusterList (Logger logger) {
         LogRecord rec = new LogRecord(Level.INFO, "USG_INSTALLED_CLUSTERS");
         String dirs = System.getProperty("netbeans.dirs");
-        String [] k = dirs.split(File.pathSeparator);
-        String [] l = new String[k.length];
-        for (int i = 0; i < k.length; i++) {
-            File f = new File(k[i]);
-            l[i] = f.getName();
+        String [] dirsArray = dirs.split(File.pathSeparator);
+        List list = new ArrayList<String>();
+        for (int i = 0; i < dirsArray.length; i++) {
+            File f = new File(dirsArray[i]);
+            if (f.exists()){
+                list.add(f.getName());
+            }
         }
-        rec.setParameters(l);
+        rec.setParameters(list.toArray());
         rec.setLoggerName(logger.getName());
-        clusterRec.add(rec);
+        return rec;
     }
     
     public static URL hintsURL() {
