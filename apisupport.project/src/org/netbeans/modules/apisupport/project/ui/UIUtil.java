@@ -106,6 +106,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -704,7 +705,7 @@ public final class UIUtil {
             try {
                 project = (NbModuleProject) ProjectManager.getDefault().findProject(folder);
                 OpenProjects.getDefault().open(new Project[] { project }, false);
-                if (wd.getProperty("setAsMain") == Boolean.TRUE) { // NOI18N
+                if (Templates.getDefinesMainProject(wd)) {
                     OpenProjects.getDefault().setMainProject(project);
                 }
             } catch (IOException e) {
