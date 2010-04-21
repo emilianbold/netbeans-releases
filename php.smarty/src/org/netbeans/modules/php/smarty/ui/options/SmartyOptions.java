@@ -60,6 +60,7 @@ public final class SmartyOptions {
     // default params
     private static final String OPEN_DELIMITER = "{"; // NOI18N
     private static final String CLOSE_DELIMITER = "}"; // NOI18N
+    private static final int TPL_SCANNING_DEPTH = 1;
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -104,5 +105,14 @@ public final class SmartyOptions {
 
     private Preferences getPreferences() {
         return NbPreferences.forModule(SmartyOptions.class).node(PREFERENCES_PATH);
+    }
+
+    public int getScanningDepth() {
+        return Integer.parseInt(getPreferences().get(String.valueOf(TPL_SCANNING_DEPTH), "1")); // NOI18N
+    }
+
+    public void setScanningDepth(int depth) {
+        getPreferences().put(String.valueOf(TPL_SCANNING_DEPTH), String.valueOf(depth));
+        SmartyFramework.DEPTH_OF_SCANNING_FOR_TPL = depth;
     }
 }

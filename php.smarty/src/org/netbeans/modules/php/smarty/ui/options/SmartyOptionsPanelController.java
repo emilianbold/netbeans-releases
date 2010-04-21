@@ -71,6 +71,7 @@ public class SmartyOptionsPanelController extends OptionsPanelController impleme
     public void update() {
         getOptions().setDefaultOpenDelimiter(smartyOptionsPanel.getOpenDelimiter());
         getOptions().setDefaultCloseDelimiter(smartyOptionsPanel.getCloseDelimiter());
+        getOptions().setScanningDepth(smartyOptionsPanel.getDepthOfScanning());
         changed = false;
     }
 
@@ -78,6 +79,7 @@ public class SmartyOptionsPanelController extends OptionsPanelController impleme
     public void applyChanges() {
         getOptions().setDefaultOpenDelimiter(smartyOptionsPanel.getOpenDelimiter());
         getOptions().setDefaultCloseDelimiter(smartyOptionsPanel.getCloseDelimiter());
+        getOptions().setScanningDepth(smartyOptionsPanel.getDepthOfScanning());
         changed = false;
 
         // accomplish manual relexing

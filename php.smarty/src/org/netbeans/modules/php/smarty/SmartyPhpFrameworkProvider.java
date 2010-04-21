@@ -39,8 +39,15 @@
 package org.netbeans.modules.php.smarty;
 
 import java.io.File;
+import java.util.Set;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
+import org.netbeans.modules.php.editor.api.ElementQuery.Index;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
@@ -78,22 +85,25 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     /**
      * Try to locate (find) a TPL files in source directory.
-     * Currently, it searches source dir and its subdirs (if <code>subdirs</code> equals {@code true}).
-     * @return {@link FileObject} or {@code null} if not found
+     * Currently, it searches source dir and its subdirs.
+     * @return {@code false} if not found
      */
-    public static boolean locatedTplFiles(PhpModule phpModule, boolean scanSubdirs) {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
 
-        for (FileObject child : sourceDirectory.getChildren()) {
-            if (!child.isFolder() && isSmartyTemplateExtension(child.getExt())) {
-                return true;
-            } else if (child.isFolder() && scanSubdirs) {
-                for (FileObject subChild : child.getChildren()) {
-                    if (!subChild.isFolder() && isSmartyTemplateExtension(subChild.getExt())) {
+    public static boolean locatedTplFiles(FileObject fo, int maxDepth, int actualDepth) {
+        while (actualDepth <= maxDepth) {
+            for (FileObject child : fo.getChildren()) {
+                if (!child.isFolder()) {
+                    if (isSmartyTemplateExtension(child.getExt())) {
+                        return true;
+                    }
+                }
+                else if (child.isFolder() && actualDepth < maxDepth) {
+                    if (locatedTplFiles(child, maxDepth, actualDepth + 1)) {
                         return true;
                     }
                 }
             }
+            actualDepth++;
         }
         return false;
     }
@@ -116,7 +126,17 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public boolean isInPhpModule(PhpModule phpModule) {
-        return locatedTplFiles(phpModule, true);
+        // get php files within the module
+//        Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(phpModule.getSourceDirectory()));
+//        Set<MethodElement> methods = index.getConstructors(NameKind.exact("Smarty"));
+//        for (MethodElement methodElement : methods) {
+//            System.out.println(methodElement.isConstructor());
+//        }
+//        Set<FileObject> filesWithUsedSmarty = index.getLocationsForIdentifiers("Smarty");
+        
+
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        return locatedTplFiles(sourceDirectory, SmartyOptions.getInstance().getScanningDepth(), 0);
     }
 
     @Override

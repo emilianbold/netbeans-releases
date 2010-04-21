@@ -60,6 +60,8 @@ public class SmartyFramework extends PhpProgram {
      */
     public static String DELIMITER_DEFAULT_CLOSE = SmartyOptions.getInstance().getDefaultCloseDelimiter();
 
+    public static int DEPTH_OF_SCANNING_FOR_TPL = SmartyOptions.getInstance().getScanningDepth();
+
     public SmartyFramework() {
         super(null);
     }
