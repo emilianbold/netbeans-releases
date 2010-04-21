@@ -162,7 +162,7 @@ public class QualifiedName {
         return null;
     }
 
-    private static QualifiedName getRemainingName(QualifiedName fullName, final QualifiedName fragmentName, boolean prefixRequired, boolean isOverlapingRequired) {
+    private static QualifiedName getRemainingName(final QualifiedName fullName, final QualifiedName fragmentName, boolean prefixRequired, boolean isOverlapingRequired) {
         QualifiedName retval = null;
         List<String> fullSegments = new ArrayList<String>(fullName.getSegments());
         List<String> fragmentSegments = new ArrayList<String>(fragmentName.getSegments());
@@ -185,32 +185,24 @@ public class QualifiedName {
             }
             retvalSegments.add(segment);
         }
-        if (isOverlapingRequired && retvalSegments.size() == 0 && lastEqualSegment != null) {
+        if (isOverlapingRequired && retvalSegments.isEmpty() && lastEqualSegment != null) {
             retvalSegments.add(lastEqualSegment);
         }
-        if (retvalSegments.size() >= 0) {
-            if (prefixRequired) {
-                Collections.reverse(retvalSegments);
-            }
-            retval = QualifiedName.create(false, retvalSegments);
+        if (prefixRequired) {
+            Collections.reverse(retvalSegments);
+        }
+        retval = QualifiedName.create(false, retvalSegments);
+
+        QualifiedName test = (prefixRequired) ? retval : fragmentName;
+        if (isOverlapingRequired) {
+            test = test.toNamespaceName();
+        }
+        LinkedList<String> qnSegments = (prefixRequired) ? fragmentName.getSegments() : retval.getSegments();
+        for (String qnseg : qnSegments) {
+            test = test.append(qnseg);
         }
 
-        if (retval != null) {
-            QualifiedName test = (prefixRequired) ? retval : fragmentName;
-            if (isOverlapingRequired) {
-                test = test.toNamespaceName();
-            }
-            LinkedList<String> qnSegments = (prefixRequired) ? fragmentName.getSegments() : retval.getSegments();
-            for (String qnseg : qnSegments) {
-                test = test.append(qnseg);
-            }
-
-            if (fullName.equals(test)) {
-                return retval;
-            }
-        }
-
-        return null;
+        return (fullName.equals(test.toFullyQualified())) ? retval : null;
     }
 
     public static QualifiedName createUnqualifiedNameInClassContext(Expression expression, ClassScope clsScope) {

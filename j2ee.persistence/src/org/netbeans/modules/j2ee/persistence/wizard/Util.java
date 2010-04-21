@@ -228,7 +228,14 @@ public class Util {
 
     public static Provider getDefaultProvider(Project project) {
         PersistenceProviderSupplier providerSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
-        return (providerSupplier != null && providerSupplier.supportsDefaultProvider()) ? providerSupplier.getSupportedProviders().get(0) : null;
+        if((providerSupplier != null && providerSupplier.supportsDefaultProvider())) {
+            List<Provider> providers = providerSupplier.getSupportedProviders();
+            if( providers.size()>0 ){
+                return providers.get(0);
+            }
+            Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.WARNING, "Default provider support is reported without any supported providers. See: " + providerSupplier);
+        }
+        return null;
     }
 
     public static ArrayList<Provider> getProviders(Project project) {
