@@ -49,7 +49,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -161,6 +160,7 @@ public class GdbProxyEngine {
         toGdb = toGdbWriter(proc.getInputStream(), proc.getOutputStream(), execEnv.isRemote());
 
         new RequestProcessor("GdbReaperThread").post(new Runnable() { // NOI18N
+            @Override
             public void run() {
                 try {
                     int rc = proc.waitFor();
@@ -222,6 +222,7 @@ public class GdbProxyEngine {
         final BufferedReader fromGdb = ProcessUtils.getReader(is, remote);
 
         gdbReader = new RequestProcessor("GdbReaderRP").post(new Runnable() { // NOI18N
+            @Override
             public void run() {
                 String line;
 
@@ -273,6 +274,7 @@ public class GdbProxyEngine {
     private void sendCommand(final MICommand command) {
         if (active) {
             sendQueue.post(new Runnable() {
+                @Override
                 public void run() {
                     if (command.getText().charAt(0) != '-') {
                         addCommand(command);
@@ -295,7 +297,13 @@ public class GdbProxyEngine {
         gdbProxy.putCB(token, cb);
         sendCommand(token, cmd);
         if (waitForCompletion) {
-            cb.waitForCompletion();
+            //extra check for debugger state
+            if (debugger.getState() != GdbDebugger.State.RUNNING) {
+                cb.waitForCompletion();
+            } else {
+                cb.error("Waitin while in running state"); //NOI18N
+                gdbProxy.removeCB(token);
+            }
         }
         return cb;
     }
@@ -475,7 +483,7 @@ public class GdbProxyEngine {
         return gdbProxy.getLogger();
     }
 
-    public MICommand createMICommand(String cmd) {
+    MICommand createMICommand(String cmd) {
         return new MICommandImpl(nextToken(), cmd);
     }
     
@@ -489,14 +497,17 @@ public class GdbProxyEngine {
             this.cmd = cmd;
         }
         
+        @Override
         public String getText() {
             return cmd;
         }
         
+        @Override
         public int getToken() {
             return token;
         }
 
+        @Override
         public synchronized void send() {
             assert !sent : "sending command " + this + " twice"; // NOI18N
             sendCommand(this);
