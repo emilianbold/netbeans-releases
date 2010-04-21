@@ -336,6 +336,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                     }
                 }
                 samplesStream.close();
+                samplesStream = null;
                 if (writeCommand) {
                     DataOutputStream dos = (DataOutputStream) e.getSource();
                     dos.write(out.toByteArray());
@@ -358,6 +359,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
+                // just to be sure
                 out = null;
                 samplesStream = null;
             }
@@ -368,6 +370,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                 FileOutputStream fstream = new FileOutputStream(file);
 
                 fstream.write(out.toByteArray());
+                out = null;
                 fstream.close();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
