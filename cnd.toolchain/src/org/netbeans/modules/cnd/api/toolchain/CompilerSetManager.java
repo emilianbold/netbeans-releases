@@ -83,6 +83,8 @@ public abstract class CompilerSetManager {
      */
     public abstract void initialize(boolean save, boolean runCompilerSetDataLoader, Writer reporter);
 
+    public abstract boolean cancel();
+
     public abstract void finishInitialization();
 
     public abstract boolean isEmpty();

@@ -42,6 +42,7 @@ package org.netbeans.modules.kenai.ui.dashboard;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
+import javax.accessibility.AccessibleContext;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.kenai.ui.spi.*;
@@ -172,6 +173,10 @@ public final class DashboardImpl extends Dashboard {
                 refreshProjects();
             }
         });
+        AccessibleContext accessibleContext = treeList.getAccessibleContext();
+        String a11y = NbBundle.getMessage(DashboardImpl.class, "A11Y_TeamProjects");
+        accessibleContext.setAccessibleName(a11y);
+        accessibleContext.setAccessibleDescription(a11y);
         setKenai(kenai);
     }
 
