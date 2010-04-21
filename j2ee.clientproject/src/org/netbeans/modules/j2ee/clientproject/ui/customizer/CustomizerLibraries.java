@@ -63,9 +63,9 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.clientproject.ui.AppClientLogicalViewProvider;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
@@ -1005,6 +1005,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                     NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_ServerLibrary_Title"),
                     NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION) {
                 ProjectManager.mutex().writeAccess(new Runnable() {
+                    @Override
                     public void run()  {
                         File loc = PropertyUtils.resolveFile(FileUtil.toFile(uiProperties.getProject().getProjectDirectory()), uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
                         String serverID = uiProperties.getProject().evaluator().getProperty(AppClientProjectProperties.J2EE_SERVER_INSTANCE);
@@ -1012,8 +1013,12 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                             Library serverLibrary = SharabilityUtility.findOrCreateLibrary(loc, serverID);
                             assert returnServerLibrary.length == 1;
                             returnServerLibrary[0] = serverLibrary.getName();
-                            EditableProperties ep = uiProperties.getProject().getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            AppClientProjectGenerator.setServerProperties(ep, serverLibrary.getName());
+                            AntProjectHelper helper = uiProperties.getProject().getAntProjectHelper();
+                            EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            EditableProperties epPriv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                            J2EEProjectProperties.setSharableServerProperties(ep, epPriv, serverLibrary.getName());
+                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, epPriv);
+                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                             ProjectManager.getDefault().saveProject(uiProperties.getProject());
                             ClassPathUiSupport.addLibraries(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(),
                                     null, new Library[]{serverLibrary}, new HashSet<Library>(), null);
