@@ -44,7 +44,7 @@ import javax.swing.JTree;
 import javax.swing.tree.MutableTreeNode;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
-import org.netbeans.modules.php.editor.api.elements.TypeTreeElement;
+import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator;
 import org.netbeans.modules.php.editor.codegen.CGSInfo;
 import org.netbeans.modules.php.editor.codegen.MethodProperty;
@@ -63,7 +63,7 @@ public class MethodPanel extends ConstructorPanel {
     @Override
     protected MutableTreeNode getRootNode() {
         // get the enclosing type
-        TypeTreeElement enclosingType = null;
+        TreeElement<TypeElement> enclosingType = null;
         for (Property property : properties) {
             MethodProperty methodProperty = (MethodProperty) property;
             enclosingType = methodProperty.getEnclosingType();
@@ -73,16 +73,16 @@ public class MethodPanel extends ConstructorPanel {
         // init tree
         CheckNode root = new CheckNode.CGSClassNode(className);
 
-        LinkedList<TypeTreeElement> queue = new LinkedList<TypeTreeElement>();
+        LinkedList<TreeElement<TypeElement>> queue = new LinkedList<TreeElement<TypeElement>>();
         queue.offer(enclosingType);
         while (!queue.isEmpty()) {
-            TypeTreeElement type = queue.poll();
+            TreeElement<TypeElement> type = queue.poll();
             final String nodeText = String.format("<html><b>%s</b> %s</html>",//NOI18N
-                    type.getType().getName(), type.getType().asString(TypeElement.PrintAs.SuperTypes));
+                    type.getElement().getName(), type.getElement().asString(TypeElement.PrintAs.SuperTypes));
             final CGSClassNode classNode = new CheckNode.CGSClassNode(nodeText);
             for (Property property : properties) {
                 MethodProperty methodProperty = (MethodProperty) property;
-                if (!ElementFilter.forEqualTypes(type.getType()).filter(methodProperty.getMethod().getType()).isEmpty()) {
+                if (!ElementFilter.forEqualTypes(type.getElement()).filter(methodProperty.getMethod().getType()).isEmpty()) {
                     classNode.add(new CheckNode.MethodPropertyNode(methodProperty));
                 }
             }
@@ -90,7 +90,7 @@ public class MethodPanel extends ConstructorPanel {
                 root.add(classNode);
             }
 
-            for (TypeTreeElement e : type.getDirectlyInherited()) {
+            for (TreeElement<TypeElement> e : type.children()) {
                 queue.offer(e);
             }
         }

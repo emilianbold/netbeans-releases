@@ -44,7 +44,7 @@ import java.util.Set;
 /**
  * @author Radek Matous
  */
-public interface TypeTreeElement  {
-    Set<TypeTreeElement> getDirectlyInherited();
-    TypeElement getType();
+public interface TreeElement<T extends PhpElement>  {
+    Set<TreeElement<T>> children();
+    T getElement();
 }
