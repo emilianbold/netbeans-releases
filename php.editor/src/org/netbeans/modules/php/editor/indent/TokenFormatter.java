@@ -1328,7 +1328,11 @@ public class TokenFormatter {
 		StringBuilder sb = new StringBuilder();
 		boolean indentLine = false;
 		String indentString = createWhitespace(doc, 0, indent + 1);
-		if (comment.charAt(0) == '\n') {
+                int indexFirstLine = 0;
+                while (indexFirstLine < comment.length() && comment.charAt(indexFirstLine) == ' ') {
+                    indexFirstLine ++;
+                }
+		if (indexFirstLine < comment.length() && comment.charAt(indexFirstLine) == '\n') {
 		    sb.append('\n');
 		    indentLine = true;
 		}
