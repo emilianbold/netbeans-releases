@@ -6,13 +6,14 @@ import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
-class ConstantElementImpl extends ModelElementImpl implements ConstantElement {
+class ConstantElementImpl extends ModelElementImpl implements ConstantElement, FullyQualifiedElement {
     ConstantElementImpl(NamespaceScopeImpl inScope, ASTNodeInfo<Scalar> node) {
         this(inScope,node.getName(),inScope.getFile(),node.getRange());
     }
