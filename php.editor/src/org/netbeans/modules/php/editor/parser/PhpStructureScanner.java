@@ -88,7 +88,7 @@ public class PhpStructureScanner implements StructureScanner {
 
     private static final String FOLD_CODE_BLOCKS = "codeblocks"; //NOI18N
 
-    private static final String FOLD_CLASS = "codeblocks"; //NOI18N
+    private static final String FOLD_CLASS = "tags"; //NOI18N
 
     private static final String FOLD_PHPDOC = "comments"; //NOI18N
 
