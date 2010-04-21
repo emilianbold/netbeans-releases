@@ -150,8 +150,8 @@ public class RepositoryController extends BugtrackingController implements Docum
         String[] repositories = null;
         if(repository.getTaskRepository() == null) {
             repositories = JiraConfig.getInstance().getRepositories();
-            for (String repositoryName : repositories) {
-                if(name.equals(repositoryName)) {
+            for (String repoId : repositories) {
+                if(name.equals(JiraConfig.getInstance().getRepositoryName(repoId))) {
                     errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_NAME_ALREADY_EXISTS");  // NOI18N
                     return false;
                 }

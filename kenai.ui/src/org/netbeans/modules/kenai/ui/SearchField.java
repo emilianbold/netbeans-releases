@@ -169,6 +169,8 @@ public class SearchField extends JPanel implements ActionListener {
 
     protected JTextComponent createCommandField() {
         JTextArea res = new JTextArea();
+        res.getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchLabel.text"));
+        res.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchLabel.AccessibleContext.accessibleDescription"));
         res.setRows(1);
         res.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         // disable default Swing's Ctrl+Shift+O binding to enable our global action

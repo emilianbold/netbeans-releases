@@ -110,10 +110,6 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
     
     private String addReference(final EjbReference ejbReference, String ejbRefName, boolean local, FileObject referencingFile, String referencingClass) throws IOException {
         String refName = null;
-        WebApp webApp = getWebApp();
-        if (webApp == null){
-            return null;
-        }
         
         MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
         final String[] ejbName = new String[1];
@@ -132,11 +128,22 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         String[] names = new String[] { "" };
         if (moduleJarTarget != null) {
             names = moduleJarTarget.getArtifactLocations()[0].getPath().split("/");  //NOI18N
+            try {
+                ProjectClassPathModifier.addAntArtifacts(new AntArtifact[]{moduleJarTarget},
+                        new URI[]{moduleJarTarget.getArtifactLocations()[0]}, webProject.getSourceRoots().getRoots()[0], ClassPath.COMPILE);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+
+        WebApp webApp = getWebApp();
+        if (webApp == null){
+            return null;
         }
 
         String jarName = names[names.length - 1] + "#";
         final String ejbLink = jarName + ejbName[0];
-        
+
         if (local) {
             refName = getUniqueName(getWebApp(), "EjbLocalRef", "EjbRefName", ejbRefName); //NOI18N
             // EjbLocalRef can come from Ejb project
@@ -160,15 +167,6 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
                 newRef.setRemote(ejbReference.getRemote());
                 getWebApp().addEjbRef(newRef);
             } catch (ClassNotFoundException ex){}
-        }
-        
-        if (moduleJarTarget != null) {
-            try {
-                ProjectClassPathModifier.addAntArtifacts(new AntArtifact[]{moduleJarTarget},
-                        new URI[]{moduleJarTarget.getArtifactLocations()[0]}, webProject.getSourceRoots().getRoots()[0], ClassPath.COMPILE);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
         }
         
         writeDD(referencingFile, referencingClass);
