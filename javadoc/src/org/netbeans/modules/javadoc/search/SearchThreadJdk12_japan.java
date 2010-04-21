@@ -44,6 +44,7 @@ package org.netbeans.modules.javadoc.search;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
@@ -118,7 +119,7 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
         }
     }
 
-    public void stopSearch() {
+    public @Override void stopSearch() {
         Reader br;
         synchronized (LOCK) {
             stopSearch = true;
@@ -126,15 +127,15 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
         }
         
         try {
-            if (br != null)
+            if (br != null) {
                 br.close();
-        }
-        catch ( java.io.IOException e ) {
+            }
+        } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
     }
 
-    public void run () {
+    public @Override void run() {
 
         ParserDelegator pd = new ParserDelegator();
         
@@ -194,7 +195,7 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
         taskFinished();
     }
     
-    void findFileObject( int direction ) {
+    private void findFileObject(int direction) {
 
         
         if ( direction < 0 ) {
@@ -299,7 +300,7 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
             this.splited = splited;
         }
         
-        public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
+        public @Override void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
 
             if ( t == HTML.Tag.DT ) {
                 where = IN_DT;
@@ -309,12 +310,12 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                 where = IN_AREF;
                 Object val = a.getAttribute( HTML.Attribute.HREF );
                 if ( val != null ) {
-                    hrefVal = (String) val.toString();
+                    hrefVal = val.toString();
                     currentDii = new DocIndexItem( null, null, contextURL, hrefVal );
                 }
             }
             else if ( t == HTML.Tag.A && (where == IN_DESCRIPTION_SUFFIX || where == IN_DESCRIPTION) ) {
-                ; // Just ignore
+                // Just ignore
             }
             else if ( t == HTML.Tag.B && where == IN_AREF ) {
                 where = IN_AREF;
@@ -324,13 +325,13 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
             }
         }
 
-        public void handleEndTag(HTML.Tag t, int pos) {
+        public @Override void handleEndTag(HTML.Tag t, int pos) {
             if (t == HTML.Tag.DT && where != IN_BALAST) {
                 where = IN_BALAST;
             }
         }
 
-        public void handleText(char[] data, int pos) {
+        public @Override void handleText(char[] data, int pos) {
             
             if ( where == IN_AREF ) {
                 
@@ -398,8 +399,9 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                 boolean isStatic = false;
                 try {
                     token = st.nextToken();
-                    if ( token.equals( STR_DASH ) )
+                    if (token.equals(STR_DASH)) {
                         token = st.nextToken();
+                    }
 
                     if ( token.equalsIgnoreCase( STR_STATIC ) ) {
                         isStatic = true;
@@ -410,26 +412,27 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                     return;
                 }
                 
-                if ( token.equalsIgnoreCase( STR_CLASS ) )
+                if (token.equalsIgnoreCase(STR_CLASS)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_CLASS );
-                else if ( token.equalsIgnoreCase( STR_INTERFACE ) )
+                } else if (token.equalsIgnoreCase(STR_INTERFACE)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_INTERFACE );
-                else if ( token.equalsIgnoreCase( STR_ENUM ) )
+                } else if (token.equalsIgnoreCase(STR_ENUM)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_ENUM );
-                else if ( token.equalsIgnoreCase( STR_ANNTYPE ) )
+                } else if (token.equalsIgnoreCase(STR_ANNTYPE)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_ANNTYPE );
-                else if ( token.equalsIgnoreCase( STR_EXCEPTION ) )
+                } else if (token.equalsIgnoreCase(STR_EXCEPTION)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_EXCEPTION );
-                else if ( token.equalsIgnoreCase( STR_ERROR ) )
+                } else if (token.equalsIgnoreCase(STR_ERROR)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_ERROR );
-                else if ( token.equalsIgnoreCase( STR_PACKAGE ) )
+                } else if (token.equalsIgnoreCase(STR_PACKAGE)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_PACKAGE );
-                else if ( token.equalsIgnoreCase( STR_CONSTRUCTOR ) )
+                } else if (token.equalsIgnoreCase(STR_CONSTRUCTOR)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_CONSTRUCTOR );
-                else if ( token.equalsIgnoreCase( STR_METHOD ) )
+                } else if (token.equalsIgnoreCase(STR_METHOD)) {
                     currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_METHOD_ST : DocSearchIcons.ICON_METHOD );
-                else if ( token.equalsIgnoreCase( STR_VARIABLE ) )
-                    currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE );
+                } else if (token.equalsIgnoreCase(STR_VARIABLE)) {
+                    currentDii.setIconIndex(isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE);
+                }
 
                 // Add the item when all information is available
                 //insertDocIndexItem( currentDii );
@@ -440,8 +443,9 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                     where = IN_DESCRIPTION_SUFFIX;
                     currentDii.setPackage( text.substring( text.lastIndexOf( ' ' ) ).trim() );
                 }
-                else
+                else {
                     where = IN_BALAST;
+                }
             }
             else if ( where == IN_DESCRIPTION_SUFFIX ) {
                 boolean isStatic = false;
@@ -451,26 +455,27 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                             isStatic = true;
 		}
 
-                if ( remark.contains( STR_CLASS_LOC ) )
+                if (remark.contains(STR_CLASS_LOC)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_CLASS);
-                else if ( remark.contains( STR_INTERFACE_LOC ) )
+                } else if (remark.contains(STR_INTERFACE_LOC)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_INTERFACE);
-                else if ( remark.contains( STR_ENUM_LOC ) )
+                } else if (remark.contains(STR_ENUM_LOC)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_ENUM );
-                else if ( remark.contains( STR_ANNTYPE_LOC ) )
+                } else if (remark.contains(STR_ANNTYPE_LOC)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_ANNTYPE );
-                else if ( remark.contains( STR_EXCEPTION_LOC ) )
+                } else if (remark.contains(STR_EXCEPTION_LOC)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_EXCEPTION );
-                else if ( remark.contains( STR_ERROR_LOC ) )
+                } else if (remark.contains(STR_ERROR_LOC)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_ERROR );
-                else if ( remark.contains( STR_PACKAGE_LOC ) )
+                } else if (remark.contains(STR_PACKAGE_LOC)) {
                     currentDii.setIconIndex( DocSearchIcons.ICON_PACKAGE );
-                else if ( remark.contains( STR_CONSTRUCTOR_LOC ) )
-                    currentDii.setIconIndex( DocSearchIcons.ICON_CONSTRUCTOR );
-                else if ( remark.contains( STR_METHOD_LOC ) )
-                                currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_METHOD_ST : DocSearchIcons.ICON_METHOD );
-                else if ( remark.contains( STR_VARIABLE_LOC ) )
-                                currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE );
+                } else if (remark.contains(STR_CONSTRUCTOR_LOC)) {
+                    currentDii.setIconIndex(DocSearchIcons.ICON_CONSTRUCTOR);
+                } else if (remark.contains(STR_METHOD_LOC)) {
+                    currentDii.setIconIndex(isStatic ? DocSearchIcons.ICON_METHOD_ST : DocSearchIcons.ICON_METHOD);
+                } else if (remark.contains(STR_VARIABLE_LOC)) {
+                    currentDii.setIconIndex(isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE);
+                }
 		
                 currentDii.setRemark( currentDii.getRemark() + remark);
                 String declaringClass = remark.trim();
@@ -480,9 +485,9 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                         insertDocIndexItem( currentDii );
                     }
                 }
-            }
-            else
+            } else {
                 where = IN_BALAST;
+            }
 
         }
 
