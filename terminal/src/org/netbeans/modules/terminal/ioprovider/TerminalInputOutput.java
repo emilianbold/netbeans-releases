@@ -539,9 +539,9 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	this.name = name;
         this.ioContainer = ioContainer;
 
-        terminal = new Terminal(ioContainer, this, actions, name);
+        terminal = new Terminal(ioContainer, this, name);
 
-	Task task = new Task.Add(ioContainer, terminal);
+	Task task = new Task.Add(ioContainer, terminal, actions);
 	task.post();
 
         // preset standard colors

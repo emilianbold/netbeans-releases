@@ -29,8 +29,13 @@
             <file name="org-netbeans-terminal-example-ShellTermAction.instance"/>
             <file name="org-netbeans-terminal-example-CmdTermAction.instance"/>
             <file name="org-netbeans-terminal-example-TermWindowAction.instance"/>
+            <file name="org-netbeans-terminal-example-topcomponent-MuxableTerminalAction.instance">
+                <attr name="component" methodvalue="org.netbeans.terminal.example.topcomponent.MuxableTerminalTopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="org.netbeans.terminal.example.topcomponent.Bundle#CTL_MuxableTerminalAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+            </file>
             <file name="org-netbeans-terminal-example-topcomponent-TerminalAction.instance">
-                <attr name="component" methodvalue="org.netbeans.terminal.example.topcomponent.TerminalTopComponent.findInstance"/>
+                <attr name="component" methodvalue="org.netbeans.terminal.example.topcomponent.TerminalTopComponent_Tabbed.findInstance"/>
                 <attr name="displayName" bundlevalue="org.netbeans.terminal.example.topcomponent.Bundle#CTL_TerminalAction"/>
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
             </file>
@@ -74,6 +79,9 @@
             </file>
         </folder>
         <folder name="Window">
+            <file name="MuxableTerminalAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-terminal-example-topcomponent-MuxableTerminalAction.instance"/>
+            </file>
             <folder name="Output">
                 <file name="TermWindowAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-terminal-example-TermWindowAction.instance"/>
@@ -86,10 +94,12 @@
     </folder>
     <folder name="Windows2">
         <folder name="Components">
+            <file name="MuxableTerminalTopComponent.settings" url="MuxableTerminalTopComponentSettings.xml"/>
             <file name="TerminalTopComponent.settings" url="topcomponent/TerminalTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
             <folder name="output">
+                <file name="MuxableTerminalTopComponent.wstcref" url="MuxableTerminalTopComponentWstcref.xml"/>
                 <file name="TerminalTopComponent.wstcref" url="topcomponent/TerminalTopComponentWstcref.xml"/>
             </folder>
         </folder>
