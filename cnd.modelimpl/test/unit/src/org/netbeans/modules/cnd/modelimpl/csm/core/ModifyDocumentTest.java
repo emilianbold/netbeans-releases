@@ -86,6 +86,9 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     }
 
     public void testInsertDeadBlock() throws Exception {
+        if (TraceFlags.TRACE_182342_BUG) {
+            System.err.printf("TEST INSERT DEAD BLOCK\n");
+        }
         final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
         final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
         final CsmProject project = super.getProject();
@@ -148,6 +151,9 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     }
 
     public void testRemoveDeadBlock() throws Exception {
+        if (TraceFlags.TRACE_182342_BUG) {
+            System.err.printf("TEST REMOVE DEAD BLOCK\n");
+        }
         final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
         final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
         final CsmProject project = super.getProject();
