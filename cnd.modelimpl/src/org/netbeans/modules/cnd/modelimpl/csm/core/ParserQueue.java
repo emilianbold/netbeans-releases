@@ -375,7 +375,13 @@ public final class ParserQueue {
      */
     public boolean add(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position,
             boolean clearPrevState, FileAction fileAction) {
-
+        if (TraceFlags.TRACE_182342_BUG) {
+            new Exception("ParserQueue: add for " + file).printStackTrace(System.err);
+            int i = 0;
+            for (APTPreprocHandler.State state : ppStates) {
+                System.err.printf("ParserQueue: State %d from original %s\n", i++, state);
+            }
+        }
         if (ppStates.isEmpty()) {
             Utils.LOG.severe("Adding a file with an emty preprocessor state set"); //NOI18N
         }
