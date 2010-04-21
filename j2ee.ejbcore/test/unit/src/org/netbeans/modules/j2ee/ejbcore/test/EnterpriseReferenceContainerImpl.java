@@ -65,7 +65,7 @@ public class EnterpriseReferenceContainerImpl implements EnterpriseReferenceCont
 
     public EnterpriseReferenceContainerImpl() {}
 
-    public String addEjbReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {            
+    public String addEjbReference(EjbReference ref, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
         this.remoteEjbReference = ref;
         this.remoteEjbRefName = ejbRefName;
         this.remoteReferencingFile = referencingFile;
@@ -73,7 +73,7 @@ public class EnterpriseReferenceContainerImpl implements EnterpriseReferenceCont
         return null;
     }
 
-    public String addEjbLocalReference(EjbReference localRef, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
+    public String addEjbLocalReference(EjbReference localRef, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
         this.localEjbReference = localRef;
         this.localEjbRefName = ejbRefName;
         this.localReferencingFile = referencingFile;

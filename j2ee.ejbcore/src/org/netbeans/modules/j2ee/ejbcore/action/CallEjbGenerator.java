@@ -158,12 +158,12 @@ public class CallEjbGenerator {
         } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
             switch(refIType){
                 case REMOTE: {
-                    erc.addEjbReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
+                    erc.addEjbReference(ejbReference, refIType, ejbReferenceName, referencingFO, referencingClassName);
                     break;
                 }
                 case NO_INTERFACE:
                 case LOCAL:{
-                    erc.addEjbLocalReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
+                    erc.addEjbLocalReference(ejbReference, refIType, ejbReferenceName, referencingFO, referencingClassName);
                     break;
                 }
             }

@@ -62,6 +62,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
@@ -100,26 +101,26 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         this.antHelper = antHelper;
     }
     
-    public String addEjbLocalReference(EjbReference localRef, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
-        return addReference(localRef, ejbRefName, true, referencingFile, referencingClass);
+    public String addEjbLocalReference(EjbReference localRef, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
+        return addReference(localRef, refType, ejbRefName, true, referencingFile, referencingClass);
     }
     
-    public String addEjbReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
-        return addReference(ref, ejbRefName, false, referencingFile, referencingClass);
+    public String addEjbReference(EjbReference ref, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
+        return addReference(ref, refType, ejbRefName, false, referencingFile, referencingClass);
     }
     
-    private String addReference(final EjbReference ejbReference, String ejbRefName, boolean local, FileObject referencingFile, String referencingClass) throws IOException {
+    private String addReference(final EjbReference ejbReference, EjbReference.EjbRefIType refType, String ejbRefName, boolean local, FileObject referencingFile, String referencingClass) throws IOException {
         String refName = null;
         
         MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
-        final String[] ejbName = new String[1];
-        FileObject ejbReferenceEjbClassFO = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
-            public FileObject run(EjbJarMetadata metadata) throws Exception {
-                ejbName[0] = metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
-                return metadata.findResource(ejbReference.getEjbClass().replace('.', '/') + ".java");
+        String ejbName = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+            public String run(EjbJarMetadata metadata) throws Exception {
+                return metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
             }
         });
 
+        FileObject ejbReferenceEjbClassFO = SourceUtils.getFileObject(ejbReference.getComponentName(refType), ejbReference.getClasspathInfo());
+        assert ejbReferenceEjbClassFO != null : "Reference FileObject not found: " + ejbReference.getComponentName(refType);
         Project project = FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
         AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
         boolean hasArtifact = (antArtifacts != null && antArtifacts.length > 0);
@@ -142,7 +143,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         }
 
         String jarName = names[names.length - 1] + "#";
-        final String ejbLink = jarName + ejbName[0];
+        final String ejbLink = jarName + ejbName;
 
         if (local) {
             refName = getUniqueName(getWebApp(), "EjbLocalRef", "EjbRefName", ejbRefName); //NOI18N
