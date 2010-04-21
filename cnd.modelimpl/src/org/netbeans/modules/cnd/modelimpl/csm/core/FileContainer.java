@@ -716,7 +716,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             
             data = new PreprocessorStatePair(state, pcState);
             if (TraceFlags.TRACE_182342_BUG) {
-                new Exception("setState:\n"+toString()).printStackTrace(System.err);
+                new Exception("setState:\n"+toString()).printStackTrace(System.err); //NOI18N
             }
         }        
 
@@ -745,7 +745,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 checkConsistency();
             }
             if (TraceFlags.TRACE_182342_BUG) {
-                new Exception("setStates:\n"+toString()).printStackTrace(System.err);
+                new Exception("setStates:\n"+toString()).printStackTrace(System.err); //NOI18N
             }
         }
 
@@ -817,7 +817,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 }
             }
             if (TraceFlags.TRACE_182342_BUG) {
-                new Exception("invalidateStates:\n"+toString()).printStackTrace(System.err);
+                new Exception("invalidateStates:\n"+toString()).printStackTrace(System.err); //NOI18N
             }
         }
         
