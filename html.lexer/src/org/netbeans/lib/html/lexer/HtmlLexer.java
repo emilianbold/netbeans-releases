@@ -249,6 +249,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         // make sure you update the optimized firstchar look in isJavaScriptArgument
     }
 
+    private static final String SUPPORTED_SCRIPT_TYPE = "text/javascript"; //NOI18N
+
     public HtmlLexer(LexerRestartInfo<HTMLTokenId> info) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
@@ -343,6 +345,13 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             }
         }
         return false;
+    }
+
+    private boolean isJavascriptType(CharSequence attributeValue, boolean quoted) {
+        //TODO create a list of included/excluded script types
+        //now "all minus vbscript" implies javascript
+        CharSequence clean = quoted ? attributeValue.subSequence(1, attributeValue.length() - 1) : attributeValue;
+        return equals(SUPPORTED_SCRIPT_TYPE, clean, true, true);
     }
 
     private boolean followsCloseTag(CharSequence closeTagName) {
@@ -746,6 +755,14 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                 case ISI_VAL_QUOT:
                     switch (actChar) {
                         case '\'':
+                            //reset the 'script embedding will follow state' if the value represents a
+                            //type attribute value of a script tag
+                            if(equals(SCRIPT, tag, true, true) && equals("type", attribute, true, true)) { //NOI18N
+                                if(!isJavascriptType(input.readText(), true)) {
+                                    lexerEmbeddingState = INIT;
+                                }
+                            }
+
                             lexerState = ISP_TAG_X;
                             return resolveValueToken();
                     }
@@ -754,6 +771,14 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                 case ISI_VAL_DQUOT:
                     switch (actChar) {
                         case '"':
+                            //reset the 'script embedding will follow state' if the value represents a
+                            //type attribute value of a script tag
+                            if(equals(SCRIPT, tag, true, true) && equals("type", attribute, true, true)) { //NOI18N
+                                if(!isJavascriptType(input.readText(), true)) {
+                                    lexerEmbeddingState = INIT;
+                                }
+                            }
+
                             lexerState = ISP_TAG_X;
                             return resolveValueToken();
                     }

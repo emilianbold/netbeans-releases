@@ -197,10 +197,10 @@ final class ProcessList {
                             }
                             pargsBuilder.setArguments(pargs_args);
                             List<String> pargsOutput = ProcessUtils.readProcessOutput(pargsBuilder.call());
-                            
+
                             idx = 0;
                             for (String procArgs : pargsOutput) {
-                                if (procArgs.isEmpty()) {
+                                if (procArgs.isEmpty() || procArgs.startsWith("pargs: Warning")) { // NOI18N
                                     continue;
                                 }
                                 if (!procArgs.startsWith("pargs:")) { // NOI18N
