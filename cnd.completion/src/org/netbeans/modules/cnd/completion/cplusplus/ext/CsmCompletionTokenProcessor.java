@@ -2258,6 +2258,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                 case STAR:
                 case AMP:
                 case GT:
+                    if (getValidExpID(peekExp()) == GENERIC_TYPE) {
+                        break;
+                    }
                 case LT:
                 case EQ:
                 case PLUSEQ:
