@@ -126,6 +126,12 @@ public final class ProjectImpl extends ProjectBase {
                 }
             };
             synchronized (editedFiles) {
+                if (TraceFlags.TRACE_182342_BUG) {
+                    for (CsmFile csmFile : editedFiles.keySet()) {
+                        System.err.println("onFileEditStart: edited file " + csmFile);
+                    }
+                    System.err.println("onFileEditStart: current file " + impl);
+                }
                 if (!editedFiles.containsKey(impl)) {
                     // register edited file
                     editedFiles.put(impl, new EditingTask(buf, changeListener));
