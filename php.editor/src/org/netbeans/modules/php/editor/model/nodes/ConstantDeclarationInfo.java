@@ -43,21 +43,30 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 
 /**
  * @author Radek Matous
  */
-public class ConstantDeclarationInfo extends ClassConstantDeclarationInfo {
-    ConstantDeclarationInfo(Identifier node) {
-        super(node);
+public class ConstantDeclarationInfo extends ClassConstantDeclarationInfo {    
+    ConstantDeclarationInfo(final Identifier node, final String value) {
+        super(node, value);
     }
 
     public static List<? extends ConstantDeclarationInfo> create(ConstantDeclaration constantDeclaration) {
         List<ConstantDeclarationInfo> retval = new ArrayList<ConstantDeclarationInfo>();
         List<Identifier> names = constantDeclaration.getNames();
         for (Identifier identifier : names) {
-            retval.add(new ConstantDeclarationInfo(identifier));
+            String value = null;
+            for (final Expression expression : constantDeclaration.getInitializers()) {
+                if (expression instanceof Scalar) {
+                    value = ((Scalar)expression).getStringValue();
+                    break;
+                }
+            }
+            retval.add(new ConstantDeclarationInfo(identifier, value));
         }
         return retval;
     }
