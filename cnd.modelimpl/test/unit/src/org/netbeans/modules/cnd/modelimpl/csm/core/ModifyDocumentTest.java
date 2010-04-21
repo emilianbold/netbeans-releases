@@ -71,11 +71,17 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class ModifyDocumentTest extends ProjectBasedTestCase {
     public ModifyDocumentTest(String testName) {
         super(testName);
+        if (Boolean.getBoolean("cnd.modelimpl.trace182342")) {
+            TraceFlags.TRACE_182342_BUG = true;
+        }
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        if (Boolean.getBoolean("cnd.modelimpl.trace182342")) {
+            TraceFlags.TRACE_182342_BUG = true;
+        }
         ModelSupport.instance().startup();
     }
 
@@ -187,7 +193,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 public void run() {
                     try {
                         if (TraceFlags.TRACE_182342_BUG) {
-                            System.err.printf("Removing dead block [%d-%d]\n", block.getEndOffset(), block.getStartOffset());
+                            System.err.printf("Removing dead block [%d-%d]\n", block.getStartOffset(), block.getEndOffset());
                         }
                         doc.remove(block.getStartOffset(), block.getEndOffset() - block.getStartOffset());
                     } catch (BadLocationException ex) {

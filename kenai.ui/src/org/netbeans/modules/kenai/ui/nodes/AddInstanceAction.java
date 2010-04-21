@@ -74,6 +74,7 @@ public class AddInstanceAction extends AbstractAction {
     @Override
     public void actionPerformed(final ActionEvent ae) {
         final JButton addButton = new JButton(ADD_BUTTON);
+        addButton.getAccessibleContext().setAccessibleDescription(ADD_BUTTON);
         final KenaiInstanceCustomizer kenaiInstanceCustomizer = new KenaiInstanceCustomizer(addButton);
         ActionListener bl = new ActionListener() {
 
@@ -154,6 +155,8 @@ public class AddInstanceAction extends AbstractAction {
         kenaiInstanceCustomizer.setDialogDescriptor(dd);
 
         dialog = (JDialog) DialogDisplayer.getDefault().createDialog(dd);
+        dialog.validate();
+        dialog.pack();
         dialog.setVisible(true);
     }
 

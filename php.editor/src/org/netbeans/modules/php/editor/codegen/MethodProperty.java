@@ -44,20 +44,21 @@ import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
-import org.netbeans.modules.php.editor.api.elements.TypeTreeElement;
+import org.netbeans.modules.php.editor.api.elements.TreeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 
 public final class MethodProperty extends Property {
 
     private final MethodElement method;
-    private final TypeTreeElement enclosingType;
+    private final TreeElement<TypeElement> enclosingType;
 
-    public MethodProperty(MethodElement method, TypeTreeElement enclosingType) {
+    public MethodProperty(MethodElement method, TreeElement<TypeElement> enclosingType) {
         super(formatName(method), method.getPhpModifiers().toFlags());
 
         this.method = method;
         this.enclosingType = enclosingType;
 
-        boolean typeIsAbstract = enclosingType.getType().getPhpModifiers().isAbstract();
+        boolean typeIsAbstract = enclosingType.getElement().getPhpModifiers().isAbstract();
         final boolean methodIsAbstract = method.isAbstract() || method.getType().isInterface();
         setSelected(!typeIsAbstract && methodIsAbstract);
     }
@@ -99,7 +100,7 @@ public final class MethodProperty extends Property {
         return method;
     }
 
-    public TypeTreeElement getEnclosingType() {
+    public TreeElement<TypeElement> getEnclosingType() {
         return enclosingType;
     }
 

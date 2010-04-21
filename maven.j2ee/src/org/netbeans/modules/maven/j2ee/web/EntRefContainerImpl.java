@@ -105,11 +105,7 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
     
     private String addReference(final EjbReference ejbReference, String ejbRefName, boolean local, FileObject referencingFile, String referencingClass) throws IOException {
         String refName = null;
-        WebApp wApp = getWebApp();
-        if (webApp == null){
-            return null;
-        }
-        
+
         MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
         final String[] ejbName = new String[1];
         FileObject ejbReferenceEjbClassFO = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
@@ -123,6 +119,30 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
         String jarName = "";
         if (oprj != null) {
             jarName = oprj.getMavenProject().getBuild().getFinalName();  //NOI18N
+
+            final String grId = oprj.getMavenProject().getGroupId();
+            final String artId = oprj.getMavenProject().getArtifactId();
+            final String version = oprj.getMavenProject().getVersion();
+            //TODO - also check the configuration of the ejb project and
+            // depend on the client jar only (add configuration to generate one).
+            //TODO - add dependency on j2ee jar (to have javax.ejb on classpath
+            org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(
+                    project.getProjectDirectory().getFileObject("pom.xml"),//NOI18N
+                    Collections.<ModelOperation<POMModel>>singletonList(new ModelOperation<POMModel>() {
+
+                public void performOperation(POMModel model) {
+                    //add as dependency
+                    Dependency d = ModelUtils.checkModelDependency(model, grId, artId, true);
+                    if (d != null) {
+                        d.setVersion(version);
+                    }
+                }
+            }));
+        }
+
+        WebApp wApp = getWebApp();
+        if (webApp == null){
+            return null;
         }
 
         jarName = jarName +  "#";
@@ -153,27 +173,6 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
             } catch (ClassNotFoundException ex){}
         }
 
-        if (oprj != null) {
-            final String grId = oprj.getMavenProject().getGroupId();
-            final String artId = oprj.getMavenProject().getArtifactId();
-            final String version = oprj.getMavenProject().getVersion();
-            //TODO - also check the configuration of the ejb project and
-            // depend on the client jar only (add configuration to generate one).
-            //TODO - add dependency on j2ee jar (to have javax.ejb on classpath
-            org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(
-                    project.getProjectDirectory().getFileObject("pom.xml"),//NOI18N
-                    Collections.<ModelOperation<POMModel>>singletonList(new ModelOperation<POMModel>() {
-
-                public void performOperation(POMModel model) {
-                    //add as dependency
-                    Dependency d = ModelUtils.checkModelDependency(model, grId, artId, true);
-                    if (d != null) {
-                        d.setVersion(version);
-                    }
-                }
-            }));
-        }
-        
         writeDD(referencingFile, referencingClass);
         return refName;
     }
