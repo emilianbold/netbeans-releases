@@ -44,6 +44,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -90,14 +91,16 @@ public class RemotePlainFile extends RemoteFileObjectBase {
         // TODO: check error processing
         try {
             getRemoteFileSupport().ensureFileSync(cache, remotePath);
+        } catch (ConnectException ex) {
+            return null;
         } catch (IOException ex) {             
-            throw new FileNotFoundException(cache.getAbsolutePath());
+            throwFileNotFoundException(ex);
         } catch (InterruptedException ex) {
             throwFileNotFoundException(ex);
         } catch (ExecutionException ex) {
             throwFileNotFoundException(ex);
         } catch (CancellationException ex) {
-            // TODO: clear CndUtils cache
+            // TODO: do we need this? unfortunately CancellationException is RuntimeException, so I'm not sure
             return null;
         }
         return new FileInputStream(cache);

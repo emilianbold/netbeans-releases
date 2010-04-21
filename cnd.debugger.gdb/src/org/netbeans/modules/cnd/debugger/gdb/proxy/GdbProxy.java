@@ -122,11 +122,11 @@ public class GdbProxy {
         return map.get(id);
     }
     
-    public void removeCB(int id) {
+    void removeCB(int id) {
         map.remove(id);
     }
     
-    public void putCB(int id, CommandBuffer cb) {
+    void putCB(int id, CommandBuffer cb) {
         map.put(id, cb);
     }
 
