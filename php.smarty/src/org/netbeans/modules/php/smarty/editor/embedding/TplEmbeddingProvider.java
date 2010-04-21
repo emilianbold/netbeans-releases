@@ -43,20 +43,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
-import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.netbeans.modules.php.smarty.editor.TplMetaData;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
-import org.netbeans.modules.php.smarty.editor.utlis.TplUtils;
-import org.openide.filesystems.FileObject;
 
 /**
  * Provides model for TPL files.
@@ -68,20 +63,10 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
-//        // sending project data into lexer
-//        Source source = snapshot.getSource();
-//        if (source != null ) {
-//            FileObject fobj = source.getFileObject();
-//            InputAttributes inputAttributes = new InputAttributes();
-//            TplMetaData tplMetaData = TplUtils.getProjectPropertiesForFileObject(fobj);
-//            inputAttributes.setValue(TplTopTokenId.language(), TplMetaData.class, tplMetaData, false);
-//            source.getDocument(true).putProperty(InputAttributes.class, inputAttributes);
-//        }
 
         TokenHierarchy<CharSequence> th = TokenHierarchy.create(snapshot.getText(), TplTopTokenId.language());
         TokenSequence<TplTopTokenId> sequence = th.tokenSequence(TplTopTokenId.language());
 
-        //issue #159775 logging >>>
         if (sequence == null) {
             Logger.getLogger("TplEmbeddingProvider").warning(
                     "TokenHierarchy.tokenSequence(TplTopTokenId.language()) == null "
@@ -91,7 +76,6 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
 
             return Collections.emptyList();
         }
-        //<<< end of the logging
 
         sequence.moveStart();
         List<Embedding> embeddings = new ArrayList<Embedding>();
@@ -130,7 +114,9 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
 //                            isPhpEnabled = false;
 //                            embeddings.add(snapshot.create(";?>", "text/x-php5"));
 //                        }
+                        embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
                         embeddings.add(snapshot.create(from, len, "text/x-php5")); //NOI18N
+                        embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
 //                    }
                 }
 
@@ -139,7 +125,9 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
             }
         }
         if (from >= 0) {
+            embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
             embeddings.add(snapshot.create(from, len, "text/x-php5")); //NOI18N
+            embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
         }
         if (embeddings.isEmpty()) {
             return Collections.emptyList();
