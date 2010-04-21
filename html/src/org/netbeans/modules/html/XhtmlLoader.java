@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,57 +31,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.html;
 
-import java.io.IOException;
-import org.openide.loaders.UniFileLoader;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
- * Loader for Html DataObjects.
  *
- * @author Jan Jancura
+ * @author marekfukala
  */
-public class HtmlLoader extends UniFileLoader {
-
-    private static final long serialVersionUID = -5809935261731217882L;
-
-    public HtmlLoader() {
-        super("org.netbeans.modules.html.HtmlDataObject"); // NOI18N
-    }
+public class XhtmlLoader extends HtmlLoader {
     
-    @Override
-    protected void initialize() {
-        super.initialize();
-        getExtensions().addMimeType(getPrimartyMimeType()); // NOI18N
-    }
+    private static final long serialVersionUID = -7010142681305297061L;
 
+    @Override
     protected String getPrimartyMimeType() {
-        return "text/html"; //NOI18N
+        return "text/xhtml"; //NOI18N
     }
-    
-    @Override
-    protected MultiDataObject createMultiObject(final FileObject primaryFile)
-    throws DataObjectExistsException, IOException {
-        return new HtmlDataObject(primaryFile, this);
-    }
-    
-    /** Get the default display name of this loader.
-     * @return default display name
-     */
+
     @Override
     protected String defaultDisplayName() {
-        return NbBundle.getMessage(HtmlLoader.class, "PROP_HtmlLoader_Name");
+        return NbBundle.getMessage(HtmlLoader.class, "PROP_XhtmlLoader_Name"); //NOI18N
     }
-    
-    @Override
-    protected String actionsContext() {
-        return "Loaders/" + getPrimartyMimeType() + "/Actions/"; // NOI18N
-    }
-    
+
 }
