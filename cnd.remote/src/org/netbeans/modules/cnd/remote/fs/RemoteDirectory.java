@@ -44,11 +44,11 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.util.StringTokenizer;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -122,8 +122,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (CancellationException ex) {
             // TODO: clear CndUtils cache
             return null;
+        } catch (ConnectException ex) {
+            // don't report, this just means that we aren't connected
+            return null;
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            ex.printStackTrace();
             return null;
         }
     }
@@ -148,9 +151,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
             }
             return childrenFO;
+        } catch (ConnectException ex) {
+            // don't report, this just means that we aren't connected
         } catch (IOException ex) {
-            // TODO: error processing
-            Exceptions.printStackTrace(ex);
+            ex.printStackTrace();
         } catch (CancellationException ex) {
             // never report CancellationException
         }
