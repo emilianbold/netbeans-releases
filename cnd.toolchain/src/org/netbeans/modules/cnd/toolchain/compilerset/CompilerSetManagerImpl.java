@@ -107,6 +107,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     private volatile State state;
     private int platform = -1;
     private Task initializationTask;
+    private CompilerSetProvider provider;
 
 
     public CompilerSetManagerImpl(ExecutionEnvironment env) {
@@ -217,6 +218,15 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         } finally {
             CompilerSetReporter.setWriter(null);
         }
+    }
+
+    @Override
+    public boolean cancel() {
+        CompilerSetProvider aProvider = provider;
+        if (aProvider != null) {
+            return aProvider.cancel();
+        }
+        return false;
     }
 
     @Override
@@ -450,8 +460,13 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
 	if (!record.isOnline()) {
             return Collections.<CompilerSet>emptyList();
         }
-        final CompilerSetProvider provider = CompilerSetProviderFactoryImpl.createNew(executionEnvironment);
-        String[] arData = provider.getCompilerSetData(path);
+        String[] arData;
+        try {
+            provider = CompilerSetProviderFactoryImpl.createNew(executionEnvironment);
+            arData = provider.getCompilerSetData(path);
+        } finally {
+            provider = null;
+        }
         List<CompilerSet> css = new ArrayList<CompilerSet>();
         if (arData != null) {
             for (String data : arData) {
@@ -583,7 +598,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                     //            CompilerSetReporter.canReport(),System.identityHashCode(CompilerSetManager.this));
                     //}
                     try {
-                        final CompilerSetProvider provider = CompilerSetProviderFactoryImpl.createNew(executionEnvironment);
+                        provider = CompilerSetProviderFactoryImpl.createNew(executionEnvironment);
                         assert provider != null;
                         provider.init();
                         platform = provider.getPlatform();
@@ -630,6 +645,8 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                             " on " + executionEnvironment, thr); //NOI18N
                         CompilerSetReporter.report("CSM_Fail"); //NOI18N
                         completeCompilerSets();
+                    } finally {
+                        provider = null;
                     }
                 }
 
