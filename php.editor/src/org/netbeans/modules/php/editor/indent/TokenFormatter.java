@@ -1409,28 +1409,43 @@ public class TokenFormatter {
 		if (oldText == null) {
 		    oldText = "";
 		}
-                if(startOffset == -1) {
-                    startOffset = formatContext.startOffset() == 0
-                            ? formatContext.startOffset()
-                            : formatContext.startOffset() -1;
-                    System.out.println("char: " + document.getText().charAt(startOffset));
-                    while (startOffset > 0 && Character.isWhitespace(document.getText().charAt(startOffset))) {
-                        startOffset --;
-                    }
-                    if (startOffset > 0) {
-                        startOffset ++;
-                    }
-                    endOffset = formatContext.endOffset();
-                    while (endOffset < document.getLength() && Character.isWhitespace(document.getText().charAt(endOffset))) {
-                        endOffset ++;
-                    }
-                    if (endOffset < document.getLength()) {
-                        endOffset --;
-                    }
 
+                if(startOffset == -1) {
+                    startOffset = formatContext.startOffset();
+                    endOffset = formatContext.endOffset();
                 }
+//                if(startOffset == -1) {
+//                    startOffset = formatContext.startOffset() == 0
+//                            ? formatContext.startOffset()
+//                            : formatContext.startOffset() -1;
+//                    System.out.println("char: " + document.getText().charAt(startOffset));
+//                    while (startOffset > 0 && Character.isWhitespace(document.getText().charAt(startOffset))) {
+//                        startOffset --;
+//                    }
+//                    if (startOffset > 0) {
+//                        startOffset ++;
+//                    }
+//                    endOffset = formatContext.endOffset();
+//                    while (endOffset < document.getLength() && Character.isWhitespace(document.getText().charAt(endOffset))) {
+//                        endOffset ++;
+//                    }
+//                    if (endOffset < document.getLength()) {
+//                        endOffset --;
+//                    }
+//
+//                }
                 if (newText != null && !oldText.equals(newText)) {
                     int realOffset = offset + delta;
+                    if (templateEdit && (startOffset - oldText.length()) == offset) {
+                        int indexOldTextLine = oldText.lastIndexOf('\n');
+                        int indexNewTextLine = newText.lastIndexOf('\n');
+                        String replaceOld = indexOldTextLine == -1 ? oldText : oldText.substring(indexOldTextLine + 1);
+                        String replaceNew = indexNewTextLine == -1 ? newText : newText.substring(indexNewTextLine + 1);
+
+                        if (!oldText.equals(newText)) {
+                            delta = replaceSimpleString(document, realOffset + indexOldTextLine + 1, replaceOld, replaceNew, delta);
+                        }
+                    }
                     if (startOffset <= realOffset
                             && realOffset <= endOffset + delta) {
 
