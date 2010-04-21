@@ -51,7 +51,7 @@ import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
-import org.netbeans.modules.php.editor.api.elements.TypeTreeElement;
+import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.openide.filesystems.FileObject;
 
@@ -147,8 +147,8 @@ public interface ElementQuery {
          * recursively
          */
         LinkedHashSet<TypeElement> getInheritedTypes(TypeElement typeElement);
-        TypeTreeElement getInheritedTypesAsTree(TypeElement typeElement);
-        TypeTreeElement getInheritedTypesAsTree(TypeElement typeElement, final Set<TypeElement> preferredTypes);
+        TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement);
+        TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement, final Set<TypeElement> preferredTypes);
         /**
          * @return all extended classes recursively
          */

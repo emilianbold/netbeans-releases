@@ -49,6 +49,8 @@ public interface CompilerSetProvider {
 
     void init();
 
+    boolean cancel();
+
     boolean hasMoreCompilerSets();
 
     String getNextCompilerSetData();

@@ -85,6 +85,7 @@ public class LogoutPanel extends javax.swing.JPanel {
 
         kenaiList.setName("kenaiList"); // NOI18N
         scrollPane.setViewportView(kenaiList);
+        kenaiList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LogoutPanel.class, "LogoutPanel.kenaiList.AccessibleContext.accessibleDescription")); // NOI18N
 
         labelServers.setLabelFor(kenaiList);
         org.openide.awt.Mnemonics.setLocalizedText(labelServers, org.openide.util.NbBundle.getMessage(LogoutPanel.class, "LogoutPanel.labelServers.text")); // NOI18N

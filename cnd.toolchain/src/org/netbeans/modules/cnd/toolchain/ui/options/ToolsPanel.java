@@ -161,6 +161,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         } else {
             this.cbDevHost.setEnabled(false);
         }
+        btEditDevHost.setEnabled(show);
         buttomPanel.setVisible(show);
         buttonPanel.setVisible(show);
         toolCollectionPanel.setVisible(show);
@@ -333,6 +334,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
     /** Update the display */
     public void update() {
+        tcm.clear();
         update(true, null, null);
     }
 
@@ -502,7 +504,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
     /** What to do if user cancels the dialog (nothing) */
     public void cancel() {
-        tcm.clear();
+        tcm.cancel();
         changed = false;
     }
 
