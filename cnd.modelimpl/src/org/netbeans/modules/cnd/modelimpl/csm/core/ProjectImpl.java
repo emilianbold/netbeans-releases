@@ -347,7 +347,7 @@ public final class ProjectImpl extends ProjectBase {
 
         public void setTask(Task task) {
             if (TraceFlags.TRACE_182342_BUG) {
-                new Exception("set new EditingTask " + task.hashCode()).printStackTrace(System.err);// NOI18N
+                new Exception("EditingTask.setTask: set new EditingTask " + task.hashCode()).printStackTrace(System.err);// NOI18N
             }
             this.task = task;
         }
@@ -356,15 +356,15 @@ public final class ProjectImpl extends ProjectBase {
             if (this.task != null) {
                 if (TraceFlags.TRACE_182342_BUG) {
                     if (!task.isFinished()) {
-                        new Exception("cancelling previous EditingTask " + task.hashCode()).printStackTrace(System.err); // NOI18N
+                        new Exception("EditingTask.cancelTask: cancelling previous EditingTask " + task.hashCode()).printStackTrace(System.err); // NOI18N
                     } else {
-                        new Exception("cancelTask where EditingTask was finished " + task.hashCode()).printStackTrace(System.err); // NOI18N
+                        new Exception("EditingTask.cancelTask: cancelTask where EditingTask was finished " + task.hashCode()).printStackTrace(System.err); // NOI18N
                     }
                 }
                 try {
                     this.task.cancel();
                 } catch (Throwable ex) {
-                    System.err.println("cancelled with exception:");
+                    System.err.println("EditingTask.cancelTask: cancelled with exception:");
                     ex.printStackTrace(System.err);
                 }
             }
@@ -447,9 +447,9 @@ public final class ProjectImpl extends ProjectBase {
             pair.cancelTask();
             if (TraceFlags.TRACE_182342_BUG) {
                 for (CsmFile csmFile : editedFiles.keySet()) {
-                    System.err.println("edited file " + csmFile);
+                    System.err.println("scheduleParseOnEditing: edited file " + csmFile);
                 }
-                System.err.println("current file " + file);
+                System.err.println("scheduleParseOnEditing: current file " + file);
             }
             task = RP.create(new Runnable() {
 
@@ -457,7 +457,7 @@ public final class ProjectImpl extends ProjectBase {
                 public void run() {
                     try {
                         if (TraceFlags.TRACE_182342_BUG) {
-                            System.err.printf("started scheduleParseOnEditing task for %s\n", file);
+                            System.err.printf("scheduleParseOnEditing: RUN scheduleParseOnEditing task for %s\n", file);
                         }
                         if (isDisposing()) {
                             return;
