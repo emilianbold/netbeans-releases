@@ -591,14 +591,14 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.name(getKind(), true);
+            formatter.appendText(getName());
+            formatter.name(getKind(), false);
+            formatter.appendText(" "); //NOI18N
             String value = getConstant().getValue();
             formatter.type(true);
             formatter.appendText(value != null ? value : "?");//NOI18N
             formatter.type(false);
-            formatter.appendText(" "); //NOI18N
-            formatter.name(getKind(), true);
-            formatter.appendText(getName());
-            formatter.name(getKind(), false);
 
             return formatter.getText();
         }
@@ -984,6 +984,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override public String getLhsHtml(HtmlFormatter formatter) {
+            String value = ((ConstantElement)getElement()).getValue();
             formatter.name(getKind(), true);
             if (emphasisName()){
                 formatter.emphasis(true);
@@ -992,8 +993,11 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             } else {
                 formatter.appendText(getName());
             }
-
             formatter.name(getKind(), false);
+            formatter.appendText(" "); //NOI18N
+            formatter.type(true);
+            formatter.appendText(value != null ? value : "?");//NOI18N
+            formatter.type(false);
 
             return formatter.getText();
         }

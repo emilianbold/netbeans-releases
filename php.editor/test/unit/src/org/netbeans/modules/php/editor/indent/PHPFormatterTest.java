@@ -46,15 +46,13 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Petr Pisl
  */
 public class PHPFormatterTest extends PHPTestBase {
     private String FORMAT_START_MARK = "/*FORMAT_START*/"; //NOI18N
@@ -646,6 +644,12 @@ public class PHPFormatterTest extends PHPTestBase {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.initialIndent, 0);
         reformatFileContents("testfiles/formatting/blankLines/Use03.php", options);
+    }
+
+    public void testBLSimpleUse04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Use04.php", options);
     }
 
     public void testOpenClosePHPTag01() throws Exception {
@@ -1708,6 +1712,11 @@ public class PHPFormatterTest extends PHPTestBase {
     public void testIssue175229() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
 	reformatFileContents("testfiles/formatting/html/issue175229.php", options);
+    }
+
+    public void testIssue183268() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	reformatFileContents("testfiles/formatting/html/issue183268.php", options);
     }
 
     public void test183200_01() throws Exception {
