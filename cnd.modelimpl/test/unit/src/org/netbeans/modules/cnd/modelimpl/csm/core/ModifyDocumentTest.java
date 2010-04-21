@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.swing.undo.UndoManager;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
@@ -58,6 +59,10 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
+import org.openide.cookies.CloseCookie;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * Test for reaction on editor modifications
@@ -66,11 +71,17 @@ import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 public class ModifyDocumentTest extends ProjectBasedTestCase {
     public ModifyDocumentTest(String testName) {
         super(testName);
+        if (Boolean.getBoolean("cnd.modelimpl.trace182342")) {
+            TraceFlags.TRACE_182342_BUG = true;
+        }
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        if (Boolean.getBoolean("cnd.modelimpl.trace182342")) {
+            TraceFlags.TRACE_182342_BUG = true;
+        }
         ModelSupport.instance().startup();
     }
 
@@ -78,10 +89,12 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         ModelSupport.instance().shutdown();
-        TraceFlags.TRACE_182342_BUG = false;
     }
 
     public void testInsertDeadBlock() throws Exception {
+        if (TraceFlags.TRACE_182342_BUG) {
+            System.err.printf("TEST INSERT DEAD BLOCK\n");
+        }
         final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
         final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
         final CsmProject project = super.getProject();
@@ -93,16 +106,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         assertTrue(doc.getLength() > 0);
         project.waitParse();
         final AtomicInteger parseCounter = new AtomicInteger(0);
-        final CsmProgressListener listener = new CsmProgressAdapter() {
-            @Override
-            public void fileParsingFinished(CsmFile file) {
-                if (file.equals(fileImpl)) {
-                    CountDownLatch cond = condRef.get();
-                    cond.countDown();
-                    parseCounter.incrementAndGet();
-                }
-            }
-        };
+        CsmProgressListener listener = createFileParseListener(fileImpl, condRef, parseCounter);
         CsmListeners.getDefault().addProgressListener(listener);
         try {
             checkDeadBlocks(project, fileImpl, "1. text before inserting dead block:", doc, "File must have no dead code blocks ", 0);
@@ -112,6 +116,8 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
             CountDownLatch parse1 = new CountDownLatch(1);
             condRef.set(parse1);
             // modify document
+            UndoManager urm = new UndoManager();
+            doc.addUndoableEditListener(urm);
             final String ifdefTxt = "#ifdef AAA\n"
                                   + "    dead code text\n"
                                   + "#endif\n";
@@ -120,6 +126,9 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 @Override
                 public void run() {
                     try {
+                        if (TraceFlags.TRACE_182342_BUG) {
+                            System.err.printf("Inserting dead block in position %d: \n", 0, ifdefTxt);
+                        }
                         doc.insertString(0,
                                         ifdefTxt,
                                         null);
@@ -128,6 +137,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                     }
                 }
             });
+
             try {
                 if (!parse1.await(10, TimeUnit.SECONDS)) {
                     exRef.compareAndSet(null, new TimeoutException("not finished await"));
@@ -137,6 +147,8 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 }
             } catch (InterruptedException ex) {
                 exRef.compareAndSet(null, ex);
+            } finally {
+                closeDocument(sourceFile, urm, doc, project, listener);
             }
         } finally {
             CsmListeners.getDefault().removeProgressListener(listener);
@@ -148,7 +160,9 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     }
 
     public void testRemoveDeadBlock() throws Exception {
-        TraceFlags.TRACE_182342_BUG = true;
+        if (TraceFlags.TRACE_182342_BUG) {
+            System.err.printf("TEST REMOVE DEAD BLOCK\n");
+        }
         final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
         final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
         final CsmProject project = super.getProject();
@@ -160,20 +174,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         assertTrue(doc.getLength() > 0);
         project.waitParse();
         final AtomicInteger parseCounter = new AtomicInteger(0);
-        final CsmProgressListener listener = new CsmProgressAdapter() {
-
-            @Override
-            public void fileParsingFinished(CsmFile file) {
-                if (TraceFlags.TRACE_182342_BUG) {
-                    new Exception("fileParsingFinished " + file).printStackTrace(System.err);// NOI18N
-                }
-                if (file.equals(fileImpl)) {
-                    CountDownLatch cond = condRef.get();
-                    cond.countDown();
-                    parseCounter.incrementAndGet();
-                }
-            }
-        };
+        CsmProgressListener listener = createFileParseListener(fileImpl, condRef, parseCounter);
         CsmListeners.getDefault().addProgressListener(listener);
         try {
 
@@ -184,11 +185,16 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
             CountDownLatch parse1 = new CountDownLatch(1);
             condRef.set(parse1);
             // modify document
+            UndoManager urm = new UndoManager();
+            doc.addUndoableEditListener(urm);
             SwingUtilities.invokeAndWait(new Runnable() {
 
                 @Override
                 public void run() {
                     try {
+                        if (TraceFlags.TRACE_182342_BUG) {
+                            System.err.printf("Removing dead block [%d-%d]\n", block.getEndOffset(), block.getStartOffset());
+                        }
                         doc.remove(block.getStartOffset(), block.getEndOffset() - block.getStartOffset());
                     } catch (BadLocationException ex) {
                         exRef.compareAndSet(null, ex);
@@ -204,14 +210,49 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 }
             } catch (InterruptedException ex) {
                 exRef.compareAndSet(null, ex);
+            } finally {
+                closeDocument(sourceFile, urm, doc, project, listener);
             }
         } finally {
+            System.err.flush();
             CsmListeners.getDefault().removeProgressListener(listener);
             Exception ex = exRef.get();
             if (ex != null) {
                 throw ex;
             }
         }
+    }
+
+    private void closeDocument(final File sourceFile, final UndoManager urm, final BaseDocument doc, final CsmProject project, final CsmProgressListener listener) throws DataObjectNotFoundException, BadLocationException {
+        CsmListeners.getDefault().removeProgressListener(listener);
+        urm.undo();
+        DataObject testDataObject = DataObject.find(FileUtil.toFileObject(sourceFile));
+        CloseCookie close = testDataObject.getLookup().lookup(CloseCookie.class);
+        if (close != null) {
+            close.close();
+        }
+        if (TraceFlags.TRACE_182342_BUG) {
+            System.err.printf("document text after close\n==============\n%s\n===============\n", doc.getText(0, doc.getLength()));
+        }
+        project.waitParse();
+    }
+    
+    private CsmProgressListener createFileParseListener(final FileImpl fileImpl, final AtomicReference<CountDownLatch> condRef, final AtomicInteger parseCounter) {
+        final CsmProgressListener listener = new CsmProgressAdapter() {
+
+            @Override
+            public void fileParsingFinished(CsmFile file) {
+                if (TraceFlags.TRACE_182342_BUG) {
+                    new Exception("fileParsingFinished " + file).printStackTrace(System.err); // NOI18N
+                }
+                if (file.equals(fileImpl)) {
+                    CountDownLatch cond = condRef.get();
+                    cond.countDown();
+                }
+                parseCounter.incrementAndGet();
+            }
+        };
+        return listener;
     }
 
     private List<CsmOffsetable> checkDeadBlocks(final CsmProject project, final FileImpl fileImpl, String docMsg, final BaseDocument doc, String msg, int expectedDeadBlocks) throws BadLocationException {
