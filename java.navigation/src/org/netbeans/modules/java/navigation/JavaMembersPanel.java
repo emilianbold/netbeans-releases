@@ -84,6 +84,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -755,9 +756,18 @@ public class JavaMembersPanel extends javax.swing.JPanel {
     private void showJavaDoc() {
         TreePath treePath = javaMembersTree.getSelectionPath();
         if (treePath != null) {
-            Object node = treePath.getLastPathComponent();
+            final Object node = treePath.getLastPathComponent();
             if (node instanceof JavaElement) {
-                docPane.setData( ((JavaElement)node).getJavaDoc() );
+                RP.post(new Runnable() {
+                    public void run() {
+                        final ElementJavadoc jdoc = ((JavaElement)node).getJavaDoc();
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                docPane.setData(jdoc);
+                            }
+                        });
+                    }
+                });
             }
         }
     }
