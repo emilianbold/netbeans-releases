@@ -61,12 +61,17 @@ public class HtmlLoader extends UniFileLoader {
         super("org.netbeans.modules.html.HtmlDataObject"); // NOI18N
     }
     
+    @Override
     protected void initialize() {
         super.initialize();
-        getExtensions().addMimeType("text/html"); // NOI18N
-        getExtensions().addMimeType("text/xhtml"); // NOI18N
+        getExtensions().addMimeType(getPrimartyMimeType()); // NOI18N
+    }
+
+    protected String getPrimartyMimeType() {
+        return "text/html"; //NOI18N
     }
     
+    @Override
     protected MultiDataObject createMultiObject(final FileObject primaryFile)
     throws DataObjectExistsException, IOException {
         return new HtmlDataObject(primaryFile, this);
@@ -75,12 +80,14 @@ public class HtmlLoader extends UniFileLoader {
     /** Get the default display name of this loader.
      * @return default display name
      */
+    @Override
     protected String defaultDisplayName() {
         return NbBundle.getMessage(HtmlLoader.class, "PROP_HtmlLoader_Name");
     }
     
+    @Override
     protected String actionsContext() {
-        return "Loaders/text/html/Actions/"; // NOI18N
+        return "Loaders/" + getPrimartyMimeType() + "/Actions/"; // NOI18N
     }
     
 }

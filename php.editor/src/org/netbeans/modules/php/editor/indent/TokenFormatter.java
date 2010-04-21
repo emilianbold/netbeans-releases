@@ -368,7 +368,7 @@ public class TokenFormatter {
                             ? EditorRegistry.lastFocusedComponent().getCaretPosition()
                             : 0;
                     boolean caretInTemplateSolved = false;
-                    int lastPHPIndent = 0;
+                    int lastPHPIndent = -1;
                     int htmlIndent = -1;
                     int index = 0;
                     int newLines = 0;
@@ -857,10 +857,8 @@ public class TokenFormatter {
                                                     indentRule = true;
                                                     changeOffset = lineOffset - delta;
                                                     oldText = doc.getText(lineOffset, firstNW - lineOffset);
-                                                    htmlIndent = suggestedIndent.intValue();
-    //						if (indent < suggestedIndent.intValue()) {
-                                                        indent = suggestedIndent.intValue() + docOptions.initialIndent;
-    //						}
+                                                    htmlIndent = suggestedIndent.intValue(); 
+                                                    indent = suggestedIndent.intValue() + docOptions.initialIndent;
                                                     countSpaces = htmlIndent;
                                                     indentOfOpenTag = countSpaces;
                                                 }
@@ -871,6 +869,7 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_AFTER_OPEN_PHP_TAG:
                                         indentRule = true;
+                                        indent = Math.max(lastPHPIndent, indent);
                                         if (!isOpenAndCloseTagOnOneLine(index)) {
                                             newLines = ((FormatToken.InitToken)formatTokens.get(0)).hasHTML()
                                                     ? docOptions.blankLinesAfterOpenPHPTagInHTML + 1
@@ -890,6 +889,7 @@ public class TokenFormatter {
                                                 int offset = formatToken.getOffset() + delta;
                                                 int lineNumber = Utilities.getLineOffset(doc, offset);
                                                 Integer suggestedIndent = suggestedLineIndents.get(lineNumber);
+                                                lastPHPIndent = indent;
                                                 if (suggestedIndent != null) {
                                                     int lineOffset = Utilities.getRowStart(doc, offset);
                                                     int firstNW = Utilities.getFirstNonWhiteFwd(doc, lineOffset);
@@ -929,7 +929,7 @@ public class TokenFormatter {
                                                 countSpaces = docOptions.spaceBeforeClosePHPTag ? 1 : 0;
                                             }
                                         }
-                                        lastPHPIndent = indent;
+                                        
                                         break;
                                     case WHITESPACE_AFTER_CLOSE_PHP_TAG:
     //				    if (index < formatTokens.size() -1
@@ -1103,23 +1103,34 @@ public class TokenFormatter {
                                         int lineOffset = formatToken.getOffset() + delta;
                                         try {
                                             int firstLine = Utilities.getLineOffset(doc, lineOffset);
-                                            int lastLine = Utilities.getLineOffset(doc, lineOffset + oldText.length());
+                                            Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents");
+                                            int lineHTMLIndent = 0;
+                                            if (suggestedLineIndents != null) {
+                                                // find previous suggested html indentation. 
+                                                int suggestedLineIndent = firstLine;
+                                                while (suggestedLineIndent > -1 && suggestedLineIndents.get(suggestedLineIndent) == null) {
+                                                    suggestedLineIndent--;
+                                                }
+                                                if (suggestedLineIndent > -1) {
+                                                    lineHTMLIndent = suggestedLineIndents.get(suggestedLineIndent);
+                                                }
+                                            }
+                                            
                                             int indexInST = 0;
                                             for (StringTokenizer st = new StringTokenizer(oldText, "\n", true); st.hasMoreTokens();) { //NOI18N
                                                 String token = st.nextToken();
                                                 int currentOffset = formatToken.getOffset() + delta + indexInST;
                                                 indexInST = indexInST + token.length();
                                                 int currentLine = Utilities.getLineOffset(doc, currentOffset);
-                                                if (firstLine < currentLine  /*&& (currentLine < lastLine || token.trim().length() > 0)*/) {
+                                                if (firstLine < currentLine ) {
                                                     int lineIndent = Utilities.getRowIndent(doc, currentOffset + 1);
-                                                    int phpIndent = indent - docOptions.initialIndent;
-                                                    int finalIndent = lineIndent + phpIndent;
+                                                    int finalIndent = lastPHPIndent + lineIndent - lineHTMLIndent;
+                                                    if (finalIndent == docOptions.initialIndent && finalIndent != 0) {
+                                                        finalIndent = 0;
+                                                    }
                                                     if (lineIndent < finalIndent) {
                                                         delta = replaceString(doc, currentOffset - delta, "", createWhitespace(doc, 0, finalIndent - lineIndent), delta, false);
                                                     }
-    //						else if (lineIndent > indent) {
-    //						    delta = replaceString(doc, currentOffset - delta, createWhitespace(0, lineIndent - finalIndent), "", delta);
-    //						}
                                                 }
 
                                             }
@@ -1322,13 +1333,18 @@ public class TokenFormatter {
 	    }
 
 	    private String formatComment(int index, int indent, String comment) {
+                indent = Math.max(indent, 0);
 		if (comment == null || comment.length() == 0) {
 		    return "";
 		}
 		StringBuilder sb = new StringBuilder();
 		boolean indentLine = false;
 		String indentString = createWhitespace(doc, 0, indent + 1);
-		if (comment.charAt(0) == '\n') {
+                int indexFirstLine = 0;
+                while (indexFirstLine < comment.length() && comment.charAt(indexFirstLine) == ' ') {
+                    indexFirstLine ++;
+                }
+		if (indexFirstLine < comment.length() && comment.charAt(indexFirstLine) == '\n') {
 		    sb.append('\n');
 		    indentLine = true;
 		}
@@ -1409,28 +1425,43 @@ public class TokenFormatter {
 		if (oldText == null) {
 		    oldText = "";
 		}
-                if(startOffset == -1) {
-                    startOffset = formatContext.startOffset() == 0
-                            ? formatContext.startOffset()
-                            : formatContext.startOffset() -1;
-                    System.out.println("char: " + document.getText().charAt(startOffset));
-                    while (startOffset > 0 && Character.isWhitespace(document.getText().charAt(startOffset))) {
-                        startOffset --;
-                    }
-                    if (startOffset > 0) {
-                        startOffset ++;
-                    }
-                    endOffset = formatContext.endOffset();
-                    while (endOffset < document.getLength() && Character.isWhitespace(document.getText().charAt(endOffset))) {
-                        endOffset ++;
-                    }
-                    if (endOffset < document.getLength()) {
-                        endOffset --;
-                    }
 
+                if(startOffset == -1) {
+                    startOffset = formatContext.startOffset();
+                    endOffset = formatContext.endOffset();
                 }
+//                if(startOffset == -1) {
+//                    startOffset = formatContext.startOffset() == 0
+//                            ? formatContext.startOffset()
+//                            : formatContext.startOffset() -1;
+//                    System.out.println("char: " + document.getText().charAt(startOffset));
+//                    while (startOffset > 0 && Character.isWhitespace(document.getText().charAt(startOffset))) {
+//                        startOffset --;
+//                    }
+//                    if (startOffset > 0) {
+//                        startOffset ++;
+//                    }
+//                    endOffset = formatContext.endOffset();
+//                    while (endOffset < document.getLength() && Character.isWhitespace(document.getText().charAt(endOffset))) {
+//                        endOffset ++;
+//                    }
+//                    if (endOffset < document.getLength()) {
+//                        endOffset --;
+//                    }
+//
+//                }
                 if (newText != null && !oldText.equals(newText)) {
                     int realOffset = offset + delta;
+                    if (templateEdit && (startOffset - oldText.length()) == offset) {
+                        int indexOldTextLine = oldText.lastIndexOf('\n');
+                        int indexNewTextLine = newText.lastIndexOf('\n');
+                        String replaceOld = indexOldTextLine == -1 ? oldText : oldText.substring(indexOldTextLine + 1);
+                        String replaceNew = indexNewTextLine == -1 ? newText : newText.substring(indexNewTextLine + 1);
+
+                        if (!oldText.equals(newText)) {
+                            delta = replaceSimpleString(document, realOffset + indexOldTextLine + 1, replaceOld, replaceNew, delta);
+                        }
+                    }
                     if (startOffset <= realOffset
                             && realOffset <= endOffset + delta) {
 

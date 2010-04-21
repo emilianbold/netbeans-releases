@@ -123,6 +123,26 @@ made subject to such option by the copyright holder.
                     </file>
                   </folder>
             </folder>
+            <folder name="xhtml">
+                <folder name="Actions">
+                  <file name="webHtml-project-separator-1.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="RunFile.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+                      <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="DebugFile.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
+                      <attr name="position" intvalue="600"/>
+                    </file>
+                  <file name="webHtml-project-separator-2.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="700"/>
+                    </file>
+                  </folder>
+            </folder>
         </folder>
     </folder>   
             

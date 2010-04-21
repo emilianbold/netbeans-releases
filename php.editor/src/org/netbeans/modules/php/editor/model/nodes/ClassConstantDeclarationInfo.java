@@ -45,21 +45,32 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 
 /**
  * @author Radek Matous
  */
 public class ClassConstantDeclarationInfo extends ASTNodeInfo<Identifier> {
-    ClassConstantDeclarationInfo(Identifier node) {
+    private final String value;
+    ClassConstantDeclarationInfo(Identifier node, final String value) {
         super(node);
+        this.value = value;
     }
 
     public static List<? extends ClassConstantDeclarationInfo> create(ConstantDeclaration constantDeclaration) {
         List<ClassConstantDeclarationInfo> retval = new ArrayList<ClassConstantDeclarationInfo>();
         List<Identifier> names = constantDeclaration.getNames();
         for (Identifier identifier : names) {
-            retval.add(new ClassConstantDeclarationInfo(identifier));
+            String value = null;
+            for (final Expression expression : constantDeclaration.getInitializers()) {
+                if (expression instanceof Scalar) {
+                    value = ((Scalar)expression).getStringValue();
+                    break;
+                }
+            }
+            retval.add(new ClassConstantDeclarationInfo(identifier, value));
         }
         return retval;
     }
@@ -84,5 +95,8 @@ public class ClassConstantDeclarationInfo extends ASTNodeInfo<Identifier> {
         Identifier name = getOriginalNode();
         return new OffsetRange(name.getStartOffset(), name.getEndOffset());
     }
-    
+
+    public String getValue() {
+        return value;
+    }
 }

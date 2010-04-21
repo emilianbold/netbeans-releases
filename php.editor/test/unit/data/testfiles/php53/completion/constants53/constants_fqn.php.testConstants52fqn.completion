@@ -2,4 +2,4 @@ Code completion result for source line:
 echo CONSTANT_AB|C;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-GLOBAL     CONSTANT_ABC                    [PUBLIC]   constants.php
+GLOBAL     CONSTANT_ABC "Hello world."     [PUBLIC]   constants.php
