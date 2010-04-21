@@ -126,7 +126,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         return getAsFile(projectFolder.getText());
     }
 
-    public Boolean getMainProject() {
+    public boolean getMainProject() {
         boolean b = mainProject.isSelected();
         NbPreferences.forModule(BasicProjectInfoPanel.class).putBoolean(SET_AS_MAIN_PREF, b);
         return b;

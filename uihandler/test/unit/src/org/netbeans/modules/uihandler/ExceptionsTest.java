@@ -70,7 +70,7 @@ public class ExceptionsTest extends NbTestCase {
     
     public void testSetReportPanelSummary(){
         String str = "RETEZEC SUMMARY";
-        ReportPanel panel = new ReportPanel();
+        ReportPanel panel = new ReportPanel(false, null);
         panel.setSummary(str);
         assertEquals(str, panel.getSummary());
     }
