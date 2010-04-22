@@ -70,7 +70,6 @@ public class ContainerManagedJTAInjectableInWebTest extends EntityManagerGenerat
     }
 
     /**
-     * TODO: need additional investigation, problem with annotation creation, commented for now
      * @throws Exception
      */
     public void testGenerate() throws Exception{
@@ -95,7 +94,6 @@ public class ContainerManagedJTAInjectableInWebTest extends EntityManagerGenerat
     }
     
     /**
-     * TODO: need additional investigation, commented for now
      * @throws Exception
      */
     public void testGenerateWithExistingEM() throws Exception{
