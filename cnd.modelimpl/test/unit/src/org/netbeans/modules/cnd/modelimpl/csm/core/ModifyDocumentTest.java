@@ -72,7 +72,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     public ModifyDocumentTest(String testName) {
         super(testName);
         if (Boolean.getBoolean("cnd.modelimpl.trace182342")) {
-            TraceFlags.TRACE_182342_BUG = true;
+//            TraceFlags.TRACE_182342_BUG = true;
         }
     }
 
@@ -80,7 +80,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         if (Boolean.getBoolean("cnd.modelimpl.trace182342")) {
-            TraceFlags.TRACE_182342_BUG = true;
+//            TraceFlags.TRACE_182342_BUG = true;
         }
         ModelSupport.instance().startup();
     }
