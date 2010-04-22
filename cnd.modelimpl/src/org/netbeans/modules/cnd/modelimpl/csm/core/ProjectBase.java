@@ -967,10 +967,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 return;
             }
 
-            ensureChangedFilesEnqueued();
-            if (isDisposing()) {
-                return;
-            }
+            // changed files are enqueued by edit start/edit end handlers
+//            ensureChangedFilesEnqueued();
+//            if (isDisposing()) {
+//                return;
+//            }
             Notificator.instance().flush();
         } finally {
             disposeLock.readLock().unlock();

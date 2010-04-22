@@ -161,7 +161,7 @@ public class ParserQueueTest extends CndBaseTestCase {
         for (int i = 0; i < sequence.length; ++i) {
             OpInfo op = sequence[i];
             if (op.add) {
-                queue.add(projectFiles.get(op.fileIndex), null, op.pos);
+                queue.add(projectFiles.get(op.fileIndex), FileImpl.DUMMY_STATE, op.pos);
             } else {
                 Entry entry = null;
                 try {
