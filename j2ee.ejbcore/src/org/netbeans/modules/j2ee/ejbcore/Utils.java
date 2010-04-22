@@ -140,7 +140,20 @@ public class Utils {
         }
         return false;
     }
-    
+
+    public static Project getNestingJ2eeApp(Project project){
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        for (Project openProject : OpenProjects.getDefault().getOpenProjects()) {
+            J2eeApplicationProvider j2eeAppProvider = openProject.getLookup().lookup(J2eeApplicationProvider.class);
+            if (j2eeAppProvider != null) {
+                if (Arrays.asList(j2eeAppProvider.getChildModuleProviders()).contains(j2eeModuleProvider)) {
+                    return openProject;
+                }
+            }
+        }
+        return null;
+    }
+
     // =========================================================================
     
     // utils for ejb code synchronization
