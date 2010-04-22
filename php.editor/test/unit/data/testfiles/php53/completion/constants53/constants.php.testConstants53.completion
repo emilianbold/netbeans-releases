@@ -1,4 +1,4 @@
 Code completion result for source line:
 echo CONSTANT_XY|Z;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-GLOBAL     CONSTANT_XYZ 'Hello World'      [PUBLIC]   test\ns\constants\ctx
+CONSTANT   CONSTANT_XYZ 'Hello World'      [PUBLIC]   test\ns\constants\ctx

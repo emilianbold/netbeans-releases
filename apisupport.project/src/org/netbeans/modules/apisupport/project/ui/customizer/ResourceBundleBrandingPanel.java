@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import javax.swing.Action;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -72,6 +73,7 @@ import org.openide.actions.OpenAction;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
@@ -142,7 +144,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        view = new org.openide.explorer.view.BeanTreeView();
+        view = new MyTree();
         searchLabel = new javax.swing.JLabel();
         searchField = new javax.swing.JTextField();
 
@@ -164,12 +166,14 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(view, javax.swing.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(searchLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 179, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, 209, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(view, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(searchLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, 209, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -180,7 +184,8 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
                     .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(searchLabel))
                 .addGap(12, 12, 12)
-                .addComponent(view, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE))
+                .addComponent(view, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         searchLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ResourceBundleBrandingPanel.class, "ResourceBundleBrandingPanel.searchLabel.AccessibleContext.accessibleDescription")); // NOI18N
@@ -755,6 +760,23 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
 
         protected Component createDesign(final String text) {
             return keyPanel = new ResourceBundleKeyPanel(text);
+        }
+    }
+
+    private final JScrollPane scrollPane = new JScrollPane();
+
+    private class MyTree extends BeanTreeView {
+
+        public MyTree() {
+            setBorder(scrollPane.getBorder());
+            setViewportBorder(scrollPane.getViewportBorder());
+        }
+
+        @Override
+        public void updateUI() {
+            super.updateUI();
+            setBorder(scrollPane.getBorder());
+            setViewportBorder(scrollPane.getViewportBorder());
         }
     }
 }
