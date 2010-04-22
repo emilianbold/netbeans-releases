@@ -90,7 +90,7 @@ public class DiffNode extends AbstractNode {
         int status = info.getStatus();
         // Special treatment: Mergeable status should be annotated as Conflict in Versioning view according to UI spec
         if (status == FileInformation.STATUS_VERSIONED_MERGE) {
-            status = FileInformation.STATUS_VERSIONED_CONFLICT;
+            status = FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT;
         }
         String oldHtmlDisplayName = htmlDisplayName;
         htmlDisplayName = Subversion.getInstance().getAnnotator().annotateNameHtml(setup.getBaseFile().getName(), info, null);

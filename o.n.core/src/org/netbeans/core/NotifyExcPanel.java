@@ -633,7 +633,8 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                 exceptions = null;
                 flash = null;
                 timer.stop();
-                note.clear();
+                if( null != note )
+                    note.clear();
             }
         }
     }

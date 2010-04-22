@@ -93,6 +93,7 @@ import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -299,7 +300,7 @@ import org.openide.util.NbBundle;
                                     (List<TypeParameterTree>)Collections.EMPTY_LIST,
                                     vars,
                                     (List<ExpressionTree>)Collections.EMPTY_LIST,
-                                    "{" + option.getCallLines("getEntityManager()", entityClassVar, PersistenceUtils.getJPAVersion(project)) + "}", //NOI18N
+                                    "{" + option.getCallLines("getEntityManager()", entityClassVar, project!=null ? PersistenceUtils.getJPAVersion(project) : Persistence.VERSION_1_0) + "}", //NOI18N
                                     null));
                     }
                     }

@@ -145,7 +145,7 @@ class DiskMapTurboProvider implements TurboProvider {
                                 entriesCount++;
                                 File f = (File) j.next();
                                 FileInformation info = (FileInformation) value.get(f);
-                                if(info.getStatus() == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                                if((info.getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT) != 0) {
                                     conflictedIndex.add(f);
                                 }
                                 if ((info.getStatus() & STATUS_VALUABLE) != 0) {
@@ -352,6 +352,9 @@ class DiskMapTurboProvider implements TurboProvider {
     }
 
     private void adjustIndex(File dir, Object value) {
+        // the file must be a folder or must not exist
+        // adding existing file is forbidden
+        assert !dir.isFile();
         Map map = (Map) value;
         Set set = map != null ? map.keySet() : null;
 
@@ -364,7 +367,7 @@ class DiskMapTurboProvider implements TurboProvider {
                 FileInformation info = (FileInformation) map.get(file);
 
                 // conflict
-                if(info.getStatus() == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                if((info.getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT) != 0) {
                     conflictedSet.add(file);
                 }
 
