@@ -57,6 +57,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
@@ -119,8 +120,11 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
         if (component != null) {
             return true;
         } else {
-            JTextComponent jtc = findComponent(Utilities.actionsGlobalContext());
-            return jtc != null;
+            if (EditorRegistry.componentList().isEmpty()) {
+                return false;
+            }
+
+            return Utilities.actionsGlobalContext().lookup(EditorCookie.class) != null;
         }
     }
 
@@ -140,7 +144,7 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
         return b;
     }
 
-    private static JTextComponent findComponent(Lookup lookup) {
+    public static JTextComponent findComponent(Lookup lookup) {
         EditorCookie ec = (EditorCookie) lookup.lookup(EditorCookie.class);
         return ec == null ? null : NbDocument.findRecentEditorPane(ec);
     }

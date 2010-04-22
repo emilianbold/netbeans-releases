@@ -45,14 +45,15 @@ import java.awt.event.ActionEvent;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.Action;
-import javax.swing.JEditorPane;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 
 import org.netbeans.editor.BaseAction;
 import org.netbeans.lib.editor.bookmarks.actions.ClearDocumentBookmarksAction;
 import org.netbeans.lib.editor.bookmarks.actions.GotoBookmarkAction;
+import org.netbeans.lib.editor.bookmarks.actions.ToggleBookmarkAction;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
-import org.openide.text.NbDocument;
 import org.openide.util.actions.NodeAction;
 
 
@@ -83,7 +84,7 @@ public class WrapperBookmarkAction extends NodeAction {
     }
 
     public void performAction(Node[] activatedNodes) {
-        JEditorPane editorPane = getEditorPane (activatedNodes);
+        JTextComponent editorPane = getEditorPane (activatedNodes);
         if (editorPane != null) {
             ActionEvent paneEvt = new ActionEvent (editorPane, 0, "");
             originalAction.actionPerformed (paneEvt);
@@ -91,23 +92,29 @@ public class WrapperBookmarkAction extends NodeAction {
     }
     
     protected boolean enable (Node[] activatedNodes) {
-        return getEditorPane (activatedNodes) != null;
+        if (activatedNodes == null || activatedNodes.length != 1) {
+            return false;
+        }
+
+        if (EditorRegistry.componentList().isEmpty()) {
+            return false;
+        }
+
+        return activatedNodes[0].getLookup().lookup(EditorCookie.class) != null;
     }
     
-    private static JEditorPane getEditorPane (Node[] activatedNodes) {
+    private static JTextComponent getEditorPane (Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length > 0) {
-            Set<JEditorPane> editors = new HashSet<JEditorPane> ();
+            Set<JTextComponent> editors = new HashSet<JTextComponent> ();
             for (Node node : activatedNodes) {
-                EditorCookie ec = node.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    JEditorPane pane = NbDocument.findRecentEditorPane(ec);
-                    if (pane != null) {
-                        editors.add (pane);
-                    }
+                JTextComponent pane = ToggleBookmarkAction.findComponent(node.getLookup());
+                if (pane != null) {
+                    editors.add(pane);
                 }
             }
-            if (editors.size () == 1)
+            if (editors.size () == 1) {
                 return editors.iterator ().next ();
+            }
         }
         return null;
     }
