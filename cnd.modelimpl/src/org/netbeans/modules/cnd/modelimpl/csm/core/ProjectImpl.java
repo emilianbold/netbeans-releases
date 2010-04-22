@@ -347,7 +347,7 @@ public final class ProjectImpl extends ProjectBase {
 
         public void setTask(Task task) {
             if (TraceFlags.TRACE_182342_BUG) {
-                new Exception("EditingTask.setTask: set new EditingTask " + task.hashCode()).printStackTrace(System.err);// NOI18N
+                System.err.printf("EditingTask.setTask: set new EditingTask %d for %s\n", task.hashCode(), buf.getFile());
             }
             this.task = task;
         }
