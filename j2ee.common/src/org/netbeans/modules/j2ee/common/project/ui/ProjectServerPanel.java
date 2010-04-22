@@ -64,7 +64,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
-import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
@@ -87,21 +86,23 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
     private List<Project> earProjects;
     private final J2eeModule.Type j2eeModuleType;
     private File projectLocation;
+    private boolean importScenario;
     
     private BigDecimal xmlVersion;
 
     @Deprecated
     public ProjectServerPanel(Object j2eeModuleType, String name, String title,
             ProjectServerWizardPanel wizard, boolean showAddToEar,
-            boolean mainAppClientClass, boolean showContextPath, boolean createProjects) {
+            boolean mainAppClientClass, boolean showContextPath, boolean createProjects, boolean importScenario) {
 
-        this(J2eeModule.Type.fromJsrType(j2eeModuleType), name, title, wizard, showAddToEar, mainAppClientClass, showContextPath, createProjects);
+        this(J2eeModule.Type.fromJsrType(j2eeModuleType), name, title, wizard, showAddToEar, mainAppClientClass, showContextPath, createProjects, importScenario);
     }
 
     /** Creates new form ProjectServerPanel */
     public ProjectServerPanel(J2eeModule.Type j2eeModuleType, String name, String title,
             ProjectServerWizardPanel wizard, boolean showAddToEar, 
-            boolean mainAppClientClass, boolean showContextPath, boolean createProjects) {
+            boolean mainAppClientClass, boolean showContextPath, boolean createProjects, boolean importScenario) {
+        this.importScenario = importScenario;
         initComponents();
         setJ2eeVersionWarningPanel();
         this.wizard = wizard;
@@ -784,7 +785,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             cdiCheckbox.setVisible(false);
             return;
         }
-        cdiCheckbox.setVisible(j2ee.equals(Profile.JAVA_EE_6_FULL) || j2ee.equals(Profile.JAVA_EE_6_WEB));
+        cdiCheckbox.setVisible(!importScenario && (j2ee.equals(Profile.JAVA_EE_6_FULL) || j2ee.equals(Profile.JAVA_EE_6_WEB)));
         String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
         if (warningType == null && warningPanel == null) {
             warningPlaceHolderPanel.setVisible(false);

@@ -76,20 +76,6 @@ public class Utils {
     private Utils() {
     }
     
-    public static String toClasspathString(File[] classpathEntries) {
-        if (classpathEntries == null) {
-            return "";
-        }
-        StringBuffer classpath = new StringBuffer();
-        for (int i = 0; i < classpathEntries.length; i++) {
-            classpath.append(classpathEntries[i].getAbsolutePath());
-            if (i + 1 < classpathEntries.length) {
-                classpath.append(':');
-            }
-        }
-        return classpath.toString();
-    }
-
     private static void setSteps(WizardDescriptor.Panel[] panels, String[] steps, String[] resultSteps, int offset) {
         int n = steps == null ? 0 : steps.length;
         for (int i = 0; i < panels.length; i++) {

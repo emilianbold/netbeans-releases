@@ -186,10 +186,12 @@ public final class FreeformProject implements Project {
             }
         });
     }
-    
+
+    //Todo: replace with api.java.common #110886
     private final class Info implements ProjectInformation, AntProjectListener {
 
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private volatile String nameCache;
         
         @SuppressWarnings("LeakingThisInConstructor")
         public Info() {
@@ -201,15 +203,17 @@ public final class FreeformProject implements Project {
         }
         
         public String getDisplayName() {
+            String res = nameCache;
+            if (res != null) {
+                return res;
+            }
             return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
                 public String run() {
                     Element genldata = getPrimaryConfigurationData();
                     Element nameEl = XMLUtil.findElement(genldata, "name", FreeformProjectType.NS_GENERAL); // NOI18N
-                    if (nameEl == null) {
-                        // Corrupt. Cf. #48267 (cause unknown).
-                        return "???"; // NOI18N
-                    }
-                    return XMLUtil.findText(nameEl);
+                    final String name = nameEl == null ? "???" : XMLUtil.findText(nameEl); //NOI18N  Corrupt. Cf. #48267 (cause unknown).
+                    nameCache = name;
+                    return name;
                 }
             });
         }
@@ -236,6 +240,7 @@ public final class FreeformProject implements Project {
 
 
         public @Override void configurationXmlChanged(AntProjectEvent ev) {
+            nameCache = null;
             pcs.firePropertyChange(null, null, null);
         }
 
