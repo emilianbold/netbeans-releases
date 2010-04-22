@@ -62,6 +62,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.OpenCookie;
@@ -95,6 +97,8 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
     private static final int SAMPLER_RATE = 10;
     private static final double MAX_AVERAGE = SAMPLER_RATE * 3;
     private static final double MAX_STDDEVIATION = SAMPLER_RATE * 4;
+    private static final int MAX_SAMPLING_TIME = 5*60;  // 5 minutes
+    private static final int MAX_SAMPLES = MAX_SAMPLING_TIME * (1000/SAMPLER_RATE);
     private final AtomicReference<Controller> RUNNING = new AtomicReference<Controller>();
     private Boolean debugMode;
     private String lastReason;
@@ -116,10 +120,6 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
 
     /**
      * Invoked when an action occurs.
@@ -136,12 +136,28 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                         , false));
                 c.run();
             } else if ((c = RUNNING.getAndSet(null)) != null) {
-                putValue(Action.NAME, ACTION_NAME_START);
-                putValue(Action.SMALL_ICON,
-                        ImageUtilities.loadImageIcon(
-                        "org/netbeans/core/ui/sampler/selfSampler.png" //NOI18N
-                        , false));
-                c.actionPerformed(new ActionEvent(this, 0, "show")); // NOI18N
+                final Controller controller = c;
+
+                setEnabled(false);
+                SwingWorker worker = new SwingWorker() {
+
+                    @Override
+                    protected Object doInBackground() throws Exception {
+                        controller.actionPerformed(new ActionEvent(this, 0, "show")); // NOI18N
+                        return null;
+                    }
+
+                    @Override
+                    protected void done() {
+                        putValue(Action.NAME, ACTION_NAME_START);
+                        putValue(Action.SMALL_ICON,
+                                ImageUtilities.loadImageIcon(
+                                "org/netbeans/core/ui/sampler/selfSampler.png" //NOI18N
+                                , false));
+                        SelfSamplerAction.this.setEnabled(true);
+                    }
+                };
+                worker.execute();
             }
         } else {
             NotifyDescriptor d = new NotifyDescriptor.Message(NOT_SUPPORTED, NotifyDescriptor.INFORMATION_MESSAGE);
@@ -164,6 +180,10 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
             return new Controller(key);
         }
         return o;
+    }
+
+    private boolean isProfileMe(Controller c) {
+        return c == RUNNING.get();
     }
 
     private synchronized boolean isDebugged() {
@@ -268,6 +288,10 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                         if (stopped) {
                             return;
                         }
+                        if (samples >= MAX_SAMPLES) {
+                            cancelTimer();
+                            return;
+                        }
                         try {
                             ThreadInfo[] infos = threadBean.dumpAllThreads(false, false);
                             long timestamp = System.nanoTime();
@@ -279,6 +303,21 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                     }
                 }
             }, SAMPLER_RATE, SAMPLER_RATE);
+        }
+
+        private void cancelTimer() {
+            timer.cancel();
+            if (SelfSamplerAction.getInstance().isProfileMe(this)) {
+                // if this sampling was invoked manually via ProfileMe action
+                // stop it
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        SelfSamplerAction.getInstance().actionPerformed(null);
+                    }
+                });
+            }
         }
 
         @Override
@@ -310,6 +349,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                     }
                 }
                 samplesStream.close();
+                samplesStream = null;
                 if (writeCommand) {
                     DataOutputStream dos = (DataOutputStream) e.getSource();
                     dos.write(out.toByteArray());
@@ -332,6 +372,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
+                // just to be sure
                 out = null;
                 samplesStream = null;
             }
@@ -342,6 +383,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                 FileOutputStream fstream = new FileOutputStream(file);
 
                 fstream.write(out.toByteArray());
+                out = null;
                 fstream.close();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
