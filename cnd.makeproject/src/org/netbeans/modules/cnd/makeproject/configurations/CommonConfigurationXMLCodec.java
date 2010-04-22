@@ -191,7 +191,6 @@ public abstract class CommonConfigurationXMLCodec
         implements XMLEncoder {
 
     public final static int CURRENT_VERSION = 67;
-
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -366,7 +365,7 @@ public abstract class CommonConfigurationXMLCodec
         if (publicLocation) {
             writeLogicalFolders(xes);
             writeSourceRoots(xes);
-        //writeSourceEncoding(xes);
+            //writeSourceEncoding(xes);
         }
         xes.element(PROJECT_MAKEFILE_ELEMENT, ((MakeConfigurationDescriptor) projectDescriptor).getProjectMakefileName());
         if (!publicLocation) {
@@ -542,8 +541,7 @@ public abstract class CommonConfigurationXMLCodec
                         new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()), // NOI18N
                         new AttrValuePair(KIND_ATTR, "" + folder.getKind()), // NOI18N
                     });
-        }
-        else {
+        } else {
             xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
                     new AttrValuePair[]{
                         new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
@@ -819,12 +817,12 @@ public abstract class CommonConfigurationXMLCodec
         if (linkerConfiguration.getTool().getModified()) {
             xes.element(COMMANDLINE_TOOL_ELEMENT, linkerConfiguration.getTool().getValue());
         }
-        if(linkerConfiguration.getLibrariesConfiguration().getModified()) {
+        if (linkerConfiguration.getLibrariesConfiguration().getModified()) {
             writeLibrariesConfiguration(xes, linkerConfiguration.getLibrariesConfiguration());
         }
         if (linkerConfiguration.getCommandLineConfiguration().getModified()) {
-                xes.element(COMMAND_LINE_ELEMENT, "" + linkerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
-             	//xes.element(DEBUGGING_ELEMENT, "" + linkerConfiguration.getTool().getValue() + " " + linkerConfiguration.getOptions()); // NOI18N
+            xes.element(COMMAND_LINE_ELEMENT, "" + linkerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
+            //xes.element(DEBUGGING_ELEMENT, "" + linkerConfiguration.getTool().getValue() + " " + linkerConfiguration.getOptions()); // NOI18N
         }
         xes.elementClose(LINKERTOOL_ELEMENT);
     }

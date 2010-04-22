@@ -395,7 +395,6 @@ public class ProjectOptionsPanel extends JPanel {
         PropertyChangeEvent pce = new PropertyChangeEvent(this, OptionsPanelController.PROP_VALID, this, this);
         firePropertyChange(pce);
     }//GEN-LAST:event_viewBinaryFilesCheckBoxActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox dependencyCheckingCheckBox;
     private javax.swing.JLabel filePathLabel;

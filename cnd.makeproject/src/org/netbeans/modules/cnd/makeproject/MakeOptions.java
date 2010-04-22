@@ -56,7 +56,6 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         getString("TXT_Auto"),
         getString("TXT_AlwaysRelative"),
         getString("TXT_AlwaysAbsolute"),};
-
     private static MakeOptions instance = null;
     // Default make options
     private static final String MAKE_OPTIONS = "makeOptions"; // NOI18N
@@ -84,7 +83,6 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     public static final String FULL_FILE_INDEXER = "fullFileIndexer"; // NOI18N
 
     static {
-        
     }
 
     static public MakeOptions getInstance() {
@@ -279,7 +277,6 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
             firePropertyChange(DEF_GROUP, oldValue, value);
         }
     }
-
 
     // Prefered language when creating new Application projects
     public String getPrefApplicationLanguage() {
