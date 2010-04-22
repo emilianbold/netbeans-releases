@@ -1463,7 +1463,7 @@ public class TokenFormatter {
                         }
                     }
                     if (startOffset <= realOffset
-                            && realOffset <= endOffset + delta) {
+                            && realOffset < endOffset + delta) {
 
                         if (!templateEdit) { // if is not in template, then replace simply
                             delta = replaceSimpleString(document, realOffset, oldText, newText, delta);
