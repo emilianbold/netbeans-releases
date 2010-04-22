@@ -323,7 +323,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         assertEquals("release version", "3", antDep.getReleaseVersion());
         assertEquals("specification version", "3.9", antDep.getSpecificationVersion());
         assertTrue("compile dependeny", antDep.hasCompileDependency());
-        assertFalse("implementation dependeny", antDep.hasImplementationDepedendency());
+        assertFalse("implementation dependeny", antDep.hasImplementationDependency());
     }
     
     public void testTheSameModuleDependencyTwice() throws Exception {

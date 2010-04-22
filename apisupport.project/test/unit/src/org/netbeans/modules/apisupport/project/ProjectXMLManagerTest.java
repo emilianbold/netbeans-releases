@@ -191,7 +191,7 @@ public class ProjectXMLManagerTest extends TestBase {
                                 "2",
                                 origDep.getSpecificationVersion(),
                                 origDep.hasCompileDependency(),
-                                origDep.hasImplementationDepedendency());
+                                origDep.hasImplementationDependency());
                         testingPXM.editDependency(origDep, newDep);
                     }
                 }
@@ -258,7 +258,7 @@ public class ProjectXMLManagerTest extends TestBase {
             if ("org.netbeans.modules.java.j2seplatform".equals(md.getModuleEntry().getCodeNameBase())) {
                 assertEquals("edited release version", "1", md.getReleaseVersion());
                 assertFalse("has compile depedendency", md.hasCompileDependency());
-                assertTrue("has implementation depedendency", md.hasImplementationDepedendency());
+                assertTrue("has implementation depedendency", md.hasImplementationDependency());
             }
         }
         assertTrue("following dependencies were found: " + assumedCNBs, assumedCNBs.isEmpty());
@@ -335,7 +335,7 @@ public class ProjectXMLManagerTest extends TestBase {
                         "", // will be check if it is not written
                         oldOO.getSpecificationVersion(),
                         md.hasCompileDependency(),
-                        md.hasImplementationDepedendency());
+                        md.hasImplementationDependency());
                 it.remove();
                 break;
             }

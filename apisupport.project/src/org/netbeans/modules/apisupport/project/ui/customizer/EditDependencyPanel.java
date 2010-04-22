@@ -99,10 +99,10 @@ public final class EditDependencyPanel extends JPanel {
         UIUtil.setText(codeNameBaseValue, me.getCodeNameBase());
         UIUtil.setText(jarLocationValue, me.getJarLocation().getAbsolutePath());
         UIUtil.setText(releaseVersionValue, origDep.getReleaseVersion());
-        UIUtil.setText(specVerValue, origDep.hasImplementationDepedendency() ?
+        UIUtil.setText(specVerValue, origDep.hasImplementationDependency() ?
             me.getSpecificationVersion() :
             origDep.getSpecificationVersion());
-        implVer.setSelected(origDep.hasImplementationDepedendency());
+        implVer.setSelected(origDep.hasImplementationDependency());
         availablePkg.setEnabled(hasAvailablePackages());
         includeInCP.setSelected(origDep.hasCompileDependency());
         refreshAvailablePackages();

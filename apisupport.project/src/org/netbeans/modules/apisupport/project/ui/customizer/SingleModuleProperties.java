@@ -445,7 +445,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         Set<ModuleDependency> deps = depsModel.getDependencies();
         for (Iterator it = deps.iterator(); it.hasNext();) {
             ModuleDependency dep = (ModuleDependency) it.next();
-            if (dep.hasImplementationDepedendency()) {
+            if (dep.hasImplementationDependency()) {
                 return true;
             }
         }

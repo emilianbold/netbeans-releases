@@ -870,7 +870,7 @@ public final class ProjectXMLManager {
             runDepEl.appendChild(createModuleElement(
                     doc, ProjectXMLManager.RELEASE_VERSION, rv));
         }
-        if (md.hasImplementationDepedendency()) {
+        if (md.hasImplementationDependency()) {
             runDepEl.appendChild(createModuleElement(
                     doc, ProjectXMLManager.IMPLEMENTATION_VERSION));
         } else {

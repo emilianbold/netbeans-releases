@@ -709,10 +709,10 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         ModuleDependency[] newDeps = AddModulePanel.selectDependencies(getProperties());
         for (int i = 0; i < newDeps.length; i++) {
             ModuleDependency dep = newDeps[i];
-            if ("0".equals(dep.getReleaseVersion()) && !dep.hasImplementationDepedendency()) { // #72216 NOI18N
+            if ("0".equals(dep.getReleaseVersion()) && !dep.hasImplementationDependency()) { // #72216 NOI18N
                 dep = new ModuleDependency(
                             dep.getModuleEntry(), "0-1", dep.getSpecificationVersion(), // NOI18N
-                            dep.hasCompileDependency(), dep.hasImplementationDepedendency());
+                            dep.hasCompileDependency(), dep.hasImplementationDependency());
             }
             String warn = pxml.getDependencyCycleWarning(Collections.singleton(dep));
             if (warn != null) {

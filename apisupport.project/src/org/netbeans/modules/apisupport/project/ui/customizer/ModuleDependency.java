@@ -167,7 +167,7 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
             if (result != 0) { return result; }
         }
         
-        result = hasImplementationDepedendency() == other.hasImplementationDepedendency() ? 0 : (implDep ? 1 : -1);
+        result = hasImplementationDependency() == other.hasImplementationDependency() ? 0 : (implDep ? 1 : -1);
         if (result != 0) { return result; }
         
         result = hasCompileDependency() == other.hasCompileDependency() ? 0 : (compileDep ? 1 : -1);
@@ -181,7 +181,7 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
                     Utilities.compareObjects(getReleaseVersion(), other.getReleaseVersion()) &&
                     ((specVersion == SPEC_VERSION_LAZY && other.specVersion == SPEC_VERSION_LAZY) ||
                     Utilities.compareObjects(getSpecificationVersion(), other.getSpecificationVersion())) &&
-                    (hasImplementationDepedendency() == other.hasImplementationDepedendency()) &&
+                    (hasImplementationDependency() == other.hasImplementationDependency()) &&
                     (hasCompileDependency() == other.hasCompileDependency());
         } else {
             return false;
@@ -197,7 +197,7 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
         return compileDep;
     }
     
-    public boolean hasImplementationDepedendency() {
+    public boolean hasImplementationDependency() {
         return implDep;
     }
     
@@ -244,7 +244,7 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
         return "ModuleDependency[me: " + getModuleEntry() + // NOI18N
                 ", relVer: " + getReleaseVersion() + // NOI18N
                 ", specVer: " + getSpecificationVersion() + // NOI18N
-                ", implDep: " + hasImplementationDepedendency() + // NOI18N
+                ", implDep: " + hasImplementationDependency() + // NOI18N
                 ", compDep: " + hasCompileDependency() + // NOI18N
                 "]"; // NOI18N
     }
