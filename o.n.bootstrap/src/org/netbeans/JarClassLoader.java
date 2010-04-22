@@ -810,14 +810,11 @@ public class JarClassLoader extends ProxyClassLoader {
         return known;
     }
     
-    /**
-     * URLStreamHandler for res protocol
-     */
-    static class ResURLStreamHandler extends URLStreamHandler {
+    static class JarURLStreamHandler extends URLStreamHandler {
 
         private final URLStreamHandler originalJarHandler;
 
-        ResURLStreamHandler(URLStreamHandler originalJarHandler) {
+        JarURLStreamHandler(URLStreamHandler originalJarHandler) {
             this.originalJarHandler = originalJarHandler;
         }
 
@@ -856,7 +853,7 @@ public class JarClassLoader extends ProxyClassLoader {
             } catch (URISyntaxException x) {
                 throw (IOException) new IOException("Decoding " + u + ": " + x).initCause(x);
             }
-            return new ResURLConnection (u, _src, _name);
+            return new NbJarURLConnection (u, _src, _name);
         }
 
         @Override
@@ -873,7 +870,7 @@ public class JarClassLoader extends ProxyClassLoader {
     /** URLConnection for URL with res protocol.
      *
      */
-    private static class ResURLConnection extends JarURLConnection {
+    private static class NbJarURLConnection extends JarURLConnection {
         private JarSource src;
         private final String name;
         private byte[] data;
@@ -884,7 +881,7 @@ public class JarClassLoader extends ProxyClassLoader {
          * @param url the parameter for which the connection should be
          * created
          */
-        private ResURLConnection(URL url, Source src, String name) throws MalformedURLException {
+        private NbJarURLConnection(URL url, Source src, String name) throws MalformedURLException {
             super(url);
             this.src = (JarSource)src;
             this.name = name;
