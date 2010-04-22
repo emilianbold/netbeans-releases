@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.event.ItemEvent;

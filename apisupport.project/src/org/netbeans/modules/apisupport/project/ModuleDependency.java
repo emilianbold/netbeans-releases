@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.apisupport.project.ui.customizer;
+package org.netbeans.modules.apisupport.project;
 
 import java.text.Collator;
 import java.util.Arrays;
@@ -216,7 +216,7 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
      * module (according to whether or not it would be listed as a friend).
      * @param dependingModuleCNB the CNB of the module depending on this one
      */
-    Set<String> getFilterTokens(String dependingModuleCNB) {
+    public Set<String> getFilterTokens(String dependingModuleCNB) {
         boolean friend = me.isDeclaredAsFriend(dependingModuleCNB);
         Set<String> filterTokens = friend ? filterTokensFriend : filterTokensNotFriend;
         if (filterTokens == null) {

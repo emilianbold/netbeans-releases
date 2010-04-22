@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
