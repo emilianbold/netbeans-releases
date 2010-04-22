@@ -87,6 +87,7 @@ import java.util.*;
 import java.io.File;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
+import org.netbeans.modules.subversion.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.versioning.util.SortedTable;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 
@@ -349,7 +350,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Update
         Commit...        
         --------------------
-        Conflict Resolved    (on conflicting file)
+        Resolve Conflicts    (on conflicting file)
         --------------------
         Blame
         Show History...
@@ -375,7 +376,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Mnemonics.setLocalizedText(item, item.getText());
         
         menu.addSeparator();
-        item = menu.add(new SystemActionBridge(SystemAction.get(ConflictResolvedAction.class), org.openide.util.NbBundle.getMessage(SyncTable.class, "CTL_PopupMenuItem_ConflictResolved"))); // NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), actionString("CTL_PopupMenuItem_ResolveConflicts"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
                 
         menu.addSeparator();

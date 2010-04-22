@@ -655,6 +655,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             displayDiffView();
             nextAction.setEnabled(false);
             prevAction.setEnabled(false);
+            commitButton.setEnabled(false);
             revalidate();
             repaint();
         } else {

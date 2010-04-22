@@ -106,8 +106,10 @@ public class DictionaryInstallerPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(tDictionary, gridBagConstraints);
+        tDictionary.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "tDictionary_ACSN")); // NOI18N
+        tDictionary.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "tDictionary_ACSD")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(bBrowse, org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "DictionaryInstallerPanel.bBrowse.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bBrowse, org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "bBrowse")); // NOI18N
         bBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bBrowseActionPerformed(evt);
@@ -116,6 +118,8 @@ public class DictionaryInstallerPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(bBrowse, gridBagConstraints);
+        bBrowse.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "bBrowse_ACSN")); // NOI18N
+        bBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "bBrowse_ACSD")); // NOI18N
 
         encoding.setLabelFor(cEncoding);
         org.openide.awt.Mnemonics.setLocalizedText(encoding, org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "DictionaryInstallerPanel.encoding.text")); // NOI18N
@@ -134,6 +138,8 @@ public class DictionaryInstallerPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(cEncoding, gridBagConstraints);
+        cEncoding.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "cEncoding_ACSN")); // NOI18N
+        cEncoding.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "cEncoding_ACSD")); // NOI18N
 
         locale.setLabelFor(tLocale);
         org.openide.awt.Mnemonics.setLocalizedText(locale, org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "DictionaryInstallerPanel.locale.text")); // NOI18N
@@ -152,6 +158,9 @@ public class DictionaryInstallerPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(tLocale, gridBagConstraints);
+        tLocale.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "tLocale_ACSN")); // NOI18N
+        tLocale.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "tLocale_ACSD")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;

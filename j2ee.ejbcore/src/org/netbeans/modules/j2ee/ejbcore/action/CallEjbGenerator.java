@@ -415,9 +415,9 @@ public class CallEjbGenerator {
         }
         if (global){
             String moduleFullName = ProjectUtils.getInformation(ejbProject).getName();
-            Project project = FileOwnerQuery.getOwner(fileObject);
-            if (project != null && !project.equals(ejbProject)){
-                moduleFullName = ProjectUtils.getInformation(project).getName() + "/" + moduleFullName;
+            Project j2eeAppProject = Utils.getNestingJ2eeApp(ejbProject);
+            if (j2eeAppProject != null && !j2eeAppProject.equals(ejbProject)){
+                moduleFullName = ProjectUtils.getInformation(j2eeAppProject).getName() + "/" + moduleFullName;
             }
             body = MessageFormat.format(JNDI_LOOKUP_GLOBAL, new Object[] {moduleFullName, ejbName, componentName});
         } else if (isSimplified && isTargetJavaSE){

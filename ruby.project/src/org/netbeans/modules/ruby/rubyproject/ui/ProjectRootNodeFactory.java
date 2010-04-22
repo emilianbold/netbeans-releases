@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -88,6 +89,8 @@ import org.openide.util.actions.SystemAction;
 @NodeFactory.Registration(projectType="org-netbeans-modules-ruby-rubyproject")
 public final class ProjectRootNodeFactory implements NodeFactory {
     
+    private static final Logger LOGGER = Logger.getLogger(ProjectRootNodeFactory.class.getName());
+
     public NodeList createNodes(Project p) {
         RubyProject project = p.getLookup().lookup(RubyProject.class);
         assert project != null;
@@ -183,6 +186,10 @@ public final class ProjectRootNodeFactory implements NodeFactory {
                     if (RakeSupport.isRakeFile(key.fileObject)) {
                         return new RakeSupport.RakeNode(key.fileObject);
                     } else {
+                        if (!key.fileObject.isValid()) {
+                            LOGGER.info("Invalid FO, skipping node: " + key.fileObject.getPath());
+                            return null;
+                        }
                         DataObject dobj = DataObject.find(key.fileObject);
                         return new FilterNode(dobj.getNodeDelegate());
                     }

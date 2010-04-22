@@ -83,6 +83,7 @@ public class UpdateCommand extends SvnCommand {
         if(ignoreExternals) {
             arguments.add("--ignore-externals");
         }
+        arguments.add("--force"); // NOI18N - permits update when locally new file conflicts with the one in repository
         for (File file : files) {
             arguments.add(file);                       
         }        
