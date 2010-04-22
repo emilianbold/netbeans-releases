@@ -899,6 +899,12 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                         popExp();
                                         pushExp(createTokenExp(VARIABLE));
                                         break;
+                                    } else {
+                                        popExp(); // top
+                                        CsmCompletionExpression var = createTokenExp(VARIABLE);
+                                        var.addParameter(top);
+                                        pushExp(var);
+                                        break;
                                     }
                                 // no break;
                                 case VARIABLE:
@@ -1077,6 +1083,10 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                             case TYPE:
                             case TYPE_REFERENCE:
                                 if (tokenID == CppTokenId.STAR || tokenID == CppTokenId.AMP) {// '*' or '&' as type reference
+                                    pushExp(createTokenExp(OPERATOR));
+                                    break;
+                                }
+                                if (tokenID == CppTokenId.EQ) {// function param = value
                                     pushExp(createTokenExp(OPERATOR));
                                     break;
                                 }
@@ -2061,7 +2071,6 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                     case INT_LITERAL:
 //                    case HEX_LITERAL:
 //                    case OCTAL_LITERAL:
-                    case UNSIGNED:
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType("int"); // NOI18N
                         break;
