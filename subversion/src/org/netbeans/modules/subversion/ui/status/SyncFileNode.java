@@ -112,7 +112,7 @@ public class SyncFileNode extends AbstractNode {
     }
 
     public Action getPreferredAction() {
-        if (node.getInformation().getStatus() == FileInformation.STATUS_VERSIONED_CONFLICT) {
+        if ((node.getInformation().getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT) != 0) {
             return SystemAction.get(ResolveConflictsAction.class);
         }
         return SystemAction.get(DiffAction.class);

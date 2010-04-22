@@ -131,7 +131,7 @@ final class Tree extends JTree {
     }
 
     void finished(String target, String text, int count) {
-        myText = i18n(Tree.class, "LBL_Search_Tab", target, text); // NOI18N
+        myText = i18n(Tree.class, "LBL_Search_Tab", target, removeAsterisk(text)); // NOI18N
         String title = i18n(Tree.class, "LBL_Root", target, text, "" + count); // NOI18N
         String name = i18n(Tree.class, "TXT_Root", target, text, "" + count); // NOI18N
         String tooltip = getHtml(title);
@@ -145,6 +145,13 @@ final class Tree extends JTree {
         createOccurences();
         updateRoot();
         expose(myRoot);
+    }
+
+    private String removeAsterisk(String text) {
+        if (text != null && text.endsWith("*")) { // NOI18N
+            text = text.substring(0, text.length() - 1);
+        }
+        return text;
     }
 
     @Override
