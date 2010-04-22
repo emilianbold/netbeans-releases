@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.editor.api;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 
@@ -98,7 +99,8 @@ public final class PhpModifiers extends Modifier {
         }
     }
     public Set<org.netbeans.modules.csl.api.Modifier> toModifiers() {
-        Set<org.netbeans.modules.csl.api.Modifier> retval = new HashSet<org.netbeans.modules.csl.api.Modifier>();
+        @SuppressWarnings("SetReplaceableByEnumSet")
+        Set<org.netbeans.modules.csl.api.Modifier> retval = new LinkedHashSet<org.netbeans.modules.csl.api.Modifier>();
         if (isPublic() && !isStatic()) {
             retval.add(org.netbeans.modules.csl.api.Modifier.PUBLIC);
         }
