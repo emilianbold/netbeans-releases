@@ -179,7 +179,12 @@ public class ComputeOverriders {
 
     private Map<ElementHandle<? extends Element>, List<ElementDescription>> processImpl(CompilationInfo info, TypeElement te, ExecutableElement ee, boolean interactive) {
         FileObject file = info.getFileObject();
-        FileObject thisSourceRoot = findSourceRoot(file);
+        FileObject thisSourceRoot;
+        if (te != null ) {
+            thisSourceRoot = findSourceRoot(SourceUtils.getFile(te, info.getClasspathInfo()));
+        } else {
+            thisSourceRoot = findSourceRoot(file);
+        }
         
         if (thisSourceRoot == null) {
             return null;
