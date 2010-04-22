@@ -57,6 +57,7 @@ public class EntityMappingsMetadataModelHelper {
     private final ClassPath bootPath;
     private final ClassPath compilePath;
     private final ClassPath sourcePath;
+    private final Object modelLock;
 
     private File persistenceXml;
 
@@ -70,6 +71,7 @@ public class EntityMappingsMetadataModelHelper {
         this.bootPath = bootPath;
         this.compilePath = compilePath;
         this.sourcePath = sourcePath;
+        modelLock = new Object();
     }
 
     public synchronized void changePersistenceXml(File newPersistenceXml) {
@@ -91,7 +93,7 @@ public class EntityMappingsMetadataModelHelper {
     }
     
     public MetadataModel<EntityMappingsMetadata> getDefaultEntityMappingsModel(boolean withDeps) {
-        synchronized (this) {
+        synchronized (modelLock) {
             if (model == null) {
                 model = EntityMappingsMetadataModelFactory.createMetadataModel(bootPath, compilePath, sourcePath);
             }
