@@ -704,6 +704,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                             String message = "Replacing correct state to incorrect " + canonical; // NOI18N
                             Utils.LOG.log(Level.SEVERE, message, new Exception());
                         }
+                        return;
                     }
                 } else {
                     data = state;
