@@ -370,6 +370,7 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(fullFileIndexer, gridBagConstraints);
 
+        rebuildPropsChangedCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("REBUILD_PROP_CHANGED_MN").charAt(0));
         rebuildPropsChangedCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "REBUILD_PROP_CHANGED_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

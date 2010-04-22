@@ -222,6 +222,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="rebuildPropsChangedCheckBox">
       <Properties>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+          <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/options/Bundle.properties" key="REBUILD_PROP_CHANGED_MN" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/options/Bundle.properties" key="REBUILD_PROP_CHANGED_TXT" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
