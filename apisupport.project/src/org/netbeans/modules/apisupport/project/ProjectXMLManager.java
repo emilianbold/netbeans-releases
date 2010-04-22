@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -718,9 +719,12 @@ public final class ProjectXMLManager {
             for (Map.Entry<String,String> entry : newValues.entrySet()) {
                 Element cpel = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_EXTENSION);
                 Element runtime = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_RUNTIME_PATH, entry.getKey());
-                Element binary = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_BINARY_ORIGIN, entry.getValue());
                 cpel.appendChild(runtime);
-                cpel.appendChild(binary);
+                String binaryPath = entry.getValue();
+                if (binaryPath != null) {
+                    Element binary = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_BINARY_ORIGIN, binaryPath);
+                    cpel.appendChild(binary);
+                }
                 _confData.appendChild(cpel);
             }
             cpExtensions = new HashMap<String, String>(newValues);
@@ -811,14 +815,15 @@ public final class ProjectXMLManager {
      * @return an array of strings (may be empty)
      */
     public String[] getBinaryOrigins() {
-        Map<String, String> cpe = getClassPathExtensions();
-        return cpe.values().toArray(new String[cpe.size()]);
+        Set<String> origins = new LinkedHashSet<String>(getClassPathExtensions().values());
+        origins.remove(null);
+        return origins.toArray(new String[origins.size()]);
     }
 
     /**
      * Returns existing classpath extensions mapping.
      * Returned map is unmodifiable.
-     * @return classpath extensions map &lt;key=runtime-path(String), value=binary-path(String)&gt;
+     * @return classpath extensions map &lt;key=runtime-path(String), value=binary-path(String or null)&gt;
      */
     public Map<String, String> getClassPathExtensions() {
         if (cpExtensions != null) {
@@ -829,9 +834,7 @@ public final class ProjectXMLManager {
             if (CLASS_PATH_EXTENSION.equals(cpExtEl.getTagName())) {
                 Element binOrigEl = findElement(cpExtEl, BINARY_ORIGIN);
                 Element runtimePathEl = findElement(cpExtEl, CLASS_PATH_RUNTIME_PATH);
-                if (binOrigEl != null && runtimePathEl != null) {
-                    cps.put(XMLUtil.findText(runtimePathEl), XMLUtil.findText(binOrigEl));
-                }
+                cps.put(XMLUtil.findText(runtimePathEl), binOrigEl != null ? XMLUtil.findText(binOrigEl) : null);
             }
         }
         return Collections.unmodifiableMap(cpExtensions = cps);
