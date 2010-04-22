@@ -274,7 +274,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
     }
     
     
-    void setMode(Mode mode) {
+    final void setMode(Mode mode) {
         this.mode = mode;
         if(mode == Mode.Form) {
             actionToEdit.setVisible(true);
