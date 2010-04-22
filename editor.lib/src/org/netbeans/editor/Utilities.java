@@ -343,7 +343,7 @@ public class Utilities {
     throws BadLocationException {
         int rowStart = getRowStart(c, offset);
         int endInit = c.getUI().getNextVisualPositionFrom(c,
-                              rowStart - 1, Position.Bias.Forward, javax.swing.SwingConstants.WEST, null);
+                              rowStart, Position.Bias.Forward, javax.swing.SwingConstants.WEST, null);
 
         if (x == BaseKit.MAGIC_POSITION_MAX){
             return endInit;
@@ -376,6 +376,37 @@ public class Utilities {
         }
         
         int best = findBestSpan(c, start, end, x);
+        
+        if (best<c.getDocument().getLength()){
+			// #56056
+			int tmp = best + 1;
+			int nextVisualPosition = c.getUI().getNextVisualPositionFrom(c,
+					tmp, javax.swing.text.Position.Bias.Backward, javax.swing.SwingConstants.WEST, null);
+            if (nextVisualPosition<best && nextVisualPosition >= 0){
+				// #164820
+				// We are in the collapsed fold, now try to find which position
+				// is the best, whether foldEnd or foldStart
+				tempRect = c.modelToView(nextVisualPosition);
+				if (tempRect == null) {
+					return nextVisualPosition;
+				}
+				int leftX = tempRect.x;
+				int nextVisualPositionRight = c.getUI().getNextVisualPositionFrom(c,
+						nextVisualPosition, javax.swing.text.Position.Bias.Forward, javax.swing.SwingConstants.EAST, null);
+				tempRect = c.modelToView(nextVisualPositionRight);
+				if (tempRect == null) {
+					return nextVisualPosition;
+				}
+				int rightX = tempRect.x;
+
+				if (Math.abs(leftX - x) < Math.abs(rightX - x)) {
+					return nextVisualPosition;
+				} else {
+					return nextVisualPositionRight;
+				}
+			}
+        }
+
         return best;
     }
 
@@ -389,9 +420,9 @@ public class Utilities {
     */
     public static int getPositionBelow(JTextComponent c, int offset, int x)
     throws BadLocationException {
-	int startInit = getRowEnd(c, offset) + 1; // 10
+	int startInit = getRowEnd(c, offset) + 1;
 
-        Rectangle2D r = modelToView(c, startInit); // 12 => 0, 15.25, 0, 15.25 / 0, 16,64,16
+        Rectangle2D r = modelToView(c, startInit);
         if (r == null){
             return offset; // skip
         }
@@ -401,19 +432,53 @@ public class Utilities {
             return startInit;
         }
         
-        int start = viewToModel(c, Math.min(Integer.MAX_VALUE, r.getX() + x - 2*r.getWidth()), r.getY());//10
+        int start = viewToModel(c, Math.min(Integer.MAX_VALUE, r.getX() + x - 2*r.getWidth()), r.getY());
         Rectangle tempRect = c.modelToView(start);
         if (tempRect!=null && tempRect.x > x){
             start = startInit;
         }
         
-        int end = viewToModel(c, Math.min(Integer.MAX_VALUE, r.getX() + x + 2*r.getWidth()), r.getY()); //10 / 189
-        tempRect = c.modelToView(end); // 0,15,0,16
+        int end = viewToModel(c, Math.min(Integer.MAX_VALUE, r.getX() + x + 2*r.getWidth()), r.getY());
+        tempRect = c.modelToView(end);
         if (tempRect!=null && tempRect.x < x){
-            end = getRowEnd(c, start);//189 / 189
+            end = getRowEnd(c, start);
         }
         
-        int best = findBestSpan(c, start, end, x);//187 / 187
+        int best = findBestSpan(c, start, end, x);
+        
+        if (best>0){
+            // #70254 - make sure $best is not in collapsed fold area. Try
+            // getNextVisualPositionFrom to EAST from the position $best-1.
+            // If the resulted next visual position is not equal to $best,
+            // $best is in the collapsed fold and foldEnd or foldStart 
+            // should be returned.
+            int tmp = best - 1;
+            int nextVisualPosition = c.getUI().getNextVisualPositionFrom(c,
+                    tmp, javax.swing.text.Position.Bias.Forward, javax.swing.SwingConstants.EAST, null);
+            if (nextVisualPosition>best && nextVisualPosition <= c.getDocument().getLength()){
+                // We are in the collapsed fold, now try to find which position
+                // is the best, whether foldEnd or foldStart
+                tempRect = c.modelToView(nextVisualPosition);
+                if (tempRect == null){
+                    return nextVisualPosition;
+                }
+                int rightX = tempRect.x;
+                int nextVisualPositionLeft = c.getUI().getNextVisualPositionFrom(c,
+                        nextVisualPosition, javax.swing.text.Position.Bias.Backward, javax.swing.SwingConstants.WEST, null);
+                tempRect = c.modelToView(nextVisualPositionLeft);
+                if (tempRect == null){
+                    return nextVisualPosition;
+                }
+                int leftX = tempRect.x;
+                
+                if (Math.abs(leftX - x) > Math.abs(rightX - x)){
+                    return nextVisualPosition;
+                } else {
+                    return nextVisualPositionLeft;
+                }
+            }
+        }
+        
         return best;
     }
 
