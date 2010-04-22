@@ -89,6 +89,7 @@ public abstract class AbstractSvnTest extends NbTestCase {
     public AbstractSvnTest(String testName) throws MalformedURLException, SVNClientException {
         super(testName);
         clientVersion = SUBVERSION_1_6;
+        System.setProperty("work.dir", getWorkDirPath());
         workDir = new File(System.getProperty("work.dir")); 
         FileUtil.refreshFor(workDir);          
         repoDir = new File(System.getProperty("work.dir") + "/repo");
