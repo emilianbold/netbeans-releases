@@ -148,7 +148,7 @@ public final class J2EEProjectProperties {
         epPriv.setProperty(J2EE_SERVER_INSTANCE, serverInstanceID);
 
         // different properties are set for server library:
-        if (isUsingServerLibrary(ep, J2EE_PLATFORM_CLASSPATH, items)) {
+        if (serverLibraryName != null || isUsingServerLibrary(ep, J2EE_PLATFORM_CLASSPATH, items)) {
             if (cs != null) {
                 // use data from model (called eg. from project properties customizer)
                 setSharableServerPropertiesFromModel(ep, epPriv, cs, items);
