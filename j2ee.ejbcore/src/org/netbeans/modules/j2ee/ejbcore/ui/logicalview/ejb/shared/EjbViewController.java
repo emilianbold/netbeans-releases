@@ -376,19 +376,20 @@ public final class EjbViewController {
     
     private FileObject findFileObject(final String className) {
         final FileObject[] result = new FileObject[1];
-        try {
-            JavaSource javaSource = JavaSource.create(cpInfo);
-            javaSource.runUserActionTask(new Task<CompilationController>() {
-                public void run(CompilationController controller) throws IOException {
-                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = controller.getElements().getTypeElement(className);
-                    if (typeElement != null) {
-                        result[0] = SourceUtils.getFile(ElementHandle.create(typeElement), controller.getClasspathInfo());
+        if (cpInfo != null){
+            try {
+                JavaSource.create(cpInfo).runUserActionTask(new Task<CompilationController>() {
+                    public void run(CompilationController controller) throws IOException {
+                        controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        TypeElement typeElement = controller.getElements().getTypeElement(className);
+                        if (typeElement != null) {
+                            result[0] = SourceUtils.getFile(ElementHandle.create(typeElement), controller.getClasspathInfo());
+                        }
                     }
-                }
-            }, true);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+                }, true);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
         }
         return result[0];
     }

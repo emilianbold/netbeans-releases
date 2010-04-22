@@ -22,7 +22,7 @@ class ScalarConstantElementImpl extends ModelElementImpl implements ConstantElem
         sb.append(name).append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
         sb.append(qualifiedName.getNamespaceName()).append(";");//NOI18N
-        sb.append(getValue()).append(";");//NOI18N
+        sb.append(getValue() != null ? getValue() : "?").append(";");//NOI18N
         return sb.toString();
     }
 

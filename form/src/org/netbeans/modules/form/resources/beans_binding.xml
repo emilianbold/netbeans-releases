@@ -55,4 +55,13 @@ made subject to such option by the copyright holder.
         <type>javadoc</type>
         <resource>jar:nbinst://org.jdesktop.beansbinding/docs/beansbinding-1.2.1-doc.zip!/</resource>
     </volume>
+    <volume>
+        <type>maven-pom</type>
+        <resource>http://download.java.net/maven/2/org/jdesktop/beansbinding/1.2.1/beansbinding-1.2.1.pom</resource>
+        <!--
+        The following reference is broken. The corresponding JAR doesn't contain
+        META-INF/services directory. Hence, the special binding properties
+        don't work with that JAR.
+        <resource>http://repo2.maven.org/maven2/net/java/dev/beansbinding/beansbinding/1.2.1/beansbinding-1.2.1.pom</resource>-->
+    </volume>
 </library>
