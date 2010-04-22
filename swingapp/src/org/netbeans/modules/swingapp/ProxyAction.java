@@ -173,8 +173,8 @@ public class ProxyAction implements Action, ResourceValue, Serializable {
             }
             return null;
         } catch (ResourceMap.LookupException ex) {
-            System.out.println("there was an error loading the icon name for: " + name);//log
-            ex.printStackTrace();
+            Logger.getLogger(ProxyAction.class.getName()).log(
+                    Level.INFO, "there was an error loading the icon name for: " + name, ex); // NOI18N
             return null;
         }
     }

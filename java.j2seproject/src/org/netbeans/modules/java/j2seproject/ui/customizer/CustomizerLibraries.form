@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -23,8 +23,8 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="librariesLocation" pref="303" max="32767" attributes="2"/>
-                  <Component id="jComboBoxTarget" alignment="0" pref="303" max="32767" attributes="2"/>
+                  <Component id="librariesLocation" pref="317" max="32767" attributes="2"/>
+                  <Component id="jComboBoxTarget" alignment="0" pref="317" max="32767" attributes="2"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -359,7 +359,7 @@
             <Component class="javax.swing.JLabel" name="librariesJLabel5">
               <Properties>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-                  <ComponentRef name="jListCpC"/>
+                  <ComponentRef name="jListCpP"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_LibrariesP_JLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -387,6 +387,14 @@
                   <Properties>
                     <Property name="visibleRowCount" type="int" value="5"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="L_ACSN_ProcesserLibraries" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="L_ACSD_ProcesserLibraries" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                  </AccessibilityProperties>
                 </Component>
               </SubComponents>
             </Container>
@@ -396,6 +404,14 @@
                   <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_AddProject_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="BTN_ACSN_Add_Project" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="BTN_ACSD_Add_Project" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
@@ -411,6 +427,14 @@
                   <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_AddLibary_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="BTN_ACSN_Add_Library" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="BTN_ACSD_Add_Library" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
@@ -426,6 +450,14 @@
                   <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_AddJar_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="BTN_ACSN_Add_Jar" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="BTN_ACSD_Add_Jar" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
@@ -441,6 +473,14 @@
                   <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_Edit_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="BTN_ACSN_Edit" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="BTN_ACSD_Edit" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
@@ -456,6 +496,14 @@
                   <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_Remove_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="BTN_ACSN_Remove" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="BTN_ACSD_Remove" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
@@ -471,6 +519,14 @@
                   <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_MoveUp_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="BTN_ACSN_MoveUp" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="BTN_ACSD_MoveUp" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
@@ -486,6 +542,14 @@
                   <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_MoveDown_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="BTN_ACSN_MoveDown" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/customizer/Bundle.properties" key="BTN_ACSD_MoveDown" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>

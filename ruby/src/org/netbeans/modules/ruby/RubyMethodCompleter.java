@@ -245,7 +245,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
                 // Add methods in the class (without an FQN)
                 for (String realType : type.getRealTypes()) {
-                    methods.addAll(getIndex().getInheritedMethods(realType, prefix, kind));
+                    methods.addAll(getIndex().getInheritedMethods(realType, prefix, kind, true, true));
                 }
             }
         }

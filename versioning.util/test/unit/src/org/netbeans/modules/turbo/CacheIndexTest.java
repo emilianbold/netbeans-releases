@@ -441,6 +441,66 @@ public class CacheIndexTest extends NbTestCase {
         assertValueSet(index.get(folder111), new File[] {file111_1});
     }
 
+    /**
+     * Adding removed files (not folders) may result in corrupted index. Adding such file will remove parent entries even if there's
+     * a modified sibling of the deleted file. See the corresponding fix in CacheIndex.
+     */
+    public void testRemoveFileTwice () throws Exception {
+        CacheIndex ci = new CIndex();
+        Map<File, Set<File>> index = getIndex(ci);
+        index.clear();
+
+        File root = new File(wc, "root");
+
+        File folder =   new File(root,      "folder1");
+        File file1 = new File(folder,      "file1");
+        File file2 =  new File(folder,     "file2");
+        folder.mkdirs();
+        file1.createNewFile();
+        file2.createNewFile();
+
+        // add file111_1 -> all versioned parents will be added
+        Set<File> s = new HashSet<File>();
+        s.add(file1);
+        ci.add(folder, s);
+        checkParents(index, file1);
+        s.clear();
+        s.add(file1);
+        s.add(file2);
+        ci.add(folder, s);
+        checkParents(index, file1);
+
+        assertValueSet(index.get(wc), new File[] {root});
+        assertValueSet(index.get(root), new File[] {folder});
+        assertValueSet(index.get(folder), new File[] {file1, file2});
+
+        //remove file1 from index
+        file2.delete();
+        s.clear();
+        s.add(file1);
+        ci.add(folder, s);
+
+        checkParents(index, file1);
+        assertValueSet(index.get(wc), new File[] {root});
+        assertValueSet(index.get(root), new File[] {folder});
+        assertValueSet(index.get(folder), new File[] {file1});
+
+        if (!file2.isFile()) {
+            ci.add(file2, null);
+            checkParents(index, file1);
+            assertValueSet(index.get(wc), new File[] {root});
+            assertValueSet(index.get(root), new File[] {folder});
+            assertValueSet(index.get(folder), new File[] {file1});
+        } else {
+            fail("The file should be deleted");
+        }
+
+        //remove file1 from index
+        s.clear();
+        ci.add(folder, s);
+        assertEquals(0, index.keySet().size());
+    }
+
     private void assertValueSet(Set<File> s, File... expectedValues) {
         assertEquals(expectedValues.length, s.size());
         for (File ev : expectedValues) {

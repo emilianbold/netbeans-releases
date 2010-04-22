@@ -79,6 +79,7 @@ public class JhlClientTest extends NbTestCase {
         suite.addTestSuite(ResolvedTest.class);
         suite.addTestSuite(RevertTest.class);
         suite.addTestSuite(StatusTest.class);
+        suite.addTestSuite(TreeConflictsTest.class);
         suite.addTestSuite(SwitchToTest.class);
         suite.addTestSuite(UpdateTest.class);
         

@@ -1033,6 +1033,10 @@ public final class RubyIndex {
      * @param kind Whether the prefix field should be taken as a prefix or a whole name
      */
     public Set<IndexedMethod> getInheritedMethods(String classFqn, String prefix, QuerySupport.Kind kind) {
+        return getInheritedMethods(classFqn, prefix, kind, false);
+    }
+
+    private Set<IndexedMethod> getInheritedMethods(String classFqn, String prefix, QuerySupport.Kind kind, boolean includeDynamicMethods) {
         boolean haveRedirected = false;
 
         if ((classFqn == null) || classFqn.equals(OBJECT)) {
@@ -1053,7 +1057,7 @@ public final class RubyIndex {
         }
 
         addMethodsFromClass(prefix, kind, classFqn, methods, seenSignatures, scannedClasses,
-            haveRedirected, false);
+            haveRedirected, false, includeDynamicMethods);
         return methods;
     }
 
@@ -1064,10 +1068,12 @@ public final class RubyIndex {
      * @param prefix
      * @param kind
      * @param includeSelf specifies whether methods from {@code classFqn} should be included.
+     * @param includeDynamic  specifies whether dynamic methods (e.g. rails finder and query methods) should
+     *  be included.
      * @return
      */
-    Set<IndexedMethod> getInheritedMethods(String classFqn, String prefix, QuerySupport.Kind kind, boolean includeSelf) {
-        Set<IndexedMethod> inherited = getInheritedMethods(classFqn, prefix, kind);
+    Set<IndexedMethod> getInheritedMethods(String classFqn, String prefix, QuerySupport.Kind kind, boolean includeSelf, boolean includeDynamic) {
+        Set<IndexedMethod> inherited = getInheritedMethods(classFqn, prefix, kind, includeDynamic);
         if (includeSelf) {
             return inherited;
         }
@@ -1086,7 +1092,7 @@ public final class RubyIndex {
      */
     private boolean addMethodsFromClass(String prefix, QuerySupport.Kind kind, String classFqn,
         Set<IndexedMethod> methods, Set<String> seenSignatures, Set<String> scannedClasses,
-        boolean haveRedirected, boolean inheriting) {
+        boolean haveRedirected, boolean inheriting, boolean includeDynamic) {
 
         // Prevent problems with circular includes or redundant includes
         if (scannedClasses.contains(classFqn)) {
@@ -1136,12 +1142,12 @@ public final class RubyIndex {
 
                     if (classIn != null) {
                         isQualified = addMethodsFromClass(prefix, kind, classIn + "::" + include,
-                                methods, seenSignatures, scannedClasses, haveRedirected, true);
+                                methods, seenSignatures, scannedClasses, haveRedirected, true, includeDynamic);
                     }
 
                     if (!isQualified) {
                         addMethodsFromClass(prefix, kind, include, methods, seenSignatures,
-                            scannedClasses, haveRedirected, true);
+                            scannedClasses, haveRedirected, true, includeDynamic);
                     }
                 }
             }
@@ -1155,11 +1161,11 @@ public final class RubyIndex {
                 Set<IndexedMethod> extendWithMethods = new HashSet<IndexedMethod>();
                 if (classIn != null) {
                     isQualified = addMethodsFromClass(prefix, kind, classIn + "::" + extendWith,
-                            extendWithMethods, seenSignatures, scannedClasses, haveRedirected, true);
+                            extendWithMethods, seenSignatures, scannedClasses, haveRedirected, true, includeDynamic);
                 }
                 if (!isQualified) {
                     addMethodsFromClass(prefix, kind, extendWith, extendWithMethods, seenSignatures,
-                        scannedClasses, haveRedirected, true);
+                        scannedClasses, haveRedirected, true, includeDynamic);
                 }
                 // we need to explicitly set methods added via "extends with" as static
                 // (we don't track methods added via extend to instances)
@@ -1259,20 +1265,20 @@ public final class RubyIndex {
         if (extendsClass == null) {
             if (haveRedirected) {
                 addMethodsFromClass(prefix, kind, OBJECT, methods, seenSignatures, scannedClasses,
-                    true, true);
+                    true, true, includeDynamic);
             } else {
                 // Rather than inheriting directly from object,
                 // let's go via Class (and Module) up to Object
                 addMethodsFromClass(prefix, kind, CLASS, methods, seenSignatures, scannedClasses,
-                    true, true);
+                    true, true, includeDynamic);
             }
         } else {
             if (ACTIVE_RECORD_BASE.equals(extendsClass)) { // NOI18N
                 // Add in database fields as well
-                addDatabaseProperties(prefix, kind, classFqn, methods);
+                addDatabaseProperties(prefix, kind, classFqn, methods, includeDynamic);
                 // add in query methods if this appears to be in a rails 3 project (if AR::Relation is
                 // indexed we make the assumption that this is a rails 3 project)
-                if (scannedClasses.contains(ACTIVE_RECORD_RELATION)
+                if (includeDynamic && scannedClasses.contains(ACTIVE_RECORD_RELATION)
                         || !getClasses(ACTIVE_RECORD_RELATION, Kind.EXACT, false, false, true).isEmpty()) {
                     addQueryMethods(prefix, kind, classFqn, methods);
                 }
@@ -1280,13 +1286,13 @@ public final class RubyIndex {
 
             // We're not sure we have a fully qualified path, so try some different candidates
             if (!addMethodsFromClass(prefix, kind, extendsClass, methods, seenSignatures,
-                        scannedClasses, haveRedirected, true)) {
+                        scannedClasses, haveRedirected, true, includeDynamic)) {
                 // Search by classIn 
                 String fqn = classIn;
 
                 while (fqn != null) {
                     if (addMethodsFromClass(prefix, kind, fqn + "::" + extendsClass, methods,
-                                seenSignatures, scannedClasses, haveRedirected, true)) {
+                                seenSignatures, scannedClasses, haveRedirected, true, includeDynamic)) {
                         break;
                     }
 
@@ -1305,8 +1311,8 @@ public final class RubyIndex {
     }
 
     private void addDatabaseProperties(String prefix, QuerySupport.Kind kind, String classFqn,
-        Set<IndexedMethod> methods) {
-        DatabasePropertiesIndexer.indexDatabaseProperties(this, prefix, kind, classFqn, methods);
+        Set<IndexedMethod> methods, boolean includeDynamic) {
+        DatabasePropertiesIndexer.indexDatabaseProperties(this, prefix, kind, classFqn, methods, includeDynamic);
     }
 
     private void addQueryMethods(String prefix, QuerySupport.Kind kind, String classFqn, Set<IndexedMethod> methods) {
