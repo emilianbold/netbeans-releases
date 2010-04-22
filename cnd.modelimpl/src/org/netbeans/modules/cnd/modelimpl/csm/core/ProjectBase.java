@@ -1139,18 +1139,22 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     //@Deprecated
     public final APTPreprocHandler getPreprocHandler(File file) {
-        return createPreprocHandler(file, getFileContainer().getPreprocState(file));
+        final Collection<State> preprocStates = getFileContainer().getPreprocStates(file);
+        APTPreprocHandler.State state = preprocStates.isEmpty() ? null : preprocStates.iterator().next();
+        return createPreprocHandlerFromState(file, state);
     }
 
     /*package*/ final APTPreprocHandler getPreprocHandler(File file, PreprocessorStatePair statePair) {
         if (statePair == null) {
-            return createPreprocHandler(file, getFileContainer().getPreprocState(file));
+            final Collection<State> preprocStates = getFileContainer().getPreprocStates(file);
+            APTPreprocHandler.State state = preprocStates.isEmpty() ? null : preprocStates.iterator().next();
+            return createPreprocHandlerFromState(file, state);
         } else {
-            return createPreprocHandler(file, statePair.state);
+            return createPreprocHandlerFromState(file, statePair.state);
         }
     }
 
-    /* package */ final APTPreprocHandler createPreprocHandler(File file, APTPreprocHandler.State state) {
+    /* package */ final APTPreprocHandler createPreprocHandlerFromState(File file, APTPreprocHandler.State state) {
         APTPreprocHandler preprocHandler = createEmptyPreprocHandler(file);
         if (state != null) {
             if (state.isCleaned()) {
