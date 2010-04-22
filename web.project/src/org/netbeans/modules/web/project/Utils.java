@@ -338,38 +338,6 @@ public class Utils {
         return c == null ? new Color(89,79,191) : c;
     }
     
-    public static String toClasspathString(File[] classpathEntries) {
-        if (classpathEntries == null) {
-            return "";
-        }
-        StringBuffer classpath = new StringBuffer();
-        for (int i = 0; i < classpathEntries.length; i++) {
-            classpath.append(classpathEntries[i].getAbsolutePath());
-            if (i + 1 < classpathEntries.length) {
-                classpath.append(':'); // NOI18N
-            }
-        }
-        return classpath.toString();
-    }
-
-    public static String toClasspathString(URL[] classpathEntries) {
-        if (classpathEntries == null) {
-            return "";
-        }
-        StringBuffer classpath = new StringBuffer();
-        for (int i = 0; i < classpathEntries.length; i++) {
-            try {
-                classpath.append(new File(classpathEntries[i].toURI()).getAbsolutePath());
-            } catch (URISyntaxException ex) {
-
-            }
-            if (i + 1 < classpathEntries.length) {
-                classpath.append(':'); // NOI18N
-            }
-        }
-        return classpath.toString();
-    }
-
     /**
      * Logs the UI gesture.
      *

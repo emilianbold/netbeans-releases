@@ -42,7 +42,7 @@ class ClassConstantElementImpl extends ModelElementImpl implements ClassConstant
         sb.append(getName().toLowerCase()).append(";");//NOI18N
         sb.append(getName()).append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
-        sb.append(getValue()).append(";");//NOI18N
+        sb.append(getValue() != null ? getValue() : "?").append(";");//NOI18N
         return sb.toString();
     }
 

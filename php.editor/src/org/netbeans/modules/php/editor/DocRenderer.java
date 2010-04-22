@@ -353,7 +353,7 @@ class DocRenderer {
                         value = constant.getValue();
                     }
                     if (value != null) {
-                        header.appendText(" ");//NOI18N
+                        header.appendText(" = ");//NOI18N
                         header.appendText(value);
                     }
                 }

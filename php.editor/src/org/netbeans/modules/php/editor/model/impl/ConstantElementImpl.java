@@ -38,7 +38,7 @@ class ConstantElementImpl extends ModelElementImpl implements ConstantElement, F
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(";");//NOI18N
-        sb.append(getValue()).append(";");//NOI18N
+        sb.append(getValue() != null ? getValue() : "?").append(";");//NOI18N
         return sb.toString();
     }
 
