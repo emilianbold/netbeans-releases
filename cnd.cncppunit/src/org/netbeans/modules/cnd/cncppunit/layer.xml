@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+
+    <folder name="Templates">
+        <folder name="cFiles">
+            <file name="CUnitMain.c" url="templates/c/cunittest-c.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.cncppunit.Bundle"/>
+                <attr name="position" intvalue="500"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/cunittest-c.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
+                <attr name="templateCategory" stringvalue="c-types"/>
+            </file>
+        </folder> <!-- End cFiles folder -->
+
+        <folder name="cppFiles">
+            <file name="cppunittest.cc" url="templates/cpp/cppunittest-cc.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.cncppunit.Bundle"/>
+                <attr name="position" intvalue="700"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/cppunittest.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CndClassWizardIterator"/>
+                <attr name="templateCategory" stringvalue="cpp-types"/>
+            </file>
+
+            <file name="cppunittest.h" url="templates/cpp/cppunittest-h.template">
+                <attr name="position" intvalue="710"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+            </file>
+
+            <file name="CppUnitRunner.cc" url="templates/cpp/cppunitrunner-cc.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.cncppunit.Bundle"/>
+                <attr name="position" intvalue="750"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/cppunitrunner.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
+                <attr name="templateCategory" stringvalue="cpp-types"/>
+            </file>
+        </folder> <!-- End cppFiles folder -->
+
+    </folder> <!-- Templates -->
+
+</filesystem>
