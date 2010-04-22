@@ -1008,7 +1008,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public ElementKind getKind() {
-            return ElementKind.GLOBAL;
+            return ElementKind.CONSTANT;
         }
     }
 
