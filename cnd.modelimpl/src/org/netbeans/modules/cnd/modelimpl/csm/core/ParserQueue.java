@@ -376,7 +376,7 @@ public final class ParserQueue {
     public boolean add(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position,
             boolean clearPrevState, FileAction fileAction) {
         if (TraceFlags.TRACE_182342_BUG) {
-            new Exception("ParserQueue: add for " + file).printStackTrace(System.err);
+            new Exception("ParserQueue: add for " + file).printStackTrace(System.err);  // NOI18N
             int i = 0;
             for (APTPreprocHandler.State aState : ppStates) {
                 System.err.printf("ParserQueue: State %d from original %s\n", i++, aState);

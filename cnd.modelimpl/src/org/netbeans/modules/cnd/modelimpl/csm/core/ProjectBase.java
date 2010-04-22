@@ -949,7 +949,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private void onAddedToModelImpl(boolean isRestored) {
-
+        if (TraceFlags.TRACE_182342_BUG) {
+            new Exception("Restored: " + isRestored + " disposing: " + isDisposing()).printStackTrace(System.err); // NOI18N
+        }
         if (isDisposing()) {
             return;
         }

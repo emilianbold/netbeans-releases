@@ -150,7 +150,7 @@ public class BrokenDatasourceSupport {
         
         Set<Datasource> dss = null;
         try {
-            dss = jmp.getModuleDatasources();
+            dss = jmp.getConfigSupport().getDatasources();
         } catch (ConfigurationException e) {
             dss = new HashSet<Datasource>();
         }
