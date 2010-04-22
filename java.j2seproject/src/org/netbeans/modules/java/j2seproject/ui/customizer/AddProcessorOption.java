@@ -112,6 +112,7 @@ class AddProcessorOption extends javax.swing.JPanel {
         keyLabel.setLabelFor(keyTextField);
         org.openide.awt.Mnemonics.setLocalizedText(keyLabel, org.openide.util.NbBundle.getMessage(AddProcessorOption.class, "LBL_ProcessorOptionKey")); // NOI18N
 
+        valueLabel.setLabelFor(valueTextField);
         org.openide.awt.Mnemonics.setLocalizedText(valueLabel, org.openide.util.NbBundle.getMessage(AddProcessorOption.class, "LBL_ProcessorOptionValue")); // NOI18N
 
         valueTextField.setText(org.openide.util.NbBundle.getMessage(AddProcessorOption.class, "AddProcessorOption.valueTextField.text")); // NOI18N
@@ -144,6 +145,11 @@ class AddProcessorOption extends javax.swing.JPanel {
                     .addComponent(valueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        keyTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddProcessorOption.class, "T_ACSN_ProcessorOptionKey")); // NOI18N
+        keyTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddProcessorOption.class, "T_ACSD_ProcessorOptionKey")); // NOI18N
+        valueTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddProcessorOption.class, "T_ACSN_ProcessorOptionValue")); // NOI18N
+        valueTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddProcessorOption.class, "T_ACSD_ProcessorOptionValue")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

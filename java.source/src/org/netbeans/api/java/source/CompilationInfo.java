@@ -65,6 +65,7 @@ import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.modules.java.preprocessorbridge.spi.WrapperFactory;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.DocPositionRegion;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -77,7 +78,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 
-/** Asorted information about the JavaSource.
+/** Assorted information about the JavaSource.
  *
  * @author Petr Hrebejk, Tomas Zezula
  */
@@ -90,6 +91,8 @@ public class CompilationInfo {
     //Expert: set to true when the runUserActionTask(,true), runModificationTask(,true)
     //ended or when reschedulable task leaved run method to verify confinement
     private boolean invalid;
+    //@GuarderBy(this)
+    private Trees trees;
     //@GuarderBy(this)
     private ElementUtilities elementUtilities;
     //@GuarderBy(this)
@@ -243,13 +246,13 @@ public class CompilationInfo {
                 return null;
             }
             else {
-                final Trees trees = getTrees();
-                assert trees != null;
+                final Trees ts = getTrees();
+                assert ts != null;
                 List<? extends Tree> typeDecls = cu.getTypeDecls();
                 TreePath cuPath = new TreePath(cu);
                 for( Tree t : typeDecls ) {
                     TreePath p = new TreePath(cuPath,t);
-                    Element e = trees.getElement(p);
+                    Element e = ts.getElement(p);
                     if ( e != null && ( e.getKind().isClass() || e.getKind().isInterface() ) ) {
                         result.add((TypeElement)e);
                     }
@@ -264,9 +267,17 @@ public class CompilationInfo {
      * Return the {@link Trees} service of the javac represented by this {@link CompilationInfo}.
      * @return javac Trees service
      */
-    public @NonNull Trees getTrees() {
+    public synchronized @NonNull Trees getTrees() {
         checkConfinement();
-        return JavacTrees.instance(impl.getJavacTask().getContext());
+        if (trees == null) {
+            trees = JavacTrees.instance(impl.getJavacTask().getContext());
+            Document doc = impl.getSnapshot().getSource().getDocument(false);
+            WrapperFactory factory = doc != null ? (WrapperFactory)doc.getProperty(WrapperFactory.class) : null;
+            if (factory != null) {
+                trees = factory.wrapTrees(trees);
+            }
+        }
+        return trees;
     }
     
     /**
