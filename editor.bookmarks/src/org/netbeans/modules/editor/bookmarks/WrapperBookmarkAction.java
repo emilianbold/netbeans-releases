@@ -77,12 +77,14 @@ public class WrapperBookmarkAction extends NodeAction {
 //        putValue(BaseAction.ICON_RESOURCE_PROPERTY, getValue(BaseAction.ICON_RESOURCE_PROPERTY));
     }
     
+    @Override
     public String getName() {
         String name = (String)originalAction.getValue(Action.SHORT_DESCRIPTION);
         assert (name != null);
         return name;
     }
 
+    @Override
     public void performAction(Node[] activatedNodes) {
         JTextComponent editorPane = getEditorPane (activatedNodes);
         if (editorPane != null) {
@@ -91,6 +93,7 @@ public class WrapperBookmarkAction extends NodeAction {
         }
     }
     
+    @Override
     protected boolean enable (Node[] activatedNodes) {
         if (activatedNodes == null || activatedNodes.length != 1) {
             return false;
@@ -119,14 +122,17 @@ public class WrapperBookmarkAction extends NodeAction {
         return null;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return null;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     protected String iconResource() {
         return (String)originalAction.getValue(BaseAction.ICON_RESOURCE_PROPERTY);
     }
