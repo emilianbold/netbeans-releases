@@ -42,12 +42,15 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.FileObject;
@@ -86,10 +89,11 @@ public class ProxyFileManager implements JavaFileManager {
     private final JavaFileManager aptSources;
     private final MemoryFileManager memoryFileManager;
     private final JavaFileManager outputhPath;
-
+    private final GeneratedFileMarker marker;
+    private final Stack<URL> explicitSibling = new Stack<URL>();
     private JavaFileObject lastInfered;
     private String lastInferedResult;
-    private int apt;
+    
 
     private static final Logger LOG = Logger.getLogger(ProxyFileManager.class.getName());
 
@@ -100,7 +104,8 @@ public class ProxyFileManager implements JavaFileManager {
             final JavaFileManager sourcePath,
             final JavaFileManager aptSources,
             final JavaFileManager outputhPath,
-            final MemoryFileManager memoryFileManager) {
+            final MemoryFileManager memoryFileManager,
+            final GeneratedFileMarker marker) {
         assert bootPath != null;
         assert classPath != null;
         assert memoryFileManager == null || sourcePath != null;
@@ -110,6 +115,7 @@ public class ProxyFileManager implements JavaFileManager {
         this.aptSources = aptSources;
         this.memoryFileManager = memoryFileManager;
         this.outputhPath = outputhPath;
+        this.marker = marker;
     }
 
     private JavaFileManager[] getFileManager (final Location location) {
@@ -221,7 +227,8 @@ public class ProxyFileManager implements JavaFileManager {
             FileObject result = fms[0].getFileForOutput(l, packageName, relativeName, sibling);
             //Workaround for wrongly written processors,
             //see Issue #180605
-            if (apt > 0 && l == StandardLocation.CLASS_OUTPUT) {
+            boolean forwardedToSource = false;
+            if (!explicitSibling.isEmpty() && l == StandardLocation.CLASS_OUTPUT) {
                 boolean exists = false;
                 try {
                     result.openInputStream().close();
@@ -235,11 +242,13 @@ public class ProxyFileManager implements JavaFileManager {
                         try {
                             otherResult.openInputStream().close();
                             result = otherResult;
+                            forwardedToSource = true;
                         } catch (IOException ioe) {
                         }
                     }
                 }
             }
+            mark(result, forwardedToSource ? StandardLocation.SOURCE_PATH : l);
             return result;
         }
     }
@@ -270,10 +279,22 @@ public class ProxyFileManager implements JavaFileManager {
         final Iterable<String> defensiveCopy = copy(remains);
         if (AptSourceFileManager.ORIGIN_FILE.equals(current)) {
             final Iterator<String> it = defensiveCopy.iterator();
-            if (it.hasNext() && it.next().length() != 0) {
-                apt++;
+            if (!it.hasNext()) {
+                throw new IllegalArgumentException("The apt-source-root requires folder.");    //NOI18N
+            }
+            final String sib = it.next();
+            if(sib.length() != 0) {
+                try {
+                    explicitSibling.push(new URL(sib));
+                } catch (MalformedURLException ex) {
+                    throw new IllegalArgumentException("Invalid path argument: " + sib);    //NOI18N
+                }
             } else {
-                apt--;
+                try {
+                    markerFinished();
+                } finally {
+                    explicitSibling.pop();
+                }
             }
         }
         for (JavaFileManager m : getFileManager(ALL)) {
@@ -322,7 +343,9 @@ public class ProxyFileManager implements JavaFileManager {
             return null;
         }
         else {
-            return fms[0].getJavaFileForOutput (l, className, kind, sibling);
+            final JavaFileObject result = fms[0].getJavaFileForOutput (l, className, kind, sibling);
+            mark (result,l);
+            return result;
         }
     }
 
@@ -365,6 +388,24 @@ public class ProxyFileManager implements JavaFileManager {
             }
         }
         return fileObject.toUri().equals (fileObject0.toUri());
+    }
+
+    private void mark(final javax.tools.FileObject result, JavaFileManager.Location l) throws MalformedURLException {
+        GeneratedFileMarker.Type type = null;
+        if (l == StandardLocation.CLASS_OUTPUT) {
+            type = GeneratedFileMarker.Type.RESOURCE;
+        } else if (l == StandardLocation.SOURCE_OUTPUT) {
+            type = GeneratedFileMarker.Type.SOURCE;
+        }
+        if (marker != null && result != null && type != null && !explicitSibling.isEmpty()) {
+            marker.mark(result.toUri().toURL(), type);
+        }
+    }
+
+    private void markerFinished() {
+        if (marker != null && !explicitSibling.isEmpty()) {
+            marker.finished(explicitSibling.peek());
+        }
     }
 
 }
