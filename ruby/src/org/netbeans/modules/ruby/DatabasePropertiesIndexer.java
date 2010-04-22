@@ -65,18 +65,22 @@ final class DatabasePropertiesIndexer {
     private final QuerySupport.Kind kind;
     private final String classFqn;
     private final Set<IndexedMethod> methods;
+    private final boolean includeDynamicFinders;
 
-    private DatabasePropertiesIndexer(RubyIndex index, String prefix, QuerySupport.Kind kind, String classFqn, Set<IndexedMethod> methods) {
+    private DatabasePropertiesIndexer(RubyIndex index, String prefix, 
+            QuerySupport.Kind kind, String classFqn, Set<IndexedMethod> methods,
+            boolean includeDynamicFinders) {
         this.index = index;
         this.prefix = prefix;
         this.kind = kind;
         this.classFqn = classFqn;
         this.methods = methods;
+        this.includeDynamicFinders = includeDynamicFinders;
     }
 
     static void indexDatabaseProperties(RubyIndex index, String prefix, QuerySupport.Kind kind,
-            String classFqn, Set<IndexedMethod> methods) {
-        DatabasePropertiesIndexer indexer = new DatabasePropertiesIndexer(index, prefix, kind, classFqn, methods);
+            String classFqn, Set<IndexedMethod> methods, boolean includeDynamicFinders) {
+        DatabasePropertiesIndexer indexer = new DatabasePropertiesIndexer(index, prefix, kind, classFqn, methods, includeDynamicFinders);
         indexer.addDatabaseProperties();
     }
 
@@ -142,7 +146,9 @@ final class DatabasePropertiesIndexer {
             createMethodsForColumns(tableName, columnDefs, fileUrls, currentCols);
 
             // dynamic finders
-            createDynamicFinders(tableName, columnDefs, fileUrls, currentCols);
+            if (includeDynamicFinders) {
+                createDynamicFinders(tableName, columnDefs, fileUrls, currentCols);
+            }
         }
     }
 
