@@ -44,6 +44,7 @@ package org.netbeans.spi.project.ui.templates.support;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.modules.project.uiapi.Utilities;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -61,6 +62,8 @@ import org.openide.loaders.TemplateWizard;
 public class Templates {
     
     private Templates() {}
+
+    private static final String SET_AS_MAIN = "setAsMain"; // NOI18N
     
     /**
      * Find the project selected for a custom template wizard iterator.
@@ -198,6 +201,31 @@ public class Templates {
         else {
             wizardDescriptor.putProperty( ProjectChooserFactory.WIZARD_KEY_TARGET_NAME, targetName );
         }
+    }
+
+    /**
+     * Checks whether a project wizard will set the main project.
+     * (The default is true.)
+     * @param wizardDescriptor a New Project wizard
+     * @return true if it will set a main project
+     * @since org.netbeans.modules.projectuiapi/1 1.47
+     */
+    public static boolean getDefinesMainProject(WizardDescriptor wizardDescriptor) {
+        return !Boolean.FALSE.equals(wizardDescriptor.getProperty(SET_AS_MAIN));
+    }
+
+    /**
+     * Specify whether a project wizard will set the main project.
+     * If so, and it {@linkplain org.openide.WizardDescriptor.InstantiatingIterator#instantiate returns}
+     * at least one {@linkplain Project#getProjectDirectory project directory} to signal
+     * that a project will be created, the first such project will be
+     * {@linkplain OpenProjects#setMainProject set as the main project}.
+     * @param wizardDescriptor a New Project wizard
+     * @param definesMainProject true if it will set a main project
+     * @since org.netbeans.modules.projectuiapi/1 1.47
+     */
+    public static void setDefinesMainProject(WizardDescriptor wizardDescriptor, boolean definesMainProject) {
+        wizardDescriptor.putProperty(SET_AS_MAIN, definesMainProject);
     }
             
     /**

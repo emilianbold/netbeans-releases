@@ -55,6 +55,9 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.netbeans.spi.xml.cookies.CheckXMLSupport;
+import org.netbeans.spi.xml.cookies.DataObjectAdapters;
+import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileObject;
@@ -69,6 +72,7 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.UserCancelException;
+import org.xml.sax.InputSource;
 
 /** Object that represents one html file.
  *
@@ -128,8 +132,16 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
             }
         };
         set.assign(FileEncodingQueryImplementation.class, feq);
+
+        //add check/validate xml cookies
+        InputSource in = DataObjectAdapters.inputSource(this);
+        set.add(new ValidateXMLSupport(in));
+        set.add(new CheckXMLSupport(in));
+        
     }
-    
+
+
+
     @Override
     public Lookup getLookup() {
         return getCookieSet().getLookup();

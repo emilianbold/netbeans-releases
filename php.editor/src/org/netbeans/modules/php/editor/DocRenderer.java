@@ -54,7 +54,9 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
@@ -341,7 +343,19 @@ class DocRenderer {
                 } else {
                     header.name(indexedElement.getKind(), true);
                     header.appendText(indexedElement.getName());
-                    header.name(indexedElement.getKind(), false);                    
+                    header.name(indexedElement.getKind(), false);
+                    String value = null;
+                    if (indexedElement instanceof ConstantElement) {
+                        ConstantElement constant = (ConstantElement) indexedElement;
+                        value = constant.getValue();                       
+                    } else if (indexedElement instanceof TypeConstantElement) {
+                        TypeConstantElement constant = (TypeConstantElement) indexedElement;
+                        value = constant.getValue();
+                    }
+                    if (value != null) {
+                        header.appendText(" = ");//NOI18N
+                        header.appendText(value);
+                    }
                 }
 
                 header.appendHtml("<br/><br/>"); //NOI18N
