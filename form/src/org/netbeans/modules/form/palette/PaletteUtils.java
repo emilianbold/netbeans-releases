@@ -43,11 +43,13 @@ package org.netbeans.modules.form.palette;
 
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.io.IOException;
+import javax.swing.Action;
 
 import org.netbeans.spi.palette.*;
 import org.openide.ErrorManager;
@@ -202,7 +204,7 @@ public final class PaletteUtils {
         if (context == null)
             return null;
 
-        Project project = FileOwnerQuery.getOwner(context);
+        final Project project = FileOwnerQuery.getOwner(context);
         if (project == null)
             return null;
 
@@ -212,15 +214,77 @@ public final class PaletteUtils {
             classPath.addPropertyChangeListener(new ClassPathListener(classPath, project));
 
             PaletteLookup lookup = new PaletteLookup();
-            ClassPathFilter filter = new ClassPathFilter(classPath);
-            lookup.setPalette(createPalette(filter));
-
+            final ClassPathFilter filter = new ClassPathFilter(classPath);
+            lookup.setPalette(EventQueue.isDispatchThread() ? createDummyPalette() : createPalette(filter));
             pInfo = new ProjectPaletteInfo();
             pInfo.paletteLookup = lookup;
             pInfo.paletteFilter = filter;
             palettes.put(project, pInfo);
+            if (EventQueue.isDispatchThread()) {
+                // Init real palette
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        PaletteController palette = createPalette(filter);
+
+                        // 184551: Init all display names and icons
+                        Lookup rootLookup = palette.getRoot();
+                        Node root = rootLookup.lookup(Node.class);
+                        for (Node category : root.getChildren().getNodes(true)) {
+                            category.getDisplayName();
+                            category.getIcon(BeanInfo.ICON_COLOR_16x16);
+                            category.getIcon(BeanInfo.ICON_COLOR_32x32);
+                            for (Node item : category.getChildren().getNodes(true)) {
+                                item.getDisplayName();
+                                item.getIcon(BeanInfo.ICON_COLOR_16x16);
+                                item.getIcon(BeanInfo.ICON_COLOR_32x32);
+                            }
+                        }
+
+                        // Replace the dummy palette
+                        ProjectPaletteInfo pInfo = palettes.get(project);
+                        if (pInfo != null) {
+                            PaletteLookup lookup = pInfo.paletteLookup;
+                            PaletteController oldPalette = pInfo.getPalette();
+                            PaletteController newPalette = createPalette(filter);
+                            if (pInfo.paletteListeners != null) {
+                                for (PropertyChangeListener l : pInfo.paletteListeners) {
+                                    oldPalette.removePropertyChangeListener(l);
+                                    newPalette.addPropertyChangeListener(l);
+                                }
+                            }
+                            lookup.setPalette(newPalette);
+                        }
+                    }
+                });
+            }
         }
         return pInfo;
+    }
+
+    private static PaletteController createDummyPalette() {
+        return PaletteFactory.createPalette(Node.EMPTY, new PaletteActions() {
+            @Override
+            public Action[] getImportActions() {
+                return new Action[0];
+            }
+            @Override
+            public Action[] getCustomPaletteActions() {
+                return new Action[0];
+            }
+            @Override
+            public Action[] getCustomCategoryActions(Lookup category) {
+                return new Action[0];
+            }
+            @Override
+            public Action[] getCustomItemActions(Lookup item) {
+                return new Action[0];
+            }
+            @Override
+            public Action getPreferredAction(Lookup item) {
+                return null;
+            }
+        });
     }
 
     /**
@@ -269,7 +333,7 @@ public final class PaletteUtils {
             paletteDataFolder = DataFolder.findFolder(getPaletteFolder());
         return paletteDataFolder;
     }
-    
+
     public static void clearPaletteSelection() {
         PaletteController palette = getPalette();
         if (palette != null) {
