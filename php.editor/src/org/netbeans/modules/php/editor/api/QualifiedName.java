@@ -202,7 +202,7 @@ public class QualifiedName {
             test = test.append(qnseg);
         }
 
-        return (fullName.equals(test.toFullyQualified())) ? retval : null;
+        return (fullName.toFullyQualified().equals(test.toFullyQualified())) ? retval : null;
     }
 
     public static QualifiedName createUnqualifiedNameInClassContext(Expression expression, ClassScope clsScope) {
