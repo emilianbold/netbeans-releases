@@ -50,7 +50,7 @@ import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
@@ -101,7 +101,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     
     public ActionEditor() {
         actionNames = new ArrayList<String>();
-        actionMap = new HashMap<ProxyAction.Scope,List<ProxyAction>>();
+        actionMap = new EnumMap<ProxyAction.Scope,List<ProxyAction>>(ProxyAction.Scope.class);
     }
     
     // property editor impl
@@ -174,7 +174,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
             });
         }
         FileObject srcFile = getSourceFile();
-        Map<ProxyAction.Scope, String> scopeMap = new HashMap<ProxyAction.Scope, String>();
+        Map<ProxyAction.Scope, String> scopeMap = new EnumMap<ProxyAction.Scope, String>(ProxyAction.Scope.class);
         scanForActions();
         String appCls = AppFrameworkSupport.getApplicationClassName(srcFile);
         if (appCls != null) {

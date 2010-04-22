@@ -47,9 +47,9 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
@@ -92,7 +92,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
     private boolean viewSource = false;
     private String newMethodName = ""; // NOI18N
     private boolean isChanging = false;
-    private Map<ProxyAction.Scope, String> scopeClasses = new HashMap<ProxyAction.Scope, String>();
+    private Map<ProxyAction.Scope, String> scopeClasses = new EnumMap<ProxyAction.Scope, String>(ProxyAction.Scope.class);
     private FileObject sourceFile;
     private String smallIconName = null;
     private String largeIconName = null;
@@ -115,7 +115,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         if(property == null) {
             globalMode = true;
         }
-        parsedActions = new HashMap<ProxyAction.Scope, List<ProxyAction>>();
+        parsedActions = new EnumMap<ProxyAction.Scope, List<ProxyAction>>(ProxyAction.Scope.class);
         
         Object[] vals = new Object[] {
             ProxyAction.BlockingType.NONE,
