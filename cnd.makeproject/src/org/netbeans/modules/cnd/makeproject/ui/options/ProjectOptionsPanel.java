@@ -69,6 +69,7 @@ public class ProjectOptionsPanel extends JPanel {
         reuseCheckBox.getAccessibleContext().setAccessibleDescription(getString("REUSE_CHECKBOX_AD"));
         saveCheckBox.getAccessibleContext().setAccessibleDescription(getString("SAVE_CHECKBOX_AD"));
         dependencyCheckingCheckBox.getAccessibleContext().setAccessibleDescription(getString("DEPENDENCY_CHECKBOX_AD"));
+        rebuildPropsChangedCheckBox.getAccessibleContext().setAccessibleDescription(getString("REBUILD_PROP_CHANGED_AD"));
 //        platformComboBox.getAccessibleContext().setAccessibleDescription(getString("DEFAULT_PLATFORM_AD"));
         filePathcomboBox.getAccessibleContext().setAccessibleDescription(getString("FILE_PATH_AD"));
         makeOptionsTextField.getAccessibleContext().setAccessibleDescription(getString("MAKE_OPTIONS_AD"));
@@ -107,6 +108,7 @@ public class ProjectOptionsPanel extends JPanel {
         listen = false;
         MakeOptions makeOptions = MakeOptions.getInstance();
         dependencyCheckingCheckBox.setSelected(makeOptions.getDepencyChecking());
+        rebuildPropsChangedCheckBox.setSelected(makeOptions.getRebuildPropChanged());
         makeOptionsTextField.setText(makeOptions.getMakeOptions());
         filePathcomboBox.removeAllItems();
         for (int i = 0; i < MakeOptions.PathModeNames.length; i++) {
@@ -129,6 +131,7 @@ public class ProjectOptionsPanel extends JPanel {
         MakeOptions makeOptions = MakeOptions.getInstance();
 
         makeOptions.setDepencyChecking(dependencyCheckingCheckBox.isSelected());
+        makeOptions.setRebuildPropChanged(rebuildPropsChangedCheckBox.isSelected());
         makeOptions.setMakeOptions(makeOptionsTextField.getText());
         makeOptions.setPathMode(filePathcomboBox.getSelectedIndex());
         makeOptions.setSave(saveCheckBox.isSelected());
@@ -204,6 +207,7 @@ public class ProjectOptionsPanel extends JPanel {
         showProfilerCheckBox = new javax.swing.JCheckBox();
         showConfigurationWarningCheckBox = new javax.swing.JCheckBox();
         fullFileIndexer = new javax.swing.JCheckBox();
+        rebuildPropsChangedCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -274,9 +278,10 @@ public class ProjectOptionsPanel extends JPanel {
         add(filePathTxt, gridBagConstraints);
 
         saveCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("SAVE_CHECKBOX_MN").charAt(0));
-        saveCheckBox.setText(bundle.getString("SAVE_CHECKBOX_TXT")); // NOI18N
+        saveCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "SAVE_CHECKBOX_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -326,7 +331,7 @@ public class ProjectOptionsPanel extends JPanel {
         add(viewBinaryFilesCheckBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 14;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -364,6 +369,16 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(fullFileIndexer, gridBagConstraints);
+
+        rebuildPropsChangedCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "REBUILD_PROP_CHANGED_TXT")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
+        add(rebuildPropsChangedCheckBox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void dependencyCheckingCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependencyCheckingCheckBoxActionPerformed
@@ -379,6 +394,7 @@ public class ProjectOptionsPanel extends JPanel {
         PropertyChangeEvent pce = new PropertyChangeEvent(this, OptionsPanelController.PROP_VALID, this, this);
         firePropertyChange(pce);
     }//GEN-LAST:event_viewBinaryFilesCheckBoxActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox dependencyCheckingCheckBox;
     private javax.swing.JLabel filePathLabel;
@@ -389,6 +405,7 @@ public class ProjectOptionsPanel extends JPanel {
     private javax.swing.JLabel makeOptionsLabel;
     private javax.swing.JTextField makeOptionsTextField;
     private javax.swing.JLabel makeOptionsTxt;
+    private javax.swing.JCheckBox rebuildPropsChangedCheckBox;
     private javax.swing.JCheckBox reuseCheckBox;
     private javax.swing.JCheckBox saveCheckBox;
     private javax.swing.JCheckBox showConfigurationWarningCheckBox;

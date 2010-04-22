@@ -111,6 +111,7 @@ public class MakeConfiguration extends Configuration {
     private LanguageBooleanConfiguration assemblerRequired;
     private DevelopmentHostConfiguration developmentHost;
     private BooleanConfiguration dependencyChecking;
+    private BooleanConfiguration rebuildPropChanged;
     private CCompilerConfiguration cCompilerConfiguration;
     private CCCompilerConfiguration ccCompilerConfiguration;
     private FortranCompilerConfiguration fortranCompilerConfiguration;
@@ -149,6 +150,7 @@ public class MakeConfiguration extends Configuration {
         assemblerRequired = new LanguageBooleanConfiguration();
         makefileConfiguration = new MakefileConfiguration(this);
         dependencyChecking = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getDepencyChecking());
+        rebuildPropChanged = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getRebuildPropChanged());
         cCompilerConfiguration = new CCompilerConfiguration(baseDir, null);
         ccCompilerConfiguration = new CCCompilerConfiguration(baseDir, null);
         fortranCompilerConfiguration = new FortranCompilerConfiguration(baseDir, null);
@@ -187,6 +189,14 @@ public class MakeConfiguration extends Configuration {
 
     public void setDependencyChecking(BooleanConfiguration dependencyChecking) {
         this.dependencyChecking = dependencyChecking;
+    }
+
+    public BooleanConfiguration getRebuildPropChanged() {
+        return rebuildPropChanged;
+    }
+
+    public void setRebuildPropChanged(BooleanConfiguration rebuildPropChanged) {
+        this.rebuildPropChanged = rebuildPropChanged;
     }
 
     public CompilerSet2Configuration getCompilerSet() {
@@ -400,6 +410,7 @@ public class MakeConfiguration extends Configuration {
         getFortranRequired().assign(makeConf.getFortranRequired());
         getAssemblerRequired().assign(makeConf.getAssemblerRequired());
         getDependencyChecking().assign(makeConf.getDependencyChecking());
+        getRebuildPropChanged().assign(makeConf.getRebuildPropChanged());
 
         getMakefileConfiguration().assign(makeConf.getMakefileConfiguration());
         getCCompilerConfiguration().assign(makeConf.getCCompilerConfiguration());
@@ -538,6 +549,7 @@ public class MakeConfiguration extends Configuration {
         clone.setAssemblerRequired(getAssemblerRequired().clone());
         clone.setMakefileConfiguration(getMakefileConfiguration().clone());
         clone.setDependencyChecking(getDependencyChecking().clone());
+        clone.setRebuildPropChanged(getRebuildPropChanged().clone());
         clone.setCCompilerConfiguration(getCCompilerConfiguration().clone());
         clone.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
         clone.setFortranCompilerConfiguration(getFortranCompilerConfiguration().clone());
@@ -587,6 +599,7 @@ public class MakeConfiguration extends Configuration {
         if (isCompileConfiguration()) {
             set = Sheet.createExpertSet();
             set.put(new BooleanNodeProp(getDependencyChecking(), true, "DependencyChecking", getString("DependencyCheckingTxt"), getString("DependencyCheckingHint"))); // NOI18N
+            set.put(new BooleanNodeProp(getRebuildPropChanged(), true, "RebuildPropChanged", getString("RebuildPropChangedTxt"), getString("RebuildPropChangedHint"))); // NOI18N
             sheet.put(set);
         }
 

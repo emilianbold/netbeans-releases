@@ -65,6 +65,8 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     private static final String PATH_MODE = "pathMode"; // NOI18N
     // Dependency checking
     private static final String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
+    //
+    private static final String REBUILD_PROP_CHANGED = "rebuildPropChanged"; // NOI18N
     // Save
     private static final String SAVE = "save";  // NOI18N
     // Reuse
@@ -145,6 +147,19 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         getPreferences().putBoolean(DEPENDENCY_CHECKING, dependencyChecking);
         if (oldValue != dependencyChecking) {
             firePropertyChange(DEPENDENCY_CHECKING, Boolean.valueOf(oldValue), Boolean.valueOf(dependencyChecking));
+        }
+    }
+
+    // Dependency Checking
+    public boolean getRebuildPropChanged() {
+        return getPreferences().getBoolean(REBUILD_PROP_CHANGED, false);
+    }
+
+    public void setRebuildPropChanged(boolean rebuildPropChanged) {
+        boolean oldValue = getRebuildPropChanged();
+        getPreferences().putBoolean(REBUILD_PROP_CHANGED, rebuildPropChanged);
+        if (oldValue != rebuildPropChanged) {
+            firePropertyChange(REBUILD_PROP_CHANGED, Boolean.valueOf(oldValue), Boolean.valueOf(rebuildPropChanged));
         }
     }
 

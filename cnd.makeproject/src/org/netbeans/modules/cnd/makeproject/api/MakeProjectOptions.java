@@ -55,6 +55,10 @@ public final class MakeProjectOptions {
         return MakeOptions.getInstance().getDepencyChecking();
     }
 
+    public static boolean getRebuildPropChanged() {
+        return MakeOptions.getInstance().getRebuildPropChanged();
+    }
+
     public static boolean getShowIndicatorsOnRun() {
         return MakeOptions.getInstance().getShowProfiling();
     }
