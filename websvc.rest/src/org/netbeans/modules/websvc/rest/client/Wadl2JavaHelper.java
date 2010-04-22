@@ -879,7 +879,7 @@ class Wadl2JavaHelper {
         return list;
     }
 
-    private static String getMethodBody(String templatePath) {
+    static String getMethodBody(String templatePath) {
         FileObject templateFo = FileUtil.getConfigFile(templatePath);
         if (templateFo != null) {
             try {
