@@ -138,7 +138,7 @@ final class OverridingMethodsImpl implements OverridingMethods {
             return cache.inherited.get(fqn);
         }
         RubyIndex index = RubyIndex.get(info);
-        Set<IndexedMethod> result = index.getInheritedMethods(fqn, "", Kind.PREFIX, false);
+        Set<IndexedMethod> result = index.getInheritedMethods(fqn, "", Kind.PREFIX, false, false);
         cache.inherited.put(fqn, result);
         return result;
     }

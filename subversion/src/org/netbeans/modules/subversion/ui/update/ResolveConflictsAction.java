@@ -42,18 +42,28 @@
 package org.netbeans.modules.subversion.ui.update;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.*;
+import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.ui.commit.ConflictResolvedAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
- * Show basic conflict resolver UI (provided by the diff module).
+ * Show basic conflict resolver UI (provided by the diff module) and resolves tree conflicts.
  *
  * @author Petr Kuzel
  */
@@ -89,14 +99,16 @@ public class ResolveConflictsAction extends ContextAction {
         Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                final List<File> filteredFiles = removeFolders(files);
+                final Map<File, ISVNStatus> treeConflicts = getTreeConflicts(files);
+                final List<File> filteredFiles = removeFolders(files, treeConflicts.keySet());
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        if (filteredFiles.isEmpty()) {
+                        if (filteredFiles.isEmpty() && treeConflicts.isEmpty()) {
                             NotifyDescriptor nd = new NotifyDescriptor.Message(org.openide.util.NbBundle.getMessage(ResolveConflictsAction.class, "MSG_NoConflictsFound")); // NOI18N
                             DialogDisplayer.getDefault().notify(nd);
                         } else {
+                            resolveTreeConflicts(treeConflicts);
                             for (File file : filteredFiles) {
                                 ResolveConflictsExecutor executor = new ResolveConflictsExecutor(file);
                                 executor.exec();
@@ -105,6 +117,28 @@ public class ResolveConflictsAction extends ContextAction {
                     }
                 });
             }
+
+            private void resolveTreeConflicts (Map<File, ISVNStatus> treeConflicts) {
+                for (Map.Entry<File, ISVNStatus> e : treeConflicts.entrySet()) {
+                    File file = e.getKey();
+                    ISVNStatus status = e.getValue();
+                    if (acceptLocalChanges(status)) {
+                        try {
+                            ConflictResolvedAction.perform(file);
+                        } catch (SVNClientException ex) {
+                            Logger.getLogger(ResolveConflictsAction.class.getName()).log(Level.INFO, null, ex);
+                        }
+                    }
+                }
+            }
+
+            private boolean acceptLocalChanges (ISVNStatus status) {
+                File file = status.getFile();
+                NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(ResolveConflictsAction.class, "MSG_ResolveConflictsAction.ResolveTreeConflict.message", file.getName()), //NOI18N
+                        NbBundle.getMessage(ResolveConflictsAction.class, "MSG_ResolveConflictsAction.ResolveTreeConflict.title"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
+                        NotifyDescriptor.QUESTION_MESSAGE, new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION}, NotifyDescriptor.NO_OPTION);
+                return DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION;
+            }
         });
     }
 
@@ -112,16 +146,38 @@ public class ResolveConflictsAction extends ContextAction {
      * Filters the array and returns only existing files, not folders.
      * I/O access
      * @param files
+     * @param treeConflicts set of files that will not be included in the returned list
      * @return
      */
-    private static List removeFolders(File[] files) {
+    private static List removeFolders (File[] files, Set<File> treeConflicts) {
         LinkedList<File> filteredFiles = new LinkedList<File>();
         for (File file : files) {
-            if (file.isFile()) {
+            if (!treeConflicts.contains(file) && file.isFile()) {
                 filteredFiles.add(file);
             }
         }
         return filteredFiles;
+    }
+
+    private static Map<File, ISVNStatus> getTreeConflicts (File[] files) {
+        Map<File, ISVNStatus> treeConflicts = new HashMap<File, ISVNStatus>(files.length);
+        if (files.length > 0) {
+            try {
+                SvnClient client = Subversion.getInstance().getClient(false);
+                FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                for (File file : files) {
+                    if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT_TREE) != 0) {
+                        ISVNStatus status = client.getSingleStatus(file);
+                        if (status.hasTreeConflict()) {
+                            treeConflicts.put(file, status);
+                        }
+                    }
+                }
+            } catch (SVNClientException ex) {
+                Subversion.LOG.log(Level.INFO, null, ex);
+            }
+        }
+        return treeConflicts;
     }
 
     @Override

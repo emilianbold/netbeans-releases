@@ -162,12 +162,14 @@ public class CLIStatus implements ISVNStatus {
         return status.getLockComment();
     }
 
+    @Override
     public boolean hasTreeConflict() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return false;//status.hasTreeConflicts();
     }
 
+    @Override
     public SVNConflictDescriptor getConflictDescriptor() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;//status.getConflictDescriptor();
     }
 
     public boolean isFileExternal() {
