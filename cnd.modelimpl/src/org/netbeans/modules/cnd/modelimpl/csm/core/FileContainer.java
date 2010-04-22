@@ -211,15 +211,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
     }
     
-    //@Deprecated
-    public APTPreprocHandler.State getPreprocState(File file) {
-        FileEntry f = getFileEntry(file, false, false);
-        if (f == null){
-            return null;
-        }
-        return f.getState();
-    }
-    
     public Collection<APTPreprocHandler.State> getPreprocStates(File file) {
         FileEntry f = getFileEntry(file, false, false);
         if (f == null){

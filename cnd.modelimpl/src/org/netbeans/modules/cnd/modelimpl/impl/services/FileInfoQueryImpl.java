@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * implementaion of CsmFileInfoQuery
@@ -362,10 +363,13 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     public List<CsmInclude> getIncludeStack(CsmFile file) {
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
-            APTPreprocHandler.State state = ((ProjectBase)impl.getProject()).getPreprocState(impl);
-            if (state == null) {
+            Collection<State> preprocStates = ((ProjectBase) impl.getProject()).getPreprocStates(impl);
+            if (preprocStates.isEmpty()) {
                 return Collections.<CsmInclude>emptyList();
             }
+            // use stack from one of states (i.e. first)
+            APTPreprocHandler.State state = preprocStates.iterator().next();
+            CndUtils.assertNotNull(state, "state must not be null in non empty collection");// NOI18N
             List<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
             StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
             ProjectBase startProject = ProjectBase.getStartProject(startEntry);
