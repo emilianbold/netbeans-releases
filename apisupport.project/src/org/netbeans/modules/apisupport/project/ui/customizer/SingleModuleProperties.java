@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
@@ -445,7 +446,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         Set<ModuleDependency> deps = depsModel.getDependencies();
         for (Iterator it = deps.iterator(); it.hasNext();) {
             ModuleDependency dep = (ModuleDependency) it.next();
-            if (dep.hasImplementationDepedendency()) {
+            if (dep.hasImplementationDependency()) {
                 return true;
             }
         }

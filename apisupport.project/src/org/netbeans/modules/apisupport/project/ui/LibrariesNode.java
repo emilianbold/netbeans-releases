@@ -72,7 +72,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.ModulesNodeFactory.AddNewLibraryWrapperAction;
 import org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel;
 import org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -154,7 +154,7 @@ final class LibrariesNode extends AbstractNode {
     private static String createHtmlDescription(final ModuleDependency dep) {
         // assemble an html short description (tooltip actually)
         StringBuffer shortDesc = new StringBuffer("<html><u>" + dep.getModuleEntry().getCodeNameBase() + "</u><br>"); // NOI18N
-        if (dep.hasImplementationDepedendency()) {
+        if (dep.hasImplementationDependency()) {
             shortDesc.append("<br><font color=\"red\">" + getMessage("CTL_ImplementationDependency") + "</font>");
         }
         if (dep.hasCompileDependency()) {

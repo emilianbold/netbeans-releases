@@ -70,7 +70,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -83,7 +82,9 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
 
     private static final String LAYER_POM = "pom"; //NOI18N
     private static final String LAYER_POM_SELECTION = "pom-selection"; //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("StatusProvider"); //NOI18N
 
+    @Override
     public UpToDateStatusProvider createUpToDateStatusProvider(Document document) {
         FileObject fo = NbEditorUtilities.getFileObject(document);
         if (fo != null && "text/x-maven-pom+xml".equals(fo.getMIMEType())) { //NOI18N
@@ -104,7 +105,8 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             listener = new FileChangeAdapter() {
                 @Override
                 public void fileChanged(FileEvent fe) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
+                        @Override
                         public void run() {
                             checkHints();
                         }
@@ -112,7 +114,8 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 }
             };
             initializeModel();
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     checkHints();
                 }

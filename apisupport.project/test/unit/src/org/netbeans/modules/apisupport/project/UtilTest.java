@@ -60,7 +60,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.jar.Manifest;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;

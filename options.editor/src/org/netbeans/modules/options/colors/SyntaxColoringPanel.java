@@ -711,15 +711,15 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         AttributeSet category = getCurrentCategory ();
         if (category == null) {
             // no category selected > disable all elements
-	    tfFont.setText ("");
+            tfFont.setText ("");
             bFont.setEnabled (false);
             cbEffects.setEnabled (false);
             cbForeground.setEnabled (false);
-	    cbForeground.setSelectedItem (new ColorValue (null, null));
+            cbForeground.setSelectedItem (new ColorValue (null, null));
             cbBackground.setEnabled (false);
-	    cbBackground.setSelectedItem (new ColorValue (null, null));
+            cbBackground.setSelectedItem (new ColorValue (null, null));
             cbEffectColor.setEnabled (false);
-	    cbEffectColor.setSelectedItem (new ColorValue (null, null));
+            cbEffectColor.setSelectedItem (new ColorValue (null, null));
             updatePreview ();
             return;
         }
@@ -772,10 +772,34 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
                 cbEffectColor,
                 (Color) category.getAttribute (StyleConstants.StrikeThrough)
             );
+        } else
+        if (getDefault (currentLanguage, category, StyleConstants.Underline) != null) {
+            cbEffects.setSelectedIndex (1);
+            cbEffectColor.setEnabled (true);
+            ColorComboBox.setColor (
+                cbEffectColor,
+                (Color) getDefault (currentLanguage, category, StyleConstants.Underline)
+            );
+        } else
+        if (getDefault (currentLanguage, category, EditorStyleConstants.WaveUnderlineColor) != null) {
+            cbEffects.setSelectedIndex (2);
+            cbEffectColor.setEnabled (true);
+            ColorComboBox.setColor (
+                cbEffectColor,
+                (Color) getDefault (currentLanguage, category, EditorStyleConstants.WaveUnderlineColor)
+            );
+        } else
+        if (getDefault (currentLanguage, category, StyleConstants.StrikeThrough) != null) {
+            cbEffects.setSelectedIndex (3);
+            cbEffectColor.setEnabled (true);
+            ColorComboBox.setColor (
+                cbEffectColor,
+                (Color) getDefault (currentLanguage, category, StyleConstants.StrikeThrough)
+            );
         } else {
             cbEffects.setSelectedIndex (0);
             cbEffectColor.setEnabled (false);
-	    cbEffectColor.setSelectedItem (new ColorValue (null, null));
+            cbEffectColor.setSelectedItem (new ColorValue (null, null));
         }
         updatePreview ();
         listen = true;

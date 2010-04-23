@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 <!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.1//EN" "http://www.netbeans.org/dtds/annotation-type-1_1.dtd">
 <type
     name='debugger-PC_mixedBP_broken'
-    description_key='HINT_PC_MIXED_BREAKPOINTS'
+    description_key='HINT_PC_MIXED_BROKEN_BREAKPOINTS'
     localizing_bundle='org.netbeans.modules.debugger.resources.Bundle'
     visible='true'
     glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/MultiBreakpoint+PC_broken.png'

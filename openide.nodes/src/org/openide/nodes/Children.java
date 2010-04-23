@@ -146,8 +146,9 @@ public abstract class Children extends Object {
         synchronized (Children.class) {
             if (getEntrySupport() == null) {
                 LOG.finer("Initializing entrySupport");
-                setEntrySupport(lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this));
-                postInitializeEntrySupport();
+                EntrySupport es = lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this);
+                setEntrySupport(es);
+                postInitializeEntrySupport(es);
             }
             return getEntrySupport();
         }
@@ -167,7 +168,7 @@ public abstract class Children extends Object {
      * lock so subclasses should behave sane. Can be overriden just in this 
      * package, until found that this is needed somewhere else. 
      */
-    void postInitializeEntrySupport() {
+    void postInitializeEntrySupport(EntrySupport es) {
     }
     
     /** Setter of parent node for this list of children. Each children in the list
@@ -663,12 +664,12 @@ public abstract class Children extends Object {
             }
         }
         @Override
-        void postInitializeEntrySupport() {
+        void postInitializeEntrySupport(EntrySupport es) {
             if (!lazySupport) {
                 if (getNodesEntry() == null) {
                     nodesEntry = createNodesEntry();
                 }
-                entrySupport().setEntries(Collections.singleton(getNodesEntry()));
+                es.setEntries(Collections.singleton(getNodesEntry()));
             } else if (getNodesEntry() != null) {
                 nodesEntry = null;
             }
