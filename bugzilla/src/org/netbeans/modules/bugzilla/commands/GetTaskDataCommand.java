@@ -56,7 +56,6 @@ public class GetTaskDataCommand extends BugzillaCommand {
     private final String id;
     private final TaskRepository taskRepository;
     private TaskData taskData;
-    private String stringValue;
 
     public GetTaskDataCommand(String id, TaskRepository taskRepository) {
         this.id = id;

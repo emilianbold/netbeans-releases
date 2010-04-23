@@ -56,7 +56,6 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         getString("TXT_Auto"),
         getString("TXT_AlwaysRelative"),
         getString("TXT_AlwaysAbsolute"),};
-
     private static MakeOptions instance = null;
     // Default make options
     private static final String MAKE_OPTIONS = "makeOptions"; // NOI18N
@@ -65,6 +64,8 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     private static final String PATH_MODE = "pathMode"; // NOI18N
     // Dependency checking
     private static final String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
+    //
+    private static final String REBUILD_PROP_CHANGED = "rebuildPropChanged"; // NOI18N
     // Save
     private static final String SAVE = "save";  // NOI18N
     // Reuse
@@ -82,7 +83,6 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     public static final String FULL_FILE_INDEXER = "fullFileIndexer"; // NOI18N
 
     static {
-        
     }
 
     static public MakeOptions getInstance() {
@@ -145,6 +145,19 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         getPreferences().putBoolean(DEPENDENCY_CHECKING, dependencyChecking);
         if (oldValue != dependencyChecking) {
             firePropertyChange(DEPENDENCY_CHECKING, Boolean.valueOf(oldValue), Boolean.valueOf(dependencyChecking));
+        }
+    }
+
+    // Dependency Checking
+    public boolean getRebuildPropChanged() {
+        return getPreferences().getBoolean(REBUILD_PROP_CHANGED, false);
+    }
+
+    public void setRebuildPropChanged(boolean rebuildPropChanged) {
+        boolean oldValue = getRebuildPropChanged();
+        getPreferences().putBoolean(REBUILD_PROP_CHANGED, rebuildPropChanged);
+        if (oldValue != rebuildPropChanged) {
+            firePropertyChange(REBUILD_PROP_CHANGED, Boolean.valueOf(oldValue), Boolean.valueOf(rebuildPropChanged));
         }
     }
 
@@ -264,7 +277,6 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
             firePropertyChange(DEF_GROUP, oldValue, value);
         }
     }
-
 
     // Prefered language when creating new Application projects
     public String getPrefApplicationLanguage() {

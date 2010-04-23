@@ -37,13 +37,6 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <memory.h>
 #include <alloca.h>
 
 #include "rfs_filedata.h"

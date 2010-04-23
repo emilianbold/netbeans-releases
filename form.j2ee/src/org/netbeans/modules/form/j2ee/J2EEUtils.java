@@ -1092,7 +1092,8 @@ public class J2EEUtils {
                         for (String column : columns) {
                             String propName = columnToProperty.get(column);
                             if (propName == null) {
-                                System.err.println("WARNING: Cannot find property for column " + column); // NOI18N
+                                Logger.getLogger(J2EEUtils.class.getName()).log(
+                                    Level.INFO, "WARNING: Cannot find property for column {0}", column); // NOI18N
                             } else {
                                 props.add(propName);
                             }

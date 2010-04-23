@@ -113,3 +113,35 @@ void _trace_shutdown() {
         }
     }
 }
+
+__attribute__ ((visibility ("hidden")))
+void init_trace_flag(const char* env_var) {
+    char *env = getenv(env_var);
+    trace_flag = env && *env == '1';
+}
+
+__attribute__ ((visibility ("hidden")))
+void report_unresolved_path(const char* path) {
+    char pwd[PATH_MAX + 1];
+    getcwd(pwd, sizeof pwd);
+    report_error("Can not resolve path: %s  cwd: %s\n", path, pwd);
+}
+
+
+__attribute__ ((visibility ("hidden")))
+void _trace_unresolved_path(const char* path, const char* action) {
+    if (trace_flag) {
+        char pwd[PATH_MAX + 1];
+        getcwd(pwd, sizeof pwd);
+        trace("Can not resolve path on %s: %s pwd: %s\n", action, path, pwd);
+    }
+}
+
+__attribute__ ((visibility ("hidden")))
+void _dbg_sleep(int time) {
+    if (trace_flag) {
+        trace("Sleeping %d sec...\n", time);
+        sleep(time);
+        trace("Awoke\n");
+    }
+}

@@ -505,8 +505,20 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
             <folder name="test.single">
-                <file name="test-single">
+                <file name="save">
                     <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="build-tests">
+                    <attr name="position" intvalue="500"/>
+                </file>
+                <file name="test-single">
+                    <attr name="position" intvalue="600"/>
                 </file>
             </folder>
         </folder>        <!-- BuildAction -->
@@ -584,13 +596,37 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
             <folder name="test">
-                <file name="test">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
                     <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="build-tests">
+                    <attr name="position" intvalue="500"/>
+                </file>
+                <file name="test">
+                    <attr name="position" intvalue="600"/>
                 </file>
             </folder>
             <folder name="test.single">
-                <file name="test-single">
+                <file name="save">
                     <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="build-tests">
+                    <attr name="position" intvalue="500"/>
+                </file>
+                <file name="test-single">
+                    <attr name="position" intvalue="600"/>
                 </file>
             </folder>
         </folder>        <!-- NoBuildAction -->

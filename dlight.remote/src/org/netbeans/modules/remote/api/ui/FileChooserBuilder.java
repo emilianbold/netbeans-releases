@@ -119,6 +119,18 @@ public final class FileChooserBuilder {
             }
         }
 
+        @Override
+        public void setCurrentDirectory(File dir) {
+            super.setCurrentDirectory(dir);
+        }
+
+        @Override
+        protected void fireActionPerformed(String command) {
+            super.fireActionPerformed(command);
+        }
+        
+        
+
         public void propertyChange(final PropertyChangeEvent evt) {
             if (RemoteFileSystemView.LOADING_STATUS.equals(evt.getPropertyName())) {
                 SwingUtilities.invokeLater(new Runnable() {

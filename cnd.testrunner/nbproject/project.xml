@@ -256,9 +256,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <package>org.netbeans.modules.cnd.testrunner.spi</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

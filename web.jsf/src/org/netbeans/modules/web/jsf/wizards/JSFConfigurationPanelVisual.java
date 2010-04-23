@@ -702,7 +702,7 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                     isJSF12 = false;
                     isJSF20 = false;
                 }
-                
+
                 String libName = null; //NOI18N
                 if (isJSF20) {
                     libName = "JSF 2.0"; //NOI18N
@@ -712,17 +712,17 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                     libName = "JSF 1.1"; //NOI18N
                 } else {
                     rbNoneLibrary.setVisible(false);
-                    Library profferedLibrary = null;
+                    Library preferredLibrary = null;
                     if (profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB)) {
-                        profferedLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_2_0_NAME);
+                        preferredLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_2_0_NAME);
                     } else {
-                        profferedLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_1_2_NAME);
+                        preferredLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_1_2_NAME);
                     }
 
-                    if (profferedLibrary != null) {
+                    if (preferredLibrary != null) {
                         // if there is a proffered library, select
                         rbRegisteredLibrary.setSelected(true);
-                        cbLibraries.setSelectedItem(profferedLibrary.getDisplayName());
+                        cbLibraries.setSelectedItem(preferredLibrary.getDisplayName());
                         updateLibrary();
                     } else {
                         // there is not a proffered library -> select one or select creating new one
@@ -732,6 +732,9 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                     }
                 }
                 if (libName != null) {
+                    if (!rbNoneLibrary.isVisible()) {
+                        rbNoneLibrary.setVisible(true);
+                    }
                     rbNoneLibrary.setText(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Any_Library", libName)); //NOI18N
                     rbNoneLibrary.setSelected(true);
                     if (panel !=null)
