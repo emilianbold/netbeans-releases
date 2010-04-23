@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil.PrefixedLogger;
@@ -61,6 +62,8 @@ class RfsLocalController extends NamedRunnable {
     private final String prefix;
     private final SharabilityFilter filter;
     private String timeStampFile;
+
+    private static final boolean USE_TIMESTAMPS = DebugUtils.getBoolean("cnd.rfs.timestamps", true);
 
     /**
      * Maps remote canonical remote path remote controller operates with
@@ -370,6 +373,12 @@ class RfsLocalController extends NamedRunnable {
      * Feeds remote controller with the list of files and their lengths
      */
     void init() {
+
+        char version = USE_TIMESTAMPS ? '2' : '1';
+        logger.log(Level.FINE, "Initialization. Version=%c", version);
+        responseStream.printf("VERSION=%c\n", version); //NOI18N
+        responseStream.flush();
+
         long time = System.currentTimeMillis();
         long timeTotal = System.currentTimeMillis();
         List<FileGatheringInfo> filesToFeed = new ArrayList<FileGatheringInfo>(512);
@@ -682,7 +691,14 @@ class RfsLocalController extends NamedRunnable {
                     || newState == FileState.TOUCHED || newState == FileState.UNCONTROLLED
                     || newState == FileState.INEXISTENT,
                     "State shouldn't be " + newState); //NOI18N
-            responseStream.printf("%c %d %s\n", newState.id, file.length(), remotePath); // NOI18N
+            if (USE_TIMESTAMPS) {
+                long fileTime = file.lastModified();
+                long seconds = fileTime / 1000;
+                long microseconds = (fileTime % 1000) * 1000;
+                responseStream.printf("%c %d %d %d %s\n", newState.id, file.length(), seconds, microseconds, remotePath); // NOI18N
+            } else {
+                responseStream.printf("%c %d %s\n", newState.id, file.length(), remotePath); // NOI18N
+            }
             responseStream.flush(); //TODO: remove?
             if (newState == FileState.INITIAL ) {
                 newState = FileState.TOUCHED;
