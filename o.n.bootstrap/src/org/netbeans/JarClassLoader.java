@@ -470,9 +470,9 @@ public class JarClassLoader extends ProxyClassLoader {
                                         }
                                         return ret;
                                     } catch (ZipException zip) {
-                                        if (retry++ < 3) {
+                                        if (file.exists() && retry++ < 3) {
                                             LOGGER.log(Level.WARNING, "Error opening " + file + " retry: " + retry, zip); // NOI18N
-                                            doCloseJar();
+                                            opened(JarClassLoader.JarSource.this, "ziperror");
                                             continue;
                                         }
                                         throw zip;
@@ -701,7 +701,7 @@ public class JarClassLoader extends ProxyClassLoader {
             synchronized (sources) {
                 if (sources.size() > LIMIT) {
                     // close something
-                    JarSource toClose = toClose();
+                    JarSource toClose = toClose(source);
                     try {
                         toClose.doCloseJar();
                     } catch (IOException ioe) {
@@ -714,7 +714,7 @@ public class JarClassLoader extends ProxyClassLoader {
         }
 
         // called under lock(sources) 
-        private static JarSource toClose() { 
+        private static JarSource toClose(JarSource notThisOne) {
             assert Thread.holdsLock(sources);
              
             int min = Integer.MAX_VALUE; 
@@ -730,10 +730,12 @@ public class JarClassLoader extends ProxyClassLoader {
                 } 
             } 
              
-            assert candidate != null; 
+            assert candidate != null;
+            assert candidate != notThisOne : "Closing just opened JarSource: " + notThisOne;
             return candidate; 
         }
 
+        @Override
         public String getIdentifier() {
             return getURL().toExternalForm();
         }
