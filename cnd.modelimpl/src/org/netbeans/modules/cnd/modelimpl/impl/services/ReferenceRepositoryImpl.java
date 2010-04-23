@@ -366,7 +366,12 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         if (ts == null || !file.isValid()) {
             return null;
         }
-        APTPreprocHandler.State ppState = file.getProjectImpl(false).getPreprocState(file);
+        APTPreprocHandler.State ppState = null;
+        Collection<APTPreprocHandler.State> preprocStates = file.getProjectImpl(false).getPreprocStates(file);
+        if (!preprocStates.isEmpty()) {
+            // use start file from one of states (i.e. first)
+            ppState = preprocStates.iterator().next();
+        }
         return file.getLanguageFilter(ppState).getFilteredStream( new APTCommentsFilter(ts));
     }
 

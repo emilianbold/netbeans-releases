@@ -101,6 +101,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.NodeOp;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -180,6 +181,9 @@ public class ListView extends JScrollPane implements Externalizable {
 
     /** if true, the hierarchy traversal is allowed, if false, it is disabled */
     private boolean traversalAllowed = true;
+
+    /** show parent node */
+    private boolean showParentNode;
 
     /** action preformer */
     private ActionListener defaultProcessor;
@@ -297,6 +301,26 @@ public class ListView extends JScrollPane implements Externalizable {
     */
     public void setTraversalAllowed(boolean value) {
         traversalAllowed = value;
+    }
+
+    /** Is parent node (e.g. explored context shown)?
+     * @return true or false. Default is false.
+     * @since 6.28
+     */
+    public boolean isShowParentNode() {
+        return showParentNode;
+    }
+
+    /** Shall the first node in the list be ".." representing currently
+     * explored context? By default it is not, but if you want to simplify
+     * the navigation in the {@link  Node} hierarchy, you can turn this
+     * property on.
+     * 
+     * @param show true to show the "..", false to not to do so
+     * @since 6.28
+     */
+    public void setShowParentNode(boolean show) {
+        showParentNode = show;
     }
 
     /** Get the current processor for default actions.
@@ -557,6 +581,11 @@ public class ListView extends JScrollPane implements Externalizable {
     // Working methods
     //
 
+    final void setNode(Node n) {
+        boolean show = showParentNode && n != manager.getRootContext();
+        model.setNode(n, show);
+    }
+
     /* Initilizes the view.
     */
     @Override
@@ -577,7 +606,7 @@ public class ListView extends JScrollPane implements Externalizable {
             manager.addVetoableChangeListener(wlvc = WeakListeners.vetoableChange(managerListener, manager));
             manager.addPropertyChangeListener(wlpc = WeakListeners.propertyChange(managerListener, manager));
 
-            model.setNode(manager.getExploredContext());
+            setNode(manager.getExploredContext());
 
             updateSelection();
         } else {
@@ -595,7 +624,7 @@ public class ListView extends JScrollPane implements Externalizable {
 
             // bugfix #23974, model doesn't reflect an explorer context change
             // because any listener was not active
-            model.setNode(manager.getExploredContext());
+            setNode(manager.getExploredContext());
             list.addMouseListener(popupSupport);
         }
     }
@@ -659,6 +688,15 @@ public class ListView extends JScrollPane implements Externalizable {
         if (defaultProcessor != null) {
             defaultProcessor.actionPerformed(new ActionEvent(node, 0, null, modifiers));
 
+            return;
+        }
+
+        if (showParentNode && NodeListModel.findVisualizerDepth(model, v) == -1) {
+            try {
+                manager.setExploredContextAndSelection(node.getParentNode(), new Node[] { node });
+            } catch (PropertyVetoException ex) {
+                // OK, let it be
+            }
             return;
         }
 
@@ -1393,7 +1431,7 @@ public class ListView extends JScrollPane implements Externalizable {
             }
 
             if (ExplorerManager.PROP_EXPLORED_CONTEXT.equals(evt.getPropertyName())) {
-                model.setNode(manager.getExploredContext());
+                setNode(manager.getExploredContext());
 
                 //System.out.println("Children: " + java.util.Arrays.asList (list.getValues ())); // NOI18N
                 return;

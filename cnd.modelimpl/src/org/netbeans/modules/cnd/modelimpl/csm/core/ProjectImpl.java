@@ -132,12 +132,13 @@ public final class ProjectImpl extends ProjectBase {
                     }
                     System.err.println("onFileEditStart: current file " + impl);
                 }
+                // sync set buffer as well
+                impl.setBuffer(buf);
                 if (!editedFiles.containsKey(impl)) {
                     // register edited file
                     editedFiles.put(impl, new EditingTask(buf, changeListener));
                 }
-                // sync set buffer as well
-                impl.setBuffer(buf);
+                scheduleParseOnEditing(impl);
             }
         }
     }
@@ -337,6 +338,8 @@ public final class ProjectImpl extends ProjectBase {
         private RequestProcessor.Task task;
         private final ChangeListener bufListener;
         private final FileBuffer buf;
+        private long lastModified = -1;
+
         public EditingTask(final FileBuffer buf, ChangeListener bufListener) {
             assert (bufListener != null);
             this.bufListener = bufListener;
@@ -345,13 +348,21 @@ public final class ProjectImpl extends ProjectBase {
             this.buf.addChangeListener(bufListener);
         }
 
+        public boolean updateLastModified(long lastModified) {
+            if (this.lastModified == lastModified) {
+                return false;
+            }
+            this.lastModified = lastModified;
+            return true;
+        }
+        
         public void setTask(Task task) {
             if (TraceFlags.TRACE_182342_BUG) {
-                new Exception("EditingTask.setTask: set new EditingTask " + task.hashCode()).printStackTrace(System.err);// NOI18N
+                System.err.printf("EditingTask.setTask: set new EditingTask %d for %s\n", task.hashCode(), buf.getFile());
             }
             this.task = task;
         }
-        
+
         public void cancelTask() {
             if (this.task != null) {
                 if (TraceFlags.TRACE_182342_BUG) {
@@ -369,6 +380,10 @@ public final class ProjectImpl extends ProjectBase {
                 }
             }
             this.buf.removeChangeListener(bufListener);
+        }
+
+        private Task getTask() {
+            return this.task;
         }
     }
     
@@ -442,35 +457,55 @@ public final class ProjectImpl extends ProjectBase {
             EditingTask pair = editedFiles.get(file);
             if (pair == null) {
                 // we were removed between rescheduling and finish of edit
+                if (TraceFlags.TRACE_182342_BUG) {
+                    System.err.println("scheduleParseOnEditing: file was removed " + file);
+                }
                 return;
             }
-            pair.cancelTask();
-            if (TraceFlags.TRACE_182342_BUG) {
-                for (CsmFile csmFile : editedFiles.keySet()) {
-                    System.err.println("scheduleParseOnEditing: edited file " + csmFile);
+            if (!pair.updateLastModified(file.getBuffer().lastModified())) {
+                // no need to schedule the second parse
+                if (TraceFlags.TRACE_182342_BUG) {
+                    System.err.println("scheduleParseOnEditing: no updates " + file + " : " + pair.lastModified);
                 }
-                System.err.println("scheduleParseOnEditing: current file " + file);
+                return;
             }
-            task = RP.create(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        if (TraceFlags.TRACE_182342_BUG) {
-                            System.err.printf("scheduleParseOnEditing: RUN scheduleParseOnEditing task for %s\n", file);
-                        }
-                        if (isDisposing()) {
-                            return;
-                        }
-                        DeepReparsingUtils.reparseOnEditingFile(ProjectImpl.this, file);
-                    } catch (AssertionError ex) {
-                        DiagnosticExceptoins.register(ex);
-                    } catch (Exception ex) {
-                        DiagnosticExceptoins.register(ex);
+            task = pair.getTask();
+            if (task == null) {
+                if (TraceFlags.TRACE_182342_BUG) {
+                    for (CsmFile csmFile : editedFiles.keySet()) {
+                        System.err.println("scheduleParseOnEditing: edited file " + csmFile);
                     }
+                    System.err.println("scheduleParseOnEditing: current file " + file);
                 }
-            }, true);
-            task.setPriority(Thread.MIN_PRIORITY);
+                task = RP.create(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        try {
+                            if (TraceFlags.TRACE_182342_BUG) {
+                                System.err.printf("scheduleParseOnEditing: RUN scheduleParseOnEditing task for %s\n", file);
+                            }
+                            if (isDisposing()) {
+                                return;
+                            }
+                            DeepReparsingUtils.reparseOnEditingFile(ProjectImpl.this, file);
+                        } catch (AssertionError ex) {
+                            DiagnosticExceptoins.register(ex);
+                        } catch (Exception ex) {
+                            DiagnosticExceptoins.register(ex);
+                        }
+                    }
+                }, true);
+                task.setPriority(Thread.MIN_PRIORITY);
+                pair.setTask(task);
+            } else {
+                if (TraceFlags.TRACE_182342_BUG) {
+                    for (CsmFile csmFile : editedFiles.keySet()) {
+                        System.err.println("reschedule in scheduleParseOnEditing: edited file " + csmFile);
+                    }
+                    System.err.println("reschedule in scheduleParseOnEditing: current file " + file);
+                }
+            }
             delay = TraceFlags.REPARSE_DELAY;
             boolean doReparse = NamedEntityOptions.instance().isEnabled(new NamedEntity() {
                 @Override
@@ -489,7 +524,6 @@ public final class ProjectImpl extends ProjectBase {
             } else {
                 delay = Integer.MAX_VALUE;
             }
-            pair.setTask(task);
         }
         task.schedule(delay);
     }

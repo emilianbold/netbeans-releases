@@ -520,6 +520,7 @@ public class TokenFormatter {
                                     case WHITESPACE_AFTER_CLASS:
                                         indentRule = true;
                                         newLines = docOptions.blankLinesAfterClass + 1 > newLines ? docOptions.blankLinesAfterClass + 1 : newLines;
+                                        countSpaces = indent;
                                         break;
                                     case WHITESPACE_BEFORE_CLASS_RIGHT_BRACE:
                                         indentRule = true;
@@ -1057,6 +1058,9 @@ public class TokenFormatter {
                                     afterSemi = false;
                                 }
 
+//                                if (indentLine && indentRule && formatToken.getId() != FormatToken.Kind.CLOSE_TAG) {
+//                                    countSpaces = Math.max(countSpaces, indent);
+//                                }
                                 newText = createWhitespace(doc, newLines, countSpaces);
                                 if (wsBetweenBraces) {
                                     newText = createWhitespace(doc, 1, indent + docOptions.indentSize) + createWhitespace(doc, 1, indent);

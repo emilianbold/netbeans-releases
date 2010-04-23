@@ -165,28 +165,28 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
             if (owner instanceof CsmClass) {
                 Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass) owner,
                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
-                def = findByName(it, getName());
+                def = findByNameAndParamsNumber(it, getName(), getParameters().size());
                 if (def == null && isOperator()) {
                     def = fixCastOperator((CsmClass)owner);
                 }
             } else if (owner instanceof CsmNamespace) {
                 Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(((CsmNamespace) owner),
                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));
-                def = findByName(it, getName());
+                def = findByNameAndParamsNumber(it, getName(), getParameters().size());
             }
         } else {
-            def = findByName(defs.iterator(), getName());
+            def = findByNameAndParamsNumber(defs.iterator(), getName(), getParameters().size());
         }
         return (CsmFunction) def;
     }
 
-    private static CsmFunction findByName(Iterator declarations, CharSequence name) {
+    private static CsmFunction findByNameAndParamsNumber(Iterator declarations, CharSequence name, int paramsNumber) {
         CsmFunction out = null;
         for (Iterator it = declarations; it.hasNext();) {
             Object o = it.next();
             if (CsmKindUtilities.isCsmObject(o) && CsmKindUtilities.isFunction((CsmObject) o)) {
                 CsmFunction decl = (CsmFunction) o;
-                if (decl.getName().equals(name)) {
+                if (decl.getName().equals(name) && decl.getParameters().size() == paramsNumber) {
                     out = decl;
                     if (!FunctionImplEx.isFakeFunction(decl)) {
                         break;

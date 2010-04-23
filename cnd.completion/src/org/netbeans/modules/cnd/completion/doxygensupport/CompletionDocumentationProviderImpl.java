@@ -66,29 +66,54 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CompletionDocumentationProvider.class)
 public class CompletionDocumentationProviderImpl implements CompletionDocumentationProvider {
 
-//    public static Document doc = null; // FIXUP: hack to get the current document
+    @Override
+    public CompletionDocumentation createDocumentation(CsmObject csmObject, CsmFile csmFile) {
+        return createDocumentationImpl(csmObject, csmFile);
+    }
+
     @Override
     public CompletionTask createDocumentationTask(CompletionItem item) {
         if (!(item instanceof CsmResultItem)) {
             return null;
         }
-//        CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false); // FIXUP: hack to get current csmFile
-        CsmFile csmFile = getCsmFile(item);
-        if (csmFile != null) {
-            return new AsyncCompletionTask(new DocQuery((CsmObject) ((CsmResultItem) item).getAssociatedObject(), csmFile));
-        }
 
-        return null;
+        CsmObject csmObject = (CsmObject) ((CsmResultItem) item).getAssociatedObject();
+        CsmFile csmFile = getCsmFile(csmObject);
+        return csmFile == null? null : new AsyncCompletionTask(new DocQuery(csmObject, csmFile));
     }
 
-    private CsmFile getCsmFile(CompletionItem item) {
+    private static CsmFile getCsmFile(CsmObject csmObject) {
         CsmFile csmFile = null;
-        Object assoc = ((CsmResultItem) item).getAssociatedObject();
-        if (CsmKindUtilities.isOffsetable(assoc)) {
-            CsmOffsetable csmOffsetable = (CsmOffsetable) assoc;
+        if (CsmKindUtilities.isOffsetable(csmObject)) {
+            CsmOffsetable csmOffsetable = (CsmOffsetable) csmObject;
             csmFile = csmOffsetable.getContainingFile();
         }
         return csmFile;
+    }
+
+    private static CompletionDocumentation createDocumentationImpl(CsmObject obj, CsmFile file) {
+        CompletionDocumentation documentation = DoxygenDocumentation.create(obj);
+        String errorText = null;
+
+        if (documentation == null) {
+            try {
+                documentation = ManDocumentation.getDocumentation(obj, file);
+            } catch (IOException ioe) {
+                errorText = ioe.getMessage();
+            }
+        }
+
+        if (documentation == null) {
+            StringBuilder w = new StringBuilder();
+
+            w.append("<html><body>"); // NOI18N
+            w.append("<p>").append(getString("NO_DOC_FOUND")).append("</p>"); // NOI18N
+            if (errorText != null) {
+                w.append("<p>").append(errorText).append("</p>"); // NOI18N
+            }
+            documentation = new EmptyCompletionDocumentationImpl(w.toString());
+        }
+        return documentation;
     }
 
     private static class DocQuery extends AsyncCompletionQuery {
@@ -103,27 +128,7 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            CompletionDocumentation documentation = DoxygenDocumentation.create(obj);
-            String errorText = null;
-
-            if (documentation == null) {
-                try {
-                    documentation = ManDocumentation.getDocumentation(obj, file);
-                } catch (IOException ioe) {
-                    errorText = ioe.getMessage();
-                }
-            }
-
-            if (documentation == null) {
-                StringBuilder w = new StringBuilder();
-
-                w.append("<html><body>"); // NOI18N
-                w.append("<p>").append(getString("NO_DOC_FOUND")).append("</p>"); // NOI18N
-                if (errorText != null) {
-                    w.append("<p>").append(errorText).append("</p>"); // NOI18N
-                }
-                documentation = new EmptyCompletionDocumentationImpl(w.toString());
-            }
+            CompletionDocumentation documentation = createDocumentationImpl(obj, file);
 
             if (documentation != null) {
                 resultSet.setDocumentation(documentation);
