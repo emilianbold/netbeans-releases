@@ -271,7 +271,8 @@ public class CompilationInfo {
         checkConfinement();
         if (trees == null) {
             trees = JavacTrees.instance(impl.getJavacTask().getContext());
-            Document doc = impl.getSnapshot().getSource().getDocument(false);
+            Snapshot snapshot = impl.getSnapshot();
+            Document doc = snapshot != null ? snapshot.getSource().getDocument(false) : null;
             WrapperFactory factory = doc != null ? (WrapperFactory)doc.getProperty(WrapperFactory.class) : null;
             if (factory != null) {
                 trees = factory.wrapTrees(trees);
