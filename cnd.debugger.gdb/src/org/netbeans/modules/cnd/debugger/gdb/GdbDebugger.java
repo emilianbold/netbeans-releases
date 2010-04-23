@@ -549,7 +549,7 @@ public class GdbDebugger implements PropertyChangeListener {
         if (target instanceof AttachTarget.CoreAttach) {
             return gdb.core(((AttachTarget.CoreAttach)target).path);
         } else if (target instanceof AttachTarget.PidAttach) {
-            return gdb.attach(Long.toString(((AttachTarget.PidAttach)target).pid));
+            return gdb.attach(((AttachTarget.PidAttach)target).pid);
         } else if (target instanceof AttachTarget.GdbServerAttach) {
             return gdb.attachRemote(((AttachTarget.GdbServerAttach)target).target);
         } else {
@@ -2225,7 +2225,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * @param pid The process ID
      * @param pinfo Miscelaneous project information
      */
-    public static void attach(Long pid, ProjectInformation pinfo, ExecutionEnvironment exEnv) throws DebuggerStartException {
+    public static void attach(int pid, ProjectInformation pinfo, ExecutionEnvironment exEnv) throws DebuggerStartException {
         attach2Target(new AttachTarget.PidAttach(pid), pinfo, exEnv);
     }
 
