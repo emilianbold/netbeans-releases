@@ -150,7 +150,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             public void focusLost(FocusEvent e) {
                 if (txtGroupId.getText().trim().length() > 0) {
                     artifactCompleter.setLoading(true);
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
                         public void run() {
                             populateArtifact();
                         }
