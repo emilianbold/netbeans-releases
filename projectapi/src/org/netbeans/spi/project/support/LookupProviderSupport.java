@@ -104,8 +104,8 @@ public final class LookupProviderSupport {
     
     static class DelegatingLookupImpl extends ProxyLookup implements LookupListener, ChangeListener {
         private final Lookup baseLookup;
-        private Lookup.Result<LookupProvider> providerResult;
-        private LookupListener providerListener;
+        private final Lookup.Result<LookupProvider> providerResult;
+        private final LookupListener providerListener;
         private List<LookupProvider> old = Collections.emptyList();
         private List<Lookup> currentLookups;
         private final ChangeListener metaMergerListener;
@@ -171,7 +171,8 @@ public final class LookupProviderSupport {
             doDelegate();
         }
         
-        private synchronized void doDelegate() {
+        private void doDelegate() {
+            synchronized (results) {
             for (Lookup.Result<?> r : results) {
                 r.removeLookupListener(this);
             }
@@ -226,6 +227,7 @@ public final class LookupProviderSupport {
             lkp = Lookups.exclude(lkp, filteredClasses.toArray(new Class<?>[filteredClasses.size()]));
             Lookup fixed = Lookups.fixed(mergedInstances.toArray(new Object[mergedInstances.size()]));
             setLookups(fixed, lkp);
+        }
         }
     }
     
