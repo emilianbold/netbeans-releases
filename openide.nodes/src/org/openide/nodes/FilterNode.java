@@ -1319,6 +1319,7 @@ public class FilterNode extends Node {
 
             if (support != null) {
                 // get original support without lock
+                assert !Thread.holdsLock(org.openide.nodes.Children.class);
                 EntrySupport origSupport = original.getChildren().entrySupport();
                 synchronized (org.openide.nodes.Children.class) {
                     if (getEntrySupport() == support && support.originalSupport() != origSupport) {
@@ -1344,8 +1345,9 @@ public class FilterNode extends Node {
                     return getEntrySupport();
                 }
                 lazySupport = osIsLazy;
-                setEntrySupport(lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os));
-                postInitializeEntrySupport();
+                EntrySupport es = lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os);
+                setEntrySupport(es);
+                postInitializeEntrySupport(es);
                 return getEntrySupport();
             }
         }
