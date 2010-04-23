@@ -176,6 +176,7 @@ public final class LookupProviderSupport {
             for (Lookup.Result<?> r : results) {
                 r.removeLookupListener(this);
             }
+            results.clear();
             
             Collection<? extends LookupProvider> providers = providerResult.allInstances();
             List<Lookup> newLookups = new ArrayList<Lookup>();
