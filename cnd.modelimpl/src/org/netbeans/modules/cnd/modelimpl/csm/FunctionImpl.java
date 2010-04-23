@@ -515,7 +515,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                     if (candidate == null) {
                         candidate = def;
                     } else {
-                        return null;
+//                        return null;
                     }
                 }
             }

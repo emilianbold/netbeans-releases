@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -484,7 +485,18 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
     } else if (FileChooser.getCurrectChooserFile() != null) {
         seed = FileChooser.getCurrectChooserFile().getPath();
     } else {
-        seed = System.getProperty("user.home"); // NOI18N
+        ExecutionEnvironment env = csm.getExecutionEnvironment();
+        if (env.isLocal()){
+            seed = System.getProperty("user.home"); // NOI18N
+        }else if (!HostInfoUtils.isHostInfoAvailable(env) && !ConnectionManager.getInstance().isConnectedTo(env)){
+            seed = null;
+        }else{
+                try {
+                    seed = HostInfoUtils.getHostInfo(env).getUserDir();
+                } catch (IOException ex) {
+                } catch (CancellationException ex) {
+                }
+        }
     }
     JFileChooser fileChooser = new FileChooserBuilder(csm.getExecutionEnvironment()).createFileChooser(seed);
     fileChooser.setDialogTitle(NbBundle.getMessage(getClass(), "SELECT_BASE_DIRECTORY_TITLE"));

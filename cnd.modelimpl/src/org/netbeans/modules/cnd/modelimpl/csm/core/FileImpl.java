@@ -373,22 +373,25 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return lang;
     }
 
-    //@Deprecated
-    private APTPreprocHandler getPreprocHandler() {
-        return getProjectImpl(true) == null ? null : getProjectImpl(true).getPreprocHandler(fileBuffer.getFile());
-    }
-
     public APTPreprocHandler getPreprocHandler(int offset) {
         PreprocessorStatePair bestStatePair = getContextPreprocStatePair(offset, offset);
         return getPreprocHandler(bestStatePair);
     }
 
     private APTPreprocHandler getPreprocHandler(PreprocessorStatePair statePair) {
-        return getProjectImpl(true) == null ? null : getProjectImpl(true).getPreprocHandler(fileBuffer.getFile(), statePair);
+        if (statePair == null) {
+            return null;
+        }
+        final ProjectBase projectImpl = getProjectImpl(true);
+        if (projectImpl == null) {
+            return null;
+        }
+        return projectImpl.getPreprocHandler(fileBuffer.getFile(), statePair);
     }
 
     public Collection<APTPreprocHandler> getPreprocHandlers() {
-        return getProjectImpl(true) == null ? Collections.<APTPreprocHandler>emptyList() : getProjectImpl(true).getPreprocHandlers(this.getFile());
+        final ProjectBase projectImpl = getProjectImpl(true);
+        return projectImpl == null ? Collections.<APTPreprocHandler>emptyList() : projectImpl.getPreprocHandlers(this.getFile());
     }
 
     public Collection<PreprocessorStatePair> getPreprocStatePairs() {
@@ -402,10 +405,6 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private PreprocessorStatePair getContextPreprocStatePair(int startContext, int endContext) {
         ProjectBase projectImpl = getProjectImpl(true);
         if (projectImpl == null) {
-            return null;
-        }
-        if (startContext == 0) {
-            // zero is in all => no the best state
             return null;
         }
         Collection<PreprocessorStatePair> preprocStatePairs = projectImpl.getPreprocessorStatePairs(this.getFile());
@@ -816,8 +815,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     /** for debugging/tracing purposes only */
     public AST debugParse() {
+        Collection<APTPreprocHandler> handlers = getPreprocHandlers();
+        if (handlers.isEmpty()) {
+            return null;
+        }
+        final APTFile fullAPT = getFullAPT();
         synchronized (stateLock) {
-            return _parse(getPreprocHandler(), getFullAPT());
+            return _parse(handlers.iterator().next(), fullAPT);
         }
     }
 

@@ -95,6 +95,7 @@
                 <friend>org.netbeans.modules.cnd.modelui</friend>
                 <friend>org.netbeans.modules.cnd.modelutil</friend>
                 <friend>org.netbeans.modules.cnd.navigation</friend>
+                <friend>org.netbeans.modules.cnd.parfait</friend>
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>

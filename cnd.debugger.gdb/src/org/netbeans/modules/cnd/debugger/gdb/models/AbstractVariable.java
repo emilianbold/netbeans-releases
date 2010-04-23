@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /*
@@ -84,16 +83,15 @@ public abstract class AbstractVariable implements LocalVariable {
 
     private final Set<PropertyChangeListener> listeners = Collections.synchronizedSet(new HashSet<PropertyChangeListener>());
 
-    public AbstractVariable(GdbDebugger debugger, String value) {
+    protected AbstractVariable(GdbDebugger debugger, String value) {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
-        assert !SwingUtilities.isEventDispatchThread();
         this.debugger = debugger;
 
-        if (debugger.getPlatform() != PlatformTypes.PLATFORM_MACOSX) {
-            this.value = value;
-        } else {
+        if (debugger != null && debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
             // Convert the Mac-specific value to standard gdb/mi format
             this.value = GdbUtils.mackHack(value);
+        } else {
+            this.value = value;
         }
 
 //        if (GdbUtils.isSinglePointer(type)) {
@@ -997,7 +995,7 @@ public abstract class AbstractVariable implements LocalVariable {
             this.parent = parent;
 //            derefValue = null;
 
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            if (parent.debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                 this.value = GdbUtils.mackHack(value);
             } else {
                 this.value = value;

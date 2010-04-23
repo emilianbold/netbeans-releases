@@ -75,6 +75,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V67 - NB 6.9
+ *   REBUILD_PROP_CHANGED
  * V66 - NB 6.9
  *   ranlib tool: RANLIB_TOOL_ELEMENT
  * V65 - NB 6.9
@@ -188,8 +190,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 66;
-
+    public final static int CURRENT_VERSION = 67;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -222,6 +223,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String ASSEMBLER_REQUIRED_ELEMENT = "assemblerRequired"; // NOI18N
     protected final static String PLATFORM_ELEMENT = "platform"; // NOI18N
     protected final static String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
+    protected final static String REBUILD_PROP_CHANGED = "rebuildPropChanged"; // NOI18N
     // Compile Type
     protected final static String NEO_CONF_ELEMENT = "neoConf"; // Old style. FIXUP : should be removed.... // NOI18N
     protected final static String COMPILE_TYPE_ELEMENT = "compileType"; // NOI18N
@@ -363,7 +365,7 @@ public abstract class CommonConfigurationXMLCodec
         if (publicLocation) {
             writeLogicalFolders(xes);
             writeSourceRoots(xes);
-        //writeSourceEncoding(xes);
+            //writeSourceEncoding(xes);
         }
         xes.element(PROJECT_MAKEFILE_ELEMENT, ((MakeConfigurationDescriptor) projectDescriptor).getProjectMakefileName());
         if (!publicLocation) {
@@ -442,6 +444,9 @@ public abstract class CommonConfigurationXMLCodec
         xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getDevelopmentHost().getBuildPlatform()); // NOI18N
         if (makeConfiguration.getDependencyChecking().getModified()) {
             xes.element(DEPENDENCY_CHECKING, "" + makeConfiguration.getDependencyChecking().getValue()); // NOI18N
+        }
+        if (makeConfiguration.getRebuildPropChanged().getModified()) {
+            xes.element(REBUILD_PROP_CHANGED, "" + makeConfiguration.getRebuildPropChanged().getValue()); // NOI18N
         }
         xes.elementClose(TOOLS_SET_ELEMENT);
     }
@@ -536,8 +541,7 @@ public abstract class CommonConfigurationXMLCodec
                         new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()), // NOI18N
                         new AttrValuePair(KIND_ATTR, "" + folder.getKind()), // NOI18N
                     });
-        }
-        else {
+        } else {
             xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
                     new AttrValuePair[]{
                         new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
@@ -813,12 +817,12 @@ public abstract class CommonConfigurationXMLCodec
         if (linkerConfiguration.getTool().getModified()) {
             xes.element(COMMANDLINE_TOOL_ELEMENT, linkerConfiguration.getTool().getValue());
         }
-        if(linkerConfiguration.getLibrariesConfiguration().getModified()) {
+        if (linkerConfiguration.getLibrariesConfiguration().getModified()) {
             writeLibrariesConfiguration(xes, linkerConfiguration.getLibrariesConfiguration());
         }
         if (linkerConfiguration.getCommandLineConfiguration().getModified()) {
-                xes.element(COMMAND_LINE_ELEMENT, "" + linkerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
-             	//xes.element(DEBUGGING_ELEMENT, "" + linkerConfiguration.getTool().getValue() + " " + linkerConfiguration.getOptions()); // NOI18N
+            xes.element(COMMAND_LINE_ELEMENT, "" + linkerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
+            //xes.element(DEBUGGING_ELEMENT, "" + linkerConfiguration.getTool().getValue() + " " + linkerConfiguration.getOptions()); // NOI18N
         }
         xes.elementClose(LINKERTOOL_ELEMENT);
     }

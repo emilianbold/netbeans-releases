@@ -81,6 +81,7 @@ public final class HostInfoFactory {
 
         info.shell = initData.getProperty("SH", UNKNOWN); // NOI18N
         info.tempDir = initData.getProperty("TMPDIRBASE", UNKNOWN); // NOI18N
+        info.userDir = initData.getProperty("USERDIRBASE", UNKNOWN); // NOI18N
         info.cpuNum = getInt(initData, "CPUNUM", 1); // NOI18N
         info.path = initData.getProperty("PATH", "/bin:/usr/bin"); // NOI18N
 
@@ -128,6 +129,7 @@ public final class HostInfoFactory {
         private String hostname;
         private String shell;
         private String tempDir;
+        private String userDir;
         private int cpuNum;
         private long clockSkew;
         private String path;
@@ -159,6 +161,22 @@ public final class HostInfoFactory {
         public String getTempDir() {
             return tempDir;
         }
+
+        @Override
+        public String getUserDir() {
+            return userDir;
+        }
+
+        @Override
+        public File getUserDirFile() {
+            if (getOSFamily() == OSFamily.WINDOWS) {
+                return new File(WindowsSupport.getInstance().convertToWindowsPath(userDir));
+            } else {
+                return new File(userDir);
+            }
+        }
+
+        
 
         public File getTempDirFile() {
             if (getOSFamily() == OSFamily.WINDOWS) {

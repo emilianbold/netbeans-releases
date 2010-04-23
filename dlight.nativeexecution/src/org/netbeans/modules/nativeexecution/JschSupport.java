@@ -54,6 +54,7 @@ import org.netbeans.modules.nativeexecution.support.Logger;
  */
 public final class JschSupport {
 
+    private static final int JSCH_CONNECTION_TIMEOUT = Integer.getInteger("jsch.connection.timeout", 10000); // NOI18N
     private final static java.util.logging.Logger log = Logger.getInstance();
 
     private JschSupport() {
@@ -72,7 +73,7 @@ public final class JschSupport {
                 ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
                 echannel.setCommand(command);
                 echannel.setXForwarding(params == null ? false : params.x11forward);
-                echannel.connect(10000);
+                echannel.connect(JSCH_CONNECTION_TIMEOUT);
 
                 return new ChannelStreams(echannel,
                         echannel.getInputStream(),
@@ -113,6 +114,7 @@ public final class JschSupport {
 
             } catch (NullPointerException npe) {
                 // Jsch bug... retry? ;)
+                log.log(Level.FINE, "Exception from JSch", npe); // NOI18N
             }
         }
 
