@@ -162,6 +162,11 @@ public class LoggerStringConcat {
             return null;
         }
 
+        //check for erroneous trees:
+        for (List<TreePath> tps : sorted)
+            for (TreePath tp : tps)
+                if (tp.getLeaf().getKind() == Kind.ERRONEOUS) return null;
+
         FixImpl fix = new FixImpl(NbBundle.getMessage(LoggerStringConcat.class, "MSG_LoggerStringConcat_fix"), methodName, TreePathHandle.create(ctx.getPath(), ctx.getInfo()), TreePathHandle.create(message, ctx.getInfo()));
 
         return ErrorDescriptionFactory.forTree(ctx, message, NbBundle.getMessage(LoggerStringConcat.class, "MSG_LoggerStringConcat"), fix);

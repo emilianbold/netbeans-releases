@@ -111,6 +111,8 @@ import org.openide.util.lookup.ProxyLookup;
  */
 final class UnitTestLibrariesNode extends AbstractNode {
 
+    private static final Logger LOG = Logger.getLogger(UnitTestLibrariesNode.class.getName());
+
     private final String testType;
     private final NbModuleProject project;
     private boolean missingJUnit4;
@@ -246,7 +248,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
                     }
                 });
             } catch (MutexException e) {
-                assert false : e.getException();
+                LOG.log(Level.INFO, null, e);
             }
         }
         

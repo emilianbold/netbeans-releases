@@ -53,17 +53,17 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import static org.netbeans.modules.xml.util.UI.*;
 
-// import java.awt.BasicStroke;
-// import java.awt.Dimension;
-// import java.awt.FlowLayout;
-// import java.awt.Graphics;
-// import java.awt.Graphics2D;
-// import javax.swing.AbstractButton;
-// import javax.swing.BorderFactory;
-// import javax.swing.JButton;
-// import javax.swing.JLabel;
-// import javax.swing.JPanel;
-// import javax.swing.plaf.basic.BasicButtonUI;
+import java.awt.BasicStroke;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.plaf.basic.BasicButtonUI;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -84,7 +84,7 @@ final class Tabbed extends JTabbedPane {
     void addTrees(Tree list, Tree tree) {
         String title = tree.toString();
         addTab(title, new Panel(list, tree));
-        // JDK 6: setTabComponentAt(getTabCount() - 1, new Tab(title));
+        setTabComponentAt(getTabCount() - 1, new Tab(title));
         setSelectedIndex(getTabCount() - 1);
     }
 
@@ -144,7 +144,6 @@ final class Tabbed extends JTabbedPane {
         return item;
     }
 
-/* TO DO JDK 6
     // -------------------------------
     private class Tab extends JPanel {
 
@@ -154,7 +153,7 @@ final class Tabbed extends JTabbedPane {
             setOpaque(false);
 
             JLabel label = new JLabel(title);
-            label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, MEDIUM_SIZE));
+            label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, TINY_SIZE));
             add(label);
             add(new TabButton());
         }
@@ -219,5 +218,4 @@ final class Tabbed extends JTabbedPane {
             }
         }
     }
-*/
 }

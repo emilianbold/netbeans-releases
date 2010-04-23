@@ -47,13 +47,13 @@ import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
-import org.netbeans.modules.php.editor.api.elements.TypeTreeElement;
 
 /**
  * @author Radek Matous
  */
-final class TypeTreeElementImpl  implements TypeTreeElement {
+final class TypeTreeElementImpl  implements TreeElement<TypeElement> {
     private final TypeElement delegate;
     private final Set<TypeElement> preferredTypes;
     TypeTreeElementImpl(final TypeElement delegate) {
@@ -65,8 +65,8 @@ final class TypeTreeElementImpl  implements TypeTreeElement {
     }    
 
     @Override
-    public Set<TypeTreeElement> getDirectlyInherited() {
-        final HashSet<TypeTreeElement> directTypes = new HashSet<TypeTreeElement>();
+    public Set<TreeElement<TypeElement>> children() {
+        final HashSet<TreeElement<TypeElement>> directTypes = new HashSet<TreeElement<TypeElement>>();
         if (delegate instanceof ClassElement) {
             final QualifiedName superClassName = ((ClassElement) delegate).getSuperClassName();
             if (superClassName != null) {
@@ -96,7 +96,7 @@ final class TypeTreeElementImpl  implements TypeTreeElement {
     }
 
     @Override
-    public TypeElement getType() {
+    public TypeElement getElement() {
         return delegate;
     }
 

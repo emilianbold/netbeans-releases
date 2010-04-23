@@ -125,8 +125,10 @@ public class DoxygenDocumentation {
                 case COMMAND:
                     CommandDescription cd = commands.get(t.image);
                     if (cd == null) {
-                        System.err.println("unknown command: " + t.image); // NOI18N
-                        break;
+                        // Unknown/unimplemented command. Use generic formatting.
+                        cd = new CommandDescription(EndsOn.PAR, "<strong>" + t.image.substring(1) + ":</strong><br>&nbsp; ", ""); // NOI18N
+//                        System.err.println("unknown command: " + t.image); // NOI18N
+//                        break;
                     }
                     output.append(cd.htmlStart);
                     switch (cd.end) {
@@ -162,9 +164,13 @@ public class DoxygenDocumentation {
         commands.put("\\sa", new CommandDescription(EndsOn.PAR, "<strong>See Also:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\verbatim", new CommandDescription(EndsOn.NONE, "<pre>", "")); // NOI18N
         commands.put("\\endverbatim", new CommandDescription(EndsOn.NONE, "</pre>", "")); // NOI18N
+        commands.put("\\brief", new CommandDescription(EndsOn.PAR, "", "")); // NOI18N
+        commands.put("\\date", new CommandDescription(EndsOn.PAR, "<strong>Date:</strong><br>&nbsp; ", "")); // NOI18N
+        commands.put("\\bug", new CommandDescription(EndsOn.PAR, "<strong>Bug:</strong><br>&nbsp; ", "")); // NOI18N
+        commands.put("\\warning", new CommandDescription(EndsOn.PAR, "<strong>Warning:</strong><br>&nbsp; ", "")); // NOI18N
+        commands.put("\\version", new CommandDescription(EndsOn.PAR, "<strong>Version:</strong><br>&nbsp; ", "")); // NOI18N
 
 //        commands.put("\\fn", new CommandDescription(EndsOn.LINE, "<strong>", "</strong>")); // NOI18N
-//        commands.put("\\brief", new CommandDescription(EndsOn.PAR, "", "")); // NOI18N
 //        commands.put("\\code", new CommandDescription(EndsOn.NONE, "<pre>", ""));//XXX: does not work properly - the content will still be processed, '<', '>' will not be escaped. // NOI18N
 //        commands.put("\\endcode", new CommandDescription(EndsOn.NONE, "</pre>", "")); // NOI18N
     }
@@ -241,22 +247,21 @@ public class DoxygenDocumentation {
         while (i < text.length()) {
             switch (text.charAt(i)) {
                 case '\n': // NOI18N
-                    if (i < text.length()-1) {
+                    if (i < text.length() - 1) {
                         if (!verbatimMode) {
                             // skip white spaces
-                            while (i < (text.length()-1) && (text.charAt(i+1) == ' ' || text.charAt(i+1) == '\t')) { // NOI18N
+                            while (i < (text.length() - 1) && (text.charAt(i + 1) == ' ' || text.charAt(i + 1) == '\t')) { // NOI18N
                                 i++;
                             }
                         }
-                        if (text.charAt(i+1) == '@' || text.charAt(i+1) == '\\' || text.charAt(i+1) == '\n') {
+                        if (text.charAt(i + 1) == '@' || text.charAt(i + 1) == '\\' || text.charAt(i + 1) == '\n') {
                             Token last = result.getLast();
                             // Skip multiple empty lines
                             if (last.id != TokenId.LINE_END && last.id != TokenId.PAR_END) {
                                 result.add(new Token(wasContent ? TokenId.LINE_END : TokenId.PAR_END, "\n")); // NOI18N
                                 wasContent = false;
                             }
-                        }
-                        else {
+                        } else {
                             if (!verbatimMode) {
                                 // Convert to space
                                 result.add(new Token(TokenId.WHITESPACE, " ")); // NOI18N
@@ -297,8 +302,7 @@ public class DoxygenDocumentation {
                     while (i < text.length()) { // NOI18N
                         if (!verbatimMode && (text.charAt(i) == ' ' || text.charAt(i) == '\t' || text.charAt(i) == '\n')) {
                             break;
-                        }
-                        else if (text.charAt(i) == '\\' || text.charAt(i) == '@') {
+                        } else if (text.charAt(i) == '\\' || text.charAt(i) == '@') {
                             break;
                         }
                         img.append(text.charAt(i++));
@@ -342,18 +346,22 @@ public class DoxygenDocumentation {
             this.text = text;
         }
 
+        @Override
         public String getText() {
             return text;
         }
 
+        @Override
         public URL getURL() {
             return null;
         }
 
+        @Override
         public CompletionDocumentation resolveLink(String link) {
             return null;
         }
 
+        @Override
         public Action getGotoSourceAction() {
             return null;
         }

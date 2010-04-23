@@ -2396,17 +2396,16 @@ public class CasualDiff {
     }
 
     private List<JCTree> filterHidden(List<? extends JCTree> list) {
-        List<JCTree> result = new ArrayList<JCTree>(); // todo (#pf): capacity?
+        LinkedList<JCTree> result = new LinkedList<JCTree>(); // todo (#pf): capacity?
         List<JCVariableDecl> fieldGroup = new ArrayList<JCVariableDecl>();
-        boolean enumConstants = false;
+        List<JCVariableDecl> enumConstants = new ArrayList<JCVariableDecl>();
         for (JCTree tree : list) {
             if (Kind.VARIABLE == tree.getKind()) {
                 JCVariableDecl var = (JCVariableDecl) tree;
                 if ((var.mods.flags & Flags.ENUM) != 0) {
                     // collect enum constants, make a field group from them
                     // and set the flag.
-                    fieldGroup.add(var);
-                    enumConstants = true;
+                    enumConstants.add(var);
                 } else {
                     if (!fieldGroup.isEmpty()) {
                         int oldPos = getOldPos(fieldGroup.get(0));
@@ -2415,13 +2414,12 @@ public class CasualDiff {
                             //seems like a field group:
                             fieldGroup.add(var);
                         } else {
-                            if (fieldGroup.size() > 1 || enumConstants) {
-                                result.add(new FieldGroupTree(fieldGroup, enumConstants));
+                            if (fieldGroup.size() > 1) {
+                                result.add(new FieldGroupTree(fieldGroup, false));
                             } else {
                                 result.add(fieldGroup.get(0));
                             }
                             fieldGroup = new ArrayList<JCVariableDecl>();
-                            enumConstants = false;
 
                             fieldGroup.add(var);
                         }
@@ -2433,13 +2431,12 @@ public class CasualDiff {
             }
 
             if (!fieldGroup.isEmpty()) {
-                if (fieldGroup.size() > 1 || enumConstants) {
-                    result.add(new FieldGroupTree(fieldGroup, enumConstants));
+                if (fieldGroup.size() > 1) {
+                    result.add(new FieldGroupTree(fieldGroup, false));
                 } else {
                     result.add(fieldGroup.get(0));
                 }
                 fieldGroup = new ArrayList<JCVariableDecl>();
-                enumConstants = false;
             }
 
             if (Kind.METHOD == tree.getKind()) {
@@ -2457,11 +2454,14 @@ public class CasualDiff {
             result.add(tree);
         }
         if (!fieldGroup.isEmpty()) {
-            if (fieldGroup.size() > 1 || enumConstants) {
-                result.add(new FieldGroupTree(fieldGroup, enumConstants));
+            if (fieldGroup.size() > 1) {
+                result.add(new FieldGroupTree(fieldGroup, false));
             } else {
                 result.add(fieldGroup.get(0));
             }
+        }
+        if (!enumConstants.isEmpty()) {
+            result.addFirst(new FieldGroupTree(enumConstants, true));
         }
         return result;
     }

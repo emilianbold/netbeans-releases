@@ -514,7 +514,6 @@ public final class WebProject implements Project, AntProjectListener {
     }
 
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
-        SubprojectProvider spp = refHelper.createSubprojectProvider();
         WebSources webSources = new WebSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING);
         
@@ -523,7 +522,7 @@ public final class WebProject implements Project, AntProjectListener {
             aux,
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
-            spp,
+            refHelper.createSubprojectProvider(),
             new ProjectWebModuleProvider (),
             new ProjectWebServicesSupportProvider(),
             webModule, //implements J2eeModuleProvider
@@ -532,7 +531,7 @@ public final class WebProject implements Project, AntProjectListener {
             new WebModuleImpl(apiWebModule),
             enterpriseResourceSupport,
             new WebActionProvider( this, this.updateHelper, this.eval ),
-            new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper),
+            new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper, webModule),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
             QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(), 
@@ -722,7 +721,8 @@ public final class WebProject implements Project, AntProjectListener {
 
                             if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
                                     WebProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
-                                String classpath = Utils.toClasspathString(platform.getClasspathEntries());
+                                String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
+                                String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), root);
                                 ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                             }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

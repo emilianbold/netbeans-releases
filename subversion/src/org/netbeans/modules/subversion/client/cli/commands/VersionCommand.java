@@ -97,8 +97,9 @@ public class VersionCommand extends SvnCommand {
             if(string.indexOf("version 0.")  > -1 ||
                string.indexOf("version 1.0") > -1 ||
                string.indexOf("version 1.1") > -1 ||
-               string.indexOf("version 1.2") > -1) 
-            {
+               string.indexOf("version 1.2") > -1 ||
+               string.indexOf("version 1.3") > -1 ||
+               string.indexOf("version 1.4") > -1) {
                 unsupportedVersion = true;
                 return false;
             }
@@ -112,10 +113,7 @@ public class VersionCommand extends SvnCommand {
 
     public boolean isSupportedJavaHl() {
         for (String string : output) {
-            if(string.indexOf("version 1.3")  > -1 ||
-               string.indexOf("version 1.4") > -1 ||
-               string.indexOf("version 1.5") > -1)
-            {
+            if(string.indexOf("version 1.5") > -1) {
                 return true;
             }
         }

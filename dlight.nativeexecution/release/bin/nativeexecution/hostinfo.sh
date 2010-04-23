@@ -1,5 +1,7 @@
 #!/bin/sh
 
+USERPATH=$PATH
+PATH=/usr/bin:/bin
 HOSTNAME=`uname -n`
 OS=`uname -s`
 CPUTYPE=`uname -p`
@@ -92,11 +94,11 @@ if [ "$OSFAMILY" != "MACOSX" -a "$OSFAMILY" != "WINDOWS" ]; then
    TMPFILE=`mktemp -q env.XXXXXX`
    if [ ! -z "$TMPFILE" ]; then
       /bin/bash -l -c "echo \$PATH>$TMPFILE" > /dev/null 2>&1
-      PATH=${PATH}:`cat $TMPFILE`
+      USERPATH=`cat $TMPFILE`
    fi
    rm -f $TMPFILE
 fi
 
-echo PATH=${PATH}
+echo PATH=${USERPATH}
 
 exit 0

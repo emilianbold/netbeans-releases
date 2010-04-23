@@ -918,7 +918,7 @@ public class FileStatusCache {
             /*|| repositoryStatus.getRepositoryPropStatus() == SVNStatusKind.DELETED*/) {
                 remoteStatus = FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY;
             } else if (repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.ADDED
-            /*|| repositoryStatus.getRepositoryPropStatus() == SVNStatusKind.ADDED*/) {
+                        || repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.REPLACED) {
                 // solved in createMissingfileInformation
             } else if ( (repositoryStatus.getRepositoryTextStatus() == null &&
                          repositoryStatus.getRepositoryPropStatus() == null)
@@ -948,13 +948,14 @@ public class FileStatusCache {
                 return new FileInformation(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY | remoteStatus, status);
             }
         } else if (SVNStatusKind.CONFLICTED.equals(pkind)) {
-            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT | remoteStatus, status);
         } else {
             throw new IllegalArgumentException("Unknown prop status: " + status.getPropStatus()); // NOI18N
         }
 
-
-        if (SVNStatusKind.NONE.equals(kind)) {
+        if (status.hasTreeConflict()) {
+            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT_TREE | remoteStatus, status);
+        } else if (SVNStatusKind.NONE.equals(kind)) {
             return FILE_INFORMATION_UNKNOWN;
         } else if (SVNStatusKind.NORMAL.equals(kind)) {
             return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE | remoteStatus, status);
@@ -974,13 +975,13 @@ public class FileStatusCache {
         } else if (SVNStatusKind.MERGED.equals(kind)) {            
             return new FileInformation(FileInformation.STATUS_VERSIONED_MERGE | remoteStatus, status);
         } else if (SVNStatusKind.CONFLICTED.equals(kind)) {            
-            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT | remoteStatus, status);
         } else if (SVNStatusKind.OBSTRUCTED.equals(kind)) {            
-            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT | remoteStatus, status);
         } else if (SVNStatusKind.IGNORED.equals(kind)) {            
             return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED | remoteStatus, status);
         } else if (SVNStatusKind.INCOMPLETE.equals(kind)) {            
-            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT | remoteStatus, status);
         } else if (SVNStatusKind.EXTERNAL.equals(kind)) {            
             return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE | remoteStatus, status);
         } else {        
@@ -1055,7 +1056,8 @@ public class FileStatusCache {
             }
         } else {
             if (repositoryStatus != REPOSITORY_STATUS_UNKNOWN) {
-                if (repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.ADDED) {
+                if (repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.ADDED
+                        || repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.REPLACED) {
                     boolean folder = repositoryStatus.getNodeKind() == SVNNodeKind.DIR;
                     return new FileInformation(FileInformation.STATUS_VERSIONED_NEWINREPOSITORY, folder);
                 }
@@ -1216,15 +1218,15 @@ public class FileStatusCache {
         }
         @Override
         public boolean hasTreeConflict() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return value.hasTreeConflict();
         }
         @Override
         public SVNConflictDescriptor getConflictDescriptor() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return value.getConflictDescriptor();
         }
         @Override
         public boolean isFileExternal() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return value.isFileExternal();
         }
     }
 

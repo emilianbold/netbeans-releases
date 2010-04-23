@@ -39,7 +39,6 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.OpenCookie;
@@ -78,19 +77,23 @@ import org.openide.util.Utilities;
         }
 
         if (!success && Utilities.isMac()) {
-            // On Mac the built-in "open" command can open standard file types.
-            // This fixes bug #178742 - NetBeans can't launch Qt Designer
-            pb = new ProcessBuilder("open", dao.getPrimaryFile().getPath()); // NOI18N
+            // On Mac the built-in "open" command can launch installed
+            // applications without having them in PATH. This fixes
+            // bug #178742 - NetBeans can't launch Qt Designer
+            pb = new ProcessBuilder("open", "-a", program, dao.getPrimaryFile().getPath()); // NOI18N
             try {
-                pb.start();
-                success = true;
+                // "open" exits immediately, it does not wait until
+                // launched application finishes, so waitFor() can be safely used
+                int exitCode = pb.start().waitFor();
+                success = exitCode == 0;
             } catch (IOException ex) {
+            } catch (InterruptedException ex) {
             }
         }
 
         if (!success && failmsg != null) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    MessageFormat.format(failmsg, program)));
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(failmsg));
         }
     }
 }

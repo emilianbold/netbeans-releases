@@ -52,7 +52,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Petr Pisl
  */
 public class PHPFormatterTest extends PHPTestBase {
     private String FORMAT_START_MARK = "/*FORMAT_START*/"; //NOI18N
@@ -644,6 +644,12 @@ public class PHPFormatterTest extends PHPTestBase {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.initialIndent, 0);
         reformatFileContents("testfiles/formatting/blankLines/Use03.php", options);
+    }
+
+    public void testBLSimpleUse04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Use04.php", options);
     }
 
     public void testOpenClosePHPTag01() throws Exception {
@@ -1674,6 +1680,12 @@ public class PHPFormatterTest extends PHPTestBase {
 	reformatFileContents("testfiles/formatting/comment06.php", options);
     }
 
+    public void testComment07() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        // Be careful during editing the test file. The space after /*  is important.
+	reformatFileContents("testfiles/formatting/comment07.php", options);
+    }
+
     // the html tests doesn't work properly, the results are deferent then in the ide. i don't know why. 
     public void testHtml01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
@@ -1702,6 +1714,11 @@ public class PHPFormatterTest extends PHPTestBase {
 	reformatFileContents("testfiles/formatting/html/issue175229.php", options);
     }
 
+    public void testIssue183268() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	reformatFileContents("testfiles/formatting/html/issue183268.php", options);
+    }
+
     public void test183200_01() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/issue183200_01.php", options);
@@ -1727,17 +1744,20 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue168396_01.php", options);
     }
 
+    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
     public void testFore_01() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/templates/fore_01.php", options, true);
     }
 
+    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
     public void testFore_02() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.spaceWithinForParens, true);
         reformatFileContents("testfiles/formatting/templates/fore_02.php", options, true);
     }
 
+    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
     public void testFore_03() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.spaceWithinForParens, true);
@@ -1745,6 +1765,7 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/templates/fore_03.php", options, true);
     }
 
+    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
     public void testFore_04() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.spaceWithinForParens, true);
@@ -1752,6 +1773,7 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/templates/fore_04.php", options, true);
     }
 
+    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
     public void testFore_05() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.spaceWithinForParens, true);
@@ -1759,12 +1781,47 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/templates/fore_05.php", options, true);
     }
 
+    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
     public void testFore_06() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.spaceWithinForParens, true);
         options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
         options.put(FmtOptions.initialIndent, 4);
         reformatFileContents("testfiles/formatting/templates/fore_06.php", options, true);
+    }
+
+    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
+    public void testIssue184481_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue184481_01.php", options, true);
+    }
+
+    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
+    public void testIssue184481_02() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue184481_02.php", options, true);
+    }
+
+    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
+    public void testIssue184481_03() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue184481_03.php", options, true);
+    }
+
+    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
+    public void testIssue184481_04() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue184481_04.php", options, true);
+    }
+
+    public void testIssue184070_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue184070_01.php", options, true);
+    }
+
+    public void testIssue184690_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue184690_01.php", options, true);
     }
 
     private void reformatFileContents(String file) throws Exception {
@@ -1822,28 +1879,31 @@ public class PHPFormatterTest extends PHPTestBase {
     protected void reformatFileContents(String file, Map<String, Object> options, boolean isTemplate) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
-        BaseDocument doc = getDocument(fo);
+
+        String text = read(fo);
+
+        int formatStart = 0;
+        int formatEnd = text.length();
+        int startMarkPos = text.indexOf(FORMAT_START_MARK);
+
+        if (startMarkPos >= 0){
+            //formatStart = startMarkPos + FORMAT_START_MARK.length();
+            formatStart = startMarkPos;
+            text = text.substring(0, formatStart) + text.substring(formatStart + FORMAT_START_MARK.length());
+            formatEnd = text.indexOf(FORMAT_END_MARK);
+            text = text.substring(0, formatEnd) + text.substring(formatEnd + FORMAT_END_MARK.length());
+            if (formatEnd == -1){
+                throw new IllegalStateException();
+            }
+        }
+        BaseDocument doc = getDocument(text);
 
         if (isTemplate) {
             doc.putProperty(TokenFormatter.TEMPLATE_HANDLER_PROPERTY, new Object());
         }
         
         assertNotNull(doc);
-        int formatStart = 0;
-        int formatEnd = doc.getLength();
-        int startMarkPos = doc.getText(0, doc.getLength() - 1).indexOf(FORMAT_START_MARK);
-
-        if (startMarkPos >= 0){
-            //formatStart = startMarkPos + FORMAT_START_MARK.length();
-            formatStart = startMarkPos;
-            doc.remove(formatStart, FORMAT_START_MARK.length());
-            formatEnd = doc.getText(0, doc.getLength() - 1).toString().indexOf(FORMAT_END_MARK);
-            doc.remove(formatEnd, FORMAT_END_MARK.length());
-
-            if (formatEnd == -1){
-                throw new IllegalStateException();
-            }
-        }
+        
 
         IndentPrefs preferences = new IndentPrefs(4, 4);
         Formatter formatter = getFormatter(preferences);

@@ -487,29 +487,18 @@ final public class EjbJarProjectProperties {
         if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N
             projectProperties.remove( NO_DEPENDENCIES ); // Remove the property completely if not set
         }
+        Profile newJ2eeVersion = J2eePlatformUiSupport.getJavaEEProfile(J2EE_PLATFORM_MODEL.getSelectedItem());
         
-        // Configure new server instance
-        boolean serverLibUsed = J2EEProjectProperties.isUsingServerLibrary(projectProperties,
-                EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH);
         if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
-                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
-            setNewServerInstanceValue(instanceId, project, projectProperties, privateProperties, !serverLibUsed);
+            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+            J2EEProjectProperties.updateServerProperties(projectProperties, privateProperties, instanceId,
+                    cs, javaClasspathList,
+                    new CallbackImpl(project), project,
+                    newJ2eeVersion, J2eeModule.Type.EJB);
         }
-
-        // Configure server libraries (if any)
-        boolean configured = setServerClasspathProperties(projectProperties, privateProperties,
-                cs, javaClasspathList);
-
-        // Configure classpath from server (no server libraries)
-        if (!configured && J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()),
-                    project, projectProperties, privateProperties, true);
-        }        
         
         // Update the deployment descriptor if upgrading from J2EE 1.3 to 1.4 and set the new J2EE spec version
         Profile oldJ2eeVersion = Profile.fromPropertiesString(projectProperties.getProperty(J2EE_PLATFORM));
-        Profile newJ2eeVersion = J2eePlatformUiSupport.getJavaEEProfile(J2EE_PLATFORM_MODEL.getSelectedItem());
         if (oldJ2eeVersion != null && newJ2eeVersion != null) {
             if (oldJ2eeVersion.equals(Profile.J2EE_13) && newJ2eeVersion.equals(Profile.J2EE_14)) {
                 org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJarModules[] = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project);
@@ -644,16 +633,17 @@ final public class EjbJarProjectProperties {
         roots.putRoots(rootURLs,rootLabels);
     }
     
-    public static void setServerInstance(final Project project, final AntProjectHelper helper, final String serverInstanceID) {
+    public static void setServerInstance(final EjbJarProject project, final AntProjectHelper helper, final String serverInstanceID) {
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             @Override
             public void run() {
                 try {
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    boolean serverLibUsed = J2EEProjectProperties.isUsingServerLibrary(projectProps, J2EE_PLATFORM_CLASSPATH);
-                    setNewServerInstanceValue(serverInstanceID, project, projectProps,
-                            privateProps, !serverLibUsed); 
+                    Profile prof = Profile.fromPropertiesString(projectProps.getProperty(J2EE_PLATFORM));
+                    J2EEProjectProperties.updateServerProperties(projectProps, privateProps, serverInstanceID,
+                            null, null, new CallbackImpl(project), project, prof, J2eeModule.Type.EJB);
+
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                     ProjectManager.getDefault().saveProject(project);
@@ -684,163 +674,6 @@ final public class EjbJarProjectProperties {
     }
 
     
-    private static void setNewServerInstanceValue(String newServInstID, Project project,
-            EditableProperties projectProps, EditableProperties privateProps, boolean setFromServer) {
-
-        assert newServInstID != null : "Server isntance id to set can't be null"; // NOI18N
-
-        // update j2ee.platform.classpath
-        String oldServInstID = privateProps.getProperty(J2EE_SERVER_INSTANCE);
-        if (oldServInstID != null) {
-            J2eePlatform oldJ2eePlatform = Deployment.getDefault().getJ2eePlatform(oldServInstID);
-            if (oldJ2eePlatform != null) {
-                ((EjbJarProject)project).unregisterJ2eePlatformListener(oldJ2eePlatform);
-            }
-        }
-        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newServInstID);
-        if (j2eePlatform == null) {
-            // probably missing server error
-            Logger.getLogger("global").log(Level.INFO, "J2EE platform is null."); // NOI18N
-            
-            // update j2ee.server.type (throws NPE)
-            //projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
-            // update j2ee.server.instance
-            privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
-
-            removeServerClasspathProperties(privateProps);
-            privateProps.remove(WebServicesConstants.J2EE_PLATFORM_JSR109_SUPPORT);
-            
-            privateProps.remove(DEPLOY_ANT_PROPS_FILE);
-            return;
-        }
-        ((EjbJarProject)project).registerJ2eePlatformListener(j2eePlatform);
-        if (setFromServer) {
-            String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
-            privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
-
-            // set j2ee.platform.embeddableejb.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_EMBEDDABLE_EJB)) {
-                File[] ejbClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_EMBEDDABLE_EJB);
-                privateProps.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
-                        Utils.toClasspathString(ejbClasspath));
-            } else {
-                privateProps.remove(EjbJarProjectProperties.J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH);
-            }
-
-            // update j2ee.platform.wscompile.classpath
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
-                privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
-            }
-
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN);
-                privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH);
-            }
-
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
-                privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
-            }
-
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIT);
-                privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH);
-            }
-
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_JWSDP);
-                privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH, 
-                        Utils.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH);
-            }
-        }
-        // update j2ee.server.type
-        projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
-        
-        // update j2ee.server.instance
-        privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
-        
-        // ant deployment support
-        File projectFolder = FileUtil.toFile(project.getProjectDirectory());
-        try {
-            AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, ANT_DEPLOY_BUILD_SCRIPT), J2eeModule.EJB, newServInstID); // NOI18N
-        } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
-        }
-        File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(newServInstID);
-        if (deployAntPropsFile == null) {
-            privateProps.remove(DEPLOY_ANT_PROPS_FILE);
-        } else {
-            privateProps.setProperty(DEPLOY_ANT_PROPS_FILE, deployAntPropsFile.getAbsolutePath());
-        }
-    }
-    
-    private static void removeServerClasspathProperties(EditableProperties props) {
-        props.remove(J2EE_PLATFORM_CLASSPATH);
-        props.remove(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
-        props.remove(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH);
-        props.remove(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
-        props.remove(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH);
-        props.remove(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH);
-    }
-
-    private static boolean setServerClasspathProperties(EditableProperties props,
-            EditableProperties privateProps, ClassPathSupport cs, Iterable<ClassPathSupport.Item> items) {
-
-        List<ClassPathSupport.Item> serverItems = new ArrayList<ClassPathSupport.Item>();
-        for (ClassPathSupport.Item item : items) {
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
-                    && !item.isBroken()
-                    && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
-                serverItems.add(ClassPathSupport.Item.create(item.getLibrary(), null));
-            }
-        }
-
-        if (serverItems.isEmpty()) {
-            removeServerClasspathProperties(props);
-            return false;
-        }
-        removeServerClasspathProperties(privateProps);
-        
-        props.setProperty(J2EE_PLATFORM_CLASSPATH, cs.encodeToStrings(serverItems, null, "classpath")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wscompile")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsgenerate")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsimport")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsinterop")); // NOI18N
-        removeReferences(serverItems);
-        props.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsjwsdp")); // NOI18N
-        return true;
-    }
-
-    private static void removeReferences(Iterable<ClassPathSupport.Item> items) {
-        for (ClassPathSupport.Item item : items) {
-            item.setReference(null);
-        }
-    }
-
     void loadIncludesExcludes(IncludeExcludeVisualizer v) {
         Set<File> roots = new HashSet<File>();
         for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
@@ -862,4 +695,24 @@ final public class EjbJarProjectProperties {
     }
     
     
+    private static class CallbackImpl implements J2EEProjectProperties.Callback {
+
+        private EjbJarProject project;
+
+        public CallbackImpl(EjbJarProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public void registerJ2eePlatformListener(J2eePlatform platform) {
+            project.registerJ2eePlatformListener(platform);
+        }
+
+        @Override
+        public void unregisterJ2eePlatformListener(J2eePlatform platform) {
+            project.unregisterJ2eePlatformListener(platform);
+        }
+
+    }
+
 }

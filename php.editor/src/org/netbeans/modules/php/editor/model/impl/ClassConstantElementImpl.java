@@ -10,6 +10,8 @@ import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 
 class ClassConstantElementImpl extends ModelElementImpl implements ClassConstantElement {
     private String typeName;
+    private final String value;
+
 
     ClassConstantElementImpl(Scope inScope, TypeConstantElement indexedConstant) {
         super(inScope, indexedConstant, PhpElementKind.TYPE_CONSTANT);
@@ -20,11 +22,13 @@ class ClassConstantElementImpl extends ModelElementImpl implements ClassConstant
         } else {
             typeName = inScope.getName();
         }
+        value = indexedConstant.getValue();
     }
 
     ClassConstantElementImpl(Scope inScope, ClassConstantDeclarationInfo clsConst) {
         super(inScope, clsConst, PhpModifiers.noModifiers());
         typeName = inScope.getName();
+        value = clsConst.getValue();
     }
 
     @Override
@@ -38,6 +42,12 @@ class ClassConstantElementImpl extends ModelElementImpl implements ClassConstant
         sb.append(getName().toLowerCase()).append(";");//NOI18N
         sb.append(getName()).append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
+        sb.append(getValue() != null ? getValue() : "?").append(";");//NOI18N
         return sb.toString();
+    }
+
+    @Override
+    public String getValue() {
+        return value;
     }
 }

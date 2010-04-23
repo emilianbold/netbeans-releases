@@ -299,7 +299,7 @@
     <Component class="javax.swing.JPasswordField" name="jPasswordField1">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="new String(originalPasswd)" type="code"/>
+          <Connection code="new String(exSettings.getPasswd())" type="code"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
