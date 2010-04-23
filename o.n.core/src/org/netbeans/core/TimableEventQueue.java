@@ -110,6 +110,7 @@ implements Runnable {
         // XXX this is a hack!
         try {
             Mutex.EVENT.writeAccess (new Mutex.Action<Void>() {
+                @Override
                 public Void run() {
                     ClassLoader scl = Lookup.getDefault().lookup(ClassLoader.class);
                     if (scl != null) {
@@ -193,6 +194,7 @@ implements Runnable {
         }
     }
 
+    @Override
     public void run() {
         if (stoppable != null) {
             LOG.log(Level.WARNING, "Still previous controller {0}", stoppable);
