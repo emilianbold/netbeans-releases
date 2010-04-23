@@ -48,6 +48,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
@@ -74,6 +75,7 @@ public class RemoteBuildMakefileTestCase extends RemoteBuildTestBase {
             File copiedBase = new File(new File(getWorkDir(), getTestHostName()), origBase.getName());
             copyDirectory(origBase, copiedBase);
             File projectDirFile = new File(copiedBase, projectName);
+            // call this only before opening project!
             changeProjectHost(projectDirFile, getTestExecutionEnvironment());
             setupHost(sync.ID);
             setSyncFactory(sync.ID);
@@ -94,6 +96,28 @@ public class RemoteBuildMakefileTestCase extends RemoteBuildTestBase {
             // ConnectionManager.getInstance().disconnect(execEnv);
         }
     }
+
+    /** To be called only before opening project! */
+    private void changeProjectHost(File projectDir, ExecutionEnvironment env) throws Exception {
+        File nbproject = new File(projectDir, "nbproject");
+        assertTrue("file does not exist: " + nbproject.getAbsolutePath(), nbproject.exists());
+        File confFile = new File(nbproject, "configurations.xml");
+        assertTrue(confFile.exists());
+        String text = readFile(confFile);
+        String openTag = "<developmentServer>";
+        String closeTag = "</developmentServer>";
+        int start = text.indexOf(openTag);
+        start += openTag.length();
+        assertTrue(start >= 0);
+        int end = text.indexOf(closeTag);
+        assertTrue(end >= 0);
+        StringBuilder newText = new StringBuilder();
+        newText.append(text.substring(0, start));
+        newText.append(ExecutionEnvironmentFactory.toUniqueID(env));
+        newText.append(text.substring(end));
+        writeFile(confFile, newText);
+    }
+
 
     @ForAllEnvironments
     public void testBuildMakefileWithExt_rfs_gnu() throws Exception {

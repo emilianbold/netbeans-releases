@@ -264,7 +264,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         }
         //Thread.sleep(3000); // give building thread time to finish and to kill rfs_controller
         RemoteSyncTestSupport.waitWorkerFinished(20);
-        assertTrue("build failed: RC=" + build_rc.get(), build_rc.get() == 0);
+        assertTrue("build failed: on " + makeProject.getDevelopmentHostExecutionEnvironment()  + ": RC=" + build_rc.get(), build_rc.get() == 0);
     }
 
     protected void clearRemoteSyncRoot() {
