@@ -166,6 +166,9 @@ public class JavaCustomIndexer extends CustomIndexer {
             ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     try {
+                        if (context.isAllFilesIndexing()) {
+                            cleanUpResources(context.getRootURI());
+                        }
                         final JavaParsingContext javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
                         if (javaContext.uq == null)
                             return null; //IDE is exiting, indeces are already closed.
@@ -709,6 +712,20 @@ public class JavaCustomIndexer extends CustomIndexer {
             }
         }
         return ret;
+    }
+
+    private static void cleanUpResources (final URL rootURL) throws IOException {
+        final File classFolder = JavaIndex.getClassFolder(rootURL);
+        final File resourcesFile = new File (classFolder,FileObjects.RESOURCES);
+        try {
+            for (String fileName : readRSFile(resourcesFile)) {
+                File f = new File (classFolder, fileName);
+                f.delete();
+            }
+            resourcesFile.delete();
+        } catch (IOException ioe) {
+            //Nothing to delete - pass
+        }
     }
 
     public static class Factory extends CustomIndexerFactory {
