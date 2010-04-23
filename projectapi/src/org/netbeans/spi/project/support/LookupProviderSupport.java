@@ -56,7 +56,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.projectapi.MetaLookupMerger;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
-import org.openide.ErrorManager;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -77,6 +76,8 @@ public final class LookupProviderSupport {
     private LookupProviderSupport() {
     }
     
+    private static final Logger LOG = Logger.getLogger(LookupProviderSupport.class.getName());
+
     /**
      * Creates a project lookup instance that combines the content from multiple sources. 
      * A convenience factory method for implementors of Project.
@@ -148,8 +149,7 @@ public final class LookupProviderSupport {
             for (Lookup.Item<?> item : lkp.lookupResult(Object.class).allItems()) {
                 Class<?> clzz = item.getType();
                 if (!LookupProvider.class.isAssignableFrom(clzz) && !MetaLookupMerger.class.isAssignableFrom(clzz)) {
-                    Logger.getLogger(LookupProviderSupport.class.getName()).log(
-                            Level.WARNING, "{0} from {1} is not a LookupProvider", new Object[] {clzz.getName(), item.getId()});
+                    LOG.log(Level.WARNING, "{0} from {1} is not a LookupProvider", new Object[] {clzz.getName(), item.getId()});
                 }
             }
             return true; // always just print warnings
@@ -172,12 +172,10 @@ public final class LookupProviderSupport {
         }
         
         private synchronized void doDelegate() {
-            //unregister listeners from the old results:
             for (Lookup.Result<?> r : results) {
                 r.removeLookupListener(this);
             }
             results.clear();
-            
             Collection<? extends LookupProvider> providers = providerResult.allInstances();
             List<Lookup> newLookups = new ArrayList<Lookup>();
             for (LookupProvider elem : providers) {
@@ -194,8 +192,6 @@ public final class LookupProviderSupport {
             currentLookups = newLookups;
             newLookups.add(baseLookup);
             Lookup lkp = new ProxyLookup(newLookups.toArray(new Lookup[newLookups.size()]));
-            
-            //merge:
             List<Class<?>> filteredClasses = new ArrayList<Class<?>>();
             List<Object> mergedInstances = new ArrayList<Object>();
             LookupListener l = listenerRef != null ? listenerRef.get() : null;
@@ -206,8 +202,7 @@ public final class LookupProviderSupport {
             l = WeakListeners.create(LookupListener.class, this, mergers);
             listenerRef = new WeakReference<LookupListener>(l);
             mergers.addLookupListener(l);
-            @SuppressWarnings("rawtypes")
-            Collection<LookupMerger> allMergers = new ArrayList<LookupMerger>(mergers.allInstances());
+            @SuppressWarnings("rawtypes") Collection<LookupMerger> allMergers = new ArrayList<LookupMerger>(mergers.allInstances());
             for (MetaLookupMerger metaMerger : metaMergers.allInstances()) {
                 LookupMerger<?> merger = metaMerger.merger();
                 if (merger != null) {
@@ -219,16 +214,12 @@ public final class LookupProviderSupport {
             for (LookupMerger<?> lm : allMergers) {
                 Class<?> c = lm.getMergeableClass();
                 if (filteredClasses.contains(c)) {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING,
-                            "Two LookupMerger registered for class " + c +
-                            ". Only first one will be used"); // NOI18N
+                    LOG.log(Level.WARNING, "Two LookupMerger registered for {0}. Only first one will be used", c);
                     continue;
                 }
                 filteredClasses.add(c);
                 mergedInstances.add(lm.merge(lkp));
-                
                 Lookup.Result<?> result = lkp.lookupResult(c);
-                
                 result.addLookupListener(this);
                 results.add(result);
             }
