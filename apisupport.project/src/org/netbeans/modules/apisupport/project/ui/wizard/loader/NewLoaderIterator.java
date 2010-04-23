@@ -279,6 +279,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.addModuleDependency("org.openide.filesystems")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.loaders")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.nodes")); //NOI18N
+        fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.util.lookup")); //NOI18N
         if (isEditable) {
             fileChanges.add(fileChanges.addModuleDependency("org.openide.text")); //NOI18N
