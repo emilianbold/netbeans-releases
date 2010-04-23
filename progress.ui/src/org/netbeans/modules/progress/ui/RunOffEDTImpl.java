@@ -153,18 +153,21 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
                 if (cancelOperation.get()) {
                     return;
                 }
-                operation.run();
-                latch.countDown();
+		try {
+		    operation.run();
+		} finally {
+		    latch.countDown();
 
-                SwingUtilities.invokeLater(new Runnable() {
+		    SwingUtilities.invokeLater(new Runnable() {
 
-                    public @Override void run() {
-                        Dialog dd = d.get();
-                        if (dd != null) {
-                            dd.setVisible(false);
-                        }
-                    }
-                });
+			public @Override void run() {
+			    Dialog dd = d.get();
+			    if (dd != null) {
+				dd.setVisible(false);
+			    }
+			}
+		    });
+		}
             }
         });
 
