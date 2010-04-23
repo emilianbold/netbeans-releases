@@ -214,7 +214,8 @@ public class MasterDetailGenerator {
             binding = binding.replace("_fieldName_", column); // NOI18N
             String type = iter.hasNext() ? iter.next() : null;
             if (type == null) { // fallback - shouldn't happen - means corrupted entity
-                Logger.getLogger(getClass().getName()).log(Level.INFO, "Cannot determine type of " + column + " property!"); // NOI18N
+                Logger.getLogger(getClass().getName()).log(
+                    Level.INFO, "Cannot determine type of {0} property!", column); // NOI18N
                 type = "Object.class"; // NOI18N
             }
             binding = binding.replace("_fieldType_", type); // NOI18N

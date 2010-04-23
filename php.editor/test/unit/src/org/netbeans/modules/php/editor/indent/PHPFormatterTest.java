@@ -281,7 +281,7 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue172475.php");
     }
 
-    public void test167791() throws Exception {
+    public void ltest167791() throws Exception {
         reformatFileContents("testfiles/formatting/issue167791.php", 5);
     }
 
@@ -1822,6 +1822,18 @@ public class PHPFormatterTest extends PHPTestBase {
     public void testIssue184690_01() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/templates/issue184690_01.php", options, true);
+    }
+
+    public void testIssue184687_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.initialIndent, 4);
+        reformatFileContents("testfiles/formatting/issue184687_01.php", options, true);
+    }
+
+    public void testIssue184687_02() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.initialIndent, 4);
+        reformatFileContents("testfiles/formatting/issue184687_02.php", options, true);
     }
 
     private void reformatFileContents(String file) throws Exception {
