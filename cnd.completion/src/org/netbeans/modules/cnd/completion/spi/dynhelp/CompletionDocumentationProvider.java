@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.cnd.completion.spi.dynhelp;
 
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 
@@ -48,6 +51,13 @@ import org.netbeans.spi.editor.completion.CompletionTask;
  */
 public interface CompletionDocumentationProvider {
 
-    public CompletionTask createDocumentationTask(CompletionItem item);
-    
+    /**
+     * Retrieves documentation synchronously.
+     */
+    public CompletionDocumentation createDocumentation(CsmObject obj, CsmFile file);
+
+    /**
+     * Retrieves documentation asynchronously.
+     */
+    public CompletionTask createDocumentationTask(CompletionItem item);  
 }
