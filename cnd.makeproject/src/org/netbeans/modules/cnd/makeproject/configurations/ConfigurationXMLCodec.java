@@ -442,6 +442,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(DEPENDENCY_CHECKING)) {
             boolean ds = currentText.equals(TRUE_VALUE);
             ((MakeConfiguration) currentConf).getDependencyChecking().setValue(ds);
+        } else if (element.equals(REBUILD_PROP_CHANGED)) {
+            boolean ds = currentText.equals(TRUE_VALUE);
+            ((MakeConfiguration) currentConf).getRebuildPropChanged().setValue(ds);
         } else if (element.equals(DEFAULT_CONF_ELEMENT)) {
             defaultConf = new Integer(currentText).intValue();
         } else if (element.equals(PROJECT_MAKEFILE_ELEMENT)) {

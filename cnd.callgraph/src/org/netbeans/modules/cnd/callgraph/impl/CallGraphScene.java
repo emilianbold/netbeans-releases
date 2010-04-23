@@ -87,6 +87,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
 
     
     private CallModel callModel;
+    private boolean isShowOverriding;
 
     public CallGraphScene() {
         mainLayer = new LayerWidget (this);
@@ -107,6 +108,10 @@ public class CallGraphScene extends GraphScene<Function,Call> {
     
     public void setModel(CallModel model){
         callModel = model;
+    }
+
+    public void setShowOverriding(boolean isShowOverriding){
+        this.isShowOverriding = isShowOverriding;
     }
     
     public void doLayout(){
@@ -571,7 +576,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    for(Call call : callModel.getCallees(function)){
+                    for(Call call : callModel.getCallees(function, isShowOverriding)){
                         addCallToScene(call);
                     }
                 }
@@ -601,7 +606,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    for(Call call : callModel.getCallers(function)){
+                    for(Call call : callModel.getCallers(function, isShowOverriding)){
                         addCallToScene(call);
                     }
                 }

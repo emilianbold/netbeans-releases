@@ -97,6 +97,12 @@ public class FormatVisitor extends DefaultVisitor {
 	List<FormatToken> beforeTokens = new ArrayList<FormatToken>(30);
 	int indexBeforeLastComment = -1;  // remember last comment
 	while (ts.moveNext() && ts.offset() < node.getStartOffset()) {
+            if (ts.token().id() == PHPTokenId.PHP_CURLY_CLOSE
+                    && path.size() > 1 && path.get(1) instanceof NamespaceDeclaration) {
+                // this a a fix for probalem that namespace declaration through {}, doesn't end with the end of  }
+                formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OTHER_RIGHT_BRACE, ts.offset()));
+            }
 	    addFormatToken(beforeTokens);
 	    if (ts.token().id() == PHPTokenId.PHPDOC_COMMENT_START
 		    || (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT

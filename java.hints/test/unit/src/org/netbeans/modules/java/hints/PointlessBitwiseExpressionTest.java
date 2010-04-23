@@ -417,6 +417,42 @@ public class PointlessBitwiseExpressionTest extends TestBase {
         );
     }
 
+    public void test184758a() throws Exception {
+        performAnalysisTest (
+            "test/Test.java",
+            "package test;\n" +
+            "class Test {\n" +
+            "    void test () {\n" +
+	    "        int modifiers = 0;\n" +
+	    "        boolean addFlag = true;\n" +
+	    "        modifiers = modifiers | (addFlag ? 1 : 0);\n" +
+            "    }\n" +
+            "}");
+    }
+
+    public void test184758b() throws Exception {
+        performFixTest (
+            "test/Test.java",
+            "package test;\n" +
+            "class Test {\n" +
+            "    void test () {\n" +
+            "        int i = 10;\n" +
+            "        boolean b = i << (0+0);\n" +
+            "    }\n" +
+            "}",
+            "4:20-4:30:verifier:Pointless bitwise expression",
+            "FixImpl",
+            (
+                "package test;\n" +
+                "class Test {\n" +
+                "    void test () {\n" +
+                "        int i = 10;\n" +
+                "        boolean b = i;\n" +
+                "    }\n" +
+                "}"
+            ).replaceAll ("[ \t\n]+", " ")
+        );
+    }
     
     static {
         NbBundle.setBranding ("test");

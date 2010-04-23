@@ -37,29 +37,16 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-#include <stdlib.h>
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include <stdio.h>
-#include <string.h>
 #include <memory.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <pthread.h>
 #include <ctype.h>
-#include <errno.h>
-#include <unistd.h>
-#include <limits.h>
-#include <sys/stat.h>
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <alloca.h>
-#include <libgen.h>
 
 #include "rfs_protocol.h"
 #include "rfs_util.h"

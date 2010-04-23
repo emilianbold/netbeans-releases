@@ -90,13 +90,13 @@ public final class DeepReparsingUtils {
      */
     public static void reparseOnEdit(FileImpl fileImpl, ProjectBase project, boolean scheduleParsing) {
         ParentFiles top = project.getGraph().getTopParentFiles(fileImpl);
-        Set<CsmFile> topParents = top.getCompilationUnits();
+        Set<CsmFile> cuStartFiles = top.getCompilationUnits();
         Set<CsmFile> parents = top.getParentFiles();
-        if (topParents.size() > 0) {
+        if (cuStartFiles.size() > 0) {
             fileImpl.clearStateCache();
             Set<CsmFile> coherence = project.getGraph().getCoherenceFiles(fileImpl).getCoherenceFiles();
             for (CsmFile file : coherence) {
-                if (topParents.contains(file)) {
+                if (cuStartFiles.contains(file)) {
                     ((FileImpl)file).clearStateCache();
                 } else if (parents.contains(file)) {
                     ((FileImpl)file).clearStateCache();
@@ -107,7 +107,7 @@ public final class DeepReparsingUtils {
             }
             if (scheduleParsing) {
                 // coherence already invalidated, pass empty set
-                addToReparse(project, topParents, new HashSet<CsmFile>(0), false);
+                addToReparse(project, cuStartFiles, new HashSet<CsmFile>(0), false);
             }
         } else {
             if (scheduleParsing) {

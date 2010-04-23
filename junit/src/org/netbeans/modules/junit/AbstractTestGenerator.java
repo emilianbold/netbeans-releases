@@ -307,7 +307,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                          TreePath compUnitPath,
                                          WorkingCopy workingCopy) {
         List<ExecutableElement> srcMethods
-                                = findTestableMethods(srcTopClass);
+                                = findTestableMethods(workingCopy, srcTopClass);
         boolean srcHasTestableMethods = !srcMethods.isEmpty();
 
         final String testClassSimpleName = TestUtil.getSimpleName(testClassName);
@@ -1709,7 +1709,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
     /**
      */
-    private List<ExecutableElement> findTestableMethods(TypeElement classElem) {
+    private List<ExecutableElement> findTestableMethods(WorkingCopy wc, TypeElement classElem) {
         List<ExecutableElement> methods
                 = ElementFilter.methodsIn(classElem.getEnclosedElements());
 
@@ -1719,9 +1719,11 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
         List<ExecutableElement> testableMethods = null;
 
+        boolean isEJB = isClassEjb31Bean(wc, classElem);
         int skippedCount = 0;
         for (ExecutableElement method : methods) {
-            if (isTestableMethod(method)) {
+            if (isTestableMethod(method) &&
+                    (!isEJB || (isEJB && isTestableEJBMethod(method)))) {
                 if (testableMethods == null) {
                     testableMethods = new ArrayList<ExecutableElement>(
                                              methods.size() - skippedCount);
@@ -1747,6 +1749,12 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         return setup.isMethodTestable(method);
     }
 
+    private boolean isTestableEJBMethod(ExecutableElement method){
+        Set<Modifier> modifiers = method.getModifiers();
+        
+        return !(modifiers.isEmpty() || !EnumSet.copyOf(modifiers).removeAll(ACCESS_MODIFIERS)) &&
+               !modifiers.contains(Modifier.PROTECTED);
+    }
     /**
      * Finds a non-abstract, direct or indirect subclass of a given source class
      * among nested classes of the given test class. Both static nested classes

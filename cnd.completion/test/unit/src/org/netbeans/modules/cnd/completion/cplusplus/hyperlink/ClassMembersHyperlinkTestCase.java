@@ -921,6 +921,30 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz184315.cc", 22, 26, "iz184315.cc", 9, 5);
     }
 
+    public void testIZ179095() throws Exception {
+        // Bug 179095 - [code model] Go To declaration doesn't work properly
+        performTest("iz179095.cc", 26, 15, "iz179095.cc", 72, 1);
+        performTest("iz179095.cc", 72, 25, "iz179095.cc", 26, 5);
+
+        performTest("iz179095.cc", 28, 15, "iz179095.cc", 104, 1);
+        performTest("iz179095.cc", 104, 25, "iz179095.cc", 28, 5);
+
+        performTest("iz179095.cc", 32, 15, "iz179095.cc", 75, 1);
+        performTest("iz179095.cc", 75, 25, "iz179095.cc", 32, 5);
+
+        performTest("iz179095.cc", 44, 15, "iz179095.cc", 67, 1);
+        performTest("iz179095.cc", 67, 25, "iz179095.cc", 44, 5);
+
+        performTest("iz179095.cc", 48, 15, "iz179095.cc", 109, 1);
+        performTest("iz179095.cc", 109, 25, "iz179095.cc", 48, 5);
+
+        performTest("iz179095.cc", 48, 15, "iz179095.cc", 109, 1);
+        performTest("iz179095.cc", 109, 25, "iz179095.cc", 48, 5);
+
+        performTest("iz179095.cc", 51, 15, "iz179095.cc", 89, 1);
+        performTest("iz179095.cc", 89, 25, "iz179095.cc", 51, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
