@@ -59,6 +59,7 @@ import org.openide.util.RequestProcessor;
  */
 public class PredefinedPanel extends javax.swing.JPanel {
 
+    private static final RequestProcessor RP = new RequestProcessor("Reset Compiler Settings", 2); // NOI18N
     private IncludesPanel includesPanel;
     private DefinitionsPanel definitionsPanel;
     private AbstractCompiler compiler;
@@ -77,11 +78,9 @@ public class PredefinedPanel extends javax.swing.JPanel {
 
         setOpaque(false);
     }
-    private static final int INSETS = 0;
-    private static final double WEIGTH = 0.1;
 
     private void updatePanels(final boolean reset) {
-        RequestProcessor.getDefault().post(new Runnable(){
+        RP.post(new Runnable(){
             @Override
             public void run() {
                 if (reset) {
