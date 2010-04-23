@@ -89,7 +89,7 @@ public abstract class CsmVirtualInfoQuery {
     // Implementation of the default query
     //
     private static final class Empty extends CsmVirtualInfoQuery {
-        private static enum Overrided {
+        private static enum Overriden {
             FIRST,
             TOP,
             ALL
@@ -132,20 +132,20 @@ public abstract class CsmVirtualInfoQuery {
 
         @Override
         public Collection<CsmMethod> getTopmostBaseDeclarations(CsmMethod method) {
-            return getBaseDeclaration(method, Overrided.TOP);
+            return getBaseDeclaration(method, Overriden.TOP);
         }
 
         @Override
         public Collection<CsmMethod> getFirstBaseDeclarations(CsmMethod method) {
-            return getBaseDeclaration(method, Overrided.FIRST);
+            return getBaseDeclaration(method, Overriden.FIRST);
         }
 
         @Override
         public Collection<CsmMethod> getAllBaseDeclarations(CsmMethod method) {
-            return getBaseDeclaration(method, Overrided.ALL);
+            return getBaseDeclaration(method, Overriden.ALL);
         }
 
-        private Collection<CsmMethod> getBaseDeclaration(CsmMethod method, Overrided overrided) {
+        private Collection<CsmMethod> getBaseDeclaration(CsmMethod method, Overriden overrided) {
             Set<CharSequence> antilLoop = new HashSet<CharSequence>();
             CharSequence sig = method.getSignature();
             Set<CsmMethod> result = new HashSet<CsmMethod>();
@@ -170,7 +170,7 @@ public abstract class CsmVirtualInfoQuery {
          */
         private void processMethod(CharSequence sig, CsmClass cls, Set<CharSequence> antilLoop,
                 CsmMethod firstFound, CsmMethod lastFound,
-                Set<CsmMethod> result, Overrided overrided) {
+                Set<CsmMethod> result, Overriden overrided) {
 
             boolean theLastInHierarchy;
             if (cls == null || antilLoop.contains(cls.getQualifiedName())) {
