@@ -645,8 +645,8 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public Folder addNewFolder(String name, String displayName, boolean projectFiles, Kind kind) {
         Folder newFolder = new Folder(getConfigurationDescriptor(), this, name, displayName, projectFiles);
-        addFolder(newFolder, true);
         newFolder.setKind(kind);
+        addFolder(newFolder, true);
         return newFolder;
     }
 
