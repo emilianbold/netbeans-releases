@@ -304,7 +304,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             helper.createAuxiliaryProperties(),
             spp,
             new AppClientActionProvider( this, helper, this.updateHelper ),
-            new AppClientLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
+            new AppClientLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper, appClient),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
@@ -488,7 +488,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
 
                             if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
                                     AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH)) { 
-                                String classpath = Utils.toClasspathString(platform.getClasspathEntries());
+                                String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
+                                String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), root);
                                 ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                             }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

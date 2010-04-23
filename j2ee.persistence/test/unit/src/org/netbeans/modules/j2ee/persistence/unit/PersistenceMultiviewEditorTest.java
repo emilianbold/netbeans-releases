@@ -57,8 +57,8 @@ public class PersistenceMultiviewEditorTest extends PersistenceEditorTestBase{
 
     public void testOpenSection() throws Exception {
         try{
-            // todo: causes IllegalStateException when run from cl (call to getNodeDelegate)
-            //dataObject.showElement(dataObject.getPersistence().getPersistenceUnit(0));
+            // 
+            dataObject.showElement(dataObject.getPersistence().getPersistenceUnit(0));
         } catch (Exception ex){
             fail("Failed to open section");
         }

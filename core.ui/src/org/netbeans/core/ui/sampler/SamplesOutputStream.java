@@ -69,6 +69,7 @@ class SamplesOutputStream {
     };
     static final String ID = "NPSS"; // NetBeans Profiler samples stream
     static final String FILE_EXT = ".npss"; // NOI18N
+    static final int RESET_THRESHOLD = 5000;
     static byte version = 1;
     private static Method toCompositeDataMethod;
 
@@ -165,6 +166,9 @@ class SamplesOutputStream {
         for (int i=0; i<samples.size();i++) {
             Sample s = samples.get(i);
             samples.set(i, null);
+            if (i > 0 && i % RESET_THRESHOLD == 0) {
+                out.reset();
+            }
             s.writeToStream(out);
         }
         out.close();

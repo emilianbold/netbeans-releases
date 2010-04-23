@@ -289,11 +289,8 @@ public class Installer extends ModuleInstall implements Runnable {
                 for (LogRecord rec : disabledRec) {
                     LogRecords.write(logStreamMetrics(), rec);
                 }
-                List<LogRecord> clusterRec = new ArrayList<LogRecord>();
-                getClusterList(log, clusterRec);
-                for (LogRecord rec : clusterRec) {
-                    LogRecords.write(logStreamMetrics(), rec);
-                }
+                LogRecord clusterRec = getClusterList(log);
+                LogRecords.write(logStreamMetrics(), clusterRec);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -642,18 +639,20 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
-    static void getClusterList (Logger logger, List<LogRecord> clusterRec) {
+    static LogRecord getClusterList (Logger logger) {
         LogRecord rec = new LogRecord(Level.INFO, "USG_INSTALLED_CLUSTERS");
         String dirs = System.getProperty("netbeans.dirs");
-        String [] k = dirs.split(File.pathSeparator);
-        String [] l = new String[k.length];
-        for (int i = 0; i < k.length; i++) {
-            File f = new File(k[i]);
-            l[i] = f.getName();
+        String [] dirsArray = dirs.split(File.pathSeparator);
+        List list = new ArrayList<String>();
+        for (int i = 0; i < dirsArray.length; i++) {
+            File f = new File(dirsArray[i]);
+            if (f.exists()){
+                list.add(f.getName());
+            }
         }
-        rec.setParameters(l);
+        rec.setParameters(list.toArray());
         rec.setLoggerName(logger.getName());
-        clusterRec.add(rec);
+        return rec;
     }
     
     public static URL hintsURL() {
@@ -1410,6 +1409,7 @@ public class Installer extends ModuleInstall implements Runnable {
         protected DataType dataType = DataType.DATA_UIGESTURE;
         final protected List<LogRecord> recs;
         protected boolean isOOM = false;
+        protected ExceptionsSettings settings;
         
         public Submit(String msg) {
             this(msg,DataType.DATA_UIGESTURE);
@@ -1826,7 +1826,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     params.add(panel.getUserName());
                 }
             } else {
-                params.add(new ExceptionsSettings().getUserName());
+                params.add(settings.getUserName());
             }
             addMoreLogs(params, openPasswd);
             userData = new LogRecord(Level.CONFIG, USER_CONFIGURATION);
@@ -1929,13 +1929,13 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
             final String summary = message;
-            final char[] passwd = new ExceptionsSettings().getPasswd();
+            settings = new ExceptionsSettings();
             try {
                 EventQueue.invokeAndWait(new Runnable() {
 
                     public void run() {
                         if (reportPanel==null) {
-                            reportPanel = new ReportPanel(isOOM, passwd);
+                            reportPanel = new ReportPanel(isOOM, settings);
                         }
                         if (summary != null){
                             reportPanel.setSummary(summary);
@@ -2000,6 +2000,13 @@ public class Installer extends ModuleInstall implements Runnable {
                 return;
             }
             reportPanel.saveUserData();
+            RP_UI.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    settings.save();
+                }
+            });
             dd.setValue(DialogDescriptor.CLOSED_OPTION);
             d.setVisible(false);
             d.dispose(); // fix the issue #137714

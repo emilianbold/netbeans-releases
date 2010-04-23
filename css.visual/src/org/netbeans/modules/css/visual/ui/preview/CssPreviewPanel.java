@@ -140,7 +140,7 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
                                     
                                 });
                             } catch (Exception ex) {
-                                Exceptions.printStackTrace(ex);
+                                LOGGER.log(Level.INFO, "Error setting the document to be previewed!", ex); //NOI18N
                             }
                         }
                     });

@@ -110,8 +110,10 @@ public class FileObjects {
     public static final String RS    = "rs";   //NOI18N
     public static final String RX    = "rx";   //NOI18N
     public static final String RAPT  = "rapt"; //NOI18N
-    
-    
+    public static final String RES   = "res";  //NOI18N
+
+    public static final String RESOURCES = "resouces." + FileObjects.RES;  //NOI18N
+
     /** Creates a new instance of FileObjects */
     private FileObjects() {
     }

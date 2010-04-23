@@ -117,14 +117,14 @@ public class FormatVisitor extends DefaultVisitor {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION, ts.offset()));
 		includeWSBeforePHPDoc = false;
 	    } else if (node instanceof FieldsDeclaration) {
-		if (isPreviousNodeTheSameInBlock((Block) path.get(0), (Statement) node)) {
+		if (isPreviousNodeTheSameInBlock(path.get(0), (Statement) node)) {
 		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
 		} else {
 		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELD, ts.offset()));
 		}
 		includeWSBeforePHPDoc = false;
 	    } else if (node instanceof UseStatement) {
-		if (isPreviousNodeTheSameInBlock((Block) path.get(0), (Statement) node)) {
+		if (isPreviousNodeTheSameInBlock(path.get(0), (Statement) node)) {
 		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_USE, ts.offset()));
 		} else {
 		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USE, ts.offset()));
@@ -867,11 +867,8 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(UseStatement node) {
-	Block block = (Block) path.get(1);
-	List<Statement> statements = block.getStatements();
 
-
-	if (isPreviousNodeTheSameInBlock(block, node)) {
+	if (isPreviousNodeTheSameInBlock(path.get(1), node)) {
 	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_USE, ts.offset()));
 	} else {
 	    if (includeWSBeforePHPDoc) {
@@ -882,7 +879,7 @@ public class FormatVisitor extends DefaultVisitor {
 
 
 	super.visit(node);
-	if (isNextNodeTheSameInBlock(block, node)) {
+	if (isNextNodeTheSameInBlock(path.get(1), node)) {
 	    addRestOfLine();
 	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_USE, ts.offset() + ts.token().length()));
 	}
@@ -1285,25 +1282,43 @@ public class FormatVisitor extends DefaultVisitor {
 		|| token.id() == PHPTokenId.PHP_LINE_COMMENT;
     }
 
-    private boolean isPreviousNodeTheSameInBlock(Block block, Statement statement) {
+    private boolean isPreviousNodeTheSameInBlock(ASTNode astNode, Statement statement) {
 	int index = 0;   // index of the current statement in the block
-	List<Statement> statements = block.getStatements();
-	while (index < statements.size() && statements.get(index).getStartOffset() < statement.getStartOffset()) {
-	    index++;
-	}
-	return (index < statements.size()
-		&& index > 0
-		&& statements.get(index - 1).getClass().equals(statement.getClass()));
+	List<Statement> statements = null;
+
+        if (astNode instanceof Block) {
+            statements = ((Block)astNode).getStatements();
+        } else if (astNode instanceof Program) {
+            statements = ((Program)astNode).getStatements();
+        }
+        if (statements != null) {
+            while (index < statements.size() && statements.get(index).getStartOffset() < statement.getStartOffset()) {
+                index++;
+            }
+            return (index < statements.size()
+                    && index > 0
+                    && statements.get(index - 1).getClass().equals(statement.getClass()));
+        }
+        return false;
     }
 
-    private boolean isNextNodeTheSameInBlock(Block block, Statement statement) {
+    private boolean isNextNodeTheSameInBlock(ASTNode astNode, Statement statement) {
 	int index = 0;   // index of the current statement in the block
-	List<Statement> statements = block.getStatements();
-	while (index < statements.size() && statements.get(index).getStartOffset() < statement.getStartOffset()) {
-	    index++;
-	}
-	return (index == statements.size() - 1
-		|| !((index < statements.size() - 1) && (statements.get(index + 1).getClass().equals(statement.getClass()))));
+	List<Statement> statements = null;
+
+        if (astNode instanceof Block) {
+            statements = ((Block)astNode).getStatements();
+        } else if (astNode instanceof Program) {
+            statements = ((Program)astNode).getStatements();
+        }
+        if (statements != null) {
+            while (index < statements.size() && statements.get(index).getStartOffset() < statement.getStartOffset()) {
+                index++;
+            }
+            return (index == statements.size() - 1
+                    || !((index < statements.size() - 1) && (statements.get(index + 1).getClass().equals(statement.getClass()))));
+        }
+        return false;
     }
 
     protected static boolean isWhitespace (final CharSequence text) {

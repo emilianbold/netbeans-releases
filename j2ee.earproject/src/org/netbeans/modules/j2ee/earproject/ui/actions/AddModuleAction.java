@@ -46,8 +46,6 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.nodes.AbstractNode;
@@ -61,13 +59,12 @@ import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.lookup.Lookups;
-
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
-
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
+import org.openide.filesystems.FileObject;
+import org.openide.util.ContextAwareAction;
 
 /**
  * Action that allows selection and assembly of J2EE module projects.
@@ -80,23 +77,25 @@ public class AddModuleAction extends CookieAction {
     private static final String FOLDER_ICON = "org/netbeans/modules/j2ee/earproject/ui/resources/folder.gif";
     
     private static final Class[] COOKIE_ARRAY =
-        new Class[] { AntProjectHelper.class };
+        new Class[] { Project.class };
     
+    @Override
     public Class[] cookieClasses() {
         return COOKIE_ARRAY;
     }
     
+    @Override
     public int mode() {
         return CookieAction.MODE_EXACTLY_ONE;
     }
     
+    @Override
     public void performAction(Node[] activeNodes) {
         try {
-            AntProjectHelper aph = activeNodes[0].getLookup().lookup(AntProjectHelper.class);
-            Project[] moduleProjects = getSelectedProjects(aph);
+            Project p = activeNodes[0].getLookup().lookup(Project.class);
+            Project[] moduleProjects = getSelectedProjects(p.getProjectDirectory());
             // XXX Vince add code here to add to application.xml and
             // build script
-            Project p = FileOwnerQuery.getOwner(aph.getProjectDirectory());
             EarProject ep = p.getLookup().lookup(EarProject.class);
             EarProjectProperties.addJ2eeSubprojects(ep, moduleProjects);
         } catch (UserCancelException uce) {
@@ -104,10 +103,12 @@ public class AddModuleAction extends CookieAction {
         }
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(AddModuleAction.class, "LBL_AddModuleAction");
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -117,7 +118,7 @@ public class AddModuleAction extends CookieAction {
         return false;
     }
     
-    private Project[] getSelectedProjects(AntProjectHelper epp) throws UserCancelException {
+    private Project[] getSelectedProjects(FileObject projDir) throws UserCancelException {
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
         List<Node> moduleProjectNodes = new LinkedList<Node>();
         for (int i = 0; i < allProjects.length; i++) {
@@ -133,7 +134,7 @@ public class AddModuleAction extends CookieAction {
         final AbstractNode root = new AbstractNode(children);
         String moduleSelector = NbBundle.getMessage(AddModuleAction.class, "LBL_ModuleSelectorTitle");
         
-        Project parent = FileOwnerQuery.getOwner(epp.getProjectDirectory());
+        Project parent = FileOwnerQuery.getOwner(projDir);
         SubprojectProvider spp = parent.getLookup().lookup(SubprojectProvider.class);
         if (null != spp) {
             final Set s = spp.getSubprojects();

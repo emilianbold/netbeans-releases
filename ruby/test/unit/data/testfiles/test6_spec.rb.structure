@@ -1,1 +1,2 @@
 describe: GET #index:TEST:[]:ESCAPED{describe: GET #index}:
+  before:TEST:[]:ESCAPED{before}:

@@ -62,6 +62,7 @@ import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -229,9 +230,8 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         resultSet.add(createdProjectFolder);
         
         UIUtil.setProjectChooserDirParent(projectFolder);
-        
-        // XXX this constant should be defined somewhere!
-        settings.putProperty("setAsMain", Boolean.valueOf(data.isMainProject())); // NOI18N
+
+        Templates.setDefinesMainProject(settings, data.isMainProject());
         
         return resultSet;
     }
