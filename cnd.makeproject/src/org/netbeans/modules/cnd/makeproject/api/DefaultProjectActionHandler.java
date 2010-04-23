@@ -463,8 +463,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                             res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
                             res.append(')');
 
-                            tab.getOut().println(res.toString());
-                            tab.getOut().println();
+                            tab.getErr().println(res.toString());
+                            tab.getErr().println();
                             closeIO();
 
                             if (listener != null) {
