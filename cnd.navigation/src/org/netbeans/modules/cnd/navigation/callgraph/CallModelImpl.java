@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.navigation.callgraph;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -139,7 +138,7 @@ public class CallModelImpl implements CallModel {
         functions.add(owner);
         if (showOverriding) {
             if (CsmKindUtilities.isMethodDeclaration(owner)) {
-                Collection<CsmMethod> overrides = CsmVirtualInfoQuery.getDefault().getOverridenMethods((CsmMethod) owner, false);
+                Collection<CsmMethod> overrides = CsmVirtualInfoQuery.getDefault().getAllBaseDeclarations((CsmMethod) owner);
                 functions.addAll(overrides);
             }
         }
