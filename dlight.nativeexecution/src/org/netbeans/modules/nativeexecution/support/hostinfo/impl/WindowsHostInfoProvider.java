@@ -61,6 +61,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
 
         HostInfoImpl info = new HostInfoImpl();
         info.initTmpDirs();
+        info.initUserDirs();
         return info;
     }
 
@@ -78,6 +79,8 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         private final String path;
         private File tmpDirFile;
         private String tmpDir;
+        private File userDirFile;
+        private String userDir;
 
         HostInfoImpl() {
             Map<String, String> env = WindowsSupport.getInstance().getEnv();
@@ -182,6 +185,53 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             tmpDir = _tmpDir;
         }
 
+        public void initUserDirs() throws IOException {
+            File _userDirFile = null;
+            String _userDir = null;
+            String ioUserDir = System.getProperty("user.home"); // NOI18N
+            Map<String, String> env = WindowsSupport.getInstance().getEnv();
+
+            /**
+             * Some magic with temp dir...
+             * In case of non-ascii chars in username use hashcode instead of
+             * plain name as in case of MinGW (without cygwin) execution may (will)
+             * fail...
+             */
+            String username = env.get("USERNAME"); // NOI18N
+
+            if (username != null) {
+                for (int i = 0; i < username.length(); i++) {
+                    char c = username.charAt(i);
+
+                    if (Character.isDigit(c) || c == '_') {
+                        continue;
+                    }
+
+                    if (c >= 'A' && c <= 'Z') {
+                        continue;
+                    }
+
+                    if (c >= 'a' && c <= 'z') {
+                        continue;
+                    }
+
+                    username = "" + username.hashCode(); // NOI18N
+                    break;
+                }
+            }
+
+            _userDirFile = new File(ioUserDir); // NOI18N
+            _userDir = _userDirFile.getAbsolutePath();
+
+            if (shell != null) {
+                _userDir = WindowsSupport.getInstance().convertToShellPath(_userDir);
+            }
+
+
+            userDirFile = _userDirFile;
+            userDir = _userDir;
+        }
+
         @Override
         public OS getOS() {
             return os;
@@ -221,6 +271,18 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         public File getTempDirFile() {
             return tmpDirFile;
         }
+
+        @Override
+        public String getUserDir() {
+            return userDir;
+        }
+
+        @Override
+        public File getUserDirFile() {
+            return userDirFile;
+        }
+
+        
 
         @Override
         public long getClockSkew() {

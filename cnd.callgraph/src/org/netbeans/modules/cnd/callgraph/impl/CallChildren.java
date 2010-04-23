@@ -58,18 +58,21 @@ public class CallChildren extends Children.Keys<Call> {
     private Node parent;
     private boolean isInited = false;
     private boolean isCalls;
+    private boolean showOverriding;
     private static final RequestProcessor RP = new RequestProcessor(CallChildren.class.getName(), 1);
 
-    public CallChildren(Call call, CallGraphState model, boolean isCalls) {
+    public CallChildren(Call call, CallGraphState model, boolean isCalls, boolean showOverriding) {
         this.call = call;
         this.model = model;
         this.isCalls = isCalls;
+        this.showOverriding = showOverriding;
     }
 
-    public CallChildren(Function function, CallGraphState model, boolean isCalls) {
+    public CallChildren(Function function, CallGraphState model, boolean isCalls, boolean showOverriding) {
         this.function = function;
         this.model = model;
         this.isCalls = isCalls;
+        this.showOverriding = showOverriding;
     }
  
     public void dispose(){
@@ -87,15 +90,15 @@ public class CallChildren extends Children.Keys<Call> {
         List<Call> set;
         if (isCalls) {
             if (call != null) {
-                set = model.getModel().getCallees(call.getCallee());
+                set = model.getModel().getCallees(call.getCallee(), showOverriding);
             } else {
-                set = model.getModel().getCallees(function);
+                set = model.getModel().getCallees(function, showOverriding);
             }
         } else {
             if (call != null) {
-                set = model.getModel().getCallers(call.getCaller());
+                set = model.getModel().getCallers(call.getCaller(), showOverriding);
             } else {
-                set = model.getModel().getCallers(function);
+                set = model.getModel().getCallers(function, showOverriding);
             }
         }
         if (set != null && set.size() > 0) {
@@ -111,7 +114,7 @@ public class CallChildren extends Children.Keys<Call> {
         if (call instanceof LoadingNode) {
             return new Node[]{(Node)call};
         }
-        Node node = new CallNode(call, model, isCalls);
+        Node node = new CallNode(call, model, isCalls, showOverriding);
         return new Node[]{node};
     }
 

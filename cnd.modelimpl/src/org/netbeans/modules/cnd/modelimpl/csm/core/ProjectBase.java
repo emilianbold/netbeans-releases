@@ -967,10 +967,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 return;
             }
 
-            ensureChangedFilesEnqueued();
-            if (isDisposing()) {
-                return;
-            }
+            // changed files are enqueued by edit start/edit end handlers
+//            ensureChangedFilesEnqueued();
+//            if (isDisposing()) {
+//                return;
+//            }
             Notificator.instance().flush();
         } finally {
             disposeLock.readLock().unlock();
@@ -1138,14 +1139,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     //@Deprecated
     public final APTPreprocHandler getPreprocHandler(File file) {
-        return createPreprocHandler(file, getFileContainer().getPreprocState(file));
+        final Collection<State> preprocStates = getFileContainer().getPreprocStates(file);
+        APTPreprocHandler.State state = preprocStates.isEmpty() ? null : preprocStates.iterator().next();
+        return createPreprocHandlerFromState(file, state);
     }
 
     /*package*/ final APTPreprocHandler getPreprocHandler(File file, PreprocessorStatePair statePair) {
-        return createPreprocHandler(file, statePair == null ? getFileContainer().getPreprocState(file) : statePair.state);
+        assert statePair != null;
+        return createPreprocHandlerFromState(file, statePair.state);
     }
 
-    /* package */ final APTPreprocHandler createPreprocHandler(File file, APTPreprocHandler.State state) {
+    /* package */ final APTPreprocHandler createPreprocHandlerFromState(File file, APTPreprocHandler.State state) {
         APTPreprocHandler preprocHandler = createEmptyPreprocHandler(file);
         if (state != null) {
             if (state.isCleaned()) {
@@ -1189,15 +1193,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             result.add(preprocHandler);
         }
         return result;
-    }
-
-    //@Deprecated
-    public final APTPreprocHandler.State getPreprocState(FileImpl fileImpl) {
-        APTPreprocHandler.State state = null;
-        FileContainer fc = getFileContainer();
-        File file = fileImpl.getBuffer().getFile();
-        state = fc.getPreprocState(file);
-        return state;
     }
 
     public final Collection<APTPreprocHandler.State> getPreprocStates(FileImpl fileImpl) {
@@ -1796,7 +1791,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private CsmFile findFileByPath(CharSequence absolutePath) {
         File file = new File(absolutePath.toString());
         APTPreprocHandler preprocHandler = null;
-        if (getFileContainer().getPreprocState(file) == null) {
+        if (getFileContainer().getEntry(file) == null) {
             NativeFileItem nativeFile = null;
             // Try to find native file
             if (getPlatformProject() instanceof NativeProject) {
@@ -1825,7 +1820,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private CsmFile findFileByItem(NativeFileItem nativeFile) {
         File file = nativeFile.getFile().getAbsoluteFile();
         APTPreprocHandler preprocHandler = null;
-        if (getFileContainer().getPreprocState(file) == null) {
+        if (getFileContainer().getEntry(file) == null) {
             if (!acceptNativeItem(nativeFile)) {
                 return null;
             }
@@ -2660,7 +2655,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         NativeFileItem out = null;
         ProjectBase filePrj = fileImpl.getProjectImpl(true);
         if (filePrj != null) {
-            APTPreprocHandler.State state = filePrj.getPreprocState(fileImpl);
+            Collection<State> preprocStates = filePrj.getPreprocStates(fileImpl);
+            if (preprocStates.isEmpty()) {
+                return null;
+            }
+            // use start file from one of states (i.e. first)
+            APTPreprocHandler.State state = preprocStates.iterator().next();
             FileImpl startFile = getStartFile(state);
             out = startFile != null ? startFile.getNativeFileItem() : null;
         }

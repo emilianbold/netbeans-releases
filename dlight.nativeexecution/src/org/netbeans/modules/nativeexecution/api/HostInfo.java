@@ -117,6 +117,10 @@ public interface HostInfo {
 
     public File getTempDirFile();
 
+    public String getUserDir();
+
+    public File getUserDirFile();
+
     /**
      * @return time difference in milliseconds between remote and localhost
      */

@@ -123,19 +123,19 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             }
         }
 
-//        int pid = 0;
-//
-//        try {
-//            pid = getPID();
-//        } catch (IOException ex) {
-//        }
-//
-//        if (pid > 0) {
-//            try {
-//                CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.SIGKILL, null).get();
-//            } catch (InterruptedException ex) {
-//            } catch (ExecutionException ex) {
-//            }
-//        }
+        int pid = 0;
+
+        try {
+            pid = getPID();
+        } catch (IOException ex) {
+        }
+
+        if (pid > 0) {
+            try {
+                CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.SIGKILL, null).get();
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+            }
+        }
     }
 }

@@ -115,7 +115,7 @@ public final class ParserThread implements Runnable {
                                     preprocHandlers = FileImpl.DUMMY_HANDLERS;
                                     break;
                                 }
-                                APTPreprocHandler preprocHandler = project.createPreprocHandler(file.getBuffer().getFile(), state);
+                                APTPreprocHandler preprocHandler = project.createPreprocHandlerFromState(file.getBuffer().getFile(), state);
                                 if (TraceFlags.TRACE_PARSER_QUEUE) {
                                     System.err.println("before ensureParse on " + file.getAbsolutePath() +
                                             ParserQueue.tracePreprocState(state));

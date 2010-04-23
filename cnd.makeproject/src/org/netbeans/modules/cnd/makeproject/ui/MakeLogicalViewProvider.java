@@ -1237,10 +1237,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         @Override
         public Action[] getActions(boolean context) {
             Action[] result;
+            ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
             if (folder.isTestRootFolder()) {
                 result = new Action[]{ //
                             SystemAction.get(NewTestAction.class),
-                            SystemAction.get(RunTestAction.class),
+                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null),
                             null,
                             SystemAction.get(NewFolderAction.class),
                             SystemAction.get(org.openide.actions.FindAction.class),
@@ -1265,7 +1266,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             SystemAction.get(PropertiesFolderAction.class),};
             }
             else if (folder.isTest()) {
-                ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
                 result = new Action[]{ //
                             CommonProjectActions.newFileAction(), //
                             SystemAction.get(AddExistingItemAction.class),

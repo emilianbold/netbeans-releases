@@ -590,7 +590,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
         String hostUID = (String) settings.getProperty("hostUID");
         CompilerSet cs = (CompilerSet) settings.getProperty("toolchain");
-        RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs));
+        Boolean readOnlyToolchain = (Boolean) settings.getProperty("readOnlyToolchain");
+        RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, readOnlyToolchain));
 
         String projectName = (String) settings.getProperty("displayName"); //NOI18N
         if (projectName == null) {
@@ -789,15 +790,17 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private final class DevHostsInitializer implements Runnable {
         private final String hostUID;
         private final CompilerSet cs;
+        private final boolean readOnlyUI;
         
         // fields to be inited in worker thread and used in EDT
         private Collection<ServerRecord> records;
         private ServerRecord srToSelect;
         private CompilerSet csToSelect;
         
-        public DevHostsInitializer(String hostUID, CompilerSet cs) {
+        public DevHostsInitializer(String hostUID, CompilerSet cs, Boolean readOnlyToolchain) {
             this.hostUID = hostUID;
             this.cs = cs;
+            this.readOnlyUI = readOnlyToolchain == null ? false : readOnlyToolchain.booleanValue();
         }
 
         @Override
@@ -835,8 +838,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     hostComboBox.setSelectedItem(srToSelect);
                     updateToolchains(srToSelect);
                     toolchainComboBox.setSelectedItem(csToSelect);
-                    hostComboBox.setEnabled(true);
-                    toolchainComboBox.setEnabled(true);
+                    hostComboBox.setEnabled(readOnlyUI);
+                    toolchainComboBox.setEnabled(readOnlyUI);
                 }
                 initialized = true;
                 panel.fireChangeEvent(); // Notify that the panel changed

@@ -55,16 +55,7 @@ enum kind {
     pkg_reply = 'r'
 };
 
-static const char* pkg_kind_to_string(enum kind kind) {
-    switch (kind) {
-        case pkg_null:          return "pkg_null";
-        case pkg_handshake:     return "pkg_handshake";
-        case pkg_request:       return "pkg_request";
-        case pkg_reply:         return "pkg_reply";
-        case pkg_written:       return "pkg_written";
-        default:                return "pkg_unknown";
-    }
-}
+const char* pkg_kind_to_string(enum kind kind);
 
 /**
  * The below is the representation of a package in program.
