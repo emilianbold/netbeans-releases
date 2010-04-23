@@ -81,9 +81,13 @@ public class ExceptionsSettings {
                 prefs().remove(passwdProp);
             }else if (keyringPasswd != null) {
                 passwd = keyringPasswd;
-            }else{
-                passwd = new char[0];
             }
+        }
+        if (passwd == null){
+            passwd = new char[0];
+        }
+        if (userName == null){
+            userName = new String();
         }
     }
 
