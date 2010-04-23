@@ -251,7 +251,7 @@ public class UnitTestLibrariesNodeTest extends TestBase {
             return null;
         }
 
-        public int compareTo(Object o) {
+        public int compareTo(ModuleEntry o) {
             return 0;
         }
 

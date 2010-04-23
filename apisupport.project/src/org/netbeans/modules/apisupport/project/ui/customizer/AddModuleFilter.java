@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
