@@ -73,7 +73,7 @@ import org.openide.windows.WindowManager;
 final class TimableEventQueue extends EventQueue 
 implements Runnable {
     private static final Logger LOG = Logger.getLogger(TimableEventQueue.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor("Timeable Event Queue Watch Dog", 1, true); // NOI18N
+    static final RequestProcessor RP = new RequestProcessor("Timeable Event Queue Watch Dog", 1, true); // NOI18N
     private static final int QUANTUM;
     private static final int REPORT;
     static {
@@ -110,6 +110,7 @@ implements Runnable {
         // XXX this is a hack!
         try {
             Mutex.EVENT.writeAccess (new Mutex.Action<Void>() {
+                @Override
                 public Void run() {
                     ClassLoader scl = Lookup.getDefault().lookup(ClassLoader.class);
                     if (scl != null) {
@@ -154,25 +155,9 @@ implements Runnable {
             LOG.log(Level.FINE, "done, timer stopped, took {0}", time); // NOI18N
             if (time > r) {
                 LOG.log(Level.WARNING, "too much time in AWT thread {0}", stoppable); // NOI18N
-                ActionListener ss = stoppable;
-                if (ss != null) {
-                    try {
-                        ByteArrayOutputStream out = new ByteArrayOutputStream();
-                        DataOutputStream dos = new DataOutputStream(out);
-                        ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
-                        dos.close();
-                        if (dos.size() > 0) {
-                            Object[] params = new Object[]{out.toByteArray(), time};
-                            Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
-                        } else {
-                            LOG.log(Level.WARNING, "no snapshot taken"); // NOI18N
-                        }
-                        stoppable = null;
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    ignoreTill = System.currentTimeMillis() + PAUSE;
-                }
+                ignoreTill = System.currentTimeMillis() + PAUSE;
+                report(stoppable, time);
+                stoppable = null;
             }
         } else {
             LOG.log(Level.FINEST, "done, timer stopped, took {0}", time);
@@ -193,6 +178,7 @@ implements Runnable {
         }
     }
 
+    @Override
     public void run() {
         if (stoppable != null) {
             LOG.log(Level.WARNING, "Still previous controller {0}", stoppable);
@@ -204,6 +190,32 @@ implements Runnable {
             stoppable = (ActionListener)selfSampler;
         }
         isWaitCursor |= isWaitCursor();
+    }
+
+    private static void report(final ActionListener ss, final long time) {
+        if (ss == null) {
+            return;
+        }
+        class R implements Runnable {
+            @Override
+            public void run() {
+                try {
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    DataOutputStream dos = new DataOutputStream(out);
+                    ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+                    dos.close();
+                    if (dos.size() > 0) {
+                        Object[] params = new Object[]{out.toByteArray(), time};
+                        Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
+                    } else {
+                        LOG.log(Level.WARNING, "no snapshot taken"); // NOI18N
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        RP.post(new R());
     }
 
     private static Object createSelfSampler() {

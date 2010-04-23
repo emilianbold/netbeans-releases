@@ -276,8 +276,8 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                 EditorContext.DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE;
         } else if (b instanceof ClassLoadUnloadBreakpoint) {
             annotationType = b.isEnabled() ?
-                "ClassBreakpoint" :
-                "DisabledClassBreakpoint";
+                EditorContext.CLASS_BREAKPOINT_ANNOTATION_TYPE :
+                EditorContext.DISABLED_CLASS_BREAKPOINT_ANNOTATION_TYPE;
         } else {
             throw new IllegalStateException(b.toString());
         }

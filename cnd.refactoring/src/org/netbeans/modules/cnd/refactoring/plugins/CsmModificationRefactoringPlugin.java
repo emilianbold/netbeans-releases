@@ -113,7 +113,7 @@ public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlu
             fireProgressListenerStep();
             CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
             if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
-                Collection<CsmMethod> overridenMethods = CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, true);
+                Collection<CsmMethod> overridenMethods = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(method, true);
                 if (overridenMethods.size() > 1) {
                     // check all overriden methods
                     for (CsmMethod csmMethod : overridenMethods) {

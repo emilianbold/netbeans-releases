@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,7 +63,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.NbModuleType;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.ErrorManager;
@@ -75,6 +75,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.NonexistentModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Mutex;
@@ -98,23 +99,23 @@ public final class ProjectXMLManager {
             "http://www.netbeans.org/ns/project/1"; // NOI18N
     // elements constants
     private static final String BINARY_ORIGIN = "binary-origin"; // NOI18N
-    private static final String BUILD_PREREQUISITE = "build-prerequisite"; // NOI18N
+    static final String BUILD_PREREQUISITE = "build-prerequisite"; // NOI18N
     private static final String CLASS_PATH_BINARY_ORIGIN = "binary-origin"; //NOI18N
     private static final String CLASS_PATH_EXTENSION = "class-path-extension"; // NOI18N
     private static final String CLASS_PATH_RUNTIME_PATH = "runtime-relative-path"; //NOI18N
-    private static final String CODE_NAME_BASE = "code-name-base"; // NOI18N
-    private static final String COMPILE_DEPENDENCY = "compile-dependency"; // NOI18N
+    static final String CODE_NAME_BASE = "code-name-base"; // NOI18N
+    static final String COMPILE_DEPENDENCY = "compile-dependency"; // NOI18N
     private static final String DATA = "data"; // NOI18N
-    private static final String DEPENDENCY = "dependency"; // NOI18N
+    static final String DEPENDENCY = "dependency"; // NOI18N
     private static final String EXTRA_COMPILATION_UNIT = "extra-compilation-unit"; // NOI18N
     private static final String FRIEND = "friend"; // NOI18N
     private static final String FRIEND_PACKAGES = "friend-packages"; // NOI18N
     private static final String IMPLEMENTATION_VERSION = "implementation-version"; // NOI18N
-    private static final String MODULE_DEPENDENCIES = "module-dependencies"; // NOI18N
+    static final String MODULE_DEPENDENCIES = "module-dependencies"; // NOI18N
     private static final String PACKAGE = "package"; // NOI18N
     private static final String PUBLIC_PACKAGES = "public-packages"; // NOI18N
     private static final String RELEASE_VERSION = "release-version"; // NOI18N
-    private static final String RUN_DEPENDENCY = "run-dependency"; // NOI18N
+    static final String RUN_DEPENDENCY = "run-dependency"; // NOI18N
     private static final String SPECIFICATION_VERSION = "specification-version"; // NOI18N
     private static final String STANDALONE = "standalone"; // NOI18N
     private static final String SUBPACKAGES = "subpackages"; // NOI18N
@@ -242,10 +243,6 @@ public final class ProjectXMLManager {
             if (!_directDeps.add(depToAdd)) {
                 throw new IOException("#175879: corrupted metadata in " + project + "; duplicate dep found: " + depToAdd);
             }
-            if (findElement(depEl, ProjectXMLManager.RUN_DEPENDENCY) == null) {
-                continue;
-            }
-
         }
         this.directDeps = Collections.unmodifiableSortedSet(_directDeps);
         return this.directDeps;
@@ -258,31 +255,28 @@ public final class ProjectXMLManager {
             Util.err.log(ErrorManager.WARNING,
                     "Detected dependency on module which cannot be found in " + // NOI18N
                     "the current module's universe (platform, suite): " + cnb); // NOI18N
-            return null;
+            me = new NonexistentModuleEntry(cnb);
         }
-
-        Element runDepEl = findElement(depEl, ProjectXMLManager.RUN_DEPENDENCY);
-        if (runDepEl == null) {
-            return new ModuleDependency(me);
-        }
-
-        Element relVerEl = findElement(runDepEl, ProjectXMLManager.RELEASE_VERSION);
         String relVer = null;
-        if (relVerEl != null) {
-            relVer = XMLUtil.findText(relVerEl);
-        }
-
-        Element specVerEl = findElement(runDepEl, ProjectXMLManager.SPECIFICATION_VERSION);
         String specVer = null;
-        if (specVerEl != null) {
-            specVer = XMLUtil.findText(specVerEl);
+        boolean implDep = false;
+        Element runDepEl = findElement(depEl, ProjectXMLManager.RUN_DEPENDENCY);
+        if (runDepEl != null) {
+            Element relVerEl = findElement(runDepEl, ProjectXMLManager.RELEASE_VERSION);
+            if (relVerEl != null) {
+                relVer = XMLUtil.findText(relVerEl);
+            }
+            Element specVerEl = findElement(runDepEl, ProjectXMLManager.SPECIFICATION_VERSION);
+            if (specVerEl != null) {
+                specVer = XMLUtil.findText(specVerEl);
+            }
+            implDep = findElement(runDepEl, ProjectXMLManager.IMPLEMENTATION_VERSION) != null;
         }
-
         Element compDepEl = findElement(depEl, ProjectXMLManager.COMPILE_DEPENDENCY);
-        Element impleVerEl = findElement(runDepEl, ProjectXMLManager.IMPLEMENTATION_VERSION);
-
         ModuleDependency newDep = new ModuleDependency(
-                me, relVer, specVer, compDepEl != null, impleVerEl != null);
+                me, relVer, specVer, compDepEl != null, implDep);
+        newDep.buildPrerequisite = findElement(depEl, ProjectXMLManager.BUILD_PREREQUISITE) != null;
+        newDep.runDependency = runDepEl != null;
         return newDep;
     }
 
@@ -719,9 +713,12 @@ public final class ProjectXMLManager {
             for (Map.Entry<String,String> entry : newValues.entrySet()) {
                 Element cpel = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_EXTENSION);
                 Element runtime = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_RUNTIME_PATH, entry.getKey());
-                Element binary = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_BINARY_ORIGIN, entry.getValue());
                 cpel.appendChild(runtime);
-                cpel.appendChild(binary);
+                String binaryPath = entry.getValue();
+                if (binaryPath != null) {
+                    Element binary = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_BINARY_ORIGIN, binaryPath);
+                    cpel.appendChild(binary);
+                }
                 _confData.appendChild(cpel);
             }
             cpExtensions = new HashMap<String, String>(newValues);
@@ -812,14 +809,15 @@ public final class ProjectXMLManager {
      * @return an array of strings (may be empty)
      */
     public String[] getBinaryOrigins() {
-        Map<String, String> cpe = getClassPathExtensions();
-        return cpe.values().toArray(new String[cpe.size()]);
+        Set<String> origins = new LinkedHashSet<String>(getClassPathExtensions().values());
+        origins.remove(null);
+        return origins.toArray(new String[origins.size()]);
     }
 
     /**
      * Returns existing classpath extensions mapping.
      * Returned map is unmodifiable.
-     * @return classpath extensions map &lt;key=runtime-path(String), value=binary-path(String)&gt;
+     * @return classpath extensions map &lt;key=runtime-path(String), value=binary-path(String or null)&gt;
      */
     public Map<String, String> getClassPathExtensions() {
         if (cpExtensions != null) {
@@ -830,9 +828,7 @@ public final class ProjectXMLManager {
             if (CLASS_PATH_EXTENSION.equals(cpExtEl.getTagName())) {
                 Element binOrigEl = findElement(cpExtEl, BINARY_ORIGIN);
                 Element runtimePathEl = findElement(cpExtEl, CLASS_PATH_RUNTIME_PATH);
-                if (binOrigEl != null && runtimePathEl != null) {
-                    cps.put(XMLUtil.findText(runtimePathEl), XMLUtil.findText(binOrigEl));
-                }
+                cps.put(XMLUtil.findText(runtimePathEl), binOrigEl != null ? XMLUtil.findText(binOrigEl) : null);
             }
         }
         return Collections.unmodifiableMap(cpExtensions = cps);
@@ -857,9 +853,14 @@ public final class ProjectXMLManager {
 
         modDepEl.appendChild(createModuleElement(doc, ProjectXMLManager.CODE_NAME_BASE,
                 md.getModuleEntry().getCodeNameBase()));
-        if (md.hasCompileDependency()) {
+        if (md.buildPrerequisite) {
             modDepEl.appendChild(createModuleElement(doc, ProjectXMLManager.BUILD_PREREQUISITE));
+        }
+        if (md.hasCompileDependency()) {
             modDepEl.appendChild(createModuleElement(doc, ProjectXMLManager.COMPILE_DEPENDENCY));
+        }
+        if (!md.runDependency) {
+            return;
         }
 
         Element runDepEl = createModuleElement(doc, ProjectXMLManager.RUN_DEPENDENCY);
@@ -870,7 +871,7 @@ public final class ProjectXMLManager {
             runDepEl.appendChild(createModuleElement(
                     doc, ProjectXMLManager.RELEASE_VERSION, rv));
         }
-        if (md.hasImplementationDepedendency()) {
+        if (md.hasImplementationDependency()) {
             runDepEl.appendChild(createModuleElement(
                     doc, ProjectXMLManager.IMPLEMENTATION_VERSION));
         } else {

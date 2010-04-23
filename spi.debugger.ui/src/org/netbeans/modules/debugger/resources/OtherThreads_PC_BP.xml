@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 <!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
 <type
     name='OtherThreads_PC_BP'
-    description_key='HINT_OTHER_THREAD_PC_BP'
+    description_key='HINT_OTHER_THREADS_PC_BP'
     localizing_bundle='org.netbeans.modules.debugger.resources.Bundle'
     visible='true'
     glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/other_threads_breakpoint_arrow.png'
