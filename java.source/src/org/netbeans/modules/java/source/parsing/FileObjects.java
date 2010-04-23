@@ -830,11 +830,8 @@ public class FileObjects {
     }
 
     public static String getRelativePath (final URL root, final URL fo) throws URISyntaxException {
-        String path = getRelativePath(new File(root.toURI()), new File(fo.toURI()));
-        if (File.separatorChar != '/') {
-            path = path.replace(File.separatorChar, '/');
-        }
-        return path;
+        final String path = getRelativePath(new File(root.toURI()), new File(fo.toURI()));
+        return path.replace(File.separatorChar, '/');
     }
 
     public static CharSequence getCharContent(InputStream ins, Charset encoding, JavaFileFilterImplementation filter, long expectedLength, boolean ignoreEncodingErrors) throws IOException {
