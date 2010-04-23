@@ -52,6 +52,7 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.NonexistentModuleEntry;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 
@@ -97,7 +98,7 @@ public class ModuleDependencyTest extends TestBase {
         ModuleDependency[] expectedOrder = new ModuleDependency[] {
             d3, d2, d5, d4, d1
         };
-        Iterator it = sorted.iterator();
+        Iterator<ModuleDependency> it = sorted.iterator();
         for (int i = 0; i < expectedOrder.length; i++) {
             assertSame("expected order", expectedOrder[i], it.next());
         }
@@ -162,6 +163,16 @@ public class ModuleDependencyTest extends TestBase {
         ModuleList ml = ModuleList.getModuleList(p.getProjectDirectoryFile());
         ModuleDependency d = new ModuleDependency(ml.getEntry("org.example.module"));
         assertFalse("no public packages -> no compile dependency by default", d.hasCompileDependency());
+    }
+
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
+    public void testBadSpecVersion() throws Exception { // #180868
+        try {
+            new ModuleDependency(new NonexistentModuleEntry("dep"), null, "1,2", true, false);
+            fail();
+        } catch (NumberFormatException x) {
+            // OK
+        }
     }
     
 }
