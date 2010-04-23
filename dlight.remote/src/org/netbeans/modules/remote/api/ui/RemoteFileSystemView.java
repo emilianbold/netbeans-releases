@@ -169,7 +169,7 @@ import org.openide.util.Exceptions;
      */
     public File createNewFolder(File containingDir) throws IOException {
 	if(containingDir == null) {
-	    throw new IOException("Containing directory is null:");
+	    throw new IOException("Containing directory is null:"); // NOI18N
 	}
 	File newFolder = null;
 	// Unix - using OpenWindows' default folder name. Can't find one for Motif/CDE.
@@ -182,7 +182,7 @@ import org.openide.util.Exceptions;
 	}
 
 	if(newFolder.exists()) {
-	    throw new IOException("Directory already exists:" + newFolder.getAbsolutePath());
+	    throw new IOException("Directory already exists:" + newFolder.getAbsolutePath()); // NOI18N
 	} else {
 	    newFolder.mkdirs();
 	}
