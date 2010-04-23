@@ -40,6 +40,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <utime.h>
 
 #include <memory.h>
 #include <ctype.h>
@@ -53,6 +54,11 @@
 #include "rfs_filedata.h"
 
 static int emulate = false;
+
+enum  {
+    VERSION_1 = '1',
+    VERSION_2 = '2'
+} protocol_version = 0;
 
 typedef struct connection_data {
     int sd;
@@ -227,7 +233,7 @@ static int create_lnk(const char* path, const char* lnk_src) {
     return true; // TODO: check
 }
 
-static int create_file(const char* path, int size) {
+static int create_file(const char* path, int size, const struct timeval *file_time) {
     trace("\tcreating file %s %d\n", path, size);
     int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0700);
     if (fd > 0) { // // TODO: error processing
@@ -244,6 +250,13 @@ static int create_file(const char* path, int size) {
             report_error("error closing %s (fd=%d)\n", path, fd);
             return false;
         }
+        struct utimbuf tm;
+        tm.actime = file_time->tv_sec;
+        tm.modtime = file_time->tv_sec;
+        if (utime(path, &tm) != 0) {
+            report_error("Error setting modification time for %s: %s\n", path, strerror(errno));
+        }
+
     } else {
         report_error("Error opening %s: %s\n", path, strerror(errno));
         return false;
@@ -251,8 +264,8 @@ static int create_file(const char* path, int size) {
     return true;
 }
 
-static int touch_file(const char* path,  int size) {
-    if (create_file(path, size)) {
+static int touch_file(const char* path,  int size, const struct timeval *file_time) {
+    if (create_file(path, size, file_time)) {
         return true;
     } else {
         report_error("can not create proxy file %s: %s\n", path, strerror(errno));
@@ -289,33 +302,63 @@ static enum file_state char_to_state(char c) {
     }
 }
 
-static int scan_line(const char* buffer, int bufsize, enum file_state *state, int *file_size, const char **path) {
+/**
+ * Converts a string that represents a non negative number with trailing space char
+ * to long.
+ * Checks whether the number is followed by the space char; if it is not, returns -1. 
+ * Stores the pointer to the character AFTER this space into *next_char
+ */
+static long string2num(const char *buffer, const char *buf_limit, const char** next_char) {
+    *next_char = buffer;
+    while (*next_char < buf_limit && isdigit(**next_char)) {
+        (*next_char)++;
+    }
+    // we should necessarily stay on ' '
+    if (**next_char == ' ') {
+        (*next_char)++; // skip space after the number
+    } else {
+        return -1;
+    }
+    return atol(buffer);
+}
+
+
+static bool scan_line(const char* buffer, int bufsize, enum file_state *state, int *file_size,
+                    struct timeval *file_time, const char **path) {
     *state = char_to_state(*buffer);
     if (*state == -1) {
         return false;
     }
+    
+    file_time->tv_sec = 0;
+    file_time->tv_usec = 0;
+
     if (*state == DIRECTORY || *state == LINK) { // directory
         // format is as in printf("D %s", path)
         *path = buffer + 2;
         *file_size = 0;
         return true;
     } else {
-        // format is as in printf("%c %d %s", kind, length, path)
-        const char* filename = buffer+2;
-        while (filename < buffer + bufsize - 1 && *filename && *filename != ' ') {
-            if (!isdigit(*filename)) {
-                return false;
-            }
-            filename++;
-        }
-        // we should necessarily stay on ' '
-        if (filename < buffer + bufsize - 1 && *filename == ' ') {
-            filename++; // skip space after size
-        } else {
+        // VERSION_1: format is as in printf("%c %d %s", kind, length, path)
+        const char* filename;
+        *file_size = string2num(buffer+2, buffer+bufsize, &filename);
+        if (*file_size < 0) {
             return false;
         }
-        *file_size = atoi(buffer+2);
+        // VERSION_2: format is as in printf("%c %d %d %d %s", kind, length, seconds, milliseconds, path)
+        // so the beginning is the same, and two long values are inserted before path
+        if (protocol_version == VERSION_2) {
+            file_time->tv_sec = string2num(filename, buffer+bufsize, &filename);
+            if (file_time->tv_sec < 0) {
+                return false;
+            }
+            file_time->tv_usec = string2num(filename, buffer+bufsize, &filename);
+            if (file_time->tv_sec < 0) {
+                return false;
+            }
+        }
         *path = filename;
+        return true;
     }
 }
 
@@ -353,6 +396,23 @@ static void free_file_list(file_elem* list) {
         list = next;
     }
 }
+
+static int init() {
+    trace("Initialization\n");
+    int bufsize = 256;
+    char buffer[bufsize];
+    fgets(buffer, bufsize, stdin);
+    if ( strncmp("VERSION=", buffer, 8) != 0 ) {
+        report_error("protocol error: first line shoud start with VERSION: %s\n", buffer);
+        return false;
+    }
+    protocol_version = buffer[8];
+    if (protocol_version != VERSION_1 && protocol_version != VERSION_2) {
+        report_error("protocol error: unexpected version: %s\n", buffer);
+        return false;
+    }
+}
+
 /**
  * Reads the list of files from the host IDE runs on,
  * creates files, fills internal file table
@@ -385,9 +445,14 @@ static int init_files() {
         enum file_state state;
         int file_size;
         char *path;
+        struct timeval file_time;
+        file_time.tv_sec = file_time.tv_usec = 0;
 
-        scan_line(buffer, bufsize, &state, &file_size, (const char**) &path);
-        trace("\t\tpath=%s size=%d state=%c (0x%x)\n", path, file_size, (char) state, (char) state);
+        if (!scan_line(buffer, bufsize, &state, &file_size, &file_time, (const char**) &path)) {
+            report_error("protocol error: %s\n", buffer);
+            break;
+        }
+        trace("\t\tpath=%s size=%d state=%c (0x%x) time=%d.%d\n", path, file_size, (char) state, (char) state, file_time.tv_sec, file_time.tv_usec);
 
         if (state == -1) {
             report_error("protocol error: %s\n", buffer);
@@ -420,7 +485,7 @@ static int init_files() {
 
             enum file_state new_state = state;
             if (touch) {
-                if (touch_file(path, file_size)) {
+                if (touch_file(path, file_size, &file_time)) {
                     new_state = TOUCHED;
                 } else {
                     new_state = ERROR;
@@ -562,6 +627,10 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    if (!init()) {
+        report_error("Initialization error\n");
+        exit(8);
+    }
     if (!init_files()) {
         report_error("Error when initializing files\n");
         exit(8);
