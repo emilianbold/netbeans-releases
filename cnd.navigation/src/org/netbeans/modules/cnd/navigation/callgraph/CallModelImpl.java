@@ -181,7 +181,7 @@ public class CallModelImpl implements CallModel {
         functions.add(owner);
         if (showOverriding) {
             if (CsmKindUtilities.isMethodDeclaration(owner)) {
-                Collection<CsmMethod> overrides = CsmVirtualInfoQuery.getDefault().getOverridenMethods((CsmMethod) owner, false);
+                Collection<CsmMethod> overrides = CsmVirtualInfoQuery.getDefault().getOverriddenMethods((CsmMethod) owner, false);
                 functions.addAll(overrides);
             }
         }
