@@ -514,7 +514,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     String msg = gdb.info_threads().getResponse(); // we get the PID from this...
-                    int pos1 = msg.indexOf("* 1 thread "); // NOI18N
+                    int pos1 = msg.toLowerCase().indexOf("* 1 thread "); // NOI18N
                     if (pos1 >= 0) {
                         int pos2 = msg.indexOf('.', pos1);
                         if (pos2 > 0) {
@@ -1022,6 +1022,11 @@ public class GdbDebugger implements PropertyChangeListener {
                         }
                         gdb.gdb_exit();
                         gdb.getProxyEngine().finish();
+
+                        // IZ 174472 without tty and in/out redirect we should kill debugger
+                        if (type != DEBUG_ATTACH && !gdb.getProxyEngine().isInferiorTty() && ioProxy == null) {
+                            gdb.getProxyEngine().kill();
+                        }
                     }
 
                     stackUpdate(new ArrayList<String>());
