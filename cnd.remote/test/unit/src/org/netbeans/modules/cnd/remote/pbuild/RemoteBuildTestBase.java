@@ -225,30 +225,6 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         }
     }
 
-    protected void changeProjectHost(FileObject projectDir, ExecutionEnvironment env) throws Exception {
-        changeProjectHost(FileUtil.toFile(projectDir), env);
-    }
-
-    protected void changeProjectHost(File projectDir, ExecutionEnvironment env) throws Exception {
-        File nbproject = new File(projectDir, "nbproject");
-        assertTrue("file does not exist: " + nbproject.getAbsolutePath(), nbproject.exists());
-        File confFile = new File(nbproject, "configurations.xml");
-        assertTrue(confFile.exists());
-        String text = readFile(confFile);
-        String openTag = "<developmentServer>";
-        String closeTag = "</developmentServer>";
-        int start = text.indexOf(openTag);
-        start += openTag.length();
-        assertTrue(start >= 0);
-        int end = text.indexOf(closeTag);
-        assertTrue(end >= 0);
-        StringBuilder newText = new StringBuilder();
-        newText.append(text.substring(0, start));
-        newText.append(ExecutionEnvironmentFactory.toUniqueID(env));
-        newText.append(text.substring(end));
-        writeFile(confFile, newText);
-    }
-
     protected void changeProjectHost(MakeProject project, ExecutionEnvironment execEnv) {
         // the code below is copypasted from  org.netbeans.modules.cnd.makeproject.ui.RemoteDevelopmentAction
         ConfigurationDescriptorProvider configurationDescriptorProvider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);

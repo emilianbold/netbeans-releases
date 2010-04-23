@@ -94,9 +94,9 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RemoteBuildTestBase 
         File projectDirFile = new File(projectPath);
         assertTrue(projectDirFile.exists());
         setupHost(sync);
-        changeProjectHost(projectDirFile, getTestExecutionEnvironment());
         FileObject projectDirFO = FileUtil.toFileObject(projectDirFile);
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        changeProjectHost(makeProject, getTestExecutionEnvironment());
         long time = System.currentTimeMillis();
         addPropertyFromRcFile(SECTION, "cnd.remote.timestamps.clear");
         addPropertyFromRcFile(SECTION, "cnd.rfs.preload.sleep");
