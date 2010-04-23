@@ -114,6 +114,7 @@ public final class JschSupport {
 
             } catch (NullPointerException npe) {
                 // Jsch bug... retry? ;)
+                log.log(Level.FINE, "Exception from JSch", npe); // NOI18N
             }
         }
 
