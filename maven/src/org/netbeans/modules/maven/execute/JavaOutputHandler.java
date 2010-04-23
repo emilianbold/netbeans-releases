@@ -373,6 +373,18 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, E
     public void forkFailed(ExecutionEvent ee) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    public void forkedProjectStarted(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void forkedProjectSucceeded(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void forkedProjectFailed(ExecutionEvent ee) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
     
     private class StreamBridge extends PrintStream implements Runnable {
         StringBuffer buff = new StringBuffer();

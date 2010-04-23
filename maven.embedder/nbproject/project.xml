@@ -124,48 +124,48 @@ made subject to such option by the copyright holder.
                 <binary-origin>external/jdom-1.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/plexus-classworlds-2.2.2.jar</runtime-relative-path>
-                <binary-origin>external/plexus-classworlds-2.2.2.jar</binary-origin>
+                <runtime-relative-path>ext/plexus-classworlds-2.2.3.jar</runtime-relative-path>
+                <binary-origin>external/plexus-classworlds-2.2.3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/commons-cli-1.2.jar</runtime-relative-path>
                 <binary-origin>external/commons-cli-1.2.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/google-collect-snapshot-20080530.jar</runtime-relative-path>
-                <binary-origin>external/google-collect-snapshot-20080530.jar</binary-origin>
+                <runtime-relative-path>ext/google-collections-1.0.jar</runtime-relative-path>
+                <binary-origin>external/google-collections-1.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-artifact-3.0-alpha-5.jar</runtime-relative-path>
-                <binary-origin>external/maven-artifact-3.0-alpha-5.jar</binary-origin>
+                <runtime-relative-path>ext/maven-artifact-3.0-beta-1.jar</runtime-relative-path>
+                <binary-origin>external/maven-artifact-3.0-beta-1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-compat-3.0-alpha-5.jar</runtime-relative-path>
-                <binary-origin>external/maven-compat-3.0-alpha-5.jar</binary-origin>
+                <runtime-relative-path>ext/maven-compat-3.0-beta-1.jar</runtime-relative-path>
+                <binary-origin>external/maven-compat-3.0-beta-1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-core-3.0-alpha-5.jar</runtime-relative-path>
-                <binary-origin>external/maven-core-3.0-alpha-5.jar</binary-origin>
+                <runtime-relative-path>ext/maven-core-3.0-beta-1.jar</runtime-relative-path>
+                <binary-origin>external/maven-core-3.0-beta-1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-embedder-3.0-alpha-5.jar</runtime-relative-path>
-                <binary-origin>external/maven-embedder-3.0-alpha-5.jar</binary-origin>
+                <runtime-relative-path>ext/maven-embedder-3.0-beta-1.jar</runtime-relative-path>
+                <binary-origin>external/maven-embedder-3.0-beta-1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-model-3.0-alpha-5.jar</runtime-relative-path>
-                <binary-origin>external/maven-model-3.0-alpha-5.jar</binary-origin>
+                <runtime-relative-path>ext/maven-model-3.0-beta-1.jar</runtime-relative-path>
+                <binary-origin>external/maven-model-3.0-beta-1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-model-builder-3.0-alpha-5.jar</runtime-relative-path>
-                <binary-origin>external/maven-model-builder-3.0-alpha-5.jar</binary-origin>
+                <runtime-relative-path>ext/maven-model-builder-3.0-beta-1.jar</runtime-relative-path>
+                <binary-origin>external/maven-model-builder-3.0-beta-1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-plugin-api-3.0-alpha-5.jar</runtime-relative-path>
-                <binary-origin>external/maven-plugin-api-3.0-alpha-5.jar</binary-origin>
+                <runtime-relative-path>ext/maven-plugin-api-3.0-beta-1.jar</runtime-relative-path>
+                <binary-origin>external/maven-plugin-api-3.0-beta-1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven-settings-3.0-alpha-5.jar</runtime-relative-path>
-                <binary-origin>external/maven-settings-3.0-alpha-5.jar</binary-origin>
+                <runtime-relative-path>ext/maven-settings-3.0-beta-1.jar</runtime-relative-path>
+                <binary-origin>external/maven-settings-3.0-beta-1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/nekohtml-1.9.6.2.jar</runtime-relative-path>
@@ -176,12 +176,12 @@ made subject to such option by the copyright holder.
                 <binary-origin>external/plexus-cipher-1.4.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/plexus-component-annotations-1.5.1.jar</runtime-relative-path>
-                <binary-origin>external/plexus-component-annotations-1.5.1.jar</binary-origin>
+                <runtime-relative-path>ext/plexus-component-annotations-1.5.4.jar</runtime-relative-path>
+                <binary-origin>external/plexus-component-annotations-1.5.4.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/plexus-container-default-1.5.1.jar</runtime-relative-path>
-                <binary-origin>external/plexus-container-default-1.5.1.jar</binary-origin>
+                <runtime-relative-path>ext/plexus-container-default-1.5.4.jar</runtime-relative-path>
+                <binary-origin>external/plexus-container-default-1.5.4.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/plexus-interpolation-1.11.jar</runtime-relative-path>
@@ -192,8 +192,8 @@ made subject to such option by the copyright holder.
                 <binary-origin>external/plexus-sec-dispatcher-1.3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/plexus-utils-2.0.1.jar</runtime-relative-path>
-                <binary-origin>external/plexus-utils-2.0.1.jar</binary-origin>
+                <runtime-relative-path>ext/plexus-utils-2.0.3.jar</runtime-relative-path>
+                <binary-origin>external/plexus-utils-2.0.3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/wagon-file-1.0-beta-6.jar</runtime-relative-path>
