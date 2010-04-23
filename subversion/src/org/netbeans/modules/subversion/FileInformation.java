@@ -103,7 +103,7 @@ public class FileInformation implements Serializable {
      * Merging during update resulted in merge conflict. Conflicts in the local copy must be resolved before
      * the file can be commited.  
      */ 
-    public static final int STATUS_VERSIONED_CONFLICT           = 64;
+    public static final int STATUS_VERSIONED_CONFLICT_CONTENT   = 64;
 
     /**
      * The file was modified both locally and remotely and these changes may or may not result in
@@ -142,6 +142,12 @@ public class FileInformation implements Serializable {
      * The file has an active lock against it.
      */
     public static final int STATUS_LOCKED = 8192;
+
+    /**
+     * Local tree conflict
+     */
+    public static final int STATUS_VERSIONED_CONFLICT_TREE = 16384;
+    public static final int STATUS_VERSIONED_CONFLICT = STATUS_VERSIONED_CONFLICT_CONTENT | STATUS_VERSIONED_CONFLICT_TREE;
     
     public static final int STATUS_ALL = ~0;
 
@@ -339,6 +345,8 @@ public class FileInformation implements Serializable {
             return loc.getString("CTL_FileInfoStatus_AddedLocally");
         } else if (match(status, FileInformation.STATUS_VERSIONED_UPTODATE)) {
             return loc.getString("CTL_FileInfoStatus_UpToDate");
+        } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT_TREE)) {
+            return loc.getString("CTL_FileInfoStatus_TreeConflict");
         } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
             return loc.getString("CTL_FileInfoStatus_Conflict");
         } else if (match(status, FileInformation.STATUS_VERSIONED_MERGE)) {
@@ -382,6 +390,8 @@ public class FileInformation implements Serializable {
             return loc.getString("CTL_FileInfoStatus_DeletedLocally_Short");
         } else if (match(status, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
             return loc.getString("CTL_FileInfoStatus_ModifiedLocally_Short");
+        } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT_TREE)) {
+            return loc.getString("CTL_FileInfoStatus_TreeConflict_Short");
         } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
             return loc.getString("CTL_FileInfoStatus_Conflict_Short");
         } else {

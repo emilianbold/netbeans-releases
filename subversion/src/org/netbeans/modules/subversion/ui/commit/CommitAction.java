@@ -481,9 +481,9 @@ public class CommitAction extends ContextAction {
             }
             stickyTags.add(fileNode.getCopy());
             int status = fileNode.getInformation().getStatus();
-            if ((status & FileInformation.STATUS_REMOTE_CHANGE) != 0 || status == FileInformation.STATUS_VERSIONED_CONFLICT) {
+            if ((status & FileInformation.STATUS_REMOTE_CHANGE) != 0 || (status & FileInformation.STATUS_VERSIONED_CONFLICT) != 0) {
                 enabled = false;
-                String msg = (status == FileInformation.STATUS_VERSIONED_CONFLICT) ?
+                String msg = (status & FileInformation.STATUS_VERSIONED_CONFLICT) != 0 ?
                         loc.getString("MSG_CommitForm_ErrorConflicts") :
                         loc.getString("MSG_CommitForm_ErrorRemoteChanges");
                 panel.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N

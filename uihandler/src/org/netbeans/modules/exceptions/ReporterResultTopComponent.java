@@ -140,7 +140,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        showMyIssues(true);
+        RP.post(new URLDisplayer(true));
     }//GEN-LAST:event_jButton1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JEditorPane dataDisplayer;
@@ -190,7 +190,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         if (showUpload) {
             return;
         }
-        showMyIssues(false);
+        RP.post(new URLDisplayer(false));
     }
 
     @Override
@@ -237,24 +237,37 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         loadPage(url, true);
     }
 
-    private void showMyIssues(boolean show) {
-        String urlStr = null;
-        String userName = new ExceptionsSettings().getUserName();
-        if (userName != null && !"".equals(userName)) {             //NOI18N
-            urlStr = NbBundle.getMessage(ReporterResultTopComponent.class, "userNameURL") + userName;
-        } else {
-            String userId = Installer.findIdentity();
-            if (userId != null) {
-                urlStr = NbBundle.getMessage(ReporterResultTopComponent.class, "userIdURL") + userId;
+    private class URLDisplayer implements Runnable {
+        private String urlStr = null;
+        private final boolean show;
+
+        public URLDisplayer(boolean show) {
+            this.show = show;
+        }
+
+        @Override
+        public void run() {
+            if (EventQueue.isDispatchThread()){
+                try {
+                    loadPage(new URL(urlStr), show);
+                } catch (MalformedURLException ex) {
+                    handleIOException(urlStr, ex);
+                }
+            }else{
+                String userName = new ExceptionsSettings().getUserName();
+                if (userName != null && !"".equals(userName)) {             //NOI18N
+                    urlStr = NbBundle.getMessage(ReporterResultTopComponent.class, "userNameURL") + userName;
+                } else {
+                    String userId = Installer.findIdentity();
+                    if (userId != null) {
+                        urlStr = NbBundle.getMessage(ReporterResultTopComponent.class, "userIdURL") + userId;
+                    }
+                }
+                if (urlStr == null) {
+                    return; // XXX prompt to log in?
+                }
+                EventQueue.invokeLater(this);
             }
-        }
-        if (urlStr == null) {
-            return; // XXX prompt to log in?
-        }
-        try {
-            loadPage(new URL(urlStr), show);
-        } catch (MalformedURLException ex) {
-            handleIOException(urlStr, ex);
         }
     }
 

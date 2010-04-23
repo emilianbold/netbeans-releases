@@ -104,6 +104,29 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Templates.definesMainProject">
+            <api name="general"/>
+            <summary>Added <code>definesMainProject</code> property to wizards</summary>
+            <version major="1" minor="47"/>
+            <date day="21" month="4" year="2010"/>
+            <author login="jglick"/>
+            <compatibility addition="yes">
+                <p>
+                    Internally, an unspecified wizard property is used to store
+                    this information, which was previously hard-coded in certain
+                    modules. All modules using the magic constant should switch
+                    to using the new methods instead.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    Added official way to specify whether a New Project wizard
+                    should set a main project.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.templates.support" name="Templates"/>
+            <issue number="184213"/>
+        </change>
         <change id="Templates.buildSimpleTargetChooser">
             <api name="general"/>
             <summary>Added <code>Templates.buildSimpleTargetChooser</code></summary>

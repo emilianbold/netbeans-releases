@@ -90,6 +90,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 import javax.swing.plaf.UIResource;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -106,6 +107,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -684,12 +686,12 @@ public final class UIUtil {
         return base;
     }
     
-    public static NbModuleProject runLibraryWrapperWizard(final Project suiteProvider) {
+    public static @CheckForNull NbModuleProject runLibraryWrapperWizard(final Project suiteProvider) {
         NewNbModuleWizardIterator iterator = NewNbModuleWizardIterator.createLibraryModuleIterator(suiteProvider);
         return UIUtil.runProjectWizard(iterator, "CTL_NewLibraryWrapperProject"); // NOI18N
     }
     
-    public static NbModuleProject runProjectWizard(
+    public static @CheckForNull NbModuleProject runProjectWizard(
             final NewNbModuleWizardIterator iterator, final String titleBundleKey) {
         WizardDescriptor wd = new WizardDescriptor(iterator);
         wd.setTitleFormat(new MessageFormat("{0}")); // NOI18N
@@ -701,10 +703,13 @@ public final class UIUtil {
         boolean cancelled = wd.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
             FileObject folder = iterator.getCreateProjectFolder();
+            if (folder == null) {
+                return null;
+            }
             try {
                 project = (NbModuleProject) ProjectManager.getDefault().findProject(folder);
                 OpenProjects.getDefault().open(new Project[] { project }, false);
-                if (wd.getProperty("setAsMain") == Boolean.TRUE) { // NOI18N
+                if (Templates.getDefinesMainProject(wd)) {
                     OpenProjects.getDefault().setMainProject(project);
                 }
             } catch (IOException e) {

@@ -955,8 +955,12 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                             Library serverLibrary = SharabilityUtility.findOrCreateLibrary(loc, serverID);
                             assert returnServerLibrary.length == 1;
                             returnServerLibrary[0] = serverLibrary.getName();
-                            EditableProperties ep = uiProperties.getProject().getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            WebProjectUtilities.setServerProperties(ep, serverLibrary.getName());
+                            AntProjectHelper helper = uiProperties.getProject().getAntProjectHelper();
+                            EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            EditableProperties epPriv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                            J2EEProjectProperties.setSharableServerProperties(ep, epPriv, serverLibrary.getName());
+                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, epPriv);
+                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                             ProjectManager.getDefault().saveProject(uiProperties.getProject());
                             ClassPathUiSupport.addLibraries(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(),
                                     null, new Library[]{serverLibrary}, new HashSet<Library>(), null);

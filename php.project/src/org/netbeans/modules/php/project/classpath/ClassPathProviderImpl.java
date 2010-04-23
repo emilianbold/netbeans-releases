@@ -91,7 +91,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     private final SourceRoots tests;
     private final SourceRoots selenium;
 
-    // GuardedBy(dirCache)
+    // GuardedBy(dirCache) - if new item is added to this map, do not forget to update propertyChange() method as well
     private final Map<String, List<FileObject>> dirCache = new HashMap<String, List<FileObject>>();
     // GuardedBy(cache)
     private final Map<ClassPathCache, ClassPath> cache = new EnumMap<ClassPathCache, ClassPath>(ClassPathCache.class);
@@ -311,8 +311,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        synchronized (dirCache) {
-            dirCache.remove(evt.getPropertyName());
+        String propertyName = evt.getPropertyName();
+        if (PhpProjectProperties.INCLUDE_PATH.equals(propertyName)) {
+            synchronized (dirCache) {
+                dirCache.remove(propertyName);
+            }
         }
     }
 }

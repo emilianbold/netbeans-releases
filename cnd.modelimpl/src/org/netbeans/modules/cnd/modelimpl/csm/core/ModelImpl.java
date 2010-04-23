@@ -340,6 +340,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     private Cancellable enqueue(RequestProcessor processor, final Runnable task, final String taskName) {
+        if (TraceFlags.TRACE_182342_BUG) {
+            new Exception(taskName).printStackTrace(System.err);
+        }
         return processor.post(new Runnable() {
 
             public void run() {

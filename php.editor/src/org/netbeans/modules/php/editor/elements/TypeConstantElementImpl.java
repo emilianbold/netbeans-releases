@@ -45,7 +45,6 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
@@ -59,15 +58,17 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
 
     public static final String IDX_FIELD = PHPIndexer.FIELD_CLASS_CONST;
     private final TypeElement enclosingType;
-
+    private final String value;
     private TypeConstantElementImpl(
             final TypeElement enclosingType,
             final String constantName,
+            final String value,
             final int offset,
             final String fileUrl,
             final ElementQuery elementQuery) {
         super(constantName, enclosingType.getName(), fileUrl, offset, elementQuery);
         this.enclosingType = enclosingType;
+        this.value = value;
     }
 
     public static Set<TypeConstantElement> fromSignature(final TypeElement type,
@@ -95,7 +96,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
         final ConstantSignatureParser signParser = new ConstantSignatureParser(signature);
         TypeConstantElement retval = null;
         if (matchesQuery(query, signParser)) {
-            retval = new TypeConstantElementImpl(type, signParser.getConstantName(),
+            retval = new TypeConstantElementImpl(type, signParser.getConstantName(),signParser.getValue(),
                     signParser.getOffset(), indexResult.getUrl().toString(),
                     indexScopeQuery);
         }
@@ -114,6 +115,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
         sb.append(getName().toLowerCase()).append(SEPARATOR.SEMICOLON);//NOI18N
         sb.append(getName()).append(SEPARATOR.SEMICOLON);//NOI18N
         sb.append(getOffset()).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(getValue()).append(SEPARATOR.SEMICOLON);//NOI18N
         checkSignature(sb);
         return sb.toString();
     }
@@ -141,8 +143,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
 
     @Override
     public String getValue() {
-        //TODO: not implemented yet
-        return null;
+        return value;
     }
 
     @Override
@@ -189,6 +190,10 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
 
         int getOffset() {
             return signature.integer(2);
+        }
+
+        String getValue() {
+            return signature.string(3);
         }
     }
 }

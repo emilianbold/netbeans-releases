@@ -30,12 +30,14 @@ KEYWORD    __LINE__                                   null
 KEYWORD    __METHOD__                                 null
 KEYWORD    abstract                                   null
 KEYWORD    array                                      null
+KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null
 KEYWORD    class                                      null
 KEYWORD    clone                                      null
 KEYWORD    const                                      null
 KEYWORD    continue                                   null
+KEYWORD    default                                    null
 KEYWORD    die                                        null
 KEYWORD    echo                                       null
 KEYWORD    empty                                      null

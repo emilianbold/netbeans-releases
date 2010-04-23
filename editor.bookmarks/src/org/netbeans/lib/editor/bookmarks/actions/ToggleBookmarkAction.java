@@ -57,6 +57,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
@@ -97,11 +98,13 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
         this.component = component;
     }
 
+    @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         JTextComponent jtc = findComponent(actionContext);
         return new ToggleBookmarkAction(jtc);
     }
 
+    @Override
     public void actionPerformed(ActionEvent arg0) {
         if (component != null) {
             // cloned action with context
@@ -115,15 +118,20 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
         }
     }
 
+    @Override
     public boolean isEnabled() {
         if (component != null) {
             return true;
         } else {
-            JTextComponent jtc = findComponent(Utilities.actionsGlobalContext());
-            return jtc != null;
+            if (EditorRegistry.componentList().isEmpty()) {
+                return false;
+            }
+
+            return Utilities.actionsGlobalContext().lookup(EditorCookie.class) != null;
         }
     }
 
+    @Override
     public Component getToolbarPresenter() {
         AbstractButton b;
         
@@ -140,7 +148,7 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
         return b;
     }
 
-    private static JTextComponent findComponent(Lookup lookup) {
+    public static JTextComponent findComponent(Lookup lookup) {
         EditorCookie ec = (EditorCookie) lookup.lookup(EditorCookie.class);
         return ec == null ? null : NbDocument.findRecentEditorPane(ec);
     }
@@ -168,12 +176,14 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
         private PropertyChangeListener bookmarksListener = null;
         private ChangeListener caretListener = null;
         
+        @SuppressWarnings("LeakingThisInConstructor")
         public BookmarkButtonModel(JTextComponent component) {
             this.component = component;
             this.component.addPropertyChangeListener(WeakListeners.propertyChange(this, this.component));
             rebuild();
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName() == null || 
                 "document".equals(evt.getPropertyName()) || //NOI18N
@@ -186,6 +196,7 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
             }
         }
 
+        @Override
         public void stateChanged(ChangeEvent evt) {
             updateState();
         }
@@ -260,6 +271,7 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
 
         }
 
+        @Override
         public void setModel(ButtonModel model) {
             ButtonModel oldModel = getModel();
             if (oldModel != null) {
@@ -276,18 +288,21 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
             stateChanged(null);
         }
 
+        @Override
         public void stateChanged(ChangeEvent evt) {
             boolean selected = isSelected();
             super.setContentAreaFilled(selected);
             super.setBorderPainted(selected);
         }
 
+        @Override
         public void setBorderPainted(boolean arg0) {
             if (!isSelected()) {
                 super.setBorderPainted(arg0);
             }
         }
 
+        @Override
         public void setContentAreaFilled(boolean arg0) {
             if (!isSelected()) {
                 super.setContentAreaFilled(arg0);

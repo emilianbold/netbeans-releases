@@ -157,7 +157,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
         long retval = -1;
         if (HgUtils.HG_FOLDER_NAME.equals(dir.getName())) {
-            Mercurial.STATUS_LOG.log(Level.FINE, "Interceptor.refreshRecursively: {0}", dir.getAbsolutePath()); //NOI18N
+            Mercurial.STATUS_LOG.log(Level.FINER, "Interceptor.refreshRecursively: {0}", dir.getAbsolutePath()); //NOI18N
             children.clear();
             retval = hgFolderEventsHandler.handleHgFolderEvent(dir);
         }
@@ -408,7 +408,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             long lastModified = 0;
             if (AUTOMATIC_REFRESH_ENABLED && !"false".equals(System.getProperty("mercurial.handleDirstateEvents", "true"))) { //NOI18N
                 hgFolder = FileUtil.normalizeFile(hgFolder);
-                Mercurial.STATUS_LOG.fine("handleHgFolderEvent: special FS event handling for " + hgFolder.getAbsolutePath()); //NOI18N
+                Mercurial.STATUS_LOG.finer("handleHgFolderEvent: special FS event handling for " + hgFolder.getAbsolutePath()); //NOI18N
                 lastModified = hgFolder.lastModified();
                 Long lastCachedModified = null;
                 synchronized (hgFolders) {

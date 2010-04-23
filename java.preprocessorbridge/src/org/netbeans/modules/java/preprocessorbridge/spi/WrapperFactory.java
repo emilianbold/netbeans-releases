@@ -37,14 +37,26 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.api.elements;
+package org.netbeans.modules.java.preprocessorbridge.spi;
 
-import java.util.Set;
+import com.sun.source.util.Trees;
 
 /**
- * @author Radek Matous
+ * This interface in a friend contract among the debugger/jpda/projects and java/source
+ * module. The implementation provides wrappers for javac services which allows for
+ * modifying the standard javac behavior.
+ * Should be registered via {@link javax.swing.text.Document#putProperty(java.lang.Object, java.lang.Object)
+ * Document.putProperty(WrapperFactory.class, factory)}.
+ *
+ * @author Dusan Balek
+ * @since 1.14
  */
-public interface TypeTreeElement  {
-    Set<TypeTreeElement> getDirectlyInherited();
-    TypeElement getType();
+public interface WrapperFactory {
+
+    /**
+     * Returns wrapper for {@link Trees}
+     * @param trees {@link Trees} instance being wrapped
+     * @return non null wrapper
+     */
+    public Trees wrapTrees(Trees trees);
 }
