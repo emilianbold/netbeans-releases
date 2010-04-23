@@ -1218,7 +1218,7 @@ public class ConfigurationMakefileWriter {
         }
         return linkObjects.toString();
     }
- 
+
     private static String getTestTargetFiles(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf) {
         StringBuilder testTargets = new StringBuilder();
         if (conf.isCompileConfiguration()) {

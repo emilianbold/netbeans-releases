@@ -96,17 +96,17 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     public boolean getModified() {
-        return getOutput().getModified() ||
-        getAdditionalLibs().getModified() ||
-        getDynamicSearch().getModified() ||
-        getStripOption().getModified() ||
-        getPICOption().getModified() ||
-        getNorunpathOption().getModified() ||
-        getNameassignOption().getModified() ||
-        getAdditionalDependencies().getModified() ||
-        getTool().getModified() ||
-        getLibrariesConfiguration().getModified() ||
-        getCommandLineConfiguration().getModified();
+        return getOutput().getModified()
+                || getAdditionalLibs().getModified()
+                || getDynamicSearch().getModified()
+                || getStripOption().getModified()
+                || getPICOption().getModified()
+                || getNorunpathOption().getModified()
+                || getNameassignOption().getModified()
+                || getAdditionalDependencies().getModified()
+                || getTool().getModified()
+                || getLibrariesConfiguration().getModified()
+                || getCommandLineConfiguration().getModified();
     }
 
     private String getAdditionalDependenciesPredefined() {
@@ -221,7 +221,6 @@ public class LinkerConfiguration implements AllOptionsProvider {
     public StringConfiguration getTool() {
         return tool;
     }
-
 
     // Clone and assign
     public void assign(LinkerConfiguration conf) {
@@ -361,7 +360,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
         set1.setDisplayName(getString("GeneralTxt"));
         set1.setShortDescription(getString("GeneralHint"));
         if (!isQtMode) {
-            if(!inheritablePropertiesOnly) {
+            if (!inheritablePropertiesOnly) {
                 set1.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
             }
             set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseDir(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories"))); // NOI18N
@@ -372,7 +371,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
         sheet.put(set1);
         if (!isQtMode) {
             Sheet.Set set2 = new Sheet.Set();
-            if(!inheritablePropertiesOnly) {
+            if (!inheritablePropertiesOnly) {
                 set2.setName("Options"); // NOI18N
                 set2.setDisplayName(getString("OptionsTxt"));
                 set2.setShortDescription(getString("OptionsHint"));
@@ -394,7 +393,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
             set3.put(new OptionsNodeProp(getAdditionalDependencies(), null, new AdditionalDependenciesOptions(), null, ",", texts)); // NOI18N
             sheet.put(set3);
             Sheet.Set set4 = new Sheet.Set();
-            if(!inheritablePropertiesOnly) {
+            if (!inheritablePropertiesOnly) {
                 set4.setName("Tool"); // NOI18N
                 set4.setDisplayName(getString("ToolTxt1"));
                 set4.setShortDescription(getString("ToolHint1"));
