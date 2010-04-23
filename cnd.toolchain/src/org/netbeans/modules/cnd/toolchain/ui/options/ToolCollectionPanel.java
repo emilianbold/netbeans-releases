@@ -60,6 +60,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -625,7 +626,11 @@ import org.openide.util.Utilities;
             toolPath = tfCMakePath.getText();
         }
         if (userChange && toolKind != PredefinedToolKind.UnknownTool) {
-            APIAccessor.get().setToolPath(manager.getCurrentCompilerSet().getTool(toolKind),toolPath);
+            Tool tool = manager.getCurrentCompilerSet().getTool(toolKind);
+            APIAccessor.get().setToolPath(tool, toolPath);
+            if (tool instanceof AbstractCompiler) {
+                ((AbstractCompiler) tool).resetSystemProperties(true);
+            }
             manager.fireCompilerSetChange();
             manager.fireCompilerSetModified();
         }

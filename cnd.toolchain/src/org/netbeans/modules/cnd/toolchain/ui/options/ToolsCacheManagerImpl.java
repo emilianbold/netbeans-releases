@@ -110,7 +110,12 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
     public void applyChanges() {
         applyChanges(ServerList.get(ExecutionEnvironmentFactory.getLocal()));
     }
-    
+
+    @Override
+    public void discardChanges() {
+        clear();
+    }
+
     @Override
     public synchronized CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env, boolean initialize) {
         CompilerSetManagerImpl out = (CompilerSetManagerImpl) copiedManagers.get(env);

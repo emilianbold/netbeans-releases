@@ -64,6 +64,8 @@ public abstract class ToolsCacheManager {
 
     public abstract void applyChanges();
 
+    public abstract void discardChanges();
+
     public static ToolsCacheManager createInstance(){
         return createInstance(false);
     }

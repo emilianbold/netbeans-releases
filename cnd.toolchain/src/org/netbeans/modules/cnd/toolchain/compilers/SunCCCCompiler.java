@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
             if (getCompilerStderrCommand2() != null) {
                 getSystemIncludesAndDefines(getCompilerStderrCommand2(), false, res);
             }
-            res.systemIncludeDirectoriesList.addUnique(applyPathPrefix("/usr/include")); // NOI18N
+            addUnique(res.systemIncludeDirectoriesList, applyPathPrefix("/usr/include")); // NOI18N
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
             String errormsg;
