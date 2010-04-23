@@ -71,7 +71,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class ModifyDocumentTest extends ProjectBasedTestCase {
     public ModifyDocumentTest(String testName) {
         super(testName);
-        if (Boolean.getBoolean("cnd.modelimpl.trace182342")) {
+        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
             TraceFlags.TRACE_182342_BUG = true;
         }
     }
@@ -79,7 +79,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        if (Boolean.getBoolean("cnd.modelimpl.trace182342")) {
+        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
             TraceFlags.TRACE_182342_BUG = true;
         }
         ModelSupport.instance().startup();

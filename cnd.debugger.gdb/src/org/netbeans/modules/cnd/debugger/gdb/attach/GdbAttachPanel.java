@@ -263,7 +263,7 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
                 ProjectCBItem pi = (ProjectCBItem) projectCB.getSelectedItem();
                 if (pi != null) {
                     try {
-                        GdbDebugger.attach(Long.valueOf(pid), pi.getProjectInformation(), getCurrentExecutionEnvironment());
+                        GdbDebugger.attach(Integer.valueOf(pid), pi.getProjectInformation(), getCurrentExecutionEnvironment());
                     } catch (DebuggerStartException dse) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 NbBundle.getMessage(GdbAttachPanel.class,
