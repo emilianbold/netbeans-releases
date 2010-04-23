@@ -155,25 +155,9 @@ implements Runnable {
             LOG.log(Level.FINE, "done, timer stopped, took {0}", time); // NOI18N
             if (time > r) {
                 LOG.log(Level.WARNING, "too much time in AWT thread {0}", stoppable); // NOI18N
-                ActionListener ss = stoppable;
-                if (ss != null) {
-                    try {
-                        ByteArrayOutputStream out = new ByteArrayOutputStream();
-                        DataOutputStream dos = new DataOutputStream(out);
-                        ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
-                        dos.close();
-                        if (dos.size() > 0) {
-                            Object[] params = new Object[]{out.toByteArray(), time};
-                            Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
-                        } else {
-                            LOG.log(Level.WARNING, "no snapshot taken"); // NOI18N
-                        }
-                        stoppable = null;
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    ignoreTill = System.currentTimeMillis() + PAUSE;
-                }
+                ignoreTill = System.currentTimeMillis() + PAUSE;
+                report(stoppable, time);
+                stoppable = null;
             }
         } else {
             LOG.log(Level.FINEST, "done, timer stopped, took {0}", time);
@@ -206,6 +190,32 @@ implements Runnable {
             stoppable = (ActionListener)selfSampler;
         }
         isWaitCursor |= isWaitCursor();
+    }
+
+    private static void report(final ActionListener ss, final long time) {
+        if (ss == null) {
+            return;
+        }
+        class R implements Runnable {
+            @Override
+            public void run() {
+                try {
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    DataOutputStream dos = new DataOutputStream(out);
+                    ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+                    dos.close();
+                    if (dos.size() > 0) {
+                        Object[] params = new Object[]{out.toByteArray(), time};
+                        Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
+                    } else {
+                        LOG.log(Level.WARNING, "no snapshot taken"); // NOI18N
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        RP.post(new R());
     }
 
     private static Object createSelfSampler() {
