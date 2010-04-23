@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -107,7 +108,8 @@ public final class LookupProviderSupport {
         private List<LookupProvider> old = Collections.emptyList();
         private List<Lookup> currentLookups;
         private final ChangeListener metaMergerListener;
-        
+
+        @SuppressWarnings("rawtypes")
         private Lookup.Result<LookupMerger> mergers;
         private final Lookup.Result<MetaLookupMerger> metaMergers;
         private Reference<LookupListener> listenerRef;
@@ -118,6 +120,7 @@ public final class LookupProviderSupport {
             this(base, Lookups.forPath(path), path);
         }
         
+        @SuppressWarnings("LeakingThisInConstructor")
         public DelegatingLookupImpl(Lookup base, Lookup providerLookup, String path) {
             super();
             assert base != null;
@@ -129,7 +132,7 @@ public final class LookupProviderSupport {
                 "Layer content at " + path + " contains other than LookupProvider instances! See messages.log file for more details."; //NOI18N
             doDelegate();
             providerListener = new LookupListener() {
-                public void resultChanged(LookupEvent ev) {
+                public @Override void resultChanged(LookupEvent ev) {
                     // XXX this may need to be run asynchronously; deadlock-prone
                     doDelegate();
                 }
@@ -143,17 +146,17 @@ public final class LookupProviderSupport {
         //just for assertion evaluation.
         private boolean isAllJustLookupProviders(Lookup lkp) {
             for (Lookup.Item<?> item : lkp.lookupResult(Object.class).allItems()) {
-                Class clzz = item.getType();
+                Class<?> clzz = item.getType();
                 if (!LookupProvider.class.isAssignableFrom(clzz) && !MetaLookupMerger.class.isAssignableFrom(clzz)) {
-                    Logger.getLogger(LookupProviderSupport.class.getName()).warning(
-                            clzz.getName() + " from " + item.getId() + " is not a LookupProvider"); //NOI18N
+                    Logger.getLogger(LookupProviderSupport.class.getName()).log(
+                            Level.WARNING, "{0} from {1} is not a LookupProvider", new Object[] {clzz.getName(), item.getId()});
                 }
             }
             return true; // always just print warnings
         }
         
         
-        public void resultChanged(LookupEvent ev) {
+        public @Override void resultChanged(LookupEvent ev) {
             doDelegate();
         }
 
@@ -163,7 +166,7 @@ public final class LookupProviderSupport {
             }
         }
         
-        public void stateChanged(ChangeEvent e) {
+        public @Override void stateChanged(ChangeEvent e) {
             // A metamerger loaded its class and is now ready for service.
             doDelegate();
         }
@@ -202,16 +205,17 @@ public final class LookupProviderSupport {
             l = WeakListeners.create(LookupListener.class, this, mergers);
             listenerRef = new WeakReference<LookupListener>(l);
             mergers.addLookupListener(l);
+            @SuppressWarnings("rawtypes")
             Collection<LookupMerger> allMergers = new ArrayList<LookupMerger>(mergers.allInstances());
             for (MetaLookupMerger metaMerger : metaMergers.allInstances()) {
-                LookupMerger merger = metaMerger.merger();
+                LookupMerger<?> merger = metaMerger.merger();
                 if (merger != null) {
                     allMergers.add(merger);
                 }
                 metaMerger.removeChangeListener(metaMergerListener);
                 metaMerger.addChangeListener(metaMergerListener);
             }
-            for (LookupMerger lm : allMergers) {
+            for (LookupMerger<?> lm : allMergers) {
                 Class<?> c = lm.getMergeableClass();
                 if (filteredClasses.contains(c)) {
                     ErrorManager.getDefault().log(ErrorManager.WARNING,
@@ -237,11 +241,11 @@ public final class LookupProviderSupport {
     private static class SourcesMerger implements LookupMerger<Sources> {
         private SourcesImpl merger;
         
-        public Class<Sources> getMergeableClass() {
+        public @Override Class<Sources> getMergeableClass() {
             return Sources.class;
         }
 
-        public Sources merge(Lookup lookup) {
+        public @Override Sources merge(Lookup lookup) {
             if (merger == null) {
                 merger = new SourcesImpl();
             } 
@@ -278,35 +282,37 @@ public final class LookupProviderSupport {
             changeSupport.fireChange();
         }
 
-        public SourceGroup[] getSourceGroups(String type) {
+        public @Override SourceGroup[] getSourceGroups(String type) {
             assert delegates != null;
             Collection<SourceGroup> result = new ArrayList<SourceGroup>();
             for (Sources ns : delegates.allInstances()) {
                 SourceGroup[] sourceGroups = ns.getSourceGroups(type);
                 if (sourceGroups != null) {
-                    for (SourceGroup sourceGroup : sourceGroups)
-                        if (sourceGroup == null)
-                            Exceptions.printStackTrace (new NullPointerException (ns + " returns null source group!"));//NOI18N
-                        else
-                            result.add (sourceGroup);
+                    for (SourceGroup sourceGroup : sourceGroups) {
+                        if (sourceGroup == null) {
+                            Exceptions.printStackTrace(new NullPointerException(ns + " returns null source group!"));
+                        } else {
+                            result.add(sourceGroup);
+                        }
+                    }
                 }
             }
             return result.toArray(new SourceGroup[result.size()]);
         }
 
-        public void addChangeListener(ChangeListener listener) {
+        public @Override void addChangeListener(ChangeListener listener) {
             changeSupport.addChangeListener(listener);
         }
 
-        public void removeChangeListener(ChangeListener listener) {
+        public @Override void removeChangeListener(ChangeListener listener) {
             changeSupport.removeChangeListener(listener);
         }
 
-        public void stateChanged(ChangeEvent e) {
+        public @Override void stateChanged(ChangeEvent e) {
             changeSupport.fireChange();
         }
 
-        public void resultChanged(LookupEvent ev) {
+        public @Override void resultChanged(LookupEvent ev) {
             if (currentDelegates.size() > 0) {
                 for (Sources old : currentDelegates) {
                     old.removeChangeListener(this);
