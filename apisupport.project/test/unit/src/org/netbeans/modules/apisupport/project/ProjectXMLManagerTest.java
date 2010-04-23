@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import org.w3c.dom.ls.LSSerializer;
+import org.w3c.dom.ls.LSOutput;
+import java.io.ByteArrayOutputStream;
+import org.w3c.dom.ls.DOMImplementationLS;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -61,6 +65,7 @@ import org.netbeans.modules.apisupport.project.ProjectXMLManager.CyclicDependenc
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.NonexistentModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -108,7 +113,7 @@ public class ProjectXMLManagerTest extends TestBase {
                 findProject(nbRoot().getFileObject("libs.xerces"));
         return new ProjectXMLManager(xercesPrj);
     }
-    
+
     public void testGetCodeNameBase() throws Exception {
         NbModuleProject p = generateStandaloneModule("module1");
         assertEquals("action-project cnb", "org.example.module1", p.getCodeNameBase());
@@ -141,11 +146,11 @@ public class ProjectXMLManagerTest extends TestBase {
     public void testGetDirectDependenciesForCustomPlatform() throws Exception {
         final NbModuleProject testingProject = generateTestingProject();
         ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
-        Set deps = testingPXM.getDirectDependencies();
+        Set<ModuleDependency> deps = testingPXM.getDirectDependencies();
         assertEquals("number of dependencies", 2, deps.size());
-        Set depsWithCustom = testingPXM.getDirectDependencies(
+        Set<ModuleDependency> depsWithCustom = testingPXM.getDirectDependencies(
                 NbPlatform.getPlatformByID("custom"));
-        assertEquals("number of dependencies", 0, depsWithCustom.size());
+        assertEquals("still have deps using NonexistentModuleEntry", 2, depsWithCustom.size());
     }
     
     public void testRemoveDependency() throws Exception {
@@ -651,6 +656,50 @@ public class ProjectXMLManagerTest extends TestBase {
         assertEquals("map has already unit test type", 1, testDeps.size());
         setUnit = testDeps.get(UNIT);
         assertEquals("contains two dependencies now", 2, setUnit.size());
+    }
+
+    public void testNonstandardDependencies() throws Exception { // #180717
+        NbModuleProject p = generateStandaloneModule("m");
+        Element data = p.getPrimaryConfigurationData();
+        Element mds = XMLUtil.findElement(data, ProjectXMLManager.MODULE_DEPENDENCIES, NbModuleProject.NAMESPACE_SHARED);
+        Document doc = mds.getOwnerDocument();
+        boolean[] Z2 = {false, true};
+        int i = 0;
+        for (boolean buildPrerequisite : Z2) {
+            for (boolean compileDependency : Z2) {
+                for (boolean runDependency : Z2) {
+                    Element md = (Element) mds.appendChild(doc.createElementNS(NbModuleProject.NAMESPACE_SHARED, ProjectXMLManager.DEPENDENCY));
+                    Element cnb = (Element) md.appendChild(doc.createElementNS(NbModuleProject.NAMESPACE_SHARED, ProjectXMLManager.CODE_NAME_BASE));
+                    cnb.appendChild(doc.createTextNode("dep" + i++));
+                    if (buildPrerequisite) {
+                        md.appendChild(doc.createElementNS(NbModuleProject.NAMESPACE_SHARED, ProjectXMLManager.BUILD_PREREQUISITE));
+                    }
+                    if (compileDependency) {
+                        md.appendChild(doc.createElementNS(NbModuleProject.NAMESPACE_SHARED, ProjectXMLManager.COMPILE_DEPENDENCY));
+                    }
+                    if (runDependency) {
+                        md.appendChild(doc.createElementNS(NbModuleProject.NAMESPACE_SHARED, ProjectXMLManager.RUN_DEPENDENCY));
+                    }
+                }
+            }
+        }
+        String orig = elementToString(mds);
+        p.putPrimaryConfigurationData(data);
+        ProjectXMLManager pxm = new ProjectXMLManager(p);
+        ModuleDependency extra = new ModuleDependency(new NonexistentModuleEntry(("other")), null, null, true, false);
+        pxm.addDependency(extra);
+        pxm.removeDependency("other");
+        mds = XMLUtil.findElement(p.getPrimaryConfigurationData(), ProjectXMLManager.MODULE_DEPENDENCIES, NbModuleProject.NAMESPACE_SHARED);
+        assertEquals(orig, elementToString(mds));
+    }
+    private static String elementToString(Element e) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DOMImplementationLS ls = (DOMImplementationLS) e.getOwnerDocument().getImplementation().getFeature("LS", "3.0"); // NOI18N
+        LSOutput output = ls.createLSOutput();
+        output.setByteStream(baos);
+        LSSerializer ser = ls.createLSSerializer();
+        ser.write(e, output);
+        return baos.toString();
     }
 
     /** add dependency from newDepProj to testingProject

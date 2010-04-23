@@ -74,6 +74,8 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
     private static final String SPEC_VERSION_LAZY = "<lazy>"; // NOI18N
     private boolean implDep;
     private boolean compileDep;
+    boolean buildPrerequisite;
+    boolean runDependency;
     
     private ModuleEntry me;
     
@@ -120,6 +122,9 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
         this.implDep = implDep;
         this.releaseVersion = releaseVersion;
         this.specVersion = specVersion;
+        // defaults, ProjectXMLManager can override with specific info:
+        buildPrerequisite = compileDep;
+        runDependency = true;
     }
     
     /**
