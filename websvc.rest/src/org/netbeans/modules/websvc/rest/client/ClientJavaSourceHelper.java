@@ -500,7 +500,7 @@ public class ClientJavaSourceHelper {
             try {
                 Metadata oauthMetadata = saasResource.getSaas().getOauthMetadata();
                 if (oauthMetadata != null) {
-                    modifiedClass = OAuthHelper.addOAuthMethods(security.getProjectType(), copy, modifiedClass, oauthMetadata);
+                    modifiedClass = OAuthHelper.addOAuthMethods(security.getProjectType(), copy, modifiedClass, oauthMetadata, classTree.getSimpleName().toString());
                     if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType())) {
                         final FileObject ddFo = security.getDeploymentDescriptor();
                         if (ddFo != null) {
