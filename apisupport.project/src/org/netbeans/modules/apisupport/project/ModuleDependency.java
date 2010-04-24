@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Utilities;
 
 /**
@@ -113,14 +114,18 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
         this(me, me.getReleaseVersion(), SPEC_VERSION_LAZY, me.getPublicPackages().length > 0, false);
     }
     
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public ModuleDependency(ModuleEntry me, String releaseVersion,
-            String specVersion, boolean compileDep, boolean implDep) {
+            String specVersion, boolean compileDep, boolean implDep) throws NumberFormatException {
         this.me = me;
         
         // set versions to null if contain the same value as the given entry
         this.compileDep = compileDep;
         this.implDep = implDep;
         this.releaseVersion = releaseVersion;
+        if (specVersion != null && !specVersion.equals(SPEC_VERSION_LAZY)) {
+            new SpecificationVersion(specVersion);
+        }
         this.specVersion = specVersion;
         // defaults, ProjectXMLManager can override with specific info:
         buildPrerequisite = compileDep;
@@ -136,7 +141,7 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
     }
     
     public String getSpecificationVersion() {
-        if (specVersion == SPEC_VERSION_LAZY) {
+        if (SPEC_VERSION_LAZY.equals(specVersion)) {
             specVersion = me.getSpecificationVersion();
         }
         return specVersion;
