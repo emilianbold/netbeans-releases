@@ -21,9 +21,10 @@
         <li><a href="#navigate">Navigate Menu</a> 
         <li><a href="#source">Source Menu</a> 
         <li><a href="#refactor">Refactor Menu</a> 
-        <li><a href="#build">Build Menu</a>
         <li><a href="#run">Run Menu</a>
+        <li><a href="#debug">Debug Menu</a>
         <li><a href="#profile">Profile Menu</a>
+        <li><a href="#team">Team Menu</a>
         <li><a href="#tools">Tools Menu</a> 
         <li><a href="#window">Window Menu</a> 
         <li><a href="#help">Help Menu</a> 
@@ -63,14 +64,9 @@
             <td>Saves all files.</td>
         </tr>
         <tr>
-            <td valign="top">Ctrl-P</td>
-            <td>Print</td>
-            <td>Prints the current file, if Web & Java EE is included.</td>
-        </tr>
-        <tr>
             <td valign="top">Ctrl-Alt-Shift-P</td>
             <td>Print</td>
-            <td>Print preview of the current file, if Web & Java EE is included.</td>
+            <td>Print the current file.</td>
         </tr>
     </table>
     
@@ -123,6 +119,11 @@
             <td valign="top">Select All</td>
             <td valign="top">Ctrl-A</td>
             <td valign="top">Selects everything in the current document or window.</td>
+        </tr>
+        <tr>
+            <td valign="top">Select Identifier</td>
+            <td valign="top">Alt-Shift-J</td>
+            <td valign="top">Selects the current identifier.</td>
         </tr>
         <tr>
             <td valign="top">Ctrl-F3</td>
@@ -180,24 +181,24 @@
             <th align="left" scope="col">Action</th>
         </tr>
         <tr> 
-            <td valign="top" scope="col">Ctrl-Numpad- -</td>
+            <td valign="top" scope="col">Ctrl-Minus</td>
             <td valign="top" scope="col">Collapse Fold</td>
             <td valign="top" scope="col">If the insertion point is in a foldable section of text, 
             collapses those lines into one line.</td>
         </tr>
         <tr> 
-            <td valign="top">Ctrl-Numpad- +</td>
+            <td valign="top">Ctrl-Plus</td>
             <td valign="top">Expand Fold</td>
             <td valign="top">If the currently selected line in the Source Editor represents 
             several folded lines, expands the fold to show all of the lines.</td>
         </tr>
         <tr> 
-            <td valign="top">Ctrl-Shift-Numpad- -</td>
+            <td valign="top">Ctrl-Shift-Minus</td>
             <td valign="top">Collapse All</td>
             <td valign="top">Collapses all foldable sections of text in the Source Editor.</td>
         </tr>
         <tr> 
-            <td valign="top">Ctrl-Shift-Numpad- +</td>
+            <td valign="top">Ctrl-Shift-Plus</td>
             <td valign="top">Expand All</td>
             <td valign="top">Expands all foldable sections of text in the Source Editor.</td>
         </tr>
@@ -226,6 +227,16 @@
             <td valign="top">Ctrl-O</td>
             <td valign="top">Go to Type</td>
             <td valign="top">Find and open a specific class or interface.</td>
+        </tr>
+        <tr>
+            <td valign="top">Ctrl-Alt-Shift-O</td>
+            <td valign="top">Go to Symbol</td>
+            <td valign="top">Find and open a specific symbol.</td>
+        </tr>
+        <tr>
+            <td valign="top">Alt-Shift-B</td>
+            <td valign="top">Go to Spring Bean</td>
+            <td valign="top">Find and open a specific Spring bean.</td>
         </tr>
         <tr> 
             <td valign="top">Ctrl-Shift-T</td>
@@ -368,7 +379,7 @@
          line or lines one line down.</td>
         </tr>  
         <tr>
-            <td valign="top">Ctrl-Slash</td>
+            <td valign="top">Ctrl-Slash or Ctrl-Shift-C</td>
             <td valign="top">Toggle Comment</td>
             <td valign="top">Toggles the commenting out
         of the current line or selected lines.</td>
@@ -441,36 +452,15 @@
             <td valign="top">Rename</td>
             <td valign="top">Inplace rename.</td> 
         </tr>
-    </table>
-    
-    <a name="build"></a>
-    <h3>Build Menu</h3>
-    <table border="1" summary="This table displays keyboard shortcuts for Build menu commands.">
         <tr>
-            <th align="left" scope="col">Keys</th>
-            <th align="left" scope="col">Command</th>
-            <th align="left" scope="col">Action</th>
+            <td valign="top">Ctrl-M</td>
+            <td valign="top">Move</td>
+            <td valign="top">Inplace move.</td>
         </tr>
         <tr>
-            <td valign="top">F11</td>
-            <td valign="top">Build Main Project</td>
-            <td valign="top">Compiles the file. If you select a folder, the IDE
-                compiles all files regardless of whether they have changed since the
-            last compile.</td> 
-        </tr>
-        <tr>
-            <td valign="top">Shift-F11</td>
-            <td valign="top">Clean and Build Main Project</td>
-            <td valign="top">Compiles the file. If you select a folder, the IDE
-                compiles all files regardless of whether they have changed since the
-            last compile.</td> 
-        </tr> 
-        <tr>
-            <td valign="top">F9</td>
-            <td valign="top">Compile File</td>
-            <td valign="top">Compiles the file. If you select a folder, the IDE
-                compiles only the files that are new or have changed since the last
-            compile.</td> 
+            <td valign="top">Alt-Delete</td>
+            <td valign="top">Safely Delete</td>
+            <td valign="top">Before deleting, display references.</td>
         </tr>
     </table>
     
@@ -597,7 +587,37 @@
             <td valign="top">Opens the Evaluate Expression dialog box.</td>
         </tr>
     </table>
-    
+
+    <a name="debug"></a>
+    <h3>Debug Menu</h3>
+    <table border="1" summary="This table displays keyboard shortcuts for Debug menu commands.">
+        <tr>
+            <th align="left" scope="col">Keys</th>
+            <th align="left" scope="col">Command</th>
+            <th align="left" scope="col">Action</th>
+        </tr>
+        <tr>
+            <td valign="top">F11</td>
+            <td valign="top">Build Main Project</td>
+            <td valign="top">Compiles the file. If you select a folder, the IDE
+                compiles all files regardless of whether they have changed since the
+            last compile.</td>
+        </tr>
+        <tr>
+            <td valign="top">Shift-F11</td>
+            <td valign="top">Clean and Build Main Project</td>
+            <td valign="top">Compiles the file. If you select a folder, the IDE
+                compiles all files regardless of whether they have changed since the
+            last compile.</td>
+        </tr>
+        <tr>
+            <td valign="top">F9</td>
+            <td valign="top">Compile File</td>
+            <td valign="top">Compiles the file. If you select a folder, the IDE
+                compiles only the files that are new or have changed since the last
+            compile.</td>
+        </tr>
+    </table>
     
     <a name="profile"></a>
     <h3>Profile Menu</h3>
