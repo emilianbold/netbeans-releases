@@ -139,7 +139,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
             });
 
             try {
-                if (!parse1.await(10, TimeUnit.SECONDS)) {
+                if (!parse1.await(20, TimeUnit.SECONDS)) {
                     exRef.compareAndSet(null, new TimeoutException("not finished await"));
                 } else {
                     checkDeadBlocks(project, fileImpl, "2. text after inserting dead block:", doc, "File must have one dead code block ", 1);
@@ -202,7 +202,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 }
             });
             try {
-                if (!parse1.await(10, TimeUnit.SECONDS)) {
+                if (!parse1.await(20, TimeUnit.SECONDS)) {
                     exRef.compareAndSet(null, new TimeoutException("not finished await"));
                 } else {
                     checkDeadBlocks(project, fileImpl, "2. text after deleting dead block:", doc, "File must have no dead code blocks ", 0);
