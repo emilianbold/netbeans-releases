@@ -139,6 +139,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
             });
 
             try {
+                assertTrue("must have undo", urm.canUndo());
                 if (!parse1.await(20, TimeUnit.SECONDS)) {
                     exRef.compareAndSet(null, new TimeoutException("not finished await"));
                 } else {
@@ -202,6 +203,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 }
             });
             try {
+                assertTrue("must have undo", urm.canUndo());
                 if (!parse1.await(20, TimeUnit.SECONDS)) {
                     exRef.compareAndSet(null, new TimeoutException("not finished await"));
                 } else {
