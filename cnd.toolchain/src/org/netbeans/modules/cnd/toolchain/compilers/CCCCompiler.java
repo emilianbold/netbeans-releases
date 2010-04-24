@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
@@ -85,10 +86,9 @@ import org.openide.util.Utilities;
         if (values.equals(compilerDefinitions.systemIncludeDirectoriesList)) {
             return false;
         }
-        PersistentList<String> systemIncludeDirectoriesList = new PersistentList<String>(values);
+        List<String> systemIncludeDirectoriesList = new ArrayList<String>(values);
         normalizePaths(systemIncludeDirectoriesList);
         compilerDefinitions.systemIncludeDirectoriesList = systemIncludeDirectoriesList;
-        saveSystemIncludesAndDefines();
         return true;
     }
 
@@ -101,42 +101,24 @@ import org.openide.util.Utilities;
         if (values.equals(compilerDefinitions.systemPreprocessorSymbolsList)) {
             return false;
         }
-        compilerDefinitions.systemPreprocessorSymbolsList = new PersistentList<String>(values);
-        saveSystemIncludesAndDefines();
+        compilerDefinitions.systemPreprocessorSymbolsList = new ArrayList<String>(values);
         return true;
     }
 
     @Override
     public List<String> getSystemPreprocessorSymbols() {
-        if (compilerDefinitions != null){
-            return compilerDefinitions.systemPreprocessorSymbolsList;
+        if (compilerDefinitions == null) {
+            resetSystemProperties();
         }
-        getSystemIncludesAndDefines();
         return compilerDefinitions.systemPreprocessorSymbolsList;
     }
 
     @Override
     public List<String> getSystemIncludeDirectories() {
-        if (compilerDefinitions != null){
-            return compilerDefinitions.systemIncludeDirectoriesList;
+        if (compilerDefinitions == null) {
+            resetSystemProperties();
         }
-        getSystemIncludesAndDefines();
         return compilerDefinitions.systemIncludeDirectoriesList;
-    }
-
-    public void saveSystemIncludesAndDefines() {
-        if (compilerDefinitions != null){
-            compilerDefinitions.systemIncludeDirectoriesList.saveList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
-            compilerDefinitions.systemPreprocessorSymbolsList.saveList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
-        }
-    }
-
-    private void restoreSystemIncludesAndDefines() {
-        PersistentList<String> systemIncludeDirectoriesList = PersistentList.restoreList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
-        PersistentList<String>systemPreprocessorSymbolsList = PersistentList.restoreList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
-        if (systemIncludeDirectoriesList != null && systemPreprocessorSymbolsList != null) {
-            compilerDefinitions = new Pair(systemIncludeDirectoriesList, systemPreprocessorSymbolsList);
-        }
     }
 
     @Override
@@ -146,29 +128,75 @@ import org.openide.util.Utilities;
 
     @Override
     public void waitReady(boolean reset) {
-        if (reset) {
+        if (reset || !isReady()) {
             resetSystemProperties();
-        } else {
-            getSystemIncludesAndDefines();
-        }
-    }
-
-    private synchronized void getSystemIncludesAndDefines() {
-        if (compilerDefinitions == null) {
-            restoreSystemIncludesAndDefines();
-            if (compilerDefinitions == null) {
-                CndUtils.assertNonUiThread();
-                compilerDefinitions = getFreshSystemIncludesAndDefines();
-                saveSystemIncludesAndDefines();
-            }
         }
     }
 
     @Override
-    public void resetSystemProperties() {
-        CndUtils.assertNonUiThread();
-        compilerDefinitions = getFreshSystemIncludesAndDefines();
-        saveSystemIncludesAndDefines();
+    public void resetSystemProperties(boolean lazy) {
+        if (lazy) {
+            compilerDefinitions = null;
+        } else {
+            CndUtils.assertNonUiThread();
+            compilerDefinitions = getFreshSystemIncludesAndDefines();
+        }
+    }
+
+    @Override
+    public void loadSettings(Preferences prefs, String prefix) {
+        List<String> includeDirList = new ArrayList<String>();
+        String includeDirPrefix = prefix + ".systemIncludes"; // NOI18N
+        int includeDirCount = prefs.getInt(includeDirPrefix + ".count", 0); // NOI18N
+        for (int i = 0; i < includeDirCount; ++i) {
+            String includeDir = prefs.get(includeDirPrefix + '.' + i, null); // NOI18N
+            if (includeDir != null) {
+                includeDirList.add(includeDir);
+            }
+        }
+        if (includeDirList.isEmpty()) {
+            // try to load using the old way;  this might be removed at some moment in future
+            List<String> oldIncludeDirList = PersistentList.restoreList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
+            if (oldIncludeDirList != null) {
+                includeDirList.addAll(oldIncludeDirList);
+            }
+        }
+        setSystemIncludeDirectories(includeDirList);
+
+        List<String> preprocSymbolList = new ArrayList<String>();
+        String preprocSymbolPrefix = prefix + ".systemMacros"; // NOI18N
+        int preprocSymbolCount = prefs.getInt(preprocSymbolPrefix + ".count", 0); // NOI18N
+        for (int i = 0; i < preprocSymbolCount; ++i) {
+            String preprocSymbol = prefs.get(preprocSymbolPrefix + '.' + i, null); // NOI18N
+            if (preprocSymbol != null) {
+                preprocSymbolList.add(preprocSymbol);
+            }
+        }
+        if (preprocSymbolList.isEmpty()) {
+            // try to load using the old way;  this might be removed at some moment in future
+            List<String> oldPreprocSymbolList = PersistentList.restoreList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
+            if (oldPreprocSymbolList != null) {
+                preprocSymbolList.addAll(oldPreprocSymbolList);
+            }
+        }
+        setSystemPreprocessorSymbols(preprocSymbolList);
+    }
+
+    @Override
+    public void saveSettings(Preferences prefs, String prefix) {
+        List<String> includeDirList = getSystemIncludeDirectories();
+        String includeDirPrefix = prefix + ".systemIncludes"; // NOI18N
+        prefs.putInt(includeDirPrefix + ".count", includeDirList.size()); // NOI18N
+        for (int i = 0; i < includeDirList.size(); ++i) {
+            prefs.put(includeDirPrefix + '.' + i, includeDirList.get(i)); // NOI18N
+        }
+
+        List<String> preprocSymbolList = getSystemPreprocessorSymbols();
+        String preprocSymbolPrefix = prefix + ".systemMacros"; // NOI18N
+        prefs.putInt(preprocSymbolPrefix + ".count", preprocSymbolList.size()); // NOI18N
+        for (int i = 0; i < preprocSymbolList.size(); ++i) {
+            prefs.put(preprocSymbolPrefix + '.' + i, preprocSymbolList.get(i)); // NOI18N
+        }
     }
 
     protected final void getSystemIncludesAndDefines(String arguments, boolean stdout, Pair pair) throws IOException {
@@ -251,7 +279,7 @@ import org.openide.util.Utilities;
 	return false;
     }
 
-    protected void parseUserMacros(final String line, final PersistentList<String> preprocessorList) {
+    protected void parseUserMacros(final String line, final List<String> preprocessorList) {
         int defineIndex = line.indexOf("-D"); // NOI18N
         while (defineIndex >= 0) {
             String token;
@@ -263,7 +291,7 @@ import org.openide.util.Utilities;
                         token = token.substring(0,token.length()-1);
                     }
                 }
-                preprocessorList.addUnique(token);
+                addUnique(preprocessorList, token);
                 defineIndex = line.indexOf("-D", spaceIndex); // NOI18N
             } else {
                 token = line.substring(defineIndex+2);
@@ -272,7 +300,7 @@ import org.openide.util.Utilities;
                         token = token.substring(0,token.length()-1);
                     }
                 }
-                preprocessorList.addUnique(token);
+                addUnique(preprocessorList, token);
                 break;
             }
         }
@@ -305,27 +333,28 @@ import org.openide.util.Utilities;
         }
     }
 
-    private void dumpLists() {
-        System.out.println("==================================" + getDisplayName()); // NOI18N
-        for (int i = 0; i < compilerDefinitions.systemIncludeDirectoriesList.size(); i++) {
-            System.out.println("-I" + compilerDefinitions.systemIncludeDirectoriesList.get(i)); // NOI18N
-        }
-        for (int i = 0; i < compilerDefinitions.systemPreprocessorSymbolsList.size(); i++) {
-            System.out.println("-D" + compilerDefinitions.systemPreprocessorSymbolsList.get(i)); // NOI18N
+//    private void dumpLists() {
+//        System.out.println("==================================" + getDisplayName()); // NOI18N
+//        for (int i = 0; i < compilerDefinitions.systemIncludeDirectoriesList.size(); i++) {
+//            System.out.println("-I" + compilerDefinitions.systemIncludeDirectoriesList.get(i)); // NOI18N
+//        }
+//        for (int i = 0; i < compilerDefinitions.systemPreprocessorSymbolsList.size(); i++) {
+//            System.out.println("-D" + compilerDefinitions.systemPreprocessorSymbolsList.get(i)); // NOI18N
+//        }
+//    }
+
+    protected static final <T> void addUnique(List<? super T> list, T element) {
+        if (!list.contains(element)) {
+            list.add(element);
         }
     }
 
     protected static final class Pair {
-        public PersistentList<String> systemIncludeDirectoriesList;
-        public PersistentList<String> systemPreprocessorSymbolsList;
+        public List<String> systemIncludeDirectoriesList;
+        public List<String> systemPreprocessorSymbolsList;
         public Pair(){
-            systemIncludeDirectoriesList = new PersistentList<String>();
-            systemPreprocessorSymbolsList = new PersistentList<String>();
-        }
-        public Pair(PersistentList<String> systemIncludeDirectoriesList,
-                    PersistentList<String> systemPreprocessorSymbolsList){
-            this.systemIncludeDirectoriesList = systemIncludeDirectoriesList;
-            this.systemPreprocessorSymbolsList = systemPreprocessorSymbolsList;
+            systemIncludeDirectoriesList = new ArrayList<String>(0);
+            systemPreprocessorSymbolsList = new ArrayList<String>(0);
         }
     }
 }

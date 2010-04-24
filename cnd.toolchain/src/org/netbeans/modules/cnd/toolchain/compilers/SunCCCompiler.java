@@ -93,11 +93,11 @@ import org.openide.ErrorManager;
                         token = line.substring(includeIndex+2);
                     }
                     if ( ! token.equals("-xbuiltin")) { //NOI18N
-                        pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
+                        addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(token));
                     }
                     if (token.endsWith("Cstd")) { // NOI18N
                         // See 89872 "Parser Settings" for Sun Compilers Collection are incorrect
-                        pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(token.substring(0, token.length()-4) + "std")); // NOI18N
+                        addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(token.substring(0, token.length()-4) + "std")); // NOI18N
                     }
                     // Hack to handle -compat flag. If this flag is added,
                     // the compiler looks in in CC4 and not in CC. Just adding CC4 doesn't
@@ -131,7 +131,7 @@ import org.openide.ErrorManager;
                     }
                     if (sepIdx > 0) {
                         String token = line.substring(8, sepIdx) + "=" + line.substring(sepIdx + 1); // NOI18N
-                        pair.systemPreprocessorSymbolsList.addUnique(token);
+                        addUnique(pair.systemPreprocessorSymbolsList, token);
                     }
                 }
             }

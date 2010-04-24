@@ -58,7 +58,7 @@ public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
     }
 
     @ForAllEnvironments
-    public void testBuildSample_Rfs_Gnu_Arguments_Once() throws Exception {        
+    public void testBuildSample_Rfs_Gnu_Arguments_Once() throws Exception {
         buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_01", 1);
     }
 

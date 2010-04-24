@@ -109,7 +109,7 @@ public final class EditDependencyPanel extends JPanel {
         refreshAvailablePackages();
         refresh();
         ActionListener versionListener = new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
+            public @Override void actionPerformed(ActionEvent arg0) {
                 refreshAvailablePackages();
             }
         };
@@ -139,12 +139,16 @@ public final class EditDependencyPanel extends JPanel {
     }
     
     public ModuleDependency getEditedDependency() {
-        ModuleDependency dep = new ModuleDependency(origDep.getModuleEntry(),
-                releaseVersionValue.getText().trim(),
-                specVerValue.getText().trim(),
-                includeInCP.isSelected(),
-                implVer.isSelected());
-        return dep;
+        try {
+            return new ModuleDependency(origDep.getModuleEntry(),
+                    releaseVersionValue.getText().trim(),
+                    specVerValue.getText().trim(),
+                    includeInCP.isSelected(),
+                    implVer.isSelected());
+        } catch (NumberFormatException x) {
+            // XXX would be better to notify the user somehow
+            return origDep;
+        }
     }
     
     /** This method is called from within the constructor to

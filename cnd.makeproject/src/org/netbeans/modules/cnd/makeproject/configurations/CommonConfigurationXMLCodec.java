@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 
 /**
@@ -75,6 +76,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V68 - NB 6.9
+ *   Assembler: ASMTOOL_ELEMENT
  * V67 - NB 6.9
  *   REBUILD_PROP_CHANGED
  * V66 - NB 6.9
@@ -190,7 +193,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 67;
+    public final static int CURRENT_VERSION = 68;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -274,6 +277,8 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String LIBRARY_LEVEL_ELEMENT = "libraryLevel"; // NOI18N
     // Fortran Compiler Tool
     protected final static String FORTRANCOMPILERTOOL_ELEMENT = "fortranCompilerTool"; // NOI18N
+    // Asm Compiler Tool
+    protected final static String ASMTOOL_ELEMENT = "asmTool"; // NOI18N
     // Custom Tool
     protected final static String CUSTOMTOOL_ELEMENT = "customTool"; // NOI18N
     protected final static String CUSTOMTOOL_COMMANDLINE_ELEMENT = "customToolCommandline"; // NOI18N
@@ -456,6 +461,7 @@ public abstract class CommonConfigurationXMLCodec
         writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration());
         writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration());
         writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
+        writeAsmCompilerConfiguration(xes, makeConfiguration.getAssemblerConfiguration());
         switch (makeConfiguration.getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_APPLICATION:
             case MakeConfiguration.TYPE_DYNAMIC_LIB:
@@ -520,6 +526,7 @@ public abstract class CommonConfigurationXMLCodec
         writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration());
         writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration());
         writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
+        writeAsmCompilerConfiguration(xes, makeConfiguration.getAssemblerConfiguration());
         //IZ#110443:Adding "Dependencies" node for makefile projects property is premature
         //if (makeConfiguration.getLinkerConfiguration() != null)
         //    writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
@@ -763,6 +770,29 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(ADDITIONAL_DEP_ELEMENT, "" + fortranCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
         }
         xes.elementClose(FORTRANCOMPILERTOOL_ELEMENT);
+    }
+
+    public static void writeAsmCompilerConfiguration(XMLEncoderStream xes, AssemblerConfiguration asmCompilerConfiguration) {
+        if (!asmCompilerConfiguration.getModified()) {
+            return;
+        }
+        xes.elementOpen(ASMTOOL_ELEMENT);
+        if (asmCompilerConfiguration.getDevelopmentMode().getModified()) {
+            xes.element(DEVELOPMENT_MODE_ELEMENT, "" + asmCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
+        }
+        if (asmCompilerConfiguration.getSixtyfourBits().getModified()) {
+            xes.element(ARCHITECTURE_ELEMENT, "" + asmCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
+        }
+        if (asmCompilerConfiguration.getTool().getModified()) {
+            xes.element(COMMANDLINE_TOOL_ELEMENT, "" + asmCompilerConfiguration.getTool().getValue()); // NOI18N
+        }
+        if (asmCompilerConfiguration.getWarningLevel().getModified()) {
+            xes.element(WARNING_LEVEL_ELEMENT, "" + asmCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
+        }
+        if (asmCompilerConfiguration.getCommandLineConfiguration().getModified()) {
+            xes.element(COMMAND_LINE_ELEMENT, "" + asmCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
+        }
+        xes.elementClose(ASMTOOL_ELEMENT);
     }
 
     public static void writeCustomToolConfiguration(XMLEncoderStream xes, CustomToolConfiguration customToolConfiguration) {

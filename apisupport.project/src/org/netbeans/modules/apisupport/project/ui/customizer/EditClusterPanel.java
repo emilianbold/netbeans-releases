@@ -151,9 +151,12 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
     private File prjDir;
     private Project prj;
 
-    /** Creates new form EditClusterPanel */
     public EditClusterPanel() {
         initComponents();
+        sourcesPanel = new NbPlatformCustomizerSources();
+        sourcesPanelContainer.add(sourcesPanel);
+        javadocPanel = new NbPlatformCustomizerJavadoc();
+        javadocPanelContainer.add(javadocPanel);
         okButton = new JButton();
         Mnemonics.setLocalizedText(okButton,
             NbBundle.getMessage(EditClusterPanel.class, "CTL_OK"));
@@ -173,22 +176,15 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        clusterDirText = new javax.swing.JTextField();
+        tabbedPanel = new javax.swing.JTabbedPane();
+        mainPanel = new javax.swing.JPanel();
         browseButton = new javax.swing.JButton();
+        clusterDir = new javax.swing.JLabel();
+        clusterDirText = new javax.swing.JTextField();
         sourcesPanelContainer = new javax.swing.JPanel();
-        sourcesPanel = new NbPlatformCustomizerSources();
-        sourcesPanelContainer.add(sourcesPanel);
         javadocPanelContainer = new javax.swing.JPanel();
-        javadocPanel = new NbPlatformCustomizerJavadoc();
-        javadocPanelContainer.add(javadocPanel);
 
-        jLabel1.setLabelFor(clusterDirText);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.jLabel1.text")); // NOI18N
-
-        clusterDirText.setEditable(false);
-        clusterDirText.setText(org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "MSG_BrowseForCluster")); // NOI18N
-        clusterDirText.getDocument().addDocumentListener(this);
+        setLayout(new java.awt.BorderLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -197,40 +193,51 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
             }
         });
 
-        sourcesPanelContainer.setLayout(new java.awt.CardLayout());
+        clusterDir.setLabelFor(clusterDirText);
+        org.openide.awt.Mnemonics.setLocalizedText(clusterDir, org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.clusterDir.text")); // NOI18N
 
-        javadocPanelContainer.setLayout(new java.awt.CardLayout());
+        clusterDirText.setEditable(false);
+        clusterDirText.setText(org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "MSG_BrowseForCluster")); // NOI18N
+        clusterDirText.getDocument().addDocumentListener(this);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
+        mainPanel.setLayout(mainPanelLayout);
+        mainPanelLayout.setHorizontalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(clusterDirText, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browseButton))
-                    .addComponent(jLabel1))
+                .addComponent(clusterDir)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(clusterDirText, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(browseButton)
                 .addContainerGap())
-            .addComponent(javadocPanelContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE)
-            .addComponent(sourcesPanelContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE)
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+        mainPanelLayout.setVerticalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(browseButton)
-                    .addComponent(clusterDirText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(12, 12, 12)
-                .addComponent(sourcesPanelContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(javadocPanelContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE))
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(clusterDir)
+                    .addComponent(clusterDirText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(browseButton))
+                .addContainerGap(470, Short.MAX_VALUE))
         );
+
+        browseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.browseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        clusterDirText.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.clusterDirText.AccessibleContext.accessibleDescription")); // NOI18N
+
+        tabbedPanel.addTab(NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.mainPanel.TabConstraints.tabTitle"), mainPanel); // NOI18N
+
+        sourcesPanelContainer.setLayout(new java.awt.BorderLayout());
+        tabbedPanel.addTab(NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.sourcesPanelContainer.TabConstraints.tabTitle"), sourcesPanelContainer); // NOI18N
+
+        javadocPanelContainer.setLayout(new java.awt.BorderLayout());
+        tabbedPanel.addTab(NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.javadocPanelContainer.TabConstraints.tabTitle"), javadocPanelContainer); // NOI18N
+
+        add(tabbedPanel, java.awt.BorderLayout.CENTER);
+
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EditClusterPanel.class, "EditClusterPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
@@ -273,10 +280,12 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
+    private javax.swing.JLabel clusterDir;
     private javax.swing.JTextField clusterDirText;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel javadocPanelContainer;
+    private javax.swing.JPanel mainPanel;
     private javax.swing.JPanel sourcesPanelContainer;
+    private javax.swing.JTabbedPane tabbedPanel;
     // End of variables declaration//GEN-END:variables
 
 

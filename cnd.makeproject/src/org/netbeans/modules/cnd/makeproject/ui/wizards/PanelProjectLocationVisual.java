@@ -76,6 +76,7 @@ import org.openide.util.RequestProcessor;
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener, HelpCtx.Provider {
 
     public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
+    public static final String PROP_MAIN_NAME = "mainName"; // NOI18N
     private PanelConfigureProject panel;
     private String templateName;
     private String name;
@@ -107,6 +108,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         setAsMainCheckBox.setVisible(true);
 
         createMainTextField.setText("main"); // NOI18N
+        createMainTextField.getDocument().addDocumentListener(PanelProjectLocationVisual.this);
 
         if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION) {
             createMainCheckBox.setVisible(true);
@@ -426,19 +428,42 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         projectNameTextField.requestFocus();
     }
 
+    private boolean isValidMakeFile(String text){
+        if (text.length() == 0) {
+            return false;
+        }
+        if (text.contains("\\") || // NOI18N
+            text.contains("/") || // NOI18N
+            text.contains("..") || // NOI18N
+            hasIllegalChar(text)) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isValidMainFile(String text){
+        // unix allows a lot of strange names, but let's prohibit this for project
+        // using symbols invalid on Windows
+        if (text.length() == 0) {
+            return true;
+        }
+        if (text.startsWith(" ") || // NOI18N
+            text.startsWith("\\") || // NOI18N
+            text.startsWith("/") || // NOI18N
+            text.contains("..") || // NOI18N
+            hasIllegalChar(text)) {
+            return false;
+        }
+        return true;
+    }
+
     private boolean isValidProjectName(String text) {
         // unix allows a lot of strange names, but let's prohibit this for project
         // using symbols invalid on Windows
         if (text.length() == 0 || text.startsWith(" ") || // NOI18N
                 text.contains("\\") || // NOI18N
                 text.contains("/") || // NOI18N
-                text.contains(":") || // NOI18N
-                text.contains("*") || // NOI18N
-                text.contains("?") || // NOI18N
-                text.contains("\"") || // NOI18N
-                text.contains("<") || // NOI18N
-                text.contains(">") || // NOI18N
-                text.contains("|")) {  // NOI18N
+                hasIllegalChar(text)) {
             return false;
         }
         // check ability to create file with specified name on target OS
@@ -451,6 +476,16 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             // failed to create
         }
         return ok;
+    }
+
+    private boolean hasIllegalChar(String text) {
+        return text.contains(":") || // NOI18N
+               text.contains("*") || // NOI18N
+               text.contains("?") || // NOI18N
+               text.contains("\"") || // NOI18N
+               text.contains("<") || // NOI18N
+               text.contains(">") || // NOI18N
+               text.contains("|");  // NOI18N
     }
 
     @Override
@@ -479,8 +514,13 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_SpacesInMakefile")); // NOI18N
             return false;
         }
-        if (makefileTextField.getText().indexOf("/") >= 0 || makefileTextField.getText().indexOf("\\") >= 0) { // NOI18N
+        if (!isValidMakeFile(makefileTextField.getText())) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalMakefileName")); // NOI18N
+            return false;
+        }
+        if (createMainCheckBox.isSelected() && !isValidMainFile(createMainTextField.getText())){
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
+                    NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalMainFileName")); // NOI18N
             return false;
         }
 
@@ -642,6 +682,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());
         }
+        if (this.createMainTextField.getDocument() == e.getDocument()) {
+            firePropertyChange(PROP_MAIN_NAME, null, this.createMainTextField.getText());
+        }
     }
 
     @Override
@@ -650,6 +693,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());
         }
+        if (this.createMainTextField.getDocument() == e.getDocument()) {
+            firePropertyChange(PROP_MAIN_NAME, null, this.createMainTextField.getText());
+        }
     }
 
     @Override
@@ -657,6 +703,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());
+        }
+        if (this.createMainTextField.getDocument() == e.getDocument()) {
+            firePropertyChange(PROP_MAIN_NAME, null, this.createMainTextField.getText());
         }
     }
 
