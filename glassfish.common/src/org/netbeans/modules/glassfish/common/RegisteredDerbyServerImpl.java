@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,11 +37,11 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.javaee.ide;
+package org.netbeans.modules.glassfish.common;
 
+import org.netbeans.modules.glassfish.spi.RegisterDatabase;
 import java.io.File;
 import org.netbeans.modules.derby.spi.support.DerbySupport;
-import org.netbeans.modules.glassfish.eecommon.api.RegisterDatabase;
 import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -52,10 +52,12 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=RegisteredDerbyServer.class)
 public class RegisteredDerbyServerImpl implements RegisteredDerbyServer {
 
+    @Override
     public void start() {
         DerbySupport.ensureStarted();
     }
 
+    @Override
     public void initialize(String candidateLocation) {
         String location = DerbySupport.getLocation();
         if (null != location && location.trim().length() > 0) {
