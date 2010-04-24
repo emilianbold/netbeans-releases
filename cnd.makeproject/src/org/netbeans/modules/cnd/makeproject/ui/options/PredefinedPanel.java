@@ -141,6 +141,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
 
     public void updateCompiler(AbstractCompiler compiler) {
         this.compiler = compiler;
+        updatePanels(false);
     }
 
     /** This method is called from within the constructor to
@@ -204,11 +205,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
-        String txt = getString("RESET_QUESTION"); // NOI18N
-        NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("RESET_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
-        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
-            updatePanels(true);
-        }
+        // This can be undone now. No need to show confirmation dialog.
+        updatePanels(true);
     }//GEN-LAST:event_resetButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel includes;
