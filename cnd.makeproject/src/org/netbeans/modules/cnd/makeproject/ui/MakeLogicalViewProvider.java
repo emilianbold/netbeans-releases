@@ -1022,14 +1022,20 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         private final Folder folder;
         private final MakeLogicalViewProvider provider;
         public LogicalFolderNode(Node folderNode, Folder folder, MakeLogicalViewProvider provider) {
-            super(new LogicalViewChildren(folder, provider), Lookups.fixed(new Object[]{
-                        folder,
-                        provider.getProject(),
-                        new FolderSearchInfo(folder),}), ANNOTATION_RP);
+            super(new LogicalViewChildren(folder, provider), createLFNLookup(folderNode, folder, provider), ANNOTATION_RP);
             this.folder = folder;
             this.provider = provider;
             setForceAnnotation(true);
             updateAnnotationFiles();
+        }
+
+        private static Lookup createLFNLookup(Node folderNode, Folder folder, MakeLogicalViewProvider provider) {
+            List<Object> elems = new ArrayList<Object>(3);
+            elems.add(folder);
+            elems.add(provider.getProject());
+            elems.add(new FolderSearchInfo(folder));
+            folderNode.getLookup().lookup(DataFolder.class);
+            return Lookups.fixed(elems.toArray());
         }
 
         private void updateAnnotationFiles() {
