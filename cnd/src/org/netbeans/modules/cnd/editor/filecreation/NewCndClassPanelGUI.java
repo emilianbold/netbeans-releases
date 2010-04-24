@@ -293,6 +293,7 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         classNameLbl = new javax.swing.JLabel();
         classNameTextField = new javax.swing.JTextField();
 
+        setMinimumSize(new java.awt.Dimension(400, 400));
         setPreferredSize(new java.awt.Dimension(400, 400));
         setLayout(new java.awt.GridBagLayout());
 
@@ -523,14 +524,13 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         org.openide.awt.Mnemonics.setLocalizedText(classNameLbl, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_FileName_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(classNameLbl, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
