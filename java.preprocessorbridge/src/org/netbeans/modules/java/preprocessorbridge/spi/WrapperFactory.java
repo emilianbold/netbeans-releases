@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,52 +31,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javadoc.search;
+package org.netbeans.modules.java.preprocessorbridge.spi;
 
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
-import org.netbeans.modules.javadoc.httpfs.HTTPURLMapper;
-
-import java.net.URL;
-import java.net.MalformedURLException;
-import java.io.File;
+import com.sun.source.util.Trees;
 
 /**
- * Utility class for producing direct URLs. It
- * supports file based and HTTP based resources.
- * Others such as javadoc in archive cannot be
- * supported because there is not well know URL
- * protocol available.
+ * This interface in a friend contract among the debugger/jpda/projects and java/source
+ * module. The implementation provides wrappers for javac services which allows for
+ * modifying the standard javac behavior.
+ * Should be registered via {@link javax.swing.text.Document#putProperty(java.lang.Object, java.lang.Object)
+ * Document.putProperty(WrapperFactory.class, factory)}.
  *
- * @author Petr Kuzel
+ * @author Dusan Balek
+ * @since 1.14
  */
-public final class JavadocURLMapper {
+public interface WrapperFactory {
 
     /**
-     *
-     * @param fileObject
-     * @return try to find direct (IDE indepenedent) URL
+     * Returns wrapper for {@link Trees}
+     * @param trees {@link Trees} instance being wrapped
+     * @return non null wrapper
      */
-    public static URL findURL(FileObject fileObject) {
-        File file = FileUtil.toFile(fileObject);
-        if (file != null) {
-            try {
-                return file.toURI().toURL();
-            } catch (MalformedURLException ex) {
-                // pass it
-            }
-        }
-
-        HTTPURLMapper mapper = new HTTPURLMapper();
-        URL url = mapper.getURL(fileObject, URLMapper.EXTERNAL);
-        if (url != null) {
-            return url;
-        }
-
-        return URLMapper.findURL(fileObject, URLMapper.EXTERNAL);
-    }
+    public Trees wrapTrees(Trees trees);
 }
-

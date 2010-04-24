@@ -56,7 +56,7 @@ final class TestNameResolver {
     private static final String SHOULDA_METHOD = "should"; //NOI18N
 
     private static final String[] TEST_METHOD_NAMES = {"test", "describe", 
-            "specify", "context", SHOULDA_METHOD, "it"}; //NOI18N
+            "specify", "context", SHOULDA_METHOD, "it", "before", "after"}; //NOI18N
 
     /**
      *@return true if the given name represents a possible name

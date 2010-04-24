@@ -80,20 +80,6 @@ public class Utils {
     private Utils() {
     }
 
-    public static String toClasspathString(File[] classpathEntries) {
-        if (classpathEntries == null) {
-            return ""; //NOI18N
-        }
-        StringBuffer classpath = new StringBuffer();
-        for (int i = 0; i < classpathEntries.length; i++) {
-            classpath.append(classpathEntries[i].getAbsolutePath());
-            if (i + 1 < classpathEntries.length) {
-                classpath.append(":"); // NOI18N
-            }
-        }
-        return classpath.toString();
-    }
-
     public static void notifyError(Exception ex) {
         NotifyDescriptor ndd = new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
         DialogDisplayer.getDefault().notify(ndd);

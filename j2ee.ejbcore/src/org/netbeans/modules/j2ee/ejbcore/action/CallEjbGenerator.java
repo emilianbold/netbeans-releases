@@ -158,12 +158,12 @@ public class CallEjbGenerator {
         } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
             switch(refIType){
                 case REMOTE: {
-                    erc.addEjbReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
+                    erc.addEjbReference(ejbReference, refIType, ejbReferenceName, referencingFO, referencingClassName);
                     break;
                 }
                 case NO_INTERFACE:
                 case LOCAL:{
-                    erc.addEjbLocalReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
+                    erc.addEjbLocalReference(ejbReference, refIType, ejbReferenceName, referencingFO, referencingClassName);
                     break;
                 }
             }
@@ -415,9 +415,9 @@ public class CallEjbGenerator {
         }
         if (global){
             String moduleFullName = ProjectUtils.getInformation(ejbProject).getName();
-            Project project = FileOwnerQuery.getOwner(fileObject);
-            if (project != null && !project.equals(ejbProject)){
-                moduleFullName = ProjectUtils.getInformation(project).getName() + "/" + moduleFullName;
+            Project j2eeAppProject = Utils.getNestingJ2eeApp(ejbProject);
+            if (j2eeAppProject != null && !j2eeAppProject.equals(ejbProject)){
+                moduleFullName = ProjectUtils.getInformation(j2eeAppProject).getName() + "/" + moduleFullName;
             }
             body = MessageFormat.format(JNDI_LOOKUP_GLOBAL, new Object[] {moduleFullName, ejbName, componentName});
         } else if (isSimplified && isTargetJavaSE){

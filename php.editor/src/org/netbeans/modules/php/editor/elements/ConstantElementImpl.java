@@ -57,13 +57,15 @@ import org.openide.util.Parameters;
 public final class ConstantElementImpl extends FullyQualifiedElementImpl implements ConstantElement {
 
     public static final String IDX_FIELD = PHPIndexer.FIELD_CONST;
-
+    private final String value;
     private ConstantElementImpl(
             final QualifiedName qualifiedName,
+            final String value,
             final int offset,
             final String fileUrl,
             final ElementQuery elementQuery) {
         super(qualifiedName.toName().toString(), qualifiedName.toNamespaceName().toString(), fileUrl, offset, elementQuery);
+        this.value = value;
     }
 
     public static Set<ConstantElement> fromSignature(final IndexQueryImpl indexQuery, final IndexResult indexResult) {
@@ -89,7 +91,7 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
         ConstantSignatureParser signParser = new ConstantSignatureParser(sig);
         ConstantElement retval = null;
         if (matchesQuery(query, signParser)) {
-            retval = new ConstantElementImpl(signParser.getQualifiedName(),
+            retval = new ConstantElementImpl(signParser.getQualifiedName(),signParser.getValue(),
                     signParser.getOffset(), indexResult.getUrl().toString(),
                     indexScopeQuery);
         }
@@ -115,6 +117,7 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
         sb.append(getOffset()).append(SEPARATOR.SEMICOLON);//NOI18N
         QualifiedName namespaceName = getNamespaceName();
         sb.append(namespaceName.toString()).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(getValue()).append(SEPARATOR.SEMICOLON);//NOI18N
         checkConstantSignature(sb);
         return sb.toString();
     }
@@ -133,7 +136,7 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
 
     @Override
     public String getValue() {
-        return null;
+        return value;
     }
 
     private static class ConstantSignatureParser {
@@ -150,6 +153,9 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
 
         int getOffset() {
             return signature.integer(2);
+        }
+        String getValue() {
+            return signature.string(4);
         }
     }
 }

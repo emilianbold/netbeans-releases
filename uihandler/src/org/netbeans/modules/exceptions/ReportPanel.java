@@ -53,15 +53,10 @@ import org.openide.awt.HtmlBrowser;
 
 
 public class ReportPanel extends javax.swing.JPanel {
-    private final ExceptionsSettings exSettings = new ExceptionsSettings();
-    private final char[] originalPasswd;
+    private final ExceptionsSettings exSettings;
     
-    /** Creates new form ReportPanel */
-    public ReportPanel() {
-        this(false, new char[0]);
-    }
-    public ReportPanel(boolean isOOM, char[] previousPasswd) {
-        this.originalPasswd = previousPasswd;
+    public ReportPanel(boolean isOOM, ExceptionsSettings exSettings) {
+        this.exSettings = exSettings;
         initComponents();
         if (isOOM){
             oomInfo.setVisible(true);
@@ -144,7 +139,7 @@ public class ReportPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.jLabel5.text_1")); // NOI18N
 
-        jPasswordField1.setText(new String(originalPasswd));
+        jPasswordField1.setText(new String(exSettings.getPasswd()));
 
         rememberCheckBox.setSelected(exSettings.rememberPasswd());
         org.openide.awt.Mnemonics.setLocalizedText(rememberCheckBox, org.openide.util.NbBundle.getMessage(ReportPanel.class, "jCheckBox1.text")); // NOI18N

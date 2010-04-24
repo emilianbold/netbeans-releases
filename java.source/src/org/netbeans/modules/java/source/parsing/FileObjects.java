@@ -830,7 +830,7 @@ public class FileObjects {
     public static String getRelativePath (final URL root, final URL fo) throws URISyntaxException {
         String path = getRelativePath(new File(root.toURI()), new File(fo.toURI()));
         if (File.separatorChar != '/') {
-            path.replace(File.separatorChar, '/');
+            path = path.replace(File.separatorChar, '/');
         }
         return path;
     }

@@ -54,9 +54,9 @@ import org.openide.filesystems.FileObject;
  */
 public interface EnterpriseReferenceContainer {
     
-    String addEjbReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException;
+    String addEjbReference(EjbReference ref, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException;
     
-    String addEjbLocalReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException;
+    String addEjbLocalReference(EjbReference ref, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException;
 
     /**
      * @return name of the service locator defined for this project or null

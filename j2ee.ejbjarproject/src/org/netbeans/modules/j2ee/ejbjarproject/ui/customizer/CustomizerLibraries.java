@@ -64,7 +64,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
@@ -862,8 +863,12 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                             Library serverLibrary = SharabilityUtility.findOrCreateLibrary(loc, serverID);
                             assert returnServerLibrary.length == 1;
                             returnServerLibrary[0] = serverLibrary.getName();
-                            EditableProperties ep = uiProperties.getProject().getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            EjbJarProjectGenerator.setServerProperties(ep, serverLibrary.getName());
+                            AntProjectHelper helper = uiProperties.getProject().getAntProjectHelper();
+                            EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            EditableProperties epPriv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                            J2EEProjectProperties.setSharableServerProperties(ep, epPriv, serverLibrary.getName());
+                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, epPriv);
+                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                             ProjectManager.getDefault().saveProject(uiProperties.getProject());
                             ClassPathUiSupport.addLibraries(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(),
                                     null, new Library[]{serverLibrary}, new HashSet<Library>(), null);

@@ -8,6 +8,6 @@ Hello, world!
     <?php
          echo 2;
     ?>
-    tst
+         tst
     <?php echo "single line"; ?>
 </p>

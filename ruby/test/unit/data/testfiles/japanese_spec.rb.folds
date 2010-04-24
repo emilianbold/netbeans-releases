@@ -4,9 +4,9 @@
   require 'test'
   
 + describe Test do
-|   before(:each) do
++   before(:each) do
 |     @test = Test.new
-|   end
+-   end
 | 
 +   it "日本語日本語日本語" do
 |     # TODO

@@ -42,7 +42,6 @@
 package org.netbeans.modules.subversion.client.parser;
 
 import java.io.File;
-import java.lang.UnsupportedOperationException;
 import java.net.MalformedURLException;
 import java.util.Date;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
@@ -215,12 +214,14 @@ public class ParserSvnStatus implements ISVNStatus {
         throw new UnsupportedOperationException("not implemented yet");             // NOI18N
     }
 
+    @Override
     public boolean hasTreeConflict() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return false;
     }
 
+    @Override
     public SVNConflictDescriptor getConflictDescriptor() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     public boolean isFileExternal() {
