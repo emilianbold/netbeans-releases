@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  * NewCndFileChooserPanelGUI is SimpleTargetChooserPanelGUI extended with extension selector and logic
  * 
  */
-class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
+final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
   
     private String sourceExt;
     private String headerExt;
@@ -84,16 +84,17 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         }
         initValues( null, null, null );
         
-        browseButton.addActionListener( this );
-        headerBrowseButton.addActionListener( this );
-        locationComboBox.addActionListener( this );
-        classNameTextField.getDocument().addDocumentListener( this );
-        folderTextField.getDocument().addDocumentListener( this );
-        headerFolderTextField.getDocument().addDocumentListener( this );
+        browseButton.addActionListener( NewCndClassPanelGUI.this );
+        headerBrowseButton.addActionListener( NewCndClassPanelGUI.this );
+        locationComboBox.addActionListener( NewCndClassPanelGUI.this );
+        classNameTextField.getDocument().addDocumentListener( NewCndClassPanelGUI.this );
+        folderTextField.getDocument().addDocumentListener( NewCndClassPanelGUI.this );
+        headerFolderTextField.getDocument().addDocumentListener( NewCndClassPanelGUI.this );
         
         setName (NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
     }
     
+    @Override
     public void initValues( FileObject template, FileObject preselectedFolder, String documentName ) {
         assert project != null;
         
@@ -120,7 +121,9 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         SourceGroup preselectedGroup = getPreselectedGroup( folders, preselectedFolder );        
         locationComboBox.setSelectedItem( preselectedGroup );               
         // Create OS dependent relative name
-        folderTextField.setText( getRelativeNativeName( preselectedGroup.getRootFolder(), preselectedFolder ) );
+        String relPreselectedFolder = getRelativeNativeName(preselectedGroup.getRootFolder(), preselectedFolder);
+        folderTextField.setText( relPreselectedFolder);
+        headerFolderTextField.setText( relPreselectedFolder);
         
         String displayName = null;
         try {
@@ -158,6 +161,7 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
 
     }
     
+    @Override
     public SourceGroup getTargetGroup() {
         Object selectedItem = locationComboBox.getSelectedItem();
         if (selectedItem == null) {
@@ -170,6 +174,7 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         return (SourceGroup) selectedItem;
     }
         
+    @Override
     public String getTargetFolder() {
         
         String folderName = folderTextField.getText().trim();
@@ -182,6 +187,7 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         }
     }
     
+    @Override
     public String getTargetName() {
         String documentName = getSourceFileName();
         
@@ -202,6 +208,7 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         return createdFileName.replace( '/', File.separatorChar );
     }
 
+    @Override
     protected void updateCreatedFile() {
         String sourceFileName = createdFileName(folderTextField) + getSourceFileName();
         String headerFileName = createdFileName(headerFolderTextField) + getHeaderFileName();
@@ -582,6 +589,7 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
     // End of variables declaration//GEN-END:variables
 
     // ActionListener implementation -------------------------------------------
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent e) {
         if ( browseButton == e.getSource() ) {
             // Show the browse dialog             
