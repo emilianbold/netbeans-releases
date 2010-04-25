@@ -42,8 +42,6 @@
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
@@ -55,6 +53,7 @@ import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -66,7 +65,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     //TODO: RETOUCHE
 //    private boolean isWaitingForScan = false;
     
-    private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private WizardDescriptor wizardDescriptor;
 
@@ -76,7 +75,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     }
     
     public void addChangeListener(ChangeListener changeListener) {
-        changeListeners.add(changeListener);
+        changeSupport.addChangeListener(changeListener);
     }
     
     public java.awt.Component getComponent() {
@@ -157,7 +156,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     }
     
     public void removeChangeListener(ChangeListener changeListener) {
-        changeListeners.remove(changeListener);
+        changeSupport.removeChangeListener(changeListener);
     }
     
     public void storeSettings(Object settings) {
@@ -188,14 +187,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     }
     
     protected final void fireChangeEvent() {
-        Iterator<ChangeListener> iterator;
-        synchronized (changeListeners) {
-            iterator = new HashSet<ChangeListener>(changeListeners).iterator();
-        }
-        ChangeEvent changeEvent = new ChangeEvent(this);
-        while (iterator.hasNext()) {
-            iterator.next().stateChanged(changeEvent);
-        }
+        changeSupport.fireChange();
     }
 
     public void stateChanged(ChangeEvent changeEvent) {
