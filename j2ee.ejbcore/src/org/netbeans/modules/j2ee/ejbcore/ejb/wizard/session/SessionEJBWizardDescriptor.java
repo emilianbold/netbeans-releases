@@ -45,12 +45,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.MultiTargetChooserPanel;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -125,7 +127,12 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
             }
 
         }
-        
+        // #183916 - avoid cyclic dependencies
+        if (isRemote && hasCyclicDependency(wizardPanel.getRemoteInterfaceProject())) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SessionEJBWizardDescriptor.class, "ERR_CyclicDependency"));
+            return false;
+        }
+
         //TODO: RETOUCHE waitScanFinished
 //        if (JavaMetamodel.getManager().isScanInProgress()) {
 //            if (!isWaitingForScan) {
@@ -195,5 +202,22 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
         fireChangeEvent();
     }
 
+    private boolean hasCyclicDependency(Project projectToCheck) {
+        if (projectToCheck == null) {
+            return false;
+        }
+        SubprojectProvider subprojectProvider = projectToCheck.getLookup().lookup(SubprojectProvider.class);
+        if (subprojectProvider != null) {
+            Set<? extends Project> subprojects = subprojectProvider.getSubprojects();
+            if (subprojects.contains(project)) {
+                return true;
+            }
+            for (Project subproject : subprojects) {
+                if (hasCyclicDependency(subproject)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
-
