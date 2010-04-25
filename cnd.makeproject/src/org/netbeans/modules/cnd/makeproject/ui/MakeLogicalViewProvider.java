@@ -106,6 +106,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfigura
 import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProviders;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -1034,7 +1035,21 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             elems.add(folder);
             elems.add(provider.getProject());
             elems.add(new FolderSearchInfo(folder));
-            folderNode.getLookup().lookup(DataFolder.class);
+            if (folder.isDiskFolder()) {
+                MakeConfigurationDescriptor conf = folder.getConfigurationDescriptor();
+                if (conf != null) {
+                    String rootPath = folder.getRootPath();
+                    String absRootPath = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), rootPath);
+                    File folderFile = CndFileUtils.normalizeFile(new File(absRootPath));
+                    FileObject fo = FileUtil.toFileObject(folderFile);
+                    if (fo.isFolder()) {
+                        DataFolder dataFolder = DataFolder.findFolder(fo);
+                        if (dataFolder != null) {
+                            elems.add(dataFolder);
+                        }
+                    }
+                }
+            }
             return Lookups.fixed(elems.toArray());
         }
 
