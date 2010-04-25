@@ -120,7 +120,9 @@ class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         SourceGroup preselectedGroup = getPreselectedGroup( folders, preselectedFolder );        
         locationComboBox.setSelectedItem( preselectedGroup );               
         // Create OS dependent relative name
-        folderTextField.setText( getRelativeNativeName( preselectedGroup.getRootFolder(), preselectedFolder ) );
+        String relPreselectedFolder = getRelativeNativeName(preselectedGroup.getRootFolder(), preselectedFolder);
+        folderTextField.setText( relPreselectedFolder);
+        headerFolderTextField.setText( relPreselectedFolder);
         
         String displayName = null;
         try {
