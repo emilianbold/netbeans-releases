@@ -81,6 +81,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -92,6 +93,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -1370,6 +1372,13 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                                WorkingCopy workingCopy) {
         TreeMaker maker = workingCopy.getTreeMaker();
 
+        ExecutableType srcMethodExType = (ExecutableType)srcMethod.asType();
+        try {
+            srcMethodExType = (ExecutableType)workingCopy.getTypes().asMemberOf((DeclaredType)srcClass.asType(), srcMethod);
+        } catch (IllegalArgumentException iae) {
+        }
+
+
         boolean isStatic = srcMethod.getModifiers().contains(Modifier.STATIC);
         List<StatementTree> statements = new ArrayList<StatementTree>(8);
 
@@ -1379,7 +1388,8 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                     srcMethod.getSimpleName().toString());
             List<VariableTree> paramVariables = generateParamVariables(
                                     workingCopy,
-                                    srcMethod);
+                                    srcMethodExType,
+                                    getTestSkeletonVarNames(srcMethod.getParameters()));
             statements.add(sout);
             statements.addAll(paramVariables);
 
@@ -1409,7 +1419,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                             srcMethod.getSimpleName()),
                     createIdentifiers(maker, paramVariables));
 
-            TypeMirror retType = srcMethod.getReturnType();
+            TypeMirror retType = srcMethodExType.getReturnType();
             TypeKind retTypeKind = retType.getKind();
 
             switch(retTypeKind){
@@ -1514,27 +1524,26 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      */
     private List<VariableTree> generateParamVariables(
                                             WorkingCopy workingCopy,
-                                            ExecutableElement srcMethod) {
+                                            ExecutableType srcMethod,
+                                            String[] varNames) {
         TreeMaker maker = workingCopy.getTreeMaker();
-        List<? extends VariableElement> params = srcMethod.getParameters();
+        List<? extends TypeMirror> params = srcMethod.getParameterTypes();
         if ((params == null) || params.isEmpty()) {
             return Collections.<VariableTree>emptyList();
         }
 
         Set<Modifier> noModifiers = Collections.<Modifier>emptySet();
         List<VariableTree> paramVariables = new ArrayList<VariableTree>(params.size());
-        String[] varNames = getTestSkeletonVarNames(params);
         int index = 0;
-        for (VariableElement param : params) {
-            TypeMirror paramType = param.asType();
-            if (paramType.getKind() == TypeKind.TYPEVAR){
-                paramType = getSuperType(workingCopy, paramType);
+        for (TypeMirror param : params) {
+            if (param.getKind() == TypeKind.TYPEVAR){
+                param = getSuperType(workingCopy, param);
             }
             paramVariables.add(
                     maker.Variable(maker.Modifiers(noModifiers),
                                    varNames[index++],
-                                   maker.Type(paramType),
-                                   getDefaultValue(maker, paramType)));
+                                   maker.Type(param),
+                                   getDefaultValue(maker, param)));
         }
         return paramVariables;
     }
@@ -1710,8 +1719,22 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     /**
      */
     private List<ExecutableElement> findTestableMethods(WorkingCopy wc, TypeElement classElem) {
-        List<ExecutableElement> methods
-                = ElementFilter.methodsIn(classElem.getEnclosedElements());
+        boolean isEJB = isClassEjb31Bean(wc, classElem);
+        final Types types = wc.getTypes();
+
+        Iterable<? extends Element> elements;
+        if (isEJB){
+            final TypeMirror typeObject = wc.getElements().getTypeElement("java.lang.Object").asType(); //NOI18N
+            ElementAcceptor acceptor = new ElementAcceptor(){
+                public boolean accept(Element e, TypeMirror type) {
+                    return !types.isSameType(typeObject, e.getEnclosingElement().asType());
+                }
+            };
+            elements = wc.getElementUtilities().getMembers(classElem.asType(), acceptor);
+        } else {
+            elements = classElem.getEnclosedElements();
+        }
+        List<ExecutableElement> methods = ElementFilter.methodsIn(elements);
 
         if (methods.isEmpty()) {
             return Collections.<ExecutableElement>emptyList();
@@ -1719,7 +1742,6 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
         List<ExecutableElement> testableMethods = null;
 
-        boolean isEJB = isClassEjb31Bean(wc, classElem);
         int skippedCount = 0;
         for (ExecutableElement method : methods) {
             if (isTestableMethod(method) &&
