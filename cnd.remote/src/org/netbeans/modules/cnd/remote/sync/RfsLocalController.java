@@ -278,7 +278,7 @@ class RfsLocalController extends NamedRunnable {
             for (Collection<String> v : values) {
                 for (String ext : v) {
                     if (extOptions.length() > 0) {
-                        extOptions.append("-o "); // NOI18N
+                        extOptions.append(" -o "); // NOI18N
                     }
                     extOptions.append("-name \"*."); // NOI18N
                     extOptions.append(ext);
