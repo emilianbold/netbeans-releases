@@ -90,7 +90,7 @@ public class ProxyFileManager implements JavaFileManager {
     private final MemoryFileManager memoryFileManager;
     private final JavaFileManager outputhPath;
     private final GeneratedFileMarker marker;
-    private final Stack<URL> explicitSibling = new Stack<URL>();
+    private final SiblingSource siblings;
     private JavaFileObject lastInfered;
     private String lastInferedResult;
     
@@ -105,10 +105,13 @@ public class ProxyFileManager implements JavaFileManager {
             final JavaFileManager aptSources,
             final JavaFileManager outputhPath,
             final MemoryFileManager memoryFileManager,
-            final GeneratedFileMarker marker) {
+            final GeneratedFileMarker marker,
+            final SiblingSource siblings) {
         assert bootPath != null;
         assert classPath != null;
         assert memoryFileManager == null || sourcePath != null;
+        assert marker != null;
+        assert siblings != null;
         this.bootPath = bootPath;
         this.classPath = classPath;
         this.sourcePath = sourcePath;
@@ -116,6 +119,7 @@ public class ProxyFileManager implements JavaFileManager {
         this.memoryFileManager = memoryFileManager;
         this.outputhPath = outputhPath;
         this.marker = marker;
+        this.siblings = siblings;
     }
 
     private JavaFileManager[] getFileManager (final Location location) {
@@ -228,7 +232,7 @@ public class ProxyFileManager implements JavaFileManager {
             //Workaround for wrongly written processors,
             //see Issue #180605
             boolean forwardedToSource = false;
-            if (!explicitSibling.isEmpty() && l == StandardLocation.CLASS_OUTPUT) {
+            if (siblings.getProvider().hasSibling() && l == StandardLocation.CLASS_OUTPUT) {
                 boolean exists = false;
                 try {
                     result.openInputStream().close();
@@ -285,7 +289,7 @@ public class ProxyFileManager implements JavaFileManager {
             final String sib = it.next();
             if(sib.length() != 0) {
                 try {
-                    explicitSibling.push(new URL(sib));
+                    siblings.push(new URL(sib));
                 } catch (MalformedURLException ex) {
                     throw new IllegalArgumentException("Invalid path argument: " + sib);    //NOI18N
                 }
@@ -293,7 +297,7 @@ public class ProxyFileManager implements JavaFileManager {
                 try {
                     markerFinished();
                 } finally {
-                    explicitSibling.pop();
+                    siblings.pop();
                 }
             }
         }
@@ -397,14 +401,14 @@ public class ProxyFileManager implements JavaFileManager {
         } else if (l == StandardLocation.SOURCE_OUTPUT) {
             type = GeneratedFileMarker.Type.SOURCE;
         }
-        if (marker != null && result != null && type != null && !explicitSibling.isEmpty()) {
+        if (marker != null && result != null && type != null && siblings.getProvider().hasSibling()) {
             marker.mark(result.toUri().toURL(), type);
         }
     }
 
     private void markerFinished() {
-        if (marker != null && !explicitSibling.isEmpty()) {
-            marker.finished(explicitSibling.peek());
+        if (marker != null && siblings.getProvider().hasSibling()) {
+            marker.finished(siblings.getProvider().getSibling());
         }
     }
 

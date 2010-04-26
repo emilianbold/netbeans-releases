@@ -485,8 +485,7 @@ public final class FileObjectFactory {
     }
 
     private boolean refresh(final Set<BaseFileObj> all2Refresh, RefreshSlow slow, final boolean expected, File[] files) {
-        final int size = all2Refresh.size();
-        int count = 0;
+        int add = 0;
         Iterator<BaseFileObj> it = all2Refresh.iterator();
         while (it.hasNext()) {
             BaseFileObj fo = null;
@@ -502,7 +501,7 @@ public final class FileObjectFactory {
                 fo = it.next();
                 it.remove();
             }
-            count++;
+            add++;
             if (!isInFiles(fo, files)) {
                 continue;
             }
@@ -514,7 +513,8 @@ public final class FileObjectFactory {
                 if (!slow.after()) {
                     return false;
                 }
-                slow.progress(count, size, fo);
+                slow.progress(add, fo);
+                add = 0;
             }
         }
         return true;

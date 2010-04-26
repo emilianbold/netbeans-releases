@@ -173,7 +173,15 @@ public final class RootObj<T extends FileObject> extends FileObject {
                 }
                 lf.add(file);
             }
-        }        
+        }
+        if (slow != null) {
+            int cnt = 0;
+            for (Map.Entry<FileObjectFactory, List<File>> entry : files2Factory.entrySet()) {
+                FileObjectFactory factory = entry.getKey();
+                cnt += factory.getSize();
+            }
+            slow.estimate(cnt);
+        }
         for (Map.Entry<FileObjectFactory, List<File>> entry : files2Factory.entrySet()) {
             FileObjectFactory factory = entry.getKey();
             List<File> lf = entry.getValue();

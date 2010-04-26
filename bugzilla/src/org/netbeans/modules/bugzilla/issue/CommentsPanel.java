@@ -333,7 +333,7 @@ public class CommentsPanel extends JPanel {
                     doc.remove(off, length);
                     doc.insertString(off, comment.substring(pos[i], pos[i+1]), hlStyle);
                 } catch (BadLocationException blex) {
-                        blex.printStackTrace();
+                    Bugzilla.LOG.log(Level.INFO, blex.getMessage(), blex);
                 }
             }
         }
@@ -358,7 +358,7 @@ public class CommentsPanel extends JPanel {
                                                                 boundaries[i + 1]),
                                                                 hlStyle);
                     } catch (BadLocationException ex) {
-                        ex.printStackTrace();
+                        Bugzilla.LOG.log(Level.INFO, ex.getMessage(), ex);
                     }
                 }
             }
@@ -385,7 +385,7 @@ public class CommentsPanel extends JPanel {
                                                                 boundaries[i + 1]),
                                                                 hlStyle);
                     } catch (BadLocationException ex) {
-                        ex.printStackTrace();
+                        Bugzilla.LOG.log(Level.INFO, ex.getMessage(), ex);
                     }
                 }
             }
