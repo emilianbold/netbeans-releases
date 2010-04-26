@@ -97,6 +97,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         DataObject.getRegistry().removeChangeListener(doListener);
         doListener.clear();
         System.err.printf("tearDown end %s %d\n", getName(), System.currentTimeMillis());
+        TraceFlags.TRACE_182342_BUG = false;
     }
 
     public void testInsertDeadBlock() throws Exception {
@@ -138,7 +139,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 public void run() {
                     try {
                         if (TraceFlags.TRACE_182342_BUG) {
-                            System.err.printf("Inserting dead block in position %d: \n", 0, ifdefTxt);
+                            System.err.printf("Inserting dead block in position %d: %s\n", 0, ifdefTxt);
                         }
                         doc.insertString(0,
                                         ifdefTxt,
@@ -261,7 +262,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
             @Override
             public void fileParsingFinished(CsmFile file) {
                 if (TraceFlags.TRACE_182342_BUG) {
-                    new Exception("fileParsingFinished " + file).printStackTrace(System.err); // NOI18N
+                    new Exception(getName() + " fileParsingFinished " + file).printStackTrace(System.err); // NOI18N
                 }
                 if (file.equals(fileImpl)) {
                     CountDownLatch cond = condRef.get();

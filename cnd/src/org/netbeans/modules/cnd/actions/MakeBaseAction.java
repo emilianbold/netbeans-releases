@@ -157,10 +157,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
 
         if (inputOutput == null) {
             // Tab Name
-            String tabName = getString("MAKE_LABEL", node.getName()); // NOI18N
-            if (target.length() > 0) {
-                tabName += " " + target; // NOI18N
-            }
+            String tabName = execEnv.isLocal() ? getString("MAKE_LABEL", node.getName(), target) : getString("MAKE_REMOTE_LABEL", node.getName(), target, execEnv.getDisplayName()); // NOI18N
             InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
             _tab.closeInputOutput(); // Close it...
             InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
