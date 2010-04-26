@@ -42,19 +42,27 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.DevHostsInitializer;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -62,6 +70,7 @@ import org.openide.util.NbBundle;
  */
 public class SelectModePanel extends javax.swing.JPanel {
     private SelectModeDescriptorPanel controller;
+    private volatile boolean initialized = false;
     
     /** Creates new form SelectModePanel */
     public SelectModePanel(SelectModeDescriptorPanel wizard) {
@@ -69,6 +78,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         initComponents();
         instructions.setEditorKit(new HTMLEditorKit());
         instructions.setBackground(instructionPanel.getBackground());
+        disableHostSensitiveComponents();
         addListeners();
     }
     
@@ -134,6 +144,10 @@ public class SelectModePanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         projectFolder = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
+        toolchainComboBox = new javax.swing.JComboBox();
+        toolchainLabel = new javax.swing.JLabel();
+        hostComboBox = new javax.swing.JComboBox();
+        hostLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -151,7 +165,7 @@ public class SelectModePanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
@@ -167,7 +181,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         simpleMode.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 12, 0, 0);
@@ -179,7 +193,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         advancedMode.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 12, 0, 0);
@@ -188,7 +202,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(modeLabel, bundle.getString("SelectModeLabelText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(modeLabel, gridBagConstraints);
@@ -198,14 +212,16 @@ public class SelectModePanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(projectFolder, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(SelectModePanel.class, "SELECT_MODE_BROWSE_PROJECT_FOLDER")); // NOI18N
@@ -217,7 +233,46 @@ public class SelectModePanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         add(browseButton, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        add(toolchainComboBox, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(toolchainLabel, org.openide.util.NbBundle.getMessage(SelectModePanel.class, "LBL_TOOLCHAIN")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 8, 0);
+        add(toolchainLabel, gridBagConstraints);
+
+        hostComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                hostComboBoxItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        add(hostComboBox, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(SelectModePanel.class, "LBL_HOST")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 8, 0);
+        add(hostLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
@@ -236,12 +291,32 @@ public class SelectModePanel extends javax.swing.JPanel {
         String path = fileChooser.getSelectedFile().getPath();
         projectFolder.setText(path);
 }//GEN-LAST:event_browseButtonActionPerformed
+
+    private void hostComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_hostComboBoxItemStateChanged
+        if (!initialized) {
+            return;
+        }
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
+            ServerRecord newItem = (ServerRecord) evt.getItem();
+            PanelProjectLocationVisual.updateToolchains(toolchainComboBox, newItem);
+            this.controller.fireChangeEvent(); // Notify that the panel changed
+        }
+}//GEN-LAST:event_hostComboBoxItemStateChanged
     
-    void read(final SelectModeDescriptorPanel wizardDescriptor) {
+    void read(WizardDescriptor wizardDescriptor) {
+        initialized = false;
         updateControls();
+        String hostUID = (String) wizardDescriptor.getProperty("hostUID");
+        CompilerSet cs = (CompilerSet) wizardDescriptor.getProperty("toolchain");
+        RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, false) {
+            @Override
+            public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
+                enableHostSensitiveComponents(records, srToSelect, csToSelect, enabled);
+            }
+        });
     }
     
-    void updateControls(){
+    void updateControls() {
         updateInstruction();
     }
 
@@ -259,6 +334,19 @@ public class SelectModePanel extends javax.swing.JPanel {
         }
         wizardDescriptor.putProperty("simpleModeFolder", projectFolder.getText().trim()); // NOI18N
         wizardDescriptor.putProperty("readOnlyToolchain", Boolean.TRUE); // NOI18N
+        Object obj = hostComboBox.getSelectedItem();
+        if (obj != null && obj instanceof ServerRecord) {
+            ServerRecord sr = (ServerRecord) obj;
+            ExecutionEnvironment ee = sr.getExecutionEnvironment();
+            wizardDescriptor.putProperty("hostUID", ExecutionEnvironmentFactory.toUniqueID(ee)); // NOI18N
+            controller.getWizardStorage().setExecutionEnvironment(ee);
+        }
+        Object tc = toolchainComboBox.getSelectedItem();
+        if (tc != null && tc instanceof CompilerSet) {
+            wizardDescriptor.putProperty("toolchain", tc); // NOI18N
+            controller.getWizardStorage().setCompilerSet((CompilerSet) tc);
+        }
+        initialized = false;
     }
 
     private static final byte noMessage = 0;
@@ -337,6 +425,8 @@ public class SelectModePanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton advancedMode;
     private javax.swing.JButton browseButton;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JComboBox hostComboBox;
+    private javax.swing.JLabel hostLabel;
     private javax.swing.JPanel instructionPanel;
     private javax.swing.JTextPane instructions;
     private javax.swing.JLabel jLabel1;
@@ -344,6 +434,23 @@ public class SelectModePanel extends javax.swing.JPanel {
     private javax.swing.JLabel modeLabel;
     private javax.swing.JTextField projectFolder;
     private javax.swing.JRadioButton simpleMode;
+    private javax.swing.JComboBox toolchainComboBox;
+    private javax.swing.JLabel toolchainLabel;
     // End of variables declaration//GEN-END:variables
-    
+
+    private void disableHostSensitiveComponents() {
+        PanelProjectLocationVisual.disableHostsInfo(this.hostComboBox, this.toolchainComboBox);
+        this.advancedMode.setEnabled(false);
+        this.simpleMode.setEnabled(false);
+    }
+
+    private void enableHostSensitiveComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
+        PanelProjectLocationVisual.updateToolchainsComponents(SelectModePanel.this.hostComboBox, SelectModePanel.this.toolchainComboBox, records, srToSelect, csToSelect, enabled);
+        this.advancedMode.setEnabled(true);
+        this.simpleMode.setEnabled(true);
+        updateInstruction();
+        initialized = true;
+        SelectModePanel.this.controller.fireChangeEvent(); // Notify that the panel changed
+    }
+
 }
