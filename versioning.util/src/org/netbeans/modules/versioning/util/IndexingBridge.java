@@ -143,7 +143,8 @@ public final class IndexingBridge {
 
                 if (refreshFS && parents.size() > 0) {
                     // let's give the filesystem some time to wake up and to realize that the file has really changed
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    Utils.postParallel(new Runnable() {
+                        @Override
                         public void run() {
                             long t = System.currentTimeMillis();
                             try {
