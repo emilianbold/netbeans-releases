@@ -56,6 +56,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 import javax.management.openmbean.CompositeData;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -70,6 +74,7 @@ class SamplesOutputStream {
     static final String ID = "NPSS"; // NetBeans Profiler samples stream
     static final String FILE_EXT = ".npss"; // NOI18N
     static final int RESET_THRESHOLD = 5000;
+    static final int STEPS = 1000;
     static byte version = 1;
     private static Method toCompositeDataMethod;
 
@@ -93,6 +98,7 @@ class SamplesOutputStream {
     Map<Long, ThreadInfo> lastThreadInfos;
     Map<StackTraceElement, StackTraceElement> steCache;
     List<Sample> samples;
+    volatile ProgressHandle progress;
 
     static boolean isSupported() {
         return toCompositeDataMethod != null;
@@ -163,15 +169,21 @@ class SamplesOutputStream {
         steCache = null;
         GZIPOutputStream stream = new GZIPOutputStream(outStream, 64 * 1024);
         ObjectOutputStream out = new ObjectOutputStream(stream);
-        for (int i=0; i<samples.size();i++) {
+        int size = samples.size();
+
+        openProgress();
+        for (int i=0; i<size;i++) {
             Sample s = samples.get(i);
             samples.set(i, null);
             if (i > 0 && i % RESET_THRESHOLD == 0) {
                 out.reset();
             }
             s.writeToStream(out);
+            if ((i+40) % 50 == 0) step((STEPS*i)/size);
         }
+        step(STEPS); // set progress at 100%
         out.close();
+        closeProgress();
     }
 
     private void writeHeader(OutputStream os) throws IOException {
@@ -191,6 +203,44 @@ class SamplesOutputStream {
             } else {
                 steCache.put(ste, ste);
             }
+        }
+    }
+
+    private void openProgress() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            // log warnining
+            return;
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(SamplesOutputStream.class, "Save_Progress"));
+                progress.start(STEPS);
+            }
+        });
+    }
+
+    private void closeProgress() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return;
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                progress.finish();
+                progress = null;
+            }
+        });
+    }
+
+    private void step(int i) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return;
+        }
+        if (progress != null) {
+            progress.progress(i);
         }
     }
 
