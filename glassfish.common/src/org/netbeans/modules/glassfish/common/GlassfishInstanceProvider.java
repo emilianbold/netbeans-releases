@@ -112,7 +112,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     EE6_INSTALL_ROOT_PROP,
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_REGISTERED_NAME", new Object[]{}),  // NOI18N
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
-                    "GlassFish_v3", // NOI18N
+                    "GlassFish_Server_3", // NOI18N
                     "http://java.net/download/glassfish/v3/release/glassfish-v3.zip", // NOI18N
                     "http://serverplugins.netbeans.org/glassfishv3/post68v3.txt", // NOI18N
                     "last-v3ee6-install-root", // NOI18N

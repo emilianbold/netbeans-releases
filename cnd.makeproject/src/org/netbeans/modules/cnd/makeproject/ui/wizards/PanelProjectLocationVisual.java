@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ResourceBundle;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -83,7 +84,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private boolean makefileNameChanged = false;
     private int type;
     private volatile boolean initialized = false;
-    private final Object FAKE_ITEM = new Object();
+    private static final Object FAKE_ITEM = new Object();
     /** Creates new form PanelProjectLocationVisual */
     public PanelProjectLocationVisual(PanelConfigureProject panel, String name, boolean showMakefileTextField, int type) {
         initComponents();
@@ -129,10 +130,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             createMainTextField.setVisible(false);
             createMainComboBox.setVisible(false);
         }
-        disableHostsInfo();
+        disableHostsInfo(this.hostComboBox, this.toolchainComboBox);
     }
 
-    private void disableHostsInfo() {
+    /*package*/static void disableHostsInfo(JComboBox hostComboBox, JComboBox toolchainComboBox) {
         // load hosts && toolchains
         hostComboBox.setEnabled(false);
         toolchainComboBox.setEnabled(false);
@@ -142,7 +143,22 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         toolchainComboBox.setRenderer(new MyToolchainListCellRenderer(FAKE_ITEM));
     }
 
-    private Collection<ServerRecord> initServerRecords() {
+    /*package*/static void updateToolchainsComponents(JComboBox hostComboBox, JComboBox toolchainComboBox, Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
+        hostComboBox.removeAllItems();
+        toolchainComboBox.removeAllItems();
+        if (records != null) {
+            for (ServerRecord serverRecord : records) {
+                hostComboBox.addItem(serverRecord);
+            }
+            hostComboBox.setSelectedItem(srToSelect);
+            updateToolchains(toolchainComboBox, srToSelect);
+            toolchainComboBox.setSelectedItem(csToSelect);
+            hostComboBox.setEnabled(enabled);
+            toolchainComboBox.setEnabled(enabled);
+        }
+    }
+
+    private static Collection<ServerRecord> initServerRecords() {
         Collection<ServerRecord> out = new ArrayList<ServerRecord>();
         for (ServerRecord serverRecord : ServerList.getRecords()) {
             if (serverRecord.isSetUp() && !serverRecord.isDeleted()) {
@@ -406,12 +422,12 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
         if (evt.getStateChange() == ItemEvent.SELECTED) {
             ServerRecord newItem = (ServerRecord) evt.getItem();
-            updateToolchains(newItem);
+            updateToolchains(this.toolchainComboBox, newItem);
             panel.fireChangeEvent(); // Notify that the panel changed
         }
     }
 
-    private void updateToolchains(ServerRecord newItem) {
+    /*package*/ static void updateToolchains(JComboBox toolchainComboBox, ServerRecord newItem) {
         // change toolchains
         CompilerSetManager csm = CompilerSetManager.get(newItem.getExecutionEnvironment());
         toolchainComboBox.removeAllItems();
@@ -621,6 +637,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
     @Override
     void read(WizardDescriptor settings) {
+        initialized = false;
         File projectLocation = (File) settings.getProperty("projdir");  //NOI18N
         if (projectLocation == null) {
             projectLocation = ProjectChooser.getProjectsFolder();
@@ -628,10 +645,17 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             projectLocation = projectLocation.getParentFile();
         }
         this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
-        String hostUID = (String) settings.getProperty("hostUID");
-        CompilerSet cs = (CompilerSet) settings.getProperty("toolchain");
-        Boolean readOnlyToolchain = (Boolean) settings.getProperty("readOnlyToolchain");
-        RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, readOnlyToolchain));
+        String hostUID = (String) settings.getProperty("hostUID");  //NOI18N
+        CompilerSet cs = (CompilerSet) settings.getProperty("toolchain"); //NOI18N
+        Boolean readOnlyToolchain = (Boolean) settings.getProperty("readOnlyToolchain"); //NOI18N
+        RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, readOnlyToolchain) {
+            @Override
+            public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
+                updateToolchainsComponents(PanelProjectLocationVisual.this.hostComboBox, PanelProjectLocationVisual.this.toolchainComboBox, records, srToSelect, csToSelect, enabled);
+                initialized = true;
+                panel.fireChangeEvent(); // Notify that the panel changed
+            }
+        });
 
         String projectName = (String) settings.getProperty("displayName"); //NOI18N
         if (projectName == null) {
@@ -792,7 +816,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         return bundle.getString(s);
     }
 
-    private static final class MyDevHostListCellRenderer extends DefaultListCellRenderer {
+    /*package*/ static final class MyDevHostListCellRenderer extends DefaultListCellRenderer {
         private final Object loadingMarker;
 
         public MyDevHostListCellRenderer(Object loadingItem) {
@@ -814,7 +838,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }
 
-    private static final class MyToolchainListCellRenderer extends DefaultListCellRenderer {
+    /*package*/ static final class MyToolchainListCellRenderer extends DefaultListCellRenderer {
         private final Object loadingMarker;
 
         public MyToolchainListCellRenderer(Object loadingItem) {
@@ -836,7 +860,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }
 
-    private final class DevHostsInitializer implements Runnable {
+    /*package*/ abstract static class DevHostsInitializer implements Runnable {
         private final String hostUID;
         private final CompilerSet cs;
         private final boolean readOnlyUI;
@@ -873,26 +897,18 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     if (cs == null) {
                         CompilerSetManager csm = CompilerSetManager.get(srToSelect.getExecutionEnvironment());
                         csToSelect = csm.getDefaultCompilerSet();
+                    } else {
+                        csToSelect = cs;
                     }
                 } finally {
                     SwingUtilities.invokeLater(this);
                 }
             } else {
-                hostComboBox.removeAllItems();
-                toolchainComboBox.removeAllItems();
-                if (records != null) {
-                    for (ServerRecord serverRecord : records) {
-                        hostComboBox.addItem(serverRecord);
-                    }
-                    hostComboBox.setSelectedItem(srToSelect);
-                    updateToolchains(srToSelect);
-                    toolchainComboBox.setSelectedItem(csToSelect);
-                    hostComboBox.setEnabled(readOnlyUI);
-                    toolchainComboBox.setEnabled(readOnlyUI);
-                }
-                initialized = true;
-                panel.fireChangeEvent(); // Notify that the panel changed
+                updateComponents(this.records, this.srToSelect, this.csToSelect, !readOnlyUI);
             }
         }
+
+        public abstract void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled);
     }
+
 }

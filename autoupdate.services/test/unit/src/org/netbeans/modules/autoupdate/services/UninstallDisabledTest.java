@@ -42,11 +42,13 @@
 package org.netbeans.modules.autoupdate.services;
 
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
  * @author Radek Matous
  */
+@RandomlyFails // NB-Core-Build #4490: info==null in OperationsTestImpl.assertInstalledModule
 public class UninstallDisabledTest extends OperationsTestImpl {
     
     public UninstallDisabledTest(String testName) {

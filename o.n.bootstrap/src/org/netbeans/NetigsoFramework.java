@@ -43,6 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.openide.modules.ModuleInfo;
@@ -70,8 +72,12 @@ public abstract class NetigsoFramework {
         Collection<? extends Module> preregister
     );
 
-    /** Start the OSGi framework */
-    protected abstract void start();
+    /** Start the OSGi framework.
+     * @param allModules the modules that are in the system
+     * @return returns set of additional modules (usually autoloads that need to be turned on)
+     * @since 2.31 it returns set of module code name bases
+     */
+    protected abstract Set<String> start(Collection<? extends Module> allModules);
 
     /** Shutdowns the framework */
     protected abstract void shutdown();
@@ -128,7 +134,7 @@ public abstract class NetigsoFramework {
         toEnable.addAll(newlyEnabling);
     }
 
-    static void turnOn(ClassLoader findNetigsoFrameworkIn, Collection<Module> allModules) {
+    static Set<Module> turnOn(ClassLoader findNetigsoFrameworkIn, Collection<Module> allModules) {
         boolean found = false;
         if (framework == null) {
             for (Module m : toEnable) {
@@ -141,7 +147,7 @@ public abstract class NetigsoFramework {
             found = true;
         }
         if (!found) {
-            return;
+            return Collections.emptySet();
         }
         final Lookup lkp = Lookups.metaInfServices(findNetigsoFrameworkIn);
         framework = lkp.lookup(NetigsoFramework.class);
@@ -151,9 +157,18 @@ public abstract class NetigsoFramework {
         getDefault().prepare(lkp, allModules);
         toEnable.clear();
         delayedInit();
-        if (framework != null) {
-            framework.start();
+        Set<String> cnbs = framework.start(allModules);
+        if (cnbs == null) {
+            return Collections.emptySet();
         }
+
+        Set<Module> additional = new HashSet<Module>();
+        for (Module m : allModules) {
+            if (!m.isEnabled() && cnbs.contains(m.getCodeNameBase())) {
+                additional.add(m);
+            }
+        }
+        return additional;
     }
 
     private static boolean delayedInit() {

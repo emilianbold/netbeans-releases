@@ -220,7 +220,7 @@ public class ErrorDescriptionFactory {
         @Override
         public ChangeInfo implement() throws Exception {
             if (disable) {
-                HintsSettings.setEnabled(RulesManager.getPreferences(metadata.id, HintsSettings.getCurrentProfileId()), false);
+                HintsSettings.setEnabled(metadata, false);
                 //XXX: re-run hints task
             } else {
                 OptionsDisplayer.getDefault().open("Editor/Hints/text/x-java/" + metadata.id);

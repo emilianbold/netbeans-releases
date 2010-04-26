@@ -114,14 +114,16 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
         token_y.setLastModified(System.currentTimeMillis() + 2000);
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, TimeUnit.SECONDS);
         // Bug #182762 - Second clean & build for LexYacc build on remote host fails
-        buildProject(makeProject, ActionProvider.COMMAND_REBUILD, timeout, TimeUnit.SECONDS);
+        buildProject(makeProject, ActionProvider.COMMAND_CLEAN, timeout, TimeUnit.SECONDS);
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, TimeUnit.SECONDS);
     }
 
     @ForAllEnvironments
     public void test_LexYacc_Updates() throws Exception {
         MakeProject makeProject = prepareSampleProject(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_Updates");
         int timeout = getSampleBuildTimeout();
-        buildProject(makeProject, ActionProvider.COMMAND_REBUILD, timeout, TimeUnit.SECONDS);
+        buildProject(makeProject, ActionProvider.COMMAND_CLEAN, timeout, TimeUnit.SECONDS);
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, TimeUnit.SECONDS);
         File projectDirFile = FileUtil.toFile(makeProject.getProjectDirectory());
         NameStatePair[] filesToCheck = new NameStatePair[] {
             new NameStatePair(new File(projectDirFile, "y.tab.c"), FileDownloadInfo.State.UNCONFIRMED),

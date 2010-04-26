@@ -42,9 +42,11 @@ package org.netbeans.modules.java.hints.options;
 
 import java.util.Map;
 import java.util.prefs.Preferences;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -95,6 +97,11 @@ public class HintsSettings {
         return preferences.getBoolean(ENABLED_KEY, HintsSettings.HINTS_ACCESSOR.isEnabledDefault(hint));
     }
 
+    public static void setEnabled( HintMetadata metadata, boolean value ) {
+	setEnabled(RulesManager.getPreferences(metadata.id, HintsSettings.getCurrentProfileId()), value);
+	fireChangeEvent();
+    }
+
     public static void setEnabled( Preferences p, boolean value ) {
         p.putBoolean(ENABLED_KEY, value);
     }
@@ -134,6 +141,20 @@ public class HintsSettings {
     
     public static Map<String, Preferences> getPreferencesOverride() {
         return preferencesOverride;
+    }
+
+    private static final ChangeSupport cs = new ChangeSupport(HintsSettings.class);
+
+    public static void addChangeListener(ChangeListener l) {
+	cs.addChangeListener(l);
+    }
+
+    public static void removeChangeListener(ChangeListener l) {
+	cs.removeChangeListener(l);
+    }
+
+    public static void fireChangeEvent() {
+	cs.fireChange();
     }
     
     public static interface HintsAccessor {

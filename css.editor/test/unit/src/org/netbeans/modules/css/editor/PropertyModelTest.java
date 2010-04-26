@@ -730,4 +730,15 @@ public class PropertyModelTest extends TestBase {
 
         assertTrue(csspv.success());
     }
+
+    public void testBorder_Top_Style() {
+        Property p = PropertyModel.instance().getProperty("border-top-style");
+
+        CssPropertyValue csspv = new CssPropertyValue(p, "dotted dotted dashed dashed");
+        assertFalse(csspv.success());
+
+        csspv = new CssPropertyValue(p, "dotted");
+        assertTrue(csspv.success());
+
+    }
 }

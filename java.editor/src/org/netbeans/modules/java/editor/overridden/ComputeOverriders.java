@@ -231,14 +231,35 @@ public class ComputeOverriders {
         Logger.getLogger("TIMER").log(Level.FINE, "Overridden Candidates - Total", //NOI18N
             new Object[] {file, endTime - startTime});
 
+	FileObject currentFileSourceRoot = findSourceRoot(file);
+
+	if (currentFileSourceRoot != null) {
+	    try {
+		URL rootURL = currentFileSourceRoot.getURL();
+
+		computeOverridingForRoot(rootURL, users.remove(rootURL), methods, overriding);
+	    } catch (FileStateInvalidException ex) {
+		LOG.log(Level.INFO, null, ex);
+	    }
+	}
+
         for (Map.Entry<URL, Map<ElementHandle<TypeElement>, Set<ElementHandle<TypeElement>>>> data : users.entrySet()) {
-            for (Map.Entry<ElementHandle<TypeElement>, Set<ElementHandle<TypeElement>>> deps : data.getValue().entrySet()) {
-                if (cancel.get()) return null;
-                findOverriddenAnnotations(data.getKey(), deps.getValue(), deps.getKey(), methods.get(deps.getKey()), overriding);
-            }
+	    computeOverridingForRoot(data.getKey(), data.getValue(), methods, overriding);
         }
 
+	if (cancel.get()) return null;
+
         return overriding;
+    }
+
+    private void computeOverridingForRoot(URL root,
+	                                  Map<ElementHandle<TypeElement>, Set<ElementHandle<TypeElement>>> overridingHandles,
+					  Map<ElementHandle<TypeElement>, List<ElementHandle<ExecutableElement>>> methods,
+					  Map<ElementHandle<? extends Element>, List<ElementDescription>> overridingResult) {
+	for (Map.Entry<ElementHandle<TypeElement>, Set<ElementHandle<TypeElement>>> deps : overridingHandles.entrySet()) {
+	    if (cancel.get()) return ;
+	    findOverriddenAnnotations(root, deps.getValue(), deps.getKey(), methods.get(deps.getKey()), overridingResult);
+	}
     }
 
     private static void fillInMethods(Iterable<? extends TypeElement> types, Map<ElementHandle<TypeElement>, List<ElementHandle<ExecutableElement>>> methods) {

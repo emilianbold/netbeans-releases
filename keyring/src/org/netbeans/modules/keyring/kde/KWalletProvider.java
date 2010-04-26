@@ -75,10 +75,8 @@ public class KWalletProvider implements KeyringProvider{
 
     @Override
     public char[] read(String key){
-        runCommand("close", runCommand("localWallet"), "true".toCharArray() );
         if (updateHandler()){
             char[] pwd = runCommand("readPassword", handler, getApplicationName(), key.toCharArray(), getApplicationName(true));
-            runCommand("close", runCommand("localWallet"), "true".toCharArray() );
             return pwd.length > 0 ? pwd : null;
         }
         throw new KwalletException("read");
@@ -88,14 +86,12 @@ public class KWalletProvider implements KeyringProvider{
     public void save(String key, char[] password, String description){
         //description is forgoten ! kdewallet dosen't have any facility to store
         //it by default and I don't want to do it by adding new fields to kwallet
-        runCommand("close", runCommand("localWallet"), "true".toCharArray() );
         if (updateHandler()){
             if (new String(runCommand("writePassword", handler , getApplicationName()
                     , key.toCharArray(), password , getApplicationName(true))
                     ).equals("-1")){
                 throw new KwalletException("save");
             }
-            runCommand("close", runCommand("localWallet"), "true".toCharArray() );
             return;
         }
         throw new KwalletException("save");
@@ -103,14 +99,12 @@ public class KWalletProvider implements KeyringProvider{
 
     @Override
     public void delete(String key){
-        runCommand("close", runCommand("localWallet"), "true".toCharArray() );
         if (updateHandler()){
             if (new String(runCommand("removeEntry" ,handler,
             getApplicationName() , key.toCharArray() , getApplicationName(true)
             )).equals("-1")){
                 throw new KwalletException("delete");
             }
-            runCommand("close", runCommand("localWallet"), "true".toCharArray() );
             return;
         }
         throw new KwalletException("delete");
@@ -144,7 +138,9 @@ public class KWalletProvider implements KeyringProvider{
         Runtime rt = Runtime.getRuntime();
         String retVal = "";
         try {
-
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "executing {0}", Arrays.toString(argv));
+            }
             Process pr = rt.exec(argv);
             
             BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
@@ -169,10 +165,9 @@ public class KWalletProvider implements KeyringProvider{
 
 
             int exitVal = pr.waitFor();
-            if(exitVal!=0){
-                logger.log(Level.FINE,"application exit with code "+exitVal+" for commandString: "+Arrays.toString(argv));
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "application exit with code {0} for commandString: {1}", new Object[]{exitVal, Arrays.toString(argv)});
             }
-
         } catch (InterruptedException ex) {
             logger.log(Level.FINE,
                     "exception thrown while invoking the command \""+Arrays.toString(argv)+"\"",

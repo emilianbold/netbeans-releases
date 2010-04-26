@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.apisupport.project.ui.customizer;
+package org.netbeans.modules.apisupport.project;
 
 import java.text.Collator;
 import java.util.Arrays;
@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Utilities;
 
 /**
@@ -74,6 +75,8 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
     private static final String SPEC_VERSION_LAZY = "<lazy>"; // NOI18N
     private boolean implDep;
     private boolean compileDep;
+    boolean buildPrerequisite;
+    boolean runDependency;
     
     private ModuleEntry me;
     
@@ -111,15 +114,22 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
         this(me, me.getReleaseVersion(), SPEC_VERSION_LAZY, me.getPublicPackages().length > 0, false);
     }
     
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public ModuleDependency(ModuleEntry me, String releaseVersion,
-            String specVersion, boolean compileDep, boolean implDep) {
+            String specVersion, boolean compileDep, boolean implDep) throws NumberFormatException {
         this.me = me;
         
         // set versions to null if contain the same value as the given entry
         this.compileDep = compileDep;
         this.implDep = implDep;
         this.releaseVersion = releaseVersion;
+        if (specVersion != null && !specVersion.equals(SPEC_VERSION_LAZY)) {
+            new SpecificationVersion(specVersion);
+        }
         this.specVersion = specVersion;
+        // defaults, ProjectXMLManager can override with specific info:
+        buildPrerequisite = compileDep;
+        runDependency = true;
     }
     
     /**
@@ -131,7 +141,7 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
     }
     
     public String getSpecificationVersion() {
-        if (specVersion == SPEC_VERSION_LAZY) {
+        if (SPEC_VERSION_LAZY.equals(specVersion)) {
             specVersion = me.getSpecificationVersion();
         }
         return specVersion;
@@ -167,7 +177,7 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
             if (result != 0) { return result; }
         }
         
-        result = hasImplementationDepedendency() == other.hasImplementationDepedendency() ? 0 : (implDep ? 1 : -1);
+        result = hasImplementationDependency() == other.hasImplementationDependency() ? 0 : (implDep ? 1 : -1);
         if (result != 0) { return result; }
         
         result = hasCompileDependency() == other.hasCompileDependency() ? 0 : (compileDep ? 1 : -1);
@@ -181,7 +191,7 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
                     Utilities.compareObjects(getReleaseVersion(), other.getReleaseVersion()) &&
                     ((specVersion == SPEC_VERSION_LAZY && other.specVersion == SPEC_VERSION_LAZY) ||
                     Utilities.compareObjects(getSpecificationVersion(), other.getSpecificationVersion())) &&
-                    (hasImplementationDepedendency() == other.hasImplementationDepedendency()) &&
+                    (hasImplementationDependency() == other.hasImplementationDependency()) &&
                     (hasCompileDependency() == other.hasCompileDependency());
         } else {
             return false;
@@ -197,7 +207,7 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
         return compileDep;
     }
     
-    public boolean hasImplementationDepedendency() {
+    public boolean hasImplementationDependency() {
         return implDep;
     }
     
@@ -216,7 +226,7 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
      * module (according to whether or not it would be listed as a friend).
      * @param dependingModuleCNB the CNB of the module depending on this one
      */
-    Set<String> getFilterTokens(String dependingModuleCNB) {
+    public Set<String> getFilterTokens(String dependingModuleCNB) {
         boolean friend = me.isDeclaredAsFriend(dependingModuleCNB);
         Set<String> filterTokens = friend ? filterTokensFriend : filterTokensNotFriend;
         if (filterTokens == null) {
@@ -244,7 +254,7 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
         return "ModuleDependency[me: " + getModuleEntry() + // NOI18N
                 ", relVer: " + getReleaseVersion() + // NOI18N
                 ", specVer: " + getSpecificationVersion() + // NOI18N
-                ", implDep: " + hasImplementationDepedendency() + // NOI18N
+                ", implDep: " + hasImplementationDependency() + // NOI18N
                 ", compDep: " + hasCompileDependency() + // NOI18N
                 "]"; // NOI18N
     }

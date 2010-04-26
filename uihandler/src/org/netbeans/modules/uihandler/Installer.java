@@ -1825,7 +1825,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 }else{
                     params.add(panel.getUserName());
                 }
-            } else {
+            } else if (settings != null) {
                 params.add(settings.getUserName());
             }
             addMoreLogs(params, openPasswd);

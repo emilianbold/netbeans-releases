@@ -46,7 +46,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
@@ -66,15 +65,19 @@ public class AptSourceFileManager extends SourceFileManager {
     public static final String ORIGIN_FILE = "apt-origin";    //NOI18N
 
     private final ClassPath userRoots;
-    private final Stack<URL> explicitSibling = new Stack<URL>();
+    private final SiblingProvider siblings;
 
 
 
-    public AptSourceFileManager (final @NonNull ClassPath userRoots,
-                              final @NonNull ClassPath aptRoots) {
+    public AptSourceFileManager (
+            final @NonNull ClassPath userRoots,
+            final @NonNull ClassPath aptRoots,
+            final @NonNull SiblingProvider siblings) {
         super(aptRoots, true);
         assert userRoots != null;
+        assert siblings != null;
         this.userRoots = userRoots;
+        this.siblings = siblings;
     }
 
     @Override
@@ -116,26 +119,7 @@ public class AptSourceFileManager extends SourceFileManager {
 
     @Override
     public boolean handleOption(String head, Iterator<String> tail) {
-        if (ORIGIN_FILE.equals(head)) {
-            if (!tail.hasNext()) {
-                throw new IllegalArgumentException("The apt-source-root requires folder.");    //NOI18N
-            }
-            final String ownerRootURL = tail.next();
-            if (ownerRootURL.length() == 0) {
-                explicitSibling.pop();
-            }
-            else {
-                try {
-                    explicitSibling.push(new URL(ownerRootURL));
-                } catch (MalformedURLException ex) {
-                    throw new IllegalArgumentException("Invalid path argument: " + ownerRootURL);    //NOI18N
-                }
-            }
-            return false;   //Pass the option to all FileManagers
-        }
-        else {
-            return super.handleOption(head, tail);
-        }
+        return super.handleOption(head, tail);
     }
 
     private FileObject getAptRoot (final javax.tools.FileObject sibling) {
@@ -149,7 +133,7 @@ public class AptSourceFileManager extends SourceFileManager {
 
     private URL getOwnerRoot (final javax.tools.FileObject sibling) {
         try {
-            return !explicitSibling.isEmpty() ? getOwnerRootSib(explicitSibling.peek()) :
+            return siblings.hasSibling() ? getOwnerRootSib(siblings.getSibling()) :
                 (sibling == null ? getOwnerRootNoSib() : getOwnerRootSib(sibling.toUri().toURL()));
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
