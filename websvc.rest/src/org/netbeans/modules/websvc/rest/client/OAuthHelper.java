@@ -59,7 +59,7 @@ import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
-import org.netbeans.modules.websvc.saas.model.oauth.AuthorizeConsumerType;
+import org.netbeans.modules.websvc.saas.model.oauth.AuthorizationType;
 import org.netbeans.modules.websvc.saas.model.oauth.DynamicUrlType;
 import org.netbeans.modules.websvc.saas.model.oauth.FlowType;
 import org.netbeans.modules.websvc.saas.model.oauth.Metadata;
@@ -671,7 +671,7 @@ public class OAuthHelper {
     }
 
     private static String getAuthorizationUrl(Metadata oauthMetadata) {
-        AuthorizeConsumerType auth = oauthMetadata.getFlow().getAuthorizeConsumer();
+        AuthorizationType auth = oauthMetadata.getFlow().getAuthorization();
         if (auth.getFixedUrl() != null) {
             StringBuffer buf = new StringBuffer(auth.getFixedUrl().getUrl());
             List<ParamType> params =  auth.getParam();
@@ -694,7 +694,7 @@ public class OAuthHelper {
             return "\""+buf.toString()+(params.size() == 0 ? "\"" : ""); //NOI18N
         } else {
             DynamicUrlType dynamicUrl = auth.getDynamicUrl();
-            return getParamFromResponse(oauthMetadata.getFlow().getRequestToken().getResponseStyle(), "requestTokenResponse", dynamicUrl.getCallbackParamName()); //NOI18N
+            return getParamFromResponse(oauthMetadata.getFlow().getRequestToken().getResponseStyle(), "requestTokenResponse", dynamicUrl.getAuthParamName()); //NOI18N
         }
     }
 
