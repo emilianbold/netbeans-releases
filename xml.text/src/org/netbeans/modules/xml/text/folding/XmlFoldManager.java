@@ -109,18 +109,27 @@ public class XmlFoldManager implements FoldManager {
         return operation;
     }
       
-    
     /**
      * Do NOT update folds here. For some reason, three fold managers get
      * instantiated by the infrastructure and three initFolds() get called.
      * 
-     * Schedule fold updates in insertUpdate removeUpdate and changeUpdate.
-     * First fold will be created by changeUpdate.
+     * Schedule fold updates in insertUpdate removeUpdate and changedUpdate.
+     * First fold will be created by changedUpdate.
      * @param transaction
      */
-    public void initFolds(FoldHierarchyTransaction transaction) {
+    @Override
+     public void initFolds(FoldHierarchyTransaction transaction) {
+        /* fix for issue #184452 (http://netbeans.org/bugzilla/show_bug.cgi?id=184452)
+         * -------------------------------------------------------------------------
+         * In NB 6.9 (April, 2010) the default behaviour has been changed: now only
+         * 1 fold manager is instantiated by the infrastructure and the method "initFolds()"
+         * is called once (the parent interface org.netbeans.spi.editor.fold.FoldManager:
+         * "... this method is by default called at the file opening time"), but the
+         * method "changedUpdate()" is not called at the file opening time.
+         */
+        scheduleFoldUpdate();
     }
-    
+
     private BaseDocument getDocument() {
         return (BaseDocument) getOperation().getHierarchy().getComponent().getDocument();
     }
