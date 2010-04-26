@@ -85,6 +85,8 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.GeneratedFileMarker;
 import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.MemoryFileManager;
+import org.netbeans.modules.java.source.parsing.SiblingSource;
+import org.netbeans.modules.java.source.parsing.SiblingSupport;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -390,15 +392,17 @@ public final class ClasspathInfo {
         if (this.fileManager == null) {
             boolean hasSources = this.cachedSrcClassPath != null;
             final CacheMarker marker = new CacheMarker(this.cachedUserSrcClassPath);
+            final SiblingSource siblings = SiblingSupport.create();
             JavaFileManager jfm = new ProxyFileManager (
                 new CachingFileManager (this.archiveProvider, this.cachedBootClassPath, true, true),
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
                 hasSources ? (!useModifiedFiles ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
                     : new SourceFileManager (this.cachedUserSrcClassPath, ignoreExcludes)) : null,
-                cachedAptSrcClassPath != null ? new AptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath) : null,
-                hasSources ? outFileManager = new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedUserSrcClassPath, this.cachedAptSrcClassPath) : null,
+                cachedAptSrcClassPath != null ? new AptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, siblings.getProvider()) : null,
+                hasSources ? outFileManager = new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, siblings.getProvider()) : null,
                 this.memoryFileManager,
-              marker);
+                marker,
+                siblings);
             this.fileManager = backgroundCompilation ? jfm : new NullWriteFileManager(jfm);
         }
         return this.fileManager;
