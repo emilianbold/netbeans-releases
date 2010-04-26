@@ -48,7 +48,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -123,36 +123,24 @@ final class CreatedModifiedFilesProvider  {
         Library library = data.getLibrary();
         retval.put("NAME",data.getLibraryName());//NOI18N
         retval.put("BUNDLE",getPackagePlusBundle(project).replace('/','.'));//NOI18N
-        
-        Iterator<URL> it = library.getContent(VOLUME_CLASS).iterator();
-        retval.put("CLASSPATH",getTokenSubstitution(it, fileSupport, data, "libs/"));//NOI18N
-        
-        it = library.getContent(VOLUME_SRC).iterator();
-        retval.put("SRC",getTokenSubstitution(it, fileSupport, data, "sources/"));//NOI18N
-        
-        it = library.getContent(VOLUME_JAVADOC).iterator();
-        retval.put("JAVADOC",getTokenSubstitution(it, fileSupport, data, "docs/"));//NOI18N
-        
+        retval.put("CLASSPATH",getTokenSubstitution(library.getContent(VOLUME_CLASS), fileSupport, data, "libs/")); // NOI18N
+        retval.put("SRC",getTokenSubstitution(library.getContent(VOLUME_SRC), fileSupport, data, "sources/")); // NOI18N
+        retval.put("JAVADOC",getTokenSubstitution(library.getContent(VOLUME_JAVADOC), fileSupport, data, "docs/")); // NOI18N
         return retval;
     }
     
-    private static String getTokenSubstitution(Iterator<URL> it, CreatedModifiedFiles fileSupport,
+    private static String getTokenSubstitution(List<URL> urls, CreatedModifiedFiles fileSupport,
             NewLibraryDescriptor.DataModel data, String pathPrefix) {
         StringBuilder sb = new StringBuilder();
-        while (it.hasNext()) {
-            URL originalURL = it.next();
+        for (URL originalURL : urls) {
             String archiveName;
             archiveName = addArchiveToCopy(fileSupport, data, originalURL, "release/"+pathPrefix);//NOI18N
             if (archiveName != null) {
                 String codeNameBase = data.getModuleInfo().getCodeNameBase();
                 String urlToString = transformURL(codeNameBase, pathPrefix, archiveName);//NOI18N
-                sb.append("<resource>");//NOI18N
+                sb.append("\n        <resource>"); // NOI18N
                 sb.append(urlToString);
-                if (it.hasNext()) {
-                    sb.append("</resource>\n");//NOI18N
-                } else {
-                    sb.append("</resource>");//NOI18N
-                }
+                sb.append("</resource>"); // NOI18N
             }
         }
         return sb.toString();
