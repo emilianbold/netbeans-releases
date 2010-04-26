@@ -51,11 +51,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 import java.util.logging.Logger;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.util.Iterators;
@@ -83,18 +83,21 @@ public class OutputFileManager extends CachingFileManager {
     private final Set<File> filteredFiles = new HashSet<File>();
     private boolean filtered;
     private String outputRoot;
-    private final Stack<URL> explicitSibling = new Stack<URL>();
+    private final SiblingProvider siblings;
 
     /** Creates a new instance of CachingFileManager */
     public OutputFileManager(final CachingArchiveProvider provider,
-            final ClassPath outputClassPath,
-            final ClassPath sourcePath,
-            final ClassPath aptPath) {
+            final @NonNull ClassPath outputClassPath,
+            final @NonNull ClassPath sourcePath,
+            final ClassPath aptPath,
+            final @NonNull SiblingProvider siblings) {
         super (provider, outputClassPath, false, true);
         assert outputClassPath != null;
         assert sourcePath != null;
+        assert siblings != null;
 	this.scp = sourcePath;
         this.apt = aptPath == null ? EMPTY_PATH : aptPath;
+        this.siblings = siblings;
     }
 
     public final boolean isFiltered () {
@@ -179,7 +182,7 @@ public class OutputFileManager extends CachingFileManager {
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
         assert pkgName != null;
         assert relativeName != null;
-        URL siblingURL = !explicitSibling.isEmpty() ? explicitSibling.peek() : sibling == null ? null : sibling.toUri().toURL();
+        URL siblingURL = siblings.hasSibling() ? siblings.getSibling() : sibling == null ? null : sibling.toUri().toURL();
         if (siblingURL == null) {
             throw new IllegalArgumentException ("sibling == null");
         }
@@ -334,24 +337,7 @@ public class OutputFileManager extends CachingFileManager {
             if (outputRoot.length() <= 0)
                 outputRoot = null;
             return true;
-        } if (AptSourceFileManager.ORIGIN_FILE.equals(head)) {
-            if (!tail.hasNext()) {
-                throw new IllegalArgumentException("The apt-origin requires folder.");    //NOI18N
-            }
-            final String aptOrigin = tail.next();
-            if (aptOrigin.length() == 0) {
-                    explicitSibling.pop();
-            }
-            else {
-                try {
-                    explicitSibling.push(new URL(aptOrigin));
-                } catch (MalformedURLException ex) {
-                    throw new IllegalArgumentException("Invalid path argument: " + aptOrigin);    //NOI18N
-                }
-            }
-            return false;   //Pass the option to all FileManagers
-        }
-        else {
+        } else {
             return super.handleOption(head, tail);
         }
     }
