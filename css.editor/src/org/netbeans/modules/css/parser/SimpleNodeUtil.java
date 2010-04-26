@@ -248,4 +248,19 @@ public class SimpleNodeUtil {
         return null;
     }
 
+    public static String getNodeImage(SimpleNode node) {
+        String image;
+        switch(node.kind()) {
+            case CssParserTreeConstants.JJTHEXCOLOR:
+                //use only the first token image (the <HASH> token) since the node
+                //can also contain comments (<HASH> ( ( <S> | <COMMENT> ) )*)
+                image = node.jjtGetFirstToken().image;
+                break;
+            default:
+                image = node.image();
+        }
+
+        return image;
+    }
+
 }

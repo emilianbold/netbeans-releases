@@ -117,6 +117,8 @@ public class CssOccurancesFinder extends OccurrencesFinder {
                 return ;
         }
 
+        final String currentNodeImage = SimpleNodeUtil.getNodeImage(currentNode);
+
         final Map<OffsetRange, ColoringAttributes> occurancesLocal = new HashMap<OffsetRange, ColoringAttributes>();
         SimpleNodeUtil.visitChildren(root, new NodeVisitor() {
 
@@ -126,7 +128,7 @@ public class CssOccurancesFinder extends OccurrencesFinder {
                     return;
                 }
                 if(currentNode.kind() == node.kind() && 
-                        LexerUtils.equals(currentNode.image().trim(), node.image().trim(), currentNode.kind() == CssParserTreeConstants.JJTHEXCOLOR, false)) {
+                        LexerUtils.equals(currentNodeImage.trim(), SimpleNodeUtil.getNodeImage(node).trim(), currentNode.kind() == CssParserTreeConstants.JJTHEXCOLOR, false)) {
 
                     OffsetRange trimmedNodeRange = SimpleNodeUtil.getTrimmedNodeRange(node);
                     //something to highlight

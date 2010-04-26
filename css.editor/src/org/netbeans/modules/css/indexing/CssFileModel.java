@@ -300,9 +300,7 @@ public class CssFileModel {
                 }
 
             } else if(node.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
-                //use only the first token image (the <HASH> token) since the node
-                //can also contain comments (<HASH> ( ( <S> | <COMMENT> ) )*)
-                String image = node.jjtGetFirstToken().image;
+                String image = SimpleNodeUtil.getNodeImage(node);
                 int[] wsLens = getTextWSPreAndPostLens(image);
                 image = image.substring(wsLens[0], image.length() - wsLens[1]);
                 OffsetRange range = new OffsetRange(node.startOffset() + wsLens[0], node.endOffset() - wsLens[1]);
