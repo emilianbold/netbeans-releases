@@ -682,6 +682,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     displayDiffView();
                     nextAction.setEnabled(false);
                     prevAction.setEnabled(false);
+                    commitButton.setEnabled(false);
                     revalidate();
                     repaint();
                 } else {

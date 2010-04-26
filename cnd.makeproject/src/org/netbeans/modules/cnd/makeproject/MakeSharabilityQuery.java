@@ -62,11 +62,11 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
  */
 public class MakeSharabilityQuery implements SharabilityQueryImplementation {
 
-    private File baseDirFile;
-    private String baseDir;
-    private int baseDirLength;
+    private final File baseDirFile;
+    private final String baseDir;
+    private final int baseDirLength;
     private boolean privateShared;
-    private ConfigurationDescriptorProvider projectDescriptorProvider;
+    private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private static final boolean IGNORE_BINARIES = CndUtils.getBoolean("cnd.vcs.ignore.binaries", true);
     private boolean inited = false;
     private Set<String> skippedFiles = new HashSet<String>();

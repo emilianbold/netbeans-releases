@@ -109,7 +109,7 @@ public class ComputeAnnotations {
             final Collection<? extends CsmMethod> baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
             Collection<? extends CsmMethod> overriddenMethods;
             if (!baseMethods.isEmpty() || CsmVirtualInfoQuery.getDefault().isVirtual(meth)) {
-                overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverridenMethods(meth, false);
+                overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(meth, false);
             } else {
                 overriddenMethods = Collections.<CsmMethod>emptyList();
             }

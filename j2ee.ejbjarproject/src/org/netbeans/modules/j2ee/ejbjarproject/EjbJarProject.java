@@ -423,7 +423,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 // remove in next release
                 new EjbJarImpl(apiEjbJar),
                 new EjbJarActionProvider( this, helper, refHelper, updateHelper, eval ),
-                new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper),
+                new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper, ejbModule),
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
                 LookupMergerSupport.createClassPathProviderMerger(cpProvider),
                 QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
@@ -672,7 +672,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
 
                             if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
                                     EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
-                                String classpath = Utils.toClasspathString(platform.getClasspathEntries());
+                                String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
+                                String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), root);
                                 ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                             }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

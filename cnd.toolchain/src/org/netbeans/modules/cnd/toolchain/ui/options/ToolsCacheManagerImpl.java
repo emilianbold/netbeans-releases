@@ -43,9 +43,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -59,6 +62,7 @@ import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
@@ -72,6 +76,8 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
     private ServerUpdateCache serverUpdateCache;
     private HashMap<ExecutionEnvironment, CompilerSetManager> copiedManagers =
             new HashMap<ExecutionEnvironment, CompilerSetManager>();
+    private AtomicBoolean canceled = new AtomicBoolean(false);
+    private Cancellable longTaskCancelable;
 
     public ToolsCacheManagerImpl(boolean initialize) {
         if (initialize) {
@@ -104,7 +110,12 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
     public void applyChanges() {
         applyChanges(ServerList.get(ExecutionEnvironmentFactory.getLocal()));
     }
-    
+
+    @Override
+    public void discardChanges() {
+        clear();
+    }
+
     @Override
     public synchronized CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env, boolean initialize) {
         CompilerSetManagerImpl out = (CompilerSetManagerImpl) copiedManagers.get(env);
@@ -123,7 +134,7 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
         copiedManagers.put(((CompilerSetManagerImpl)newCsm).getExecutionEnvironment(), newCsm);
     }
 
-    public synchronized CompilerSetManagerImpl restoreCompilerSets(CompilerSetManagerImpl oldCsm) {
+    public CompilerSetManagerImpl restoreCompilerSets(CompilerSetManagerImpl oldCsm) {
 
         ExecutionEnvironment execEnv = oldCsm.getExecutionEnvironment();
 
@@ -136,16 +147,39 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
         }
 
         CompilerSetManagerImpl newCsm = CompilerSetManagerAccessorImpl.create(execEnv);
-        newCsm.initialize(false, true, null);
-        while (newCsm.isPending()) {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException ex) {
-                return null;
+        String progressMessage = NbBundle.getMessage(CompilerSetManagerImpl.class, "PROGRESS_TEXT", execEnv.getDisplayName()); // NOI18N
+        final AtomicBoolean cancel = new AtomicBoolean(false);
+        longTaskCancelable = new Cancellable() {
+            @Override
+            public boolean cancel() {
+                cancel.set(true);
+                return true;
             }
+        };
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressMessage, longTaskCancelable);
+        progressHandle.start();
+        try {
+            newCsm.initialize(false, true, null);
+            while (newCsm.isPending()) {
+                if (cancel.get()) {
+                    if (newCsm.cancel()) {
+                        return null;
+                    }
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    return null;
+                }
+            }
+        } finally {
+            progressHandle.finish();
+            longTaskCancelable = null;
         }
 
-        addCompilerSetManager(newCsm);
+        if (cancel.get()) {
+            return null;
+        }
 
         List<CompilerSet> list = oldCsm.getCompilerSets();
         for (CompilerSet cs : list) {
@@ -177,11 +211,19 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
             WindowsSupport.getInstance().init();
         }
 
+        if (canceled.get()) {
+            return null;
+        }
+        addCompilerSetManager(newCsm);
+
         return newCsm;
     }
 
     public void applyChanges(final ServerRecord selectedRecord) {
-
+        Cancellable aLongTaskCancelable = longTaskCancelable;
+        if (aLongTaskCancelable != null) {
+            aLongTaskCancelable.cancel();
+        }
         final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
             @Override
             public void doWork() {
@@ -235,6 +277,17 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
     }
 
     public synchronized void clear() {
+        canceled.set(false);
+        serverUpdateCache = null;
+        copiedManagers.clear();
+    }
+
+    public synchronized void cancel() {
+        canceled.set(true);
+        Cancellable aLongTaskCancelable = longTaskCancelable;
+        if (aLongTaskCancelable != null) {
+            aLongTaskCancelable.cancel();
+        }
         serverUpdateCache = null;
         copiedManagers.clear();
     }

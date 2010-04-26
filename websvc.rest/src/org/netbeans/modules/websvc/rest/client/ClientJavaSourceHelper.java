@@ -207,7 +207,8 @@ public class ClientJavaSourceHelper {
 
                     addSecurityMetadata(security, saasResource);
 
-                    if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType()) && Security.Authentication.SESSION_KEY == security.getAuthentication()) {
+                    if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType()) && 
+                            (Security.Authentication.SESSION_KEY == security.getAuthentication() || Security.Authentication.OAUTH == security.getAuthentication())) {
                         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
 
                         if (restSupport != null && restSupport instanceof WebRestSupport) {
@@ -499,8 +500,30 @@ public class ClientJavaSourceHelper {
             try {
                 Metadata oauthMetadata = saasResource.getSaas().getOauthMetadata();
                 if (oauthMetadata != null) {
-                     modifiedClass = Wadl2JavaHelper.addOAuthMethods(copy, modifiedClass, oauthMetadata);
+                    modifiedClass = OAuthHelper.addOAuthMethods(security.getProjectType(), copy, modifiedClass, oauthMetadata);
+                    if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType())) {
+                        final FileObject ddFo = security.getDeploymentDescriptor();
+                        if (ddFo != null) {
+                            final String packageName = ((IdentifierTree)copy.getCompilationUnit().getPackageName()).getName().toString();
+                            final String className = (outerClassName==null ? "" : outerClassName+"$")+ //NOI18N
+                                    classTree.getSimpleName().toString();
+                            RequestProcessor.getDefault().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        addWebXmlOAuthArtifacts(ddFo, className, packageName);
+                                    } catch (IOException ex) {
+                                        Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Cannot add servlet/servlet mapping to web.xml", ex);
+                                    }
+                                }
+
+                            },1000);
+
+                        }
+                        modifiedClass = OAuthHelper.addOAuthServlets(copy, modifiedClass, oauthMetadata, classTree.getSimpleName().toString(), (ddFo == null));
+                    }
                 }
+
             } catch (IOException ex) {
                 Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Cannot get metadata for oauth", ex);
             } catch (JAXBException ex) {
@@ -1082,6 +1105,35 @@ public class ClientJavaSourceHelper {
                         ((ServletMapping25)servletMapping).addUrlPattern(urlPattern);
                     } else {
                         servletMapping.setUrlPattern(urlPattern);
+                    }
+                    webApp.addServlet(servlet);
+                    webApp.addServletMapping(servletMapping);
+
+                } catch (ClassNotFoundException ex) {
+                }
+            }
+            webApp.write(ddFo);
+        }
+    }
+
+    private static void addWebXmlOAuthArtifacts(FileObject ddFo, String parentClassName, String packageName) throws IOException {
+        String[] servletNames = new String[] {"OAuthLoginServlet", "OAuthCallbackServlet"}; //NOI18N
+        String[] urlPatterns = new String[] {"/OAuthLogin", "/OAuthCallback"}; //NOI18N
+        WebApp webApp = DDProvider.getDefault().getDDRoot(ddFo);
+        if (webApp != null) {
+            for (int i = 0; i<servletNames.length; i++) {
+                String servletName = parentClassName+"$"+servletNames[i];
+                String className = packageName+"."+servletName;
+                try {
+                    Servlet servlet = (Servlet) webApp.createBean("Servlet"); //NOI18N
+                    servlet.setServletName(servletName);
+                    servlet.setServletClass(className);
+                    ServletMapping servletMapping = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
+                    servletMapping.setServletName(servletName);
+                    if (servletMapping instanceof ServletMapping25) {
+                        ((ServletMapping25)servletMapping).addUrlPattern(urlPatterns[i]);
+                    } else {
+                        servletMapping.setUrlPattern(urlPatterns[i]);
                     }
                     webApp.addServlet(servlet);
                     webApp.addServletMapping(servletMapping);

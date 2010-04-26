@@ -148,6 +148,16 @@ public class JiraConfig {
         BugtrackingUtil.savePassword(httpPassword, "http", httpUser, url); // NOI18N
 
     }
+
+    public String getRepositoryName(String repoId) {
+        String repoString = getPreferences().get(REPO_ID + repoId, "");         // NOI18N
+        if(repoString.equals("")) {                                             // NOI18N
+            return null;
+        }
+        String[] values = repoString.split(DELIMITER);
+        return values.length > 5 ? values[5] : repoId;
+    }
+
     public JiraRepository getRepository(String repoID) {
         String repoString = getPreferences().get(REPO_ID + repoID, "");     // NOI18N
         if(repoString.equals("")) {                                             // NOI18N

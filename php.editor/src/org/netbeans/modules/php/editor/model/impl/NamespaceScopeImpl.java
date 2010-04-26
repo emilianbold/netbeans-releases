@@ -75,8 +75,8 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         return retval;
     }
 
-    ScalarConstantElementImpl createConstantElement(ASTNodeInfo<Scalar> node) {
-        return new ScalarConstantElementImpl(this, node);
+    ScalarConstantElementImpl createConstantElement(final ASTNodeInfo<Scalar> node, final String value) {
+        return new ScalarConstantElementImpl(this, node, value);
     }
     ConstantElementImpl createElement(ConstantDeclarationInfo node) {
         ConstantElementImpl retval = new ConstantElementImpl(this, node);

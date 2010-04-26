@@ -195,6 +195,14 @@ public class BugzillaConfig {
         }
     }
 
+    public String getRepositoryName(String repoID) {
+        String[] values = getRepositoryValues(repoID);
+        if(values == null) {
+            return null;
+        }
+        return values.length > 6 ? values[6] : repoID;
+    }
+
     public BugzillaRepository getRepository(String repoID) {
         String[] values = getRepositoryValues(repoID);
         if(values == null) {

@@ -69,6 +69,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.windows.IOProvider;
 
 /**
@@ -135,7 +136,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         setSysProps();        
     }
 
-    protected void cleanUserDir()  {
+    protected final void cleanUserDir()  {
         File userDir = getUserDir();
         if (userDir.exists()) {
             if (!removeDirectoryContent(userDir)) {
@@ -207,11 +208,14 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     protected void buildProject(MakeProject makeProject, String command, long timeout, TimeUnit unit) throws Exception {
 
+        assertNotSame("buildProject should never be called with \"rebuild\" command.", ActionProvider.COMMAND_REBUILD, command);
+
         final CountDownLatch done = new CountDownLatch(1);
         final AtomicInteger build_rc = new AtomicInteger(-1);
         IOProvider iop = IOProvider.getDefault();
         assert iop instanceof CndTestIOProvider;
-        ((CndTestIOProvider) iop).addListener(new CndTestIOProvider.Listener() {
+
+        CndTestIOProvider.Listener listener = new CndTestIOProvider.Listener() {
 
             @Override
             public void linePrinted(String line) {
@@ -252,19 +256,24 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                 }
                 return false;
             }
-        });
-        MakeActionProvider makeActionProvider = new MakeActionProvider(makeProject);
-        makeActionProvider.invokeAction(command, null);
-        if (timeout <= 0) {
-            done.await();
-        } else {
-            if (!done.await(timeout, unit)) {
-                assertTrue("Timeout: could not build within " + timeout + " " + unit.toString().toLowerCase(), false);
-            }
+        };
+        try {
+            ((CndTestIOProvider) iop).addListener(listener);
+            MakeActionProvider makeActionProvider = new MakeActionProvider(makeProject);
+            makeActionProvider.invokeAction(command, null);
+            if (timeout <= 0) {
+                done.await();
+            } else {
+                    if (!done.await(timeout, unit)) {
+                        assertTrue("Timeout: could not build within " + timeout + " " + unit.toString().toLowerCase(), false);
+                    }
+                }
+            //Thread.sleep(3000); // give building thread time to finish and to kill rfs_controller
+            RemoteSyncTestSupport.waitWorkerFinished(20);
+            assertTrue("build failed: on " + makeProject.getDevelopmentHostExecutionEnvironment()  + ": RC=" + build_rc.get(), build_rc.get() == 0);
+        } finally {
+            ((CndTestIOProvider) iop).removeListener(listener);
         }
-        //Thread.sleep(3000); // give building thread time to finish and to kill rfs_controller
-        RemoteSyncTestSupport.waitWorkerFinished(20);
-        assertTrue("build failed: RC=" + build_rc.get(), build_rc.get() == 0);
     }
 
     protected void clearRemoteSyncRoot() {

@@ -1,4 +1,4 @@
 Code completion result for source line:
 self::|ParentClassConst;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-CONSTANT   ? ParentClassConst              [PUBLIC]   ParentClass
+CONSTANT   ParentClassConst 1              [PUBLIC]   ParentClass

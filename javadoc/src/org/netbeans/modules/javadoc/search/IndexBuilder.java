@@ -41,21 +41,27 @@
 
 package org.netbeans.modules.javadoc.search;
 
-import java.io.*;
-import java.lang.ref.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import javax.swing.text.html.parser.*;
-
 import org.openide.ErrorManager;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-
 import org.openide.util.RequestProcessor;
-
 
 /**
  * Builds index of Javadoc filesystems.
@@ -76,14 +82,14 @@ public class IndexBuilder implements Runnable, ChangeListener {
     private static final ErrorManager err =
             ErrorManager.getDefault().getInstance("org.netbeans.modules.javadoc.search.IndexBuilder"); // NOI18N;
     
-    private Reference cachedData;
+    private Reference<List<Index>> cachedData;
     
     private JavadocRegistry jdocRegs;
 
     /**
-     * WeakMap<FileSystem : info> of information extracted from filesystems.
+     * information extracted from filesystems.
      */
-    Map     filesystemInfo = Collections.EMPTY_MAP;
+    Map<FileObject,Info> filesystemInfo = Collections.emptyMap();
 
     private static class Info {
         /**
@@ -97,6 +103,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
         String      indexFileName;
     }
 
+    @SuppressWarnings("LeakingThisInConstructor")
     private IndexBuilder() {
         this.jdocRegs = JavadocRegistry.getDefault();
         this.jdocRegs.addChangeListener(this);
@@ -110,82 +117,78 @@ public class IndexBuilder implements Runnable, ChangeListener {
      * It will start parsing asynch.
      */
     public synchronized static IndexBuilder getDefault() {
-        if (INSTANCE != null)
+        if (INSTANCE != null) {
             return INSTANCE;
+        }
         INSTANCE = new IndexBuilder();
         scheduleTask();
         return INSTANCE;
     }
     
-    public void run() {
+    public @Override void run() {
         cachedData = null;
         refreshIndex();
     }
     
-    public void stateChanged (ChangeEvent event) {
+    public @Override void stateChanged (ChangeEvent event) {
         scheduleTask ();
+    }
+
+    public static final class Index implements Comparable<Index> {
+        private static final Collator c = Collator.getInstance();
+        public final String display;
+        public final FileObject fo;
+        private Index(String display, FileObject fo) {
+            this.display = display;
+            this.fo = fo;
+        }
+        public @Override boolean equals(Object obj) {
+            if (!(obj instanceof Index)) {
+                return false;
+            }
+            final Index other = (Index) obj;
+            return display.equals(other.display) && fo == other.fo;
+        }
+        public @Override int hashCode() {
+            return display.hashCode() ^ fo.hashCode();
+        }
+        public @Override int compareTo(Index o) {
+            return c.compare(display, o.display);
+        }
     }
 
     /**
      * Get the important information from the index builder.
      * Waits for parsing to complete first, if necessary.
      * @param blocking {@code true} in case the current thread should wait for result
-     * @return two lists, one of String display names, the other of FileObject indices
+     * @return list of index files together with display names,
      *      or null in case it is non blocking call and result is not ready yet.
      */
-    public List[] getIndices(boolean blocking) {
+    public List<Index> getIndices(boolean blocking) {
         if (blocking) {
             task.waitFinished();
         } else if (!task.isFinished()) {
             return null;
         }
-        
         if (cachedData != null) {
-            List[] data = (List[])cachedData.get();
+            List<Index> data = cachedData.get();
             if (data != null) {
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    err.log("getIndices (cached)");
-                }
+                err.log("getIndices (cached)");
                 return data;
             }
         }
-        
-        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            err.log("getIndices");
-        }
-        Map m = this.filesystemInfo;
-        Iterator it = m.entrySet().iterator();
-        final Collator c = Collator.getInstance();
-        class Pair implements Comparable {
-            public String display;
-            public FileObject fo;
-            public int compareTo(Object o) {
-                return c.compare(display, ((Pair)o).display);
-            }
-        }
-        SortedSet pairs = new TreeSet(); // SortedSet<Pair>
-        for (int i = 0; i < m.size(); i++) {
-            Map.Entry e = (Map.Entry)it.next();
-            FileObject f = (FileObject)e.getKey();
-            Info info = (Info)e.getValue();
-            FileObject fo = f.getFileObject(info.indexFileName);
-            if (fo == null)
+        err.log("getIndices");
+        List<Index> data = new ArrayList<Index>();
+        for (Map.Entry<FileObject,Info> entry : filesystemInfo.entrySet()) {
+            Info info = entry.getValue();
+            FileObject fo = entry.getKey().getFileObject(info.indexFileName);
+            if (fo == null) {
                 continue;
-            Pair p = new Pair();
-            p.display = info.title;
-            p.fo = fo;
-            pairs.add(p);
+            }
+            data.add(new Index(info.title, fo));
         }
-        List display = new ArrayList(pairs.size());
-        List fos = new ArrayList(pairs.size());
-        it = pairs.iterator();
-        while (it.hasNext()) {
-            Pair p = (Pair)it.next();
-            display.add(p.display);
-            fos.add(p.fo);
-        }
-        List[] data = new List[] {display, fos};
-        cachedData = new WeakReference(data);
+        Collections.sort(data);
+        cachedData = new WeakReference<List<Index>>(data);
         return data;
     }
 
@@ -193,19 +196,19 @@ public class IndexBuilder implements Runnable, ChangeListener {
         if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
             err.log("refreshIndex");
         }
-        Map oldMap;
+        Map<FileObject,Info> oldMap;
         synchronized (this) {
             oldMap = this.filesystemInfo;
         }
         //Enumeration e = FileSystemCapability.DOC.fileSystems();
         FileObject docRoots[] = jdocRegs.getDocRoots();
         // XXX needs to be able to listen to result; when it changes, call scheduleTask()
-        Map m = new WeakHashMap();
+        Map<FileObject,Info> m = new WeakHashMap<FileObject,Info>();
 //        long startTime = System.nanoTime();
 
         for ( int ifCount = 0; ifCount < docRoots.length; ifCount++ ) {
             FileObject fo = docRoots[ifCount];
-            Info oldInfo = (Info)oldMap.get(fo);
+            Info oldInfo = oldMap.get(fo);
             if (oldInfo != null) {
                 // No need to reparse.
                 m.put(fo, oldInfo);
@@ -255,8 +258,9 @@ public class IndexBuilder implements Runnable, ChangeListener {
                 String title = parseTitle(index);
                 if (title != null) {
                     JavadocSearchType st = jdocRegs.findSearchType( fo );
-                    if (st == null)
+                    if (st == null) {
                         continue;
+                    }
                     title = st.getOverviewTitleBase(title);
                 }
                 if (title == null || "".equals(title)) { // NOI18N
@@ -311,7 +315,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
 
     private synchronized static void scheduleTask() {
         if (task == null) {
-            task = new RequestProcessor("Javadoc Index Builder").create(getDefault()); // NOI18N
+            task = new RequestProcessor(IndexBuilder.class).create(getDefault()); // NOI18N
         }
         // Give it a small delay to avoid restarting too many times e.g. during
         // project switch:
@@ -324,10 +328,9 @@ public class IndexBuilder implements Runnable, ChangeListener {
         private InputStream is;
         private String charset;
         private String title;
-        private int state = CONTINUE;
+        private State state = State.CONTINUE;
 
-        private static final int CONTINUE = 0;
-        private static final int EXIT = 0;
+        enum State {CONTINUE, EXIT}
 
         SimpleTitleParser(InputStream is) {
             this.is = is;
@@ -339,7 +342,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
 
         public void parse() throws IOException {
             readNext();
-            while (state == CONTINUE) {
+            while (state == State.CONTINUE) {
                 switch (cc) {
                     case '<' : // start of tags
                         handleOpenBrace();
@@ -356,6 +359,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
             cc = (char) is.read();
         }
 
+        @SuppressWarnings("fallthrough") // XXX intentional?
         private void handleOpenBrace() throws IOException {
             StringBuilder sb = new StringBuilder();
             while (true) {
@@ -364,7 +368,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
                     case '>':  // end of tag
                         String tag = sb.toString().toLowerCase();
                         if (tag.startsWith("body")) { // NOI18N
-                            state = EXIT;
+                            state = State.EXIT;
                             return; // exit parsing, no title
                         } else if (tag.startsWith("meta")) { // NOI18N
                             handleMetaTag(tag);
@@ -378,8 +382,9 @@ public class IndexBuilder implements Runnable, ChangeListener {
                     case (char) -1:  // EOF
                         return;
                     case ' ':
-                        if (sb.length() == 0) // ignore leading spaces
+                        if (sb.length() == 0) {
                             break;
+                        }
                     default:
                         sb.append(cc);
                 }
@@ -398,22 +403,22 @@ public class IndexBuilder implements Runnable, ChangeListener {
             char[] txts = txt.toCharArray();
             int offset = 5; // skip "meta "
             int start = offset;
-            int state = 0;
+            int state2 = 0;
             while (offset < txts.length) {
                 tc = txt.charAt(offset);
-                if (tc == '=' && state == 0) { // end of name
+                if (tc == '=' && state2 == 0) { // end of name
                     name = String.valueOf(txts, start, offset++ - start).trim();
-                    state = 1;
-                } else if (state == 1 && (tc == '"' || tc == '\'')) { // start of value
+                    state2 = 1;
+                } else if (state2 == 1 && (tc == '"' || tc == '\'')) { // start of value
                     start = ++offset;
-                    state = 2;
-                } else if (state == 2 && (tc == '"' || tc == '\'')) { // end of value
+                    state2 = 2;
+                } else if (state2 == 2 && (tc == '"' || tc == '\'')) { // end of value
                     value = String.valueOf(txts, start, offset++ - start);
                     if ("content".equals(name)) { // NOI18N
                         break;
                     }
                     name = ""; // NOI18N
-                    state = 0;
+                    state2 = 0;
                     start = offset;
                 } else {
                     ++offset;
@@ -434,6 +439,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
             }
         }
 
+        @SuppressWarnings("fallthrough") // XXX intentional?
         private void handleTitleTag() throws IOException {
             byte[] buf = new byte[200];
             int offset = 0;
@@ -446,7 +452,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
                         if ("</title".equals(new String(buf, offset - 7, 7).toLowerCase())) {
                             // title is ready
                             // XXX maybe we should also resolve entities like &gt;
-                            state = EXIT;
+                            state = State.EXIT;
                             if (charset == null) {
                                 title = new String(buf, 0, offset - 7).trim();
                             } else {
@@ -467,9 +473,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
 
         private static byte[] enlarge(byte[] b) {
             byte[] b2 = new byte[b.length + 200];
-            for (int i = 0; i < b.length; i++) {
-                b2[i] = b[i];
-            }
+            System.arraycopy(b, 0, b2, 0, b.length);
             return b2;
         }
     }

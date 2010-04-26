@@ -461,6 +461,7 @@ public final class ToolchainManagerImpl {
         DebuggerDescriptor debugger = descriptor.getDebugger();
         if (debugger != null) {
             element = doc.createElement("debugger"); // NOI18N
+            element.setAttribute("id", debugger.getID()); // NOI18N
             writeDebugger(doc, element, debugger);
             root.appendChild(element);
         }
@@ -1116,6 +1117,7 @@ public final class ToolchainManagerImpl {
      * class package-local for testing only
      */
     static final class Debugger extends Tool {
+        String id;
     }
 
     /**
@@ -1487,6 +1489,10 @@ public final class ToolchainManagerImpl {
                 }
                 return;
             }
+            if (path.endsWith(".debugger")) { // NOI18N
+                v.debugger.id = getValue(attributes, "id"); // NOI18N
+		return;
+	    }
             if (path.indexOf(".debugger.") > 0) { // NOI18N
                 Debugger d = v.debugger;
                 if (path.endsWith(".tool")) { // NOI18N
@@ -2420,9 +2426,16 @@ public final class ToolchainManagerImpl {
 
     private static final class DebuggerDescriptorImpl
             extends ToolDescriptorImpl<Debugger> implements DebuggerDescriptor {
+        private Debugger debugger;
 
         public DebuggerDescriptorImpl(Debugger debugger) {
             super(debugger);
+            this.debugger = debugger;
+        }
+
+        @Override
+        public String getID() {
+            return debugger.id;
         }
     }
 

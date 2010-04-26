@@ -320,6 +320,8 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
         installedLocalesList.setModel(getInstalledDictionariesModel());
         installedLocalesList.setVisibleRowCount(4);
         jScrollPane1.setViewportView(installedLocalesList);
+        installedLocalesList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "installedLocalesList_ACSN")); // NOI18N
+        installedLocalesList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "installedLocalesList_ACSD")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "SpellcheckerOptionsPanel.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
@@ -360,6 +362,11 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        addButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "SpellcheckerOptionsPanel.addButton.ACSN")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "SpellcheckerOptionsPanel.addButton.ACSD")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "SpellcheckerOptionsPanel.removeButton.ACSN")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "SpellcheckerOptionsPanel.removeButton.ACSD")); // NOI18N
+
         defaultLocalePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "LBL_Default_Locale_Panel", new Object[] {}))); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "LBL_Default_Locale", new Object[] {})); // NOI18N
@@ -377,7 +384,7 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(defaultLocalePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(errorText)
-                    .addComponent(defaultLocale, 0, 251, Short.MAX_VALUE))
+                    .addComponent(defaultLocale, 0, 255, Short.MAX_VALUE))
                 .addContainerGap())
         );
         defaultLocalePanelLayout.setVerticalGroup(
@@ -395,6 +402,8 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
 
         lUseIn.setVisibleRowCount(5);
         jScrollPane2.setViewportView(lUseIn);
+        lUseIn.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "lUseIn_ACSN")); // NOI18N
+        lUseIn.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "lUseIn_ACSD")); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -408,7 +417,7 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
                 .addContainerGap())
         );
 

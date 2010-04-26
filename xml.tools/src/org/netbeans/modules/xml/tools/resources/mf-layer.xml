@@ -91,6 +91,22 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
             </folder>
+            <folder name="xhtml">
+                <folder name="Actions">
+                    <file name="beforeXMLCheckSeparator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="860"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-tools-actions-CheckAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
+                        <attr name="position" intvalue="870"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
+                        <attr name="position" intvalue="880"/>
+                    </file>
+                </folder>
+            </folder>
 
             <folder name="dtd-xml">
                 <folder name="Actions">
@@ -144,6 +160,22 @@ made subject to such option by the copyright holder.
                     </folder> <!-- Default -->
                 </folder> <!-- Toolbars -->
             </folder> <!-- xml -->
+            <folder name="xhtml">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-xml-tools-actions-CheckAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
+                        <attr name="position" intvalue="1705"/>
+                    </file>
+                    <file name="afterXMLCheckSeparator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1750"/>
+                    </file>
+                </folder>
+            </folder>
         </folder> <!-- text -->
         <folder name="application">
             <folder name="xml-dtd">

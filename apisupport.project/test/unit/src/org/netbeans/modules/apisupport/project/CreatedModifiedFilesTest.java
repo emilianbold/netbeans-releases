@@ -67,7 +67,6 @@ import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.Operation;
 import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -323,7 +322,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         assertEquals("release version", "3", antDep.getReleaseVersion());
         assertEquals("specification version", "3.9", antDep.getSpecificationVersion());
         assertTrue("compile dependeny", antDep.hasCompileDependency());
-        assertFalse("implementation dependeny", antDep.hasImplementationDepedendency());
+        assertFalse("implementation dependeny", antDep.hasImplementationDependency());
     }
     
     public void testTheSameModuleDependencyTwice() throws Exception {

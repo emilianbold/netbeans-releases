@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
@@ -56,6 +57,7 @@ public class GdbLocalVariable extends AbstractVariable implements LocalVariable,
 
     public GdbLocalVariable(GdbDebugger debugger, GdbVariable var) {
         super(debugger, var.getValue());
+        assert !SwingUtilities.isEventDispatchThread();
         this.name = var.getName();
         this.type = getDebugger().requestWhatis(name);
         
@@ -64,6 +66,7 @@ public class GdbLocalVariable extends AbstractVariable implements LocalVariable,
 
     public GdbLocalVariable(GdbDebugger debugger, String name) {
         super(debugger, null);
+        assert !SwingUtilities.isEventDispatchThread();
         this.name = name;
         this.type = getDebugger().requestWhatis(name);
         String expr = name;

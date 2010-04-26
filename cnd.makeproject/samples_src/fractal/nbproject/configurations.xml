@@ -36,6 +36,12 @@
         <ccCompilerTool>
           <developmentMode>0</developmentMode>
         </ccCompilerTool>
+        <fortranCompilerTool>
+          <developmentMode>0</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>0</developmentMode>
+        </asmTool>
         <linkerTool>
           <linkerLibItems>
           </linkerLibItems>
@@ -88,6 +94,12 @@
         <ccCompilerTool>
           <developmentMode>2</developmentMode>
         </ccCompilerTool>
+        <fortranCompilerTool>
+          <developmentMode>2</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>2</developmentMode>
+        </asmTool>
         <linkerTool>
           <linkerLibItems>
           </linkerLibItems>
@@ -115,6 +127,12 @@
         <ccCompilerTool>
           <developmentMode>4</developmentMode>
         </ccCompilerTool>
+        <fortranCompilerTool>
+          <developmentMode>4</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>4</developmentMode>
+        </asmTool>
         <linkerTool>
           <linkerLibItems>
           </linkerLibItems>
@@ -142,6 +160,12 @@
         <ccCompilerTool>
           <developmentMode>5</developmentMode>
         </ccCompilerTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
         <linkerTool>
           <linkerLibItems>
           </linkerLibItems>
@@ -169,6 +193,12 @@
         <ccCompilerTool>
           <developmentMode>6</developmentMode>
         </ccCompilerTool>
+        <fortranCompilerTool>
+          <developmentMode>6</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>6</developmentMode>
+        </asmTool>
         <linkerTool>
           <linkerLibItems>
           </linkerLibItems>
@@ -198,6 +228,14 @@
           <developmentMode>6</developmentMode>
           <sixtyfourBits>true</sixtyfourBits>
         </ccCompilerTool>
+        <fortranCompilerTool>
+          <developmentMode>6</developmentMode>
+          <sixtyfourBits>true</sixtyfourBits>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>6</developmentMode>
+          <sixtyfourBits>true</sixtyfourBits>
+        </asmTool>
         <linkerTool>
           <linkerLibItems>
           </linkerLibItems>

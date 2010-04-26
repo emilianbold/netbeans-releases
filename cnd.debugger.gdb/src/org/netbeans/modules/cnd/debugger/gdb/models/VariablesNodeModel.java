@@ -194,6 +194,8 @@ public class VariablesNodeModel implements ExtendedNodeModel {
     public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT || node instanceof GdbWatchVariable || node instanceof Watch) {
             return WATCH;
+        } else if (node instanceof WatchesTreeModel.EmptyWatch) {
+            return null;
         } else if (node instanceof Field) {
             if (node instanceof AbstractVariable.ErrorField) {
                 return ERROR;
@@ -241,6 +243,12 @@ public class VariablesNodeModel implements ExtendedNodeModel {
     // implement methods from ExtendedNodeModel
     
     public boolean canRename(Object node) throws UnknownTypeException {
+        if (node instanceof WatchesTreeModel.EmptyWatch) {
+            return true;
+        }
+        if (node instanceof GdbWatchVariable) {
+            return true;
+        }
         return false;
     }
 
@@ -266,6 +274,14 @@ public class VariablesNodeModel implements ExtendedNodeModel {
     }
 
     public void setName(Object node, String name) throws UnknownTypeException {
-        throw new UnsupportedOperationException();
+        if (node instanceof GdbWatchVariable) {
+            ((GdbWatchVariable)node).getWatch().setExpression(name);
+            return;
+        }
+        if (node instanceof WatchesTreeModel.EmptyWatch) {
+            ((WatchesTreeModel.EmptyWatch)node).setExpression(name);
+            return;
+        }
+        throw new UnknownTypeException(node);
     }
 }

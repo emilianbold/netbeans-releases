@@ -156,7 +156,7 @@ public final class ShellScriptRunner {
                     scriptWriter = new BufferedWriter(new OutputStreamWriter(shellProcess.getOutputStream(), scriptCS));
                     if (script != null) {
                         scriptWriter.write(script);
-                        scriptWriter.newLine();
+                        scriptWriter.write('\n');
                     } else {
                         BufferedReader scriptReader = null;
                         try {

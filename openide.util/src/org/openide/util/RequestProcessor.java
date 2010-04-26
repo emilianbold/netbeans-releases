@@ -41,6 +41,8 @@
 
 package org.openide.util;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -2057,8 +2059,25 @@ outer:  do {
                         return current;
                     }
                 };
+            ThreadGroup orig = java.security.AccessController.doPrivileged(run);
+            ThreadGroup nuova = null;
 
-            return java.security.AccessController.doPrivileged(run);
+            try {
+                Class<?> appContext = Class.forName("sun.awt.AppContext");
+                Method instance = appContext.getMethod("getAppContext");
+                Method getTG = appContext.getMethod("getThreadGroup");
+                nuova = (ThreadGroup) getTG.invoke(instance.invoke(null));
+            } catch (Exception exception) {
+                logger().log(Level.FINE, "Cannot access sun.awt.AppContext", exception);
+                return orig;
+            }
+
+            assert nuova != null;
+
+            if (nuova != orig) {
+                logger().log(Level.WARNING, "AppContext group {0} differs from originally used {1}", new Object[]{nuova, orig});
+            }
+            return nuova;
         }
 
         private static final Set<Class<? extends Runnable>> warnedClasses = Collections.synchronizedSet(new WeakSet<Class<? extends Runnable>>());

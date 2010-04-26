@@ -126,6 +126,9 @@ class AddAnnotationProcessor extends javax.swing.JPanel {
                     .addComponent(textField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        textField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddAnnotationProcessor.class, "T_ACSN_AnnotationProcessorFQN")); // NOI18N
+        textField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddAnnotationProcessor.class, "T_ACSN_AnnotationProcessorFQN")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

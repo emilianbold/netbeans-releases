@@ -1,5 +1,7 @@
 #!/bin/sh
 
+USERPATH=$PATH
+PATH=/usr/bin:/bin
 HOSTNAME=`uname -n`
 OS=`uname -s`
 CPUTYPE=`uname -p`
@@ -57,12 +59,14 @@ OSFAMILY=${OSFAMILY:-`test "$OS" = "Linux" && echo LINUX`}
 OSFAMILY=${OSFAMILY:-${OS}}
 
 CPUFAMILY=`(echo ${CPUTYPE} | egrep "^i|x86_64|athlon|Intel" >/dev/null && echo x86) || echo ${CPUTYPE}`
+USERDIRBASE=${HOME}
 
 if [ "${OSFAMILY}" = "LINUX" ]; then
    CPUNUM=`cat /proc/cpuinfo | grep processor | wc -l | sed 's/^ *//'`
 elif [ "${OSFAMILY}" = "WINDOWS" ]; then
    CPUNUM=$NUMBER_OF_PROCESSORS
    OSNAME=`uname`
+   USERDIRBASE=${USERPROFILE}
 elif [ "${OSFAMILY}" = "MACOSX" ]; then
    CPUNUM=`hostinfo | awk '/processor.*logical/{print $1}'`
    OSNAME="MacOSX"
@@ -85,6 +89,7 @@ echo OSBUILD=${OSBUILD}
 echo OSFAMILY=${OSFAMILY}
 echo USER=${USER}
 echo SH=${SH}
+echo USERDIRBASE=${USERDIRBASE}
 echo TMPDIRBASE=${TMPDIRBASE}
 echo DATETIME=${DATETIME}
 
@@ -92,11 +97,11 @@ if [ "$OSFAMILY" != "MACOSX" -a "$OSFAMILY" != "WINDOWS" ]; then
    TMPFILE=`mktemp -q env.XXXXXX`
    if [ ! -z "$TMPFILE" ]; then
       /bin/bash -l -c "echo \$PATH>$TMPFILE" > /dev/null 2>&1
-      PATH=${PATH}:`cat $TMPFILE`
+      USERPATH=`cat $TMPFILE`
    fi
    rm -f $TMPFILE
 fi
 
-echo PATH=${PATH}
+echo PATH=${USERPATH}
 
 exit 0
