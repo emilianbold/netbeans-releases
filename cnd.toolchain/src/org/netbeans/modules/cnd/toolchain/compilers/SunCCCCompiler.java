@@ -98,8 +98,8 @@ import org.openide.util.NbBundle;
     }
 
     protected Collection<String> getSystemPaths(String line) {
-        List<String> res =getIncludePaths(line, "-include");
-        res.addAll(getIncludePaths(line, "-I"));
+        List<String> res =getIncludePaths(line, "-include"); // NOI18N
+        res.addAll(getIncludePaths(line, "-I")); // NOI18N
         return res;
     }
 
