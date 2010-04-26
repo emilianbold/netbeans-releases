@@ -70,12 +70,14 @@ public class ConditionsPanel extends JPanel {
 
         FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
         int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
+        String mimeType = file != null ? file.getMIMEType() : "text/plain"; // NOI18N
 
         //Add JEditorPane and context
-        JComponent [] editorComponents = Utilities.createSingleLineEditor(file.getMIMEType());
+        JComponent [] editorComponents = Utilities.createSingleLineEditor(mimeType);
         conditionPane = (JTextComponent) editorComponents[1];
-
-        DialogBinding.bindComponentToFile(file, line, 0, 0, conditionPane);
+        if (file != null) {
+            DialogBinding.bindComponentToFile(file, line, 0, 0, conditionPane);
+        }
 
         conditionSP = (JScrollPane)editorComponents[0];
         conditionSP.setEnabled(false);
