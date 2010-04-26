@@ -47,13 +47,11 @@ import java.util.logging.Logger;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.asm.core.dataobjects.AsmObjectUtilities;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 import org.netbeans.modules.cnd.asm.model.AsmSyntaxProvider;
@@ -62,11 +60,10 @@ import org.netbeans.modules.cnd.asm.model.AsmModelAccessor;
 import org.netbeans.modules.cnd.asm.model.AsmModelProvider;
 import org.netbeans.modules.cnd.asm.model.AsmSyntax;
 import org.netbeans.modules.cnd.asm.model.AsmTypesProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorUtilities;
 
 public class AsmEditorKit extends NbEditorKit {
-
-    public static final String MIME_TYPE = "text/x-asm"; // NOI18N
 
     /** Initialize document by adding the draw-layers for example. */
     @Override
@@ -77,7 +74,7 @@ public class AsmEditorKit extends NbEditorKit {
 
     @Override
     public String getContentType() {
-        return MIME_TYPE;
+        return MIMENames.ASM_MIME_TYPE;
     }
 
     private static final class LangInitializer implements DocumentListener {
@@ -86,13 +83,16 @@ public class AsmEditorKit extends NbEditorKit {
         LangInitializer(Document doc) {
             this.doc = doc;
         }
+        @Override
         public void insertUpdate(DocumentEvent e) {
             initLanguage();
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             initLanguage();
         }
