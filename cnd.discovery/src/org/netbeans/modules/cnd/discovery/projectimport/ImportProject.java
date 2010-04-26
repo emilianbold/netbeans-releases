@@ -110,6 +110,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.WizardDescriptor;
@@ -189,8 +190,8 @@ public class ImportProject implements PropertyChangeListener {
         }
         runMake = Boolean.TRUE.equals(wizard.getProperty("buildProject"));  // NOI18N
         setAsMain = Boolean.TRUE.equals(wizard.getProperty("setMain"));  // NOI18N
-        hostUID = null; // default host
-        toolchain = null; // default toolchain
+        hostUID = (String) wizard.getProperty("hostUID"); // NOI18N
+        toolchain = (CompilerSet)wizard.getProperty("toolchain"); // NOI18N
         
         List<SourceFolderInfo> list = new ArrayList<SourceFolderInfo>();
         list.add(new SourceFolderInfo() {
@@ -549,7 +550,11 @@ public class ImportProject implements PropertyChangeListener {
 
     private void downloadRemoteFile(File file){
         if (file != null && !file.exists()) {
-            ExecutionEnvironment developmentHost = ServerList.getDefaultRecord().getExecutionEnvironment();
+            ExecutionEnvironment env = null;
+            if (hostUID != null) {
+                env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+            }
+            ExecutionEnvironment developmentHost = (env != null) ? env : ServerList.getDefaultRecord().getExecutionEnvironment();
             if (developmentHost.isRemote()) {
                 String remoteFile = HostInfoProvider.getMapper(developmentHost).getRemotePath(file.getAbsolutePath());
                 try {

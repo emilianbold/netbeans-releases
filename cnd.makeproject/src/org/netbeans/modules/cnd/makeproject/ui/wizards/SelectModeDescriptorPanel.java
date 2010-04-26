@@ -302,6 +302,10 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
                 return storage.getMake();
             } else if ("configureName".equals(name)) { // NOI18N
                 return storage.getConfigure();
+            } else if ("hostUID".equals(name)) { // NOI18N
+                return ExecutionEnvironmentFactory.toUniqueID(storage.env);
+            } else if ("toolchain".equals(name)) { // NOI18N
+                return storage.cs;
             }
             return super.getProperty(name);
         }
