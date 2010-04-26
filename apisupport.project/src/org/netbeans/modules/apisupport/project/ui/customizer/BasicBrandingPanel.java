@@ -236,6 +236,7 @@ final class BasicBrandingPanel extends AbstractBrandingPanel  {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(23, 0, 0, 0);
         add(browse16, gridBagConstraints);
+        browse16.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BasicBrandingPanel.class, "ACS_Browse")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(icon32, bundle.getString("LBL_AppIcon32")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -267,6 +268,8 @@ final class BasicBrandingPanel extends AbstractBrandingPanel  {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(browse32, gridBagConstraints);
+        browse32.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BasicBrandingPanel.class, "ACS_Browse")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 4;
