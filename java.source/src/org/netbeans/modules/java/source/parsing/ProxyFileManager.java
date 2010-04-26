@@ -406,15 +406,14 @@ public class ProxyFileManager implements JavaFileManager {
         }
         final boolean hasSibling = siblings.getProvider().hasSibling();
         final boolean write = marker.allowsWrite() || !hasSibling;
-        final boolean mark = marker.allowsWrite() && hasSibling;
-        if (result != null && type != null && mark) {
+        if (result != null && type != null && hasSibling) {
             marker.mark(result.toUri().toURL(), type);
         }
         return write ? result : (T) new NullFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
     }
 
     private void markerFinished() {
-        if (marker.allowsWrite() && siblings.getProvider().hasSibling()) {
+        if (siblings.getProvider().hasSibling()) {
             marker.finished(siblings.getProvider().getSibling());
         }
     }

@@ -514,21 +514,23 @@ public final class ClasspathInfo {
         }
 
         public void mark(@NonNull final URL result, GeneratedFileMarker.Type type) {
-            switch (type) {
-                case SOURCE:
-                    srcOutput.add(result);
-                    break;
-                case RESOURCE:
-                    clsOutput.add(result);
-                    break;
-                default:
-                    throw new IllegalArgumentException();
+            if (allowsWrite) {
+                switch (type) {
+                    case SOURCE:
+                        srcOutput.add(result);
+                        break;
+                    case RESOURCE:
+                        clsOutput.add(result);
+                        break;
+                    default:
+                        throw new IllegalArgumentException();
+                }
             }
         }
 
         public void finished(@NonNull final URL source) {
             try {
-                if (!srcOutput.isEmpty() || !clsOutput.isEmpty()) {
+                if (allowsWrite && (!srcOutput.isEmpty() || !clsOutput.isEmpty())) {
                     final URL sourceRootURL = getOwnerRoot(source);
                     if (sourceRootURL == null) {
                         //todo: caused by next round generating.
