@@ -42,6 +42,9 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -57,6 +60,7 @@ import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.util.Iterators;
 
 /**
@@ -252,8 +256,7 @@ public class ProxyFileManager implements JavaFileManager {
                     }
                 }
             }
-            mark(result, forwardedToSource ? StandardLocation.SOURCE_PATH : l);
-            return result;
+            return mark(result, forwardedToSource ? StandardLocation.SOURCE_PATH : l);
         }
     }
 
@@ -348,8 +351,7 @@ public class ProxyFileManager implements JavaFileManager {
         }
         else {
             final JavaFileObject result = fms[0].getJavaFileForOutput (l, className, kind, sibling);
-            mark (result,l);
-            return result;
+            return mark (result,l);
         }
     }
 
@@ -394,21 +396,50 @@ public class ProxyFileManager implements JavaFileManager {
         return fileObject.toUri().equals (fileObject0.toUri());
     }
 
-    private void mark(final javax.tools.FileObject result, JavaFileManager.Location l) throws MalformedURLException {
+    @SuppressWarnings("unchecked")
+    private <T extends javax.tools.FileObject> T mark(final T result, JavaFileManager.Location l) throws MalformedURLException {
         GeneratedFileMarker.Type type = null;
         if (l == StandardLocation.CLASS_OUTPUT) {
             type = GeneratedFileMarker.Type.RESOURCE;
         } else if (l == StandardLocation.SOURCE_OUTPUT) {
             type = GeneratedFileMarker.Type.SOURCE;
         }
-        if (marker != null && result != null && type != null && siblings.getProvider().hasSibling()) {
+        final boolean hasSibling = siblings.getProvider().hasSibling();
+        final boolean write = marker.allowsWrite() || !hasSibling;
+        final boolean mark = marker.allowsWrite() && hasSibling;
+        if (result != null && type != null && mark) {
             marker.mark(result.toUri().toURL(), type);
         }
+        return write ? result : (T) new NullFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
     }
 
     private void markerFinished() {
-        if (marker != null && siblings.getProvider().hasSibling()) {
+        if (marker.allowsWrite() && siblings.getProvider().hasSibling()) {
             marker.finished(siblings.getProvider().getSibling());
+        }
+    }
+
+    private static final class NullFileObject extends ForwardingInferableJavaFileObject {
+        private NullFileObject (@NonNull final InferableJavaFileObject delegate) {
+            super (delegate);
+        }
+
+        @Override
+        public OutputStream openOutputStream() throws IOException {
+            return new NullOutputStream();
+        }
+
+        @Override
+        public Writer openWriter() throws IOException {
+            return new OutputStreamWriter(openOutputStream());
+        }
+    }
+
+
+    private static class NullOutputStream extends OutputStream {
+        @Override
+        public void write(int b) throws IOException {
+            //pass
         }
     }
 
