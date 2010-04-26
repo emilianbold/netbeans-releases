@@ -86,7 +86,6 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
-import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.commands.AddAttachmentCommand;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -1194,9 +1193,9 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                             }
                         }
                     } catch (DataObjectNotFoundException dnfex) {
-                        dnfex.printStackTrace();
+                        Bugzilla.LOG.log(Level.INFO, dnfex.getMessage(), dnfex);
                     } catch (IOException ioex) {
-                        ioex.printStackTrace();
+                        Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
                     } finally {
                         handle.finish();
                     }
@@ -1221,7 +1220,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                         try {
                             getAttachementData(new FileOutputStream(file));
                         } catch (IOException ioex) {
-                            ioex.printStackTrace();
+                            Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
                         } finally {
                             handle.finish();
                         }
@@ -1247,7 +1246,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                             File file = saveToTempFile();
                             PatchUtils.applyPatch(file, context);
                         } catch (IOException ioex) {
-                            ioex.printStackTrace();
+                            Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
                         } finally {
                             handle.finish();
                         }
