@@ -123,8 +123,10 @@ class SamplesOutputStream {
         List<Long> tids = new ArrayList();
 
         for (ThreadInfo tinfo : infos) {
-            long id = tinfo.getThreadId();
+            long id;
 
+            if (tinfo == null) continue;    // ignore null ThreadInfo
+            id = tinfo.getThreadId();
             if (id != selfThreadId) { // ignore sampling thread
                 Long tid = Long.valueOf(tinfo.getThreadId());
                 ThreadInfo lastThread = lastThreadInfos.get(tid);
