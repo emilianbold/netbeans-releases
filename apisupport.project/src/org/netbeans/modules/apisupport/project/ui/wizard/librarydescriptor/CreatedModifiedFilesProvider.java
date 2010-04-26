@@ -176,7 +176,7 @@ final class CreatedModifiedFilesProvider  {
                 FileObject folderToZip;
                 folderToZip = URLMapper.findFileObject(originalURL);
                 if (folderToZip != null) {
-                    retval = data.getLibraryName()+".zip";//NOI18N
+                    retval = data.getLibraryName() + "-" + folderToZip.getName() + ".zip"; // NOI18N
                     pathPrefix += retval;
                     fileSupport.add(new ZipAndCopyOperation(data.getProject(),
                             folderToZip, pathPrefix));
