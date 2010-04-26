@@ -74,7 +74,8 @@ class SourceClassPathImpl extends AbstractProjectClassPathImpl {
         while (it.hasNext()) {
             URI res = it.next();
             for (URI srcs : col) {
-                if (res.toString().startsWith(srcs.toString())) {
+                if (res.toString().startsWith(srcs.toString())
+                        && resources.contains(res)) {
                     it.remove();
                 }
             }

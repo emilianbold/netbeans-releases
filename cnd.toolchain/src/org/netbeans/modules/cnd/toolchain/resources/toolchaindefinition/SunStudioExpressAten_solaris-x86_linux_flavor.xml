@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
     <toolchain name="OracleSolarisStudioExpress" display="Oracle Solaris Studio Express 6/10 Compiler Collection" family="SunStudio"/>
     <platforms stringvalue="sun_intel,linux"/>
     <default_locations>
-        <platform os="linux" directory="opt/oracle/solstudioex1006/bin"/>
+        <platform os="linux" directory="/opt/oracle/solstudioex1006/bin"/>
         <platform os="sun_intel" directory="/opt/solstudioex1006/bin"/>
     </default_locations>
 </toolchaindefinition>

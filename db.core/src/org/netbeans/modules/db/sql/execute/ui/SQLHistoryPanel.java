@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 - 2010 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 - 2010 Sun Microsystems, Inc.
  */
 
 /*
@@ -136,6 +136,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         setupSQLSaveLimit();
         // Adjust table column width
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 adjustColumnPreferredWidths(sqlHistoryTable);
                 sqlHistoryTable.revalidate();
@@ -279,58 +280,58 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         inputWarningLabel.setRequestFocusEnabled(false);
         inputWarningLabel.setVerifyInputWhenFocusTarget(false);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 610, Short.MAX_VALUE)
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel1)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(connectionUrlComboBox, 0, 306, Short.MAX_VALUE)
-                                .add(18, 18, 18)
-                                .add(jLabel2)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(searchTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 147, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(insertSQLButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 655, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(connectionUrlComboBox, 0, 306, Short.MAX_VALUE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(searchTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(insertSQLButton)
                         .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(inputWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
-                        .add(493, 493, 493))
-                    .add(layout.createSequentialGroup()
-                        .add(sqlLimitLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(sqlLimitTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 62, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(sqlLimitButton))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(inputWarningLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                        .addGap(493, 493, 493))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(sqlLimitLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sqlLimitTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sqlLimitButton))))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(searchTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel2)
-                    .add(connectionUrlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(insertSQLButton)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(sqlLimitTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(sqlLimitButton)
-                            .add(sqlLimitLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(inputWarningLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(searchTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2)
+                    .addComponent(connectionUrlComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(insertSQLButton)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(sqlLimitTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(sqlLimitButton)
+                            .addComponent(sqlLimitLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(inputWarningLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -411,7 +412,13 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     
     private void updateSaveLimitUponReset(String enteredLimit) {
         try {
-            int iLimit = Integer.parseInt(enteredLimit);
+            int iLimit;
+            if (enteredLimit.trim().length() < 10) {
+                iLimit = Integer.parseInt(enteredLimit);
+            } else {
+                // too long number
+                iLimit = SAVE_STATEMENTS_MAX_LIMIT + 1;
+            }
             String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", SAVE_STATEMENTS_CLEARED); // NOI18N
             if (iLimit < 0) {
                 inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_TextInputWarningLabel"));
@@ -553,7 +560,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             }
             int lf = from.length();
             char[] targetChars = target.toCharArray();
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             int copyFrom = 0;
             while (start != -1) {
                 buffer.append(targetChars, copyFrom, start - copyFrom);
@@ -729,6 +736,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             }
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt) {
             processUpdate();
         }
@@ -782,10 +790,12 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             }
         }
 
+        @Override
         public void insertUpdate(DocumentEvent evt) {
             processUpdate();
                     } 
 
+        @Override
         public void removeUpdate(DocumentEvent evt) {
             processUpdate();
                     }
@@ -797,17 +807,18 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             refreshTable(view.getCurrentSQLHistoryList());
                     }
 
+        @Override
         public void changedUpdate(DocumentEvent arg0) {
             // unused
         }
 
-        private void cleanTable() {
-            List<SQLHistory> sqlHistoryList = view.getSQLHistoryList();
-            data = null;                         
-            data = new Object[sqlHistoryList.size()][2];
-            sqlHistoryTable.repaint();
-        }
-
+//        private void cleanTable() {
+//            List<SQLHistory> sqlHistoryList = view.getSQLHistoryList();
+//            data = null;
+//            data = new Object[sqlHistoryList.size()][2];
+//            sqlHistoryTable.repaint();
+//        }
+//
         public List<SQLHistory> sortData() {
             // Refresh the table
             List<SQLHistory> filteredSQLHistoryList = view.filterSQLHistoryList();
@@ -844,6 +855,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             this.doc = doc;
         }
 
+        @Override
         public synchronized void run() {
             try {
                 result = doc.getText(0, doc.getLength());
@@ -945,7 +957,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 }
                 setText((value == null) ? "" : value.toString());
                 setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-                return this;
+                return SQLHistoryPanel.this;
             }
         };
         label.setHorizontalAlignment(JLabel.CENTER);
@@ -983,6 +995,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             this.sortAsc = sortAsc;
         }
 
+        @Override
         public int compare(SQLHistory sql1, SQLHistory sql2) {
             int result = 0;
             if (!(sql1 instanceof SQLHistory) || !(sql2 instanceof SQLHistory)) {

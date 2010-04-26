@@ -363,7 +363,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
     }
 
     @Override
-    public void hyperlinkUpdate(HyperlinkEvent e) {
+    public void hyperlinkUpdate(final HyperlinkEvent e) {
         if (!HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
             return;
         }
@@ -388,7 +388,14 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         } else {
             LOG.log(Level.INFO, "Bugzilla Accessor not found");
         }
-        HtmlBrowser.URLDisplayer.getDefault().showURL(e.getURL());
+        RP.post(new Runnable(){
+
+            @Override
+            public void run() {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(e.getURL());
+            }
+
+        });
     }
 
     final static class ResolvableHelper implements Serializable {

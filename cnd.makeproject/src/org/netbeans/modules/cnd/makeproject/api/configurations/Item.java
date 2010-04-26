@@ -393,7 +393,14 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
             tool = PredefinedToolKind.FortranCompiler;
         } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
-            tool = PredefinedToolKind.Assembler;
+            DataObject dataObject = getDataObject();
+            FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
+            // Do not use assembler for .il files
+            if (fo != null && "il".equals(fo.getExt())) { //NOI18N
+                tool = PredefinedToolKind.CustomTool;
+            } else {
+                tool = PredefinedToolKind.Assembler;
+            }
         } else {
             tool = PredefinedToolKind.CustomTool;
         }

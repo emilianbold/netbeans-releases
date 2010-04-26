@@ -380,7 +380,7 @@ public class ActionManager {
                 lineObj.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
             }
         } catch (Exception ex) {
-            Logger.getLogger(ActionMethodTask.class.getName()).log(Level.INFO, null, ex);
+            Logger.getLogger(ActionManager.class.getName()).log(Level.INFO, null, ex);
         }
     }
 
@@ -760,9 +760,9 @@ public class ActionManager {
                         prop.setValue(null);
                         prop.setValue(action);
                     } catch (IllegalAccessException ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(ActionManager.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     } catch (InvocationTargetException ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(ActionManager.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                 }
             }
@@ -1113,7 +1113,7 @@ public class ActionManager {
                     FormModel mod = getFormModel(formfile);
                     deleteAction(action, mod);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(ActionManager.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             }
         }

@@ -39,13 +39,18 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.undo.UndoManager;
 import org.netbeans.editor.BaseDocument;
@@ -69,29 +74,35 @@ import org.openide.loaders.DataObjectNotFoundException;
  * @author Vladimir Voskresensky
  */
 public class ModifyDocumentTest extends ProjectBasedTestCase {
+    private final ObjectsChangeListener doListener = new ObjectsChangeListener();
     public ModifyDocumentTest(String testName) {
         super(testName);
-        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
-            TraceFlags.TRACE_182342_BUG = true;
-        }
     }
 
     @Override
     protected void setUp() throws Exception {
+        System.err.printf("setUp %s %d\n", getName(), System.currentTimeMillis());
         super.setUp();
-        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
-            TraceFlags.TRACE_182342_BUG = true;
-        }
+        doListener.clear();
+        DataObject.getRegistry().addChangeListener(doListener);
         ModelSupport.instance().startup();
+        System.err.printf("setUp end %s %d\n", getName(), System.currentTimeMillis());
     }
 
     @Override
     protected void tearDown() throws Exception {
+        System.err.printf("tearDown %s %d\n", getName(), System.currentTimeMillis());
         super.tearDown();
         ModelSupport.instance().shutdown();
+        DataObject.getRegistry().removeChangeListener(doListener);
+        doListener.clear();
+        System.err.printf("tearDown end %s %d\n", getName(), System.currentTimeMillis());
     }
 
     public void testInsertDeadBlock() throws Exception {
+        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
+            TraceFlags.TRACE_182342_BUG = true;
+        }
         if (TraceFlags.TRACE_182342_BUG) {
             System.err.printf("TEST INSERT DEAD BLOCK\n");
         }
@@ -140,6 +151,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
 
             try {
                 assertTrue("must have undo", urm.canUndo());
+                assertEquals("must have only one modified object", 1, this.doListener.size());
                 if (!parse1.await(20, TimeUnit.SECONDS)) {
                     exRef.compareAndSet(null, new TimeoutException("not finished await"));
                 } else {
@@ -161,6 +173,9 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     }
 
     public void testRemoveDeadBlock() throws Exception {
+        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
+            TraceFlags.TRACE_182342_BUG = true;
+        }
         if (TraceFlags.TRACE_182342_BUG) {
             System.err.printf("TEST REMOVE DEAD BLOCK\n");
         }
@@ -204,6 +219,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
             });
             try {
                 assertTrue("must have undo", urm.canUndo());
+                assertEquals("must have only one modified object", 1, this.doListener.size());
                 if (!parse1.await(20, TimeUnit.SECONDS)) {
                     exRef.compareAndSet(null, new TimeoutException("not finished await"));
                 } else {
@@ -273,5 +289,25 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         }
         assertEquals(msg + fileImpl.getAbsolutePath(), expectedDeadBlocks, unusedCodeBlocks.size());
         return unusedCodeBlocks;
+    }
+
+    private static final class ObjectsChangeListener implements ChangeListener {
+        private final Set<DataObject> modifiedDOs = new HashSet<DataObject>();
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            DataObject[] objs = DataObject.getRegistry().getModified();
+            modifiedDOs.addAll(Arrays.asList(objs));
+            if (TraceFlags.TRACE_182342_BUG) {
+                ModelSupport.traceDataObjectRegistryStateChanged(e);
+            }
+        }
+
+        public void clear() {
+            modifiedDOs.clear();
+        }
+
+        public int size() {
+            return modifiedDOs.size();
+        }
     }
 }
