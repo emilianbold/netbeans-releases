@@ -80,6 +80,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         this(displayName, null);
     }
 
+    @Override
     public void log(SQLExecutionResult result) {
         if (result.hasExceptions()) {
             logException(result);
@@ -88,6 +89,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         }
     }
 
+    @Override
     public void finish(long executionTime) {
         OutputWriter writer = inputOutput.getOut();
         writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionFinished",
@@ -97,6 +99,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         writer.close();
     }
 
+    @Override
     public void cancel() {
         OutputWriter writer = inputOutput.getErr();
         writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionCancelled"));
@@ -195,17 +198,21 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
             this.column = column;
         }
 
+        @Override
         public void outputLineSelected(OutputEvent ev) {
             goToLine(false);
         }
 
+        @Override
         public void outputLineCleared(OutputEvent ev) {
         }
 
+        @Override
         public void outputLineAction(OutputEvent ev) {
             goToLine(true);
         }
 
+        @SuppressWarnings("deprecation")
         private void goToLine(boolean focus) {
             Line l = lineCookie.getLineSet().getOriginal(line);
             if (!l.isDeleted()) {
