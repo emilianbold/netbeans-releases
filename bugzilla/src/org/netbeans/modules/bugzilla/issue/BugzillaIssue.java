@@ -1193,9 +1193,9 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                             }
                         }
                     } catch (DataObjectNotFoundException dnfex) {
-                        dnfex.printStackTrace();
+                        Bugzilla.LOG.log(Level.INFO, dnfex.getMessage(), dnfex);
                     } catch (IOException ioex) {
-                        ioex.printStackTrace();
+                        Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
                     } finally {
                         handle.finish();
                     }
@@ -1220,7 +1220,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                         try {
                             getAttachementData(new FileOutputStream(file));
                         } catch (IOException ioex) {
-                            ioex.printStackTrace();
+                            Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
                         } finally {
                             handle.finish();
                         }
@@ -1246,7 +1246,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                             File file = saveToTempFile();
                             PatchUtils.applyPatch(file, context);
                         } catch (IOException ioex) {
-                            ioex.printStackTrace();
+                            Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
                         } finally {
                             handle.finish();
                         }
