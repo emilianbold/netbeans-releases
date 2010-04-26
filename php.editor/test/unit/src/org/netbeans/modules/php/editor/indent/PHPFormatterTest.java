@@ -168,6 +168,12 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/initial_indent1.php", options);
     }
 
+   public void testInitialIndent01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/initialIndent01.php", options);
+    }
+
     public void testIfElseAlternativeSyntax() throws Exception {
         reformatFileContents("testfiles/formatting/ifelse_alternative_syntax.php");
     }
