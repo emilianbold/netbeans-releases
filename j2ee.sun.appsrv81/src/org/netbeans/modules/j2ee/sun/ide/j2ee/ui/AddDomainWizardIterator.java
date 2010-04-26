@@ -56,7 +56,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.glassfish.eecommon.api.RegisterDatabase;
+import org.netbeans.modules.glassfish.spi.RegisterDatabase;
 import org.netbeans.modules.glassfish.spi.ExecSupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -168,22 +168,27 @@ public class AddDomainWizardIterator implements
         return panels;
     }
     
+    @Override
     public WizardDescriptor.Panel current() {
         return getPanels()[index];
     }
     
+    @Override
     public String name() {
         return index + 1 + ". from " + getPanels().length;
     }
     
+    @Override
     public boolean hasNext() {
         return index < getPanels().length - 1;
     }
     
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
     
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -191,6 +196,7 @@ public class AddDomainWizardIterator implements
         index++;
     }
     
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -203,11 +209,13 @@ public class AddDomainWizardIterator implements
     // the following and call when needed: fireChangeEvent();
     //
     private Set/*<ChangeListener>*/ listeners = new HashSet/*<ChangeListener>*/(1);
+    @Override
     public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+    @Override
     public void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -225,6 +233,7 @@ public class AddDomainWizardIterator implements
         }
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (null == wizard) {
             return;
@@ -285,16 +294,19 @@ public class AddDomainWizardIterator implements
         listeners = new HashSet/*<ChangeListener>*/(1);
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
         this.wizard = wizard;
     }
     
     private WizardDescriptor  wizard;
     
+    @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
     }
     
+    @Override
     public java.util.Set instantiate() throws java.io.IOException {
         InstanceProperties ip = null;
         if (null != wizard) {
@@ -577,6 +589,7 @@ public class AddDomainWizardIterator implements
             return notFired;
         }
         
+        @Override
         synchronized public boolean cancel() {
             notFired = false;
             p.destroy();

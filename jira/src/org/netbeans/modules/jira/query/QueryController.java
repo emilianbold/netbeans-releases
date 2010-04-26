@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.jira.query;
 
+import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -71,6 +72,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.basic.BasicListUI.ListSelectionHandler;
 import javax.swing.text.Document;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.model.Component;
@@ -120,6 +122,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -149,6 +152,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private UserSearch assigneeUserSearch;
 
     private static SimpleDateFormat dateRangeDateFormat = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
+
+    private static final String[] LBL_LOADING = new String[]{ NbBundle.getMessage(QueryController.class, "LBL_Loading") };
 
     public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
         this(repository, query, fd, true);
@@ -1123,46 +1128,95 @@ public class QueryController extends BugtrackingController implements DocumentLi
         populateProjectDetails(projects);
     }
 
-    private void populateProjectDetails(Project... projects) {
+    private RequestProcessor.Task populateProjectTask;
+    private void populateProjectDetails(final Project... projects) {
         if(projects == null || projects.length == 0) {
             return;
         }
 
-        Set<Version> versions = new HashSet<Version>();
-        Set<Component> components = new HashSet<Component>();
-        for (Project p : projects) {
-            Component[] cs = p.getComponents();
-            if(cs != null) {
-                for (Component c : cs) {
-                    // for what ever reason - component doesn't implement equals!
-                    boolean found = false;
-                    for (Component knownComponent : components) {
-                        if(knownComponent.getId().equals(c.getId())) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if(!found) {
-                        components.add(c);
-                    }
-                }
-            }
-            Version[] vs = p.getVersions();
-            if(vs != null) {
-                versions.addAll(Arrays.asList(vs));
-            }
+        if(populateProjectTask != null) {
+            populateProjectTask.cancel();
         }
 
-        Version[] versionsArray = versions.toArray(new Version[versions.size()]);
-        Component[] componentsArray = components.toArray(new Component[components.size()]);
-        populateList(panel.fixForList, versionsArray);
-        populateList(panel.affectsVersionList, versionsArray);
-        populateList(panel.componentsList, componentsArray);
+        populateProjectTask = Jira.getInstance().getRequestProcessor().create(new Runnable() {
+            @Override
+            public void run() {
 
-        setListVisibility();
-
-        panel.byDetailsPanel.validate();
+                boolean allDetailed = true;
+                for (Project p : projects) {
+                    allDetailed = p.hasDetails();
+                    if(!allDetailed)break;
+                }
+                if(!allDetailed) {
+                    // there is at least one project which has no details initialized - show "loading..." label
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            populateList(panel.fixForList, LBL_LOADING);
+                            populateList(panel.affectsVersionList, LBL_LOADING);
+                            populateList(panel.componentsList, LBL_LOADING);
+                            setListVisibility();
+                            panel.byDetailsPanel.validate();
+                        }
+                    });
+                }
+                Set<Version> versions = new HashSet<Version>();
+                Set<Component> components = new HashSet<Component>();
+                getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                try {
+                    for (Project p : projects) {
+                        repository.getConfiguration().ensureProjectLoaded(p);
+                        Component[] cs = p.getComponents();
+                        if(cs != null) {
+                            for (Component c : cs) {
+                                // for what ever reason - component doesn't implement equals!
+                                boolean found = false;
+                                for (Component knownComponent : components) {
+                                    if(knownComponent.getId().equals(c.getId())) {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                                if(!found) {
+                                    components.add(c);
+                                }
+                            }
+                        }
+                        Version[] vs = p.getVersions();
+                        if(vs != null) {
+                            versions.addAll(Arrays.asList(vs));
+                        }
+                    }
+                } finally {
+                    getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    Version[] versionsArray = versions.toArray(new Version[versions.size()]);
+                    Component[] componentsArray = components.toArray(new Component[components.size()]);
+                    setProjectLists(versionsArray, componentsArray);
+                    populateProjectTask = null;
+                }
+            }
+        });
+        populateProjectTask.schedule(300);
     }
+
+     public void setProjectLists(final Version[] versionsArray, final Component[] componentsArray) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                populateList(panel.fixForList, versionsArray);
+                populateList(panel.affectsVersionList, versionsArray);
+                populateList(panel.componentsList, componentsArray);
+                setListVisibility();
+                panel.byDetailsPanel.validate();
+            }
+        };
+        if(EventQueue.isDispatchThread()) {
+            r.run();
+        } else {
+            EventQueue.invokeLater(r);
+        }
+   }
+
 
     private void remove() {
         if (refreshTask != null) {

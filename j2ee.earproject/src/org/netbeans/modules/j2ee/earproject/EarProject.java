@@ -223,7 +223,7 @@ public final class EarProject implements Project, AntProjectListener {
             // remove in next release
             new EarImpl(ear, appModule),
             new EarActionProvider(this, updateHelper),
-            new J2eeArchiveLogicalViewProvider(this, updateHelper, evaluator(), refHelper),
+            new J2eeArchiveLogicalViewProvider(this, updateHelper, evaluator(), refHelper, appModule),
             new MyIconBaseProvider(),
             new CustomizerProviderImpl(this, helper, refHelper),
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
@@ -325,7 +325,8 @@ public final class EarProject implements Project, AntProjectListener {
                             EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                             EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             if (!J2EEProjectProperties.isUsingServerLibrary(projectProps, EarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
-                                String classpath = EarProjectGenerator.toClasspathString(platform.getClasspathEntries());
+                                String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
+                                String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), root);
                                 ep.setProperty(J2EEProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                             }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
@@ -476,7 +477,8 @@ public final class EarProject implements Project, AntProjectListener {
                 Deployment.getDefault().enableCompileOnSaveSupport(appModule);
             }
             
-            if (J2eeArchiveLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
+            J2eeArchiveLogicalViewProvider logicalViewProvider = (J2eeArchiveLogicalViewProvider) EarProject.this.getLookup().lookup (J2eeArchiveLogicalViewProvider.class);
+            if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
                 BrokenReferencesSupport.showAlert();
             }
 

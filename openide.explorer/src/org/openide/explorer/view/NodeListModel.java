@@ -66,6 +66,9 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     /** parent node */
     private transient VisualizerNode parent;
 
+    /** should parent node be visible? */
+    private transient boolean showParent;
+
     /** originally selected item */
     private transient Object selectedObject;
 
@@ -100,7 +103,11 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     /** Changes the root of the model. This is thread safe method.
     * @param root the root of the model
     */
-    public void setNode(final Node root) {
+    public void setNode(Node root) {
+        setNode(root, false);
+    }
+
+    final void setNode(final Node root, final boolean showRoot) {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
@@ -110,7 +117,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
                 }
                 VisualizerNode v = VisualizerNode.getVisualizer(null, root);
 
-                if (v == parent) {
+                if (v == parent && showParent == showRoot) {
                     // no change
                     return;
                 }
@@ -118,6 +125,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
                 removeAll();
                 parent.removeNodeModel(listener());
 
+                showParent = showRoot;
                 parent = v;
                 selectedObject = v;
                 clearChildrenCount();
@@ -172,7 +180,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     */
     @Override
     public int getSize() {
-        int s = findSize(parent, -1, depth);
+        int s = findSize(parent, showParent, -1, depth);
         return s;
     }
 
@@ -180,7 +188,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     */
     @Override
     public Object getElementAt(int i) {
-        return findElementAt(parent, i, -1, depth);
+        return findElementAt(parent, showParent, i, -1, depth);
     }
 
     /** Finds index of given object.
@@ -223,10 +231,14 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     * @param depth the depth to scan
     * @return number of children
     */
-    private int findSize(VisualizerNode vis, int index, int depth) {
+    private int findSize(VisualizerNode vis, boolean includeOwnself, int index, int depth) {
         Info info = childrenCount.get(vis);
         if (info != null) {
             return info.childrenCount;
+        }
+
+        if (includeOwnself) {
+            index++;
         }
 
         // only my children
@@ -247,11 +259,11 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
                 // count node v
                 tmp++;
                 // now count children of node v
-                tmp += findSize(v, index + tmp, depth);
+                tmp += findSize(v, false, index + tmp, depth);
             }
         }
 
-        info.childrenCount = tmp;
+        info.childrenCount = includeOwnself ? tmp + 1 : tmp;
         childrenCount.put(vis, info);
         return tmp;
     }
@@ -263,7 +275,15 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     * @param depth the depth to scan
     * @return the children
     */
-    private VisualizerNode findElementAt(VisualizerNode vis, int indx, int realIndx, int depth) {
+    private VisualizerNode findElementAt(VisualizerNode vis, boolean countSelf, int indx, int realIndx, int depth) {
+        if (countSelf) {
+            if (indx == 0) {
+                return vis;
+            } else {
+                indx--;
+            }
+        }
+
         if (--depth == 0) {
             // last depth is handled in special way
             return (VisualizerNode) vis.getChildAt(indx);
@@ -277,11 +297,11 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
                 return v;
             }
 
-            int s = findSize(v, ++realIndx, depth);
+            int s = findSize(v, false, ++realIndx, depth);
 
             if (indx < s) {
                 // search this child
-                return findElementAt(v, indx, realIndx, depth);
+                return findElementAt(v, false, indx, realIndx, depth);
             }
 
             // go to next child

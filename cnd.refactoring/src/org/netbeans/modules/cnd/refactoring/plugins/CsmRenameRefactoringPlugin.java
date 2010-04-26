@@ -158,7 +158,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
                 CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
                 this.referencedObjects.add(method);
                 if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
-                    this.referencedObjects.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, true));
+                    this.referencedObjects.addAll(CsmVirtualInfoQuery.getDefault().getOverriddenMethods(method, true));
                     assert !this.referencedObjects.isEmpty() : "must be at least start object " + method;
                 }
             } else {

@@ -93,7 +93,7 @@ import org.openide.ErrorManager;
                         token = line.substring(includeIndex+2);
                     }
                     if (!token.equals("-xbuiltin")) { //NOI18N
-                        pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
+                        addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(token));
                     }
                     if (spaceIndex > 0) {
                         includeIndex = line.indexOf("-I", spaceIndex); // NOI18N
@@ -104,8 +104,8 @@ import org.openide.ErrorManager;
                 parseUserMacros(line, pair.systemPreprocessorSymbolsList);
             }
             // Adding "__STDC__=0". It's missing from dryrun output
-            pair.systemPreprocessorSymbolsList.addUnique("__STDC__=0"); // NOI18N
-            
+            addUnique(pair.systemPreprocessorSymbolsList, "__STDC__=0"); // NOI18N
+
             reader.close();
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.attach;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,7 +52,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.debugger.gdb.actions.AttachTableColumn;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -177,11 +175,14 @@ final class ProcessList {
                         npb.setExecutable(executable);
                         npb.setArguments(args.toArray(new String[args.size()]));
                         npb.redirectError();
-                        NativeProcess process = npb.call();
-                        BufferedReader reader = ProcessUtils.getReader(process.getInputStream(), exEnv.isRemote());
-                        String line = reader.readLine(); // read and ignore header line...
+                        List<String> psOutput = ProcessUtils.readProcessOutput(npb.call());
                         List<Vector<String>> proclist = new ArrayList<Vector<String>>();
-                        while ((line = reader.readLine()) != null) {
+                        boolean header = true;
+                        for (String line : psOutput) {
+                            if (header) { //skip header line
+                                header = false;
+                                continue;
+                            }
                             proclist.add(parseLine(line));
                         }
 
@@ -197,10 +198,10 @@ final class ProcessList {
                             }
                             pargsBuilder.setArguments(pargs_args);
                             List<String> pargsOutput = ProcessUtils.readProcessOutput(pargsBuilder.call());
-                            
+
                             idx = 0;
                             for (String procArgs : pargsOutput) {
-                                if (procArgs.isEmpty()) {
+                                if (procArgs.isEmpty() || procArgs.startsWith("pargs: Warning")) { // NOI18N
                                     continue;
                                 }
                                 if (!procArgs.startsWith("pargs:")) { // NOI18N

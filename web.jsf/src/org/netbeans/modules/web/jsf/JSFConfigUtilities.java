@@ -91,7 +91,9 @@ import org.openide.util.Exceptions;
  * @author Po-Ting Wu
  */
 public class JSFConfigUtilities {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(JSFConfigUtilities.class.getName());
+
     private static String CONFIG_FILES_PARAM_NAME = "javax.faces.CONFIG_FILES"; //NOI18N
     private static String FACES_PARAM = "javax.faces";  //NOI18N
     private static String DEFAULT_FACES_CONFIG_PATH = "WEB-INF/faces-config.xml"; //NOI18N
@@ -134,7 +136,7 @@ public class JSFConfigUtilities {
                         }
                     }
                 } catch (IOException ex) {
-                    Logger.getLogger(JSFConfigUtilities.class.getName()).log(Level.WARNING, ex.getMessage());
+                    LOGGER.log(Level.WARNING, ex.getMessage());
                 }
             }
 
@@ -155,7 +157,7 @@ public class JSFConfigUtilities {
                                 }
                                 return Boolean.FALSE;
                             } finally {
-                                Logger.getLogger(this.getClass().getName()).log(Level.INFO,"Total time spent = "+(System.currentTimeMillis() - time)+" ms");
+                                LOGGER.log(Level.INFO,"Total time spent = "+(System.currentTimeMillis() - time)+" ms");
                             }
                         }
                     });
@@ -164,8 +166,10 @@ public class JSFConfigUtilities {
                     } else {
                         return false;
                     }
-                }catch(Exception e){
-                    Exceptions.printStackTrace(e);
+                } catch(NullPointerException npe){
+                    //source path is null, nothing to do here, just return false
+                } catch (Exception ex) {
+                    LOGGER.log(Level.WARNING, ex.getMessage());
                 }
             } else {
                 return true;

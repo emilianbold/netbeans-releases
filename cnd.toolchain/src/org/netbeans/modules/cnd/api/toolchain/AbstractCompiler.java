@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.api.toolchain;
 import java.io.File;
 import java.util.List;
 import java.util.Vector;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -199,7 +200,25 @@ public abstract class AbstractCompiler extends Tool {
     /**
      * restore default compiler system properties,
      * i.e. default include paths, predefined macros, ...
+     * Same as <code>resetSystemProperties(false)</code>
      */
-    public void resetSystemProperties() {
+    public final void resetSystemProperties() {
+        resetSystemProperties(false);
+    }
+
+    /**
+     * @param lazy  when <code>true</code> postpone actual reset until
+     *      {@link #getSystemPreprocessorSymbols()},
+     *      {@link #getSystemIncludeDirectories()} or
+     *      {@link #waitReady(boolean)} is called;
+     *      when <code>false</code> do reset immediately
+     */
+    public void resetSystemProperties(boolean lazy) {
+    }
+
+    public void saveSettings(Preferences prefs, String prefix) {
+    }
+
+    public void loadSettings(Preferences prefs, String prefix) {
     }
 }

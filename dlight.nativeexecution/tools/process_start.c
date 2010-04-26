@@ -56,6 +56,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/termios.h>
 
 static pid_t pty_fork();
 
@@ -68,14 +69,17 @@ int main(int argc, char* argv[]) {
     pid_t pid, w;
     int status;
     char *pty = NULL;
-
     int c;
     int err_flag = 0;
+    int close_term = 0;
 
-    while (pty == NULL && (c = getopt(argc, argv, "p:")) != EOF) {
+    while (pty == NULL && (c = getopt(argc, argv, "qp:")) != EOF) {
         switch (c) {
             case 'p':
                 pty = optarg;
+                break;
+            case 'q':
+                close_term = 1;
                 break;
             default:
                 err_flag++;
@@ -84,7 +88,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (err_flag || (optind >= argc)) {
-        printf("ERROR: Usage: process_start -p pty command [arg ...]\n");
+        printf("ERROR: Usage: process_start [-q] -p pty command [arg ...]\n");
         exit(1);
     }
 
@@ -100,8 +104,9 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    int pty_fd = open(pty, O_RDWR);
+
     if (pid == 0) {
-        int pty_fd;
         int saved_stdout = -1;
         int saved_errno;
 
@@ -124,8 +129,6 @@ int main(int argc, char* argv[]) {
         sigaction(SIGINT, NULL, &act);
         act.sa_handler = SIG_DFL;
         sigaction(SIGINT, &act, NULL);
-
-        pty_fd = open(pty, O_RDWR);
 
         if (pty_fd == -1) {
             printf("ERROR cannot open pty \"%s\" -- %s\n",
@@ -174,10 +177,17 @@ int main(int argc, char* argv[]) {
     fflush(stdout);
 
     w = waitpid(pid, &status, WUNTRACED | WCONTINUED);
-    
+
+    if (close_term) {
+#if defined _XOPEN_STREAMS && _XOPEN_STREAMS != -1
+        tcsendbreak(pty_fd, 0);
+#endif
+    }
+
     if (w != -1 && WIFEXITED(status)) {
         exit(WEXITSTATUS(status));
     }
+
 
     exit(EXIT_FAILURE);
 }

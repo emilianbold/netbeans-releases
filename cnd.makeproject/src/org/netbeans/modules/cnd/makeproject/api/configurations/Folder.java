@@ -73,8 +73,10 @@ import org.openide.util.WeakSet;
 
 public class Folder implements FileChangeListener, ChangeListener {
 
-    public enum Kind {SOURCE_LOGICAL_FOLDER, SOURCE_DISK_FOLDER, IMPORTANT_FILES_FOLDER, TEST_LOGICAL_FOLDER, TEST};
+    public enum Kind {
 
+        SOURCE_LOGICAL_FOLDER, SOURCE_DISK_FOLDER, IMPORTANT_FILES_FOLDER, TEST_LOGICAL_FOLDER, TEST
+    };
     public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
     public static final String DEFAULT_FOLDER_DISPLAY_NAME = getString("NewFolderName");
     public static final String DEFAULT_TEST_FOLDER_DISPLAY_NAME = getString("NewTestFolderName");
@@ -83,7 +85,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     private String displayName;
     private final Folder parent;
     private ArrayList<Object> items = null; // Folder or Item
-    private HashMap<String,HashMap<Configuration,DeletedConfiguration>> deletedItems;
+    private HashMap<String, HashMap<Configuration, DeletedConfiguration>> deletedItems;
     private final Set<ChangeListener> changeListenerList = new WeakSet<ChangeListener>(1);
     private final boolean projectFiles;
     private String id = null;
@@ -135,10 +137,10 @@ public class Folder implements FileChangeListener, ChangeListener {
         File folderFile = new File(AbsRootPath);
 
         // Folders to be removed
-        if (!folderFile.exists() ||
-            !folderFile.isDirectory() ||
-            !VisibilityQuery.getDefault().isVisible(folderFile) ||
-            getConfigurationDescriptor().getFolderVisibilityQuery().isVisible(folderFile)) {
+        if (!folderFile.exists()
+                || !folderFile.isDirectory()
+                || !VisibilityQuery.getDefault().isVisible(folderFile)
+                || getConfigurationDescriptor().getFolderVisibilityQuery().isVisible(folderFile)) {
             // Remove it plus all subfolders and items from project
             if (log.isLoggable(Level.FINE)) {
                 log.log(Level.FINE, "------------removing folder {0} in {1}", new Object[]{getPath(), getParent().getPath()}); // NOI18N
@@ -149,10 +151,10 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Items to be removed
         for (Item item : getItemsAsArray()) {
             File file = item.getFile();
-            if (!file.exists() ||
-                !file.isFile() ||
-                !VisibilityQuery.getDefault().isVisible(file) ||
-                !CndFileVisibilityQuery.getDefault().isVisible(file)) {
+            if (!file.exists()
+                    || !file.isFile()
+                    || !VisibilityQuery.getDefault().isVisible(file)
+                    || !CndFileVisibilityQuery.getDefault().isVisible(file)) {
                 if (log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, "------------removing item {0} in {1}", new Object[]{item.getPath(), getPath()}); // NOI18N
                 }
@@ -255,7 +257,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public void detachListener() {
         if (log.isLoggable(Level.FINER)) {
-           log.log(Level.FINER, "-----------detachFileChangeListener {0}", getPath()); // NOI18N
+            log.log(Level.FINER, "-----------detachFileChangeListener {0}", getPath()); // NOI18N
         }
         FileUtil.removeFileChangeListener(this);
         if (isDiskFolder() && getRoot() != null) {
@@ -447,7 +449,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     public Item addItemAction(Item item) {
         return addItemAction(item, true);
     }
-    
+
     public Item addItemAction(Item item, boolean setModified) {
         if (addItem(item, true, setModified) == null) {
             return null; // Nothing added
@@ -590,7 +592,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     public String suggestedNewFolderName() {
         return suggestedName(DEFAULT_FOLDER_DISPLAY_NAME);
     }
-    
+
     public String suggestedName(String template) {
         String aNname;
         String aDisplayName;
@@ -626,17 +628,13 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (kindText != null) {
             if (kindText.equals("IMPORTANT_FILES_FOLDER")) { // NOI18N
                 k = Kind.IMPORTANT_FILES_FOLDER;
-            }
-            else if (kindText.equals("SOURCE_DISK_FOLDER")) { // NOI18N
+            } else if (kindText.equals("SOURCE_DISK_FOLDER")) { // NOI18N
                 k = Kind.SOURCE_DISK_FOLDER;
-            }
-            else if (kindText.equals("SOURCE_LOGICAL_FOLDER")) { // NOI18N
+            } else if (kindText.equals("SOURCE_LOGICAL_FOLDER")) { // NOI18N
                 k = Kind.SOURCE_LOGICAL_FOLDER;
-            }
-            else if (kindText.equals("TEST")) { // NOI18N
+            } else if (kindText.equals("TEST")) { // NOI18N
                 k = Kind.TEST;
-            }
-            else if (kindText.equals("TEST_LOGICAL_FOLDER")) { // NOI18N
+            } else if (kindText.equals("TEST_LOGICAL_FOLDER")) { // NOI18N
                 k = Kind.TEST_LOGICAL_FOLDER;
             }
         }
@@ -645,8 +643,8 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public Folder addNewFolder(String name, String displayName, boolean projectFiles, Kind kind) {
         Folder newFolder = new Folder(getConfigurationDescriptor(), this, name, displayName, projectFiles);
-        addFolder(newFolder, true);
         newFolder.setKind(kind);
+        addFolder(newFolder, true);
         return newFolder;
     }
 
@@ -732,7 +730,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     private boolean removeFolder(Folder folder, boolean setModified) {
         boolean ret = false;
         if (folder != null) {
-            for (Folder f : folder.getAllFolders(false)){
+            for (Folder f : folder.getAllFolders(false)) {
                 MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), f, null);
             }
             MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), folder, null);
@@ -957,10 +955,10 @@ public class Folder implements FileChangeListener, ChangeListener {
         while (iter.hasNext()) {
             Object o = iter.next();
             if (o instanceof Folder) {
-                if (((Folder)o).isTest()) {
-                    list.add((Folder)o);
+                if (((Folder) o).isTest()) {
+                    list.add((Folder) o);
                 }
-                ((Folder)o).getTests(list);
+                ((Folder) o).getTests(list);
             }
         }
     }
@@ -1165,6 +1163,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     private static final class DeletedConfiguration {
+
         private ConfigurationAuxObject aux;
         private ItemConfiguration ic;
     }

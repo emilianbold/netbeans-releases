@@ -49,7 +49,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,6 +90,8 @@ public class GdbProxyEngine {
     private int currentToken = MIN_TOKEN;
     private boolean active;
     private RequestProcessor.Task gdbReader = null;
+    private final NativeProcess proc;
+    private volatile boolean killed = false;
 
     // This queue was created due to the issue 156138
     private final RequestProcessor sendQueue = new RequestProcessor("sendQueue"); // NOI18N
@@ -109,7 +110,7 @@ public class GdbProxyEngine {
      * @param workingDirectory - a directory where the debugger should run
      * @param stepIntoProject - a flag to stop at first source line
      */
-    public GdbProxyEngine(GdbDebugger debugger, GdbProxy gdbProxy, List<String> debuggerCommand,
+    public GdbProxyEngine(final GdbDebugger debugger, GdbProxy gdbProxy, List<String> debuggerCommand,
                     MacroMap debuggerEnvironment, String workingDirectory, String tty,
                     String cspath) throws IOException {
         inferiorTty = (tty != null);
@@ -127,13 +128,7 @@ public class GdbProxyEngine {
         getLogger().logMessage("NB version: " + System.getProperty("netbeans.buildnumber")); // NOI18N
         getLogger().logMessage("================================================"); // NOI18N
 
-        startDebugger(debuggerCommand, workingDirectory, debuggerEnvironment, cspath);
-    }
-    
-    private void startDebugger(List<String> debuggerCommand,
-                               String workingDirectory,
-                               MacroMap debuggerEnvironment,
-                               String cspath) throws IOException {
+        //start process
         ExecutionEnvironment execEnv = debugger.getHostExecutionEnvironment();
         String[] args = debuggerCommand.subList(1, debuggerCommand.size()).toArray(new String[debuggerCommand.size()-1]);
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
@@ -156,17 +151,18 @@ public class GdbProxyEngine {
             npb.setUsePty(true);
         }
 
-        final NativeProcess proc = npb.call();
+        proc = npb.call();
         // for remote execution we need to convert encoding
         toGdb = toGdbWriter(proc.getInputStream(), proc.getOutputStream(), execEnv.isRemote());
 
         new RequestProcessor("GdbReaperThread").post(new Runnable() { // NOI18N
+            @Override
             public void run() {
                 try {
                     int rc = proc.waitFor();
                     if (rc == 0) {
                         debugger.finish(false);
-                    } else {
+                    } else if (!killed) {
                         unexpectedGdbExit(rc);
                     }
                 } catch (InterruptedException ex) {
@@ -174,6 +170,14 @@ public class GdbProxyEngine {
                 }
             }
         });
+    }
+
+    /**
+     * kill gdb process
+     */
+    public void kill() {
+        killed = true;
+        proc.destroy();
     }
 
     public boolean isInferiorTty() {
@@ -222,6 +226,7 @@ public class GdbProxyEngine {
         final BufferedReader fromGdb = ProcessUtils.getReader(is, remote);
 
         gdbReader = new RequestProcessor("GdbReaderRP").post(new Runnable() { // NOI18N
+            @Override
             public void run() {
                 String line;
 
@@ -273,6 +278,7 @@ public class GdbProxyEngine {
     private void sendCommand(final MICommand command) {
         if (active) {
             sendQueue.post(new Runnable() {
+                @Override
                 public void run() {
                     if (command.getText().charAt(0) != '-') {
                         addCommand(command);
@@ -295,7 +301,13 @@ public class GdbProxyEngine {
         gdbProxy.putCB(token, cb);
         sendCommand(token, cmd);
         if (waitForCompletion) {
-            cb.waitForCompletion();
+            //extra check for debugger state
+            if (debugger.getState() != GdbDebugger.State.RUNNING) {
+                cb.waitForCompletion();
+            } else {
+                cb.error("Waitin while in running state"); //NOI18N
+                gdbProxy.removeCB(token);
+            }
         }
         return cb;
     }
@@ -475,7 +487,7 @@ public class GdbProxyEngine {
         return gdbProxy.getLogger();
     }
 
-    public MICommand createMICommand(String cmd) {
+    MICommand createMICommand(String cmd) {
         return new MICommandImpl(nextToken(), cmd);
     }
     
@@ -489,14 +501,17 @@ public class GdbProxyEngine {
             this.cmd = cmd;
         }
         
+        @Override
         public String getText() {
             return cmd;
         }
         
+        @Override
         public int getToken() {
             return token;
         }
 
+        @Override
         public synchronized void send() {
             assert !sent : "sending command " + this + " twice"; // NOI18N
             sendCommand(this);

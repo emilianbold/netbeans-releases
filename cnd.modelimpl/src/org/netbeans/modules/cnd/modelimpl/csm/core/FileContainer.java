@@ -211,15 +211,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
     }
     
-    //@Deprecated
-    public APTPreprocHandler.State getPreprocState(File file) {
-        FileEntry f = getFileEntry(file, false, false);
-        if (f == null){
-            return null;
-        }
-        return f.getState();
-    }
-    
     public Collection<APTPreprocHandler.State> getPreprocStates(File file) {
         FileEntry f = getFileEntry(file, false, false);
         if (f == null){
@@ -659,6 +650,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
          * e.g., when creating new file, when invalidating state of a *source* (not a header) file, etc
          */
         public final synchronized void setState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
+            if (TraceFlags.TRACE_182342_BUG) {
+                new Exception("setState replacing:\n" + toString()).printStackTrace(System.err); //NOI18N
+            }
             State oldState = null;
             if( state != null && ! state.isCleaned() ) {
                 state = APTHandlersSupport.createCleanPreprocState(state);
@@ -716,9 +710,15 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
             
             data = new PreprocessorStatePair(state, pcState);
+            if (TraceFlags.TRACE_182342_BUG) {
+                new Exception("setState at the end:\n"+toString()).printStackTrace(System.err); //NOI18N
+            }
         }        
 
         public synchronized void setStates(Collection<PreprocessorStatePair> pairs, PreprocessorStatePair yetOneMore) {
+            if (TraceFlags.TRACE_182342_BUG) {
+                new Exception("setStates replacing:\n" + toString()).printStackTrace(System.err); //NOI18N
+            }
             incrementModCount();
             if (yetOneMore != null && yetOneMore.state != null && !yetOneMore.state.isCleaned()) {
                 yetOneMore = new PreprocessorStatePair(APTHandlersSupport.createCleanPreprocState(yetOneMore.state), yetOneMore.pcState);
@@ -741,6 +741,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
             if (CndUtils.isDebugMode()) {
                 checkConsistency();
+            }
+            if (TraceFlags.TRACE_182342_BUG) {
+                new Exception("setStates at the end:\n"+toString()).printStackTrace(System.err); //NOI18N
             }
         }
 
@@ -811,6 +814,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                     data = newData;
                 }
             }
+            if (TraceFlags.TRACE_182342_BUG) {
+                new Exception("invalidateStates:\n"+toString()).printStackTrace(System.err); //NOI18N
+            }
         }
         
         private static PreprocessorStatePair createInvalidState(PreprocessorStatePair pair) {
@@ -862,7 +868,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append(fileNew);
-            sb.append("states:\n"); //NOI18N
+            sb.append("\nstates:\n"); //NOI18N
             for (PreprocessorStatePair pair : getStatePairs()) {
                 sb.append(pair);
                 sb.append('\n'); //NOI18N

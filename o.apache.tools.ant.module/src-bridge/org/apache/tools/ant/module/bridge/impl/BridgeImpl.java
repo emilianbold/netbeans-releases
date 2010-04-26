@@ -91,6 +91,8 @@ import org.openide.windows.OutputWriter;
  * @author Jesse Glick
  */
 public class BridgeImpl implements BridgeInterface {
+
+    private static final RequestProcessor RP = new RequestProcessor(BridgeImpl.class);
     
     /** Number of milliseconds to wait before forcibly halting a runaway process. */
     private static final int STOP_TIMEOUT = 10000;
@@ -298,7 +300,7 @@ public class BridgeImpl implements BridgeInterface {
         }
         
         // Now check to see if the Project defined any cool new custom tasks.
-        RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
             public void run() {
                 IntrospectedInfo custom = AntSettings.getCustomDefs();
                 Map<String,Map<String,Class>> defs = new HashMap<String,Map<String,Class>>();
@@ -316,7 +318,7 @@ public class BridgeImpl implements BridgeInterface {
                 gutProject(project);
                 if (!ant16) {
                     // #36393 - memory leak in Ant 1.5.
-                    RequestProcessor.getDefault().post(new Runnable() {
+                        RP.post(new Runnable() {
                         public void run() {
                             hack36393();
                         }
@@ -356,7 +358,7 @@ public class BridgeImpl implements BridgeInterface {
         process.interrupt();
         // But if that doesn't do it, double-check later...
         // Yes Thread.stop() is deprecated; that is why we try to avoid using it.
-        RequestProcessor.getDefault().create(new Runnable() {
+        RP.create(new Runnable() {
             public void run () {
                 forciblyStop(process);
             }

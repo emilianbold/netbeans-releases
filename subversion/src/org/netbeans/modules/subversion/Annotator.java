@@ -191,7 +191,9 @@ public class Annotator {
 
         // aligned with SvnUtils.getComparableStatus
 
-        if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
+        if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT_TREE)) {
+            return getAnnotationProvider().TREECONFLICT_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
             return getAnnotationProvider().CONFLICT_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MERGE)) {
             return getAnnotationProvider().MERGEABLE_FILE.getFormat().format(new Object [] { name, textAnnotation });
@@ -579,7 +581,9 @@ public class Annotator {
         if(mostImportantInfo == null) return null;
         String statusText = null;
         int status = mostImportantInfo.getStatus();
-        if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
+        if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT_TREE)) {
+            statusText = getAnnotationProvider().TREECONFLICT_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
             statusText = getAnnotationProvider().CONFLICT_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MERGE)) {
             statusText = getAnnotationProvider().MERGEABLE_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });

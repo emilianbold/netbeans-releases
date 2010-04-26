@@ -44,6 +44,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,7 +53,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -151,7 +151,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         return in.replaceAll(POSTFIX, "");
     }
     
-    public void ensureFileSync(File file, String remotePath) throws IOException, InterruptedException, ExecutionException {
+    public void ensureFileSync(File file, String remotePath) throws IOException, InterruptedException, ExecutionException, ConnectException {
         if (!file.exists() || file.length() == 0) {
             synchronized (getLock(file)) {
                 // dbl check is ok here since it's file-based
@@ -163,7 +163,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         }
     }
 
-    private void syncFile(File file, String remotePath) throws IOException, InterruptedException, ExecutionException, CancellationException {
+    private void syncFile(File file, String remotePath) throws IOException, InterruptedException, ExecutionException, ConnectException {
         CndUtils.assertTrue(!file.exists() || file.isFile(), "not a file " + file.getAbsolutePath());
         checkConnection(file, remotePath, false);
         Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, file.getAbsolutePath(), null);
@@ -193,7 +193,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
     /**
      * Ensured that the directory is synchronized
      */
-    public final void ensureDirSync(File dir, String remoteDir) throws IOException, CancellationException {
+    public final void ensureDirSync(File dir, String remoteDir) throws IOException, ConnectException {
         // TODO: synchronization
         if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
             synchronized (getLock(dir)) {
@@ -207,7 +207,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings("RV") // it's ok to ignore File.createNewFile() return value
-    private void syncDirStruct(final File dir, final String remoteDir) throws IOException, CancellationException {
+    private void syncDirStruct(final File dir, final String remoteDir) throws IOException, ConnectException {
         if (dir.exists()) {
             CndUtils.assertTrue(dir.isDirectory(), dir.getAbsolutePath() + " is not a directory"); //NOI18N
         }
@@ -322,12 +322,12 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         return fileCopyCount;
     }
 
-    private void checkConnection(File localFile, String remotePath, boolean isDirectory) throws IOException, CancellationException {
+    private void checkConnection(File localFile, String remotePath, boolean isDirectory) throws ConnectException {
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
             RemoteUtil.LOGGER.log(Level.FINEST, "Adding notification for {0}:{1}", new Object[]{execEnv, remotePath}); //NOI18N
             pendingFilesQueue.add(localFile, remotePath, isDirectory);
             getNotifier().showIfNeed();
-            throw new CancellationException();
+            throw new ConnectException();
         }
     }
 
@@ -347,7 +347,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
 
     // NB: it is always called in a specially created thread
     @Override
-    public void connected() {
+    public void connected() throws InterruptedException, ConnectException, InterruptedIOException, IOException, ExecutionException {
         ProgressHandle handle = ProgressHandleFactory.createHandle(
                 NbBundle.getMessage(getClass(), "Progress_Title", RemoteUtil.getDisplayName(execEnv)));
         handle.start();
@@ -358,23 +358,13 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
             PendingFile pendingFile;
             // die after half a minute inactivity period
             while ((pendingFile = pendingFilesQueue.poll(1, TimeUnit.SECONDS)) != null) {
-                try {
-                    if (pendingFile.isDirectory) {
-                        ensureDirSync(pendingFile.localFile, pendingFile.remotePath);
-                    } else {
-                        ensureFileSync(pendingFile.localFile, pendingFile.remotePath);
-                    }                    
-                    handle.progress(NbBundle.getMessage(getClass(), "Progress_Message", pendingFile.remotePath), cnt++); // NOI18N
-                } catch (InterruptedIOException ex) {
-                    break; // TODO: error processing (store pending files?)
-                } catch (IOException ex) {
-                    ex.printStackTrace(); // TODO: error processing (show another notification?)
-                } catch (ExecutionException ex) {
-                    ex.printStackTrace(); // TODO: error processing (show another notification?)
+                if (pendingFile.isDirectory) {
+                    ensureDirSync(pendingFile.localFile, pendingFile.remotePath);
+                } else {
+                    ensureFileSync(pendingFile.localFile, pendingFile.remotePath);
                 }
+                handle.progress(NbBundle.getMessage(getClass(), "Progress_Message", pendingFile.remotePath), cnt++); // NOI18N
             }
-        } catch (InterruptedException ex) {
-            // TODO: error processing (store pending files?)
         } finally {
             handle.finish();
             RemoteCodeModelUtils.scheduleReparse(execEnv);

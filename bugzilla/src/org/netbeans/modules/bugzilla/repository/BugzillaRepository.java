@@ -410,6 +410,7 @@ public class BugzillaRepository extends Repository {
 
     public void setCredentials(String user, String password, String httpUser, String httpPassword) {
         MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
+        resetRepository(); 
     }
 
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {

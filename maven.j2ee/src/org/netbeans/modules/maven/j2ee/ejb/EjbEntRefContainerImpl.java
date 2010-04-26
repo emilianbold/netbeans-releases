@@ -54,6 +54,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceSupport;
 import org.netbeans.modules.j2ee.api.ejbjar.MessageDestinationReference;
 import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
@@ -86,31 +87,30 @@ public final class EjbEntRefContainerImpl implements EnterpriseReferenceContaine
         ejbProject = prj;
     }
 
-    public String addEjbReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
-        return addReference(ref, ejbRefName, false, referencingFile, referencingClass);
+    public String addEjbReference(EjbReference ref, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
+        return addReference(ref, refType, ejbRefName, false, referencingFile, referencingClass);
     }
 
-    public String addEjbLocalReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
-        return addReference(ref, ejbRefName, true, referencingFile, referencingClass);
+    public String addEjbLocalReference(EjbReference ref, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
+        return addReference(ref, refType, ejbRefName, true, referencingFile, referencingClass);
     }
 
-    private String addReference(final EjbReference ejbReference, final String ejbRefName, final boolean local, FileObject referencingFile,
+    private String addReference(final EjbReference ejbReference, final EjbReference.EjbRefIType refType, final String ejbRefName, final boolean local, FileObject referencingFile,
             final String referencingClass) throws IOException {
 
         final org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = findEjbModule(referencingFile);
         MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
 
         MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
-        final String[] ejbName = new String[1];
-        FileObject ejbReferenceEjbClassFO = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+        String ejbName = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
 
-            public FileObject run(EjbJarMetadata metadata) throws Exception {
-                ejbName[0] = metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
-                return metadata.findResource(ejbReference.getEjbClass().replace('.', '/') + ".java");
+            public String run(EjbJarMetadata metadata) throws Exception {
+                return metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
             }
         });
 
-
+        FileObject ejbReferenceEjbClassFO = SourceUtils.getFileObject(ejbReference.getComponentName(refType), ejbReference.getClasspathInfo());
+        assert ejbReferenceEjbClassFO != null : "Reference FileObject not found: " + ejbReference.getComponentName(refType);
         Project otherPrj = FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
         NbMavenProject oprj = otherPrj.getLookup().lookup(NbMavenProject.class);
         String jarName = "";
@@ -119,7 +119,7 @@ public final class EjbEntRefContainerImpl implements EnterpriseReferenceContaine
         }
 
         jarName = jarName +  "#";
-        final String ejbLink = jarName + ejbName[0];
+        final String ejbLink = jarName + ejbName;
 
         final boolean fromSameProject = (oprj != null && ejbProject.equals(otherPrj)) || oprj == null /** ant? */;
 

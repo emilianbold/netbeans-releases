@@ -74,12 +74,11 @@ import org.openide.util.RequestProcessor;
 class SQLExecutionHelper {
 
     private final DataView dataView;
-    private static Logger mLogger = Logger.getLogger(SQLExecutionHelper.class.getName());
     // the RequestProcessor used for executing statements.
     private final RequestProcessor rp = new RequestProcessor("SQLStatementExecution", 20, true); // NOI18N
     private static final String LIMIT_CLAUSE = " LIMIT "; // NOI18N
     public static final String OFFSET_CLAUSE = " OFFSET "; // NOI18N
-    private static Logger LOGGER = Logger.getLogger(SQLExecutionHelper.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SQLExecutionHelper.class.getName());
 
     SQLExecutionHelper(DataView dataView) {
         this.dataView = dataView;
@@ -379,7 +378,7 @@ class SQLExecutionHelper {
                     stmt = conn.prepareStatement(truncateSql);
                     executePreparedStatement(stmt);
                 } catch (SQLException sqe) {
-                    mLogger.log(Level.FINE, "TRUNCATE Not supported...will try DELETE * \n"); // NOI18N
+                    LOGGER.log(Level.FINE, "TRUNCATE Not supported...will try DELETE * \n"); // NOI18N
                     truncateSql = "DELETE FROM " + dbTable.getFullyQualifiedName(true); // NOI18N
                     stmt = conn.prepareStatement(truncateSql);
                     executePreparedStatement(stmt);
@@ -416,6 +415,7 @@ class SQLExecutionHelper {
             boolean lastEditState = dataView.isEditable();
 
             // Execute the Select statement
+            @Override
             public void execute() throws SQLException, DBException {
                 dataView.setEditable(false);
                 String sql = dataView.getSQLString();
@@ -451,6 +451,7 @@ class SQLExecutionHelper {
                 }
             }
 
+            @Override
             public void finished() {
                 DataViewUtils.closeResources(stmt);
                 dataView.setEditable(lastEditState);
@@ -497,7 +498,11 @@ class SQLExecutionHelper {
 
             // Get next page
             int rowCnt = 0;
-            while (((pageSize == -1) || (pageSize > rowCnt)) && (lastRowPicked || rs.next())) {
+            boolean hasNext = false;
+            if (! lastRowPicked) {
+                hasNext = rs.next();
+            }
+            while (((pageSize == -1) || (pageSize > rowCnt)) && (lastRowPicked || hasNext)) {
                 if (Thread.currentThread().isInterrupted()) {
                     return;
                 }
@@ -511,9 +516,15 @@ class SQLExecutionHelper {
                 if (lastRowPicked) {
                     lastRowPicked = false;
                 }
+                try {
+                    hasNext = rs.next();
+                } catch (SQLException x) {
+                    LOGGER.log(Level.INFO, "Failed to forward to next record, cause: " + x.getLocalizedMessage(), x);
+                    hasNext = false;
+                }
             }
         } catch (SQLException e) {
-            mLogger.log(Level.SEVERE, "Failed to set up table model.", e); // NOI18N
+            LOGGER.log(Level.SEVERE, "Failed to set up table model.", e); // NOI18N
             throw e;
         } finally {
             dataView.getDataViewPageContext().setCurrentRows(rows);
@@ -531,7 +542,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException ex) {
-            mLogger.log(Level.SEVERE, "Could not get total row count " + ex); // NOI18N
+            LOGGER.log(Level.SEVERE, "Could not get total row count " + ex); // NOI18N
         }
     }
 
@@ -569,7 +580,7 @@ class SQLExecutionHelper {
                     stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
                 }
             } catch (SQLException exc) {
-                mLogger.log(Level.WARNING, "Unable to set Max row size" + exc); // NOI18N
+                LOGGER.log(Level.WARNING, "Unable to set Max row size" + exc); // NOI18N
             }
         } else {
             stmt = conn.createStatement();
@@ -578,7 +589,7 @@ class SQLExecutionHelper {
     }
 
     private void executeSQLStatement(Statement stmt, String sql) throws SQLException {
-        mLogger.log(Level.FINE, "Statement: " + sql); // NOI18N
+        LOGGER.log(Level.FINE, "Statement: " + sql); // NOI18N
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_executestmt") + sql);
 
         long startTime = System.currentTimeMillis();
@@ -592,7 +603,7 @@ class SQLExecutionHelper {
                 if (sqlExc.getErrorCode() == 1064 && sqlExc.getSQLState().equals("37000")) {
                     isResultSet = stmt.execute(sql);
                 } else {
-                    mLogger.log(Level.SEVERE, "Failed to execute SQL Statement" + sqlExc);
+                    LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement" + sqlExc);
                     throw sqlExc;
                 }
             }

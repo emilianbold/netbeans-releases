@@ -108,7 +108,7 @@ public class Offset2LineService {
         List<Integer> offsets = new ArrayList<Integer>();
         while ((line=out.readLine())!= null){
             line = line.trim();
-            if (line.isEmpty()) {
+            if (line.length() == 0) {
                 continue;
             }
             switch (state) {

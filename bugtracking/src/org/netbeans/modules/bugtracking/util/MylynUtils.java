@@ -128,7 +128,7 @@ public class MylynUtils {
     public static void logCredentials(TaskRepository repository, String user, String psswd, String msg) {
         BugtrackingManager.LOG.log(
             Level.FINEST,
-            msg + "[{0} user={1}, password={2}]",                               // NOI18N
+            msg + "[{0}, user={1}, password={2}]",                               // NOI18N
             new Object[]{
                 repository.getUrl(),
                 user,

@@ -1464,6 +1464,16 @@ abstract public class CsmCompletionQuery {
                             if (obj != null && CsmKindUtilities.isClass(obj)) {
                                 lastType = CsmCompletion.createType((CsmClass)obj, 0, 0, false);
                             }
+                            if (last) {
+                                if (CsmKindUtilities.isClass(obj)) {
+                                    CsmClass c = (CsmClass) obj;
+                                    Collection<CsmClass> classList = new LinkedHashSet<CsmClass>();
+                                    classList.add(c);
+                                    result = new CsmCompletionResult(component, getBaseDocument(), classList,
+                                            c.getQualifiedName().toString(),
+                                            item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
+                                }
+                            }
                         }
                     }
                     break;

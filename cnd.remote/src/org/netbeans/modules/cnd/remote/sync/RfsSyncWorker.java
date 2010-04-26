@@ -74,6 +74,7 @@ import org.openide.util.RequestProcessor;
  */
 /*package*/ final class RfsSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
 
+    private static final RequestProcessor RP = new RequestProcessor("RFS Sync Worker", 20); // NOI18N
     private NativeProcess remoteControllerProcess;
     private RfsLocalController localController;
     private String remoteDir;
@@ -162,7 +163,7 @@ import org.openide.util.RequestProcessor;
         }
         remoteControllerProcess = pb.call();
 
-        RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream(), err));
+        RP.post(new ErrorReader(remoteControllerProcess.getErrorStream(), err));
 
         final InputStream rcInputStream = remoteControllerProcess.getInputStream();
         final OutputStream rcOutputStream = remoteControllerProcess.getOutputStream();
@@ -172,7 +173,7 @@ import org.openide.util.RequestProcessor;
                 executionEnvironment, files, rcInputStreamReader,
                 rcOutputStreamWriter, err, privProjectStorageDir);
 
-        localController.feedFiles(new SharabilityFilter());
+        localController.init();
 
         // read port
         String line = rcInputStreamReader.readLine();
@@ -189,7 +190,7 @@ import org.openide.util.RequestProcessor;
             throw new ExecutionException(message, null); //NOI18N
         }
         RemoteUtil.LOGGER.log(Level.FINE, "Remote Controller listens port {0}", port); // NOI18N
-        RequestProcessor.getDefault().post(localController);
+        RP.post(localController);
 
         String preload = RfsSetupProvider.getPreloadName(executionEnvironment);
         CndUtils.assertTrue(preload != null);

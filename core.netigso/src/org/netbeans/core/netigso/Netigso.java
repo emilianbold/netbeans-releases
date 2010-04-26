@@ -70,8 +70,11 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
+import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.service.packageadmin.RequiredBundle;
 
 /**
  *
@@ -131,15 +134,45 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
 
     @Override
-    protected void start() {
+    protected Set<String> start(Collection<? extends Module> allModules) {
         if (framework.getState() == Bundle.ACTIVE) {
-            return;
+            return toActivate(framework, allModules);
         }
         try {
             framework.start();
         } catch (BundleException ex) {
             LOG.log(Level.WARNING, "Cannot start Container" + framework, ex);
         }
+        return toActivate(framework, allModules);
+    }
+
+    private static Set<String> toActivate(Framework f, Collection<? extends Module> allModules) {
+        ServiceReference sr = f.getBundleContext().getServiceReference("org.osgi.service.packageadmin.PackageAdmin"); // NOI18N
+        if (sr == null) {
+            return null;
+        }
+        PackageAdmin pkgAdm = (PackageAdmin)f.getBundleContext().getService(sr);
+        if (pkgAdm == null) {
+            return null;
+        }
+        Set<String> needEnablement = new HashSet<String>();
+        for (Bundle b : f.getBundleContext().getBundles()) {
+            String loc = b.getLocation();
+            if (loc.startsWith("netigso://")) {
+                loc = loc.substring("netigso://".length());
+            } else {
+                continue;
+            }
+            RequiredBundle[] arr = pkgAdm.getRequiredBundles(loc);
+            for (RequiredBundle rb : arr) {
+                for (Bundle n : rb.getRequiringBundles()) {
+                    if (n.getState() == Bundle.ACTIVE) {
+                        needEnablement.add(loc);
+                    }
+                }
+            }
+        }
+        return needEnablement;
     }
 
     @Override

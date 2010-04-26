@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerProvider;
@@ -80,6 +81,7 @@ public final class CompilerSetPreferences {
     private static final String TOOL_KIND = ".toolKind."; // NOI18N
     private static final String TOOL_PATH = ".toolPath."; // NOI18N
     private static final String TOOL_FLAVOR = ".toolFlavor."; // NOI18N
+    private static final String TOOL_SETTINGS = ".toolSettings."; // NOI18N
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     private static CompilerProvider compilerProvider = null;
@@ -165,6 +167,9 @@ public final class CompilerSetPreferences {
                     getPreferences().putInt(CSM + executionEnvironmentKey + TOOL_KIND + setCount + '.' + toolCount, tool.getKind().ordinal());
                     getPreferences().put(CSM + executionEnvironmentKey + TOOL_PATH + setCount + '.' + toolCount, tool.getPath());
                     getPreferences().put(CSM + executionEnvironmentKey + TOOL_FLAVOR + setCount + '.' + toolCount, tool.getFlavor().toString());
+                    if (tool instanceof AbstractCompiler) {
+                        ((AbstractCompiler) tool).saveSettings(getPreferences(), CSM + executionEnvironmentKey + TOOL_SETTINGS + setCount + '.' + toolCount);
+                    }
                     toolCount++;
                 }
                 setCount++;
@@ -227,6 +232,9 @@ public final class CompilerSetPreferences {
                     toolFlavor = CompilerFlavorImpl.toFlavor(toolFlavorName, pform);
                 }
                 Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(env, toolFlavor, PredefinedToolKind.getTool(toolKind), toolName, toolDisplayName, toolPath);
+                if (tool instanceof AbstractCompiler) {
+                    ((AbstractCompiler) tool).loadSettings(getPreferences(), CSM + executionEnvironmentKey + TOOL_SETTINGS + setCount + '.' + toolCount);
+                }
                 cs.addTool(tool);
             }
             css.add(cs);

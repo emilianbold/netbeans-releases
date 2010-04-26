@@ -121,6 +121,9 @@ public class ASTNodeInfo<T extends ASTNode> {
         } else if (type && node instanceof StaticDispatch) {
             StaticDispatch staticDispatch = (StaticDispatch) node;
             retval = QualifiedName.create(staticDispatch.getClassName());
+        } else if (node instanceof Scalar) {
+            String toName = toName(node);
+            retval = QualifiedName.create(toName);
         }
         if (retval == null) {
             String toName = toName(node);

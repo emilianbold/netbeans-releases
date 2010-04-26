@@ -106,7 +106,7 @@ public final class ProjectServerWizardPanel implements WizardDescriptor.Panel, W
 
     public Component getComponent() {
         if (component == null) {
-            component = new ProjectServerPanel(j2eeModuleType, name, title, this, showAddToEar, mainAppClientClass, showContextPath, createProjects);
+            component = new ProjectServerPanel(j2eeModuleType, name, title, this, showAddToEar, mainAppClientClass, showContextPath, createProjects, importScenario);
         }
         return component;
     }

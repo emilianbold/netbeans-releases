@@ -122,11 +122,11 @@ public class GdbProxy {
         return map.get(id);
     }
     
-    public void removeCB(int id) {
+    void removeCB(int id) {
         map.remove(id);
     }
     
-    public void putCB(int id, CommandBuffer cb) {
+    void putCB(int id, CommandBuffer cb) {
         map.put(id, cb);
     }
 
@@ -149,7 +149,7 @@ public class GdbProxy {
     }
     
     /** Attach to a running program */
-    public CommandBuffer attach(String pid) {
+    public CommandBuffer attach(int pid) {
 //        return engine.sendCommand("-target-attach " + pid); // NOI18N - no implementaion
         return engine.sendCommandEx("attach " + pid); // NOI18N
     }

@@ -122,7 +122,7 @@ public class BusinessMethodExposed extends EJBVerificationRule {
             Map<String, ExecutableElement> definedMethodsByName = new HashMap<String, ExecutableElement>();
             
             for (ExecutableElement method : definedMethods){
-                definedMethodsByName.put(method.getSimpleName().toString(), method);
+                definedMethodsByName.put(method.toString(), method);
             }
             
             // ----
@@ -130,7 +130,7 @@ public class BusinessMethodExposed extends EJBVerificationRule {
             Collection<ErrorDescription> problemsFound = new LinkedList<ErrorDescription>();
             for (ExecutableElement method : ElementFilter.methodsIn(ctx.getClazz().getEnclosedElements())){
                 if (isEligibleMethod(method)){
-                    ExecutableElement potentialMatch = definedMethodsByName.get(method.getSimpleName().toString());
+                    ExecutableElement potentialMatch = definedMethodsByName.get(method.toString());
                     
                     if (potentialMatch != null && JavaUtils.isMethodSignatureSame(ctx.getComplilationInfo(),
                             method, potentialMatch)){
