@@ -87,6 +87,7 @@ public class CssOccurancesFinder extends OccurrencesFinder {
         occurrences = null;
 
         if(cancelled) {
+            cancelled = false;
             return ;
         }
 
@@ -125,6 +126,7 @@ public class CssOccurancesFinder extends OccurrencesFinder {
             @Override
             public void visit(SimpleNode node) {
                 if (cancelled) {
+                    cancelled = false;
                     return;
                 }
                 if(currentNode.kind() == node.kind() && 
@@ -154,6 +156,7 @@ public class CssOccurancesFinder extends OccurrencesFinder {
         });
 
         if (cancelled) {
+            cancelled = false;
             return;
         }
 
