@@ -262,17 +262,22 @@ public class ConfigurationDescriptorProvider {
                     flavor = compilerSet.getCompilerFlavor().toString();
                 } else {
                     families = new String[0];
+                    if (makeConfiguration.getCompilerSet() != null) {
+                        families = new String[] { makeConfiguration.getCompilerSet().getName() };
+                    }
                     flavor = makeConfiguration.getCompilerSet().getFlavor();
                 }
                 String family;
                 if (families.length == 0) {
-                    family = "UKNOWN"; // NOI18N
+                    family = flavor; // NOI18N
                 } else {
                     StringBuilder buffer = new StringBuilder();
                     for (int i = 0; i < families.length; i++) {
-                        buffer.append(families[i]);
-                        if (i < families.length - 1) {
-                            buffer.append(","); // NOI18N
+                        if (families[i] != null) {
+                            buffer.append(families[i]);
+                            if (i < families.length - 1) {
+                                buffer.append(","); // NOI18N
+                            }
                         }
                     }
                     family = buffer.toString();
