@@ -54,6 +54,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -63,6 +64,7 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
 import org.openide.util.NbBundle;
 
@@ -89,7 +91,7 @@ public class AttachmentsPanel extends JPanel {
             maxMethod = GroupLayout.Group.class.getDeclaredMethod("calculateMaximumSize", int.class); // NOI18N
             maxMethod.setAccessible(true);
         } catch (NoSuchMethodException nsmex) {
-            nsmex.printStackTrace();
+            Bugzilla.LOG.log(Level.INFO, nsmex.getMessage(), nsmex);
         }
     }
 
@@ -224,7 +226,7 @@ public class AttachmentsPanel extends JPanel {
                 try {
                     groupWidth = (Integer)maxMethod.invoke(horizontalGroup, 1);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Bugzilla.LOG.log(Level.INFO, ex.getMessage(), ex);
                 }
             }
             for (JPanel p : panels) {

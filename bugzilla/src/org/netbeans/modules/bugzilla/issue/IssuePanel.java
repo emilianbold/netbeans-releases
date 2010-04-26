@@ -2028,7 +2028,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 initialValues.remove(IssueField.MILESTONE.getKey());
                 reloadForm(false);
             } catch (CoreException cex) {
-                cex.printStackTrace();
+                Bugzilla.LOG.log(Level.INFO, cex.getMessage(), cex);
             }
         }
     }//GEN-LAST:event_productComboActionPerformed
