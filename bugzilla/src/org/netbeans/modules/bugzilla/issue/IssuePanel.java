@@ -46,6 +46,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -93,9 +94,12 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicTextFieldUI;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
@@ -173,6 +177,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         duplicateButton.setVisible(false);
         attachDocumentListeners();
         attachHideStatusListener();
+        addCommentArea.addCaretListener(new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                makeCaretVisible(addCommentArea);
+            }
+        });
 
         // A11Y - Issues 163597 and 163598
         UIUtils.fixFocusTraversalKeys(addCommentArea);
@@ -2576,6 +2586,19 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         return true;
+    }
+    
+    void makeCaretVisible(JTextArea textArea) {
+        int pos = textArea.getCaretPosition();
+        try {
+            Rectangle rec = textArea.getUI().modelToView(textArea, pos);
+            if (rec != null) {
+                Point p = SwingUtilities.convertPoint(textArea, rec.x, rec.y, this);
+                scrollRectToVisible(new Rectangle(p.x, p.y, rec.width, rec.height));
+            }
+        } catch (BadLocationException blex) {
+            Bugzilla.LOG.log(Level.INFO, blex.getMessage(), blex);
+        }
     }
 
     @Override
