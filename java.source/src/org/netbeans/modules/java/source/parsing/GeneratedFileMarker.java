@@ -55,4 +55,5 @@ public interface GeneratedFileMarker {
 
     void mark (@NonNull URL generated, @NonNull Type type);
     void finished(@NonNull URL source);
+    boolean allowsWrite();
 }
