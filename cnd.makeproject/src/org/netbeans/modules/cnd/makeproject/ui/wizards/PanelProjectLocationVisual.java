@@ -887,8 +887,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     hostComboBox.setSelectedItem(srToSelect);
                     updateToolchains(srToSelect);
                     toolchainComboBox.setSelectedItem(csToSelect);
-                    hostComboBox.setEnabled(readOnlyUI);
-                    toolchainComboBox.setEnabled(readOnlyUI);
+                    hostComboBox.setEnabled(!readOnlyUI);
+                    toolchainComboBox.setEnabled(!readOnlyUI);
                 }
                 initialized = true;
                 panel.fireChangeEvent(); // Notify that the panel changed
