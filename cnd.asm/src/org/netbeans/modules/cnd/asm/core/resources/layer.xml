@@ -172,6 +172,15 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.asm.core.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="position" intvalue="100"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/asm/core/resources/asm-file.html"/>
+                <attr name="templateCategory" stringvalue="asm-types"/>
+            </file>
+
+            <file name="InlineTemplate.il" url="InlineTemplate.il">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.asm.core.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="position" intvalue="200"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/asm/core/resources/il-file.html"/>
                 <attr name="templateCategory" stringvalue="asm-types"/>
             </file>
         </folder>
