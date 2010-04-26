@@ -61,7 +61,6 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -174,7 +173,6 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     
     public Set instantiate() throws IOException {
         final File projectFolder = new File(data.getProjectFolder());
-        ProjectChooser.setProjectsFolder(new File(data.getProjectLocation()));
         ModuleUISettings.getDefault().setLastUsedPlatformID(data.getPlatformID());
         WizardDescriptor settings = data.getSettings();
         switch (data.getWizardType()) {
@@ -228,8 +226,10 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         
         Set<FileObject> resultSet = new HashSet<FileObject>();
         resultSet.add(createdProjectFolder);
-        
-        UIUtil.setProjectChooserDirParent(projectFolder);
+
+        if (!projectFolder.getParent().equals(data.getSuiteRoot())) { // #184830
+            UIUtil.setProjectChooserDirParent(projectFolder);
+        }
 
         Templates.setDefinesMainProject(settings, data.isMainProject());
         

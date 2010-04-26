@@ -562,8 +562,14 @@ public class FilterNode extends Node {
     * @param type constants from <CODE>java.bean.BeanInfo</CODE>
     * @return icon to use to represent the bean
     */
-    public Image getIcon(int type) {
-        return original.getIcon(type);
+    public @Override Image getIcon(int type) {
+        Image icon = original.getIcon(type);
+        if (icon != null) {
+            return icon;
+        } else {
+            LOGGER.log(Level.WARNING, "Cannot return null from {0}.getIcon", original.getClass().getName());
+            return Node.EMPTY.getIcon(type);
+        }
     }
 
     /* Finds an icon for this node. This icon should represent the node
