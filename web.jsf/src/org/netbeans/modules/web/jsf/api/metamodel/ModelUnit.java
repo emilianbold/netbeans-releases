@@ -84,7 +84,7 @@ public class ModelUnit {
      * Cached list of folders under which some configuration files may be created,
      * eg. Java source root under which MEAT-INF/*faces-config.xml can be created.
      */
-    private List<FileObject> configRoots = Collections.EMPTY_LIST;
+    private List<FileObject> configRoots = new LinkedList<FileObject>();
 
     private static final String META_INF = "META-INF";      // NOI18N
     private static final String FACES_CONFIG = "faces-config.xml";// NOI18N

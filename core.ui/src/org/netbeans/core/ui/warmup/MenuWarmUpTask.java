@@ -242,15 +242,16 @@ public final class MenuWarmUpTask implements Runnable {
             ActionEvent handleBridge = new HandleBridge(this);
 
             try {
-                File[] roots = File.listRoots();
-                if( null != roots && roots.length > 0 ) {
-                    FileObject fo = FileUtil.toFileObject(roots[0]);
-                    if( null != fo ) {
-                        run = (Runnable)fo.getAttribute("refreshSlow"); // NOI18N
-                    }
+                File userDir = new File(System.getProperty("netbeans.user")); // NOI18N
+                FileObject udFo = FileUtil.toFileObject(userDir);
+                if (udFo != null) {
+                    udFo = udFo.getFileSystem().getRoot();
                 }
-            } catch (RuntimeException ex) {
-                Exceptions.printStackTrace(ex);
+                if (udFo != null) {
+                    run = (Runnable)udFo.getAttribute("refreshSlow"); // NOI18N
+                }
+            } catch (Exception ex) {
+                LOG.log(Level.FINE, "Error getting refreshSlow", ex); // NOI18N
             }
             long now = System.currentTimeMillis();
             try {
