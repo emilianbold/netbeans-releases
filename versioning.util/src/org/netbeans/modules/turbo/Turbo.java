@@ -41,11 +41,11 @@
 package org.netbeans.modules.turbo;
 
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 
 import java.util.*;
 import java.lang.ref.WeakReference;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * Turbo is general purpose entries/attributes dictionary with pluggable
@@ -443,7 +443,7 @@ public final class Turbo {
         synchronized(prepareRequests) {
             if (preparationTask == null) {
                 preparationTask = new PreparationTask(prepareRequests);
-                RequestProcessor.getDefault().post(preparationTask);
+                Utils.postParallel(preparationTask, 0);
                 statistics.backgroundThread();
             }
             preparationTask.notifyNewRequest(new Request(key, name));
