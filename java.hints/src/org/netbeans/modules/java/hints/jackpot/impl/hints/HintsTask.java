@@ -42,6 +42,7 @@ package org.netbeans.modules.java.hints.jackpot.impl.hints;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
@@ -50,6 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -59,7 +61,9 @@ import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.hints.infrastructure.JavaHintsPositionRefresher;
+import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -123,30 +127,46 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
 
 
     @ServiceProvider(service=JavaSourceTaskFactory.class)
-    public static final class FactoryImpl extends EditorAwareJavaSourceTaskFactory {
+    public static final class FactoryImpl extends EditorAwareJavaSourceTaskFactory implements ChangeListener {
 
         public FactoryImpl() {
             super(Phase.RESOLVED, Priority.LOW);
+	    HintsSettings.addChangeListener(WeakListeners.change(this, HintsSettings.class));
         }
 
         @Override
         protected CancellableTask<CompilationInfo> createTask(FileObject file) {
             return new HintsTask(false);
         }
+
+	@Override
+	public void stateChanged(ChangeEvent e) {
+	    for (FileObject file : getFileObjects()) {
+		reschedule(file);
+	    }
+	}
         
     }
 
     @ServiceProvider(service=JavaSourceTaskFactory.class)
-    public static final class CaretFactoryImpl extends CaretAwareJavaSourceTaskFactory {
+    public static final class CaretFactoryImpl extends CaretAwareJavaSourceTaskFactory implements ChangeListener {
 
         public CaretFactoryImpl() {
             super(Phase.RESOLVED, Priority.LOW);
+	    HintsSettings.addChangeListener(WeakListeners.change(this, HintsSettings.class));
         }
 
         @Override
         protected CancellableTask<CompilationInfo> createTask(FileObject file) {
             return new HintsTask(true);
         }
+
+	@Override
+	public void stateChanged(ChangeEvent e) {
+	    for (FileObject file : getFileObjects()) {
+		reschedule(file);
+	    }
+	}
 
     }
 }
