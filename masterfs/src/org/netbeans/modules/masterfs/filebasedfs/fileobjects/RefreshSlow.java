@@ -48,6 +48,8 @@ final class RefreshSlow extends AtomicBoolean implements Runnable {
     private ActionEvent ref;
     private boolean ignoreIO;
     private BaseFileObj preferrable;
+    private int size;
+    private int index;
 
     public RefreshSlow() {
         super();
@@ -67,7 +69,8 @@ final class RefreshSlow extends AtomicBoolean implements Runnable {
         }
     }
 
-    void progress(int index, int size, FileObject obj) {
+    void progress(int add, FileObject obj) {
+        index += add;
         if (ref != null) {
             final Object[] arr = new Object[]{index, size, obj, this, null};
             if (preferrable != null) {
@@ -107,5 +110,9 @@ final class RefreshSlow extends AtomicBoolean implements Runnable {
 
     BaseFileObj preferrable() {
         return preferrable;
+    }
+
+    void estimate(int cnt) {
+        this.size = cnt;
     }
 }
