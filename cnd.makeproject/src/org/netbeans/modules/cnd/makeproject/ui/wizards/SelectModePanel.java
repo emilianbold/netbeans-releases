@@ -258,6 +258,7 @@ public class SelectModePanel extends javax.swing.JPanel {
             wizardDescriptor.putProperty("simpleMode", Boolean.FALSE); // NOI18N
         }
         wizardDescriptor.putProperty("simpleModeFolder", projectFolder.getText().trim()); // NOI18N
+        wizardDescriptor.putProperty("readOnlyToolchain", Boolean.TRUE); // NOI18N
     }
 
     private static final byte noMessage = 0;
