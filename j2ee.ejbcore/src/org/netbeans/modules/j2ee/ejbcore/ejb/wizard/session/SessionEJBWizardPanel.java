@@ -44,6 +44,8 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ComboBoxModel;
@@ -99,6 +101,12 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             }
         });
 
+        inProjectCombo.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                listener.stateChanged(null);
+            }
+        });
         remoteCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 listener.stateChanged(null);
@@ -128,6 +136,7 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             });
             inProjectCombo.setModel(projectsList);
             inProjectCombo.setSelectedIndex(0);
+            listener.stateChanged(null);
         }
     }
 
@@ -289,6 +298,9 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
     }
 
     public Project getRemoteInterfaceProject() {
+        if (projectsList == null) {
+            return null;
+        }
         return (Project)projectsList.getSelectedItem();
     }
 }
