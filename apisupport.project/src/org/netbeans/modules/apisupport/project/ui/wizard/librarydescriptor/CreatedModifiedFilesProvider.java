@@ -111,21 +111,11 @@ final class CreatedModifiedFilesProvider  {
     }
     
     static String getLibraryDescriptorEntryPath(String libraryName) {
-        StringBuffer sb = new StringBuffer();
-        
-        sb.append(LIBRARY_LAYER_ENTRY).append("/").append(libraryName).append(".xml");//NOI18N
-        
-        return sb.toString();//NOI18N
+        return LIBRARY_LAYER_ENTRY + "/"  + libraryName + ".xml"; // NOI18N
     }
     
-    
     private static String transformURL(final String cnb, final String pathPrefix, final String archiveName) {
-        StringBuffer sb = new StringBuffer();
-        
-        sb.append("jar:nbinst://").append(cnb).append("/");//NOI18N
-        sb.append(pathPrefix).append(archiveName).append("!/");//NOI18N
-        
-        return sb.toString();
+        return "jar:nbinst://" + cnb + "/" + pathPrefix + archiveName + "!/"; // NOI18N
     }
     
     private static Map<String, String> getTokens(CreatedModifiedFiles fileSupport, Project project, NewLibraryDescriptor.DataModel data) {
@@ -148,7 +138,7 @@ final class CreatedModifiedFilesProvider  {
     
     private static String getTokenSubstitution(Iterator<URL> it, CreatedModifiedFiles fileSupport,
             NewLibraryDescriptor.DataModel data, String pathPrefix) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         while (it.hasNext()) {
             URL originalURL = it.next();
             String archiveName;
@@ -180,9 +170,7 @@ final class CreatedModifiedFilesProvider  {
                 return null;
             }
             retval = archiv.getNameExt();
-            StringBuffer sb = new StringBuffer();
-            sb.append(pathPrefix).append(retval);
-            fileSupport.add(fileSupport.createFile(sb.toString(), archiv));
+            fileSupport.add(fileSupport.createFile(pathPrefix + retval, archiv));
         } else {
             if ("file".equals(originalURL.getProtocol())) {//NOI18N
                 FileObject folderToZip;
@@ -208,19 +196,21 @@ final class CreatedModifiedFilesProvider  {
             addCreatedOrModifiedPath(relativePath, false);
         }
         
-        public void run() throws IOException {
+        public @Override void run() throws IOException {
             Collection<? extends FileObject> files = Collections.list(folderToZip.getChildren(true));
-            if (files.isEmpty()) return;
+            if (files.isEmpty()) {
+                return;
+            }
             FileObject prjDir = getProject().getProjectDirectory();
             assert prjDir != null;
             
-            FileObject zipedTarget  = prjDir.getFileObject(relativePath);
-            if (zipedTarget == null) {
-                zipedTarget = FileUtil.createData(prjDir, relativePath);
+            FileObject zippedTarget  = prjDir.getFileObject(relativePath);
+            if (zippedTarget == null) {
+                zippedTarget = FileUtil.createData(prjDir, relativePath);
             }
             
-            assert zipedTarget != null;
-            OutputStream os = zipedTarget.getOutputStream();
+            assert zippedTarget != null;
+            OutputStream os = zippedTarget.getOutputStream();
             try {
                 createZipFile(os, folderToZip, files);
             } finally {
