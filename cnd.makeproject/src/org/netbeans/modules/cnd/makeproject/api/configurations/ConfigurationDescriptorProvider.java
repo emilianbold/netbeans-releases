@@ -50,11 +50,11 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -289,9 +289,11 @@ public class ConfigurationDescriptorProvider {
                 } else {
                     platform = "UNKNOWN_PLATFORM"; // NOI18N
                 }
+
+                String ideType = SunStudioUserCounter.getIDEType().getTag();
                 if (USG_PROJECT_CREATE_CND.equals(msg)) {
                     // stop here
-                    rec.setParameters(new Object[] { type, flavor, family, host, platform, "USER_PROJECT"}); // NOI18N
+                    rec.setParameters(new Object[] { type, flavor, family, host, platform, "USER_PROJECT"/*, ideType*/}); // NOI18N
                     rec.setLoggerName(logger.getName());
                     logger.log(rec);
                 } else if (projectItems != null) {
@@ -326,7 +328,7 @@ public class ConfigurationDescriptorProvider {
                     String cUsage = cLang ? "USE_C" : "NO_C"; // NOI18N
                     String fUsage = fLang ? "USE_FORTRAN" : "NO_FORTRAN"; // NOI18N
                     String aUsage = aLang ? "USE_ASM" : "NO_ASM"; // NOI18N
-                    rec.setParameters(new Object[] { type, flavor, family, host, platform, toSizeString(allItems), toSizeString(size), ccUsage, cUsage, fUsage, aUsage});
+                    rec.setParameters(new Object[] { type, flavor, family, host, platform, toSizeString(allItems), toSizeString(size), ccUsage, cUsage, fUsage, aUsage/*, ideType*/});
                     rec.setLoggerName(logger.getName());
                     logger.log(rec);
                 }
