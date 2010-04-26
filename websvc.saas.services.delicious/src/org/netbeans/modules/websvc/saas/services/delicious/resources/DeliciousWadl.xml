@@ -59,7 +59,7 @@ Open issues:
 	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
                     https://wadl.dev.java.net/wadl20061109.xsd
                     http://netbeans.org/ns/oauth/metadata/1
-                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/oauth-metadata.xsd"
+                    http://netbeans.org/ns/oauth/metadata/1.xsd"
 	     xmlns="http://research.sun.com/wadl/2006/10">
     <grammars>
         <include href="DeliciousResponse.xsd"/>
