@@ -684,6 +684,7 @@ public final class ModuleList {
             List<ModuleList> lists = new ArrayList<ModuleList>();
             lists.add(findOrCreateModuleListFromSuiteWithoutBinaries(root, nbdestdir, eval));
             lists.addAll(findOrCreateModuleListsFromClusterPath(clup, nbdestdir));
+            // XXX should this also omit excluded modules? or should that be done only in e.g. LayerUtils.getPlatformJarsForSuiteComponentProject?
             return merge(lists.toArray(new ModuleList[lists.size()]), root);
         } else {
             return merge(new ModuleList[]{
