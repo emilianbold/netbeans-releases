@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,6 +41,7 @@
 package org.netbeans.modules.db.dataview.util;
 
 import org.netbeans.modules.db.dataview.meta.DBException;
+import org.openide.util.NbBundle;
 
 public class BinaryToStringConverter {
 
@@ -149,7 +150,7 @@ public class BinaryToStringConverter {
 
     public static byte[] convertBitStringToBytes(String s) throws DBException {
         int shtBits = s.length() % 8;
-        s = (shtBits > 0 ? "00000000".substring(0, 8 - shtBits) + s : s);
+        s = (shtBits > 0 ? "00000000".substring(0, 8 - shtBits) + s : s); // NOI18N
 
         byte[] buf = new byte[s.length() / 8];
 
@@ -159,7 +160,7 @@ public class BinaryToStringConverter {
                 int b = 1 << (7 - bit);
                 buf[index] |= b;
             } else if ('0' != s.charAt(i)) { // NOI18N
-                throw new DBException(s.charAt(i) + "found at character " + i + "; 0 or 1 expected. ");
+                throw new DBException(NbBundle.getMessage(BinaryToStringConverter.class, "BinaryToStringConverter_InvalidBitFormat", s.charAt(i), i)); // NOI18N
             }
             bit++;
             if (bit > 7) {
