@@ -104,7 +104,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
 
             @Override
             public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
-                if (rowIndex != -1 && columnIndex != -1) {
+                if (rowIndex != -1 && columnIndex != -1 && ((DefaultTableModel) jTable1.getModel()).getRowCount() > 1) {
                     removeBtn.setEnabled(true);
                 }
                 AWTEvent awtEvent = EventQueue.getCurrentEvent();
