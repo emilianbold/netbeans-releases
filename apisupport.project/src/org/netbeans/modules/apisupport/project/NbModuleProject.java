@@ -483,15 +483,17 @@ public final class NbModuleProject implements Project {
         //TODO shall we check for illegal cases like "none-defined" or "both-defined" here?
         Manifest m = getManifest();
         if (m != null) {
-            String manVersion = m.getMainAttributes().getValue("OpenIDE-Module-Specification-Version"); //NOI18N
+            String manVersion = ManifestManager.getInstance(m, false).getSpecificationVersion();
             if (manVersion != null) {
-                return stripExcessZeros(manVersion);
+                return manVersion;
             }
         }
-        return stripExcessZeros(evaluator().getProperty(SingleModuleProperties.SPEC_VERSION_BASE));
-    }
-    private static String stripExcessZeros(String spec) { // #72826
-        return spec != null ? spec.replaceAll("(\\.[0-9]+)\\.0$", "$1") : null; // NOI18N
+        String svb = evaluator().getProperty(SingleModuleProperties.SPEC_VERSION_BASE);
+        if (svb != null) {
+            return svb/* #72826 */.replaceAll("(\\.[0-9]+)\\.0$", "$1"); // NOI18N
+        }
+        // Fallback:
+        return "0"; // NOI18N
     }
     
     /**
