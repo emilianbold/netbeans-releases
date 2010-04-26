@@ -749,7 +749,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 String cnb = modNode.getName();
                 if (resolveFixInfo.toAdd.contains(cnb)) {
                     Enabled en = (Enabled) modNode;
-                    assert ! en.isEnabled();
+                    assert !en.isEnabled() : "#185032: " + cnb + " (" + en.getState() + ") cannot add " + resolveFixInfo.toAdd;
                     en.setState(EnabledState.FULL_ENABLED, false);  // update cluster states only once
                 }
             }
