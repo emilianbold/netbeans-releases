@@ -45,6 +45,7 @@ import java.awt.BorderLayout;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -191,8 +192,11 @@ public final class AdvancedPanel extends JPanel {
         if (selectedIndex != -1) {
             String category = tabbedPanel.getTitleAt(selectedIndex);
             if (tabbedPanel.getSelectedComponent() instanceof JLabel) {
-                tabbedPanel.setComponentAt(tabbedPanel.getSelectedIndex(), new JScrollPane(model.getPanel(category)));
-                ((JComponent)tabbedPanel.getSelectedComponent()).setBorder (new EmptyBorder(11,11,11,11));
+                JScrollPane scroll = new JScrollPane(model.getPanel(category));
+                scroll.setOpaque(false);
+                scroll.getViewport().setOpaque(false);
+                scroll.setBorder(BorderFactory.createEmptyBorder(11,11,11,11));
+                tabbedPanel.setComponentAt(tabbedPanel.getSelectedIndex(), scroll);
             }
             model.update(category);
             firePropertyChange (OptionsPanelController.PROP_HELP_CTX, null, null);        
