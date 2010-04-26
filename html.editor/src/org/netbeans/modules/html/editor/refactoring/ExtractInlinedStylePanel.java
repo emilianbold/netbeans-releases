@@ -352,6 +352,15 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE))
         );
+
+        embeddedSectionRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "ACSD_EmbeddedSection")); // NOI18N
+        externalSheetRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "ACSD_ExternalStylesheet")); // NOI18N
+        existingEmbeddedSectionsComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "ACSD_EmbeddedSectionComboBoxName")); // NOI18N
+        existingEmbeddedSectionsComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "ACSD_EmbeddedSectionComboBoxDescription")); // NOI18N
+        externalSheetsComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "ASCD_ExternalStylesheetName")); // NOI18N
+        externalSheetsComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "ACSD_ExternalStylesheetDescr")); // NOI18N
+        idSelectorTypeRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "ASCD_GenerateIdSelectors")); // NOI18N
+        classSelectorTypeRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "ASCD_GenerateClassSelectors")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void existingEmbeddedSectionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_existingEmbeddedSectionsComboBoxActionPerformed

@@ -66,7 +66,9 @@ public class Utils {
     /** returns top most joined html token seuence for the document at the specified offset. */
     public static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(TokenHierarchy th, int offset) {
         TokenSequence ts = th.tokenSequence();
-        //XXX this seems to be wrong, the return code should be checked
+        if(ts == null) {
+            return null;
+        }
         ts.move(offset);
 
         while(ts.moveNext() || ts.movePrevious()) {
