@@ -201,7 +201,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.title")); // NOI18N
         setBackground(java.awt.Color.white);
-        setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        setFont(new java.awt.Font("Dialog", 0, 12));
         setForeground(java.awt.Color.black);
         setLocationByPlatform(true);
         setModal(true);
@@ -254,7 +254,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
 
         previewBtn.setFont(previewBtn.getFont());
         previewBtn.setMnemonic('S');
-        previewBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(previewBtn, org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
         previewBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 previewBtnActionPerformed(evt);
@@ -264,8 +264,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         previewBtn.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
         previewBtn.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
 
-        addBtn.setMnemonic('A');
-        addBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.addBtn.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addBtn, org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.addBtn.text_1")); // NOI18N
         addBtn.setToolTipText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.addBtn.toolTipText")); // NOI18N
         addBtn.setMaximumSize(previewBtn.getMaximumSize());
         addBtn.setMinimumSize(previewBtn.getMinimumSize());
@@ -277,8 +276,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         });
         btnPanel.add(addBtn);
 
-        removeBtn.setMnemonic('R');
-        removeBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.removeBtn.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeBtn, org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.removeBtn.text_1")); // NOI18N
         removeBtn.setToolTipText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.removeBtn.toolTipText")); // NOI18N
         removeBtn.setEnabled(false);
         removeBtn.setMaximumSize(previewBtn.getMaximumSize());
@@ -292,8 +290,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         btnPanel.add(removeBtn);
 
         executeBtn.setFont(executeBtn.getFont());
-        executeBtn.setMnemonic('O');
-        executeBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(executeBtn, org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
         executeBtn.setMaximumSize(previewBtn.getMaximumSize());
         executeBtn.setMinimumSize(previewBtn.getMinimumSize());
         executeBtn.setPreferredSize(previewBtn.getPreferredSize());
@@ -307,8 +304,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         executeBtn.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
 
         cancelBtn.setFont(cancelBtn.getFont());
-        cancelBtn.setMnemonic('C');
-        cancelBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.cancelBtn.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cancelBtn, org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.cancelBtn.text")); // NOI18N
         cancelBtn.setMaximumSize(previewBtn.getMaximumSize());
         cancelBtn.setMinimumSize(previewBtn.getMinimumSize());
         cancelBtn.setPreferredSize(previewBtn.getPreferredSize());
