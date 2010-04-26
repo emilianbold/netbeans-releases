@@ -411,7 +411,13 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     
     private void updateSaveLimitUponReset(String enteredLimit) {
         try {
-            int iLimit = Integer.parseInt(enteredLimit);
+            int iLimit;
+            if (enteredLimit.trim().length() < 10) {
+                iLimit = Integer.parseInt(enteredLimit);
+            } else {
+                // too long number
+                iLimit = SAVE_STATEMENTS_MAX_LIMIT + 1;
+            }
             String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", SAVE_STATEMENTS_CLEARED); // NOI18N
             if (iLimit < 0) {
                 inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_TextInputWarningLabel"));
