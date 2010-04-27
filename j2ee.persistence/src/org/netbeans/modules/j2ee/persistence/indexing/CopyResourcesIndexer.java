@@ -80,6 +80,7 @@ public class CopyResourcesIndexer extends CustomIndexer {
 
         private volatile String cachedPath;
         private Date timestamp;
+        private long length;
 
         @Override
         public boolean scanStarted(Context context) {
@@ -94,12 +95,14 @@ public class CopyResourcesIndexer extends CustomIndexer {
                         final FileObject persistenceXML = persistenceXmlLocation.getFileObject("persistence.xml");//NOI18N
                         if (persistenceXML != null) {
                             final Date cts = persistenceXML.lastModified();
+                            final long cl = persistenceXML.getSize();
                             synchronized (Factory.this) {
-                                if (cts.equals(timestamp)) {
+                                if (cts.equals(timestamp) && length == cl) {
                                     //Nothing changed.
                                     return super.scanStarted(context);
                                 }
                                 timestamp = cts;
+                                length = cl;
                             }
                             try {
                                 final String path = getCachePath();
