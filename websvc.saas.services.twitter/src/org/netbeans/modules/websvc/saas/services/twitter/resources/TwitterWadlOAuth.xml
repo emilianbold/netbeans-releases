@@ -45,7 +45,7 @@
 	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
                     https://wadl.dev.java.net/wadl20061109.xsd
                     http://netbeans.org/ns/oauth/metadata/1
-                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/oauth-metadata.xsd"
+                    http://netbeans.org/ns/oauth/metadata/1.xsd"
 	     xmlns="http://research.sun.com/wadl/2006/10"
              xmlns:t="urn:twitter:twitterresponse" >
     <grammars>
@@ -53,10 +53,10 @@
         <oauth:metadata xmlns:oauth="http://netbeans.org/ns/oauth/metadata/1" base-url="http://twitter.com/oauth" signature-method="HMAC_SHA1">
             <oauth:flow>
                 <oauth:request-token method-name="request_token" request-style="PATH" response-style="FORM"/>
-                <oauth:authorize-consumer>
+                <oauth:authorization>
                     <oauth:fixed-url url="http://twitter.com/oauth/authorize"/>
                     <oauth:param oauth-name="oauth_token"/>
-                </oauth:authorize-consumer>
+                </oauth:authorization>
                 <oauth:access-token method-name="access_token" request-style="PATH" response-style="FORM" verifier="true"/>
             </oauth:flow>
         </oauth:metadata>

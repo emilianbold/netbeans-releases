@@ -59,19 +59,19 @@ public class CreateClassTest extends ErrorHintsTestBase {
     }
     
     public void testCreateClassForNewExpression() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {new NonExisting(1);}}", 114 - 48, "CreateClass:test.NonExisting:[]:CLASS");
+        performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {new NonExisting(1);}}", 114 - 48, "CreateClass:test.NonExisting:[]:CLASS", "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS");
     }
 
     public void testCreateClassVariable() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {NonExisting n;}}", 112 - 48, "CreateClass:test.NonExisting:[]:CLASS");
+        performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {NonExisting n;}}", 112 - 48, "CreateClass:test.NonExisting:[]:CLASS", "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS");
     }
 
     public void testCreateMemberSelect() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {NonExisting.call();}}", 112 - 48, "CreateClass:test.NonExisting:[]:CLASS");
+        performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {NonExisting.call();}}", 112 - 48, "CreateClass:test.NonExisting:[]:CLASS", "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS");
     }
 
     public void test116853() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public interface Test {public Non|Existing test();}", "CreateClass:test.NonExisting:[]:CLASS");
+        performAnalysisTest("test/Test.java", "package test; public interface Test {public Non|Existing test();}", "CreateClass:test.NonExisting:[]:CLASS", "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS");
     }
 
     public void testPerformCreateClass() throws Exception {
@@ -111,7 +111,7 @@ public class CreateClassTest extends ErrorHintsTestBase {
     }
 
     public void testCreateClassTypeParameter() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test<T extends Number&CharSequence> {public static void test() {Test<NonExisting> t;}}", 150 - 48, "CreateClass:test.NonExisting:[]:CLASS");
+        performAnalysisTest("test/Test.java", "package test; public class Test<T extends Number&CharSequence> {public static void test() {Test<NonExisting> t;}}", 150 - 48, "CreateClass:test.NonExisting:[]:CLASS", "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS");
     }
 
     public void testPerformCreateClassTypeParameter() throws Exception {
@@ -130,7 +130,8 @@ public class CreateClassTest extends ErrorHintsTestBase {
         performAnalysisTest("test/Test.java",
                             "package test; public class Test {public static class X extends NonExisting {}}",
                             92 - 25,
-                            "CreateClass:test.NonExisting:[]:CLASS");
+                            "CreateClass:test.NonExisting:[]:CLASS",
+			    "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS");
     }
 
     public void testPerformCreateInterfaceGeneric() throws Exception {
@@ -146,7 +147,8 @@ public class CreateClassTest extends ErrorHintsTestBase {
         performAnalysisTest("test/Test.java",
                        "package test; public class Test {public static void test() {new Unknown1<Unknown2>();}}",
                        93 - 25,
-                       "CreateClass:test.Unknown1:[]:CLASS"
+                       "CreateClass:test.Unknown1:[]:CLASS",
+		       "CreateInnerClass:test.Test.Unknown1:[private, static]:CLASS"
                        );
     }
 
@@ -154,7 +156,8 @@ public class CreateClassTest extends ErrorHintsTestBase {
         performAnalysisTest("test/Test.java",
                        "package test; public class Test {public static void test() {new Unknown1<Unknown2>();}}",
                        101 - 25,
-                       "CreateClass:test.Unknown2:[]:CLASS"
+                       "CreateClass:test.Unknown2:[]:CLASS",
+		       "CreateInnerClass:test.Test.Unknown2:[private, static]:CLASS"
                        );
     }
 
@@ -182,28 +185,32 @@ public class CreateClassTest extends ErrorHintsTestBase {
         performAnalysisTest("test/Test.java",
                        "package test; public class Test implements UU {}",
                        69 - 25,
-                       "CreateClass:test.UU:[]:INTERFACE");
+                       "CreateClass:test.UU:[]:INTERFACE",
+		       "CreateInnerClass:test.Test.UU:[private, static]:INTERFACE");
     }
 
     public void testCreate106773() throws Exception {
         performAnalysisTest("test/Test.java",
                        "package test; public class Test {public UU g() {return null;}}",
                        66 - 25,
-                       "CreateClass:test.UU:[]:CLASS");
+                       "CreateClass:test.UU:[]:CLASS",
+		       "CreateInnerClass:test.Test.UU:[private, static]:CLASS");
     }
 
     public void testCreateFromNewArray() throws Exception {
         performAnalysisTest("test/Test.java",
                        "package test; public class Test {public Object g() {return new Unknown[0];}}",
                        91 - 25,
-                       "CreateClass:test.Unknown:[]:CLASS");
+                       "CreateClass:test.Unknown:[]:CLASS",
+		       "CreateInnerClass:test.Test.Unknown:[private, static]:CLASS");
     }
 
     public void testCreate108016() throws Exception {
         performAnalysisTest("test/Test.java",
                        "package test; public class Test {public void g() {new Runnable() {public void run() {new Runnable() {public void run() {DDD.ddd();}};}};}}",
                        147 - 25,
-                       "CreateClass:test.DDD:[]:CLASS");
+                       "CreateClass:test.DDD:[]:CLASS",
+		       "CreateInnerClass:test.Test.DDD:[private, static]:CLASS");
     }
 
     /**
@@ -213,7 +220,8 @@ public class CreateClassTest extends ErrorHintsTestBase {
 	performAnalysisTest("test/Test.java",
                        "package test; public class Test {public void g() throws FooException{}}",
 		       84 - 25,
-		       "CreateClass:test.FooException:[]:CLASS");
+		       "CreateClass:test.FooException:[]:CLASS",
+		       "CreateInnerClass:test.Test.FooException:[private, static]:CLASS");
     }
 
     /**
@@ -221,7 +229,7 @@ public class CreateClassTest extends ErrorHintsTestBase {
      */
     public void testCreateException130810() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {public void g() throws FooException0, FooException1, FooExc|eption2 {}}",
-                "CreateClass:test.FooException2:[]:CLASS");
+                "CreateClass:test.FooException2:[]:CLASS", "CreateInnerClass:test.Test.FooException2:[private, static]:CLASS");
     }
 
     public void testCreateClassForArray() throws Exception {

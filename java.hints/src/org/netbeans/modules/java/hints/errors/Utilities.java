@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import java.util.HashSet;
+import org.netbeans.modules.java.hints.infrastructure.Pair;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.BinaryTree;
@@ -744,4 +746,81 @@ public class Utilities {
         return (enclosingMethodElement != null &&
                 enclosingMethodElement.getKind() == ElementKind.CONSTRUCTOR);
     }
+
+    public static Pair<List<? extends TypeMirror>, List<String>> resolveArguments(CompilationInfo info, TreePath invocation, List<? extends ExpressionTree> realArguments) {
+        List<TypeMirror> argumentTypes = new LinkedList<TypeMirror>();
+        List<String> argumentNames = new LinkedList<String>();
+        Set<String>      usedArgumentNames = new HashSet<String>();
+
+        for (ExpressionTree arg : realArguments) {
+            TypeMirror tm = info.getTrees().getTypeMirror(new TreePath(invocation, arg));
+
+            //anonymous class?
+            tm = Utilities.convertIfAnonymous(tm);
+
+            if (tm == null || containsErrorsOrTypevarsRecursively(tm)) {
+                return null;
+            }
+
+            if (tm.getKind() == TypeKind.NULL) {
+                tm = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            }
+
+            argumentTypes.add(tm);
+
+            String proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(arg);
+
+            if (proposedName == null) {
+                proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(tm);
+            }
+
+            if (proposedName == null) {
+                proposedName = "arg"; // NOI18N
+            }
+
+            if (usedArgumentNames.contains(proposedName)) {
+                int num = 0;
+
+                while (usedArgumentNames.contains(proposedName + num)) {
+                    num++;
+                }
+
+                proposedName = proposedName + num;
+            }
+
+            usedArgumentNames.add(proposedName);
+
+            argumentNames.add(proposedName);
+        }
+
+        return new Pair<List<? extends TypeMirror>, List<String>>(argumentTypes, argumentNames);
+    }
+
+    //XXX: currently we cannot fix:
+    //xxx = new ArrayList<Unknown>();
+    //=>
+    //ArrayList<Unknown> xxx;
+    //xxx = new ArrayList<Unknown>();
+    public static boolean containsErrorsOrTypevarsRecursively(TypeMirror tm) {
+        switch (tm.getKind()) {
+            case WILDCARD:
+            case TYPEVAR:
+            case ERROR:
+                return true;
+            case DECLARED:
+                DeclaredType type = (DeclaredType) tm;
+
+                for (TypeMirror t : type.getTypeArguments()) {
+                    if (containsErrorsOrTypevarsRecursively(t))
+                        return true;
+                }
+
+                return false;
+            case ARRAY:
+                return containsErrorsOrTypevarsRecursively(((ArrayType) tm).getComponentType());
+            default:
+                return false;
+        }
+    }
+
 }
