@@ -113,6 +113,7 @@ public class GnomeProvider implements KeyringProvider {
                             return result.secret.toCharArray();
                         } else {
                             LOG.warning("#183670: GnomeKeyringFound.secret == null");
+                            delete(key);
                         }
                     } else {
                         LOG.warning("#183670: GList<GnomeKeyringFound>[0].result == null");

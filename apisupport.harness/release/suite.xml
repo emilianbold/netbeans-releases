@@ -268,7 +268,7 @@ made subject to such option by the copyright holder.
                 <selector refid="zip.platform.included.files"/>
             </pathfileset>
             <chainedmapper>
-                <mapper type="regexp" from="(^.+)[/\\]config[/\\]Modules[/\\]" to="\1"/> <!-- #71849 -->
+                <mapper type="regexp" from="(^.+)[/\\](config[/\\]Modules[/\\]|lib[/\\]|core[/\\])" to="\1"/> <!-- #71849, #185047 -->
                 <filtermapper>
                     <linecontainsregexp negate="true">
                         <regexp pattern="update[/\\]backup[/\\]netbeans[/\\]?$"/>
