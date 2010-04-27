@@ -350,6 +350,10 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return declaration.getEnclosingTypedefs();
         }
 
+        public Collection<CsmVariable> getEnclosingVariables() {
+            return declaration.getEnclosingVariables();
+        }
+
         public boolean isTemplate() {
             return ((CsmTemplate)declaration).isTemplate();
         }
