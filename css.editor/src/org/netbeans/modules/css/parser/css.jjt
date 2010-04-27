@@ -223,11 +223,16 @@ void importRule() : {} {
 }
 
 void mediaRule() : {} {
+    try {
         <MEDIA_SYM> ( ( <S> | <COMMENT> ) )*
         mediaList()
         <LBRACE> ( ( <S> | <COMMENT> ) )*
         ( mediaRuleList() )?
         <RBRACE>
+    } catch(ParseException e) {
+        reportError(e);
+        error_skipblock();
+    }
 }
 
 void mediaList() :{} {
@@ -374,7 +379,7 @@ void styleRule() :
     } catch(ParseException e) {
         reportError(e);
         error_skipblock();
-}
+    }
 }
 
 void selectorList() :
@@ -733,7 +738,7 @@ void error_skipblock() {
     else if( t.kind == EOF )
       break;
   }
-}
+  }
 
 JAVACODE
 void error_skipdecl() {
