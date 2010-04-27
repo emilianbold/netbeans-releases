@@ -54,6 +54,7 @@ import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Parameters;
 
 /**
  * Default implementations of template UI. 
@@ -255,6 +256,8 @@ public class Templates {
      * @since org.netbeans.modules.projectuiapi/1 1.45
      */
     public static SimpleTargetChooserBuilder buildSimpleTargetChooser(Project project, SourceGroup[] folders) {
+        Parameters.notNull("project", project);
+        Parameters.notNull("folders", folders);
         return new SimpleTargetChooserBuilder(project, folders);
     }
 
