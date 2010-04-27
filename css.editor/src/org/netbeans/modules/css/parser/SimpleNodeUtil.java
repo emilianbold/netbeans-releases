@@ -252,9 +252,9 @@ public class SimpleNodeUtil {
         String image;
         switch(node.kind()) {
             case CssParserTreeConstants.JJTHEXCOLOR:
-                //use only the first token image (the <HASH> token) since the node
-                //can also contain comments (<HASH> ( ( <S> | <COMMENT> ) )*)
-                image = node.jjtGetFirstToken().image;
+                //filter out comments and whitespaces since the node
+                //can also contain them: (<HASH> ( ( <S> | <COMMENT> ) )*)
+                image = node.image(CssParserConstants.COMMENT, CssParserConstants.S);
                 break;
             default:
                 image = node.image();
