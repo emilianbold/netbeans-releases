@@ -463,8 +463,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                             res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
                             res.append(')');
 
-                            tab.getOut().println(res.toString());
-                            tab.getOut().println();
+                            // use \n\r to correctly move cursor in terminals as well
+                            tab.getOut().printf("\n\r%s\n\r",res.toString());
                             closeIO();
 
                             if (listener != null) {
@@ -492,8 +492,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                             res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
                             res.append(')');
 
-                            tab.getErr().println(res.toString());
-                            tab.getErr().println();
+                            // use \n\r to correctly move cursor in terminals as well
+                            tab.getErr().printf("\n\r%s\n\r",res.toString());
                             closeIO();
                             if (listener != null) {
                                 listener.executionFinished(-1);
@@ -521,8 +521,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                             res.append(')');
 
                             PrintWriter pw = (rc == 0) ? tab.getOut() : tab.getErr();
-                            pw.println(res.toString());
-                            pw.println();
+                            // use \n\r to correctly move cursor in terminals as well
+                            pw.printf("\n\r%s\n\r",res.toString());
                             closeIO();
 
                             if (listener != null) {
