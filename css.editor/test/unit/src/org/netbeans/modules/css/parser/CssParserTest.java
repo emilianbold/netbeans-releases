@@ -243,8 +243,8 @@ public class CssParserTest extends TestBase {
         //fails - issue http://www.netbeans.org/issues/show_bug.cgi?id=162844
         //the problem is that the SimpleNode for property value contains also the whitespace and comment
 
-//        String code = "h3 { color: red /*.....*/ }";
-//
+        String code = "h3 { color: red /*.....*/ }";
+
 //        //tokens
 //        System.out.println("code='" + code + "'");
 //        System.out.println("Tokens: ");
@@ -254,13 +254,13 @@ public class CssParserTest extends TestBase {
 //            System.out.print("<" + t.offset + "," + t.image + "> ");
 //        }
 //        System.out.println(".");
-//
-//        SimpleNode root = check(code);
+
+        SimpleNode root = check(code);
 //        System.out.println(root.dump());
-//
-//        SimpleNode node = SimpleNodeUtil.query(root, "styleSheetRuleList/rule/styleRule/declaration/expr/term");
-//        assertNotNull(node);
-//        assertEquals("red", node.image());
+
+        SimpleNode node = SimpleNodeUtil.query(root, "styleSheetRuleList/rule/styleRule/declaration/expr/term");
+        assertNotNull(node);
+        assertEquals("red", node.image(CssParserConstants.COMMENT, CssParserConstants.S));
  
     }
 

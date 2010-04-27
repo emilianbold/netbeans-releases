@@ -393,7 +393,9 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             }
             String elementText = elementTextPrefix + entryHandle.entry().getName();
             int elementTextIndex = croppedLineText.indexOf(elementText);
-            assert elementTextIndex != -1;
+            assert elementTextIndex != -1 : "elementText='" + elementText +
+                    "'; lineText='" + lineText + "'; croppedLineText='" +
+                    croppedLineText + "'; elementTextPrefix='" + elementTextPrefix + "'";
             String prefix = croppedLineText.substring(0, elementTextIndex).trim();
             String postfix = croppedLineText.substring(elementTextIndex + elementText.length()).trim();
 
