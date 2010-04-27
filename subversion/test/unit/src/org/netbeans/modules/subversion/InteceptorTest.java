@@ -422,7 +422,7 @@ public class InteceptorTest extends NbTestCase {
         assertTrue(!wc.exists());
         
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(wc).getTextStatus());        
-        assertEquals(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, getStatus(wc));        
+        assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(wc));
     }
 
     public void deleteVersionedFileTree() throws Exception {

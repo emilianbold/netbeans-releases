@@ -276,6 +276,7 @@ public class FormLAF {
                     // FIXME(-ttran) needs to hold a lock on UIDefaults to
                     // prevent other threads from creating Swing components
                     // in the mean time
+                    synchronized (Introspector.class) {
                     synchronized (UIManager.getDefaults()) {
                         boolean restoreAfter = true;
                         try {
@@ -295,6 +296,7 @@ public class FormLAF {
                             }
                         }
                     }
+                    }
                 }
             });
         }
@@ -310,6 +312,7 @@ public class FormLAF {
                 // FIXME(-ttran) needs to hold a lock on UIDefaults to
                 // prevent other threads from creating Swing components
                 // in the mean time
+                synchronized (Introspector.class) {
                 synchronized (UIManager.getDefaults()) {
                     boolean restoreAfter = true;
                     try {
@@ -328,6 +331,7 @@ public class FormLAF {
                             lafBlockEntered = false;
                         }
                     }
+                }
                 }
                 return null;
             }

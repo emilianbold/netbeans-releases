@@ -287,7 +287,8 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     private void targetFinished(Integer status) {
         int exitCode = -1;
 
-        io.getOut().println();
+        // use \r\n to correctly move cursor in terminals as well
+        io.getOut().printf("\r\n"); // NOI18N
 
         if (status == null) {
             StatusDisplayer.getDefault().setStatusText(getMessage("Status.RunTerminated")); // NOI18N
@@ -302,9 +303,11 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             String time = formatTime(System.currentTimeMillis() - startTimeMillis);
             
             if (success) {
-                io.getOut().println(getMessage("Output.RunSuccessful", time)); // NOI18N);
+                // use \r\n to correctly move cursor in terminals as well
+                io.getOut().printf("%s\r\n", getMessage("Output.RunSuccessful", time)); // NOI18N);
             } else {
-                io.getErr().println(getMessage("Output.RunFailed", exitCode, time)); // NOI18N
+                // use \r\n to correctly move cursor in terminals as well
+                io.getErr().printf("%s\r\n", getMessage("Output.RunFailed", exitCode, time)); // NOI18N
             }
         }
 
