@@ -4724,7 +4724,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 this.path = path;
                 this.sourcePositions = sourcePositions;
                 this.scope = scope;
-                Object prop = component.getDocument().getProperty(SKIP_ACCESSIBILITY_CHECK);
+                Object prop = component != null ? component.getDocument().getProperty(SKIP_ACCESSIBILITY_CHECK) : null;
                 this.checkAccessibility = !(prop instanceof String && Boolean.parseBoolean((String)prop));
             }
             
