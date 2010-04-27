@@ -41,7 +41,7 @@ package org.netbeans.modules.dlight.indicators.impl;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -90,6 +90,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.UIUtilities;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -357,7 +358,7 @@ public final class TimeSeriesIndicator
                 ResultSet rs = sqlStorage.select(timeSeriesTable.getName(), timeSeriesTable.getColumns());
                 try {
                     while (rs.next()) {
-                        int idx = rs.getInt(0);
+                        int idx = rs.getInt(1);
                         float[] dataArray = new float[timeSeriesCount];
                         for (int i = 0; i < timeSeriesList.size(); ++i) {
                             dataArray[i] = rs.getFloat(TimeSeriesDescriptorAccessor.getDefault().getName(timeSeriesList.get(i)));
@@ -368,6 +369,7 @@ public final class TimeSeriesIndicator
                     rs.close();
                 }
             } catch (SQLException ex) {
+                Exceptions.printStackTrace(ex);
                 return false;
             }
         }
@@ -387,6 +389,7 @@ public final class TimeSeriesIndicator
                 }
                 detailsValues = map;
             } catch (SQLException ex) {
+                Exceptions.printStackTrace(ex);
                 return false;
             }
         }
@@ -404,12 +407,12 @@ public final class TimeSeriesIndicator
             for (int i = 0; i < data.size(); ++i) {
                 float[] dataArray = data.get(i);
                 if (dataArray != null) {
-                    List<Object> dataList = new ArrayList<Object>(columnNames.size());
+                    List<Object> dataList = new ArrayList<Object>(1 + columnNames.size());
                     dataList.add(i);
                     for (float x : dataArray) {
                         dataList.add(x);
                     }
-                    dataRows.add(new DataRow(columnNames, Arrays.asList(i, dataList)));
+                    dataRows.add(new DataRow(columnNames, dataList));
                 }
             }
             sqlStorage.syncAddData(timeSeriesTable.getName(), dataRows);
@@ -436,7 +439,7 @@ public final class TimeSeriesIndicator
     }
 
     // for tests
-    /*package*/ void dumpData(PrintWriter out) {
+    /*package*/ void dumpData(PrintStream out) {
         out.println("Time Series Data:"); // NOI18N
         for (int i = 0; i < data.size(); ++i) {
             out.printf("%06d:", i); // NOI18N
@@ -454,8 +457,9 @@ public final class TimeSeriesIndicator
         out.println("Details:"); // NOI18N
         Set<String> details = new TreeSet<String>(detailsValues.keySet());
         for (String detail : details) {
-            out.printf("%s => %d\n", detail, detailsValues.get(detail)); // NOI18N
+            out.printf("%s => %s\n", detail, detailsValues.get(detail)); // NOI18N
         }
+        out.flush();
     }
 
     private final static class UILock {
