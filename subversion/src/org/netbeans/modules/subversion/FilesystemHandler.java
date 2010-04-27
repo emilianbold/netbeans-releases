@@ -393,6 +393,11 @@ class FilesystemHandler extends VCSInterceptor {
         return retval;
     }
 
+    @Override
+    public boolean isMutable(File file) {
+        return SvnUtils.isPartOfSubversionMetadata(file) || super.isMutable(file);
+    }
+
     private String getRemoteRepository(File file) {
         if(file == null) return null;
         SVNUrl url = null;
