@@ -164,6 +164,11 @@ public class MercurialInterceptor extends VCSInterceptor {
         return retval;
     }
 
+    @Override
+    public boolean isMutable(File file) {
+        return HgUtils.isPartOfMercurialMetadata(file) || super.isMutable(file);
+    }
+
     private void hgMoveImplementation(final File srcFile, final File dstFile) throws IOException {
         final Mercurial hg = Mercurial.getInstance();
         final File root = hg.getRepositoryRoot(srcFile);

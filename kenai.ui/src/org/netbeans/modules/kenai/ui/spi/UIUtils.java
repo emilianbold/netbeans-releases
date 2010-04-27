@@ -47,6 +47,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.PasswordAuthentication;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -221,6 +223,10 @@ public final class UIUtils {
                             public void run() {
                                 try {
                                     KenaiConnection.getDefault(k);
+                                    PasswordAuthentication current = k.getPasswordAuthentication();
+                                    if (current !=null && !(loginPanel.getUsername().equals(current.getUserName()) && Arrays.equals(loginPanel.getPassword(), current.getPassword()))) {
+                                        k.logout();
+                                    }
                                     k.login(loginPanel.getUsername(), loginPanel.getPassword(), loginPanel.isOnline());
                                     SwingUtilities.invokeLater(new Runnable() {
 
