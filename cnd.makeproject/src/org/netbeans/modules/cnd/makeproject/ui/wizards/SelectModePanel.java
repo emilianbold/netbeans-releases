@@ -125,19 +125,19 @@ public class SelectModePanel extends javax.swing.JPanel {
     
     private void updateInstruction(){
         if (simpleMode.isSelected()){
-            String toolsInfo = getString("SelectModeSimpleInstructionExtraText_Make");
+            String toolsInfo = getString("SelectModeSimpleInstructionExtraText_Make"); // NOI18N
             if (controller.getWizardStorage() != null && controller.getWizardStorage().getMake() == null) {
                 String configure = controller.getWizardStorage().getConfigure();
                 if (configure != null) {
-                    toolsInfo = getString("SelectModeSimpleInstructionExtraText_Configure");
+                    toolsInfo = getString("SelectModeSimpleInstructionExtraText_Configure"); // NOI18N
                     File confFile = FileUtil.normalizeFile(new File(configure));
                     FileObject fo = FileUtil.toFileObject(confFile);
                     if (fo != null) {
                         String mimeType = fo.getMIMEType();
                         if (MIMENames.CMAKE_MIME_TYPE.equals(mimeType)) {
-                            toolsInfo = getString("SelectModeSimpleInstructionExtraText_CMake");
+                            toolsInfo = getString("SelectModeSimpleInstructionExtraText_CMake"); // NOI18N
                         } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mimeType)) {
-                            toolsInfo = getString("SelectModeSimpleInstructionExtraText_QMake");
+                            toolsInfo = getString("SelectModeSimpleInstructionExtraText_QMake"); // NOI18N
                         }
                     }
                 }
