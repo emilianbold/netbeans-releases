@@ -42,12 +42,14 @@ package org.netbeans.modules.cnd.completion.debugger;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -81,7 +83,8 @@ import org.openide.util.lookup.ServiceProvider;
 public class CsmAutosProviderImpl implements AutosProvider {
     public static final boolean AUTOS_INCLUDE_MACROS = Boolean.getBoolean("debugger.autos.macros");
 
-    public Set<String> getAutos(final StyledDocument document, int line) {
+    @Override
+    public Set<String> getAutos(final StyledDocument document, final int line) {
         if (line < 0 || document == null) {
             return Collections.emptySet();
         }
@@ -98,9 +101,27 @@ public class CsmAutosProviderImpl implements AutosProvider {
         // add current line autos
         int startOffset = addAutos(csmFile, lineRootElement, line, document, autos);
 
+        // add previous line autos
         if (line > 0) {
-            // add previous line autos
-            addAutos(csmFile, lineRootElement, line-1, document, autos);
+            final Element lineElem = lineRootElement.getElement(line-1);
+            if (lineElem != null) {
+                final AtomicInteger prevOffset = new AtomicInteger(lineElem.getEndOffset());
+
+                document.render(new Runnable() {
+                    @Override
+                    public void run() {
+                        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(document, prevOffset.get(), false, true);
+                        if (ts == null) {
+                            return;
+                        }
+                        if (CndTokenUtilities.shiftToNonWhite(ts, true)) {
+                            prevOffset.set(ts.offset());
+                        }
+                    }
+                });
+                int prevLine = NbDocument.findLineNumber(document, prevOffset.get());
+                addAutos(csmFile, lineRootElement, prevLine, document, autos);
+            }
         }
 
         return autos;
@@ -131,6 +152,7 @@ public class CsmAutosProviderImpl implements AutosProvider {
         final int endOffset = lineEndOffset;
 
         CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
+            @Override
             public void visit(CsmReferenceContext context) {
                 CsmReference reference = context.getReference();
                     if (startOffset <= reference.getStartOffset() && reference.getEndOffset() <= endOffset) {

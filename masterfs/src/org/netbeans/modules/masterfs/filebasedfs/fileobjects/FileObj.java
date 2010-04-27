@@ -321,7 +321,7 @@ public class FileObj extends BaseFileObj {
     @Override
     public final FileLock lock() throws IOException {
         final File me = getFileName().getFile();
-        if (!me.canWrite()) {
+        if (!getProvidedExtensions().canWrite(me)) {
             FSException.io("EXC_CannotLock", me);
         }
         try {            
