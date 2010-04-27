@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
@@ -277,6 +278,7 @@ public class HostUpdates {
         }
         // Bug 183353 - Files tab is not updated when downloading completes
         FileUtil.refreshFor(refreshDirs.toArray(new File[refreshDirs.size()]));
+        CndFileUtils.clearFileExistenceCache();
 
         handle.finish();
 

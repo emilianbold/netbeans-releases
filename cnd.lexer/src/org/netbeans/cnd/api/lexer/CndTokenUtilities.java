@@ -229,6 +229,7 @@ public class CndTokenUtilities {
                 case LINE_COMMENT:
                 case ESCAPED_LINE:
                 case ESCAPED_WHITESPACE:
+                case NEW_LINE:
                     break;
                 default:
                     return true;
