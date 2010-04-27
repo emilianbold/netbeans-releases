@@ -84,6 +84,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListModel;
@@ -92,12 +93,15 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.basic.BasicTextFieldUI;
 import javax.swing.table.TableModel;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -433,6 +437,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         affectsVersionList.addListSelectionListener(new CancelHighlightListener(affectsVersionLabel));
         fixVersionList.addListSelectionListener(new CancelHighlightListener(fixVersionLabel));
         addCommentArea.getDocument().addDocumentListener(new RevalidatingListener());
+        addCommentArea.addCaretListener(new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                makeCaretVisible(addCommentArea);
+            }
+        });
     }
 
     private void attachHideStatusListener() {
@@ -2345,6 +2355,19 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         return unitIncrement;
+    }
+
+    void makeCaretVisible(JTextArea textArea) {
+        int pos = textArea.getCaretPosition();
+        try {
+            Rectangle rec = textArea.getUI().modelToView(textArea, pos);
+            if (rec != null) {
+                Point p = SwingUtilities.convertPoint(textArea, rec.x, rec.y, this);
+                scrollRectToVisible(new Rectangle(p.x, p.y, rec.width, rec.height));
+            }
+        } catch (BadLocationException blex) {
+            Jira.LOG.log(Level.INFO, blex.getMessage(), blex);
+        }
     }
 
     class CancelHighlightListener implements DocumentListener, ActionListener, ListSelectionListener {

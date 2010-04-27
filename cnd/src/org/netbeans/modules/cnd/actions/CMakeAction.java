@@ -146,7 +146,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
         traceExecutable(executable, buildDir, argsFlat, envMap);
         if (inputOutput == null) {
             // Tab Name
-            String tabName = getString("CMAKE_LABEL", node.getName()); // NOI18N
+            String tabName = execEnv.isLocal() ? getString("CMAKE_LABEL", node.getName()) : getString("CMAKE_REMOTE_LABEL", node.getName(), execEnv.getDisplayName()); // NOI18N
             InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
             _tab.closeInputOutput(); // Close it...
             final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...

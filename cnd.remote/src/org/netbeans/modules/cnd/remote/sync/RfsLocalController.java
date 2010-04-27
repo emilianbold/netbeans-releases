@@ -89,7 +89,7 @@ class RfsLocalController extends NamedRunnable {
         this.mapper = RemotePathMap.getPathMap(execEnv);
         this.remoteUpdates = new HashSet<File>();
         this.privProjectStorageDir = privProjectStorageDir;
-        this.fileData = new FileData(privProjectStorageDir, executionEnvironment);
+        this.fileData = FileData.get(privProjectStorageDir, executionEnvironment);
         this.prefix = "LC[" + executionEnvironment + "]"; //NOI18N
         this.logger = new RemoteUtil.PrefixedLogger(prefix);
         this.filter = new SharabilityFilter();
@@ -278,7 +278,7 @@ class RfsLocalController extends NamedRunnable {
             for (Collection<String> v : values) {
                 for (String ext : v) {
                     if (extOptions.length() > 0) {
-                        extOptions.append("-o "); // NOI18N
+                        extOptions.append(" -o "); // NOI18N
                     }
                     extOptions.append("-name \"*."); // NOI18N
                     extOptions.append(ext);

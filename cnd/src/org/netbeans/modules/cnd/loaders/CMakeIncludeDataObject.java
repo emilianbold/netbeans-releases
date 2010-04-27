@@ -36,24 +36,35 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.loaders;
 
-package org.netbeans.modules.java.source.parsing;
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
+import org.openide.nodes.Children;
+import org.openide.util.Lookup;
+import org.openide.text.DataEditorSupport;
 
-import java.net.URL;
-import org.netbeans.api.annotations.common.NonNull;
+public class CMakeIncludeDataObject extends MultiDataObject {
 
-/**
- *
- * @author Tomas Zezula
- */
-public interface GeneratedFileMarker {
-
-    enum Type {
-        SOURCE,
-        RESOURCE
+    public CMakeIncludeDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+        super(pf, loader);
+        CookieSet cookies = getCookieSet();
+        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
     }
 
-    void mark (@NonNull URL generated, @NonNull Type type);
-    void finished(@NonNull URL source);
-    boolean allowsWrite();
+    @Override
+    protected Node createNodeDelegate() {
+        return new DataNode(this, Children.LEAF, getLookup());
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
 }
