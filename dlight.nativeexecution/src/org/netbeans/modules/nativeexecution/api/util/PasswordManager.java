@@ -44,9 +44,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -78,6 +80,7 @@ public final class PasswordManager {
         if (keepPasswordsInMemory) {
             String cachedPassword = cache.get(key);
             if (cachedPassword != null) {
+                Logger.getInstance().log(Level.FINEST, "PasswordManager.get({0}) found password in memory", execEnv); // NOI18N
                 return cachedPassword.toCharArray();
             }
         }
@@ -88,8 +91,11 @@ public final class PasswordManager {
             if (keepPasswordsInMemory && keyringPassword != null) {
                  cache.put(key, String.valueOf(keyringPassword));
             }
+            Logger.getInstance().log(Level.FINEST, "PasswordManager.get({0}) found password in keyring", execEnv); // NOI18N
             return keyringPassword;
         }
+
+        Logger.getInstance().log(Level.FINEST, "PasswordManager.get({0}) failed to find password", execEnv); // NOI18N
         return null;
     }
 
@@ -116,7 +122,9 @@ public final class PasswordManager {
         if (keepPasswordsInMemory) {
             if (password != null) {
                 cache.put(key, String.valueOf(password));
+                Logger.getInstance().log(Level.FINEST, "PasswordManager.put({0}, non-null) stored password in memory", execEnv); // NOI18N
             } else {
+                Logger.getInstance().log(Level.FINEST, "PasswordManager.put({0}, null) cleared password from memory", execEnv); // NOI18N
                 cache.put(key, null);
             }
         }
@@ -125,6 +133,7 @@ public final class PasswordManager {
             keyringIsActivated = true;
             Keyring.save(KEY_PREFIX + key, password,
                     NbBundle.getMessage(PasswordManager.class, "PasswordManagerPasswordFor",execEnv.getDisplayName())); // NOI18N
+            Logger.getInstance().log(Level.FINEST, "PasswordManager.put({0}, non-null) stored password in keyring", execEnv); // NOI18N
         }
     }
 
