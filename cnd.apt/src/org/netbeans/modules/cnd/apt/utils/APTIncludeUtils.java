@@ -94,7 +94,14 @@ public class APTIncludeUtils {
         while( searchPaths.hasNext() ) {
             IncludeDirEntry dirPrefix = searchPaths.next();
             if (dirPrefix.isExistingDirectory()) {
-                String absolutePath = CharSequenceUtils.toString(dirPrefix.getAsString(), File.separatorChar, includedFile);
+                String prefix = dirPrefix.getAsString();
+                int len = prefix.length();
+                String absolutePath;
+                if (len > 0 && prefix.charAt(len - 1) == File.separatorChar) {
+                    absolutePath = dirPrefix.getAsString() + includedFile;
+                } else {
+                    absolutePath = CharSequenceUtils.toString(prefix, File.separatorChar, includedFile);
+                }
                 if (isExistingFile(absolutePath)) {
                     return new ResolvedPath(dirPrefix.getAsSharedCharSequence(), normalize(absolutePath), absolutePath, false, dirOffset);
                 } else {
