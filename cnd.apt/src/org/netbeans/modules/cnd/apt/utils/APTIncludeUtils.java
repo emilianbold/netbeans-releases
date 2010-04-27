@@ -98,7 +98,7 @@ public class APTIncludeUtils {
                 int len = prefix.length();
                 String absolutePath;
                 if (len > 0 && prefix.charAt(len - 1) == File.separatorChar) {
-                    absolutePath = dirPrefix.getAsString() + includedFile;
+                    absolutePath = prefix + includedFile;
                 } else {
                     absolutePath = CharSequenceUtils.toString(prefix, File.separatorChar, includedFile);
                 }
