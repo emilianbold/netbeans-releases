@@ -83,7 +83,7 @@ public class TestSimpleCppIterator extends CCFSrcFileIterator {
         Project project = Templates.getProject(wiz);
         Folder testsRoot = getTestsRootFolder(project);
 
-        Folder test = testsRoot.addNewFolder("zzz", "zzz", true, Folder.Kind.TEST);
+        //Folder test = testsRoot.addNewFolder("zzz", "zzz", true, Folder.Kind.TEST);
 
         //getExplorerManager().setSelectedNodes(new Node[]{node});
 
