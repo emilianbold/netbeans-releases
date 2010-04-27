@@ -82,7 +82,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
     protected ClassEnumBase(String name, CsmFile file, AST ast) {
         super(file, getStartOffset(ast), getEndOffset(ast));
-        enclosingTypdefs = Collections.synchronizedList(new ArrayList<CsmUID<CsmTypedef>>());
+        enclosingTypdefs = Collections.synchronizedList(new ArrayList<CsmUID<CsmTypedef>>(0));
         this.name = (name == null) ? CharSequences.empty() : NameCache.getManager().getString(name);
     }
 
