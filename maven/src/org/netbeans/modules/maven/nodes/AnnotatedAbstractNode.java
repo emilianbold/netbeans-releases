@@ -70,6 +70,7 @@ public abstract class AnnotatedAbstractNode extends AbstractNode implements File
     private final Object privateLock = new Object();
     private boolean iconChange;
     private boolean nameChange;
+    private static final RequestProcessor RP = new RequestProcessor(AnnotatedAbstractNode.class);
 
     public AnnotatedAbstractNode(Children childs, Lookup lookup) {
         super(childs, lookup);
@@ -135,7 +136,7 @@ public abstract class AnnotatedAbstractNode extends AbstractNode implements File
 
     public void annotationChanged(FileStatusEvent event) {
         if (task == null) {
-            task = RequestProcessor.getDefault().create(this);
+            task = RP.create(this);
         }
 
         synchronized (privateLock) {

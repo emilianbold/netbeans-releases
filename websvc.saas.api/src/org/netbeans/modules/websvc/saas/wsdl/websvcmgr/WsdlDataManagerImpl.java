@@ -120,7 +120,7 @@ public class WsdlDataManagerImpl implements WsdlDataManager, PropertyChangeListe
                     String cause = (exception != null) ? exception.getLocalizedMessage() : null;
                     String excString = (exception != null) ? exception.getClass().getName() + " - " + cause : null;
 
-                    String errorMessage = NbBundle.getMessage(WsdlDataManagerImpl.class, "WS_ADD_ERROR") + "\n\n" + excString; // NOI18N
+                    String errorMessage = NbBundle.getMessage(WsdlDataManagerImpl.class, "WS_ADD_ERROR", excString);
 
                     NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
                     DialogDisplayer.getDefault().notify(d);

@@ -197,7 +197,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
             for (String sql : sqlList) {
                 length = sql.trim().length();
                 maxLength = length > TABLE_DATA_WIDTH_SQL ? TABLE_DATA_WIDTH_SQL : length;
-                data[row][0] = sql.trim().substring(0, maxLength);
+                data[row][0] = sql.trim().substring(0, maxLength).replaceAll("\n", " ");
                 row++;
             }
             // Initialize data
@@ -207,7 +207,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 row++;
             }
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -762,7 +762,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                       url.equals(sqlHistory.getUrl())) {
                     length = sqlHistory.getSql().trim().length();
                     maxLength = length > TABLE_DATA_WIDTH_SQL ? TABLE_DATA_WIDTH_SQL : length;
-                    sqlList.add(sqlHistory.getSql().trim().substring(0, maxLength));
+                    sqlList.add(sqlHistory.getSql().trim().substring(0, maxLength).replaceAll("\n", " "));
                     dateList.add(DateFormat.getInstance().format(sqlHistory.getDate()));
                 }
             }
@@ -773,7 +773,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             for (String sql : sqlList) {
                 length = sql.trim().length();
                 maxLength = length > TABLE_DATA_WIDTH_SQL ? TABLE_DATA_WIDTH_SQL : length;
-                data[row][0] = sql.trim().substring(0, maxLength);
+                data[row][0] = sql.trim().substring(0, maxLength).replaceAll("\n", " ");
                 row++;
             }
             // Initialize date column data

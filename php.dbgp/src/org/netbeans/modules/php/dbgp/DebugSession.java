@@ -112,19 +112,12 @@ public class DebugSession extends SingleThread {
     public void startProcessing(Socket socket) {
         synchronized (getSync()) {
             Status stat = getStatus();
-            if (stat != null && (stat.isRunning() || stat.isBreak())) {
-                try {
-                    socket.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } else {
-                if (stat != null) {
-                    waitFinished();
-                }
-                this.sessionSocket = socket;
-                invokeLater();
+            detachRequest.set(true);
+            if (stat != null) {
+                waitFinished();
             }
+            this.sessionSocket = socket;
+            invokeLater();
         }
     }
     /* (non-Javadoc)

@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.awt.CardLayout;
 import java.io.CharConversionException;
 import javax.swing.Action;
 import javax.swing.table.TableColumn;
@@ -141,7 +140,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     public SuiteCustomizerLibraries(final SuiteProperties suiteProps, ProjectCustomizer.Category cat) {
         super(suiteProps, SuiteCustomizerLibraries.class, cat);
         initComponents();
-        initAccessibility();
+        resolveButton.setVisible(false);
         manager = new ExplorerManager();
         waitRoot = new AbstractNode(new Children.Array() {
 
@@ -458,93 +457,29 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
-        platformsPanel = new javax.swing.JPanel();
-        platformValue = org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory.getNbPlatformsComboxBox();
-        platform = new javax.swing.JLabel();
-        managePlafsButton = new javax.swing.JButton();
         javaPlatformLabel = new javax.swing.JLabel();
         javaPlatformCombo = new javax.swing.JComboBox();
         javaPlatformButton = new javax.swing.JButton();
-        filler = new javax.swing.JLabel();
-        view = new org.openide.explorer.view.OutlineView();
+        platform = new javax.swing.JLabel();
+        platformValue = org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory.getNbPlatformsComboxBox();
+        managePlafsButton = new javax.swing.JButton();
         viewLabel = new javax.swing.JLabel();
-        buttonsPanel = new javax.swing.JPanel();
-        resolveButtonPanel = new javax.swing.JPanel();
-        hidingPanel = new javax.swing.JPanel();
+        view = new org.openide.explorer.view.OutlineView();
         resolveButton = new javax.swing.JButton();
         addProjectButton = new javax.swing.JButton();
         addClusterButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "jLabel1");
-
-        setLayout(new java.awt.GridBagLayout());
-
-        platformsPanel.setLayout(new java.awt.GridBagLayout());
-
-        platformValue.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                platformValueItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
-        platformsPanel.add(platformValue, gridBagConstraints);
-
-        platform.setLabelFor(platformValue);
-        org.openide.awt.Mnemonics.setLocalizedText(platform, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_NetBeansPlatform")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
-        platformsPanel.add(platform, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(managePlafsButton, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "CTL_ManagePlatform_a")); // NOI18N
-        managePlafsButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                managePlatforms(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        platformsPanel.add(managePlafsButton, gridBagConstraints);
-
         javaPlatformLabel.setLabelFor(javaPlatformCombo);
         org.openide.awt.Mnemonics.setLocalizedText(javaPlatformLabel, NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_Java_Platform")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        platformsPanel.add(javaPlatformLabel, gridBagConstraints);
 
         javaPlatformCombo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 javaPlatformComboItemStateChanged(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        platformsPanel.add(javaPlatformCombo, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(javaPlatformButton, NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_Manage_Java_Platforms")); // NOI18N
         javaPlatformButton.addActionListener(new java.awt.event.ActionListener() {
@@ -552,51 +487,27 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 javaPlatformButtonActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        platformsPanel.add(javaPlatformButton, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        add(platformsPanel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.weighty = 1.0;
-        add(filler, gridBagConstraints);
+        platform.setLabelFor(platformValue);
+        org.openide.awt.Mnemonics.setLocalizedText(platform, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_NetBeansPlatform")); // NOI18N
 
-        view.setBorder(javax.swing.UIManager.getBorder("ScrollPane.border"));
-		gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(view, gridBagConstraints);
-        
+        platformValue.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                platformValueItemStateChanged(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(managePlafsButton, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "CTL_ManagePlatform_a")); // NOI18N
+        managePlafsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                managePlatforms(evt);
+            }
+        });
+
         viewLabel.setLabelFor(view);
         org.openide.awt.Mnemonics.setLocalizedText(viewLabel, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_PlatformModules")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 2, 0);
-        add(viewLabel, gridBagConstraints);
 
-        buttonsPanel.setLayout(new java.awt.GridLayout(1, 0, 5, 0));
-
-        resolveButtonPanel.setLayout(new java.awt.CardLayout());
-
-        hidingPanel.setLayout(null);
-        resolveButtonPanel.add(hidingPanel, "card3");
+        view.setBorder(javax.swing.UIManager.getBorder("ScrollPane.border"));
 
         resolveButton.setForeground(java.awt.Color.red);
         org.openide.awt.Mnemonics.setLocalizedText(resolveButton, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_ResolveButton")); // NOI18N
@@ -606,9 +517,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 resolveButtonActionPerformed(evt);
             }
         });
-        resolveButtonPanel.add(resolveButton, "card2");
-
-        buttonsPanel.add(resolveButtonPanel);
 
         org.openide.awt.Mnemonics.setLocalizedText(addProjectButton, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_AddProject")); // NOI18N
         addProjectButton.addActionListener(new java.awt.event.ActionListener() {
@@ -616,7 +524,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 addProjectButtonActionPerformed(evt);
             }
         });
-        buttonsPanel.add(addProjectButton);
 
         org.openide.awt.Mnemonics.setLocalizedText(addClusterButton, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_AddCluster")); // NOI18N
         addClusterButton.addActionListener(new java.awt.event.ActionListener() {
@@ -624,7 +531,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 addClusterButtonActionPerformed(evt);
             }
         });
-        buttonsPanel.add(addClusterButton);
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "CTL_RemoveButton")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -632,7 +538,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 removeButtonActionPerformed(evt);
             }
         });
-        buttonsPanel.add(removeButton);
 
         org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "CTL_EditButton")); // NOI18N
         editButton.addActionListener(new java.awt.event.ActionListener() {
@@ -640,15 +545,70 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 editButtonActionPerformed(evt);
             }
         });
-        buttonsPanel.add(editButton);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
-        add(buttonsPanel, gridBagConstraints);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(javaPlatformLabel)
+                    .addComponent(platform))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(javaPlatformCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, 259, Short.MAX_VALUE)
+                    .addComponent(platformValue, javax.swing.GroupLayout.Alignment.TRAILING, 0, 259, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(managePlafsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(javaPlatformButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(74, Short.MAX_VALUE)
+                .addComponent(resolveButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(addProjectButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(addClusterButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(removeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(editButton))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(viewLabel)
+                .addContainerGap())
+            .addComponent(view, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(javaPlatformLabel)
+                    .addComponent(javaPlatformCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(javaPlatformButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(platform)
+                    .addComponent(platformValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(managePlafsButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(viewLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(view, javax.swing.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(editButton)
+                    .addComponent(removeButton)
+                    .addComponent(addClusterButton)
+                    .addComponent(addProjectButton)
+                    .addComponent(resolveButton)))
+        );
+
+        javaPlatformLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SuiteCustomizerLibraries.class, "ACSD_JavaPlatformLbl")); // NOI18N
+        javaPlatformCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SuiteCustomizerLibraries.class, "ACSD_JavaPlatformCombo")); // NOI18N
+        javaPlatformButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SuiteCustomizerLibraries.class, "ACSD_JavaPlatformButton")); // NOI18N
+        platform.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SuiteCustomizerLibraries.class, "ACSD_PlatformLbl")); // NOI18N
+        platformValue.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SuiteCustomizerLibraries.class, "ACSD_PlatformValue")); // NOI18N
+        managePlafsButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SuiteCustomizerLibraries.class, "ACSD_ManagePlafsButton")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void javaPlatformButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaPlatformButtonActionPerformed
@@ -772,21 +732,15 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addClusterButton;
     private javax.swing.JButton addProjectButton;
-    private javax.swing.JPanel buttonsPanel;
     private javax.swing.JButton editButton;
-    private javax.swing.JLabel filler;
-    private javax.swing.JPanel hidingPanel;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JButton javaPlatformButton;
     private javax.swing.JComboBox javaPlatformCombo;
     private javax.swing.JLabel javaPlatformLabel;
     private javax.swing.JButton managePlafsButton;
     private javax.swing.JLabel platform;
     private javax.swing.JComboBox platformValue;
-    private javax.swing.JPanel platformsPanel;
     private javax.swing.JButton removeButton;
     private javax.swing.JButton resolveButton;
-    private javax.swing.JPanel resolveButtonPanel;
     private org.openide.explorer.view.OutlineView view;
     private javax.swing.JLabel viewLabel;
     // End of variables declaration//GEN-END:variables
@@ -1376,16 +1330,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return NbBundle.getMessage(CustomizerDisplay.class, key);
     }
     
-    private void initAccessibility() {
-        managePlafsButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_ManagePlafsButton"));
-        platformValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PlatformValue"));
-        javaPlatformCombo.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JavaPlatformCombo"));
-        javaPlatformButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JavaPlatformButton"));
-        
-        javaPlatformLabel.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JavaPlatformLbl"));
-        platform.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PlatformLbl"));
-    }
-    
     // #65924: show warnings if some dependencies cannot be satisfied
     
     interface UniverseModule {
@@ -1649,7 +1593,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         try {
-                            CardLayout cl = (CardLayout) resolveButtonPanel.getLayout();
                             if (!fi.isEmpty()) {
                                 String key = fi.warning[0];
                                 String[] args = new String[fi.warning.length - 1];
@@ -1657,10 +1600,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                                 category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
                                 resolveFixInfo = fi;
                                 resolveButton.setEnabled(fi.fixable);
-                                cl.last(resolveButtonPanel);
+                                resolveButton.setVisible(true);
                             } else {
                                 category.setErrorMessage(null);
-                                cl.first(resolveButtonPanel);
+                                resolveButton.setVisible(false);
                             }
                         } finally {
                             manager.setRootContext(realRoot);
