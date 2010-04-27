@@ -239,14 +239,17 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         return fullName;
     }
 
+    @Override
     public T getTemplateDeclaration() {
         return declaration;
     }
 
+    @Override
     public Map<CsmTemplateParameter, CsmSpecializationParameter> getMapping() {
         return mapping;
     }
 
+    @Override
     public boolean isValid() {
         return CsmBaseUtilities.isValid(declaration);
     }
@@ -280,50 +283,62 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         return template;
     }
 
+    @Override
     public CsmFile getContainingFile() {
         return getTemplateDeclaration().getContainingFile();
     }
 
+    @Override
     public int getEndOffset() {
         return getTemplateDeclaration().getEndOffset();
     }
 
+    @Override
     public Position getEndPosition() {
         return getTemplateDeclaration().getEndPosition();
     }
 
+    @Override
     public int getStartOffset() {
         return getTemplateDeclaration().getStartOffset();
     }
 
+    @Override
     public Position getStartPosition() {
         return getTemplateDeclaration().getStartPosition();
     }
 
+    @Override
     public CharSequence getText() {
         return getTemplateDeclaration().getText();
     }
 
+    @Override
     public Kind getKind() {
         return getTemplateDeclaration().getKind();
     }
 
+    @Override
     public CharSequence getUniqueName() {
         return getTemplateDeclaration().getUniqueName();
     }
 
+    @Override
     public CharSequence getQualifiedName() {
         return getTemplateDeclaration().getQualifiedName();
     }
 
+    @Override
     public CharSequence getName() {
         return getTemplateDeclaration().getName();
     }
 
+    @Override
     public CsmScope getScope() {
         return getTemplateDeclaration().getScope();
     }
 
+    @Override
     public CsmUID<Instantiation> getUID() {
         return new InstantiationUID(this);
     }
@@ -335,21 +350,29 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         public Class(CsmClass clazz, CsmType type) {
             super(clazz, type);
             assert type.isInstantiation() : "Instantiation without parameters"; // NOI18N
-            assert !isRecursion(this, MAX_INHERITANCE_DEPTH) : "infinite recursion in "+toString();
+            assert !isRecursion(Class.this, MAX_INHERITANCE_DEPTH) : "infinite recursion in "+Class.this.toString();
         }
 
         public Class(CsmClass clazz, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
             super(clazz, mapping);
         }
 
+        @Override
         public Collection<CsmScopeElement> getScopeElements() {
             return declaration.getScopeElements();
         }
 
+        @Override
         public Collection<CsmTypedef> getEnclosingTypedefs() {
             return declaration.getEnclosingTypedefs();
         }
 
+        @Override
+        public Collection<CsmVariable> getEnclosingVariables() {
+            return declaration.getEnclosingVariables();
+        }
+
+        @Override
         public boolean isTemplate() {
             return ((CsmTemplate)declaration).isTemplate();
         }
@@ -387,6 +410,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return member;
         }
 
+        @Override
         public Collection<CsmMember> getMembers() {
             Collection<CsmMember> res = new ArrayList<CsmMember>();
             for (CsmMember member : declaration.getMembers()) {
@@ -395,6 +419,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return res;
         }
 
+        @Override
         public Iterator<CsmMember> getMembers(CsmFilter filter) {
             Collection<CsmMember> res = new ArrayList<CsmMember>();
             Iterator<CsmMember> it = CsmSelect.getClassMembers(declaration, filter);
@@ -404,14 +429,17 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return res.iterator();
         }
 
+        @Override
         public int getLeftBracketOffset() {
             return declaration.getLeftBracketOffset();
         }
 
+        @Override
         public Collection<CsmFriend> getFriends() {
             return declaration.getFriends();
         }
 
+        @Override
         public Collection<CsmInheritance> getBaseClasses() {
             Collection<CsmInheritance> res = new ArrayList<CsmInheritance>();
             for (CsmInheritance inh : declaration.getBaseClasses()) {
@@ -425,22 +453,27 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return "INSTANTIATION OF CLASS: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
 
+        @Override
         public CsmClass getContainingClass() {
             return ((CsmMember)declaration).getContainingClass();
         }
 
+        @Override
         public CsmVisibility getVisibility() {
             return ((CsmMember)declaration).getVisibility();
         }
 
+        @Override
         public boolean isStatic() {
             return ((CsmMember)declaration).isStatic();
         }
 
+        @Override
         public CharSequence getDisplayName() {
             return ((CsmTemplate)declaration).getDisplayName();
         }
 
+        @Override
         public List<CsmTemplateParameter> getTemplateParameters() {
             return ((CsmTemplate)declaration).getTemplateParameters();
         }
@@ -456,46 +489,57 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             this.type = createType(inheritance.getAncestorType(), instantiation);
         }
 
+        @Override
         public CsmType getAncestorType() {
             return type;
         }
 
+        @Override
         public CharSequence getText() {
             return inheritance.getText();
         }
 
+        @Override
         public Position getStartPosition() {
             return inheritance.getStartPosition();
         }
 
+        @Override
         public int getStartOffset() {
             return inheritance.getStartOffset();
         }
 
+        @Override
         public Position getEndPosition() {
             return inheritance.getEndPosition();
         }
 
+        @Override
         public int getEndOffset() {
             return inheritance.getEndOffset();
         }
 
+        @Override
         public CsmFile getContainingFile() {
             return inheritance.getContainingFile();
         }
 
+        @Override
         public boolean isVirtual() {
             return inheritance.isVirtual();
         }
 
+        @Override
         public CsmVisibility getVisibility() {
             return inheritance.getVisibility();
         }
 
+        @Override
         public CsmClassifier getClassifier() {
             return getClassifier(null);
         }
 
+        @Override
         public CsmClassifier getClassifier(Resolver parent) {
             if (resolvedClassifier == null) {
                 CsmType t= getAncestorType();
@@ -516,14 +560,15 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         public Function(CsmFunction function, CsmType instantiation) {
             super(function, instantiation);
             assert instantiation.isInstantiation() : "Instantiation without parameters"; // NOI18N
-            this.retType = createType(function.getReturnType(), this);
+            this.retType = createType(function.getReturnType(), Function.this);
         }
 
         public Function(CsmFunction function, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
             super(function, mapping);
-            this.retType = createType(function.getReturnType(), this);
+            this.retType = createType(function.getReturnType(), Function.this);
         }
 
+        @Override
         public Collection<CsmScopeElement> getScopeElements() {
             return declaration.getScopeElements();
         }
@@ -532,26 +577,32 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return ((CsmTemplate)declaration).isTemplate();
         }
 
+        @Override
         public boolean isInline() {
             return declaration.isInline();
         }
 
+        @Override
         public boolean isOperator() {
             return declaration.isOperator();
         }
 
+        @Override
         public OperatorKind getOperatorKind() {
             return declaration.getOperatorKind();
         }
 
+        @Override
         public CharSequence getSignature() {
             return declaration.getSignature();
         }
 
+        @Override
         public CsmType getReturnType() {
             return retType;
         }
 
+        @Override
         public CsmFunctionParameterList getParameterList() {
             ArrayList<CsmParameter> res = new ArrayList<CsmParameter>();
             Collection<CsmParameter> parameters = declaration.getParameterList().getParameters();
@@ -562,6 +613,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return FunctionParameterListImpl.create(declaration.getParameterList(), res);
         }
 
+        @Override
         public Collection<CsmParameter> getParameters() {
             Collection<CsmParameter> res = new ArrayList<CsmParameter>();
             Collection<CsmParameter> parameters = declaration.getParameters();
@@ -571,14 +623,17 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return res;
         }
 
+        @Override
         public CsmFunctionDefinition getDefinition() {
             return declaration.getDefinition();
         }
 
+        @Override
         public CsmFunction getDeclaration() {
             return declaration.getDeclaration();
         }
 
+        @Override
         public CharSequence getDeclarationText() {
             return declaration.getDeclarationText();
         }
@@ -597,38 +652,47 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             this.type = createType(field.getType(), instantiation);
         }
 
+        @Override
         public boolean isExtern() {
             return declaration.isExtern();
         }
 
+        @Override
         public CsmType getType() {
             return type;
         }
 
+        @Override
         public CsmExpression getInitialValue() {
             return declaration.getInitialValue();
         }
 
+        @Override
         public CharSequence getDisplayText() {
             return declaration.getDisplayText();
         }
 
+        @Override
         public CsmVariableDefinition getDefinition() {
             return declaration.getDefinition();
         }
 
+        @Override
         public CharSequence getDeclarationText() {
             return declaration.getDeclarationText();
         }
 
+        @Override
         public boolean isStatic() {
             return declaration.isStatic();
         }
 
+        @Override
         public CsmVisibility getVisibility() {
             return declaration.getVisibility();
         }
 
+        @Override
         public CsmClass getContainingClass() {
             return declaration.getContainingClass();
         }
@@ -647,22 +711,27 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             this.type = createType(typedef.getType(), instantiation);
         }
 
+        @Override
         public boolean isTypeUnnamed() {
             return declaration.isTypeUnnamed();
         }
 
+        @Override
         public CsmType getType() {
             return type;
         }
 
+        @Override
         public CsmClass getContainingClass() {
             return ((CsmMember)declaration).getContainingClass();
         }
 
+        @Override
         public CsmVisibility getVisibility() {
             return ((CsmMember)declaration).getVisibility();
         }
 
+        @Override
         public boolean isStatic() {
             return ((CsmMember)declaration).isStatic();
         }
@@ -680,18 +749,22 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             super(forward, mapping);
         }
 
+        @Override
         public CsmClass getContainingClass() {
             return ((CsmMember)declaration).getContainingClass();
         }
 
+        @Override
         public CsmVisibility getVisibility() {
             return ((CsmMember)declaration).getVisibility();
         }
 
+        @Override
         public boolean isStatic() {
             return ((CsmMember)declaration).isStatic();
         }
 
+        @Override
         public CsmClass getCsmClass() {
             if (csmClass == null) {
                 CsmClass declClassifier = declaration.getCsmClass();
@@ -720,18 +793,22 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             this.retType = createType(method.getReturnType(), instantiation);
         }
 
+        @Override
         public Collection<CsmScopeElement> getScopeElements() {
             return declaration.getScopeElements();
         }
 
+        @Override
         public boolean isStatic() {
             return declaration.isStatic();
         }
 
+        @Override
         public CsmVisibility getVisibility() {
             return declaration.getVisibility();
         }
 
+        @Override
         public CsmClass getContainingClass() {
             return declaration.getContainingClass();
         }
@@ -740,18 +817,22 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return ((CsmTemplate)declaration).isTemplate();
         }
 
+        @Override
         public boolean isInline() {
             return declaration.isInline();
         }
 
+        @Override
         public CharSequence getSignature() {
             return declaration.getSignature();
         }
 
+        @Override
         public CsmType getReturnType() {
             return retType;
         }
 
+        @Override
         public CsmFunctionParameterList getParameterList() {
             Collection<CsmParameter> res = new ArrayList<CsmParameter>();
             Collection<CsmParameter> parameters = ((CsmFunction) declaration).getParameterList().getParameters();
@@ -761,6 +842,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return FunctionParameterListImpl.create(((CsmFunction) declaration).getParameterList(), res);
         }
 
+        @Override
         public Collection<CsmParameter> getParameters() {
             Collection<CsmParameter> res = new ArrayList<CsmParameter>();
             Collection<CsmParameter> parameters = declaration.getParameters();
@@ -770,42 +852,52 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return res;
         }
 
+        @Override
         public CsmFunctionDefinition getDefinition() {
             return declaration.getDefinition();
         }
 
+        @Override
         public CharSequence getDeclarationText() {
             return declaration.getDeclarationText();
         }
 
+        @Override
         public boolean isVirtual() {
             return declaration.isVirtual();
         }
 
+        @Override
         public boolean isExplicit() {
             return declaration.isExplicit();
         }
 
+        @Override
         public boolean isConst() {
             return declaration.isConst();
         }
 
+        @Override
         public boolean isAbstract() {
             return declaration.isAbstract();
         }
 
+        @Override
         public boolean isOperator() {
             return declaration.isOperator();
         }
 
+        @Override
         public OperatorKind getOperatorKind() {
             return declaration.getOperatorKind();
         }
 
+        @Override
         public CsmCompoundStatement getBody() {
             return ((CsmFunctionDefinition)declaration).getBody();
         }
 
+        @Override
         public CsmFunction getDeclaration() {
             return ((CsmFunctionDefinition)declaration).getDeclaration();
         }
@@ -824,30 +916,37 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             this.type = parameter.isVarArgs() ? TypeFactory.getVarArgType() : createType(parameter.getType(), instantiation);
         }
 
+        @Override
         public boolean isExtern() {
             return declaration.isExtern();
         }
 
+        @Override
         public CsmType getType() {
             return type;
         }
 
+        @Override
         public CsmExpression getInitialValue() {
             return declaration.getInitialValue();
         }
 
+        @Override
         public CharSequence getDisplayText() {
             return declaration.getDisplayText();
         }
 
+        @Override
         public CsmVariableDefinition getDefinition() {
             return declaration.getDefinition();
         }
 
+        @Override
         public CharSequence getDeclarationText() {
             return declaration.getDeclarationText();
         }
 
+        @Override
         public boolean isVarArgs() {
             return declaration.isVarArgs();
         }
@@ -899,10 +998,12 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             super(type, instantiation);
         }
 
+        @Override
         public CsmTemplateParameter getParameter() {
             return ((CsmTemplateParameterType)instantiatedType).getParameter();
         }
 
+        @Override
         public CsmType getTemplateType() {
             return ((CsmTemplateParameterType)instantiatedType).getTemplateType();
         }
@@ -952,11 +1053,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                 }
             }
 
-            if(!isRecursion(this, MAX_INHERITANCE_DEPTH)) {
+            if(!isRecursion(Type.this, MAX_INHERITANCE_DEPTH)) {
                 this.originalType = origType;
                 this.instantiatedType = newType;
             } else {
-                CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + getContainingFile() + " type " + this.toString()); //NOI18N
+                CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + Type.this.getContainingFile() + " type " + Type.this.toString()); //NOI18N
                 this.originalType = origType;
                 this.instantiatedType = origType;
             }
@@ -966,6 +1067,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return originalType != instantiatedType;
         }
 
+        @Override
         public CharSequence getClassifierText() {
             return instantiatedType.getClassifierText().toString() + TypeImpl.getInstantiationText(this);
         }
@@ -974,6 +1076,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return getTextImpl(true);
         }
 
+        @Override
         public CharSequence getText() {
             return getTextImpl(false);
         }
@@ -1009,26 +1112,32 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return originalType.getText();
         }
 
+        @Override
         public Position getStartPosition() {
             return instantiatedType.getStartPosition();
         }
 
+        @Override
         public int getStartOffset() {
             return instantiatedType.getStartOffset();
         }
 
+        @Override
         public Position getEndPosition() {
             return instantiatedType.getEndPosition();
         }
 
+        @Override
         public int getEndOffset() {
             return instantiatedType.getEndOffset();
         }
 
+        @Override
         public CsmFile getContainingFile() {
             return instantiatedType.getContainingFile();
         }
 
+        @Override
         public boolean isInstantiation() {
             return instantiatedType.isInstantiation();
         }
@@ -1062,10 +1171,12 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         }
 
 
+        @Override
         public boolean isTemplateBased() {
             return isTemplateBased(new HashSet<CsmType>());
         }
 
+        @Override
         public boolean isTemplateBased(Set<CsmType> visited) {
             if (instantiatedType == null) {
                 return true;
@@ -1080,6 +1191,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return instantiatedType.isTemplateBased();
         }
 
+        @Override
         public boolean isReference() {
             if(instantiationHappened()) {
                 return originalType.isReference() || instantiatedType.isReference();
@@ -1088,6 +1200,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             }
         }
 
+        @Override
         public boolean isPointer() {
             if(instantiationHappened()) {
                 return originalType.isPointer() || instantiatedType.isPointer();
@@ -1096,6 +1209,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             }
         }
 
+        @Override
         public boolean isConst() {
             if(instantiationHappened()) {
                 return originalType.isConst() || instantiatedType.isConst();
@@ -1104,10 +1218,12 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             }
         }
 
+        @Override
         public boolean isBuiltInBased(boolean resolveTypeChain) {
             return instantiatedType.isBuiltInBased(resolveTypeChain);
         }
 
+        @Override
         public List<CsmSpecializationParameter> getInstantiationParams() {
             if (!originalType.isInstantiation()) {
                 return Collections.emptyList();
@@ -1130,6 +1246,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return res;
         }
 
+        @Override
         public int getPointerDepth() {
             if (instantiationHappened()) {
                 return instantiatedType.getPointerDepth();
@@ -1138,6 +1255,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             }
         }
 
+        @Override
         public CsmClassifier getClassifier(Resolver parent) {
             if (resolved == null) {
                 if (inst) {
@@ -1190,14 +1308,17 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return resolved;
         }
 
+        @Override
         public CsmClassifier getClassifier() {
             return getClassifier(null);
         }
 
+        @Override
         public CharSequence getCanonicalText() {
             return originalType.getCanonicalText();
         }
 
+        @Override
         public int getArrayDepth() {
             if (instantiationHappened()) {
                 return originalType.getArrayDepth() + instantiatedType.getArrayDepth();
@@ -1319,12 +1440,14 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             this.ref = ref;
         }
 
+        @Override
         public Instantiation getObject() {
             return this.ref;
         }
         ////////////////////////////////////////////////////////////////////////////
         // impl for Persistent
 
+        @Override
         public void write(DataOutput output) throws IOException {
             // write nothing
         }
