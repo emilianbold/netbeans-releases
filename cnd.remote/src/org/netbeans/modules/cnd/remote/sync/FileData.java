@@ -46,11 +46,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Exceptions;
 
 /**
@@ -88,7 +92,30 @@ public final class FileData {
 
     }
 
-    public FileData(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
+    private static Map<String, WeakReference<FileData>> instances = new HashMap<String, WeakReference<FileData>>();
+
+    public static FileData get(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
+        String key;
+        try {
+            key = privProjectStorageDir.getCanonicalPath();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            key = privProjectStorageDir.getAbsolutePath();
+        }
+        key += ExecutionEnvironmentFactory.toUniqueID(executionEnvironment);
+        WeakReference<FileData> ref = instances.get(key);
+        FileData instance = null;
+        if (ref != null) {
+            instance = ref.get();
+        }
+        if (instance == null) {
+            instance = new FileData(privProjectStorageDir, executionEnvironment);
+            instances.put(key, new WeakReference<FileData>(instance));
+        }
+        return instance;
+    }
+
+    private FileData(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
         data = new Properties();
         String dataFileName = "timestamps-" + executionEnvironment.getHost() + //NOI18N
                 '-' + executionEnvironment.getUser()+ //NOI18N
