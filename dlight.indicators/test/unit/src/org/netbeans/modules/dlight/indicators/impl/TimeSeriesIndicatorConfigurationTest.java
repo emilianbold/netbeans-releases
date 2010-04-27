@@ -36,14 +36,16 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.indicators;
+package org.netbeans.modules.dlight.indicators.impl;
 
 import java.util.Collection;
+import java.util.List;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.modules.dlight.indicators.Aggregation;
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
+import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesIndicatorConfigurationAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -60,18 +62,9 @@ public class TimeSeriesIndicatorConfigurationTest {
     public TimeSeriesIndicatorConfigurationTest() {
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
     @Before
     public void setUp() {
-        folder = FileUtil.getConfigFile("DLight/Fops.Configuration");
-        assertNotNull("testing layer is loaded: ", folder);
+        folder = FileUtil.getConfigFile("DLight/iofileb.Configuration");
     }
 
     @After
@@ -80,47 +73,28 @@ public class TimeSeriesIndicatorConfigurationTest {
 
     @Test
     public void testCreate() {
-        TimeSeriesIndicatorConfiguration result = null;
-        try {
-            FileObject fo = folder.getFileObject("TimeSeriesIndicatorConfiguration.instance");
-            assertNotNull("file " + "DLight/Fops.Configuration/TimeSeriesIndicatorConfiguration.instance", fo);
+        FileObject fo = folder.getFileObject("TimeSeriesIndicatorConfiguration.instance");
+        assertNotNull(fo);
 
-            Object obj = fo.getAttribute("instanceCreate");
-            assertNotNull("File object should have not null instanceCreate attribute", obj);
+        TimeSeriesIndicatorConfiguration conf = TimeSeriesIndicatorConfigurationFactory.createInstance(fo, TimeSeriesIndicatorConfiguration.class);
+        assertNotNull(conf);
 
-            if (!(obj instanceof TimeSeriesIndicatorConfiguration)) {
-                fail("Object needs to be a IndicatorMetadata: " + obj);
-            }
-            result = (TimeSeriesIndicatorConfiguration) obj;
-
-        } catch (Exception ex) {
-            fail("Test is not passed");
-        }
-        assertNotNull("TimeSeriesIndicatorConfiguration should not be null", result);
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
-        assertEquals(Aggregation.SUM, accessor.getAggregation(result));
-        assertEquals(1000000000L, accessor.getGranularity(result));
-        assertTrue(accessor.getLabelRenderer(result) instanceof org.netbeans.modules.dlight.util.BytesFormatter);
-        assertEquals("I/O Usage", accessor.getTitle(result));
+        assertEquals(Aggregation.SUM, accessor.getAggregation(conf));
+        assertEquals(1000000000L, accessor.getGranularity(conf));
+        assertTrue(accessor.getLabelRenderer(conf) instanceof org.netbeans.modules.dlight.util.BytesFormatter);
+        assertEquals("My First I/O bytes DLight Tool", accessor.getTitle(conf));
     }
 
     @Test
-    @SuppressWarnings({"unchecked"})
     public void testTimeSeriesDescriptorsList() {
-        Collection<TimeSeriesDescriptor> result = null;
-        try {
-            FileObject fo = folder.getFileObject("TimeSeriesDescriptors.List");
-            assertNotNull("file " + "DLight/Fops.Configuration/TimeSeriesDescriptors.List", fo);
+        FileObject fo = folder.getFileObject("TimeSeriesDescriptorList.instance");
+        assertNotNull(fo);
 
-            Object obj = fo.getAttribute("instanceCreate");
-            assertNotNull("File object should have not null instanceCreate attribute", obj);
+        @SuppressWarnings("unchecked")
+        Collection<TimeSeriesDescriptor> list = TimeSeriesIndicatorConfigurationFactory.createInstance(fo, List.class);
+        assertNotNull(list);
 
-            result = (Collection<TimeSeriesDescriptor>) obj;
-
-        } catch (Exception ex) {
-            fail("Test is not passed");
-        }
-        assertNotNull("IndicatorMetadata should not be null", result);
-        assertEquals(1, result.size());
+        assertEquals(1, list.size());
     }
 }
