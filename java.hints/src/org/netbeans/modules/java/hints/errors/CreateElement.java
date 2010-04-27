@@ -56,6 +56,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -290,7 +291,12 @@ public final class CreateElement implements ErrorRule<Void> {
                 if (wasMemberSelect) {
                     return prepareCreateInnerClassFix(info, newClass, target, modifiers, simpleName, nct.getArguments(), null, ElementKind.CLASS, numTypeArguments);
                 } else {
-                    return prepareCreateOuterClassFix(info, newClass, source, EnumSet.noneOf(Modifier.class), simpleName, nct.getArguments(), null, ElementKind.CLASS, numTypeArguments);
+		    List<Fix> currentResult = new LinkedList<Fix>();
+
+		    currentResult.addAll(prepareCreateOuterClassFix(info, newClass, source, EnumSet.noneOf(Modifier.class), simpleName, nct.getArguments(), null, ElementKind.CLASS, numTypeArguments));
+		    currentResult.addAll(prepareCreateInnerClassFix(info, newClass, info.getElementUtilities().outermostTypeElement(source), EnumSet.of(Modifier.PRIVATE, Modifier.STATIC), simpleName, nct.getArguments(), null, ElementKind.CLASS, numTypeArguments));
+		    
+                    return currentResult;
                 }
             }
 
@@ -315,6 +321,7 @@ public final class CreateElement implements ErrorRule<Void> {
                 result.addAll(prepareCreateInnerClassFix(info, null, target, modifiers, simpleName, null, superType[0], classType, numTypeParameters[0]));
             } else {
                 result.addAll(prepareCreateOuterClassFix(info, null, source, EnumSet.noneOf(Modifier.class), simpleName, null, superType[0], classType, numTypeParameters[0]));
+                result.addAll(prepareCreateInnerClassFix(info, null, info.getElementUtilities().outermostTypeElement(source), EnumSet.of(Modifier.PRIVATE, Modifier.STATIC), simpleName, null, superType[0], classType, numTypeParameters[0]));
             }
         }
 
