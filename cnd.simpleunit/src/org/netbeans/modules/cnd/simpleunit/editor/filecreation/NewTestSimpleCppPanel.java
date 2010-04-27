@@ -128,7 +128,7 @@ public class NewTestSimpleCppPanel extends CndPanel {
     }
 
     public static FileObject getTemplateFileObject(String formType) {
-        return FileUtil.getConfigFile("Templates/cppFiles/" + formType); // NOI18N
+        return FileUtil.getConfigFile("Templates/testFiles/" + formType); // NOI18N
     }
 
     public static DataObject getTemplateDataObject(String formType) {

@@ -39,24 +39,29 @@
 
 package org.netbeans.modules.cnd.simpleunit.editor.filecreation;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import javax.swing.Action;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -70,52 +75,60 @@ public class TestSimpleCppIterator extends CCFSrcFileIterator {
 
     @Override
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
-        DataFolder targetFolder = wiz.getTargetFolder();
-
         Set<DataObject> dataObjects = new HashSet<DataObject>();
 
-        DataObject formDataObject = NewTestSimpleCppPanel.getTemplateDataObject("cppsimpletest.cc"); // NOI18N
-
-        if(getTestFileName() != null) {
-            dataObjects.add(formDataObject.createFromTemplate(targetFolder, getTestFileName()));
+        if(getTestFileName() == null || getTestName() == null) {
+            return dataObjects;
         }
+
+        DataFolder targetFolder = wiz.getTargetFolder();
+        DataObject formDataObject = NewTestSimpleCppPanel.getTemplateDataObject("simpletestfile.cpp"); // NOI18N
+        
+        DataObject dataObject = formDataObject.createFromTemplate(targetFolder, getTestFileName());
 
         Project project = Templates.getProject(wiz);
+
+        Folder folder = null;
         Folder testsRoot = getTestsRootFolder(project);
-
-        //Folder test = testsRoot.addNewFolder("zzz", "zzz", true, Folder.Kind.TEST);
-
-        //getExplorerManager().setSelectedNodes(new Node[]{node});
-
-        //final Action[] actions = f.getItemsAsArray()[0].getDataObject().getNodeDelegate().getActions(true);
-
-
-
-//
-//        if (getSourceFileName() != null) {
-//            DataObject sourceDataObject = NewQtFormPanel.getTemplateDataObject("form.cc"); // NOI18N
-//            dataObjects.add(sourceDataObject.createFromTemplate(targetFolder, getSourceFileName()));
-//
-//            DataObject headerDataObject = NewQtFormPanel.getTemplateDataObject("form.h"); // NOI18N
-//            dataObjects.add(headerDataObject.createFromTemplate(targetFolder, getHeaderFileName()));
-//        }
-
-        return dataObjects;
-    }
-
-    private static Folder getTestsRootFolder(Project project) {
-        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        MakeConfigurationDescriptor projectDescriptor = cdp.getConfigurationDescriptor();
-
-        Folder root = projectDescriptor.getLogicalFolders();
-        Folder testRootFolder = null;
-        for (Folder folder : root.getFolders()) {
-            if(folder.isTestRootFolder()) {
-                testRootFolder = folder;
-                break;
-            }
+        if(testsRoot != null) {
+            Folder newFolder = testsRoot.addNewFolder(true, Folder.Kind.TEST);
+            newFolder.setDisplayName(getTestName());
+            folder = newFolder;
         }
-        return testRootFolder;
+
+        if(folder == null) {
+            return dataObjects;
+        }
+
+        MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(project);
+
+        FileObject file = dataObject.getPrimaryFile();
+        Project owner = FileOwnerQuery.getOwner(file);
+
+        if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory()) {
+            File ioFile = FileUtil.toFile(file);
+            if (ioFile.isDirectory()) {
+                return dataObjects;
+            } // don't add directories.
+            if (!makeConfigurationDescriptor.okToChange()) {
+                return dataObjects;
+            }
+            String itemPath;
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                itemPath = CndPathUtilitities.toRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
+            } else {
+                itemPath = ioFile.getPath();
+            }
+            itemPath = CndPathUtilitities.normalize(itemPath);
+            Item item = new Item(itemPath);
+
+            folder.addItemAction(item);
+        }
+        
+        dataObjects.add(dataObject);
+        return dataObjects;
     }
 
     @Override
@@ -159,18 +172,31 @@ public class TestSimpleCppIterator extends CCFSrcFileIterator {
         return ((NewTestSimpleCppPanelGUI)targetChooserDescriptorPanel.getComponent()).getTestFileName();
     }
 
+    private String getTestName() {
+        return ((NewTestSimpleCppPanelGUI)targetChooserDescriptorPanel.getComponent()).getTestName();
+    }
 
-//    private FormType getFormType() {
-//        return ((NewQtFormPanelGUI)targetChooserDescriptorPanel.getComponent()).getFormType();
-//    }
-//
-//    private String getSourceFileName() {
-//        return ((NewQtFormPanelGUI)targetChooserDescriptorPanel.getComponent()).getSourceFileName();
-//    }
-//
-//    private String getHeaderFileName() {
-//        return ((NewQtFormPanelGUI)targetChooserDescriptorPanel.getComponent()).getHeaderFileName();
-//    }
+    private MakeConfigurationDescriptor getMakeConfigurationDescriptor(Project p) {
+        ConfigurationDescriptorProvider pdp = p.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (pdp == null) {
+            return null;
+        }
+        return pdp.getConfigurationDescriptor();
+    }
 
+    private static Folder getTestsRootFolder(Project project) {
+        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        MakeConfigurationDescriptor projectDescriptor = cdp.getConfigurationDescriptor();
+
+        Folder root = projectDescriptor.getLogicalFolders();
+        Folder testRootFolder = null;
+        for (Folder folder : root.getFolders()) {
+            if(folder.isTestRootFolder()) {
+                testRootFolder = folder;
+                break;
+            }
+        }
+        return testRootFolder;
+    }
 }
 

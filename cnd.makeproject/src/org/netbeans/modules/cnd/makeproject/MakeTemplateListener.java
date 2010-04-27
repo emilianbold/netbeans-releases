@@ -41,7 +41,6 @@
 package org.netbeans.modules.cnd.makeproject;
 
 import java.io.File;
-import java.util.Enumeration;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -65,6 +64,8 @@ import org.openide.util.Utilities;
 public class MakeTemplateListener implements OperationListener {
 
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(MakeTemplateListener.class.getName());
+
+    private static final String ADD_TO_LOGICAL_FOLDER_ATTRIBUTE = "addToLogicalFolder"; // NOI18N
 
     @Override
     public void operationPostCreate(OperationEvent operationEvent) {
@@ -103,9 +104,24 @@ public class MakeTemplateListener implements OperationListener {
     @Override
     public void operationCreateFromTemplate(OperationEvent.Copy copy) {
         Folder folder = Utilities.actionsGlobalContext().lookup(Folder.class);
-        Project p = Utilities.actionsGlobalContext().lookup(Project.class);
+        Project project = Utilities.actionsGlobalContext().lookup(Project.class);
 
-        if (folder == null || p == null) {
+        if(project != null) {
+            DataObject originalDataObject = copy.getOriginalDataObject();
+            if(originalDataObject != null) {
+                FileObject originalPrimaryFile = originalDataObject.getPrimaryFile();
+                if(originalPrimaryFile != null) {
+                    if(originalPrimaryFile.getAttribute(ADD_TO_LOGICAL_FOLDER_ATTRIBUTE) != null) {
+                        boolean addToLogicalFolder = (Boolean)originalPrimaryFile.getAttribute(ADD_TO_LOGICAL_FOLDER_ATTRIBUTE);
+                        if(!addToLogicalFolder) {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (folder == null || project == null) {
             //maybe a file belonging into a project is selected. Try:
             DataObject od = Utilities.actionsGlobalContext().lookup(DataObject.class);
 
@@ -116,9 +132,9 @@ public class MakeTemplateListener implements OperationListener {
 
             FileObject file = od.getPrimaryFile();
 
-            p = FileOwnerQuery.getOwner(file);
+            project = FileOwnerQuery.getOwner(file);
 
-            if (p == null) {
+            if (project == null) {
                 //no project:
                 return;
             }
@@ -131,7 +147,7 @@ public class MakeTemplateListener implements OperationListener {
             }
 
             //check if the project is a Makefile project:
-            MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(p);
+            MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(project);
 
             if (makeConfigurationDescriptor == null) {
                 //no:
@@ -152,16 +168,9 @@ public class MakeTemplateListener implements OperationListener {
         if (folder.isDiskFolder()) {
             return; // item is added via Folder.fileDataCreated event
         }
-        MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(p);
+        MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(project);
 
         assert makeConfigurationDescriptor != null;
-
-        FileObject primaryFile = copy.getOriginalDataObject().getPrimaryFile();
-        Enumeration<String> attributes = primaryFile.getAttributes();
-        
-        while (attributes.hasMoreElements()) {
-            System.err.println(attributes.nextElement());
-        }
 
         FileObject file = copy.getObject().getPrimaryFile();
         Project owner = FileOwnerQuery.getOwner(file);
@@ -170,10 +179,10 @@ public class MakeTemplateListener implements OperationListener {
             ERR.log(ErrorManager.INFORMATIONAL, "processing file=" + file); // NOI18N
             ERR.log(ErrorManager.INFORMATIONAL, "FileUtil.toFile(file.getPrimaryFile())=" + FileUtil.toFile(file)); // NOI18N
             ERR.log(ErrorManager.INFORMATIONAL, "into folder = " + folder); // NOI18N
-            ERR.log(ErrorManager.INFORMATIONAL, "in project = " + p.getProjectDirectory()); // NOI18N
+            ERR.log(ErrorManager.INFORMATIONAL, "in project = " + project.getProjectDirectory()); // NOI18N
         }
 
-        if (owner != null && owner.getProjectDirectory() == p.getProjectDirectory()) {
+        if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory()) {
             File ioFile = FileUtil.toFile(file);
             if (ioFile.isDirectory()) {
                 return;

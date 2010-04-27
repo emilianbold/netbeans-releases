@@ -29,6 +29,13 @@
                 <attr name="templateCategory" stringvalue="cncpp-test-types"/>
             </file>
 
+            <file name="simpletestfile.cpp" url="templates/cpp/test-simple-file-cpp.template">
+                <attr name="position" intvalue="210"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+                <attr name="addToLogicalFolder" boolvalue="false"/>
+            </file>
+
         </folder> <!-- End testFiles folder -->
 
     </folder> <!-- Templates -->
