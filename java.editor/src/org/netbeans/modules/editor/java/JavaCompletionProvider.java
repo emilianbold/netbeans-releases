@@ -214,6 +214,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             PUBLIC_KEYWORD, STATIC_KEYWORD, STRICT_KEYWORD, SYNCHRONIZED_KEYWORD,
             TRANSIENT_KEYWORD, VOID_KEYWORD, VOLATILE_KEYWORD
         };
+
+        private static final String SKIP_ACCESSIBILITY_CHECK = "org.netbeans.modules.editor.java.JavaCompletionProvider.skipAccessibilityCheck"; //NOI18N
         
         private List<JavaCompletionItem> results;
         private boolean hasAdditionalItems;
@@ -2704,7 +2706,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             }
                             return (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types) &&
-                                    tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t) && 
+                                    env.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t) &&
                                     (!isStatic || e.getModifiers().contains(STATIC)) &&
                                     ((isStatic && !inImport) || !e.getSimpleName().contentEquals(CLASS_KEYWORD));
                         case ENUM_CONSTANT:
@@ -2714,13 +2716,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                             return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types) &&
-                                    tu.isAccessible(scope, e, t);
+                                    env.isAccessible(scope, e, t);
                         case METHOD:
                             String sn = e.getSimpleName().toString();
                             return startsWith(env, sn, prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(((ExecutableType)asMemberOf(e, t, types)).getReturnType(), e, kinds, baseType, scope, trees, types) &&
-                                    (isSuperCall && e.getModifiers().contains(PROTECTED) || tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t)) &&
+                                    (isSuperCall && e.getModifiers().contains(PROTECTED) || env.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t)) &&
                                     (!isStatic || e.getModifiers().contains(STATIC)) &&
                                     (!Utilities.isExcludeMethods() || !Utilities.isExcluded(Utilities.getElementName(e.getEnclosingElement(), true) + "." + sn)); //NOI18N
                         case CLASS:
@@ -2732,12 +2734,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                             return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) &&
-                                    tu.isAccessible(scope, e, t) && isStatic;
+                                    env.isAccessible(scope, e, t) && isStatic;
                         case CONSTRUCTOR:
                             ctorSeen[0] = true;
                             return (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(e.getEnclosingElement().asType(), e, kinds, baseType, scope, trees, types) &&
-                                    (tu.isAccessible(scope, e, t) || (elem.getModifiers().contains(ABSTRACT) && !e.getModifiers().contains(PRIVATE))) &&
+                                    (env.isAccessible(scope, e, t) || (elem.getModifiers().contains(ABSTRACT) && !e.getModifiers().contains(PRIVATE))) &&
                                     isStatic;
                     }
                     return false;
@@ -4712,6 +4714,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             private boolean insideClass = false;
             private Set<? extends TypeMirror> smartTypes = null;
             private Set<Element> excludes = null;
+            private boolean checkAccessibility;
             
             private Env(int offset, String prefix, CompilationController controller, TreePath path, SourcePositions sourcePositions, Scope scope) {
                 this.offset = offset;
@@ -4721,6 +4724,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 this.path = path;
                 this.sourcePositions = sourcePositions;
                 this.scope = scope;
+                Object prop = component != null ? component.getDocument().getProperty(SKIP_ACCESSIBILITY_CHECK) : null;
+                this.checkAccessibility = !(prop instanceof String && Boolean.parseBoolean((String)prop));
             }
             
             public int getOffset() {
@@ -4839,6 +4844,10 @@ public class JavaCompletionProvider implements CompletionProvider {
 
             public Set<? extends Element> getExcludes() {
                 return excludes;
+            }
+
+            public boolean isAccessible(Scope scope, Element member, TypeMirror type) {
+                return !checkAccessibility || getController().getTreeUtilities().isAccessible(scope, member, type);
             }
         }
         

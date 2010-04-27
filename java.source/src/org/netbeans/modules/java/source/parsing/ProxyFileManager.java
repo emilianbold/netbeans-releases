@@ -232,31 +232,7 @@ public class ProxyFileManager implements JavaFileManager {
             return null;
         }
         else {
-            FileObject result = fms[0].getFileForOutput(l, packageName, relativeName, sibling);
-            //Workaround for wrongly written processors,
-            //see Issue #180605
-            boolean forwardedToSource = false;
-            if (siblings.getProvider().hasSibling() && l == StandardLocation.CLASS_OUTPUT) {
-                boolean exists = false;
-                try {
-                    result.openInputStream().close();
-                    exists = true;
-                } catch (IOException ioe) {
-                }
-                if (!exists) {
-                    fms = getFileManager(SOURCE_PATH_WRITE);
-                    if (fms.length == 1) {
-                        FileObject otherResult = fms[0].getFileForOutput(StandardLocation.SOURCE_PATH, packageName, relativeName, sibling);
-                        try {
-                            otherResult.openInputStream().close();
-                            result = otherResult;
-                            forwardedToSource = true;
-                        } catch (IOException ioe) {
-                        }
-                    }
-                }
-            }
-            return mark(result, forwardedToSource ? StandardLocation.SOURCE_PATH : l);
+            return mark(fms[0].getFileForOutput(l, packageName, relativeName, sibling), l);
         }
     }
 
@@ -406,8 +382,17 @@ public class ProxyFileManager implements JavaFileManager {
         }
         final boolean hasSibling = siblings.getProvider().hasSibling();
         final boolean write = marker.allowsWrite() || !hasSibling;
-        if (result != null && type != null && hasSibling) {
-            marker.mark(result.toUri().toURL(), type);
+        if (result != null && hasSibling) {
+            if (type == GeneratedFileMarker.Type.SOURCE) {
+                marker.mark(result.toUri().toURL(), type);
+            } else {
+                try {
+                    result.openInputStream().close();
+                } catch (IOException ioe) {
+                    //Marking only created files
+                    marker.mark(result.toUri().toURL(), type);
+                }
+            }
         }
         return write ? result : (T) new NullFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
     }

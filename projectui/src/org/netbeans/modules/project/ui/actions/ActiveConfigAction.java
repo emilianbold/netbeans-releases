@@ -81,6 +81,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.Presenter;
@@ -92,6 +93,8 @@ import org.openide.util.actions.Presenter;
 public class ActiveConfigAction extends CallableSystemAction implements LookupListener, PropertyChangeListener, ContextAwareAction {
 
     private static final Logger LOGGER = Logger.getLogger(ActiveConfigAction.class.getName());
+
+    private static final RequestProcessor RP = new RequestProcessor(ActiveConfigAction.class);
 
     private static final DefaultComboBoxModel EMPTY_MODEL = new DefaultComboBoxModel();
     private static final Object CUSTOMIZE_ENTRY = new Object();
@@ -574,15 +577,23 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         return toReturn;
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    public @Override void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(OpenProjectList.PROPERTY_MAIN_PROJECT) ||
             evt.getPropertyName().equals(OpenProjectList.PROPERTY_OPEN_PROJECTS) ) {
-            refreshView(lookup);
+            refreshViewLater();
         }
     }
 
-    public void resultChanged(LookupEvent ev) {
-        refreshView(lookup);
+    public @Override void resultChanged(LookupEvent ev) {
+        refreshViewLater();
+    }
+
+    private void refreshViewLater() {
+        RP.post(new Runnable() {
+            public @Override void run() {
+                refreshView(lookup);
+            }
+        });
     }
 
 }

@@ -90,7 +90,7 @@ public class WatchPanel {
         //Add JEditorPane and context
         JComponent [] editorComponents = Utilities.createSingleLineEditor(mimeType);
         editorPane = (JTextComponent) editorComponents[1];
-        if (file != null) {
+        if (file != null && line >= 0) {
             DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
         }
         editorPane.setText(expression);
