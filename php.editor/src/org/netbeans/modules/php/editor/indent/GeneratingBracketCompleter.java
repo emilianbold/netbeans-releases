@@ -38,9 +38,12 @@
  */
 
 package org.netbeans.modules.php.editor.indent;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -51,20 +54,19 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.model.FunctionScope;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.nav.NavUtils;
-import org.netbeans.modules.php.editor.nav.SemiAttribute;
-import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
-import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement.Kind;
-import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedType;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
@@ -96,7 +98,7 @@ public class GeneratingBracketCompleter {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    final ParserResult parameter = (ParserResult) resultIterator.getParserResult();
+                    final ParserResult parserResult = (ParserResult) resultIterator.getParserResult();
                     //find coresponding ASTNode:
                     //TODO: slow and ugly:
                     class Result extends Error {
@@ -114,7 +116,7 @@ public class GeneratingBracketCompleter {
                             @Override
                             public void scan(ASTNode node) {
                                 if (node != null) {
-                                    Comment c = Utils.getCommentForNode(Utils.getRoot(parameter), node);
+                                    Comment c = Utils.getCommentForNode(Utils.getRoot(parserResult), node);
 
                                     if (c != null && c.getStartOffset() <= offset && offset <= c.getEndOffset()) {
                                         //found:
@@ -123,7 +125,7 @@ public class GeneratingBracketCompleter {
                                 }
                                 super.scan(node);
                             }
-                        }.scan(Utils.getRoot(parameter));
+                        }.scan(Utils.getRoot(parserResult));
                     } catch (Result r) {
                         n = r.node;
                     }
@@ -134,28 +136,29 @@ public class GeneratingBracketCompleter {
                     }
 
                     if (n instanceof FunctionDeclaration) {
-                        generateFunctionDoc(doc, offset, indent, parameter, (FunctionDeclaration) n);
+                        generateFunctionDoc(doc, offset, indent, parserResult, (FunctionDeclaration) n);
                     }
 
                     if (n instanceof MethodDeclaration) {
-                        generateFunctionDoc(doc, offset, indent, parameter, ((MethodDeclaration) n).getFunction());
+                        generateFunctionDoc(doc, offset, indent, parserResult, ((MethodDeclaration) n).getFunction());
                     }
 
-                    if (n instanceof ExpressionStatement && ((ExpressionStatement) n).getExpression() instanceof Assignment) {
-                        Assignment a = (Assignment) ((ExpressionStatement) n).getExpression();
-
-                        if (a.getLeftHandSide() instanceof ArrayAccess) {
-                            AttributedElement el = SemiAttribute.semiAttribute(parameter).getElement(
-                                    a.getLeftHandSide());
-
-                            if (el != null && el.getKind() == Kind.VARIABLE) {
-                                generateVariableDoc(doc, offset, indent, parameter, el);
-                            }
-                        }
-                    }
+//TODO: rewrite needed, doesn't work properly now
+//                    if (n instanceof ExpressionStatement && ((ExpressionStatement) n).getExpression() instanceof Assignment) {
+//                        Assignment a = (Assignment) ((ExpressionStatement) n).getExpression();
+//
+//                        if (a.getLeftHandSide() instanceof ArrayAccess) {
+//                            AttributedElement el = SemiAttribute.semiAttribute(parserResult).getElement(
+//                                    a.getLeftHandSide());
+//
+//                            if (el != null && el.getKind() == Kind.VARIABLE) {
+//                                generateVariableDoc(doc, offset, indent, parserResult, el);
+//                            }
+//                        }
+//                    }
 
                     if (n instanceof FieldsDeclaration) {
-                        generateFieldDoc(doc, offset, indent, parameter, (FieldsDeclaration) n);
+                        generateFieldDoc(doc, offset, indent, parserResult, (FieldsDeclaration) n);
                     }
                 }
             });
@@ -169,15 +172,97 @@ public class GeneratingBracketCompleter {
     
     private static void generateFunctionDoc(BaseDocument doc, int offset, int indent, ParserResult info, FunctionDeclaration decl) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
-        
         ScannerImpl i = new ScannerImpl(info, decl);
         
         i.scan(decl);
         
         addVariables(doc, toAdd, "@global", indent, i.globals);
         addVariables(doc, toAdd, "@staticvar", indent, i.staticvars);
+        addVariables(doc, toAdd, "@param", indent, i.params);
+                
+        if (i.hasReturn) {
+            generateDocEntry(doc, toAdd, "@return", indent, null, i.returnType);
+        }
         
-        for (final FormalParameter p : decl.getFormalParameters()) {
+        doc.insertString(offset - 1, toAdd.toString(), null);
+    }
+    
+    private static void addVariables(BaseDocument doc, StringBuilder toAdd, String text, int indent, List<Pair<String, String>> vars) {
+        for (Pair<String, String> p : vars) {
+            generateDocEntry(doc, toAdd, text,indent, p.getA(), p.getB());
+        }
+    }
+        
+    private static void generateDocEntry(BaseDocument doc, StringBuilder toAdd, String text, int indent, String name, String type) {
+        toAdd.append("\n");
+        toAdd.append(IndentUtils.createIndentString(doc, indent));
+
+        toAdd.append(" * ");
+        toAdd.append(text);
+        if (type != null) {
+            if (type != null) {
+                toAdd.append(" ");
+                toAdd.append(type);
+            }
+        } else {
+            toAdd.append(" ");
+            toAdd.append(TYPE_PLACEHOLDER);
+        }
+        if (name != null) {
+            toAdd.append(" ");
+            toAdd.append(name);
+        }
+    }
+    
+//    private static void generateVariableDoc(BaseDocument doc, int offset, int indent, ParserResult info, AttributedElement el) throws BadLocationException {
+//        StringBuilder toAdd = new StringBuilder();
+//
+//        generateDocEntry(doc, toAdd, "@global", indent, "$GLOBALS['" + el.getName() + "']", null);
+//        generateDocEntry(doc, toAdd, "@name", indent, "$" + el.getName(), null);
+//
+//        doc.insertString(offset - 1, toAdd.toString(), null);
+//    }
+    
+    private static void generateFieldDoc(BaseDocument doc, int offset, int indent, ParserResult info, FieldsDeclaration decl) throws BadLocationException {
+        StringBuilder toAdd = new StringBuilder();
+
+        generateDocEntry(doc, toAdd, "@var", indent, null, null);
+        
+        doc.insertString(offset - 1, toAdd.toString(), null);
+    }
+    
+    private static class ScannerImpl extends DefaultVisitor {
+        private List<Pair<String, String>> globals = new LinkedList<Pair<String, String>>();
+        private List<Pair<String, String>> staticvars = new LinkedList<Pair<String, String>>();
+        private List<Pair<String, String>> params = new LinkedList<Pair<String, String>>();
+        final Set<VariableName> declaredVariables = new HashSet<VariableName>();
+        private boolean hasReturn;
+        private String returnType;
+        private final FunctionDeclaration decl;
+        private final FunctionScope fnc;
+
+        public ScannerImpl(ParserResult info, FunctionDeclaration decl) {
+            if (info instanceof PHPParseResult) {
+                PHPParseResult parseResult = (PHPParseResult) info;
+                Model model = parseResult.getModel();
+                final VariableScope variableScope = model.getVariableScope(decl.getEndOffset()-1);
+                if (variableScope instanceof FunctionScope) {
+                    fnc = (FunctionScope) variableScope;
+                    declaredVariables.addAll(fnc.getDeclaredVariables());
+                } else { fnc = null;}
+            } else { fnc = null;} 
+            this.decl = decl;
+        }
+
+        @Override
+        public void scan(ASTNode node) {
+            if (fnc != null) {
+                super.scan(node);
+            }
+        }
+
+        @Override
+        public void visit(final FormalParameter p) {
             String name = "";
             Expression expr = p.getParameterName();
             Variable var = null;
@@ -193,96 +278,35 @@ public class GeneratingBracketCompleter {
             if (var != null && var.getName() instanceof Identifier) {
                 name = ((Identifier) var.getName()).getName();
             }
-            AttributedType type = null;
-            if (p.getParameterType() != null) {
-                final Expression paramIdentifier = p.getParameterType();
-                if (paramIdentifier != null) {
-                    type = new AttributedType() {
-                        @Override
-                        public String getTypeName() {
-                            return CodeUtils.extractUnqualifiedTypeName(p);
-                        }
-                    };
+            if (name != null) {
+                for (VariableName variable : ElementFilter.forName(NameKind.exact(name)).filter(declaredVariables)) {
+                    final Collection<? extends String> typeNames = variable.getTypeNames(variable.getNameRange().getEnd());
+                    String type = typeNames.isEmpty() ? null : typeNames.iterator().next();
+                    if (type != null && type.contains("@")) {
+                        type = null;
+                    }
+                    params.add(new Pair<String, String>(variable.getName(), type));
                 }
             }
-            generateDocEntry(doc, toAdd, "@param", indent, "$" + name, type);
+            super.visit(p);
         }
+
+
         
-        if (i.hasReturn) {
-            generateDocEntry(doc, toAdd, "@return", indent, null, i.returnType);
-        }
-        
-        doc.insertString(offset - 1, toAdd.toString(), null);
-    }
-    
-    private static void addVariables(BaseDocument doc, StringBuilder toAdd, String text, int indent, List<Pair<AttributedElement, AttributedType>> vars) {
-        for (Pair<AttributedElement, AttributedType> p : vars) {
-            generateDocEntry(doc, toAdd, text,indent, "$" + p.getA().getName(), p.getB());
-        }
-    }
-    
-    private static final AttributedType PRINT_NO_TYPE = new AttributedType() {
-        @Override
-        public String getTypeName() {
-            return null;
-        }
-    };
-    
-    private static void generateDocEntry(BaseDocument doc, StringBuilder toAdd, String text, int indent, String name, AttributedType type) {
-        toAdd.append("\n");
-        toAdd.append(IndentUtils.createIndentString(doc, indent));
-
-        toAdd.append(" * ");
-        toAdd.append(text);
-        if (type != null) {
-            if (type != PRINT_NO_TYPE) {
-                toAdd.append(" ");
-                toAdd.append(type.getTypeName());
-            }
-        } else {
-            toAdd.append(" ");
-            toAdd.append(TYPE_PLACEHOLDER);
-        }
-        if (name != null) {
-            toAdd.append(" ");
-            toAdd.append(name);
-        }
-    }
-    
-    private static void generateVariableDoc(BaseDocument doc, int offset, int indent, ParserResult info, AttributedElement el) throws BadLocationException {
-        StringBuilder toAdd = new StringBuilder();
-
-        generateDocEntry(doc, toAdd, "@global", indent, "$GLOBALS['" + el.getName() + "']", null);
-        generateDocEntry(doc, toAdd, "@name", indent, "$" + el.getName(), PRINT_NO_TYPE);
-
-        doc.insertString(offset - 1, toAdd.toString(), null);
-    }
-    
-    private static void generateFieldDoc(BaseDocument doc, int offset, int indent, ParserResult info, FieldsDeclaration decl) throws BadLocationException {
-        StringBuilder toAdd = new StringBuilder();
-        
-        generateDocEntry(doc, toAdd, "@var", indent, null, null);
-        
-        doc.insertString(offset - 1, toAdd.toString(), null);
-    }
-    
-    private static class ScannerImpl extends DefaultVisitor {
-        private List<Pair<AttributedElement, AttributedType>> globals = new LinkedList<Pair<AttributedElement, AttributedType>>();
-        private List<Pair<AttributedElement, AttributedType>> staticvars = new LinkedList<Pair<AttributedElement, AttributedType>>();
-        private boolean hasReturn;
-        private AttributedType returnType;
-        private SemiAttribute sa;
-        private FunctionDeclaration decl;
-
-        public ScannerImpl(ParserResult info, FunctionDeclaration decl) {
-            sa = SemiAttribute.semiAttribute(info);
-            this.decl = decl;
-        }
-
         @Override
         public void visit(GlobalStatement node) {
             for (Variable v : node.getVariables()) {
-                handleVariable(v, globals);
+                final String name = CodeUtils.extractVariableName(v);
+                if (name != null) {
+                    for (VariableName variable : ElementFilter.forName(NameKind.exact(name)).filter(declaredVariables)) {
+                        final Collection<? extends String> typeNames = variable.getTypeNames(variable.getNameRange().getEnd());
+                        String type = typeNames.isEmpty() ? null : typeNames.iterator().next();
+                        if (type != null && type.contains("@")) {
+                            type = null;
+                        }
+                        globals.add(new Pair<String, String>(variable.getName(), type));
+                    }
+                }
             }
             
             super.visit(node);
@@ -291,40 +315,33 @@ public class GeneratingBracketCompleter {
         @Override
         public void visit(ReturnStatement node) {
             hasReturn = true;
-            Expression expression = node.getExpression();
-            if (expression instanceof ClassInstanceCreation) {
-                ClassInstanceCreation instanceCreation = (ClassInstanceCreation) expression;
-                final String clsname = CodeUtils.extractClassName(instanceCreation.getClassName());
-                if (clsname != null) {
-                    //TODO: resolve type (should be recorded in SemiAttribute)
-                    returnType = new AttributedType() {
-                        @Override
-                        public String getTypeName() {
-                            return clsname;
-                        }
-                    };
-                }
+            Collection<? extends String> typeNames = fnc.getReturnTypeNames();
+            String type = typeNames.isEmpty() ? null : typeNames.iterator().next();
+            if (type != null && type.contains("@")) {
+                type = null;
             }
-
+            returnType = type;
         }
 
         @Override
         public void visit(StaticStatement node) {
             for (Variable v : node.getVariables()) {
-                handleVariable(v, staticvars);
+                final String name = CodeUtils.extractVariableName(v);
+                if (name != null) {
+                    for (VariableName variable : ElementFilter.forName(NameKind.exact(name)).filter(declaredVariables)) {
+                        final Collection<? extends String> typeNames = variable.getTypeNames(variable.getNameRange().getEnd());
+                        String type = typeNames.isEmpty() ? null : typeNames.iterator().next();
+                        if (type != null && type.contains("@")) {
+                            type = null;
+                        }
+                        staticvars.add(new Pair<String, String>(variable.getName(), type));
+                    }
+                }
             }
             
             super.visit(node);
         }
 
-        private void handleVariable(Variable v, List<Pair<AttributedElement, AttributedType>> vars) {
-            AttributedElement e = sa.getElement(v);
-
-            if (e != null) {
-                //TODO: types
-                vars.add(new Pair<AttributedElement, AttributedType>(e, null));
-            }
-        }
 
         @Override
         public void visit(FunctionDeclaration node) {

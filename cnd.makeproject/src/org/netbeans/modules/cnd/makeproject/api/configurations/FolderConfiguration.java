@@ -65,9 +65,9 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         // Compilers
         cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), parentCCompilerConfiguration);
         ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), parentCCCompilerConfiguration);
-        if(folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()) {
+        if (folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()) {
             linkerConfiguration = new LinkerConfiguration((MakeConfiguration) configuration);
-            if(folder.isTest()) {
+            if (folder.isTest()) {
                 linkerConfiguration.getOutput().setValue("${TESTDIR}/" + folder.getPath()); // NOI18N
             }
         }
@@ -148,7 +148,7 @@ public class FolderConfiguration implements ConfigurationAuxObject {
     public void assignValues(FolderConfiguration folderConfiguration) {
         getCCompilerConfiguration().assign(folderConfiguration.getCCompilerConfiguration());
         getCCCompilerConfiguration().assign(folderConfiguration.getCCCompilerConfiguration());
-        if(getLinkerConfiguration() != null && folderConfiguration.getLinkerConfiguration() != null) {
+        if (getLinkerConfiguration() != null && folderConfiguration.getLinkerConfiguration() != null) {
             getLinkerConfiguration().assign(folderConfiguration.getLinkerConfiguration());
         }
     }
@@ -170,7 +170,7 @@ public class FolderConfiguration implements ConfigurationAuxObject {
 
         getCCompilerConfiguration().assign(i.getCCompilerConfiguration());
         getCCCompilerConfiguration().assign(i.getCCCompilerConfiguration());
-        if(getLinkerConfiguration() != null && i.getLinkerConfiguration() != null) {
+        if (getLinkerConfiguration() != null && i.getLinkerConfiguration() != null) {
             getLinkerConfiguration().assign(i.getLinkerConfiguration());
         }
     }
@@ -187,7 +187,7 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         FolderConfiguration i = new FolderConfiguration(getConfiguration(), (CCompilerConfiguration) getCCompilerConfiguration().getMaster(), (CCCompilerConfiguration) getCCCompilerConfiguration().getMaster(), getFolder());
         i.setCCompilerConfiguration(getCCompilerConfiguration().clone());
         i.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
-        if(getLinkerConfiguration() != null) {
+        if (getLinkerConfiguration() != null) {
             i.setLinkerConfiguration(getLinkerConfiguration().clone());
         }
         return i;

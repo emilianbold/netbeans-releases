@@ -101,6 +101,11 @@
           <ResourceString bundle="org/netbeans/modules/html/editor/refactoring/Bundle.properties" key="MSG_ExtractToEmbeddedSection" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/html/editor/refactoring/Bundle.properties" key="ACSD_EmbeddedSection" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="externalSheetRB">
       <Properties>
@@ -114,6 +119,11 @@
           <Connection code="!allStylesheets.isEmpty()" type="code"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/html/editor/refactoring/Bundle.properties" key="ACSD_ExternalStylesheet" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JComboBox" name="existingEmbeddedSectionsComboBox">
       <Properties>
@@ -121,6 +131,14 @@
           <Connection code="createEmbeddedCssSectionsModel()" type="code"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/html/editor/refactoring/Bundle.properties" key="ACSD_EmbeddedSectionComboBoxName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/html/editor/refactoring/Bundle.properties" key="ACSD_EmbeddedSectionComboBoxDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="existingEmbeddedSectionsComboBoxActionPerformed"/>
       </Events>
@@ -137,6 +155,14 @@
           <Connection code="new ExternalStylesheetsListCellRenderer(externalSheetsComboBox.getRenderer())" type="code"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/html/editor/refactoring/Bundle.properties" key="ASCD_ExternalStylesheetName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/html/editor/refactoring/Bundle.properties" key="ACSD_ExternalStylesheetDescr" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="externalSheetsComboBoxActionPerformed"/>
       </Events>
@@ -157,6 +183,11 @@
           <ResourceString bundle="org/netbeans/modules/html/editor/refactoring/Bundle.properties" key="MSG_IdType" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/html/editor/refactoring/Bundle.properties" key="ASCD_GenerateIdSelectors" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="classSelectorTypeRB">
       <Properties>
@@ -167,6 +198,11 @@
           <ResourceString bundle="org/netbeans/modules/html/editor/refactoring/Bundle.properties" key="MSG_ClassType" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/html/editor/refactoring/Bundle.properties" key="ASCD_GenerateClassSelectors" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="resolveDeclarationsLabel">
       <Properties>

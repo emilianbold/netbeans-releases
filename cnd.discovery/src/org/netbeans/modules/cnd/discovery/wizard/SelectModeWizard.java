@@ -135,6 +135,9 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
     
     public void storeSettings(Object settings) {
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
+        if (wizardDescriptor instanceof WizardDescriptor) {
+            ((WizardDescriptor)wizardDescriptor).putProperty("readOnlyToolchain", Boolean.TRUE);// NOI18N
+        }
     }
 
     public void prepareValidation() {

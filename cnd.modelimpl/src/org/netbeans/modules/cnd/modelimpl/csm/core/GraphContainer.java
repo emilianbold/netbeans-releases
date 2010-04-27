@@ -289,12 +289,12 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
             graphLock.readLock().lock();
             try {
                 getParentFiles(parent, keyTo);
-                if (parent.size()==0) {
+                if (parent.isEmpty()) {
                     parent.add(keyTo);
                 }
                 for(CsmUID<CsmFile> uid : parent){
                     NodeLink link = graph.get(uid);
-                    if (link != null && link.getInLinks().size()==0){
+                    if (link != null && link.getInLinks().isEmpty()){
                         top.add(uid);
                     }
                 }
@@ -317,7 +317,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
             graphLock.readLock().lock();
             try {
                 getParentFiles(parent, keyTo);
-                if (parent.size()==0) {
+                if (parent.isEmpty()) {
                     parent.add(keyTo);
                 }
                 coherence.addAll(parent);
@@ -556,6 +556,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
             return out;
         }
 
+        @Override
         public void write(final DataOutput output) throws IOException {
             assert output != null;
             assert in != null;

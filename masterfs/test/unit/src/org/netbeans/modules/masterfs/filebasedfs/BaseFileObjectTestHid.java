@@ -111,7 +111,40 @@ public class BaseFileObjectTestHid extends TestBaseHid{
                              "testdir/mountdir7/file2.ext",
                              "testdir/mountdir8/",
                              "testdir/mountdir9/",                
+                             "testdir/mountdir10/",
         };
+    }
+
+    
+    public void testFileTypeNotRemembered() throws Exception {
+        String newFileName = "test";
+
+        FileObject parent = root.getFileObject("testdir/mountdir10");
+        assertNotNull(parent);
+        assertTrue(parent.isFolder());
+        parent.getChildren();
+
+        // create a folder
+        assertTrue(parent.createFolder(newFileName).isFolder());
+
+        File parentFile = FileUtil.toFile(parent);
+        assertNotNull(parentFile);
+        assertTrue(parentFile.getAbsolutePath(),parentFile.exists());
+        File newFile = new File(parentFile, newFileName);
+        assertTrue(newFile.getAbsolutePath(), newFile.exists());
+
+        // externally delete the folder
+        assertTrue(newFile.getAbsolutePath(), newFile.delete());
+        assertFalse(newFile.exists());
+
+        // create a file with the same name as the deleted folder
+        assertTrue(newFile.getAbsolutePath(), new File(parentFile, newFileName).createNewFile());
+        assertTrue(newFile.exists());
+
+        parent.refresh();
+
+        FileObject fo = FileUtil.toFileObject(newFile);
+        assertTrue(newFile.getAbsolutePath(), fo.isData());
     }
 
     public void testRootToFileObject() throws Exception {

@@ -367,6 +367,20 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 }
             }
         }
+
+        // verify that there are not new components in the 'new' definition
+        // of the library...  If there are new components... rebuild the library.
+        if (lib != null && size < libraryList.size()) {
+            try {
+                lmgr.removeLibrary(lib);
+            } catch (IOException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
+            } catch (IllegalArgumentException ex) {
+                // Already removed somehow, ignore.
+            }
+            lib = null;
+        }
+
         if (lib != null) {
             List<URL> libList = lib.getContent(JAVADOC_VOLUME);
             size = libList.size();
@@ -394,7 +408,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
 
         // verify that there are not new components in the 'new' definition
         // of the library...  If there are new components... rebuild the library.
-        if (lib != null && size < libraryList.size()) {
+        if (lib != null && null != docList &&  size < docList.size()) {
             try {
                 lmgr.removeLibrary(lib);
             } catch (IOException ex) {

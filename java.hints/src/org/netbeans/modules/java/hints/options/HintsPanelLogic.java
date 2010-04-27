@@ -174,10 +174,15 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     }
     
     synchronized void applyChanges() {
+	boolean containsChanges = false;
         for (String hint : changes.keySet()) {
             ModifiedPreferences mn = changes.get(hint);
+	    containsChanges |= !mn.isEmpty();
             mn.store(RulesManager.getPreferences(hint, HintsSettings.getCurrentProfileId()));
         }
+	if (containsChanges) {
+	    HintsSettings.fireChangeEvent();
+	}
         if (depScn != null)
             DepScanningSettings.setDependencyTracking(depScn);
     }
@@ -543,7 +548,10 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         protected void flushSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
+
+	boolean isEmpty() {
+	    return map.isEmpty();
+	}
     }
 
 }

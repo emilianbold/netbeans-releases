@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
@@ -101,6 +102,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private CCompilerConfiguration currentCCompilerConfiguration = null;
     private CCCompilerConfiguration currentCCCompilerConfiguration = null;
     private FortranCompilerConfiguration currentFortranCompilerConfiguration = null;
+    private AssemblerConfiguration currentAsmConfiguration = null;
     private CustomToolConfiguration currentCustomToolConfiguration = null;
     private LinkerConfiguration currentLinkerConfiguration = null;
     private PackagingConfiguration currentPackagingConfiguration = null;
@@ -295,6 +297,14 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
             currentCCCCompilerConfiguration = null;
             currentBasicCompilerConfiguration = currentFortranCompilerConfiguration;
+        } else if (element.equals(ASMTOOL_ELEMENT)) {
+            if (currentItemConfiguration != null) {
+                currentAsmConfiguration = currentItemConfiguration.getAssemblerConfiguration();
+            } else {
+                currentAsmConfiguration = ((MakeConfiguration) currentConf).getAssemblerConfiguration();
+            }
+            currentCCCCompilerConfiguration = null;
+            currentBasicCompilerConfiguration = currentAsmConfiguration;
         } else if (element.equals(CUSTOMTOOL_ELEMENT)) {
             if (currentItemConfiguration != null) {
                 currentCustomToolConfiguration = currentItemConfiguration.getCustomToolConfiguration();
@@ -442,6 +452,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(DEPENDENCY_CHECKING)) {
             boolean ds = currentText.equals(TRUE_VALUE);
             ((MakeConfiguration) currentConf).getDependencyChecking().setValue(ds);
+        } else if (element.equals(REBUILD_PROP_CHANGED)) {
+            boolean ds = currentText.equals(TRUE_VALUE);
+            ((MakeConfiguration) currentConf).getRebuildPropChanged().setValue(ds);
         } else if (element.equals(DEFAULT_CONF_ELEMENT)) {
             defaultConf = new Integer(currentText).intValue();
         } else if (element.equals(PROJECT_MAKEFILE_ELEMENT)) {
@@ -549,6 +562,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentBasicCompilerConfiguration = null;
         } else if (element.equals(FORTRANCOMPILERTOOL_ELEMENT)) {
             currentFortranCompilerConfiguration = null;
+            currentBasicCompilerConfiguration = null;
+        } else if (element.equals(ASMTOOL_ELEMENT)) {
+            currentAsmConfiguration = null;
             currentBasicCompilerConfiguration = null;
         } else if (element.equals(CUSTOMTOOL_ELEMENT)) {
             currentCustomToolConfiguration = null;

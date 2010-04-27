@@ -49,16 +49,18 @@ public interface CallModel {
     /**
      * 
      * @param function
+     * @param showOverriding show overriding virtual functions
      * @return list of all function definitions that has call of function
      */
-    List<Call> getCallers(Function declaration);
+    List<Call> getCallers(Function declaration, boolean showOverriding);
     
     /**
      * 
      * @param definition
+     * @param showOverriding show overriding virtual functions
      * @return list of all called functions from definition
      */
-    List<Call> getCallees(Function definition);
+    List<Call> getCallees(Function definition, boolean showOverriding);
 
     Function getRoot();
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,45 +34,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.loaders;
 
-package org.netbeans.modules.glassfish.javaee.ide;
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
+import org.openide.nodes.Children;
+import org.openide.util.Lookup;
+import org.openide.text.DataEditorSupport;
 
-import java.io.File;
-import org.netbeans.modules.derby.spi.support.DerbySupport;
-import org.netbeans.modules.glassfish.eecommon.api.RegisterDatabase;
-import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
-import org.openide.util.lookup.ServiceProvider;
+public class CMakeIncludeDataObject extends MultiDataObject {
 
-/**
- *
- * @author vkraemer
- */
-@ServiceProvider(service=RegisteredDerbyServer.class)
-public class RegisteredDerbyServerImpl implements RegisteredDerbyServer {
-
-    public void start() {
-        DerbySupport.ensureStarted();
+    public CMakeIncludeDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+        super(pf, loader);
+        CookieSet cookies = getCookieSet();
+        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
     }
 
-    public void initialize(String candidateLocation) {
-        String location = DerbySupport.getLocation();
-        if (null != location && location.trim().length() > 0) {
-            return;
-        }
-        DerbySupport.setLocation(candidateLocation);
-        location = DerbySupport.getSystemHome();
-        if (null != location && location.trim().length() > 0) {
-            return;
-        } else {
-            File dbdir = new File(DerbySupport.getDefaultSystemHome());
-            if (dbdir.exists() == false) {
-                dbdir.mkdirs();
-            }
-        }
-        DerbySupport.setSystemHome(DerbySupport.getDefaultSystemHome());
-        RegisterDatabase.getDefault().configureDatabase();
+    @Override
+    protected Node createNodeDelegate() {
+        return new DataNode(this, Children.LEAF, getLookup());
     }
 
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
 }

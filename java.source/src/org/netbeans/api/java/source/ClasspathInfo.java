@@ -72,7 +72,6 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.CachingFileManager;
-import org.netbeans.modules.java.source.parsing.NullWriteFileManager;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.ProxyFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileManager;
@@ -85,6 +84,8 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.GeneratedFileMarker;
 import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.MemoryFileManager;
+import org.netbeans.modules.java.source.parsing.SiblingSource;
+import org.netbeans.modules.java.source.parsing.SiblingSupport;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -389,17 +390,18 @@ public final class ClasspathInfo {
     synchronized JavaFileManager getFileManager() {
         if (this.fileManager == null) {
             boolean hasSources = this.cachedSrcClassPath != null;
-            final CacheMarker marker = new CacheMarker(this.cachedUserSrcClassPath);
-            JavaFileManager jfm = new ProxyFileManager (
+            final CacheMarker marker = new CacheMarker(this.cachedUserSrcClassPath, backgroundCompilation);
+            final SiblingSource siblings = SiblingSupport.create();
+            this.fileManager = new ProxyFileManager (
                 new CachingFileManager (this.archiveProvider, this.cachedBootClassPath, true, true),
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
                 hasSources ? (!useModifiedFiles ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
                     : new SourceFileManager (this.cachedUserSrcClassPath, ignoreExcludes)) : null,
-                cachedAptSrcClassPath != null ? new AptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath) : null,
-                hasSources ? outFileManager = new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedUserSrcClassPath, this.cachedAptSrcClassPath) : null,
+                cachedAptSrcClassPath != null ? new AptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, siblings.getProvider()) : null,
+                hasSources ? outFileManager = new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, siblings.getProvider()) : null,
                 this.memoryFileManager,
-              marker);
-            this.fileManager = backgroundCompilation ? jfm : new NullWriteFileManager(jfm);
+                marker,
+                siblings);
         }
         return this.fileManager;
     }
@@ -493,31 +495,42 @@ public final class ClasspathInfo {
     private static class CacheMarker implements GeneratedFileMarker {
 
         private final ClassPath userRoots;
+        private final boolean allowsWrite;
         private final Set<URL> srcOutput = new HashSet<URL>();
         private final Set<URL> clsOutput = new HashSet<URL>();
 
-        public CacheMarker(final @NonNull ClassPath userRoots) {
+        private StringBuilder cachedValue;
+        private Set<String> cachedResources;
+
+        public CacheMarker(final @NonNull ClassPath userRoots, final boolean allowsWrite) {
             assert userRoots != null;
             this.userRoots = userRoots;
+            this.allowsWrite = allowsWrite;
         }
 
+        @Override
+        public boolean allowsWrite() {
+            return this.allowsWrite;
+        }
 
         public void mark(@NonNull final URL result, GeneratedFileMarker.Type type) {
-            switch (type) {
-                case SOURCE:
-                    srcOutput.add(result);
-                    break;
-                case RESOURCE:
-                    clsOutput.add(result);
-                    break;
-                default:
-                    throw new IllegalArgumentException();
+            if (allowsWrite) {
+                switch (type) {
+                    case SOURCE:
+                        srcOutput.add(result);
+                        break;
+                    case RESOURCE:
+                        clsOutput.add(result);
+                        break;
+                    default:
+                        throw new IllegalArgumentException();
+                }
             }
         }
 
         public void finished(@NonNull final URL source) {
             try {
-                if (!srcOutput.isEmpty() || !clsOutput.isEmpty()) {
+                if (allowsWrite && (!srcOutput.isEmpty() || !clsOutput.isEmpty())) {
                     final URL sourceRootURL = getOwnerRoot(source);
                     if (sourceRootURL == null) {
                         //todo: caused by next round generating.
@@ -538,20 +551,26 @@ public final class ClasspathInfo {
                         if (!cacheFile.getParentFile().exists()) {
                             cacheFile.getParentFile().mkdirs();
                         }
-                        writeFile(cacheFile, sb.toString());
+                        writeFile(cacheFile, sb, null);
                     }
                     if (!clsOutput.isEmpty()) {
                         final File resFile = new File (classCache,FileObjects.RESOURCES);
                         final Set<String> currentResources = new HashSet<String>();
-                        final StringBuilder sb = readFile(resFile, currentResources);   //todo: cache
+                        final StringBuilder sb = readFile(resFile, currentResources);
+                        boolean changed = false;
                         for (URL url : clsOutput) {
                             String resPath = FileObjects.getRelativePath(classCache.toURI().toURL(),url);
                             if (currentResources.add(resPath)) {
                                 sb.append(resPath);
                                 sb.append('\n');    //NOI18N
+                                changed = true;
                             }
                         }
-                        writeFile(resFile, sb.toString());
+                        if (changed) {
+                            writeFile(resFile, sb, currentResources);
+                        } else {
+                            setCacheIfNeeded(sb, currentResources);
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -564,16 +583,25 @@ public final class ClasspathInfo {
             }
         }
 
-        private static void writeFile (final File file, final String data) throws IOException {
+        private void writeFile (final File file, final StringBuilder data, Set<String> currentResources) throws IOException {
+            if (currentResources != null) {
+                cachedValue = data;
+                cachedResources = currentResources;
+            }
             final Writer out = new OutputStreamWriter(new FileOutputStream(file),"UTF-8");    //NOI18N
             try {
-                out.write(data);
+                out.write(data.toString());
             } finally {
                 out.close();
             }
         }
 
-        private static StringBuilder readFile(final File file, Set<? super String> currentResources) {
+        private StringBuilder readFile(final File file, Set<? super String> currentResources) {
+            if (cachedResources != null) {
+                assert cachedValue != null;
+                currentResources.addAll(cachedResources);
+                return cachedValue;
+            }
             StringBuilder sb = new StringBuilder();
             try {
                 final Reader in = new InputStreamReader (new FileInputStream (file),"UTF-8");   //NOI18N
@@ -593,6 +621,15 @@ public final class ClasspathInfo {
             }
             currentResources.addAll(Arrays.asList(sb.toString().split("\n")));  //NOI18N
             return sb;
+        }
+
+        private void setCacheIfNeeded(final StringBuilder data, final Set<String> currentResources) {
+            assert data != null;
+            assert currentResources != null;
+            if (cachedResources == null) {
+                cachedValue = data;
+                cachedResources = currentResources;
+            }
         }
 
         private URL getOwnerRoot (@NonNull final URL source) throws URISyntaxException {

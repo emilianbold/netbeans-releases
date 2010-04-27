@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.eecommon.api;
+package org.netbeans.modules.glassfish.spi;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -99,6 +99,7 @@ public class RegisterDatabase {
         if (dbInstall != null && dbInstall.exists()){
             registerDerbyLibrary(dbInstall);
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         DerbyDatabases.createSampleDatabase();
@@ -137,6 +138,7 @@ public class RegisterDatabase {
             this.libsFolder = libsFolder;
         }
 
+        @Override
         public void run() throws IOException {
             FileLock ld = null;
             java.io.OutputStream outStreamd = null;

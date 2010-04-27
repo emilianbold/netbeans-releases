@@ -262,6 +262,7 @@ public final class ConnectionManager {
 
         if (connectionTask.problem != null) {
             if (connectionTask.problem == Problem.AUTH_FAIL) {
+                log.log(Level.FINE, "JSch problem: {0}", connectionTask.problem); // NOI18N
                 PasswordManager.getInstance().clearPassword(env);
                 return false;
             } else if (connectionTask.problem == Problem.CONNECTION_TIMEOUT) {
@@ -433,6 +434,7 @@ public final class ConnectionManager {
                     // only after 6th attempt it throws an exception
                     newSession.connect(JSCH_CONNECTION_TIMEOUT);
                 } catch (JSchException e) {
+                    log.log(Level.FINE, "JSchException", e); // NOI18N
                     if (e.getMessage().equals("Auth fail")) { // NOI18N
                         problem = Problem.AUTH_FAIL;
                         return null;
@@ -446,6 +448,7 @@ public final class ConnectionManager {
                     }
                     problem = Problem.CONNECTION_FAILED;
                 } catch (CancellationException ex) {
+                    log.log(Level.FINE, "CancellationException", ex); // NOI18N
                     cancelled = true;
                     return null;
                 }

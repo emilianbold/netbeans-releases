@@ -57,6 +57,7 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -130,6 +131,7 @@ class DataViewUI extends JXPanel {
             }
         }
 
+        @Override
         protected void showPopup(MouseEvent evt) {
         }
     };
@@ -335,6 +337,7 @@ class DataViewUI extends JXPanel {
 
         ActionListener outputListener = new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Object src = e.getSource();
                 if (src.equals(refreshButton)) {
@@ -478,14 +481,17 @@ class DataViewUI extends JXPanel {
 
         matchBoxField.addKeyListener(new KeyListener() {
 
+            @Override
             public void keyTyped(KeyEvent e) {
                 processKeyEvents();
             }
 
+            @Override
             public void keyPressed(KeyEvent e) {
                 processKeyEvents();
             }
 
+            @Override
             public void keyReleased(KeyEvent e) {
                 processKeyEvents();
             }
@@ -573,17 +579,17 @@ class DataViewUI extends JXPanel {
         }
         initToolbar(toolbar, outputListener);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(panel);
+        GroupLayout layout = new GroupLayout(panel);
         panel.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(toolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE))
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(toolbar, GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(toolbar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(toolbar, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE))
         );
         return panel;
     }

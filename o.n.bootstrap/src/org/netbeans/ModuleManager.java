@@ -787,7 +787,8 @@ public final class ModuleManager {
         ev.log(Events.PERF_TICK, "verified dependencies"); // NOI18N
 
         ev.log(Events.START_ENABLE_MODULES, toEnable);
-        {
+        NetigsoFramework.willEnable(toEnable);
+        for (;;) {
             // Actually turn on the listed modules.
             // List of modules that need to be "rolled back".
             LinkedList<Module> fallback = new LinkedList<Module>();
@@ -799,8 +800,10 @@ public final class ModuleManager {
             Dependency failedPackageDep = null;
             try {
                 ev.log(Events.PERF_START, "module preparation" ); // NOI18N
-                NetigsoFramework.willEnable(toEnable);
                 for (Module m: toEnable) {
+                    if (m.isEnabled()) {
+                        continue;
+                    }
                     fallback.addFirst(m);
                     Util.err.fine("enable: bringing up: " + m);
                     ev.log(Events.PERF_START, "bringing up classloader on " + m.getCodeName() ); // NOI18N
@@ -925,8 +928,16 @@ public final class ModuleManager {
                 Util.err.fine("enable: no class loader yet, not appending");
             }
             Util.err.fine("enable: continuing to installation");
-            NetigsoFramework.turnOn(classLoader, this.modules);
+            Set<Module> enableMore = NetigsoFramework.turnOn(classLoader, this.modules);
+            if (!enableMore.isEmpty()) {
+                Util.err.log(Level.FINE, "netigso needs additional modules: {0}", enableMore);
+                List<Module> toEnableMore = simulateEnable(enableMore, false);
+                toEnable.addAll(toEnableMore);
+                Util.err.log(Level.FINE, "Adding {0} and trying again", toEnableMore);
+                continue;
+            }
             installer.load(toEnable);
+            break;
         }
         {
             // Take care of notifying various changes.
@@ -1030,6 +1041,9 @@ public final class ModuleManager {
      * creating the module classloader fails unexpectedly.
      */
     public List<Module> simulateEnable(Set<Module> modules) throws IllegalArgumentException {
+        return simulateEnable(modules, true);
+    }
+    final List<Module> simulateEnable(Set<Module> modules, boolean honorAutoloadEager) throws IllegalArgumentException {
         /* Not quite, eager modules may change this:
         if (modules.isEmpty()) {
             return Collections.EMPTY_LIST;
@@ -1038,8 +1052,10 @@ public final class ModuleManager {
         // XXX also optimize for modules.size == 1
         Set<Module> willEnable = new HashSet<Module>(modules.size() * 2 + 1);
         for (Module m: modules) {
-            if (m.isAutoload()) throw new IllegalArgumentException("Cannot simulate enabling an autoload: " + m); // NOI18N
-            if (m.isEager()) throw new IllegalArgumentException("Cannot simulate enabling an eager module: " + m); // NOI18N
+            if (honorAutoloadEager) {
+                if (m.isAutoload()) throw new IllegalArgumentException("Cannot simulate enabling an autoload: " + m); // NOI18N
+                if (m.isEager()) throw new IllegalArgumentException("Cannot simulate enabling an eager module: " + m); // NOI18N
+            }
             if (m.isEnabled()) throw new IllegalArgumentException("Already enabled: " + m); // NOI18N
             if (!m.isValid()) throw new IllegalArgumentException("Not managed by me: " + m + " in " + m); // NOI18N
             maybeAddToEnableList(willEnable, modules, m, true);

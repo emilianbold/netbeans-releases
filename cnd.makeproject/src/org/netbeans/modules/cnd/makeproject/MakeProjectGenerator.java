@@ -324,10 +324,16 @@ public class MakeProjectGenerator {
         if (mainTemplate == null) {
             return null; // Don't know the template
         }
+        String createdMainName = mainName;
+        if (mainName.indexOf('\\') > 0 || mainName.indexOf('/') > 0) {
+            File file = new File(srcFolder.getPath(), mainName).getCanonicalFile();
+            srcFolder = FileUtil.createFolder(file.getParentFile());
+            createdMainName = file.getName();
+        }
 
         DataObject mt = DataObject.find(mainTemplate);
         DataFolder pDf = DataFolder.findFolder(srcFolder);
-        mt.createFromTemplate(pDf, mainName);
+        mt.createFromTemplate(pDf, createdMainName);
 
         return mainName;
     }

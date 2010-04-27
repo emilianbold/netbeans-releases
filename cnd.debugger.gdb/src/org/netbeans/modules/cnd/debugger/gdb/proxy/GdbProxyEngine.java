@@ -90,6 +90,8 @@ public class GdbProxyEngine {
     private int currentToken = MIN_TOKEN;
     private boolean active;
     private RequestProcessor.Task gdbReader = null;
+    private final NativeProcess proc;
+    private volatile boolean killed = false;
 
     // This queue was created due to the issue 156138
     private final RequestProcessor sendQueue = new RequestProcessor("sendQueue"); // NOI18N
@@ -108,7 +110,7 @@ public class GdbProxyEngine {
      * @param workingDirectory - a directory where the debugger should run
      * @param stepIntoProject - a flag to stop at first source line
      */
-    public GdbProxyEngine(GdbDebugger debugger, GdbProxy gdbProxy, List<String> debuggerCommand,
+    public GdbProxyEngine(final GdbDebugger debugger, GdbProxy gdbProxy, List<String> debuggerCommand,
                     MacroMap debuggerEnvironment, String workingDirectory, String tty,
                     String cspath) throws IOException {
         inferiorTty = (tty != null);
@@ -126,13 +128,7 @@ public class GdbProxyEngine {
         getLogger().logMessage("NB version: " + System.getProperty("netbeans.buildnumber")); // NOI18N
         getLogger().logMessage("================================================"); // NOI18N
 
-        startDebugger(debuggerCommand, workingDirectory, debuggerEnvironment, cspath);
-    }
-    
-    private void startDebugger(List<String> debuggerCommand,
-                               String workingDirectory,
-                               MacroMap debuggerEnvironment,
-                               String cspath) throws IOException {
+        //start process
         ExecutionEnvironment execEnv = debugger.getHostExecutionEnvironment();
         String[] args = debuggerCommand.subList(1, debuggerCommand.size()).toArray(new String[debuggerCommand.size()-1]);
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
@@ -155,7 +151,7 @@ public class GdbProxyEngine {
             npb.setUsePty(true);
         }
 
-        final NativeProcess proc = npb.call();
+        proc = npb.call();
         // for remote execution we need to convert encoding
         toGdb = toGdbWriter(proc.getInputStream(), proc.getOutputStream(), execEnv.isRemote());
 
@@ -166,7 +162,7 @@ public class GdbProxyEngine {
                     int rc = proc.waitFor();
                     if (rc == 0) {
                         debugger.finish(false);
-                    } else {
+                    } else if (!killed) {
                         unexpectedGdbExit(rc);
                     }
                 } catch (InterruptedException ex) {
@@ -174,6 +170,14 @@ public class GdbProxyEngine {
                 }
             }
         });
+    }
+
+    /**
+     * kill gdb process
+     */
+    public void kill() {
+        killed = true;
+        proc.destroy();
     }
 
     public boolean isInferiorTty() {

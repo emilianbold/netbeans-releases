@@ -149,7 +149,7 @@ public class GdbProxy {
     }
     
     /** Attach to a running program */
-    public CommandBuffer attach(String pid) {
+    public CommandBuffer attach(int pid) {
 //        return engine.sendCommand("-target-attach " + pid); // NOI18N - no implementaion
         return engine.sendCommandEx("attach " + pid); // NOI18N
     }

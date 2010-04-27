@@ -1236,7 +1236,7 @@ public class MonitorFilter extends Logger implements Filter {
 	ed.setAttributeValue("serverPort", //NOI18N
 			     String.valueOf(request.getServerPort()));
 	ed.setAttributeValue("jre", //NOI18N
-			     String.valueOf(context.getMajorVersion())); 
+			     System.getProperty("java.version"));
 	ed.setAttributeValue("platform", context.getServerInfo()); //NOI18N
     }
          

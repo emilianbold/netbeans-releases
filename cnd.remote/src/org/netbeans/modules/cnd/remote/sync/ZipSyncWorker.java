@@ -84,7 +84,7 @@ import org.openide.util.NbBundle;
         private final SharabilityFilter delegate;
 
         public TimestampAndSharabilityFilter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
-            fileData = new FileData(privProjectStorageDir, executionEnvironment);
+            fileData = FileData.get(privProjectStorageDir, executionEnvironment);
             delegate = new SharabilityFilter();
         }
 

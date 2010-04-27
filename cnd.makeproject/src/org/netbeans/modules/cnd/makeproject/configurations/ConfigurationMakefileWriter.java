@@ -790,12 +790,18 @@ public class ConfigurationMakefileWriter {
                 }
                 folders = CndPathUtilitities.getDirName(target);
                 bw.write("\n"); // NOI18N
+
+                bw.write(target + ": "); // NOI18N
                 // See IZ #151465 for explanation why Makefile is listed as dependency.
-                if (additionalDep != null) {
-                    bw.write(target + ": nbproject/Makefile-${CND_CONF}.mk " + file + " " + additionalDep + "\n"); // NOI18N
-                } else {
-                    bw.write(target + ": nbproject/Makefile-${CND_CONF}.mk " + file + "\n"); // NOI18N
+                if (conf.getRebuildPropChanged().getValue()) {
+                    bw.write("nbproject/Makefile-${CND_CONF}.mk "); // NOI18N
                 }
+                if (additionalDep != null) {
+                    bw.write(file + " " + additionalDep + "\n"); // NOI18N
+                } else {
+                    bw.write(file + "\n"); // NOI18N
+                }
+
                 if (folders != null) {
                     bw.write("\t${MKDIR} -p " + folders + "\n"); // NOI18N
                 }

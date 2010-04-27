@@ -15,6 +15,15 @@
             <file name="SunStudio_12.2_solaris-sparc_fortran" url="resources/toolchaindefinition/SunStudio_12.2_solaris-sparc_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_12_fortran"/>
             </file>
+            <file name="SunStudio_12.2_linuxGNU_flavor" url="resources/toolchaindefinition/SunStudio_12.2_linuxGNU_flavor.xml">
+                <attr name="extends" stringvalue="SunStudio_12_flavor"/>
+            </file>
+            <file name="SunStudio_12.2_linuxGNU_cpp" url="resources/toolchaindefinition/SunStudio_12.2_linuxGNU_cpp.xml">
+                <attr name="extends" stringvalue="SunStudio_12_cpp"/>
+            </file>
+            <file name="SunStudio_12.2_linuxGNU_linker" url="resources/toolchaindefinition/SunStudio_12.2_linuxGNU_linker.xml">
+                <attr name="extends" stringvalue="SunStudio_linker"/>
+            </file>
             <file name="SunStudio_12.2_solaris-x86_linux_flavor" url="resources/toolchaindefinition/SunStudio_12.2_solaris-x86_linux_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
@@ -38,6 +47,15 @@
             </file>
             <file name="SunStudioExpressAten_solaris-sparc_fortran" url="resources/toolchaindefinition/SunStudioExpressAten_solaris-sparc_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_12_fortran"/>
+            </file>
+            <file name="SunStudioExpressAten_linuxGNU_flavor" url="resources/toolchaindefinition/SunStudioExpressAten_linuxGNU_flavor.xml">
+                <attr name="extends" stringvalue="SunStudioExpressAten_solaris-x86_linux_flavor"/>
+            </file>
+            <file name="SunStudioExpressAten_linuxGNU_cpp" url="resources/toolchaindefinition/SunStudioExpressAten_linuxGNU_cpp.xml">
+                <attr name="extends" stringvalue="SunStudioExpressAten_solaris-x86_linux_cpp"/>
+            </file>
+            <file name="SunStudioExpressAten_linuxGNU_linker" url="resources/toolchaindefinition/SunStudioExpressAten_linuxGNU_linker.xml">
+                <attr name="extends" stringvalue="SunStudio_linker"/>
             </file>
             <file name="SunStudioExpressAten_solaris-x86_linux_flavor" url="resources/toolchaindefinition/SunStudioExpressAten_solaris-x86_linux_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
@@ -184,7 +202,6 @@
                 <attr name="extends" stringvalue="GNU_fortran"/>
             </file>
             <file name="Cygwin_4.x_assembler" url="resources/toolchaindefinition/Cygwin_4.x_assembler.xml">
-<!--                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>-->
                 <attr name="extends" stringvalue="GNU_assembler"/>
             </file>
             <file name="Cygwin_4.x_linker" url="resources/toolchaindefinition/Cygwin_4.x_linker.xml">
@@ -353,7 +370,44 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
                 </file>
                 <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_debugger"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
+                </file>
+                <file name="qmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
+                </file>
+                <file name="cmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
+                </file>
+            </folder>
+            <folder name="SunStudio_12.2_linuxCompatGNU">
+                <attr name="position" intvalue="1124"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
+                <file name="flavor.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_linuxGNU_flavor"/>
+                </file>
+                <file name="c.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_solaris-x86_linux_c"/>
+                </file>
+                <file name="cpp.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_linuxGNU_cpp"/>
+                </file>
+                <file name="fortran.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_solaris-x86_linux_fortran"/>
+                </file>
+                <file name="assembler.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_assembler"/>
+                </file>
+                <file name="scanner.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_scanner"/>
+                </file>
+                <file name="linker.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_linuxGNU_linker"/>
+                </file>
+                <file name="make.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
+                </file>
+                <file name="debugger.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
                 </file>
                 <file name="qmake.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
@@ -390,7 +444,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
                 </file>
                 <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_debugger"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
                 </file>
                 <file name="qmake.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
@@ -427,7 +481,44 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
                 </file>
                 <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_debugger"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
+                </file>
+                <file name="qmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
+                </file>
+                <file name="cmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
+                </file>
+            </folder>
+            <folder name="SunStudioExpressAten_linuxGNU">
+                <attr name="position" intvalue="1136"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
+                <file name="flavor.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressAten_linuxGNU_flavor"/>
+                </file>
+                <file name="c.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressAten_solaris-x86_linux_c"/>
+                </file>
+                <file name="cpp.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressAten_linuxGNU_cpp"/>
+                </file>
+                <file name="fortran.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressAten_solaris-x86_linux_fortran"/>
+                </file>
+                <file name="assembler.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_assembler"/>
+                </file>
+                <file name="scanner.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_scanner"/>
+                </file>
+                <file name="linker.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressAten_linuxGNU_linker"/>
+                </file>
+                <file name="make.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
+                </file>
+                <file name="debugger.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
                 </file>
                 <file name="qmake.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
@@ -464,7 +555,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
                 </file>
                 <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_debugger"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
                 </file>
                 <file name="qmake.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
@@ -501,7 +592,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
                 </file>
                 <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_debugger"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
                 </file>
                 <file name="qmake.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
@@ -538,7 +629,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
                 </file>
                 <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_debugger"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
                 </file>
                 <file name="qmake.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
@@ -575,7 +666,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
                 </file>
                 <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_debugger"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
                 </file>
                 <file name="qmake.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
@@ -612,7 +703,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
                 </file>
                 <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_debugger"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
                 </file>
                 <file name="qmake.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
@@ -649,7 +740,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
                 </file>
                 <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_debugger"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
                 </file>
                 <file name="qmake.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
@@ -686,7 +777,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
                 </file>
                 <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_debugger"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
                 </file>
                 <file name="qmake.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
@@ -723,7 +814,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
                 </file>
                 <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_debugger"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
                 </file>
                 <file name="qmake.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
@@ -760,7 +851,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
                 </file>
                 <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_debugger"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
                 </file>
                 <file name="qmake.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
@@ -797,7 +888,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
                 </file>
                 <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_debugger"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
                 </file>
                 <file name="qmake.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
@@ -834,7 +925,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
                 </file>
                 <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_debugger"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
                 </file>
                 <file name="qmake.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>

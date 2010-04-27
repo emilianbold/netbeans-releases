@@ -106,6 +106,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfigura
 import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProviders;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -1022,14 +1023,34 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         private final Folder folder;
         private final MakeLogicalViewProvider provider;
         public LogicalFolderNode(Node folderNode, Folder folder, MakeLogicalViewProvider provider) {
-            super(new LogicalViewChildren(folder, provider), Lookups.fixed(new Object[]{
-                        folder,
-                        provider.getProject(),
-                        new FolderSearchInfo(folder),}), ANNOTATION_RP);
+            super(new LogicalViewChildren(folder, provider), createLFNLookup(folderNode, folder, provider), ANNOTATION_RP);
             this.folder = folder;
             this.provider = provider;
             setForceAnnotation(true);
             updateAnnotationFiles();
+        }
+
+        private static Lookup createLFNLookup(Node folderNode, Folder folder, MakeLogicalViewProvider provider) {
+            List<Object> elems = new ArrayList<Object>(3);
+            elems.add(folder);
+            elems.add(provider.getProject());
+            elems.add(new FolderSearchInfo(folder));
+            if (folder.isDiskFolder()) {
+                MakeConfigurationDescriptor conf = folder.getConfigurationDescriptor();
+                if (conf != null) {
+                    String rootPath = folder.getRootPath();
+                    String absRootPath = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), rootPath);
+                    File folderFile = CndFileUtils.normalizeFile(new File(absRootPath));
+                    FileObject fo = FileUtil.toFileObject(folderFile);
+                    if (fo.isFolder()) {
+                        DataFolder dataFolder = DataFolder.findFolder(fo);
+                        if (dataFolder != null) {
+                            elems.add(dataFolder);
+                        }
+                    }
+                }
+            }
+            return Lookups.fixed(elems.toArray());
         }
 
         private void updateAnnotationFiles() {
@@ -1237,10 +1258,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         @Override
         public Action[] getActions(boolean context) {
             Action[] result;
+            ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
             if (folder.isTestRootFolder()) {
                 result = new Action[]{ //
                             SystemAction.get(NewTestAction.class),
-                            SystemAction.get(RunTestAction.class),
+                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null),
                             null,
                             SystemAction.get(NewFolderAction.class),
                             SystemAction.get(org.openide.actions.FindAction.class),
@@ -1265,7 +1287,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             SystemAction.get(PropertiesFolderAction.class),};
             }
             else if (folder.isTest()) {
-                ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
                 result = new Action[]{ //
                             CommonProjectActions.newFileAction(), //
                             SystemAction.get(AddExistingItemAction.class),

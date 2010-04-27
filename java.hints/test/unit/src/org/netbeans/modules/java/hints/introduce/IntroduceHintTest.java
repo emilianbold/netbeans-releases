@@ -296,6 +296,30 @@ public class IntroduceHintTest extends NbTestCase {
                        new DialogDisplayerImpl("name", true, false, true),
                        3, 0);
     }
+
+    public void testFix180164() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    private final Object o = new Runnable() {\n" +
+                       "        public void run() {\n" +
+                       "            String u = null;\n" +
+                       "            String n = |u|;\n" +
+                       "        }\n" +
+                       "    };\n" +
+                       "}\n",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    private final Object o = new Runnable() {\n" +
+                       "        public void run() {\n" +
+                       "            String u = null;\n" +
+                       "            String name = u;\n" +
+                       "            String n = name;\n" +
+                       "        }\n" +
+                       "    };\n" +
+                       "}\n",
+                       new DialogDisplayerImpl("name", true, false, true),
+                       3, 0);
+    }
     
     public void testFixNewClassTree179766() throws Exception {
         performFixTest("package test;\n" +

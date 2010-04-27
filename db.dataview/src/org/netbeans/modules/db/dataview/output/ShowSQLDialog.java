@@ -69,6 +69,7 @@ class ShowSQLDialog extends javax.swing.JDialog {
         KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
         Action escapeAction = new AbstractAction() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 dispose();
             }
@@ -100,37 +101,46 @@ class ShowSQLDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.title")); // NOI18N
 
-        jEditorPane1.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-sql"));
+        jEditorPane1.setContentType(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.jEditorPane1.contentType.plain")); // NOI18N
+        jEditorPane1.setEditorKit(CloneableEditorSupport.getEditorKit(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.jEditorPane1.contentType")));
         jScrollPane1.setViewportView(jEditorPane1);
+        jEditorPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "showsql.editorpane.accessibleName")); // NOI18N
+        jEditorPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.jEditorPane1.AccessibleContext.accessibleDescription")); // NOI18N
 
         jButton1.setFont(jButton1.getFont());
-        jButton1.setText(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.jButton1.text")); // NOI18N
+        jButton1.setMnemonic('O');
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.jButton1.text")); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jButton1)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButton1)
                 .addContainerGap())
         );
+
+        jButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.jButton1.text")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.title")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.AccessibleContext.accessibleDescription")); // NOI18N
 
         pack();
     }// </editor-fold>//GEN-END:initComponents

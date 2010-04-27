@@ -498,8 +498,11 @@ class SQLExecutionHelper {
 
             // Get next page
             int rowCnt = 0;
-            boolean isNext = rs.next();
-            while (((pageSize == -1) || (pageSize > rowCnt)) && (lastRowPicked || isNext)) {
+            boolean hasNext = false;
+            if (! lastRowPicked) {
+                hasNext = rs.next();
+            }
+            while (((pageSize == -1) || (pageSize > rowCnt)) && (lastRowPicked || hasNext)) {
                 if (Thread.currentThread().isInterrupted()) {
                     return;
                 }
@@ -514,10 +517,10 @@ class SQLExecutionHelper {
                     lastRowPicked = false;
                 }
                 try {
-                    isNext = rs.next();
+                    hasNext = rs.next();
                 } catch (SQLException x) {
                     LOGGER.log(Level.INFO, "Failed to forward to next record, cause: " + x.getLocalizedMessage(), x);
-                    isNext = false;
+                    hasNext = false;
                 }
             }
         } catch (SQLException e) {

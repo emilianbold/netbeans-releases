@@ -169,7 +169,7 @@ public abstract class CssElementContext {
 
 	@Override
 	public String getElementName() {
-	    return getElement().image().trim();
+	    return SimpleNodeUtil.getNodeImage(getElement()).trim();
 	}
 
 	@Override

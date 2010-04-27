@@ -248,4 +248,19 @@ public class SimpleNodeUtil {
         return null;
     }
 
+    public static String getNodeImage(SimpleNode node) {
+        String image;
+        switch(node.kind()) {
+            case CssParserTreeConstants.JJTHEXCOLOR:
+                //filter out comments and whitespaces since the node
+                //can also contain them: (<HASH> ( ( <S> | <COMMENT> ) )*)
+                image = node.image(CssParserConstants.COMMENT, CssParserConstants.S);
+                break;
+            default:
+                image = node.image();
+        }
+
+        return image;
+    }
+
 }

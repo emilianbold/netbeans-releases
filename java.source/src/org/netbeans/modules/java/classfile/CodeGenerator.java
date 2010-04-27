@@ -90,8 +90,13 @@ import org.openide.util.Exceptions;
 public class CodeGenerator {
 
     private static final Logger LOG = Logger.getLogger(CodeGenerator.class.getName());
+    private static final Set<ElementKind> UNUSABLE_KINDS = EnumSet.of(ElementKind.PACKAGE);
 
     public static FileObject generateCode(final ClasspathInfo cpInfo, final ElementHandle<? extends Element> toOpenHandle) {
+	if (UNUSABLE_KINDS.contains(toOpenHandle.getKind())) {
+	    return null;
+	}
+
         try {
             FileObject file = FileUtil.createMemoryFileSystem().getRoot().createData("test.java");  //NOI18N
             OutputStream out = file.getOutputStream();
@@ -119,7 +124,7 @@ public class CodeGenerator {
                     final TypeElement te = toOpen != null ? wc.getElementUtilities().outermostTypeElement(toOpen) : null;
 
                     if (te == null) {
-                        LOG.info("Cannot resolve element: " + toOpenHandle.getQualifiedName() + " on classpath: " + cp.toString()); //NOI18N
+                        LOG.info("Cannot resolve element: " + toOpenHandle.toString() + " on classpath: " + cp.toString()); //NOI18N
                         return;
                     }
 

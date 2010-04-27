@@ -373,11 +373,13 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             String[][] entity = instantiatePersitence(javaFile.getParent(), connection, masterTableName, detailFKTable);
 
             if (entity[0] == null) {
-                System.err.println("WARNING: Cannot find entity: " + masterTableName); // NOI18N
+                Logger.getLogger(getClass().getName()).log(
+                    Level.INFO, "WARNING: Cannot find entity: {0}", masterTableName); // NOI18N
                 entity[0] = new String[] {"Object", Object.class.getName()}; // NOI18N
             }
             if ((detailFKTable != null) && (entity[1] == null)) {
-                System.err.println("WARNING: Cannot find entity: " + detailFKTable); // NOI18N
+                Logger.getLogger(getClass().getName()).log(
+                    Level.INFO, "WARNING: Cannot find entity: {0}", detailFKTable); // NOI18N
                 entity[1] = new String[] {"Object", Object.class.getName()}; // NOI18N
             }
 

@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 2001-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -41,16 +41,8 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.1//EN" "http://www.netbeans.org/dtds/annotation-type-1_1.dtd">
-<type
-    name='DisabledMethodBreakpoint'
-    description_key='HINT_BREAKPOINT'
-    localizing_bundle='org.netbeans.modules.debugger.resources.Bundle'
-    visible='true'
-    glyph='nbresloc:/org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpoint.gif'
-    type='line'
-    actions='BreakpointActions'
-    severity='ok'
-    priority='100'
-    custom_sidebar_color='0xFF8FD5'
-/>
+<toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
+    <linker>
+        <output_file flags="-compat=g -o "/>
+    </linker>
+</toolchaindefinition>

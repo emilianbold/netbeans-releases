@@ -198,6 +198,7 @@ public final class ToolchainManager {
     }
 
     public interface DebuggerDescriptor extends ToolDescriptor {
+        String getID();
     }
 
     public interface QMakeDescriptor extends ToolDescriptor {

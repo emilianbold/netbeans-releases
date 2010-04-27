@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import java.awt.Component;
 import java.io.CharConversionException;
 import java.util.Arrays;

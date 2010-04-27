@@ -156,9 +156,11 @@ public class DoxygenDocumentation {
     static {
         commands.put("\\c", new CommandDescription(EndsOn.WORD, "<tt>", "</tt>")); // NOI18N
         commands.put("\\p", new CommandDescription(EndsOn.WORD, "<tt>", "</tt>")); // NOI18N
+        commands.put("\\a", new CommandDescription(EndsOn.WORD, "<i>", "</i>")); // NOI18N
         commands.put("\\n", new CommandDescription(EndsOn.NONE, "<br/>", "")); // NOI18N
         commands.put("\\author", new CommandDescription(EndsOn.PAR, "<strong>Author:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\exception", new CommandDescription(EndsOn.PAR, "<strong>Exceptions:</strong><br>&nbsp; ", "")); // NOI18N
+        commands.put("\\throw", new CommandDescription(EndsOn.PAR, "<strong>Throws:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\return", new CommandDescription(EndsOn.PAR, "<strong>Returns:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\param", new CommandDescription(EndsOn.PAR, "<strong>Parameter:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\sa", new CommandDescription(EndsOn.PAR, "<strong>See Also:</strong><br>&nbsp; ", "")); // NOI18N

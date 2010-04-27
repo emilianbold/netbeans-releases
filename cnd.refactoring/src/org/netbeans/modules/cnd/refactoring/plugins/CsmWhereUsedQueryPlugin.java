@@ -200,7 +200,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             if (CsmKindUtilities.isMethod(referencedObject)) {
                 CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
                 if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
-                    out.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, isSearchFromBaseClass()));
+                    out.addAll(CsmVirtualInfoQuery.getDefault().getOverriddenMethods(method, isSearchFromBaseClass()));
                 }
             } else if (CsmKindUtilities.isClass(referencedObject)) {
                 // add all constructors
@@ -294,7 +294,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
     private Collection<RefactoringElementImplementation> processOverridenMethodsQuery(final CsmMethod csmMethod) {
         assert isFindOverridingMethods() : "must be search for overriden methods";
         Collection<RefactoringElementImplementation> elements = new LinkedHashSet<RefactoringElementImplementation>(1024);
-        Collection<CsmMethod> overrides = CsmVirtualInfoQuery.getDefault().getOverridenMethods(csmMethod, isSearchFromBaseClass());        
+        Collection<CsmMethod> overrides = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(csmMethod, isSearchFromBaseClass());
         overrides.add(csmMethod);
         for (CsmMethod method : overrides) {
             CsmReference declRef = CsmReferenceSupport.createObjectReference(method);
