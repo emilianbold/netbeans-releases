@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,54 +34,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.indicators.impl;
+package org.netbeans.modules.dlight.spi.indicator;
 
-import java.awt.Color;
-import java.util.Collection;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
-import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor.Kind;
+import java.util.List;
+import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 
 /**
+ * Indicator which can save its state to/load from a {@link DataStorage}.
  *
- * @author mt154047
+ * @author Alexey Vladykin
  */
-abstract public class TimeSeriesDescriptorAccessor {
-private static volatile TimeSeriesDescriptorAccessor DEFAULT;
+public abstract class PersistentIndicator<T extends IndicatorConfiguration> extends Indicator<T> {
 
-    public static TimeSeriesDescriptorAccessor getDefault() {
-        TimeSeriesDescriptorAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-
-        try {
-            Class.forName(TimeSeriesDescriptor.class.getName(), true, TimeSeriesDescriptor.class.getClassLoader());//
-        } catch (Exception e) {
-        }
-        return DEFAULT;
+    public PersistentIndicator(T configuration) {
+        super(configuration);
     }
 
-    public static void setDefault(TimeSeriesDescriptorAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-        DEFAULT = accessor;
-    }
+    /**
+     * @return <code>DataStorageType</code> which this indicator can persist to
+     */
+    public abstract DataStorageType getDataStorageType();
 
-    public TimeSeriesDescriptorAccessor() {
-    }
+    /**
+     * @return list of tables which are used to persist this indicator's state
+     */
+    public abstract List<DataTableMetadata> getDataTableMetadata();
 
-    public abstract String getName(TimeSeriesDescriptor descriptor);
+    /**
+     * Tells indicator to load its state from given storage. Storage must be
+     * of required type and must contain required tables filled with indicator
+     * state.
+     *
+     * @param storage  storage containing previously saved indicator state
+     * @return <code>true</code> on success, <code>false</code> on failure
+     */
+    public abstract boolean loadState(DataStorage storage);
 
-    public abstract String getDisplayName(TimeSeriesDescriptor descriptor);
-
-    public abstract Color getColor(TimeSeriesDescriptor descriptor);
-
-    public abstract Kind getKind(TimeSeriesDescriptor descriptor);
-
-    public abstract Collection<Column> getSourceColumns(TimeSeriesDescriptor descriptor);
+    /**
+     * Tells indicator to save its state to given storage. Storage must be
+     * of required type, and required tables must exist but be empty.
+     *
+     * @param storage  storage to save indicator state to
+     * @return <code>true</code> on success, <code>false</code> on failure
+     */
+    public abstract boolean saveState(DataStorage storage);
 }

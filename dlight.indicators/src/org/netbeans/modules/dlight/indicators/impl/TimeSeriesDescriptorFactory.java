@@ -39,13 +39,21 @@
 package org.netbeans.modules.dlight.indicators.impl;
 
 import java.awt.Color;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
-import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor.Kind;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -68,32 +76,70 @@ public final class TimeSeriesDescriptorFactory {
         return result;
     }
 
-    private static int getColor(String c) {
-        if (c.startsWith("0x")) { //NOI18N
-            return Integer.parseInt(c.substring(2),16);
-        } else {
-            return Integer.parseInt(c);
+    static TimeSeriesDescriptor createTimeSeriesDescriptor(Map<?, ?> map) {
+        String name = getString(map, "name"); // NOI18N
+        String displayName = getString(map, "displayName"); // NOI18N
+        Color color = decodeColor(getString(map, "color")); // NOI18N
+        TimeSeriesDescriptor.Kind kind = TimeSeriesDescriptor.Kind.valueOf(getString(map, "kind")); // NOI18N
+        TimeSeriesDescriptor descriptor = new TimeSeriesDescriptor(name, displayName, color, kind);
+
+        Column column = createInstance(getString(map, "column"), Column.class); // NOI18N
+        if (column != null) {
+            descriptor.setSourceColumns(Collections.singleton(column));
         }
+
+        return descriptor;
     }
 
-    static TimeSeriesDescriptor create(Map<?,?> map) {
-        String colorString = getStringValue(map, "color");//NOI18N
-        String[] rgb = colorString.split(":");//NOI18N
-        Color color = Color.BLACK;
-        if (rgb != null && rgb.length == 3){
-            try{
-                color = new Color( getColor(rgb[0]), getColor(rgb[1]), getColor(rgb[2]));
-            }catch(Throwable e){
-                e.printStackTrace();
+    private static String getString(Map<?,?> map, String key) {
+        return (String) map.get(key);
+    }
+
+    private static Color decodeColor(String color) {
+        if (color == null) {
+            return null;
+        }
+        try {
+            return Color.decode(color);
+        } catch (NumberFormatException ex) {
+        } catch (SecurityException ex) {}
+        try {
+            Field field = Color.class.getDeclaredField(color);
+            if ((field.getModifiers() & Modifier.STATIC) != 0 && field.getType() == Color.class) {
+                return (Color) field.get(null);
+            }
+        } catch (NoSuchFieldException ex) {
+        } catch (IllegalAccessException ex) {}
+        return Color.BLACK;
+    }
+
+    private static<T> T createInstance(String path, Class<T> clazz) {
+        if (path != null) {
+            FileObject fileObject = FileUtil.getConfigFile(path);
+            return fileObject == null? null : createInstance(fileObject, clazz);
+        }
+        return null;
+    }
+
+    private static<T> T createInstance(FileObject instanceFileObject, Class<T> clazz) {
+        if (instanceFileObject != null) {
+            try {
+                DataObject dataObject = DataObject.find(instanceFileObject);
+                InstanceCookie instanceCookie = dataObject.getCookie(InstanceCookie.class);
+                if (instanceCookie != null) {
+                    return clazz.cast(instanceCookie.instanceCreate());
+                }
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ClassCastException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
-        String displayName = getStringValue(map, "displayName");//NOI18N
-        Kind kind = Kind.valueOf(getStringValue(map, "kind"));//NOI18N
-        return  new TimeSeriesDescriptor(color, displayName, kind);
-    }
-
-    private static String getStringValue(Map<?,?> map, String key) {
-        return (String) map.get(key);
+        return null;
     }
 
     private TimeSeriesDescriptorFactory() {
