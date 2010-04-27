@@ -56,9 +56,9 @@ public class CssParserTest extends TestBase {
         super(testName);
     }
 
-    public static Test xsuite(){
+    public static Test Xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new CssParserTest("testIssue182434"));
+        suite.addTest(new CssParserTest("testErrorInMediaRule"));
         return suite;
     }
 
@@ -139,7 +139,7 @@ public class CssParserTest extends TestBase {
     public void testAtSymbol() throws ParseException {
         String code = "@a ";
         dumpTokens(code);
-        dumpParseTree(code);
+//        dumpParseTree(code);
         check(code);
     }
 
@@ -243,8 +243,8 @@ public class CssParserTest extends TestBase {
         //fails - issue http://www.netbeans.org/issues/show_bug.cgi?id=162844
         //the problem is that the SimpleNode for property value contains also the whitespace and comment
 
-//        String code = "h3 { color: red /*.....*/ }";
-//
+        String code = "h3 { color: red /*.....*/ }";
+
 //        //tokens
 //        System.out.println("code='" + code + "'");
 //        System.out.println("Tokens: ");
@@ -254,15 +254,77 @@ public class CssParserTest extends TestBase {
 //            System.out.print("<" + t.offset + "," + t.image + "> ");
 //        }
 //        System.out.println(".");
-//
-//        SimpleNode root = check(code);
+
+        SimpleNode root = check(code);
 //        System.out.println(root.dump());
-//
-//        SimpleNode node = SimpleNodeUtil.query(root, "styleSheetRuleList/rule/styleRule/declaration/expr/term");
-//        assertNotNull(node);
-//        assertEquals("red", node.image());
+
+        SimpleNode node = SimpleNodeUtil.query(root, "styleSheetRuleList/rule/styleRule/declaration/expr/term");
+        assertNotNull(node);
+        assertEquals("red", node.image(CssParserConstants.COMMENT, CssParserConstants.S));
  
     }
+
+    public void testErrorInMediaRule() throws ParseException {
+        String source = "@media page {  htm }  ";
+//        dumpParseTree(source);
+        SimpleNode node = parse(source);
+        assertNotNull(node);
+
+        List<SimpleNode> errors = getErrors(node);
+        assertEquals(2, errors.size());
+
+        SimpleNode error = errors.get(0);
+        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
+        error = errors.get(1);
+        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
+    }
+
+    public void testErrorInStyleRule() throws ParseException {
+        String source = "div {  htm }";
+        SimpleNode node = parse(source);
+        assertNotNull(node);
+
+        List<SimpleNode> errors = getErrors(node);
+        assertEquals(2, errors.size());
+
+        SimpleNode error = errors.get(0);
+        assertEquals(CssParserTreeConstants.JJTERROR_SKIPDECL, error.kind());
+        error = errors.get(1);
+        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
+    }
+
+    public void testErrorInDeclaration() throws ParseException {
+        String source = "div {  color: ; azimuth: center; }";
+        SimpleNode node = parse(source);
+        assertNotNull(node);
+
+        List<SimpleNode> errors = getErrors(node);
+
+
+        assertEquals(2, errors.size());
+
+        SimpleNode error = errors.get(0);
+        assertEquals(CssParserTreeConstants.JJTERROR_SKIPDECL, error.kind());
+        error = errors.get(1);
+        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
+    }
+
+    public void testErrorInDeclarationInMediaRule() throws ParseException {
+        String source = "@media page { div { color: } } ";
+        SimpleNode node = parse(source);
+        assertNotNull(node);
+
+        List<SimpleNode> errors = getErrors(node);
+
+
+        assertEquals(2, errors.size());
+
+        SimpleNode error = errors.get(0);
+        assertEquals(CssParserTreeConstants.JJTERROR_SKIPDECL, error.kind());
+        error = errors.get(1);
+        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
+    }
+
 
     private void dumpTokens(String source) {
     CssParserTokenManager tm = new CssParserTokenManager(new ASCII_CharStream(new StringReader(source)));

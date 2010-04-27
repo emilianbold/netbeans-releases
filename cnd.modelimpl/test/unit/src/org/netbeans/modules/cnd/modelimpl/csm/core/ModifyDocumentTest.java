@@ -91,13 +91,13 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
 
     @Override
     protected void tearDown() throws Exception {
+        TraceFlags.TRACE_182342_BUG = false;
         System.err.printf("tearDown %s %d\n", getName(), System.currentTimeMillis());
         super.tearDown();
         ModelSupport.instance().shutdown();
         DataObject.getRegistry().removeChangeListener(doListener);
         doListener.clear();
         System.err.printf("tearDown end %s %d\n", getName(), System.currentTimeMillis());
-        TraceFlags.TRACE_182342_BUG = false;
     }
 
     public void testInsertDeadBlock() throws Exception {

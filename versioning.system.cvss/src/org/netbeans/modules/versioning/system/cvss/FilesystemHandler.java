@@ -259,6 +259,11 @@ class FilesystemHandler extends VCSInterceptor {
         return retval;
     }
 
+    @Override
+    public boolean isMutable(File file) {
+        return org.netbeans.modules.versioning.system.cvss.util.Utils.isPartOfCVSMetadata(file) || super.isMutable(file);
+    }
+
     // private methods ---------------------------
 
     private void fileCreatedImpl(File file) {

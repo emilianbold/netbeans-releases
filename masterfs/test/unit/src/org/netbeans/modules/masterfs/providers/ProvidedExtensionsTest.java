@@ -149,10 +149,11 @@ public class ProvidedExtensionsTest extends NbTestCase {
         FileObject fo = FileUtil.toFileObject(getWorkDir());
         assertNotNull(fo);
         assertNotNull(iListener);
+        int nCalls = iListener.implsCanWriteCalls;
         FileObject toChange = fo.createData("cw");
         assertNotNull(toChange);
         boolean cw = toChange.canWrite();
-        assertEquals(1, iListener.implsCanWriteCalls);            
+        assertEquals(nCalls + 1, iListener.implsCanWriteCalls);
     }
     
     public void testImplsMove() throws IOException {
