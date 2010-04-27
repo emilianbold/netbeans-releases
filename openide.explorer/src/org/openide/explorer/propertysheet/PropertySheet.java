@@ -701,7 +701,7 @@ public class PropertySheet extends JPanel {
         boolean result = true;
 
         for (int i = 0; i < ps.length; i++) {
-            result &= (ps[i].getProperties() != null);
+            result &= (ps[i] != null && ps[i].getProperties() != null);
 
             if (!result) {
                 break;
