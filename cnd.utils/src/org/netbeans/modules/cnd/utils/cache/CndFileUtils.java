@@ -233,12 +233,13 @@ public final class CndFileUtils {
     private static Flags getFlags(File file, String absolutePath, boolean indexParentFolder) {
         assert file != null || absolutePath != null;
         absolutePath = (absolutePath == null) ? file.getAbsolutePath() : absolutePath;
+        absolutePath = changeStringCaseIfNeeded(absolutePath);
         Flags exists;
         ConcurrentMap<String, Flags> files = getFilesMap();
         exists = files.get(absolutePath);
         if (exists == null) {
             file = (file == null) ? new File(absolutePath) : file;
-            String parent = file.getParent();
+            String parent = changeStringCaseIfNeeded(file.getParent());
             if (parent != null) {
                 Flags parentDirFlags = files.get(parent);
                 if (parentDirFlags == null || parentDirFlags == Flags.DIRECTORY) {
@@ -283,7 +284,7 @@ public final class CndFileUtils {
             File[] listFiles = listFilesImpl(file);
             for (int i = 0; i < listFiles.length; i++) {
                 File curFile = listFiles[i];
-                String absPath = curFile.getAbsolutePath();
+                String absPath = changeStringCaseIfNeeded(curFile.getAbsolutePath());
                 if (curFile.isDirectory()) {
                     files.putIfAbsent(absPath, Flags.DIRECTORY);
                 } else {
@@ -291,8 +292,19 @@ public final class CndFileUtils {
                 }
             }
         }
+        // path is already converted into correct case
+        assert changeStringCaseIfNeeded(path).equals(path);
         files.put(path, Flags.INDEXED_DIRECTORY);
     }
+
+    private static String changeStringCaseIfNeeded(String in) {
+        if (TRUE_CASE_SENSITIVE_SYSTEM) {
+            return in;
+        } else {
+            return in.toLowerCase();
+        }
+    }
+    
 //    public static String getHitRate() {
 //	return "" + hits + "/" + calls; // NOI18N
 //    }
