@@ -101,6 +101,7 @@
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.repository</friend>
                 <friend>org.netbeans.modules.cnd.script</friend>
+                <friend>org.netbeans.modules.cnd.simpleunit</friend>
                 <friend>org.netbeans.modules.cnd.source</friend>
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
