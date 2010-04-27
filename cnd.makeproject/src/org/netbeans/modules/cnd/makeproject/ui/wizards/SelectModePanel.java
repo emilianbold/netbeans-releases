@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.DevHostsInitializer;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -69,7 +70,7 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public class SelectModePanel extends javax.swing.JPanel {
-    private SelectModeDescriptorPanel controller;
+    private final SelectModeDescriptorPanel controller;
     private volatile boolean initialized = false;
     
     /** Creates new form SelectModePanel */
@@ -87,17 +88,22 @@ public class SelectModePanel extends javax.swing.JPanel {
 
             @Override
             public void insertUpdate(DocumentEvent e) {
-                controller.getWizardStorage().setPath(projectFolder.getText());
+                update();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                controller.getWizardStorage().setPath(projectFolder.getText());
+                update();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
+                update();
+            }
+
+            private void update() {
                 controller.getWizardStorage().setPath(projectFolder.getText());
+                updateInstruction();
             }
         });
         simpleMode.addActionListener(new ActionListener(){
@@ -119,7 +125,24 @@ public class SelectModePanel extends javax.swing.JPanel {
     
     private void updateInstruction(){
         if (simpleMode.isSelected()){
-            instructions.setText(getString("SelectModeSimpleInstructionText")); // NOI18N
+            String toolsInfo = getString("SelectModeSimpleInstructionExtraText_Make");
+            if (controller.getWizardStorage() != null && controller.getWizardStorage().getMake() == null) {
+                String configure = controller.getWizardStorage().getConfigure();
+                if (configure != null) {
+                    toolsInfo = getString("SelectModeSimpleInstructionExtraText_Configure");
+                    File confFile = FileUtil.normalizeFile(new File(configure));
+                    FileObject fo = FileUtil.toFileObject(confFile);
+                    if (fo != null) {
+                        String mimeType = fo.getMIMEType();
+                        if (MIMENames.CMAKE_MIME_TYPE.equals(mimeType)) {
+                            toolsInfo = getString("SelectModeSimpleInstructionExtraText_CMake");
+                        } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mimeType)) {
+                            toolsInfo = getString("SelectModeSimpleInstructionExtraText_QMake");
+                        }
+                    }
+                }
+            }
+            instructions.setText(getString("SelectModeSimpleInstructionText", toolsInfo)); // NOI18N
         } else {
             instructions.setText(getString("SelectModeAdvancedInstructionText")); // NOI18N
         }
