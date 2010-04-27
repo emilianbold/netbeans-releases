@@ -70,7 +70,7 @@ public class HtmlLexerTest extends NbTestCase {
 
     public static Test xsuite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new HtmlLexerTest("testEmbeddedCss"));
+        suite.addTest(new HtmlLexerTest("testEscapedQuotesInAttrValue"));
         return suite;
     }
 
@@ -127,7 +127,7 @@ public class HtmlLexerTest extends NbTestCase {
 
         //css attribute
         checkTokens("<div class=\"myclass\"/>", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "class|ARGUMENT",
-                "=|OPERATOR", "\"myclass\"|VALUE_CSS");
+                "=|OPERATOR", "\"myclass\"|VALUE_CSS", "/>|TAG_CLOSE_SYMBOL");
     }
 
     public void testGenericCssClassEmbedding() {
@@ -142,37 +142,55 @@ public class HtmlLexerTest extends NbTestCase {
         TokenSequence ts = th.tokenSequence();
 
         checkTokens(ts, "<|TAG_OPEN_SYMBOL", "c:button|TAG_OPEN", " |WS", "styleClass|ARGUMENT",
-                "=|OPERATOR", "\"myclass\"|VALUE_CSS");
+                "=|OPERATOR", "\"myclass\"|VALUE_CSS", "/>|TAG_CLOSE_SYMBOL");
         
     }
 
     public void testEmbeddedScripting() {
         //javascript embedding w/o type specification
-        checkTokens("<script>x</script>", "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", ">|TAG_CLOSE_SYMBOL", "x|SCRIPT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE");
+        checkTokens("<script>x</script>", "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", ">|TAG_CLOSE_SYMBOL", "x|SCRIPT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
 
 
         //javascript embedding w/ explicit type specification
         checkTokens("<script type=\"text/javascript\">x</script>", 
                 "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
-                "=|OPERATOR", "\"text/javascript\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|SCRIPT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE");
+                "=|OPERATOR", "\"text/javascript\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|SCRIPT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
 
         //javascript embedding w/ explicit unknown type specification - no embedding
         checkTokens("<script type=\"text/xxx\">x</script>",
                 "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
-                "=|OPERATOR", "\"text/xxx\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|TEXT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE");
+                "=|OPERATOR", "\"text/xxx\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|TEXT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
 
         //javascript embedding w/ explicit type specification of known but excluded type - no embedding
         checkTokens("<script type=\"text/vbscript\">x</script>",
                 "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
-                "=|OPERATOR", "\"text/vbscript\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|TEXT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE");
+                "=|OPERATOR", "\"text/vbscript\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|TEXT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
 
         //check also single quotes
         //javascript embedding w/ explicit unknown type specification
         checkTokens("<script type='text/xxx'>x</script>",
                 "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
-                "=|OPERATOR", "'text/xxx'|VALUE", ">|TAG_CLOSE_SYMBOL", "x|TEXT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE");
+                "=|OPERATOR", "'text/xxx'|VALUE", ">|TAG_CLOSE_SYMBOL", "x|TEXT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
 
 
+    }
+
+    public void testEscapedQuotesInAttrValueSingleQuoted() {
+        //             <div onclick='alert(\'hello\')'/>
+        String code = "<div onclick='alert(\\'hello\\')'/>";
+
+        checkTokens(code,  "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN",
+                " |WS", "onclick|ARGUMENT", "=|OPERATOR",
+                "'alert(\\'hello\\')'|VALUE_JAVASCRIPT", "/>|TAG_CLOSE_SYMBOL" );
+    }
+
+    public void testEscapedQuotesInAttrValueDoubleQuoted() {
+        //             <div onclick="alert(\"hello\")"/>
+        String code = "<div onclick=\"alert(\\\"hello\\\")\"/>";
+
+        checkTokens(code,  "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN",
+                " |WS", "onclick|ARGUMENT", "=|OPERATOR",
+                "\"alert(\\\"hello\\\")\"|VALUE_JAVASCRIPT", "/>|TAG_CLOSE_SYMBOL" );
     }
 
     private void checkTokens(String text, String... descriptions) {
@@ -204,6 +222,18 @@ public class HtmlLexerTest extends NbTestCase {
                 assertEquals(id, t.id().name());
             }
         }
+
+        StringBuilder b = new StringBuilder();
+        while(ts.moveNext()) {
+            Token t = ts.token();
+            b.append("\"");
+            b.append(t.text());
+            b.append('|');
+            b.append(t.id().name());
+            b.append("\"");
+            b.append(", ");
+        }
+        assertTrue("There are some tokens left: " + b.toString(), b.length() == 0);
     }
 
 }
