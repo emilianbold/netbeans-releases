@@ -99,6 +99,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     
     public static final Logger LOGGER = 
             Logger.getLogger(DatabaseConnectionConvertor.class.getName());
+
+    private static final RequestProcessor RP = new RequestProcessor(DatabaseConnectionConvertor.class);
     
     /**
      * The delay by which the write of the changes is postponed.
@@ -497,7 +499,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (this) {
                 if (saveTask == null)
-                    saveTask = RequestProcessor.getDefault().create(this);
+                    saveTask = RP.create(this);
                 keepAlive.add(evt);
             }
             saveTask.schedule(DELAY);
