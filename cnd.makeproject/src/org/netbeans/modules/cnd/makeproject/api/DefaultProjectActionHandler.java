@@ -464,7 +464,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                             res.append(')');
 
                             // use \n\r to correctly move cursor in terminals as well
-                            tab.getOut().printf("\n\r%s\n\r",res.toString());
+                            tab.getOut().printf("\n\r%s\n\r",res.toString()); // NOI18N
                             closeIO();
 
                             if (listener != null) {
@@ -493,7 +493,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                             res.append(')');
 
                             // use \n\r to correctly move cursor in terminals as well
-                            tab.getErr().printf("\n\r%s\n\r",res.toString());
+                            tab.getErr().printf("\n\r%s\n\r",res.toString()); // NOI18N
                             closeIO();
                             if (listener != null) {
                                 listener.executionFinished(-1);
@@ -522,7 +522,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
                             PrintWriter pw = (rc == 0) ? tab.getOut() : tab.getErr();
                             // use \n\r to correctly move cursor in terminals as well
-                            pw.printf("\n\r%s\n\r",res.toString());
+                            pw.printf("\n\r%s\n\r",res.toString()); // NOI18N
                             closeIO();
 
                             if (listener != null) {

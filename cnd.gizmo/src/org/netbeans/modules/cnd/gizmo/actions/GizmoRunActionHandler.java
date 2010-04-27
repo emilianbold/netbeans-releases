@@ -288,7 +288,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         int exitCode = -1;
 
         // use \r\n to correctly move cursor in terminals as well
-        io.getOut().printf("\r\n");
+        io.getOut().printf("\r\n"); // NOI18N
 
         if (status == null) {
             StatusDisplayer.getDefault().setStatusText(getMessage("Status.RunTerminated")); // NOI18N
