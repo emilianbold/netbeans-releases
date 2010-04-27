@@ -224,7 +224,7 @@ public class LoginPanel extends javax.swing.JPanel {
         progressBar = new javax.swing.JProgressBar();
         chkIsOnline = new javax.swing.JCheckBox();
         kenaiLabel = new javax.swing.JLabel();
-        kenaiCombo = new KenaiCombo(Kenai.Status.OFFLINE, true);
+        kenaiCombo = new KenaiCombo(true);
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
