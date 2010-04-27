@@ -922,7 +922,7 @@ public class OAuthHelper {
     }
 
     private static String getAuthorizeConsumerBodyNb(Metadata oauthMetadata) {
-        String dialogPanel = Wadl2JavaHelper.getMethodBody("Templates/OAuth/OAuthAuthorizationPanelNb.java"); //NOI18N
+        String dialogPanel = Wadl2JavaHelper.getMethodBody("Templates/SaaSServices/OAuthAuthorizationPanelNb.java"); //NOI18N
         MethodType accessTokenMethod = oauthMetadata.getFlow().getAccessToken();
         StringBuffer bodyBuf = new StringBuffer();
         bodyBuf.append("{"); //NOI18N
