@@ -5,9 +5,8 @@
  * Created on %<%DATE%>%, %<%TIME%>%
  */
 
-#ifndef _%<%GUARD_NAME%>%
-#define	_%<%GUARD_NAME%>%
-
+#ifndef %<%GUARD_NAME%>%
+#define	%<%GUARD_NAME%>%
 class %<%CLASSNAME%>% {
 public:
 	%<%CLASSNAME%>%();
@@ -17,5 +16,5 @@ private:
 
 };
 
-#endif	/* _%<%GUARD_NAME%>% */
+#endif	/* %<%GUARD_NAME%>% */
 
