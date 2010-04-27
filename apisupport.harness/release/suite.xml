@@ -103,7 +103,7 @@ made subject to such option by the copyright holder.
                 </filtermapper>
             </chainedmapper>
         </pathconvert>
-        <tempfile property="old.project.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true"/>
+        <tempfile property="old.project.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true" prefix="duplicates"/>
         <mkdir dir="${basedir}/build"/>
         <echo file="${old.project.clusters.duplicates.file}" message="${old.project.clusters.duplicates}"/>
 
@@ -276,7 +276,7 @@ made subject to such option by the copyright holder.
                 </filtermapper>
             </chainedmapper>
         </pathconvert>
-        <tempfile property="zip.platform.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true"/>
+        <tempfile property="zip.platform.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true" prefix="duplicates"/>
         <echo file="${zip.platform.clusters.duplicates.file}" message="${zip.platform.clusters.duplicates}"/>
 
         <union id="zip.platform.clusters"> <!-- union removes duplicates -->
@@ -331,8 +331,8 @@ made subject to such option by the copyright holder.
         <mkdir dir="${dist.dir}"/>
         <!-- pathfileset does not support 'prefix' and 'filemode' parameters,
              we have to copy them to temp location -->
-        <tempfile property="temp.dir.nbexec" destdir="${basedir}/build" deleteonexit="true"/>
-        <tempfile property="temp.dir.rest" destdir="${basedir}/build" deleteonexit="delete"/>
+        <tempfile property="temp.dir.nbexec" destdir="${basedir}/build" deleteonexit="true" prefix="nbexec"/>
+        <tempfile property="temp.dir.rest" destdir="${basedir}/build" deleteonexit="delete" prefix="rest"/>
         <subant genericantfile="${harness.dir}/suite.xml" target="copy-cluster" inheritrefs="true">
             <property name="dest.dir" value="${temp.dir.rest}"/>
             <property name="nbexec.dir" value="${temp.dir.nbexec}"/>
