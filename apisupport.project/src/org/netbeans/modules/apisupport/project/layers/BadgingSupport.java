@@ -91,6 +91,7 @@ import org.openide.util.actions.Presenter;
 final class BadgingSupport implements FileSystem.Status, FileChangeListener {
 
     static final RequestProcessor RP = new RequestProcessor(BadgingSupport.class.getName());
+    private static final Logger LOG = Logger.getLogger(BadgingSupport.class.getName());
 
     /** for branding/localization like "_f4j_ce_ja"; never null, but may be "" */
     private String suffix = "";
@@ -277,7 +278,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             }
         } catch (Exception e) {
             // ignore, OK
-            Logger.getLogger(BadgingSupport.class.getName()).log(Level.FINE, "Ignored exception: (" + e.getClass().getSimpleName() + ") " + e.getMessage());
+            LOG.log(Level.FINE, "Ignored exception: ({0}) {1}", new Object[] {e.getClass().getSimpleName(), e.getMessage()});
         }
         // OK, probably a developed module, so take a guess.
         String clazz = (String) fo.getAttribute("instanceClass"); // NOI18N
@@ -307,6 +308,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
     }
     
     public Image annotateIcon(final Image icon, int type, final Set<? extends FileObject> files) {
+        assert icon != null;
         final boolean big;
         if (type == BeanInfo.ICON_COLOR_16x16) {
             big = false;
@@ -327,6 +329,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         RP.post(new Runnable() {
             public void run() {
                 Image r = annotateIconGeneral(icon, big, files);
+                assert r != null : files;
                 synchronized (icons) {
                     for (FileObject f : files) {
                         icons.put(f.getPath(), r);
@@ -364,8 +367,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                     }
                     return Toolkit.getDefaultToolkit().getImage(u[0]);
                 } catch (Exception e) {
-                    //e.printStackTrace(LayerDataNode.getErr());
-                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                    LOG.log(Level.INFO, "For " + value + " on " + fo.getPath(), e);
                 }
             }
         }

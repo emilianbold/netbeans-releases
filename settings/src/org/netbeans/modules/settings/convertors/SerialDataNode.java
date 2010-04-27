@@ -183,20 +183,21 @@ public final class SerialDataNode extends DataNode {
     * @param type constant from {@link java.beans.BeanInfo}
     * @return icon to use to represent the node
     */
-    public Image getIcon (int type) {
-        if (noBeanInfo) return super.getIcon(type);
-        Image img = null;
+    public @Override Image getIcon (int type) {
+        if (noBeanInfo) {
+            return super.getIcon(type);
+        }
+        Image img = initIcon(type);
+        if (img == null) {
+            img = super.getIcon(type);
+        }
         try {
             DataObject dobj = getDataObject();
-            img = dobj.getPrimaryFile().getFileSystem().getStatus().
-                annotateIcon (img, type, dobj.files ());
+            return dobj.getPrimaryFile().getFileSystem().getStatus().annotateIcon(img, type, dobj.files());
         } catch (FileStateInvalidException e) {
             // no fs, do nothing
+            return img;
         }
-        
-        if (img == null) img = initIcon(type);
-        if (img == null) img = super.getIcon(type);
-        return img;
     }
 
     /** Find an icon for this node (in the open state).

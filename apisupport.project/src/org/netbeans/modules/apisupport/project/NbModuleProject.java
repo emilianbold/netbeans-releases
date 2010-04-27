@@ -61,6 +61,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -479,19 +480,20 @@ public final class NbModuleProject implements Project {
         }
     }
     
-    public String getSpecVersion() {
+    public @CheckForNull String getSpecVersion() {
         //TODO shall we check for illegal cases like "none-defined" or "both-defined" here?
         Manifest m = getManifest();
         if (m != null) {
-            String manVersion = m.getMainAttributes().getValue("OpenIDE-Module-Specification-Version"); //NOI18N
+            String manVersion = ManifestManager.getInstance(m, false).getSpecificationVersion();
             if (manVersion != null) {
-                return stripExcessZeros(manVersion);
+                return manVersion;
             }
         }
-        return stripExcessZeros(evaluator().getProperty(SingleModuleProperties.SPEC_VERSION_BASE));
-    }
-    private static String stripExcessZeros(String spec) { // #72826
-        return spec != null ? spec.replaceAll("(\\.[0-9]+)\\.0$", "$1") : null; // NOI18N
+        String svb = evaluator().getProperty(SingleModuleProperties.SPEC_VERSION_BASE);
+        if (svb != null) {
+            return svb/* #72826 */.replaceAll("(\\.[0-9]+)\\.0$", "$1"); // NOI18N
+        }
+        return null;
     }
     
     /**

@@ -78,6 +78,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -1069,11 +1070,16 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         public void run() {
             CompilerSetManagerImpl newCsm = null;
             try {
+                HostInfoUtils.updateHostInfo(execEnv);
                 newCsm = tcm.restoreCompilerSets(csm);
                 if (newCsm != null) {
                     csm = newCsm;
                     newCsmCreated.set(true);
                 }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } catch (InterruptedException ex) {
+                // don't report InterruptedException
             } finally {
                 SwingUtilities.invokeLater(postWork);
             }

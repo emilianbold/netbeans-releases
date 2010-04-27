@@ -77,7 +77,7 @@ public class RemoteSyncServiceImpl implements RemoteSyncService {
             this.execEnv = execEnv;
             pathMap = HostInfoProvider.getMapper(this.execEnv);
             File privProjectStorageDir = RemoteProjectSupport.getPrivateStorage(project);
-            fileData = new FileData(privProjectStorageDir, execEnv);
+            fileData = FileData.get(privProjectStorageDir, execEnv);
         }
 
 

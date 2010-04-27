@@ -827,7 +827,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         //add targets here as required by the external plugins..
         public List<String> getExtensibleTargets() {
             String[] targets = new String[] {
-                "-do-init", "-init-check", "-post-clean", "jar", "-pre-pre-compile","-do-compile","-do-compile-single" //NOI18N
+                "-do-init", "-init-check", "-post-clean", "jar", "-pre-pre-compile","-do-compile","-do-compile-single", "-post-jar" //NOI18N
             };
             return Arrays.asList(targets);
         }
