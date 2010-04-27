@@ -68,6 +68,8 @@ final class BasicBrandingPanel extends AbstractBrandingPanel  {
     private URL iconSource32;
     private URL iconSource16;
 
+    private boolean titleValueModified;
+
     public BasicBrandingPanel(BasicBrandingModel model) {
         super(NbBundle.getMessage(BasicBrandingPanel.class, "LBL_BasicTab"), model); //NOI18N
         initComponents();        
@@ -78,9 +80,11 @@ final class BasicBrandingPanel extends AbstractBrandingPanel  {
             public void insertUpdate(DocumentEvent e) {
                 checkValidity();
                 setModified();
+                titleValueModified = true;
             }
         };
-        titleValue.getDocument().addDocumentListener(textFieldChangeListener);                
+        titleValue.getDocument().addDocumentListener(textFieldChangeListener);
+        titleValueModified = false;
     }
     
     protected void checkValidity() {
@@ -121,7 +125,8 @@ final class BasicBrandingPanel extends AbstractBrandingPanel  {
     }
     
     public @Override void store() {
-        getBranding().setTitle(titleValue.getText());
+        if (titleValueModified)
+            getBranding().setTitle(titleValue.getText());
         getBranding().setIconSource(48, iconSource48);
         getBranding().setIconSource(32, iconSource32);
         getBranding().setIconSource(16, iconSource16);
