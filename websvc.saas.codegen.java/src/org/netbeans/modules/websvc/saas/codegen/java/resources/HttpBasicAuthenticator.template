@@ -102,6 +102,7 @@ public class ${name} extends Authenticator {
             submitButton.addActionListener(this);
             submitButton.setActionCommand("Submit");
             cancelButton.setActionCommand("Cancel");
+            passwordTF.setActionCommand("Password");
 
             panel.add(unLabel);
             panel.add(userNameTF);
@@ -109,6 +110,22 @@ public class ${name} extends Authenticator {
             panel.add(passwordTF);
             panel.add(submitButton);
             panel.add(cancelButton);
+
+            userNameTF.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    passwordTF.grabFocus();
+                }
+
+            });
+
+            passwordTF.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    AuthenticationPanel.this.actionPerformed(e);
+                }
+
+            });
         }
 
         //method to call to show authentication...can be replaced by main() if required
@@ -138,7 +155,7 @@ public class ${name} extends Authenticator {
             String actionSource = evt.getActionCommand();
             if (actionSource.equals("Cancel")) {
                 frame.dispose();
-            } else if (actionSource.equals("Submit")) {
+            } else if (actionSource.equals("Submit") || actionSource.equals("Password")) {
                 username = userNameTF.getText();
                 password = new String(passwordTF.getPassword());
                 frame.dispose();

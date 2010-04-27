@@ -168,6 +168,12 @@
 <mapID target="gui.testing" url="gui/gui_previewing.html" />
 <mapID target="gui.deploying" url="gui/gui_deploying.html" />
 
+
+<!-- begin OSGi section -->
+ <mapID target="osgi_intro" url="osgi/about-osgi.html"/>
+
+
+
 <!--begin Groovy section-->
 
 <mapID target="groovy_intro" url="groovy/groovy_intro.html" />

@@ -281,7 +281,13 @@ Microsystems, Inc. All Rights Reserved.
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value=" ${packagemaker.path} -build -v -p ${basedir}/build/${module.name}-${nb.id}.pkg -f ${module.builddir}/netbeans -i ${module.builddir}/Info.plist -r ${scriptsdir} -d ${module.builddir}/Description.plist"/>
-        </exec>                                         
+        </exec>
+        <echo message="Deleting TokenDefinitions.plist and IFPkgPathMappings, see Issue #184419 for details"/>
+        <property name="token.def.plist" value="${basedir}/build/${module.name}-${nb.id}.pkg/Contents/Resources/TokenDefinitions.plist"/>
+        <exec executable="sh" failonerror="no">
+            <arg value="-c"/>
+            <arg value="[ -e  '${token.def.plist}' ] &amp;&amp; rm -f '${token.def.plist}' &amp;&amp; /usr/libexec/PlistBuddy -c 'Delete IFPkgPathMappings' '${basedir}/build/${module.name}-${nb.id}.pkg/Contents/Info.plist'"/>
+        </exec>
     </target>          
 
 
