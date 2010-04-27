@@ -49,8 +49,14 @@
     <xsd:element name="metadata" type="oauth:metadata"/>
 
     <xsd:complexType name="metadata">
+        <xsd:annotation>
+          <xsd:documentation>
+            root element: specifies OAuth authentication flow and OAuth parameters;
+          </xsd:documentation>
+        </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="flow" type="oauth:flowType"/>
+            <xsd:element name="param" type="oauth:paramType" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="base-url" type="xsd:anyURI" use="required"/>
         <xsd:attribute name="signature-method" type="oauth:signature-methodType" use="required"/>
@@ -60,14 +66,27 @@
     </xsd:complexType>
 
     <xsd:complexType name="flowType">
+        <xsd:annotation>
+          <xsd:documentation>
+            specifies 3 phases of OAuth authentication mechanism:
+            1. obtaining request-token,
+            2. consumer authorization and getting access-token
+            3. obtaining access-token
+          </xsd:documentation>
+        </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="request-token" type="oauth:methodType" />
-            <xsd:element name="authorize-consumer" type="oauth:authorize-consumerType" />
+            <xsd:element name="authorization" type="oauth:authorizationType" />
             <xsd:element name="access-token" type="oauth:methodType"/>
         </xsd:sequence>
     </xsd:complexType>
 
     <xsd:complexType name="methodType">
+        <xsd:annotation>
+          <xsd:documentation>
+            specifies REST method used to obtain (request/access) token.
+          </xsd:documentation>
+        </xsd:annotation>
         <xsd:attribute name="method-name" type="xsd:string" use="required"/>
         <xsd:attribute name="verifier-param-name" type="xsd:string"/>
         <xsd:attribute name="request-style" use="required">
@@ -97,10 +116,12 @@
         <xsd:attribute name="verifier" type="xsd:boolean"/> <!-- default: false -->
     </xsd:complexType>
 
-      <xsd:complexType name="authorize-consumerType">
+      <xsd:complexType name="authorizationType">
         <xsd:annotation>
           <xsd:documentation>
-            specifies auth-page;
+            specifies authorization step, that can be either
+            1. fixed-url URL with one ore more OAuth parameters
+            2. dynamic-url obtained during first step (request-token)
           </xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
@@ -114,14 +135,30 @@
       </xsd:complexType>
 
       <xsd:complexType name="dynamic-urlType">
-        <xsd:attribute name="callback-param-name" type="xsd:string" use="required"/>
+        <xsd:annotation>
+          <xsd:documentation>
+            specifies dynamic-url of authorization page,
+            obtained during request-token step - as auth-param-name
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:attribute name="auth-param-name" type="xsd:string" use="required"/>
       </xsd:complexType>
 
       <xsd:complexType name="fixed-urlType">
+        <xsd:annotation>
+          <xsd:documentation>
+            specifies fixed-url of authorization page
+          </xsd:documentation>
+        </xsd:annotation>
         <xsd:attribute name="url" type="xsd:anyURI" use="required"/>
       </xsd:complexType>
 
       <xsd:simpleType name="signature-methodType">
+        <xsd:annotation>
+          <xsd:documentation>
+            signature method
+          </xsd:documentation>
+        </xsd:annotation>
         <xsd:restriction base="xsd:string">
           <xsd:enumeration value="HMAC_SHA1"/>
           <xsd:enumeration value="PLAINTEXT"/>

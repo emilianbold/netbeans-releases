@@ -135,7 +135,10 @@ public class ClientJavaSourceHelper {
                     restLibs.add(lib);
                 }
             }
-            if (cp.findResource("com/sun/jersey/api/clientWebResource.class") == null) { //NOI18N
+            if (cp.findResource("com/sun/jersey/api/client/WebResource.class") == null ||
+                (Security.Authentication.OAUTH == security.getAuthentication() && 
+                 cp.findResource("com/sun/jersey/oauth/client/OAuthClientFilter.class") == null)
+                    ) {
                 Library lib = LibraryManager.getDefault().getLibrary("restlib"); //NOI18N
                 if (lib != null) {
                     restLibs.add(lib);
@@ -500,7 +503,7 @@ public class ClientJavaSourceHelper {
             try {
                 Metadata oauthMetadata = saasResource.getSaas().getOauthMetadata();
                 if (oauthMetadata != null) {
-                    modifiedClass = OAuthHelper.addOAuthMethods(security.getProjectType(), copy, modifiedClass, oauthMetadata);
+                    modifiedClass = OAuthHelper.addOAuthMethods(security.getProjectType(), copy, modifiedClass, oauthMetadata, classTree.getSimpleName().toString());
                     if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType())) {
                         final FileObject ddFo = security.getDeploymentDescriptor();
                         if (ddFo != null) {
