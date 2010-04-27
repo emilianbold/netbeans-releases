@@ -54,5 +54,13 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="Templates">
+        <folder name="SaaSServices">
+            <file name="OAuthAuthorizationPanelNb.java"
+                  url="/org/netbeans/modules/websvc/saas/oauth/OAuthAuthorizationPanelNb.template">
+                <attr name="position" intvalue="77"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
 

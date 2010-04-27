@@ -135,7 +135,10 @@ public class ClientJavaSourceHelper {
                     restLibs.add(lib);
                 }
             }
-            if (cp.findResource("com/sun/jersey/api/clientWebResource.class") == null) { //NOI18N
+            if (cp.findResource("com/sun/jersey/api/client/WebResource.class") == null ||
+                (Security.Authentication.OAUTH == security.getAuthentication() && 
+                 cp.findResource("com/sun/jersey/oauth/client/OAuthClientFilter.class") == null)
+                    ) {
                 Library lib = LibraryManager.getDefault().getLibrary("restlib"); //NOI18N
                 if (lib != null) {
                     restLibs.add(lib);
@@ -168,7 +171,7 @@ public class ClientJavaSourceHelper {
                 targetProjectType = Wadl2JavaHelper.PROJEC_TYPE_DESKTOP;
             }
             security.setProjectType(targetProjectType);
-
+            
             RestServiceDescription restServiceDesc = resourceNode.getLookup().lookup(RestServiceDescription.class);
             if (restServiceDesc != null) {
                 String uriTemplate = restServiceDesc.getUriTemplate();
@@ -232,10 +235,24 @@ public class ClientJavaSourceHelper {
                             pf,
                             security);
 
+                    // add JAXB request/response types from wadl file
                     try {
                         Wadl2JavaHelper.generateJaxb(targetFo, saasResource.getSaas());
                     } catch (IOException ex) {
                         ex.printStackTrace();
+                    }
+                    // checking if Openide modules are on the classpath
+                    if (Wadl2JavaHelper.PROJEC_TYPE_NB_MODULE.equals(targetProjectType) &&
+                            (Security.Authentication.OAUTH == security.getAuthentication() ||
+                            Security.Authentication.SESSION_KEY == security.getAuthentication())
+                            ) {
+                        if (cp.findResource("org/openide/DialogDisplayer.class.class") == null ||
+                            cp.findResource("org/openide/util/NbPreferences.class.class") == null ||
+                            cp.findResource("org/openide/awt/HtmlBrowser.class") == null) {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    NbBundle.getMessage(ClientJavaSourceHelper.class, "MSG_MissingOpenideModules"),
+                                    NotifyDescriptor.WARNING_MESSAGE));
+                        }
                     }
                 }
             }
@@ -500,7 +517,7 @@ public class ClientJavaSourceHelper {
             try {
                 Metadata oauthMetadata = saasResource.getSaas().getOauthMetadata();
                 if (oauthMetadata != null) {
-                    modifiedClass = OAuthHelper.addOAuthMethods(security.getProjectType(), copy, modifiedClass, oauthMetadata);
+                    modifiedClass = OAuthHelper.addOAuthMethods(security.getProjectType(), copy, modifiedClass, oauthMetadata, classTree.getSimpleName().toString());
                     if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType())) {
                         final FileObject ddFo = security.getDeploymentDescriptor();
                         if (ddFo != null) {

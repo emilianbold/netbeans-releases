@@ -121,7 +121,7 @@ class DTDParser extends Object {
                 Object subElem = oldElem = incIter.next();
                 if( subElem instanceof String ) {
                     String key = (String)subElem;
-                    subElem = elementMap.get( xmlDTD ? key : key.toUpperCase() );
+                    subElem = elementMap.get( xmlDTD ? key : key.toUpperCase(Locale.ENGLISH) );
                 }
                 if( subElem == null ) {
                     throw new WrongDTDException( "'" + oldElem + "' element referenced from " + elem.getName() + " not found throughout the DTD." ); // NOI18N
@@ -136,7 +136,7 @@ class DTDParser extends Object {
                 Object subElem = oldElem = excIter.next();
                 if( subElem instanceof String ) {
                     String key = (String)subElem;
-                    subElem = elementMap.get( xmlDTD ? key : key.toUpperCase() );
+                    subElem = elementMap.get( xmlDTD ? key : key.toUpperCase(Locale.ENGLISH) );
                 }
                 if( subElem == null ) {
                     throw new WrongDTDException( "'" + oldElem + "' element referenced from " + elem.getName() + " not found throughout the DTD." ); // NOI18N
@@ -232,7 +232,7 @@ class DTDParser extends Object {
     
     /** Adds given instance of DTD.Attribute to Element named elemName */
     void addAttrToElement( String elemName, DTD.Attribute attr) throws WrongDTDException {
-        String key = xmlDTD ? elemName : elemName.toUpperCase();
+        String key = xmlDTD ? elemName : elemName.toUpperCase(Locale.ENGLISH);
         ElementImpl elem = (ElementImpl)elementMap.get( key );
         if( elem == null ) throw new WrongDTDException( "Attribute definition for unknown Element \"" + elemName +"\"." ); // NOI18N
         elem.addAttribute( attr );
@@ -729,7 +729,7 @@ class DTDParser extends Object {
                             DTD.ContentModel cm = createContentModel( content, inSet, exSet );
                             for( Iterator iter = list.iterator(); iter.hasNext(); ) {
                                 String key = (String)iter.next();
-                                key = xmlDTD ? key : key.toUpperCase();
+                                key = xmlDTD ? key : key.toUpperCase(Locale.ENGLISH);
                                 elementMap.put( key, createElement( key, cm, optStart, optEnd, xmlDTD) );
                             }
                             return;
@@ -1057,7 +1057,7 @@ class DTDParser extends Object {
                             SortedMap vals = new TreeMap();
                             for( Iterator iter = values.iterator(); iter.hasNext(); ) {
                                 String key = (String)iter.next();
-                                String valName = xmlDTD ? key : key.toLowerCase();
+                                String valName = xmlDTD ? key : key.toLowerCase(Locale.ENGLISH);
                                 vals.put( valName, createValue( valName ) );
                             }
                             a = createAttribute( attr.toString(),
@@ -1471,7 +1471,7 @@ class DTDParser extends Object {
         public List getValueList( String prefix ) {
             if( type != TYPE_SET ) return null;
 
-            if( prefix == null ) prefix = ""; else prefix = xmlDTD ? prefix : prefix.toLowerCase();
+            if( prefix == null ) prefix = ""; else prefix = xmlDTD ? prefix : prefix.toLowerCase(Locale.ENGLISH);
 
             List retVal = new ArrayList();
             Iterator i = values.tailMap(prefix).entrySet().iterator();

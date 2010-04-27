@@ -75,8 +75,11 @@ You can enable or disable a breakpoint directly in the Breakpoints window by sel
               <td>Turns off the selected breakpoint, but preserves an entry for it in this window.</td>
         </tr>
 	<tr valign="top">
-		<td>Set Group Name</td>
-		<td>You can organize breakpoints into groups so that you can enable, disable, and delete the breakpoints as a group. If you select multiple breakpoints and then choose this option, you can give them a group name in the Create Group dialog box. The group name is added to the Breakpoints window as a node, and all the breakpoints in the group appear under the node. </td>
+		<td>Move Into Group</td>
+		<td>You can organize breakpoints into groups so that you can enable, disable, and delete the breakpoints as a group. 
+                    You can select one or multiple breakpoints and then choose this option to create or add the breakpoints to a group.
+                    The group name is displayed as an expandable node in the Breakpoints window in the Custom Group view.
+                    You can also choose to display custom groups in the Nested view. </td>
 	</tr>
 	<tr valign="top">
       <td>New Breakpoint </td>
@@ -90,6 +93,13 @@ You can enable or disable a breakpoint directly in the Breakpoints window by sel
       <td>Disable All</td>
       <td>Disables all the breakpoints in this window. </td>
   </tr>
+  <tr valign="top">
+      <td>Delete</td>
+      <td>Deletes the selected breakpoint(s).
+        <ul class="warning">
+          <li>If you choose this option, the breakpoint(s) is deleted immediately. There is no confirmation dialog box. </li>
+      </ul></td>
+  </tr>
 	<tr valign="top">
       <td>Delete All</td>
       <td>Deletes all the breakpoints in this window.
@@ -98,16 +108,18 @@ You can enable or disable a breakpoint directly in the Breakpoints window by sel
       </ul></td>
   </tr>
 	<tr valign="top">
-      <td>Customize</td>
-      <td>>Opens a dialog box enabling you to specify behavior of the breakpoint, including the line number and source file, conditions triggering the breakpoint, and which threads to suspend.</td>
+      <td>Properties</td>
+      <td>Opens the Properties dialog box enabling you to specify behavior of the breakpoint, including the line number and source file,
+          conditions triggering the breakpoint, and which threads to suspend.</td>
   </tr>
-	<tr valign="top">
-		<td>List Options</td>
-		<td>Enables you to customize the display of the Breakpoints window, including adding and removing columns of information, reordering the columns, and sorting the columns. 
-See <a href="../debug_customize_views.html">Customizing a Debugger Window</a> for more information. </td>
-	</tr>
 </table>
 
+<h3>Grouping Breakpoints</h3>
+
+<p>You can modify how breakpoints are organized in the Breakpoints window by clicking the Breakpoint Groups button
+    (&nbsp;<img src="../images/BreakpointGroups_options_16.png" alt="Select breakpoints group">&nbsp;)
+    and selecting a grouping strategy from the popup window.
+    If you choose Nested you can specify the specific groups and the order of the groups that are displayed.</p>
 <dl>
 	<dt><a name="seealso">See Also</a></dt>
             <dd><a href="../breakpoint_setting.html">Setting a Java Breakpoint</a></dd>
