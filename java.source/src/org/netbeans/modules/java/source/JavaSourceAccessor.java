@@ -256,6 +256,10 @@ public abstract class JavaSourceAccessor {
 
     public abstract AnnotatedTypeTree makeAnnotatedType(TreeMaker make, List<? extends AnnotationTree> annotations, ExpressionTree type);
     public abstract AnnotationTree makeTypeAnnotation(TreeMaker make, AnnotationTree t);
+
+    public static boolean holdsParserLock() {
+	return Utilities.holdsParserLock();
+    }
     
     private static class CancelableTaskWrapper extends JavaParserResultTask implements ClasspathInfoProvider {
         
