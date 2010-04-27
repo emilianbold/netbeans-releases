@@ -772,16 +772,18 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
                 if( null != ExplorerDnDManager.getDefault().getDraggedTransferable( (DnDConstants.ACTION_MOVE & dropAction) != 0 ) )
                     ExplorerDnDManager.getDefault().setDraggedNodes(diffNodes);
 
-                //postpone the potential re-order so that the drop Node has enough 
-                //time to re-create its children
-                SwingUtilities.invokeLater( new Runnable() {
-                    public void run() {
-                        Node[] diffNodes = getDiffNodes( parentNode, preNodes );
-                        if( canReorder( parentNode, diffNodes ) ) {
-                            performReorder( parentNode, diffNodes, lowerNodeIdx, upperNodeIdx );
+                if (dropIndex != -1) {
+                    //postpone the potential re-order so that the drop Node has enough
+                    //time to re-create its children
+                    SwingUtilities.invokeLater( new Runnable() {
+                        public void run() {
+                            Node[] diffNodes = getDiffNodes( parentNode, preNodes );
+                            if( canReorder( parentNode, diffNodes ) ) {
+                                performReorder( parentNode, diffNodes, lowerNodeIdx, upperNodeIdx );
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
 
             TreeCellEditor tce = tree.getCellEditor();

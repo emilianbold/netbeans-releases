@@ -203,10 +203,7 @@ public final class HostInfoUtils {
                     if (result == null) {
                         throw new IOException("Error getting host info for " + execEnv); // NOI18N
                     }
-                    HostInfo oldInfo = cache.putIfAbsent(execEnv, result);
-                    if (oldInfo != null) {
-                        result = oldInfo;
-                    }
+                    cache.put(execEnv, result);
                 } catch (InterruptedException ex) {
                     throw new CancellationException("getHostInfo(" + execEnv.getDisplayName() + ") cancelled."); // NOI18N
                 }
@@ -214,6 +211,13 @@ public final class HostInfoUtils {
             return result;
         }
 
+    }
+
+    public static void updateHostInfo(ExecutionEnvironment execEnv) throws IOException, InterruptedException {
+        HostInfo result = new FetchHostInfoTask().compute(execEnv);
+        if (result != null) {
+            cache.put(execEnv, result);
+        }
     }
 
     /**

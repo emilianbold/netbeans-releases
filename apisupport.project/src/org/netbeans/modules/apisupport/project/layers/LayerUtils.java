@@ -52,7 +52,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -74,9 +73,6 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.ui.customizer.ClusterInfo;
-import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
-import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -85,7 +81,6 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.modules.xml.tax.parser.XMLParsingSupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.tax.TreeDocumentRoot;
 import org.netbeans.tax.TreeException;
 import org.netbeans.tax.TreeObject;
@@ -110,6 +105,7 @@ import org.xml.sax.InputSource;
  */
 public class LayerUtils {
     private static final Collection<FileSystem> EMPTY_FS_COL = new ArrayList<FileSystem>();
+    private static final Logger LOG = Logger.getLogger(LayerUtils.class.getName());
 
     private LayerUtils() {}
 
@@ -527,14 +523,6 @@ public class LayerUtils {
     }
     
     /**
-     * Get the platform JARs associated with a standalone module project.
-     */
-    public static Set<File> getPlatformJarsForStandaloneProject(Project project) {
-        NbPlatform platform = getPlatformForProject(project);
-        return getPlatformJars(platform, null, null, null);
-    }
-
-    /**
      * Returns platform for project with fallback to default platform.
      * 
      * @param Project, must contain {@link NbModuleProvider} in lookup.
@@ -554,29 +542,16 @@ public class LayerUtils {
     }
     
     public static Set<File> getPlatformJarsForSuiteComponentProject(SuiteProject suite) {
-        NbPlatform platform = suite.getPlatform(true);
-        PropertyEvaluator eval = suite.getEvaluator();
-        String[] includedClusters;
-        Set<ClusterInfo> clusterPath = ClusterUtils.evaluateClusterPath(suite.getProjectDirectoryFile(), eval, platform.getDestDir());
-        // cluster.path or the old definition (with enabled.clusters, disabled.clusters)?
-        if (clusterPath!=null && clusterPath.size()>0) {
-            LinkedList<String> platformClusters = new LinkedList<String>();
-            for (ClusterInfo clusterInfo : clusterPath) {
-                // cluster.path -> get platform clusters from it
-                if (clusterInfo.isPlatformCluster()) {
-                    platformClusters.add(clusterInfo.getClusterDir().getName());
-                }
+        try {
+            Set<File> jars = new HashSet<File>();
+            for (ModuleEntry entry : ModuleList.findOrCreateModuleListFromSuite(suite.getProjectDirectoryFile(), null).getAllEntries()) {
+                jars.add(entry.getJarLocation());
             }
-            includedClusters = platformClusters.toArray(new String[0]);
-        } else {
-            // NOT cluster.path, still the old definition with enabled.clusters, disabled.clusters
-            includedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.ENABLED_CLUSTERS_PROPERTY);
+            return jars;
+        } catch (IOException x) {
+            LOG.log(Level.INFO, null, x);
+            return Collections.emptySet();
         }
-        // disabled.clusters list is empty when cluster.path is used
-        String[] excludedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
-        // disabled.modules list works for both the old definition and the new definition with cluster.path
-        String[] excludedModules = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_MODULES_PROPERTY);
-        return getPlatformJars(platform, includedClusters, excludedClusters, excludedModules);
     }
     
     public static Set<NbModuleProject> getProjectsForNetBeansOrgProject(NbModuleProject project) throws IOException {
@@ -595,7 +570,7 @@ public class LayerUtils {
             try {
                 p2 = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
             } catch (IOException x) {
-                Logger.getLogger(LayerUtils.class.getName()).log(Level.INFO, "could not load " + fo, x);
+                LOG.log(Level.INFO, "could not load " + fo, x);
                 continue;
             }
             if (p2 == null) continue;
@@ -605,22 +580,16 @@ public class LayerUtils {
     }
     
     /**
-     * Finds all the module JARs in the platform.
-     * Can optionally pass non-null lists of cluster names and module CNBs to exclude, as per suite properties.
+     * Get the platform JARs associated with a standalone module project.
      */
-    private static Set<File> getPlatformJars(NbPlatform platform, String[] includedClusters, String[] excludedClusters, String[] excludedModules) {
+    public static Set<File> getPlatformJarsForStandaloneProject(Project project) {
+        NbPlatform platform = getPlatformForProject(project);
         if (platform == null) {
             return Collections.emptySet();
         }
-        Set<String> includedClustersS = (includedClusters != null) ? new HashSet<String>(Arrays.asList(includedClusters)) : Collections.<String>emptySet();
-        Set<String> excludedClustersS = (excludedClusters != null) ? new HashSet<String>(Arrays.asList(excludedClusters)) : Collections.<String>emptySet();
-        Set<String> excludedModulesS = (excludedModules != null) ? new HashSet<String>(Arrays.asList(excludedModules)) : Collections.<String>emptySet();
         Set<ModuleEntry> entries = platform.getModules();
         Set<File> jars = new HashSet<File>(entries.size());
         for (ModuleEntry entry : entries) {
-            if (SingleModuleProperties.isExcluded(entry, excludedModulesS, includedClustersS, excludedClustersS)) {
-                continue;
-            }
             jars.add(entry.getJarLocation());
         }
         return jars;

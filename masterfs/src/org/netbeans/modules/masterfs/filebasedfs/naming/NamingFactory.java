@@ -82,8 +82,8 @@ public final class NamingFactory {
         return nameMap.size();
     }
     
-    public static synchronized FileNaming fromFile(final FileNaming parentFn, final File file) {            
-        return NamingFactory.registerInstanceOfFileNaming(parentFn, file, FileType.unknown);
+    public static synchronized FileNaming fromFile(final FileNaming parentFn, final File file, boolean ignoreCache) {
+        return NamingFactory.registerInstanceOfFileNaming(parentFn, file, null, ignoreCache, FileType.unknown);
     }
     
     public static synchronized void checkCaseSensitivity(final FileNaming childName, final File f) throws IOException {

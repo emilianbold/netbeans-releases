@@ -76,30 +76,14 @@ import org.openide.ErrorManager;
     public CompilerDescriptor getDescriptor() {
         return getFlavor().getToolchainDescriptor().getC();
     }
-    
+
     @Override
     protected void parseCompilerOutput(BufferedReader reader, Pair pair) {
         try {
             String line;
             while ((line = reader.readLine()) != null) {
-                //System.out.println(line);
-                int includeIndex = line.indexOf("-I"); // NOI18N
-                while (includeIndex > 0) {
-                    String token;
-                    int spaceIndex = line.indexOf(' ', includeIndex + 1); // NOI18N
-                    if (spaceIndex > 0) {
-                        token = line.substring(includeIndex+2, spaceIndex);
-                    } else {
-                        token = line.substring(includeIndex+2);
-                    }
-                    if (!token.equals("-xbuiltin")) { //NOI18N
-                        addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(token));
-                    }
-                    if (spaceIndex > 0) {
-                        includeIndex = line.indexOf("-I", spaceIndex); // NOI18N
-                    } else {
-                        break;
-                    }
+                for(String token : getSystemPaths(line)){
+                    addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(token));
                 }
                 parseUserMacros(line, pair.systemPreprocessorSymbolsList);
             }

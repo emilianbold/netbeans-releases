@@ -161,4 +161,11 @@ public class NbModuleProjectTest extends TestBase {
 //        assertEquals("two generic source group", 2, sourceGroups.length); // prjFolder and unitFolder
 //    }
 
+    public void testGetSpecVersion() throws Exception {
+        NbModuleProject m = generateStandaloneModule(getWorkDir(), "module", false);
+        assertEquals("1.0", m.getSpecVersion());
+        m = generateStandaloneModule(getWorkDir(), "bundle", true);
+        assertEquals("1.0", m.getSpecVersion()); // #185020
+    }
+
 }

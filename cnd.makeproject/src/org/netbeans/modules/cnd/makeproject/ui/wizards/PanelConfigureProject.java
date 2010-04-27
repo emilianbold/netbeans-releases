@@ -157,6 +157,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
     public void storeSettings(WizardDescriptor settings) {
         WizardDescriptor d = settings;
         component.store(d);
+        initialized = false;
     }
 
     @Override

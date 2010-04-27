@@ -94,6 +94,7 @@ public class MyProjectNode extends LeafNode {
     private final PropertyChangeListener projectListener;
     private TreeLabel rightPar;
     private TreeLabel leftPar;
+    private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
 
     public MyProjectNode( final ProjectHandle project ) {
         super( null );
@@ -169,7 +170,7 @@ public class MyProjectNode extends LeafNode {
                 component.add(rightPar, new GridBagConstraints(4, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 setOnline(mh.getOnlineCount() >= 0 && count >0);
                 
-                post(new Runnable() {
+                issuesRP.post(new Runnable() {
 
                     public void run() {
                         DashboardImpl.getInstance().myProjectsProgressStarted();

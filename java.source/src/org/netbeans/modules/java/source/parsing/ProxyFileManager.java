@@ -42,6 +42,9 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -57,6 +60,7 @@ import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.util.Iterators;
 
 /**
@@ -90,7 +94,7 @@ public class ProxyFileManager implements JavaFileManager {
     private final MemoryFileManager memoryFileManager;
     private final JavaFileManager outputhPath;
     private final GeneratedFileMarker marker;
-    private final Stack<URL> explicitSibling = new Stack<URL>();
+    private final SiblingSource siblings;
     private JavaFileObject lastInfered;
     private String lastInferedResult;
     
@@ -105,10 +109,13 @@ public class ProxyFileManager implements JavaFileManager {
             final JavaFileManager aptSources,
             final JavaFileManager outputhPath,
             final MemoryFileManager memoryFileManager,
-            final GeneratedFileMarker marker) {
+            final GeneratedFileMarker marker,
+            final SiblingSource siblings) {
         assert bootPath != null;
         assert classPath != null;
         assert memoryFileManager == null || sourcePath != null;
+        assert marker != null;
+        assert siblings != null;
         this.bootPath = bootPath;
         this.classPath = classPath;
         this.sourcePath = sourcePath;
@@ -116,6 +123,7 @@ public class ProxyFileManager implements JavaFileManager {
         this.memoryFileManager = memoryFileManager;
         this.outputhPath = outputhPath;
         this.marker = marker;
+        this.siblings = siblings;
     }
 
     private JavaFileManager[] getFileManager (final Location location) {
@@ -228,7 +236,7 @@ public class ProxyFileManager implements JavaFileManager {
             //Workaround for wrongly written processors,
             //see Issue #180605
             boolean forwardedToSource = false;
-            if (!explicitSibling.isEmpty() && l == StandardLocation.CLASS_OUTPUT) {
+            if (siblings.getProvider().hasSibling() && l == StandardLocation.CLASS_OUTPUT) {
                 boolean exists = false;
                 try {
                     result.openInputStream().close();
@@ -248,8 +256,7 @@ public class ProxyFileManager implements JavaFileManager {
                     }
                 }
             }
-            mark(result, forwardedToSource ? StandardLocation.SOURCE_PATH : l);
-            return result;
+            return mark(result, forwardedToSource ? StandardLocation.SOURCE_PATH : l);
         }
     }
 
@@ -285,7 +292,7 @@ public class ProxyFileManager implements JavaFileManager {
             final String sib = it.next();
             if(sib.length() != 0) {
                 try {
-                    explicitSibling.push(new URL(sib));
+                    siblings.push(new URL(sib));
                 } catch (MalformedURLException ex) {
                     throw new IllegalArgumentException("Invalid path argument: " + sib);    //NOI18N
                 }
@@ -293,7 +300,7 @@ public class ProxyFileManager implements JavaFileManager {
                 try {
                     markerFinished();
                 } finally {
-                    explicitSibling.pop();
+                    siblings.pop();
                 }
             }
         }
@@ -344,8 +351,7 @@ public class ProxyFileManager implements JavaFileManager {
         }
         else {
             final JavaFileObject result = fms[0].getJavaFileForOutput (l, className, kind, sibling);
-            mark (result,l);
-            return result;
+            return mark (result,l);
         }
     }
 
@@ -390,21 +396,49 @@ public class ProxyFileManager implements JavaFileManager {
         return fileObject.toUri().equals (fileObject0.toUri());
     }
 
-    private void mark(final javax.tools.FileObject result, JavaFileManager.Location l) throws MalformedURLException {
+    @SuppressWarnings("unchecked")
+    private <T extends javax.tools.FileObject> T mark(final T result, JavaFileManager.Location l) throws MalformedURLException {
         GeneratedFileMarker.Type type = null;
         if (l == StandardLocation.CLASS_OUTPUT) {
             type = GeneratedFileMarker.Type.RESOURCE;
         } else if (l == StandardLocation.SOURCE_OUTPUT) {
             type = GeneratedFileMarker.Type.SOURCE;
         }
-        if (marker != null && result != null && type != null && !explicitSibling.isEmpty()) {
+        final boolean hasSibling = siblings.getProvider().hasSibling();
+        final boolean write = marker.allowsWrite() || !hasSibling;
+        if (result != null && type != null && hasSibling) {
             marker.mark(result.toUri().toURL(), type);
         }
+        return write ? result : (T) new NullFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
     }
 
     private void markerFinished() {
-        if (marker != null && !explicitSibling.isEmpty()) {
-            marker.finished(explicitSibling.peek());
+        if (siblings.getProvider().hasSibling()) {
+            marker.finished(siblings.getProvider().getSibling());
+        }
+    }
+
+    private static final class NullFileObject extends ForwardingInferableJavaFileObject {
+        private NullFileObject (@NonNull final InferableJavaFileObject delegate) {
+            super (delegate);
+        }
+
+        @Override
+        public OutputStream openOutputStream() throws IOException {
+            return new NullOutputStream();
+        }
+
+        @Override
+        public Writer openWriter() throws IOException {
+            return new OutputStreamWriter(openOutputStream());
+        }
+    }
+
+
+    private static class NullOutputStream extends OutputStream {
+        @Override
+        public void write(int b) throws IOException {
+            //pass
         }
     }
 

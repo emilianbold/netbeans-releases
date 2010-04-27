@@ -106,6 +106,11 @@ public final class Utils {
      */
     private static final RequestProcessor vcsBlockingRequestProcessor = new RequestProcessor("Versioning long tasks", 1);
 
+    /**
+     * Request processor for parallel tasks.
+     */
+    private static final RequestProcessor vcsParallelRequestProcessor = new RequestProcessor("Versioning parallel tasks", 5, true);
+
     private static /*final*/ File [] unversionedFolders;
 
     /**
@@ -162,7 +167,28 @@ public final class Utils {
      * @param runnable Runnable to run
      */
     public static void post(Runnable runnable) {
-        vcsRequestProcessor.post(runnable);
+        post(runnable, 0);
+    }
+
+    /**
+     * Runs the runnable in the Versioning RequestProcessor (which has throughput of 1). The runnable must not take long
+     * to execute (connect through network, etc).
+     *
+     * @param runnable Runnable to run
+     * @param timeToWait delay before starting the task
+     */
+    public static void post (Runnable runnable, int timeToWait) {
+        vcsRequestProcessor.post(runnable, timeToWait);
+    }
+
+    /**
+     * Runs the runnable in the Versioning RequestProcessor (which has throughput of 5).
+     *
+     * @param runnable Runnable to run
+     * @param timeToWait delay before starting the task
+     */
+    public static void postParallel (Runnable runnable, int timeToWait) {
+        vcsParallelRequestProcessor.post(runnable, timeToWait);
     }
 
     /**
@@ -1181,7 +1207,7 @@ public final class Utils {
                 foldersToCheck.add(folder);
                 if (loggingTask == null) {
                     loggingTask = new LogTask();
-                    RequestProcessor.getDefault().post(loggingTask, 2000);
+                    Utils.postParallel(loggingTask, 2000);
                 }
             }
         }

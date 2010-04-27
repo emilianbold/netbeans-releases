@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.editor.indent;
 
+import java.util.MissingResourceException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
@@ -60,7 +61,6 @@ import org.openide.util.NbBundle;
  */
 public class CppIndentTask extends IndentSupport implements IndentTask {
 
-    private static String SPACES = "                                "; // NOI18N
     private Context context;
     private Document doc;
 
@@ -89,6 +89,31 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
     @Override
     public ExtraLock indentLock() {
         return null;
+    }
+    
+    private String spaces(int i){
+        StringBuilder buf = new StringBuilder(i);
+        for(;i>0;i--){
+            buf.append(' ');
+        }
+        return buf.toString();
+    }
+
+    private StringBuilder createDoc(int indent, Function function) throws MissingResourceException {
+        StringBuilder buf = new StringBuilder();
+        buf.append(spaces(indent));
+        buf.append("* ").append("\n"); // NOI18N
+        for (Parameter p : function.getParametes()) {
+            buf.append(spaces(indent));
+            buf.append("* @param ").append(p.getName()).append('\n'); // NOI18N
+        }
+        final String returnType = function.getReturnType();
+        if (returnType != null && !"void".equals(returnType)) { // NOI18N
+            buf.append(spaces(indent));
+            buf.append("* @return ").append('\n'); // NOI18N
+        }
+        buf.append(spaces(indent));
+        return buf;
     }
 
     private TokenItem moveToFirstLineImportantToken(TokenItem token) {
@@ -152,26 +177,9 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                             && "/**\n*/".equals(doc.getText(token.getTokenSequence().offset(), 6))) { // NOI18N
                         Function function = CsmDocGeneratorProvider.getDefault().getFunction(doc, caretOffset);
                         if (function != null) {
-                            StringBuilder buf = new StringBuilder();
-                            buf.append(SPACES.substring(0, indent));
-                            buf.append("* ").append(NbBundle.getMessage(CppIndentTask.class, "DOCUMENT_HERE_TXT", function.getSignature())).append("\n"); // NOI18N
-                            buf.append(SPACES.substring(0, indent));
-                            buf.append("*\n"); // NOI18N
-                            for (Parameter p : function.getParametes()) {
-                                buf.append(SPACES.substring(0, indent));
-                                buf.append("* @param ").append(p.getName()).append('\n'); // NOI18N
-                            }
-                            final String returnType = function.getReturnType();
-                            if (returnType != null && !"void".equals(returnType)) { // NOI18N
-                                buf.append(SPACES.substring(0, indent));
-                                buf.append("* @return ...").append('\n'); // NOI18N
-                            }
-//                            buf.append(SPACES.substring(0, indent));
-//                            buf.append("*\n"); // NOI18N
-                            buf.append(SPACES.substring(0, indent));
-                            buf.append("* @author ").append(System.getProperty("user.name")).append("\n"); // NOI18N
-                            buf.append(SPACES.substring(0, indent));
+                            StringBuilder buf = createDoc(indent, function);
                             doc.insertString(caretOffset, buf.toString(), null);
+                            context.setCaretOffset(caretOffset+indent+2);
                         }
                     } else {
                         if (!"*".equals(doc.getText(caretOffset, 1))) { // NOI18N
