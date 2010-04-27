@@ -49,6 +49,7 @@ import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.netbeans.modules.css.visual.ui.preview.CssTCController;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -64,12 +65,24 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  */
 public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserResult> {
 
+    //static, will hold the singleton reference forever but I cannot reasonably
+    //hook to gsf to be able to free this once last css component closes
+    private static CssTCController windowController;
+
     private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
+
+    private static synchronized void initializeWindowController() {
+        if(windowController == null) {
+            windowController = CssTCController.getDefault();
+        }
+    }
 
     public static class Factory extends TaskFactory {
 
         @Override
         public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+            initializeWindowController();
+
             String mimeType = snapshot.getMimeType();
             String sourceMimeType = snapshot.getSource().getMimeType();
 
