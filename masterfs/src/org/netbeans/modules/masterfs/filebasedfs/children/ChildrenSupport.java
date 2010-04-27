@@ -79,7 +79,7 @@ public class ChildrenSupport {
 
     public synchronized Set<FileNaming> getChildren(final FileNaming folderName, final boolean rescan) {
         if (rescan || !isStatus(ChildrenSupport.ALL_CHILDREN_CACHED))  {
-            rescanChildren(folderName);
+            rescanChildren(folderName, false);
             setStatus(ChildrenSupport.ALL_CHILDREN_CACHED);
         } /*else if (!isStatus(ChildrenSupport.ALL_CHILDREN_CACHED)) {
 
@@ -96,11 +96,11 @@ public class ChildrenSupport {
     public synchronized FileNaming getChild(final String childName, final FileNaming folderName, final boolean rescan) {
         FileNaming retval = null;
         if (rescan || isStatus(ChildrenSupport.NO_CHILDREN_CACHED)) {
-            retval = rescanChild(folderName, childName);
+            retval = rescanChild(folderName, childName, false);
         } else if (isStatus(ChildrenSupport.SOME_CHILDREN_CACHED)) {
             retval = lookupChildInCache(folderName, childName, true);
             if (retval == null && lookupChildInCache(folderName, childName, false) == null) {
-                retval = rescanChild(folderName, childName);
+                retval = rescanChild(folderName, childName, false);
             }
         } else if (isStatus(ChildrenSupport.ALL_CHILDREN_CACHED)) {
             retval = lookupChildInCache(folderName, childName, true);
@@ -137,7 +137,7 @@ public class ChildrenSupport {
         if (isStatus(ChildrenSupport.SOME_CHILDREN_CACHED)) {
             Set<FileNaming> existingToCheck = new HashSet<FileNaming>(e);
             for (FileNaming fnToCheck : existingToCheck) {
-                FileNaming fnRescanned = rescanChild(folderName, fnToCheck.getName());
+                FileNaming fnRescanned = rescanChild(folderName, fnToCheck.getName(), true);
                 if (fnRescanned == null) {
                     retVal.put(fnToCheck, ChildrenCache.REMOVED_CHILD);
                 }
@@ -146,13 +146,13 @@ public class ChildrenSupport {
             Set<FileNaming> notExistingToCheck = new HashSet<FileNaming>(nE);
             for (FileNaming fnToCheck : notExistingToCheck) {
                 assert fnToCheck != null;
-                FileNaming fnRescanned = rescanChild(folderName, fnToCheck.getName());
+                FileNaming fnRescanned = rescanChild(folderName, fnToCheck.getName(), true);
                 if (fnRescanned != null) {
                     retVal.put(fnToCheck, ChildrenCache.ADDED_CHILD);
                 }
             }
         } else if (isStatus(ChildrenSupport.ALL_CHILDREN_CACHED)) {
-            retVal = rescanChildren(folderName);
+            retVal = rescanChildren(folderName, true);
         }
         return retVal;
     }
@@ -173,12 +173,12 @@ public class ChildrenSupport {
     }
 
 
-    private FileNaming rescanChild(final FileNaming folderName, final String childName) {
+    private FileNaming rescanChild(final FileNaming folderName, final String childName, boolean ignoreCache) {
         final File folder = folderName.getFile();
         final File child = new File(folder, childName);
         final FileInfo fInfo = new FileInfo(child);
 
-        FileNaming retval = (fInfo.isConvertibleToFileObject()) ? NamingFactory.fromFile(folderName, child) : null;
+        FileNaming retval = (fInfo.isConvertibleToFileObject()) ? NamingFactory.fromFile(folderName, child, ignoreCache) : null;
         if (retval != null) {
             addChild(folderName, retval);
         } else {
@@ -201,8 +201,8 @@ public class ChildrenSupport {
         return retval;
     }
 
-    private Map<FileNaming, Integer> rescanChildren(final FileNaming folderName) {
-        final Map<FileNaming, Integer> retval = new HashMap<FileNaming, Integer>();
+    private Map<FileNaming, Integer> rescanChildren(final FileNaming folderName, boolean ignoreCache) {
+        final Map<FileNaming, Integer> retval = new IdentityHashMap<FileNaming, Integer>();
         final Set<FileNaming> newChildren = new LinkedHashSet<FileNaming>();
 
         final File folder = folderName.getFile();
@@ -213,7 +213,7 @@ public class ChildrenSupport {
             for (int i = 0; i < children.length; i++) {
                 final FileInfo fInfo = new FileInfo(children[i],1);
                 if (fInfo.isConvertibleToFileObject()) {
-                    FileNaming child = NamingFactory.fromFile(folderName, children[i]);
+                    FileNaming child = NamingFactory.fromFile(folderName, children[i], ignoreCache);
                     newChildren.add(child);
                 }
             }
@@ -222,21 +222,33 @@ public class ChildrenSupport {
             return retval;
         }
 
-        Set<FileNaming> deleted = new HashSet<FileNaming>(getExisting(false));
-        deleted.removeAll(newChildren);
+        Set<FileNaming> deleted = deepMinus(getExisting(false), newChildren);
         for (FileNaming fnRem : deleted) {
             removeChild(folderName, fnRem);
             retval.put(fnRem, ChildrenCache.REMOVED_CHILD);
         }
 
-        Set<FileNaming> added = new HashSet<FileNaming>(newChildren);
-        added.removeAll(getExisting(false));
+        Set<FileNaming> added = deepMinus(newChildren, getExisting(false));
         for (FileNaming fnAdd : added) {
             addChild(folderName, fnAdd);
             retval.put(fnAdd, ChildrenCache.ADDED_CHILD);
         }
 
         return retval;
+    }
+
+    private static Set<FileNaming> deepMinus(Set<FileNaming> base, Set<FileNaming> minus) {
+        HashMap<FileNaming, FileNaming> detract = new HashMap<FileNaming, FileNaming>(base.size() * 2);
+        for (FileNaming fn : base) {
+            detract.put(fn, fn);
+        }
+        for (FileNaming mm : minus) {
+            FileNaming orig = detract.remove(mm);
+            if (orig != null && orig.isFile() != mm.isFile()) {
+                detract.put(orig, orig);
+            }
+        }
+        return detract.keySet();
     }
 
     private FileNaming lookupChildInCache(final FileNaming folder, final String childName, boolean lookupExisting) {
