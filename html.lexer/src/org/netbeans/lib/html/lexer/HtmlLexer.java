@@ -223,6 +223,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
     private static final int ISI_SGML_DECL_WS = 41; //after whitespace in SGML declaration
 
+    private static final int ISI_VAL_QUOT_ESC = 42;
+    private static final int ISI_VAL_DQUOT_ESC = 43;
+
     static final Set<String> EVENT_HANDLER_NAMES = new HashSet<String>();
     static {
         // See http://www.w3.org/TR/html401/interact/scripts.html
@@ -754,6 +757,11 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
                 case ISI_VAL_QUOT:
                     switch (actChar) {
+                        case '\\':
+                            //may be escaped quote
+                            lexerState = ISI_VAL_QUOT_ESC;
+                            break;
+
                         case '\'':
                             //reset the 'script embedding will follow state' if the value represents a
                             //type attribute value of a script tag
@@ -770,6 +778,11 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
                 case ISI_VAL_DQUOT:
                     switch (actChar) {
+                        case '\\':
+                            //may be escaped quote
+                            lexerState = ISI_VAL_DQUOT_ESC;
+                            break;
+
                         case '"':
                             //reset the 'script embedding will follow state' if the value represents a
                             //type attribute value of a script tag
@@ -784,7 +797,19 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     }
                     break;  // else simply consume next char of VALUE
 
+                case ISI_VAL_QUOT_ESC:
+                    //Just consume the escaped char.
+                    //The state prevents the quoted value
+                    //to be finished by an escaped quote.
+                    lexerState = ISI_VAL_QUOT;
+                    break;
 
+                case ISI_VAL_DQUOT_ESC:
+                    //Just consume the escaped char.
+                    //The state prevents the quoted value
+                    //to be finished by an escaped quote.
+                    lexerState = ISI_VAL_DQUOT;
+                    break;
 
                 case ISA_SGML_ESCAPE:       // DONE
                     if( isAZ(actChar) ) {
@@ -1063,6 +1088,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             case ISI_VAL:
             case ISI_VAL_QUOT:
             case ISI_VAL_DQUOT:
+            case ISI_VAL_QUOT_ESC:
+            case ISI_VAL_DQUOT_ESC:
                 return resolveValueToken();
 
             case ISI_SGML_DECL:
