@@ -85,6 +85,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
     private int catWidth;
     private int resultWidth;
     private Task evalTask;
+    private static final RequestProcessor RP = new RequestProcessor(QuickSearchPopup.class);
 
     public QuickSearchPopup (AbstractQuickSearchComboBar comboBar) {
         this.comboBar = comboBar;
@@ -156,6 +157,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
 
     /** implementation of ActionListener, called by timer,
      * actually runs search */
+    @Override
     public void actionPerformed(ActionEvent e) {
         updateTimer.stop();
         // search only if we are not cancelled already
@@ -166,7 +168,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
             evalTask = CommandEvaluator.evaluate(searchedText, rModel);
             evalTask.addTaskListener(this);
             // start waiting on all providers execution
-            RequestProcessor.getDefault().post(evalTask);
+            RP.post(evalTask);
         }
     }
 
