@@ -290,7 +290,7 @@ made subject to such option by the copyright holder.
                         <regexp pattern="platform[0-9]*[/\\]?$"/>
                     </linecontainsregexp>
                 </filtermapper>
-                <mapper type="regexp" from="[/\\]([^/\\]+)[/\\]?$" to="\1"/> <!-- #71849 -->
+                <mapper type="regexp" from="[/\\]([^/\\]+)([/\\]build[/\\]cluster)?[/\\]?$" to="\1"/> <!-- #71849, #179410 -->
             </chainedmapper>
         </pathconvert>
 
@@ -356,7 +356,7 @@ made subject to such option by the copyright holder.
     <target name="copy-cluster" description="Copies cluster specified by basedir to dir ${dest.dir}">
         <pathconvert property="cluster.name">
             <path path="${basedir}"/>
-            <mapper type="regexp" from="[/\\]([^/\\]+)[/\\]?$" to="\1"/>
+            <mapper type="regexp" from="[/\\]([^/\\]+)([/\\]build[/\\]cluster)?[/\\]?$" to="\1"/>
         </pathconvert>
         <copy todir="${dest.dir}/${cluster.name}">
             <fileset dir="${basedir}">
