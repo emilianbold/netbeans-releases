@@ -68,9 +68,6 @@ org.netbeans.modules.dlight.management.api.ExecutionContextEvent
 org.netbeans.modules.dlight.management.api.ExecutionContextListener
 org.netbeans.modules.dlight.management.api.SessionStateListener
 
-#177559
-org.netbeans.modules.css.visual.ui.preview.CssTCController
-
 #177560
 org.netbeans.modules.csl.core.GsfModuleInstaller
 
