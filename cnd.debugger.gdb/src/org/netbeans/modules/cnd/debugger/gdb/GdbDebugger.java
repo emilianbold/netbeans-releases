@@ -1077,8 +1077,8 @@ public class GdbDebugger implements PropertyChangeListener {
                 localVariables.clear(); // clear old variables so we can store new ones here
             }
             gdb.stack_select_frame(frame);
-            gdb.stack_list_arguments(1);
             gdb.stack_list_locals("--all-values"); // NOI18N
+            gdb.stack_list_arguments(1);
         }
     }
 
@@ -1437,7 +1437,12 @@ public class GdbDebugger implements PropertyChangeListener {
             if (curFrame != null && level == curFrame.getFrameNumber() && !vars.isEmpty()) {
                 log.finest("GD.addArgsToLocalVariables: Starting to add Args to localVariables"); // NOI18N
                 synchronized (localVariables) {
-                    localVariables.addAll(vars);
+                    // do not substitute locals!
+                    for (GdbVariable var : vars) {
+                        if (!localVariables.contains(var)) {
+                            localVariables.add(var);
+                        }
+                    }
                 }
                 log.finest("GD.addArgsToLocalVariables: Added " + vars.size() + " args");
             }
@@ -1445,17 +1450,13 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     private void addLocalsToLocalVariables(String info) {
-        Collection<GdbVariable> v = GdbUtils.createLocalsList(info.substring(1, info.length() - 1));
-        if (!v.isEmpty()) {
+        Collection<GdbVariable> vars = GdbUtils.createLocalsList(info.substring(1, info.length() - 1));
+        if (!vars.isEmpty()) {
             log.finest("GD.addLocalsToLocalVariables: Starting to add locals to localVariables"); // NOI18N
             synchronized (localVariables) {
-                for (GdbVariable var : v) {
-                    if (!localVariables.contains(var)) {
-                        localVariables.add(var);
-                    }
-                }
+                localVariables.addAll(vars);
             }
-            log.finest("GD.addLocalsToLocalVariables: Added " + v.size() + " locals");
+            log.finest("GD.addLocalsToLocalVariables: Added " + vars.size() + " locals");
         }
     }
 
