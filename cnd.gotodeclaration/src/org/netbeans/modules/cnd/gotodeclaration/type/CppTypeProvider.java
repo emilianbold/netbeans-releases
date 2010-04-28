@@ -54,15 +54,18 @@ public class CppTypeProvider implements TypeProvider {
 	if( TRACE ) System.err.printf("CppTypeProvider.ctor\n");
     }
     
+    @Override
     public String name() {
         return "C/C++"; // NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(CppTypeProvider.class, "TYPE_PROVIDER_DISPLAY_NAME"); // NOI18N
     }
 
 //    public List<? extends TypeDescriptor> getTypeNames(Project project, String text, SearchType type) {
+    @Override
     public void computeTypeNames(Context context, Result res) {
         isCancelled = false;
         Project project = context.getProject();
@@ -108,11 +111,13 @@ public class CppTypeProvider implements TypeProvider {
 	}
     }
 
+    @Override
     public void cancel() {
 	if( TRACE ) System.err.printf("CppTypeProvider.cancel\n");
         isCancelled = true;
     }
 
+    @Override
     public void cleanup() {
 	if( TRACE ) System.err.printf("CppTypeProvider.cleanup\n");
     }
