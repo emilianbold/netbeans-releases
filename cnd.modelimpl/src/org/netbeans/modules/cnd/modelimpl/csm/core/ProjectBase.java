@@ -901,17 +901,37 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (validator != null) {
             // fill up needed collections based on validation
             if (fileAndHandler.fileImpl.validate()) {
-                if (validator.arePropertiesChanged(nativeFile)) {
-                    if (TraceFlags.TRACE_VALIDATION) {
-                        System.err.printf("Validation: %s properties are changed \n", nativeFile.getFile().getAbsolutePath());
+                if (fileAndHandler.fileImpl.isParsed()){
+                    if (validator.arePropertiesChanged(nativeFile)) {
+                        if (TraceFlags.TRACE_VALIDATION) {
+                            System.err.printf("Validation: %s properties are changed \n", nativeFile.getFile().getAbsolutePath());
+                        }
+                        reparseOnPropertyChanged.add(nativeFile);
                     }
-                    reparseOnPropertyChanged.add(nativeFile);
+                } else {
+                    if (validator.arePropertiesChanged(nativeFile)) {
+                        if (fileAndHandler.fileImpl.getState() == FileImpl.State.INITIAL){
+                            fileAndHandler.preprocHandler = createPreprocHandler(nativeFile);
+                            ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
+                        } else {
+                            if (TraceFlags.TRACE_VALIDATION) {
+                                System.err.printf("Validation: %s properties are changed \n", nativeFile.getFile().getAbsolutePath());
+                            }
+                            reparseOnPropertyChanged.add(nativeFile);
+                        }
+                    } else {
+                        ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
+                    }
                 }
             } else {
                 if (TraceFlags.TRACE_VALIDATION) {
                     System.err.printf("Validation: file %s is changed\n", nativeFile.getFile().getAbsolutePath());
                 }
-                reparseOnEdit.add(fileAndHandler.fileImpl);
+                if (validator.arePropertiesChanged(nativeFile)) {
+                    reparseOnPropertyChanged.add(nativeFile);
+                } else {
+                    reparseOnEdit.add(fileAndHandler.fileImpl);
+                }
             }
         } else {
             // put directly into parser queue if needed
