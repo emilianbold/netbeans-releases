@@ -32,6 +32,7 @@ import org.netbeans.modules.cnd.api.model.*;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
 import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcherFactory;
 
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -77,7 +78,8 @@ public class CppTypeProvider implements TypeProvider {
 	
 	
 	CsmSelect.CsmFilter filter = NameMatcherFactory.createNameFilter(text, type);
-	if( filter == null ) {
+	NameMatcher matcher = NameMatcherFactory.createNameMatcher(text, type);
+	if( filter == null || matcher == null) {
 	    return;
 	}
         
@@ -86,7 +88,7 @@ public class CppTypeProvider implements TypeProvider {
 	    if( ! csmProjects.isEmpty() ) {
                 Set<TypeDescriptor> result = new HashSet<TypeDescriptor>();
 		for( CsmProject csmProject : csmProjects ) {
-		    processProject(csmProject, result, filter);
+		    processProject(csmProject, result, filter, matcher);
 		}
                 if( PROCESS_LIBRARIES ) {
                     for( CsmProject csmProject : csmProjects ) {
@@ -94,7 +96,7 @@ public class CppTypeProvider implements TypeProvider {
                             break;
                         }
                         Set<CsmProject> processedLibs = new HashSet<CsmProject>();
-                        processProjectLibs(csmProject, result, filter, processedLibs);
+                        processProjectLibs(csmProject, result, filter, processedLibs, matcher);
                     }
                 }
                 res.addResult(new ArrayList<TypeDescriptor>(result));
@@ -103,9 +105,9 @@ public class CppTypeProvider implements TypeProvider {
 	else {
 	    Set<TypeDescriptor> result = new HashSet<TypeDescriptor>();
             CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
-	    processProject(csmProject, result, filter);
+	    processProject(csmProject, result, filter, matcher);
             if( PROCESS_LIBRARIES ) {
-                processProjectLibs(csmProject, result, filter, new HashSet<CsmProject>());
+                processProjectLibs(csmProject, result, filter, new HashSet<CsmProject>(), matcher);
             }
             res.addResult(new ArrayList<TypeDescriptor>(result));
 	}
@@ -128,7 +130,7 @@ public class CppTypeProvider implements TypeProvider {
     }
     
     private void processProjectLibs(CsmProject project, Set<TypeDescriptor> result, 
-            CsmSelect.CsmFilter filter, Set<CsmProject> processedLibs) {
+            CsmSelect.CsmFilter filter, Set<CsmProject> processedLibs, NameMatcher matcher) {
         for( CsmProject lib : project.getLibraries() ) {
             if( isCancelled ) {
                 return;
@@ -136,35 +138,35 @@ public class CppTypeProvider implements TypeProvider {
             if( lib.isArtificial() ) {
                 if( ! processedLibs.contains(lib) ) {
                     processedLibs.add(lib);
-                    processProject(lib, result, filter);
+                    processProject(lib, result, filter, matcher);
                 }
             }
         }
     }
 
-    private void processProject(CsmProject project, Set<TypeDescriptor> result, CsmSelect.CsmFilter filter) {
+    private void processProject(CsmProject project, Set<TypeDescriptor> result, CsmSelect.CsmFilter filter, NameMatcher matcher) {
 	if( TRACE ) System.err.printf("processProject %s\n", project.getName());
-        processNamespace(project.getGlobalNamespace(), result, filter);
+        processNamespace(project.getGlobalNamespace(), result, filter, matcher);
     }
     
-    private void processNamespace(CsmNamespace nsp, Set<TypeDescriptor> result, CsmSelect.CsmFilter filter) {
+    private void processNamespace(CsmNamespace nsp, Set<TypeDescriptor> result, CsmSelect.CsmFilter filter, NameMatcher matcher) {
         if( TRACE ) System.err.printf("processNamespace %s\n", nsp.getQualifiedName());
         for( Iterator<CsmOffsetableDeclaration> iter  = CsmSelect.getDeclarations(nsp, filter); iter.hasNext(); ) {
             if( isCancelled ) {
 		return;
 	    }
             CsmDeclaration declaration = iter.next();
-	    processDeclaration(declaration, result);
+	    processDeclaration(declaration, result, matcher);
 	}
 	for( CsmNamespace child : nsp.getNestedNamespaces() ) {
             if( isCancelled ) {
 		return;
 	    }
-	    processNamespace(child, result, filter);
+	    processNamespace(child, result, filter, matcher);
 	}
     }
 
-    private void processDeclaration(CsmDeclaration decl, Set<TypeDescriptor> result) {
+    private void processDeclaration(CsmDeclaration decl, Set<TypeDescriptor> result, NameMatcher matcher) {
         switch (decl.getKind()) {
             case CLASS:
             case UNION:
@@ -174,7 +176,9 @@ public class CppTypeProvider implements TypeProvider {
                 if( ! isCancelled ) {
                     for( CsmMember member : cls.getMembers() ) {
                         if( ! isCancelled ) {
-                            processDeclaration(member, result);
+                            if (matcher.accept(member.getName().toString())) {
+                                processDeclaration(member, result, matcher);
+                            }
                         }
                     }
                 }
