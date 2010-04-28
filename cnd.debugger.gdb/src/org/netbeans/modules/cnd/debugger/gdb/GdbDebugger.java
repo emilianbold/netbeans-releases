@@ -1678,7 +1678,7 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    private LineBreakpoint rtcBreakpoint = null;
+    private CndBreakpoint rtcBreakpoint = null;
     /**
      * Set the temporary breakpoint at the current line and continue execution
      */
@@ -1694,8 +1694,17 @@ public class GdbDebugger implements PropertyChangeListener {
         }
         if (rtcBreakpoint != null) {
             DebuggerManager.getDebuggerManager().removeBreakpoint(rtcBreakpoint);
+            rtcBreakpoint = null;
         }
-        rtcBreakpoint = LineBreakpoint.create(file, line);
+        if (Disassembly.isInDisasm()) {
+            String address = Disassembly.getCurrent().getLineAddress(line);
+            if (address.isEmpty()) {
+                return;
+            }
+            rtcBreakpoint = AddressBreakpoint.create(address);
+        } else {
+            rtcBreakpoint = LineBreakpoint.create(file, line);
+        }
         rtcBreakpoint.setTemporary();
         rtcBreakpoint.setHidden(true);
         DebuggerManager.getDebuggerManager().addBreakpoint(rtcBreakpoint);
