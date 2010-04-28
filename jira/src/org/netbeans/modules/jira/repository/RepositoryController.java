@@ -299,6 +299,9 @@ public class RepositoryController extends BugtrackingController implements Docum
             @Override
             public void execute() {
                 validateError = false;
+
+                repository.resetRepository(true); // reset mylyns caching
+
                 String name = getName();
                 String url = getUrl();
                 String user = getUser();
