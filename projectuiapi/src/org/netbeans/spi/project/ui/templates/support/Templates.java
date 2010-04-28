@@ -42,6 +42,7 @@
 package org.netbeans.spi.project.ui.templates.support;
 
 import java.io.IOException;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -77,8 +78,18 @@ public class Templates {
      *                         or {@link TemplateWizard.Iterator#initialize}
      * @return the project into which the user has requested this iterator create a file (or null if not set)
      */
-    public static Project getProject( WizardDescriptor wizardDescriptor ) {
-        return (Project) wizardDescriptor.getProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT );
+    public static Project getProject(WizardDescriptor wizardDescriptor) {
+        Project p = (Project) wizardDescriptor.getProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT);
+        if (p != null) {
+            return p;
+        } else {
+            FileObject target = getTargetFolder(wizardDescriptor);
+            if (target != null) {
+                return FileOwnerQuery.getOwner(target);
+            } else {
+                return null;
+            }
+        }
     }
     
     /**
