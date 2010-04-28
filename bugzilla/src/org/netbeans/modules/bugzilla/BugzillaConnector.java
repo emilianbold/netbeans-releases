@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugzilla;
 
 import java.awt.Image;
+import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -109,8 +110,8 @@ public class BugzillaConnector extends BugtrackingConnector {
     }
 
     @Override
-    public void fireRepositoriesChanged() {
-        super.fireRepositoriesChanged();
+    public void fireRepositoriesChanged(Collection<Repository> oldRepos, Collection<Repository> newRepos) {
+        super.fireRepositoriesChanged(oldRepos, newRepos);
     }
 
 }

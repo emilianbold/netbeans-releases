@@ -40,6 +40,7 @@
 package org.netbeans.modules.jira;
 
 import java.awt.Image;
+import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -110,8 +111,8 @@ public class JiraConnector extends BugtrackingConnector {
     }
 
     @Override
-    public void fireRepositoriesChanged() {
-        super.fireRepositoriesChanged();
+    protected void fireRepositoriesChanged(Collection<Repository> oldRepositories, Collection<Repository> newRepositories) {
+        super.fireRepositoriesChanged(oldRepositories, newRepositories);
     }
-
+    
 }
