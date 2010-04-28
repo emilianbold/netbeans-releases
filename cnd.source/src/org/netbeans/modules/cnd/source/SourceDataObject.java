@@ -41,6 +41,8 @@
 package org.netbeans.modules.cnd.source;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
 import org.openide.filesystems.FileObject;
@@ -60,6 +62,7 @@ import org.openide.util.lookup.InstanceContent;
  *  Abstract superclass of a C/C++/Fortran DataObject.
  */
 public abstract class SourceDataObject extends MultiDataObject {
+    private static final Logger LOG = Logger.getLogger(SourceDataObject.class.getName());
 
     /** Serial version number */
     static final long serialVersionUID = -6788084224129713370L;
@@ -90,7 +93,22 @@ public abstract class SourceDataObject extends MultiDataObject {
 
     @Override
     public final <T extends Cookie> T getCookie(Class<T> type) {
-        return getLookup().lookup(type);
+        if (!Cookie.class.isAssignableFrom(type)) {
+            Exception exception = new Exception("Class "+Cookie.class.getName()+" does not AssignableFrom "+type.getName()); //NOI18N
+            LOG.log(Level.INFO, exception.getMessage(), exception);
+            return null;
+        }
+        Object lookupResult = getLookup().lookup(type);
+        if (lookupResult != null) {
+            if (!type.isInstance(lookupResult)) {
+                Exception exception = new Exception("Class "+lookupResult.getClass().getName()+" is not instance of "+type.getName()); //NOI18N
+                LOG.log(Level.INFO, exception.getMessage(), exception);
+                return null;
+            }
+        }
+        @SuppressWarnings("unchecked")
+        T res = (T) lookupResult;
+        return res;
     }
 
     @Override
