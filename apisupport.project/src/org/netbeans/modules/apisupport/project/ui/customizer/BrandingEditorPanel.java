@@ -53,6 +53,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -107,6 +108,9 @@ class BrandingEditorPanel extends javax.swing.JPanel {
         setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         setLayout(new java.awt.BorderLayout(0, 5));
         add(tabbedPane, java.awt.BorderLayout.CENTER);
+        tabbedPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(BrandingEditorPanel.class, "ACS_BrandingTabs")); // NOI18N
+        tabbedPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrandingEditorPanel.class, "ACS_BrandingTabs")); // NOI18N
+
         add(lblError, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -126,6 +130,8 @@ class BrandingEditorPanel extends javax.swing.JPanel {
             }
         });
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        dlg.getAccessibleContext().setAccessibleName(NbBundle.getMessage(BrandingEditorPanel.class, "ACS_BrandingCustomizer")); //NOI18N
+        dlg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrandingEditorPanel.class, "ACS_BrandingCustomizer")); //NOI18N
         dlg.setVisible(true);
         //it's possible to open project properties window while branding editor is opened
         //and switch from application suite to module suite which doesn't support branding
