@@ -185,7 +185,7 @@ public final class TimeSeriesIndicator
         DataTableMetadata table = null;
         if (!timeSeriesList.isEmpty()) {
             List<Column> timeSeriesColumns = new ArrayList<Column>(timeSeriesList.size());
-            timeSeriesColumns.add(new Column("idx", Integer.class)); // NOI18N
+            timeSeriesColumns.add(new Column("timestamp", Long.class)); // NOI18N
             for (TimeSeriesDescriptor timeSeries : timeSeriesList) {
                 timeSeriesColumns.add(new Column(TimeSeriesDescriptorAccessor.getDefault().getName(timeSeries), Float.class));
             }
@@ -358,12 +358,12 @@ public final class TimeSeriesIndicator
                 ResultSet rs = sqlStorage.select(timeSeriesTable.getName(), timeSeriesTable.getColumns());
                 try {
                     while (rs.next()) {
-                        int idx = rs.getInt(1);
+                        long timestamp = rs.getLong(1);
                         float[] dataArray = new float[timeSeriesCount];
                         for (int i = 0; i < timeSeriesList.size(); ++i) {
                             dataArray[i] = rs.getFloat(TimeSeriesDescriptorAccessor.getDefault().getName(timeSeriesList.get(i)));
                         }
-                        data.put(idx, dataArray);
+                        data.put(timestamp, dataArray);
                     }
                 } finally {
                     rs.close();
@@ -408,7 +408,7 @@ public final class TimeSeriesIndicator
                 float[] dataArray = data.get(i);
                 if (dataArray != null) {
                     List<Object> dataList = new ArrayList<Object>(1 + columnNames.size());
-                    dataList.add(i);
+                    dataList.add(i * TimeSeriesIndicatorConfigurationAccessor.getDefault().getGranularity(configuration));
                     for (float x : dataArray) {
                         dataList.add(x);
                     }
@@ -442,16 +442,11 @@ public final class TimeSeriesIndicator
     /*package*/ void dumpData(PrintStream out) {
         out.println("Time Series Data:"); // NOI18N
         for (int i = 0; i < data.size(); ++i) {
-            out.printf("%06d:", i); // NOI18N
-            float[] dataArray = data.get(i);
-            if (dataArray == null) {
-                out.println(" null"); // NOI18N
-            } else {
-                for (float x : dataArray) {
-                    out.printf("%3.2f", x); // NOI18N
-                }
-                out.println();
+            out.printf("%d =>", i); // NOI18N
+            for (float x : data.get(i)) {
+                out.printf(" %.2f", x); // NOI18N
             }
+            out.println();
         }
 
         out.println("Details:"); // NOI18N

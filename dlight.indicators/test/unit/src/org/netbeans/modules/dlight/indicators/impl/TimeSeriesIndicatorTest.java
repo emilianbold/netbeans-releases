@@ -74,6 +74,7 @@ public class TimeSeriesIndicatorTest extends NbTestCase {
         conf.setPersistencePrefix("prefix");
         conf.addTimeSeriesDescriptors(new TimeSeriesDescriptor("t1", "t1 display name", Color.YELLOW, TimeSeriesDescriptor.Kind.LINE));
         conf.addDetailDescriptors(new DetailDescriptor("d1", "d1 display name", "d1 value"));
+        conf.setLastNonNull(false);
         conf.setDataRowHandler(new DataRowToTimeSeries() {
 
             private int rowCount = 0;
@@ -91,30 +92,35 @@ public class TimeSeriesIndicatorTest extends NbTestCase {
         });
 
         SQLDataStorage sqlStorage = new H2DataStorageFactory().createStorage();
+        try {
+            TimeSeriesIndicator ind1 = (TimeSeriesIndicator) new TimeSeriesIndicatorFactory().create(conf);
+            ind1.getComponent(); // for initUI()
+            updateIndicator(ind1, 0, 10);
+            updateIndicator(ind1, 1, 10);
+            updateIndicator(ind1, 2, 10);
+            updateIndicator(ind1, 3, 10);
+            updateIndicator(ind1, 4, 0);
+            updateIndicator(ind1, 6, 100);
+            ind1.tick(); // for details
+            File state1 = new File(getWorkDir(), "state1");
+            ind1.dumpData(new PrintStream(state1));
 
-        TimeSeriesIndicator ind1 = (TimeSeriesIndicator) new TimeSeriesIndicatorFactory().create(conf);
-        ind1.getComponent(); // for initUI()
-        updateIndicator(ind1, 0, 10);
-        updateIndicator(ind1, 1, 10);
-        updateIndicator(ind1, 2, 10);
-        updateIndicator(ind1, 3, 10);
-        ind1.tick(); // for details
-        File state1 = new File(getWorkDir(), "state1");
-        ind1.dumpData(new PrintStream(state1));
+            sqlStorage.createTables(ind1.getDataTableMetadata());
+            assertTrue(ind1.saveState(sqlStorage));
 
-        sqlStorage.createTables(ind1.getDataTableMetadata());
-        assertTrue(ind1.saveState(sqlStorage));
+            TimeSeriesIndicator ind2 = (TimeSeriesIndicator) new TimeSeriesIndicatorFactory().create(conf);
+            assertTrue(ind2.loadState(sqlStorage));
+            File state2 = new File(getWorkDir(), "state2");
+            ind2.dumpData(new PrintStream(state2));
 
-        TimeSeriesIndicator ind2 = (TimeSeriesIndicator) new TimeSeriesIndicatorFactory().create(conf);
-        assertTrue(ind2.loadState(sqlStorage));
-        File state2 = new File(getWorkDir(), "state2");
-        ind2.dumpData(new PrintStream(state2));
-
-        assertFile(state1, state2);
+            assertFile(state1, state2);
+        } finally {
+            sqlStorage.shutdown();
+        }
     }
 
     private static void updateIndicator(TimeSeriesIndicator ind, long time, int value) {
         ind.updated(Collections.singletonList(
-                new DataRow(Arrays.asList("timestamp", "test"), Arrays.asList(time, value))));
+                new DataRow(Arrays.asList("timestamp", "test"), Arrays.asList(1000000000L * time, value))));
     }
 }

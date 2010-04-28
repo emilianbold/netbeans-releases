@@ -553,7 +553,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
                 new Convertor<Object>() {
 
                     public String toString(Object item) {
-                        return String.valueOf(item);
+                        return '\'' + String.valueOf(item) + '\'';
                     }
                 }));
 
