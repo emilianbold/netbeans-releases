@@ -152,7 +152,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                     overriddenMethods = Collections.<CsmMethod>emptyList();
                 }
                 baseMethods.remove(meth); // in the case CsmVirtualInfoQuery added function itself (which was previously the case)
-                if (showOverridesPopup(inDeclaration ? null : meth, baseMethods, overriddenMethods, CsmKindUtilities.isFunctionDefinition(item), target, offset)) {
+                if (showOverridesPopup(inDeclaration ? null : meth, baseMethods, overriddenMethods, inDeclaration ? CsmKindUtilities.isFunctionDefinition(item) : true, target, offset)) {
                     return true;
                 }
             } else if (CsmKindUtilities.isClass(item)) {
