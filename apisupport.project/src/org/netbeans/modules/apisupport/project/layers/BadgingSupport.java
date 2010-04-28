@@ -51,6 +51,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -144,23 +145,24 @@ final class BadgingSupport implements SynchronousStatus, FileChangeListener {
         }
         RP.post(new Runnable() {
             public void run() {
-                String r = annotateNameGeneral(name, files, suffix, fileChangeListener, classpath);
+                Set<FileObject> toFire = new HashSet<FileObject>(files);
+                String r = annotateNameGeneral(name, files, suffix, fileChangeListener, classpath, toFire);
                 synchronized (names) {
                     for (FileObject f : files) {
                         names.put(f.getPath(), r);
                     }
                 }
-                fireFileStatusChanged(new FileStatusEvent(fs, files, false, true));
+                fireFileStatusChanged(new FileStatusEvent(fs, toFire, false, true));
             }
         });
         return name;
     }
     public @Override String annotateNameSynch(String name, Set<? extends FileObject> files) {
         // XXX could participate in names cache
-        return annotateNameGeneral(name, files, suffix, null, classpath);
+        return annotateNameGeneral(name, files, suffix, null, classpath, null);
     }
     private static String annotateNameGeneral(String name, Set<? extends FileObject> files,
-            String suffix, FileChangeListener fileChangeListener, ClassPath cp) {
+            String suffix, FileChangeListener fileChangeListener, ClassPath cp, Set<FileObject> toFire) {
         for (FileObject fo : files) {
             // #168446: try <attr name="displayName" bundlevalue="Bundle#key"/> first
             String bundleKey = (String) fo.getAttribute("literal:displayName"); // NOI18N
@@ -201,8 +203,8 @@ final class BadgingSupport implements SynchronousStatus, FileChangeListener {
                         }
                         }
                         if (val != null) {
-                            if (fo.getPath().startsWith("Menu/")) { // NOI18N
-                                // Special-case menu folders to trim the mnemonics, since they are ugly.
+                            if (fo.getPath().matches("(Menu|Toolbars)/.+")) { // NOI18N
+                                // Special-case these folders to trim the mnemonics, since they are ugly.
                                 return Actions.cutAmpersand(val);
                             } else {
                                 return val;
@@ -232,7 +234,10 @@ final class BadgingSupport implements SynchronousStatus, FileChangeListener {
                         orig = null;
                     }
                     if (orig != null && orig.hasExt("instance")) { // NOI18N
-                        return annotateNameGeneral((String) originalFile, Collections.singleton(orig), suffix, fileChangeListener, cp);
+                        if (toFire != null) {
+                            toFire.add(orig);
+                        }
+                        return annotateNameGeneral((String) originalFile, Collections.singleton(orig), suffix, fileChangeListener, cp, toFire);
                     }
                 }
             }
@@ -410,6 +415,9 @@ final class BadgingSupport implements SynchronousStatus, FileChangeListener {
         someFileChange();
     }
     public void fileAttributeChanged(FileAttributeEvent fe) {
+        if ("DataEditorSupport.read-only.refresh".equals(fe.getName())) { // NOI18N
+            return;
+        }
         someFileChange();
     }
     public void fileRenamed(FileRenameEvent fe) {
