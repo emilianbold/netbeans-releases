@@ -79,7 +79,6 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
     public static final String SQL_DATA_STORAGE_TYPE = "db:sql"; // NOI18N
     private final static DataStorageType storageType = DataStorageTypeFactory.getInstance().getDataStorageType(SQL_DATA_STORAGE_TYPE);
     private LinkedBlockingQueue<Request> requestQueue;
-    private final Object insertPreparedStatmentsLock = new Object();
     private final Map<String, PreparedStatement> insertPreparedStatments;
     private static final int WAIT_INTERVALS = 100;
     private static final int MAX_BULK_SIZE = 10000;
@@ -366,9 +365,8 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
     }
 
     private PreparedStatement getPreparedInsertStatement(DataTableMetadata tableDescription) {
-        PreparedStatement statement;
-        synchronized (insertPreparedStatmentsLock) {
-            statement = insertPreparedStatments.get(tableDescription.getName());
+        synchronized (insertPreparedStatments) {
+            PreparedStatement statement = insertPreparedStatments.get(tableDescription.getName());
             if (statement != null) {
                 return statement;
             }
@@ -395,19 +393,14 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
                 logger.fine("SQL: dispatching " + query.toString()); //NOI18N
             }
 
-            PreparedStatement stmt = null;
-
             try {
-                stmt = connection.prepareStatement(query.toString());
+                statement = connection.prepareStatement(query.toString());
             } catch (SQLException ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
 
-            if (stmt != null) {
-                synchronized (insertPreparedStatments) {
-                    insertPreparedStatments.put(tableName, stmt);
-                    //insert(tableName, row);
-                }
+            if (statement != null) {
+                insertPreparedStatments.put(tableName, statement);
             }
             return statement;
         }
