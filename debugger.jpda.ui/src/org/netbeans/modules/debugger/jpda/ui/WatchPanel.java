@@ -73,6 +73,7 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.editor.EditorUI;
@@ -228,6 +229,8 @@ public class WatchPanel {
                 public void run() {
                     String origText = editorPane.getText();
                     DialogBinding.bindComponentToDocument(doc, offset, 0, editorPane);
+                    Document doc = editorPane.getDocument();
+                    doc.putProperty("org.netbeans.modules.editor.java.JavaCompletionProvider.skipAccessibilityCheck", "true");
                     editorPane.setText(origText);
                 }
             };
