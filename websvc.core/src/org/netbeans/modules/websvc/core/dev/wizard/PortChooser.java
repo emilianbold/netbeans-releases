@@ -96,8 +96,9 @@ public class PortChooser extends javax.swing.JPanel {
         return nodeDisplayPanel.getSelectedNodes();
     }
 
-    public String getSelectedPortOwnerName() {
-        return nodeDisplayPanel.getSelectedNodes()[0].getParentNode().getDisplayName();
+    String getSelectedPortOwnerName() {
+        Node[] nodes = nodeDisplayPanel.getSelectedNodes();
+        return nodes.length > 0 ? nodeDisplayPanel.getSelectedNodes()[0].getParentNode().getDisplayName() : null;
     }
 
     /** This method is called from within the constructor to

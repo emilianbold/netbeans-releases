@@ -1210,7 +1210,11 @@ This list is exposed in a popup menu.
 -->
  <answer id="resources-preferences">
   <p>
-   XXX no answer for resources-preferences
+   <api category="devel" group="preferences" name="org.openide.actions.FileSystemRefreshAction.manual" type="export">
+       If <code>NbPreferences.root().node("org.openide.actions.FileSystemRefreshAction").getBoolean("manual", false)</a>
+       returns true, then <a href="@TOP@/org/openide/actions/FileSystemRefreshAction.html">FileSystemRefreshAction</a>
+       is displayed in popup menu of folders.
+   </api>
   </p>
  </answer>
 

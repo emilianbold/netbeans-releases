@@ -54,7 +54,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -73,6 +72,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
@@ -141,6 +141,7 @@ public final class MenuWarmUpTask implements Runnable {
         private AtomicBoolean goOn;
         private static final Logger UILOG = Logger.getLogger("org.netbeans.ui.focus"); // NOI18N
         private static final Logger LOG = Logger.getLogger("org.netbeans.core.ui.focus"); // NOI18N
+        private boolean warnedNoRefresh;
 
         @Override
         public void windowActivated(WindowEvent e) {
@@ -178,9 +179,20 @@ public final class MenuWarmUpTask implements Runnable {
             }
         }
 
+        private static boolean isNoRefresh() {
+            if (Boolean.getBoolean("netbeans.indexing.noFileRefresh")) {
+                return true;
+            }
+            return NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction").getBoolean("manual", false); // NOI18N
+        }
+
         @Override
         public void run() {
-            if (Boolean.getBoolean("netbeans.indexing.noFileRefresh") == true) { // NOI18N
+            if (isNoRefresh()) {
+                if (!warnedNoRefresh) {
+                    LOG.info("External Changes Refresh on focus gain disabled"); // NOI18N
+                    warnedNoRefresh = true;
+                }
                 LOG.fine("Refresh disabled, aborting");
                 return; // no file refresh
             }
@@ -307,29 +319,27 @@ public final class MenuWarmUpTask implements Runnable {
 
             ++counter;
 
-            LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_REFRESH_CANCEL"); // NOI18N
-            r.setParameters(new Object[]{counter});
-            r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
-            r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
-            r.setLoggerName(UILOG.getName());
-            UILOG.log(r);
+            {
+                LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_REFRESH_CANCEL"); // NOI18N
+                r.setParameters(new Object[]{counter});
+                r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
+                r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
+                r.setLoggerName(UILOG.getName());
+                UILOG.log(r);
+            }
 
-            if (counter >= 3) {
-                FileObject action = FileUtil.getConfigFile("Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"); // NOI18N
-                Object obj = action == null ? null : action.getAttribute("instanceCreate"); // NOI18N
-                if (obj instanceof Action) {
-                    JEditorPane browser = new JEditorPane();
-                    browser.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
-                    browser.setPreferredSize(new Dimension(300, 150));
-                    browser.setEditable(false);
-                    browser.setEditorKit(new HTMLEditorKit()); // needed up to nb5.5
-                    browser.setBackground(new JLabel().getBackground());
-                    browser.setText(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_SoDInfo"));
-                    Message nd = new Message(browser);
-                    nd.setOptions(new Object[] { Message.YES_OPTION, Message.NO_OPTION });
-                    if (DialogDisplayer.getDefault().notify(nd) == Message.YES_OPTION) {
-                        ((Action)obj).actionPerformed(new ActionEvent(this, 0, ""));
-                    }
+            if (counter >= 1) {
+                Message nd = new Message(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_SoDInfo"));
+                nd.setOptions(new Object[] { Message.YES_OPTION, Message.NO_OPTION });
+                if (DialogDisplayer.getDefault().notify(nd) == Message.YES_OPTION) {
+                    NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction").putBoolean("manual", true); // NOI18N
+                    
+                    LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_REFRESH_OFF"); // NOI18N
+                    r.setParameters(new Object[]{counter});
+                    r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
+                    r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
+                    r.setLoggerName(UILOG.getName());
+                    UILOG.log(r);
                 }
             }
             return true;

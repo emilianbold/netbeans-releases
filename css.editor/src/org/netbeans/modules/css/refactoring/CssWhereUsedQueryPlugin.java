@@ -170,7 +170,7 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
                             source = Source.create(file);
                         }
 
-                        CssFileModel model = new CssFileModel(source);
+                        CssFileModel model = CssFileModel.create(source);
                         Collection<Entry> entries = model.get(type);
 
                         boolean related = relatedFiles.contains(file);
@@ -204,7 +204,7 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
             for (Node referingNode : deps.getSourceNode().getReferingNodes()) {
                 try {
                     FileObject file = referingNode.getFile();
-                    CssFileModel model = new CssFileModel(Source.create(file));
+                    CssFileModel model = CssFileModel.create(Source.create(file));
                     Collection<Entry> imports = model.getImports();
                     //find the import of the base file
                     for(Entry e : imports) {

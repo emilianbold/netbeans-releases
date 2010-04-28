@@ -331,9 +331,10 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         if (msg != null) {
             if (CsmKindUtilities.isMacro(item)) {
                 msg = getAlternativeHyperlinkTip(doc, "AltHyperlinkHint", msg); // NOI18N
-            } else if (CsmKindUtilities.isMethod(item) &&
-                    !isInDeclaration((CsmFunction) item, CsmUtilities.getCsmFile(doc, true, false), offset)) {
+            } else if (CsmKindUtilities.isMethod(item)) {
                 msg = getAlternativeHyperlinkTip(doc, "AltMethodHyperlinkHint", msg); // NOI18N
+            } else if (CsmKindUtilities.isClass(item)) {
+                msg = getAlternativeHyperlinkTip(doc, "AltClassHyperlinkHint", msg); // NOI18N
             }
         }
         return msg == null ? null : msg.toString();
