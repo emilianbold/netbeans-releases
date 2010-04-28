@@ -394,6 +394,7 @@ public class TokenFormatter {
                             boolean indentRule = false;
                             boolean afterSemi = false;
                             boolean wsBetweenBraces = false;
+                            CodeStyle.BracePlacement lastBracePlacement = CodeStyle.BracePlacement.SAME_LINE;
 
                             changeOffset = formatToken.getOffset();
 
@@ -472,36 +473,42 @@ public class TokenFormatter {
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.ifBracePlacement, newLines, 0, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = indentRule ? ws.spaces : 1;
+                                        lastBracePlacement = docOptions.ifBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_FOR_RIGHT_BRACE:
                                         indentLine = indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.forBracePlacement, newLines, 0, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = indentRule ? ws.spaces : 1;
+                                        lastBracePlacement = docOptions.forBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_WHILE_RIGHT_BRACE:
                                         indentLine = indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.whileBracePlacement, newLines, 0, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = indentRule ? ws.spaces : 1;
+                                        lastBracePlacement = docOptions.whileBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_SWITCH_RIGHT_BACE:
                                         indentLine = indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.switchBracePlacement, newLines, 0, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
+                                        lastBracePlacement = docOptions.switchBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_CATCH_RIGHT_BRACE:
                                         indentLine = indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.catchBracePlacement, newLines, 0, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = indentRule ? ws.spaces : 1;
+                                        lastBracePlacement = docOptions.catchBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_OTHER_RIGHT_BRACE:
                                         indentLine = indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.otherBracePlacement, newLines, 0, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = indentRule ? ws.spaces : 1;
+                                        lastBracePlacement = docOptions.otherBracePlacement;
                                         break;
                                     case WHITESPACE_BETWEEN_OPEN_CLOSE_BRACES:
                                         wsBetweenBraces = true;
@@ -526,6 +533,7 @@ public class TokenFormatter {
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.classDeclBracePlacement, newLines, docOptions.blankLinesBeforeClassEnd, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
+                                        lastBracePlacement = docOptions.classDeclBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_FUNCTION:
                                         indentRule = true;
@@ -540,6 +548,7 @@ public class TokenFormatter {
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.methodDeclBracePlacement, newLines, docOptions.blankLinesBeforeFunctionEnd, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = indentRule ? ws.spaces : 1;
+                                        lastBracePlacement = docOptions.methodDeclBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_FIELD:
                                         newLines = docOptions.blankLinesBeforeField + 1 > newLines ? docOptions.blankLinesBeforeField + 1 : newLines;
@@ -1062,7 +1071,10 @@ public class TokenFormatter {
 //                                }
                                 newText = createWhitespace(doc, newLines, countSpaces);
                                 if (wsBetweenBraces) {
-                                    newText = createWhitespace(doc, 1, indent + docOptions.indentSize) + createWhitespace(doc, 1, indent);
+                                    newText = createWhitespace(doc, 1, 
+                                            indent + docOptions.indentSize)
+                                            + createWhitespace(doc, 1,
+                                            lastBracePlacement == CodeStyle.BracePlacement.NEW_LINE_INDENTED ? indent + docOptions.indentSize : indent);
                                 }
                                 int realOffset = changeOffset + delta;
                                 if (templateEdit && !caretInTemplateSolved && oldText != null

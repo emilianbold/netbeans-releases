@@ -12,15 +12,15 @@ class Test implements InterfaceName {
     function method1($param) {
 
     }
-    public function getAddress()
-        {
-        
-        }
+public function getAddress()
+    {
+    
+    }
 
-    public function getName()
-        {
-        
-        }
+public function getName()
+    {
+    
+    }
 
 }
 
