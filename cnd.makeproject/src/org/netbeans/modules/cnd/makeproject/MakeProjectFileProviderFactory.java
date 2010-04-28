@@ -49,12 +49,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.cnd.gotodeclaration.matcher.NameMatcher;
+import org.netbeans.modules.cnd.gotodeclaration.matcher.NameMatcherFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -64,7 +65,6 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
-import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -153,7 +153,8 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                     final SourceGroup[] genericSG = srcs.getSourceGroups("generic"); // NOI18N
                     if (genericSG != null && genericSG.length > 0) {
                         if (genericSG[0].getRootFolder().equals(context.getRoot())) {
-                            computeFiles(project, descriptor, context.getSearchType(), context.getText(), result);
+                            NameMatcher matcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
+                            computeFiles(project, descriptor, matcher, result);
                         }
                     }
                     return true;
@@ -167,44 +168,18 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
             cancel.set(true);
         }
 
-        private void computeFiles(Project project, MakeConfigurationDescriptor descriptor, SearchType type, String what, Result result) {
-            Pattern pattern = null;
-            switch (type) {
-                case CAMEL_CASE:
-                    {
-                        final StringBuilder patternString = new StringBuilder();
-                        for (int i = 0; i < what.length(); i++) {
-                            char c = what.charAt(i);
-                            patternString.append(c);
-                            if (i == what.length() - 1) {
-                                patternString.append("\\w*"); // NOI18N
-                            } else {
-                                patternString.append("[\\p{Lower}\\p{Digit}]*"); // NOI18N
-                            }
-                        }
-                        pattern = Pattern.compile(patternString.toString());
-                        break;
-                    }
-                case CASE_INSENSITIVE_PREFIX:
-                case CASE_INSENSITIVE_EXACT_NAME:
-                    what = what.toLowerCase();
-                    break;
-                case CASE_INSENSITIVE_REGEXP:
-                case REGEXP:
-                    pattern = Pattern.compile(what);
-                    break;
-            }
+        private void computeFiles(Project project, MakeConfigurationDescriptor descriptor, NameMatcher matcher, Result result) {
             FileObject projectDirectoryFO = project.getProjectDirectory();
             // track configuration && generated files
             if (projectDirectoryFO != null) {
                 FileObject nbFO = projectDirectoryFO.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
-                computeFOs(nbFO, type, what, pattern, result);
+                computeFOs(nbFO, matcher, result);
             }
             for (Item item : descriptor.getExternalFileItemsAsArray()) {
                 if (cancel.get()) {
                     return;
                 }
-                if (match(item, type, what, pattern)) {
+                if (matcher.accept(item.getName())) {
                     result.addFileDescriptor(new ItemFD(item, project));
                 }
             }
@@ -212,7 +187,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                 if (cancel.get()) {
                     return;
                 }
-                if (match(item, type, what, pattern)) {
+                if (matcher.accept(item.getName())) {
                     result.addFileDescriptor(new ItemFD(item, project));
                 }
             }
@@ -233,7 +208,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                             if (cancel.get()) {
                                 return;
                             }
-                            if (match(name.toString(), type, what, pattern)) {
+                            if (matcher.accept(name.toString())) {
                                 result.addFileDescriptor(new OtherFD(name.toString(), project, baseDir, folder));
                             }
                         }
@@ -242,37 +217,13 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
             }
         }
 
-        private boolean match(Item item, SearchType type, String what, Pattern pattern) {
-            return match(item.getName(), type, what, pattern);
-        }
-
-        private boolean match(String name, SearchType type, String what, Pattern pattern) {
-            switch (type) {
-                case CAMEL_CASE:
-                    return pattern.matcher(name).matches();
-                case CASE_INSENSITIVE_EXACT_NAME:
-                    return name.toLowerCase().equals(what);
-                case CASE_INSENSITIVE_PREFIX:
-                    return name.toLowerCase().startsWith(what);
-                case CASE_INSENSITIVE_REGEXP:
-                    return pattern.matcher(name.toLowerCase()).matches();
-                case EXACT_NAME:
-                    return name.equals(what);
-                case PREFIX:
-                    return name.startsWith(what);
-                case REGEXP:
-                    return pattern.matcher(name).matches();
-            }
-            return false;
-        }
-
-        private void computeFOs(FileObject nbFO, SearchType searchType, String type, Pattern what, Result result) {
+        private void computeFOs(FileObject nbFO, NameMatcher matcher, Result result) {
             if (nbFO != null) {
                 assert nbFO.isFolder();
                 for (FileObject fileObject : nbFO.getChildren()) {
                     if (fileObject.isFolder()) {
-                        computeFOs(fileObject, searchType, type, what, result);
-                    } else if (match(fileObject.getNameExt(), searchType, type, what)) {
+                        computeFOs(fileObject, matcher, result);
+                    } else if (matcher.accept(fileObject.getNameExt())) {
                         result.addFile(fileObject);
                     }
                 }

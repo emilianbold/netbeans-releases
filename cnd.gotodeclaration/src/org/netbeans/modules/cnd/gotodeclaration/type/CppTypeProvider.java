@@ -32,8 +32,8 @@ import org.netbeans.modules.cnd.api.model.*;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
-import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
-import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcherFactory;
+import org.netbeans.modules.cnd.gotodeclaration.matcher.NameMatcher;
+import org.netbeans.modules.cnd.gotodeclaration.matcher.NameMatcherFactory;
 
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
