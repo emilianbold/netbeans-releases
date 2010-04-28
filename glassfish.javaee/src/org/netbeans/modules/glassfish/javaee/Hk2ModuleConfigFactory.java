@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,7 +43,6 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
-import org.openide.ErrorManager;
 
 /**
  *
@@ -55,12 +54,17 @@ public class Hk2ModuleConfigFactory implements ModuleConfigurationFactory {
     public Hk2ModuleConfigFactory() {
     }
     
-    public ModuleConfiguration create(J2eeModule module) {
+    @Override
+    public ModuleConfiguration create(J2eeModule module) throws ConfigurationException {
         ModuleConfiguration retVal = null;
         try {
             retVal = new ModuleConfigurationImpl(module);
         } catch (ConfigurationException ce) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ce);
+            throw ce;
+        } catch (Exception ex) {
+            ConfigurationException ce = new ConfigurationException(module.toString());
+            ce.initCause(ex);
+            throw ce;
         }
         return retVal;
     }
