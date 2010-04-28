@@ -18,22 +18,28 @@
   rules. The IDE enables you to check an XML document to
   ensure it conforms to the necessary rules, including the following requirements:</p>
 <ul>
-  <li>Every start tag must have an end tag.</li>
-  <li>Elements cannot overlap.</li>
-  <li>There must be exactly one root element.</li>
-  <li>Attribute values must be quoted.</li>
-  <li>An element cannot have two attributes with the same name.</li>
+  <li>Every start tag must have a matching end tag. Tags are case-sensitive.
+</li>
+  <li>Start, end and empty-element tags must have proper nesting, without missing
+or overlapping tags.</li>
+  <li>There must be exactly one root element, also known as the document element,
+that does not appear in the content of any other element.
+</li>
+  <li>Attribute values must be quoted.  Attributes are listed in the start tag.
+</li>
+  <li>An element cannot have two or more attributes with the same name.
+</li>
   <li>Comments and processing instructions cannot appear inside tags.</li>
   <li>No unescaped <tt>&lt;</tt> or <tt>&amp;</tt> signs can occur in the element's 
-    character data or attribute's character data.</li>
+    character data or attribute's character data, except when used as markup.</li>
 </ul>
 <p><b>To check an XML document:</b></p>
 <ol>
   <li>Right-click the document's node in the Files window.</li>
   <li>Choose Check XML, Check DTD, or Check CSS, depending on the document you 
-    are checking.</li>
+    are checking.
 <p>The Output window lists any errors along with the line number where the error 
-  was detected. </ol>
+  was detected. </li></ol>
   
   <ul class="note">
     <li>This location is not necessarily the line where

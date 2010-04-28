@@ -163,6 +163,9 @@ public final class RandomTestContainer extends PropertyProvider {
      * Run the whole testing.
      * <br/>
      * Take all rounds and process them one by one.
+     *
+     * @param seed seed for a <code>java.util.Random</code> with which the test should run
+     *  or <code>0L</code> to run a truly random test.
      */
     public void run(long seed) throws Exception {
         this.random = new Random();
