@@ -276,9 +276,9 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
 
     @Override
     public void destroy() throws java.io.IOException {
-        String clientName = client.getName();
-            
-            JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
+        String clientName = client.getName();         
+        JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
+        if (support != null) {
             // removing local wsdl and xml artifacts
             FileObject localWsdlFolder = support.getLocalWsdlFolderForClient(clientName,false);
             if (localWsdlFolder!=null) {
@@ -317,19 +317,22 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
             }
             // cleaning java artifacts
             FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-            try {
-                ExecutorTask wsimportTask =
-                        ActionUtils.runTarget(buildImplFo,
-                        new String[]{"wsimport-client-clean-"+clientName},null); //NOI18N
-                wsimportTask.waitFinished();
-            } catch (java.io.IOException ex) {
-                ErrorManager.getDefault().log(ex.getLocalizedMessage());
-            } catch (IllegalArgumentException ex) {
-                ErrorManager.getDefault().log(ex.getLocalizedMessage());
+            if (buildImplFo != null) {
+                try {
+                    ExecutorTask wsimportTask =
+                            ActionUtils.runTarget(buildImplFo,
+                            new String[]{"wsimport-client-clean-"+clientName},null); //NOI18N
+                    wsimportTask.waitFinished();
+                } catch (java.io.IOException ex) {
+                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                } catch (IllegalArgumentException ex) {
+                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                }
             }
             // removing entry from jax-ws.xml
             support.removeServiceClient(clientName);
-            super.destroy();
+        }
+        super.destroy();
     }
     
     /**
