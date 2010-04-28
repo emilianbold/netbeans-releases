@@ -38,14 +38,10 @@
  */
 package org.netbeans.modules.css.indexing;
 
-import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.refactoring.api.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,6 +66,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -86,29 +83,35 @@ public class CssFileModel {
     private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
 
     private Collection<Entry> classes, ids, htmlElements, imports, colors;
-    private Snapshot snapshot;
+    private final Snapshot snapshot;
+    private final Snapshot topLevelSnapshot;
     private SimpleNode parseTreeRoot;
+    
 
-    private static CssParserResult getResult(Source source) throws ParseException {
+    public static CssFileModel create(Source source) throws ParseException {
         final AtomicReference<CssParserResult> result = new AtomicReference<CssParserResult>();
+        final AtomicReference<Snapshot> snapshot = new AtomicReference<Snapshot>();
         ParserManager.parse(Collections.singletonList(source), new UserTask() {
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, CssLanguage.CSS_MIME_TYPE);
+                snapshot.set(resultIterator.getSnapshot());
                 result.set(cssRi == null ? null : (CssParserResult) cssRi.getParserResult());
             }
         });
-        return result.get();
+
+        return new CssFileModel(result.get(), snapshot.get());
     }
 
-    public CssFileModel(Source source) throws ParseException {
-       this(getResult(source));
+    public static CssFileModel create(CssParserResult result) {
+        return new CssFileModel(result, null);
     }
 
-    public CssFileModel(CssParserResult parserResult) {
+    private CssFileModel(CssParserResult parserResult, Snapshot topLevelSnapshot) {
         snapshot = parserResult.getSnapshot();
         parseTreeRoot = parserResult.root();
+        this.topLevelSnapshot = topLevelSnapshot;
 
         if(parseTreeRoot != null) {
             SimpleNodeUtil.visitChildren(parseTreeRoot, new AstVisitor());
@@ -118,6 +121,10 @@ public class CssFileModel {
 
     public Snapshot getSnapshot() {
         return snapshot;
+    }
+
+    public Snapshot getTopLevelSnapshot() {
+        return topLevelSnapshot;
     }
 
     public FileObject getFileObject() {
@@ -379,30 +386,9 @@ public class CssFileModel {
                 int astLineStart = GsfUtilities.getRowStart(getSnapshot().getText(), range.getStart());
                 int astLineEnd = GsfUtilities.getRowEnd(getSnapshot().getText(), range.getStart());
                 elementLineText = getSnapshot().getText().subSequence(astLineStart, astLineEnd);
-
-                //try to compute line number of document start offset, this "needs" to run on document.
-                final Document doc = getSnapshot().getSource().getDocument(true);
-                if(doc == null) {
-                    //strange, this should not normally happen
-                    lineOffset = -1; //cannot determine the value
-                    
-                } else {
-                    final AtomicInteger ret = new AtomicInteger();
-                    final int offset = documentFrom;
-                    //XXX this should operate on the snapshot, not the document!
-                    doc.render(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            try {
-                                ret.set(Utilities.getLineOffset((BaseDocument) doc, offset));
-                            } catch (BadLocationException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-
-                    });
-                    lineOffset = ret.get();
+                if(topLevelSnapshot != null) {
+                    //compute the line offset of the element in the source snapshot (document)
+                    lineOffset = LexerUtils.getLineOffset(topLevelSnapshot.getText(), documentFrom); //ast offsets
                 }
 
             } catch (BadLocationException ex) {

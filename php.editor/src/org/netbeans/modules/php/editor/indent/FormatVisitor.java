@@ -310,9 +310,9 @@ public class FormatVisitor extends DefaultVisitor {
 			addFormatToken(formatTokens);
 			formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLASS, ts.offset() + ts.token().length()));
 		    } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
-			if (!includeWBC) {
+			//if (!includeWBC) {
 			    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION_RIGHT_BRACE, ts.offset()));
-			}
+			//}
 			addFormatToken(formatTokens);
 			formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_FUNCTION, ts.offset() + ts.token().length()));
 		    } else if (parent instanceof IfStatement) {

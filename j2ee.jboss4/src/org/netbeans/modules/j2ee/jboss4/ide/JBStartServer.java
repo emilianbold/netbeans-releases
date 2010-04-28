@@ -40,12 +40,14 @@
  */
 package org.netbeans.modules.j2ee.jboss4.ide;
 
+import java.net.URISyntaxException;
 import java.util.Collections;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import java.io.IOException;
 import java.io.File;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import javax.enterprise.deploy.shared.ActionType;
@@ -201,13 +203,14 @@ public class JBStartServer extends StartServer implements ProgressObject{
         return false;
     }
     
-    private boolean isReallyRunning(){
+    private boolean isReallyRunning() {
         final InstanceProperties ip = dm.getInstanceProperties();
         if (ip == null) {
             return false; // finish, it looks like this server instance has been unregistered
         }
         // this should prevent the thread from getting stuck if the server is in suspended state
         SafeTrueTest test = new SafeTrueTest() {
+
             public void run() {
                 String checkingConfigName = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
                 String checkingServerDir = null;
@@ -232,18 +235,27 @@ public class JBStartServer extends StartServer implements ProgressObject{
                     result = false;
                 }
 
-                Object serverName = Util.getMBeanParameter(dm, "ServerName", "jboss.system:type=ServerConfig");
-                Object serverHome = Util.getMBeanParameter(dm, "ServerHomeDir", "jboss.system:type=ServerConfig");
+                Object serverName = Util.getMBeanParameter(dm, "ServerName", "jboss.system:type=ServerConfig"); //NOI18N
+                Object serverHome = Util.getMBeanParameter(dm, "ServerHomeLocation", "jboss.system:type=ServerConfig"); //NOI18N
+                boolean isJBoss6 = serverHome != null;
+                if (!isJBoss6) {
+                    serverHome = Util.getMBeanParameter(dm, "ServerHomeDir", "jboss.system:type=ServerConfig"); //NOI18N
+                }
+                try {
+                    serverHome = isJBoss6
+                            ? new File(((URL) serverHome).toURI()).getAbsolutePath()
+                            : ((File) serverHome).getAbsolutePath();
+                } catch (URISyntaxException use) {
+                    Logger.getLogger(JBStartServer.class.getName()).log(Level.WARNING, "error getting file from URI: " + serverHome, use); //NOI18N
+                }
                 
-                if(serverName == null || serverHome == null) {
+                if (serverName == null || serverHome == null) {
                     result = false;
                     return;
                 }
-                
-                serverHome = ((File)serverHome).getAbsolutePath();
-                
-                if (checkingConfigName.equals(serverName) && checkingServerDir.equals(serverHome))
+                if (checkingConfigName.equals(serverName) && checkingServerDir.equals(serverHome)) {
                     result = true;
+            }
             }
         };
         
