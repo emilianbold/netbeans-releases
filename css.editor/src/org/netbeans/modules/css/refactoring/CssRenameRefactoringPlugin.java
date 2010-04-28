@@ -238,7 +238,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                     source = Source.create(file);
                 }
 
-                CssFileModel model = new CssFileModel(source);
+                CssFileModel model = CssFileModel.create(source);
 
                 List<Difference> diffs = new ArrayList<Difference>();
                 for (Entry entry : model.getImports()) {
@@ -297,7 +297,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                         CssFileModel model = modelsCache.get(source);
                         if (model == null) {
                             try {
-                                model = new CssFileModel(Source.create(source)); //use file to parse
+                                model = CssFileModel.create(Source.create(source)); //use file to parse
                                 modelsCache.put(source, model);
                             } catch (ParseException ex) {
                                 Exceptions.printStackTrace(ex);
@@ -341,7 +341,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
         SimpleNode element = context.getElement();
         String elementImage = element.image();
 
-        CssFileModel model = new CssFileModel(context.getParserResult());
+        CssFileModel model = CssFileModel.create(context.getParserResult());
         List<Difference> diffs = new ArrayList<Difference>();
         CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(context.getFileObject());
         for (Entry entry : model.getHtmlElements()) {
@@ -402,7 +402,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                     source = Source.create(file);
                 }
 
-                CssFileModel model = new CssFileModel(source);
+                CssFileModel model = CssFileModel.create(source);
                 Collection<Entry> entries = model.get(type);
 
                 boolean related = relatedFiles.contains(file);

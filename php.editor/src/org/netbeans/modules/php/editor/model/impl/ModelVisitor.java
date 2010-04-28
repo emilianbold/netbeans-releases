@@ -56,7 +56,9 @@ import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
@@ -622,6 +624,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     @Override
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void visit(Assignment node) {
         //Scope scope = currentScope.peek();
         Scope scope = modelBuilder.getCurrentScope();
@@ -665,6 +668,22 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             VariableNameImpl varN = findVariable(modelBuilder.getCurrentScope(), fieldAccess.getDispatcher());
             if (varN != null) {
                 varN.createLazyFieldAssignment(fieldAccess, node, scope);
+                ClassScope classScope = null;
+                final ASTNodeInfo<FieldAccess> fieldAccessInfo = ASTNodeInfo.create(fieldAccess);
+                if (scope instanceof ClassScope) {
+                    classScope = (ClassScope) scope;
+                } else if (scope.getInScope() instanceof ClassScope) {
+                    classScope = (ClassScope) scope.getInScope();
+                }
+                if (classScope != null) {
+                    Set<FieldElement> declaredFields = new HashSet<FieldElement>();
+                    declaredFields.addAll(classScope.getDeclaredFields());
+                    declaredFields = ElementFilter.forName(NameKind.exact(fieldAccessInfo.getName())).filter(declaredFields);
+                    if (declaredFields.isEmpty()) {
+                        String typeName = VariousUtils.extractVariableTypeFromExpression(rightHandSide, new HashMap<String, AssignmentImpl>());
+                        new FieldElementImpl(classScope, typeName, fieldAccessInfo);
+                    }
+                }
             }
 
         } else if (leftHandSide instanceof StaticFieldAccess) {

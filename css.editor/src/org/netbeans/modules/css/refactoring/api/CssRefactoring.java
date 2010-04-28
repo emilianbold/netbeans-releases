@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.css.editor.CssProjectSupport;
@@ -65,7 +64,7 @@ public class CssRefactoring {
 
     public static Collection<Entry> getAllSelectors(FileObject file, RefactoringElementType type) {
         try {
-            return new CssFileModel(Source.create(file)).get(type);
+            return CssFileModel.create(Source.create(file)).get(type);
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -105,7 +104,7 @@ public class CssRefactoring {
                     source = Source.create(file);
                 }
 
-                CssFileModel model = new CssFileModel(source);
+                CssFileModel model = CssFileModel.create(source);
                 Collection<Entry> modelEntries = model.get(type);
 
                 Collection<EntryHandle> entries = result.get(file);
