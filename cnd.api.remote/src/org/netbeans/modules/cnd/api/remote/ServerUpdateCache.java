@@ -54,7 +54,7 @@ public final class ServerUpdateCache {
 
     private List<ServerRecord> hosts;
     private ServerRecord defaultRecord;
-    private Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     public ServerUpdateCache() {
         hosts = null;
