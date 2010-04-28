@@ -62,10 +62,18 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
     super(files)
   end
 
+  def self.is_1_2_7_or_newer
+    if Spec::VERSION::MAJOR == 1
+      Spec::VERSION::MINOR >= 3 || (Spec::VERSION::MINOR >= 2 && Spec::VERSION::TINY >= 7)
+    else
+      Spec::VERSION::MAJOR >= 2
+    end
+  end
+
   def run
     prepare
     success = true
-    if @options.line_number != nil
+    if @options.line_number && !NbRspecMediator.is_1_2_7_or_newer # NbSpecParser not needed for >= 1.2.7
       @spec_parser = NbSpecParser.create(@options)
       @spec_parser.spec_name_for(@options.files[0], @options.line_number)
     end
