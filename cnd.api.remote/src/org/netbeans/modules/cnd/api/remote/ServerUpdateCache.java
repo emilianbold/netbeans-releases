@@ -71,15 +71,19 @@ public final class ServerUpdateCache {
 
     public synchronized void setHosts(Collection<? extends ServerRecord> newHosts) {
         hosts = new ArrayList<ServerRecord>(newHosts);
-        if (defaultRecord != null && !hosts.contains(defaultRecord)) {
-            defaultRecord = hosts.isEmpty() ? null : hosts.get(0);
+        fixDefaultRecordIfNeed();
+    }
+
+    private void fixDefaultRecordIfNeed() {
+        if (defaultRecord == null || !hosts.contains(defaultRecord)) {
+            if (!hosts.isEmpty()) {
+                defaultRecord = hosts.get(0);
+            }
         }
     }
 
     public synchronized ServerRecord getDefaultRecord() {
-        if (defaultRecord == null) {
-            log.warning("ServerUpdateCache.getDefaultRecord: Forcing negative index to 0");
-        }
+        fixDefaultRecordIfNeed();
         return defaultRecord;
     }
 
