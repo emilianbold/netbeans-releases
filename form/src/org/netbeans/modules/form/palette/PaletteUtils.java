@@ -263,7 +263,12 @@ public final class PaletteUtils {
     }
 
     private static PaletteController createDummyPalette() {
-        return PaletteFactory.createPalette(Node.EMPTY, new PaletteActions() {
+        Node loadingNode = new AbstractNode(Children.LEAF);
+        loadingNode.setDisplayName(getBundleString("MSG_DummyPaletteLoading")); // NOI18N
+        Children.Array rootChildren = new Children.Array();
+        rootChildren.add(new Node[] {loadingNode});
+        Node root = new AbstractNode(rootChildren);
+        return PaletteFactory.createPalette(root, new PaletteActions() {
             @Override
             public Action[] getImportActions() {
                 return new Action[0];
