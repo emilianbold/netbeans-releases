@@ -117,6 +117,16 @@ public class DocumentTesting {
         return container;
     }
 
+    public static void initUndoManager(RandomTestContainer container) {
+        Document doc = DocumentTesting.getDocument(container);
+        UndoManager undoManager = (UndoManager) doc.getProperty(UndoManager.class);
+        if (undoManager == null) {
+            undoManager = new UndoManager();
+            doc.addUndoableEditListener(undoManager);
+            doc.putProperty(UndoManager.class, undoManager);
+        }
+    }
+
     /**
      * Get document from test container by consulting either an editor pane's document
      * or a document property.
