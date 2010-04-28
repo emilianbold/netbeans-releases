@@ -159,7 +159,7 @@ public abstract class AbstractVariable implements LocalVariable {
 
         if (getDebugger() != null) {
             value = value.trim();
-            if (value.length() > 0 && value.charAt(0) == '(' && (pos = GdbUtils.findMatchingParen(value, 0)) != -1) {
+            if (!value.isEmpty() && value.charAt(0) == '(' && (pos = GdbUtils.findMatchingParen(value, 0)) != -1) {
                 // Strip a cast
                 value = value.substring(pos + 1).trim();
             }
@@ -177,7 +177,7 @@ public abstract class AbstractVariable implements LocalVariable {
                 if (value == null) { // Invalid input
                     msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Char*"); // NOI18N
                 }
-            } else if ((rt.equals("int") || rt.equals("long"))) { // NOI18N
+            } else if ((rt.equals("int") || rt.equals("long") || rt.endsWith("int"))) { // NOI18N
                 value = setValueNumber(value);
                 if (value == null) { // Invalid input
                     msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Number"); // NOI18N
@@ -191,7 +191,7 @@ public abstract class AbstractVariable implements LocalVariable {
                 if (value == null) { // Invalid input
                     msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Enum"); // NOI18N
                 }
-            } else if (value.charAt(0) == '"' || (value.startsWith("0x") && value.endsWith("\""))) { // NOI18N
+            } else if (!value.isEmpty() && value.charAt(0) == '"' || (value.startsWith("0x") && value.endsWith("\""))) { // NOI18N
                 //see IZ: 151642 - string values may differ
                 if (value.replace("\"", "\\\"").equals(this.value)) { // NOI18N
                     return;
@@ -211,7 +211,7 @@ public abstract class AbstractVariable implements LocalVariable {
 //                        value = value.substring(pos, value.length() - 1) + '"';
 //                    }
 //                }
-                if (value.charAt(0) == '(') {
+                if (!value.isEmpty() && value.charAt(0) == '(') {
                     pos = GdbUtils.findMatchingParen(value, 0);
                     if (pos != -1) {
                         value = value.substring(pos + 1).trim();
