@@ -677,6 +677,18 @@ public final class MakeActionProvider implements ActionProvider {
                 }
                 runProfile.getEnvironment().putenv("LD_LIBRARY_PATH", path.toString()); // NOI18N
             }
+            // make sure OMP_NUM_THREADS is set to something reasonable
+            // See 169981 for details
+            String ont = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("OMP_NUM_THREADS"); // NOI18N
+            if (ont == null) {
+                ont = conf.getProfile().getEnvironment().getenv("OMP_NUM_THREADS"); // NOI18N
+            }
+            if (ont == null) {
+                if (runProfile == null) {
+                    runProfile = conf.getProfile().clone(conf);
+                }
+                runProfile.getEnvironment().putenv("OMP_NUM_THREADS", "2"); // NOI18N
+            }
         }
         if (platform == PlatformTypes.PLATFORM_MACOSX || platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC || platform == PlatformTypes.PLATFORM_LINUX) {
             // Make sure DISPLAY variable has been set
