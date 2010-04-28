@@ -250,8 +250,8 @@ public class JiraRepository extends Repository {
                 removeQuery((JiraQuery) q);
             }
         }
-        resetRepository();
         Jira.getInstance().removeRepository(this);
+        resetRepository();
     }
 
     @Override

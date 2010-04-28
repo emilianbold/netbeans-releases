@@ -188,8 +188,8 @@ public class BugzillaRepository extends Repository {
         for (Query q : qs) {
             removeQuery((BugzillaQuery) q);
         }
-        resetRepository();
         Bugzilla.getInstance().removeRepository(this);
+        resetRepository();
     }
 
     public Lookup getLookup() {
