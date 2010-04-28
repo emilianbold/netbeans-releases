@@ -192,10 +192,19 @@ public class EditorPaneTesting {
         });
     }
 
-    private static StringBuilder debugCaret(StringBuilder sb, JEditorPane pane) {
-        sb.append("caret[").append(pane.getCaretPosition()).append(',');
+    private static StringBuilder debugCaret(StringBuilder sb, JEditorPane pane) throws Exception {
+        int caretOffset = pane.getCaretPosition();
+        Document doc = pane.getDocument();
+        sb.append("caret[").append(caretOffset).append(',');
         sb.append(pane.getSelectionStart()).append(',');
         sb.append(pane.getSelectionEnd()).append(']');
+        int startTextOffset = Math.max(0, caretOffset - 2);
+        int endTextOffset = Math.min(caretOffset + 2, doc.getLength() + 1);
+        sb.append(" \"");
+        CharSequenceUtilities.debugText(sb, doc.getText(startTextOffset, caretOffset - startTextOffset));
+        sb.append('|');
+        CharSequenceUtilities.debugText(sb, doc.getText(caretOffset, endTextOffset - caretOffset));
+        sb.append("\"");
         return sb;
     }
 
@@ -260,10 +269,10 @@ public class EditorPaneTesting {
 
     public static void setCaretOffset(Context context, final int offset) throws Exception {
         final JEditorPane pane = context.getInstance(JEditorPane.class);
+        StringBuilder sb = null;
         if (context.isLogOp()) {
-            StringBuilder sb = context.logOpBuilder();
+            sb = context.logOpBuilder();
             sb.append("SET_CARET_OFFSET: ").append(pane.getCaretPosition()).append(" => ").append(offset).append("\n");
-            context.logOp(sb);
         }
         SwingUtilities.invokeAndWait(new Runnable() {
             @Override
@@ -271,6 +280,29 @@ public class EditorPaneTesting {
                 pane.setCaretPosition(offset);
             }
         });
+        if (context.isLogOp()) {
+            debugCaret(sb, pane);
+            context.logOp(sb);
+        }
+    }
+
+    public static void moveCaret(Context context, final int offset) throws Exception {
+        final JEditorPane pane = context.getInstance(JEditorPane.class);
+        StringBuilder sb = null;
+        if (context.isLogOp()) {
+            sb = context.logOpBuilder();
+            sb.append("MOVE_CARET: ").append(pane.getCaret().getMark()).append(" => ").append(offset).append("\n");
+        }
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                pane.getCaret().moveDot(offset);
+            }
+        });
+        if (context.isLogOp()) {
+            debugCaret(sb, pane);
+            context.logOp(sb);
+        }
     }
 
     public static void typeChar(Context context, char ch) throws Exception {
