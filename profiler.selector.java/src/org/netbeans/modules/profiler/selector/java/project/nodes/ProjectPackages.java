@@ -103,14 +103,17 @@ class ProjectPackages extends SelectorChildren<ContainerNode> {
 
         ClasspathInfo cpInfo = ProjectUtilities.getClasspathInfo(project, subprojects, scope.contains(SearchScope.SOURCE),
                                                                  scope.contains(SearchScope.DEPENDENCIES));
-        ClassIndex index = cpInfo.getClassIndex();
+        // #170201: A misconfigured(?) project can have no source roots defined, returning NULL as its ClasspathInfo
+        // ignore such a project
+        if (cpInfo != null) {
+            ClassIndex index = cpInfo.getClassIndex();
 
-        for (String pkgName : index.getPackageNames("", true, scope)) { // NOI18N
-            pkgs.add(new JavaPackageNode(cpInfo, pkgName, parent, scope));
+            for (String pkgName : index.getPackageNames("", true, scope)) { // NOI18N
+                pkgs.add(new JavaPackageNode(cpInfo, pkgName, parent, scope));
+            }
+
+            Collections.sort(pkgs, PackageNode.COMPARATOR);
         }
-
-        Collections.sort(pkgs, PackageNode.COMPARATOR);
-
         return pkgs;
     }
 }

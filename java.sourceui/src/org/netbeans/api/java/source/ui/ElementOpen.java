@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.openide.util.NbBundle;
 
 /** Utility class for opening elements in editor.
@@ -208,7 +209,7 @@ public final class ElementOpen {
                     log.info("Skipping location of element offset within file, Scannig in progress");
                     return 0; //we are opening @ 0 position. Fix #160478
                 }
-            } else if (SwingUtilities.isEventDispatchThread()) {
+            } else if (SwingUtilities.isEventDispatchThread() && !JavaSourceAccessor.holdsParserLock()) {
                 ProgressUtils.runOffEventDispatchThread(new Runnable() {
                         public void run() {
                             try {

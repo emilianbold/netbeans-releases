@@ -236,8 +236,11 @@ public class ComputeOverriders {
 	if (currentFileSourceRoot != null) {
 	    try {
 		URL rootURL = currentFileSourceRoot.getURL();
+		Map<ElementHandle<TypeElement>, Set<ElementHandle<TypeElement>>> overridingHandles = users.remove(rootURL);
 
-		computeOverridingForRoot(rootURL, users.remove(rootURL), methods, overriding);
+		if (overridingHandles != null) {
+		    computeOverridingForRoot(rootURL, overridingHandles, methods, overriding);
+		}
 	    } catch (FileStateInvalidException ex) {
 		LOG.log(Level.INFO, null, ex);
 	    }
