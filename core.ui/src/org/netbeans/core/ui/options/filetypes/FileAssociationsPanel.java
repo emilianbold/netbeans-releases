@@ -42,13 +42,14 @@ package org.netbeans.core.ui.options.filetypes;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import javax.swing.UIManager;
+import java.util.prefs.Preferences;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.core.ui.options.filetypes.FileAssociationsModel.MimeItem;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /** Options panel with extensions and associated MIME types.
  *
@@ -95,6 +96,8 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         txtPattern = new javax.swing.JTextArea();
         txtPatternError = new javax.swing.JLabel();
+        autoScan = new javax.swing.JCheckBox();
+        autoScanLabel = new javax.swing.JLabel();
 
         lblExtension.setLabelFor(cbExtension);
         org.openide.awt.Mnemonics.setLocalizedText(lblExtension, org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblExtension.text")); // NOI18N
@@ -169,6 +172,15 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
         txtPatternError.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         txtPatternError.setFocusable(false);
 
+        org.openide.awt.Mnemonics.setLocalizedText(autoScan, org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.autoScan.text", new Object[] {})); // NOI18N
+        autoScan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                autoScanActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(autoScanLabel, org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.autoScanLabel.text", new Object[] {})); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -179,7 +191,7 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lblFileAssociations)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(sepFileAssociations, javax.swing.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE))
+                        .addComponent(sepFileAssociations, javax.swing.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(10, 10, 10)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -190,11 +202,11 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(lblAssociatedAlso)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lblAssociatedAlsoExt, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE))
+                                .addComponent(lblAssociatedAlsoExt, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(cbExtension, 0, 254, Short.MAX_VALUE)
-                                    .addComponent(cbType, 0, 254, Short.MAX_VALUE))
+                                    .addComponent(cbExtension, 0, 293, Short.MAX_VALUE)
+                                    .addComponent(cbType, 0, 293, Short.MAX_VALUE))
                                 .addGap(10, 10, 10)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
@@ -203,19 +215,30 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
                                         .addComponent(btnRemove))
                                     .addComponent(btnDefault)))))
                     .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(10, 10, 10)
+                                        .addComponent(lblPattern))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(autoScan, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
+                                        .addGap(44, 44, 44)))
+                                .addGap(41, 41, 41))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(21, 21, 21)
+                                .addComponent(autoScanLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                        .addComponent(txtPatternError, javax.swing.GroupLayout.DEFAULT_SIZE, 72, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(lblFilesIgnored)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(setFilesIgnored, javax.swing.GroupLayout.DEFAULT_SIZE, 482, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(lblPattern)
-                        .addGap(41, 41, 41)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtPatternError, javax.swing.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jScrollPane1)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(btnDefaultIgnored)))))
+                                .addComponent(btnDefaultIgnored))
+                            .addComponent(setFilesIgnored, javax.swing.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -250,8 +273,17 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
                     .addComponent(btnDefaultIgnored)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtPatternError, javax.swing.GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE)
-                .addGap(16, 16, 16))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtPatternError, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE)
+                        .addGap(16, 16, 16))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(20, 20, 20)
+                        .addComponent(autoScan)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(autoScanLabel)
+                        .addGap(79, 79, 79))))
         );
 
         lblExtension.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblExtension.AN")); // NOI18N
@@ -354,6 +386,10 @@ private void btnDefaultIgnoredActionPerformed(java.awt.event.ActionEvent evt) {/
     txtPattern.setText(IgnoredFilesPreferences.DEFAULT_IGNORED_FILES);
 }//GEN-LAST:event_btnDefaultIgnoredActionPerformed
 
+private void autoScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoScanActionPerformed
+    controller.changed();
+}//GEN-LAST:event_autoScanActionPerformed
+
     void load() {
         cbExtension.removeAllItems();
         cbType.removeAllItems();
@@ -378,6 +414,9 @@ private void btnDefaultIgnoredActionPerformed(java.awt.event.ActionEvent evt) {/
         txtPattern.setText(IgnoredFilesPreferences.getIgnoredFiles());
         txtPattern.getDocument().addDocumentListener(patternListener);
         btnDefaultIgnored.setEnabled(!IgnoredFilesPreferences.DEFAULT_IGNORED_FILES.equals(txtPattern.getText()));
+
+        boolean manual = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction").getBoolean("manual", false); // NOI18N
+        autoScan.setSelected(!manual);
     }
     
     void store() {
@@ -385,6 +424,12 @@ private void btnDefaultIgnoredActionPerformed(java.awt.event.ActionEvent evt) {/
         model.store();
         // store ignored files pattern
         IgnoredFilesPreferences.setIgnoredFiles(txtPattern.getText());
+
+        final Preferences nd = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction"); // NOI18N
+        boolean manual = nd.getBoolean("manual", false);
+        if (manual == autoScan.isSelected()) {
+            nd.putBoolean("manual", !manual);  // NOI18N
+        }
     }
 
     boolean valid() {
@@ -394,6 +439,8 @@ private void btnDefaultIgnoredActionPerformed(java.awt.event.ActionEvent evt) {/
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox autoScan;
+    private javax.swing.JLabel autoScanLabel;
     private javax.swing.JButton btnDefault;
     private javax.swing.JButton btnDefaultIgnored;
     private javax.swing.JButton btnNew;

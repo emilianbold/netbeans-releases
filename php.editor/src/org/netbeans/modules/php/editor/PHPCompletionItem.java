@@ -248,7 +248,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 case UNQUALIFIED:
                     boolean fncFromDefaultNamespace = ((ifq instanceof FunctionElement) && ifq.getIn() == null
                             && NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(ifq.getNamespaceName().toString()));
-                    if (!(elem instanceof NamespaceElement) && !fncFromDefaultNamespace) {
+                    if (!fncFromDefaultNamespace) {
                         Model model = request.result.getModel();
                         NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());

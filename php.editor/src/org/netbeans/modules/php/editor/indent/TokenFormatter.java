@@ -376,7 +376,6 @@ public class TokenFormatter {
                     int column = 0;
                     int indentOfOpenTag = 0;
 
-
                     FormatToken formatToken;
                     String newText = null;
                     String oldText = null;
@@ -395,6 +394,7 @@ public class TokenFormatter {
                             boolean indentRule = false;
                             boolean afterSemi = false;
                             boolean wsBetweenBraces = false;
+                            CodeStyle.BracePlacement lastBracePlacement = CodeStyle.BracePlacement.SAME_LINE;
 
                             changeOffset = formatToken.getOffset();
 
@@ -473,36 +473,42 @@ public class TokenFormatter {
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.ifBracePlacement, newLines, 0, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = indentRule ? ws.spaces : 1;
+                                        lastBracePlacement = docOptions.ifBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_FOR_RIGHT_BRACE:
                                         indentLine = indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.forBracePlacement, newLines, 0, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = indentRule ? ws.spaces : 1;
+                                        lastBracePlacement = docOptions.forBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_WHILE_RIGHT_BRACE:
                                         indentLine = indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.whileBracePlacement, newLines, 0, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = indentRule ? ws.spaces : 1;
+                                        lastBracePlacement = docOptions.whileBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_SWITCH_RIGHT_BACE:
                                         indentLine = indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.switchBracePlacement, newLines, 0, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
+                                        lastBracePlacement = docOptions.switchBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_CATCH_RIGHT_BRACE:
                                         indentLine = indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.catchBracePlacement, newLines, 0, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = indentRule ? ws.spaces : 1;
+                                        lastBracePlacement = docOptions.catchBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_OTHER_RIGHT_BRACE:
                                         indentLine = indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.otherBracePlacement, newLines, 0, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = indentRule ? ws.spaces : 1;
+                                        lastBracePlacement = docOptions.otherBracePlacement;
                                         break;
                                     case WHITESPACE_BETWEEN_OPEN_CLOSE_BRACES:
                                         wsBetweenBraces = true;
@@ -527,6 +533,7 @@ public class TokenFormatter {
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.classDeclBracePlacement, newLines, docOptions.blankLinesBeforeClassEnd, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
+                                        lastBracePlacement = docOptions.classDeclBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_FUNCTION:
                                         indentRule = true;
@@ -541,6 +548,7 @@ public class TokenFormatter {
                                         ws = countWhiteSpaceBeforeRightBrace(docOptions.methodDeclBracePlacement, newLines, docOptions.blankLinesBeforeFunctionEnd, indent, index - 1);
                                         newLines = ws.lines;
                                         countSpaces = indentRule ? ws.spaces : 1;
+                                        lastBracePlacement = docOptions.methodDeclBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_FIELD:
                                         newLines = docOptions.blankLinesBeforeField + 1 > newLines ? docOptions.blankLinesBeforeField + 1 : newLines;
@@ -1063,7 +1071,10 @@ public class TokenFormatter {
 //                                }
                                 newText = createWhitespace(doc, newLines, countSpaces);
                                 if (wsBetweenBraces) {
-                                    newText = createWhitespace(doc, 1, indent + docOptions.indentSize) + createWhitespace(doc, 1, indent);
+                                    newText = createWhitespace(doc, 1, 
+                                            indent + docOptions.indentSize)
+                                            + createWhitespace(doc, 1,
+                                            lastBracePlacement == CodeStyle.BracePlacement.NEW_LINE_INDENTED ? indent + docOptions.indentSize : indent);
                                 }
                                 int realOffset = changeOffset + delta;
                                 if (templateEdit && !caretInTemplateSolved && oldText != null
@@ -1424,6 +1435,7 @@ public class TokenFormatter {
 
             private int startOffset = -1;
             private int endOffset = -1;
+            private int previousLineIndent = 0;
 
 	    private int replaceString(BaseDocument document, int offset, String oldText, String newText, int delta, boolean templateEdit) {
 		if (oldText == null) {
@@ -1454,22 +1466,36 @@ public class TokenFormatter {
 //                    }
 //
 //                }
-                if (newText != null && !oldText.equals(newText)) {
+                if (newText != null && (!oldText.equals(newText)
+                        || (startOffset > 0 && (startOffset - oldText.length()) == offset))) {
                     int realOffset = offset + delta;
-                    if (templateEdit && (startOffset - oldText.length()) == offset) {
+                    if (startOffset > 0 && (startOffset - oldText.length()) > offset) {
                         int indexOldTextLine = oldText.lastIndexOf('\n');
                         int indexNewTextLine = newText.lastIndexOf('\n');
-                        String replaceOld = indexOldTextLine == -1 ? oldText : oldText.substring(indexOldTextLine + 1);
-                        String replaceNew = indexNewTextLine == -1 ? newText : newText.substring(indexNewTextLine + 1);
+                        if (indexOldTextLine > -1 && indexNewTextLine > -1) {
+                            previousLineIndent = newText.length() - indexNewTextLine - oldText.length() + indexOldTextLine;
+                        }
+                    }
+                    if (startOffset > 0 && (startOffset - oldText.length()) == offset) {
+                        int indexOldTextLine = oldText.lastIndexOf('\n');
+                        int indexNewTextLine = newText.lastIndexOf('\n');
 
-                        if (!oldText.equals(newText)) {
+                        String replaceNew = indexNewTextLine == -1 ? newText : newText.substring(indexNewTextLine + 1);
+                        if (previousLineIndent != 0 && indexNewTextLine > -1 && (replaceNew.length()) > 0) {
+                            int newSpaces = replaceNew.length() - previousLineIndent;
+                            replaceNew = createWhitespace(document, 0, Math.max(0, newSpaces));
+                        }
+                        String replaceOld = indexOldTextLine == -1 ? oldText : oldText.substring(indexOldTextLine + 1);
+                        
+
+                        if (!replaceOld.equals(replaceNew)) {
                             delta = replaceSimpleString(document, realOffset + indexOldTextLine + 1, replaceOld, replaceNew, delta);
                         }
                     }
                     if (startOffset <= realOffset
                             && realOffset < endOffset + delta) {
 
-                        if (!templateEdit) { // if is not in template, then replace simply
+                        if (!templateEdit || startOffset == 0) { // if is not in template, then replace simply or is not format selection
                             delta = replaceSimpleString(document, realOffset, oldText, newText, delta);
                         } else {
                             // the replacing has to be done line by line.
@@ -1480,8 +1506,7 @@ public class TokenFormatter {
                             String replaceOld;
                             String replaceNew;
 
-                            if ((indexOldTextLine == -1 && indexNewTextLine == -1) // no new line in both
-                                    || oldText.length() == 0) {
+                            if (indexOldTextLine == -1 && indexNewTextLine == -1) { // no new line in both)
                                 delta = replaceSimpleString(document, realOffset, oldText, newText, delta);
                             } else {
 
@@ -1493,9 +1518,17 @@ public class TokenFormatter {
                                         indexOldTextLine = oldText.length();
                                     if (indexNewTextLine == -1)
                                         indexNewTextLine = newText.length();
-                                    replaceOld = indexOldText == indexOldTextLine ? "\n" : oldText.substring(indexOldText, indexOldTextLine); // NOI18N
+                                    replaceOld = indexOldText == indexOldTextLine && oldText.length() > 0 ? "\n" : oldText.substring(indexOldText, indexOldTextLine); // NOI18N
                                     replaceNew = indexNewText == indexNewTextLine ? "\n" : newText.substring(indexNewText, indexNewTextLine); // NOI18N
-                                    if (!replaceOld.equals(replaceNew)) {
+                                    if (previousLineIndent != 0 && indexNewText != indexNewTextLine 
+                                            && indexNewText > 0
+                                            && indexNewTextLine > -1 && (replaceNew.length()) > 0) {
+                                        int newSpaces = replaceNew.length() - previousLineIndent;
+                                        replaceNew = createWhitespace(document, 0, Math.max(0, newSpaces));
+                                    }
+                                    if (!replaceOld.equals(replaceNew)
+                                            && ((indexOldText + replaceOld.length()) < oldText.length()
+                                            || indexNewText == indexNewTextLine)) {
                                         delta = replaceSimpleString(document, realOffset + indexOldText,
                                                 replaceOld, replaceNew, delta);
                                     }
@@ -1508,8 +1541,49 @@ public class TokenFormatter {
 
                                 if (indexOldText >= oldText.length()
                                         && indexNewText < newText.length()) {
-                                    delta = replaceSimpleString(document, realOffset + oldText.length(),
-                                            "", newText.substring(indexNewText), delta);
+                                    
+//                                    indexNewTextLine = newText.lastIndexOf('\n');
+//                                    replaceNew = newText.substring(indexNewText);
+//                                    if (indexNewTextLine >= indexNewText) {
+//                                        // there has to be recounted spaces on the last line
+//                                        if (previousLineIndent != 0) {
+//                                            int newSpaces = newText.length() - indexNewTextLine - previousLineIndent - 1;
+//                                            replaceNew = replaceNew.substring(0, indexNewTextLine - indexNewText + 1) + createWhitespace(document, 0, Math.max(0, newSpaces));
+//                                        }
+//                                    } else {
+//                                        if (previousLineIndent != 0) {
+//                                            int newSpaces = replaceNew.length() - previousLineIndent;
+//                                            replaceNew = createWhitespace(document, 0, Math.max(0, newSpaces));
+//                                        }
+//                                    }
+                                    StringBuilder sb = new StringBuilder();
+//                                    indexNewText --;
+                                    boolean addNewLine = false;
+                                    do {
+                                        indexNewTextLine = newText.indexOf('\n', indexNewText); // NOI18N
+                                        addNewLine = (indexNewTextLine != -1);
+                                        if (!addNewLine) {
+                                            indexNewTextLine = newText.length();
+                                        }
+                                        replaceNew = newText.substring(indexNewText, indexNewTextLine == -1 ? newText.length() : indexNewTextLine); // NOI18N
+                                        if (previousLineIndent != 0 && indexNewText != indexNewTextLine
+                                                && indexNewText > 0
+                                                && indexNewTextLine > -1 && (replaceNew.length()) > 0) {
+                                            int newSpaces = replaceNew.length() - previousLineIndent;
+                                            replaceNew = createWhitespace(document, 0, Math.max(0, newSpaces));
+                                        }
+                                        sb.append(replaceNew);
+                                        if (addNewLine) {
+                                            sb.append('\n');   //NOI18N
+                                        }
+                                        indexNewText = indexNewTextLine + 1;
+                                    } while (indexNewText < newText.length());
+
+                                    if (sb.length() > 0) {
+                                        delta = replaceSimpleString(document, realOffset + oldText.length(),
+                                                "", sb.toString(), delta);
+                                    }
+
                                 }
                             }
 
