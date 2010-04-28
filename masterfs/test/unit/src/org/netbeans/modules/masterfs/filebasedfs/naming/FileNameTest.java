@@ -206,8 +206,9 @@ public class FileNameTest extends NbTestCase {
         File f = f1;
         assertTrue(f.exists());
         FileNaming pi = NamingFactory.fromFile(f);
-        assertTrue(pi.rename("renamed3"));
-        File f2 = pi.getFile();
+        FileNaming ni = pi.rename("renamed3", null);
+        assertTrue(pi != ni);
+        File f2 = ni.getFile();
         assertFalse(f.exists());
         assertTrue(f2.exists());
         assertFalse(f2.equals(f));

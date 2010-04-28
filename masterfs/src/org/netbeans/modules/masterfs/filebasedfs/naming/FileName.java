@@ -55,7 +55,7 @@ import org.openide.util.CharSequences;
  * @author Radek Matous
  */
 public class FileName implements FileNaming {
-    private CharSequence name;
+    private final CharSequence name;
     private final FileNaming parent;
     private Integer id;
 
@@ -69,32 +69,25 @@ public class FileName implements FileNaming {
         return parent == null ? file.getPath() : file.getName();
     }
 
-    public boolean rename(String name, ProvidedExtensions.IOHandler handler) throws IOException {
-        boolean retVal = false;
+    @Override
+    public FileNaming rename(String name, ProvidedExtensions.IOHandler handler) throws IOException {
+        boolean success = false;
         final File f = getFile();
 
         if (FileChangedManager.getInstance().exists(f)) {
             File newFile = new File(f.getParentFile(), name);
             if (handler != null) {
                 handler.handle();
-                retVal = true;
+                success = true;
             } else {
-                retVal = f.renameTo(newFile);
+                success = f.renameTo(newFile);
             }
-            if (retVal) {
-                this.name = CharSequences.create(name);
-                Integer iid = NamingFactory.createID(newFile);                               
-                if (!iid.equals(id)) {
-                    id = iid;                  
-                }
+            if (success) {
+                FolderName.freeCaches();
+                return NamingFactory.fromFile(getParent(), newFile, true);
             }
         }
-        FolderName.freeCaches();
-        return retVal;
-    }
-
-    public final boolean rename(final String name) throws IOException {
-        return rename(name, null);
+        return this;
     }
 
     public final boolean isRoot() {
