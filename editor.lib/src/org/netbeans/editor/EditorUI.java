@@ -589,6 +589,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             if (undoManager != null) {
                 doc.removeUndoableEditListener(undoManager);
                 doc.putProperty(BaseDocument.UNDO_MANAGER_PROP, null);
+                doc.putProperty(UndoManager.class, null); // For tests compatibility
             }
         } else { // Implicit use e.g. an editor pane in a dialog
             if (undoManager == null) {
@@ -596,6 +597,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                 undoManager = new UndoManager();
                 doc.addUndoableEditListener(undoManager);
                 doc.putProperty(BaseDocument.UNDO_MANAGER_PROP, undoManager);
+                doc.putProperty(UndoManager.class, undoManager); // For tests compatibility
             }
         }
     }

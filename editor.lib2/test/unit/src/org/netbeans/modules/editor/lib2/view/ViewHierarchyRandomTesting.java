@@ -61,14 +61,16 @@ import org.netbeans.lib.editor.util.random.RandomText;
 public class ViewHierarchyRandomTesting {
 
     public static RandomTestContainer createContainer(EditorKit kit) throws Exception {
+        // Ensure the new view hierarchy is turned on
+        System.setProperty("org.netbeans.editor.linewrap", "true");
         // Set the property for synchronous highlights firing since otherwise
         // the repeatability of problems with view hierarchy is none or limited.
         System.setProperty("org.netbeans.editor.sync.highlights", "true");
         System.setProperty("org.netbeans.editor.linewrap.edt", "true");
 
-
         RandomTestContainer container = EditorPaneTesting.initContainer(null, kit);
         DocumentTesting.initContainer(container);
+        DocumentTesting.initUndoManager(container);
         return container;
     }
 
@@ -80,13 +82,6 @@ public class ViewHierarchyRandomTesting {
                 pane.putClientProperty("HighlightsLayerIncludes", "");
             }
         });
-    }
-
-    public static void initUndoManager(RandomTestContainer container) throws Exception {
-        UndoManager undoManager = new UndoManager();
-        Document doc = DocumentTesting.getDocument(container);
-        doc.addUndoableEditListener(undoManager);
-        doc.putProperty(UndoManager.class, undoManager);
     }
 
     public static void initRandomText(RandomTestContainer container) throws Exception {
