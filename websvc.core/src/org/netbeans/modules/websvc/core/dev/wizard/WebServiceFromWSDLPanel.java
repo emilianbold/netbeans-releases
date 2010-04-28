@@ -366,13 +366,17 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
             if (Util.isJavaEE5orHigher(project) || jaxWsInJ2ee14Supported ||
                     (!jsr109Supported && !jsr109oldSupported ||
                     (!jsr109Supported && jsr109oldSupported /* && jwsdpSupported*/))) {
-                jTextFieldPort.setText(chooser.getSelectedPortOwnerName() + "#" + chooser.getSelectedNodes()[0].getDisplayName()); //NOI18N
-                service = wsdlModel.getServiceByName(chooser.getSelectedPortOwnerName());
-                port = service.getPortByName(chooser.getSelectedNodes()[0].getDisplayName());
-                if (wsdlHandler != null) {
-                    String bindingType = wsdlHandler.getBindingTypeForPort(port.getName());
-                    if (bindingType != null) {
-                        port.setSOAPVersion(bindingType);
+
+                String portOwnerName = chooser.getSelectedPortOwnerName();
+                if (portOwnerName != null) {
+                    jTextFieldPort.setText(portOwnerName + "#" + chooser.getSelectedNodes()[0].getDisplayName()); //NOI18N
+                    service = wsdlModel.getServiceByName(portOwnerName);
+                    port = service.getPortByName(chooser.getSelectedNodes()[0].getDisplayName());
+                    if (wsdlHandler != null) {
+                        String bindingType = wsdlHandler.getBindingTypeForPort(port.getName());
+                        if (bindingType != null) {
+                            port.setSOAPVersion(bindingType);
+                        }
                     }
                 }
             }
