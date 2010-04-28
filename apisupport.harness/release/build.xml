@@ -103,7 +103,7 @@ made subject to such option by the copyright holder.
                 </filtermapper>
             </chainedmapper>
         </pathconvert>
-        <tempfile property="old.project.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true"/>
+        <tempfile property="old.project.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true" prefix="duplicates"/>
         <mkdir dir="${basedir}/build"/>
         <echo file="${old.project.clusters.duplicates.file}" message="${old.project.clusters.duplicates}"/>
 
