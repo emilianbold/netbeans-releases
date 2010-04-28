@@ -128,23 +128,29 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }
         TokenItem<CppTokenId> jumpToken = getJumpToken();
         CsmOffsetable primary = (CsmOffsetable) findTargetObject(doc, jumpToken, offset, false);
-        CsmOffsetable item = toJumpObject(primary, CsmUtilities.getCsmFile(doc, true, false), offset);
-        if ((type == HyperlinkType.ALT_HYPERLINK) && CsmKindUtilities.isMethod(item)) {
-            // popup should only be shown on *usages*, not on declaraions (definitions);
-            // for latter annotatations should be used instead
-            if (!isInDeclaration((CsmFunction) primary, CsmUtilities.getCsmFile(doc, true, false), offset)) {
+        CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
+        CsmOffsetable item = toJumpObject(primary, csmFile, offset);
+        if (type == HyperlinkType.ALT_HYPERLINK) {
+            if (CsmKindUtilities.isMethod(item)) {
                 CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) item);
-                if (showOverridesPopup(meth, target, offset)) {
+                if (showOverridesPopup(meth, target, csmFile, offset)) {
                     return true;
                 }
+            } else if (CsmKindUtilities.isClassifier(item)) {
+
             }
         }
         return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
     }
 
-    private boolean showOverridesPopup(CsmMethod meth, JTextComponent target, int offset) {
-        final Collection<? extends CsmMethod> baseMethods = Collections.<CsmMethod>emptyList();
-        // baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
+    private boolean showOverridesPopup(CsmMethod meth, JTextComponent target, CsmFile csmFile, int offset) {
+        boolean inDeclaration = isInDeclaration(meth, csmFile, offset);
+        final Collection<? extends CsmMethod> baseMethods;
+        if (inDeclaration) {
+            baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
+        } else {
+            baseMethods = Collections.<CsmMethod>emptyList();
+        }
         Collection<? extends CsmMethod> overriddenMethods;
         if (!baseMethods.isEmpty() || CsmVirtualInfoQuery.getDefault().isVirtual(meth)) {
             overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(meth, false);
@@ -154,7 +160,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         baseMethods.remove(meth); // in the case CsmVirtualInfoQuery added function itself (which was previously the case)
         if (!baseMethods.isEmpty() || !overriddenMethods.isEmpty()) {
             try {
-                final OverridesPopup popup = new OverridesPopup(null, meth, baseMethods, overriddenMethods, true);
+                final OverridesPopup popup = new OverridesPopup(null, inDeclaration ? null : meth, baseMethods, overriddenMethods, !inDeclaration);
                 Rectangle rect = target.modelToView(offset);
                 final Point point = new Point((int) rect.getX(), (int)(rect.getY() + rect.getHeight()));
                 SwingUtilities.convertPointToScreen(point, target);
