@@ -44,6 +44,7 @@ package org.netbeans.core.windows.actions;
 
 
 import java.awt.EventQueue;
+import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
@@ -102,11 +103,14 @@ public class ToggleFullScreenAction extends SystemAction implements DynamicMenuC
     }
     
     /** Updates state of action. Uses Runnable interface impl to save one class */ 
+    @Override
     public void run () {
-        MainWindow frame = (MainWindow)WindowManager.getDefault().getMainWindow();
+        Frame frame = WindowManager.getDefault().getMainWindow();
         synchronized( this ) {
             createItems();
-            menuItems[0].setSelected(null != frame && frame.isFullScreenMode());
+            menuItems[0].setSelected(null != frame 
+                    && (frame instanceof MainWindow)
+                    && ((MainWindow)frame).isFullScreenMode());
         }
     }
     
