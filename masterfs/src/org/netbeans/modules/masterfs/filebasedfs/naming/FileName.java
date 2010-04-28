@@ -126,7 +126,17 @@ public class FileName implements FileNaming {
 
     public final boolean equals(final Object obj) {
         if (obj instanceof FileName ) {
-            return (obj.hashCode() == hashCode()) && name.equals(((FileName)obj).name);
+            FileName fn = (FileName)obj;
+            if (obj.hashCode() != hashCode()) {
+                return false;
+            }
+            if (!name.equals(fn.name)) {
+                return false;
+            }
+            if (parent == null || fn.parent == null) {
+                return parent == null && fn.parent == null;
+            }
+            return parent.equals(fn.parent);
         }
         return (obj instanceof FileNaming && obj.hashCode() == hashCode());
     }

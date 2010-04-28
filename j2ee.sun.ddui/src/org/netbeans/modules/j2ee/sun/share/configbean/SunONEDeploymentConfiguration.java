@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -44,7 +44,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.spi.DConfigBeanRoot;
@@ -68,6 +68,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.sun.api.CmpMappingProvider;
 import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceConfigurator;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.cmp.SunCmpMappings;
@@ -153,6 +154,7 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
         final String text = folderMsg + " " + resourceMsg;
         resourceProcessor.post(new Runnable() {
 
+            @Override
             public void run() {
                 NotifyDescriptor.Message msg = new NotifyDescriptor.Message(text, NotifyDescriptor.WARNING_MESSAGE);
                 DialogDisplayer.getDefault().notify(msg);
@@ -307,23 +309,25 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
     // ------------------------------------------------------------------------
     // Implementation of abstract portion of MessageDestinationConfiguration
     // ------------------------------------------------------------------------
+    @Override
     public boolean supportsCreateDatasource() {
         return true;
     }
 
+    @Override
     public Set<Datasource> getDatasources() {
         Set<Datasource> datasources = null;
-        ResourceConfiguratorInterface rci = getResourceConfigurator();
         File resourceDir = module.getResourceDirectory();
-        if (rci != null && resourceDir != null && resourceDir.exists()) {
-            datasources = rci.getResources(resourceDir);
+        if (resourceDir != null && resourceDir.exists()) {
+            datasources = ResourceConfigurator.getResourcesFromFile(resourceDir);
         }
         if(datasources == null) {
-            datasources = new HashSet<Datasource>();
+            datasources = Collections.EMPTY_SET;
         }
         return datasources;
     }
 
+    @Override
     public Datasource createDatasource(final String jndiName, final String url, final String username, final String password, final String driver) throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException {
         Datasource ds = null;
         File resourceDir = module.getResourceDirectory();
@@ -343,6 +347,7 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
     // ------------------------------------------------------------------------
     // Implementation of abstract portion of MessageDestinationConfiguration
     // ------------------------------------------------------------------------
+    @Override
     public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
         Set<MessageDestination> destinations = null;
         ResourceConfiguratorInterface rci = getResourceConfigurator();
@@ -351,15 +356,17 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
             destinations = rci.getMessageDestinations(resourceDir);
         }
         if(destinations == null) {
-            destinations = new HashSet<MessageDestination>();
+            destinations = Collections.EMPTY_SET;
         }
         return destinations;
     }
 
+    @Override
     public boolean supportsCreateMessageDestination() {
         return true;
     }
 
+    @Override
     public MessageDestination createMessageDestination(String name, MessageDestination.Type type) throws UnsupportedOperationException, ConfigurationException {
         MessageDestination jmsResource = null;
         File resourceDir = module.getResourceDirectory();
@@ -488,30 +495,37 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
     // Implementation (or lack thereof) of JSR-88 DeploymentConfiguration
     // ------------------------------------------------------------------------
 
+    @Override
     public DConfigBeanRoot getDConfigBeanRoot(DDBeanRoot dDBeanRoot) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
         throw new UnsupportedOperationException("JSR-88 Configuration is no longer supported.");
     }
 
+    @Override
     public javax.enterprise.deploy.model.DeployableObject getDeployableObject() {
         throw new UnsupportedOperationException("JSR-88 Configuration is no longer supported.");
     }
 
+    @Override
     public void removeDConfigBean(DConfigBeanRoot dConfigBeanRoot) throws BeanNotFoundException {
         throw new UnsupportedOperationException("JSR-88 Configuration is no longer supported.");
     }
 
+    @Override
     public void restore(InputStream inputStream) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
         throw new UnsupportedOperationException("JSR-88 Configuration is no longer supported.");
     }
 
+    @Override
     public DConfigBeanRoot restoreDConfigBean(InputStream inputStream, DDBeanRoot dDBeanRoot) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
         throw new UnsupportedOperationException("JSR-88 Configuration is no longer supported.");
     }
 
+    @Override
     public void save(OutputStream outputStream) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
         throw new UnsupportedOperationException("JSR-88 Configuration is no longer supported.");
     }
 
+    @Override
     public void saveDConfigBean(OutputStream outputStream, DConfigBeanRoot rootBean) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
         throw new UnsupportedOperationException("JSR-88 Configuration is no longer supported.");
     }

@@ -725,6 +725,10 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      */
     @Override
     public HashSet getResources(File resourceDir) {
+        return getResourcesFromFile(resourceDir);
+    }
+
+    public static HashSet getResourcesFromFile(File resourceDir) {
         HashSet serverresources = new HashSet();
         File resourceFile = getServerResourceFiles(resourceDir);
         if (resourceFile == null) {
@@ -992,7 +996,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         ResourceUtils.createFile(location, resources);
     }
     
-    private File getServerResourceFiles(File resourceDir) {
+    private static File getServerResourceFiles(File resourceDir) {
         File resourceFile = null;
         if(resourceDir != null){
             resourceFile =  ResourceUtils.getServerResourcesFile(FileUtil.toFileObject(resourceDir));
@@ -1000,7 +1004,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return resourceFile;
     }
     
-    private HashMap getConnectionPools(File resourceFile) {
+    private static HashMap getConnectionPools(File resourceFile) {
         HashMap<String, JdbcConnectionPool> connPools = new HashMap<String, JdbcConnectionPool>();
         Resources resources = getResourcesGraph(resourceFile);
         JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
@@ -1011,7 +1015,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return connPools;
     }
     
-    private HashMap getJdbcResources(File resourceFile) {
+    private static HashMap getJdbcResources(File resourceFile) {
         HashMap<String, JdbcResource> jdbcResources = new HashMap<String, JdbcResource>();
         Resources resources = getResourcesGraph(resourceFile);
         JdbcResource[] dsources = resources.getJdbcResource();
@@ -1033,7 +1037,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return aoResources;
     }
     
-    private Resources getResourcesGraph(File resourceFile){
+    private static Resources getResourcesGraph(File resourceFile){
         Resources resourceGraph = DDProvider.getDefault().getResourcesGraph();
         try {
             if(! resourceFile.isDirectory()){
