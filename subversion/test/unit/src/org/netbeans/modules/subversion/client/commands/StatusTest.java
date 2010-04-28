@@ -125,7 +125,23 @@ public class StatusTest extends AbstractCommandTest {
         
         assertEquals(10, sNb.length);
         assertStatus(sRef, sNb);        
-    }       
+    }
+
+    /**
+     * Simulates wrong implementation of CommandlineClient.getStatus(File, boolean, boolean)
+     * This status call does not return status for deleted (svn remove) files. Unfortunately it's called from FileStatusCache, so there's a chance we're missing something
+     */
+    public void testStatusDeletedFile () throws Exception {
+        File deleted = createFile("deleted");
+        add(deleted);
+        commit(getWC());
+
+        remove(deleted);
+        ISVNStatus[] sNb = getNbClient().getStatus(deleted.getParentFile(), true, true);
+        ISVNStatus[] sRef = getReferenceClient().getStatus(deleted.getParentFile(), true, true);
+        assertEquals(2, sNb.length);
+        assertStatus(sRef, sNb);
+    }
     
     public void testStatusFile() throws Exception {
         File uptodate = createFile("uptodate");
