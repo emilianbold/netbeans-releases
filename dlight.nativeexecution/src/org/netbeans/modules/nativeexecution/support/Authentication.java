@@ -53,6 +53,7 @@ import org.openide.util.NbPreferences;
 public final class Authentication {
 
     private static final Preferences prefs = NbPreferences.forModule(Authentication.class);
+    private static final boolean isUnitTest = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
     private static final String knownHosts;
     private static String last_ssh_key;
     private final ExecutionEnvironment env;
@@ -100,8 +101,12 @@ public final class Authentication {
         Authentication result = new Authentication(env);
         result.restore();
 
-        if (result.ssh_key == null || result.ssh_key.trim().length() == 0) {
-            result.ssh_key = last_ssh_key;
+        if (isUnitTest) {
+            result.setPassword();
+        } else {
+            if (result.ssh_key == null || result.ssh_key.trim().length() == 0) {
+                result.ssh_key = last_ssh_key;
+            }
         }
 
         return result;
