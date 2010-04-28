@@ -92,7 +92,7 @@ public abstract class BaseFileObj extends FileObject {
 
     //private fields
     private EventListenerList eventSupport;
-    private final FileNaming fileName;
+    private FileNaming fileName;
 
 
     protected BaseFileObj(final File file) {
@@ -327,6 +327,7 @@ public abstract class BaseFileObj extends FileObject {
                 String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
                 FSException.io("EXC_CannotRename", file.getName(), parentPath, newNameExt);// NOI18N
             }
+            fileName = allRenamed[0];
             fs.rename();
             BaseFileObj.attribs.renameAttributes(file.getAbsolutePath().replace('\\', '/'), file2Rename.getAbsolutePath().replace('\\', '/'));//NOI18N
             for (int i = 0; i < allRenamed.length; i++) {

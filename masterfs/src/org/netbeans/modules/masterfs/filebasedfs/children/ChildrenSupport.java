@@ -275,11 +275,7 @@ public class ChildrenSupport {
             public Integer getId() {
                 return id;
             }
-            public boolean rename(String name) {
-                // not implemented, as it will not be called
-                throw new IllegalStateException();
-            }
-            public boolean rename(String name, ProvidedExtensions.IOHandler h) {
+            public FileNaming rename(String name, ProvidedExtensions.IOHandler h) {
                 // not implemented, as it will not be called
                 throw new IllegalStateException();
             }

@@ -66,7 +66,5 @@ public interface FileNaming {
 
     Integer getId(boolean recompute);
 
-    boolean rename(String name) throws IOException;
-    boolean rename(String name, ProvidedExtensions.IOHandler handler) throws IOException;
-    
+    FileNaming rename(String name, ProvidedExtensions.IOHandler handler) throws IOException;
 }

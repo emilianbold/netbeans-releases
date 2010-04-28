@@ -101,14 +101,15 @@ public final class NamingFactory {
     
     public static FileNaming[] rename (FileNaming fNaming, String newName, ProvidedExtensions.IOHandler handler) throws IOException {
         final ArrayList all = new ArrayList();
-        boolean retVal = false;
         synchronized(NamingFactory.class) {
             removeImpl(fNaming, null);
         }
         
-        retVal = fNaming.rename(newName, handler);
+        FileNaming newNaming = fNaming.rename(newName, handler);
+        boolean retVal = newNaming != fNaming;
         
         synchronized(NamingFactory.class) {        
+            all.add(newNaming);
             all.add(fNaming);
             NamingFactory.registerInstanceOfFileNaming(fNaming.getParent(), fNaming.getFile(), fNaming, true, FileType.unknown);
             renameChildren(all);
