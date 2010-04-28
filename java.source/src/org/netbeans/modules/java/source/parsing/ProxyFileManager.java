@@ -385,7 +385,7 @@ public class ProxyFileManager implements JavaFileManager {
         if (result != null && hasSibling) {
             if (type == GeneratedFileMarker.Type.SOURCE) {
                 marker.mark(result.toUri().toURL(), type);
-            } else {
+            } else if (type == GeneratedFileMarker.Type.RESOURCE) {
                 try {
                     result.openInputStream().close();
                 } catch (IOException ioe) {
