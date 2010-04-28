@@ -77,7 +77,7 @@ public class HostValidatorImpl implements HostValidator {
     }
 
     @Override
-    public boolean validate(ExecutionEnvironment env, char[] password, boolean rememberPassword, final PrintWriter writer) {
+    public boolean validate(ExecutionEnvironment env, /*char[] password, boolean rememberPassword,*/ final PrintWriter writer) {
         boolean result = false;
         final RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
         final boolean alreadyOnline = record.isOnline();
@@ -95,10 +95,9 @@ public class HostValidatorImpl implements HostValidator {
                     env.getHost()));
         }
         try {
-            if (password != null && password.length > 0) {
-                PasswordManager.getInstance().storePassword(env, password, rememberPassword);
-            }
-
+//            if (password != null && password.length > 0) {
+//                PasswordManager.getInstance().storePassword(env, password, rememberPassword);
+//            }
             ConnectionManager.getInstance().connectTo(env);
         } catch (IOException ex) {
             writer.print("\n" + RemoteCommandSupport.getMessage(ex)); //NOI18N

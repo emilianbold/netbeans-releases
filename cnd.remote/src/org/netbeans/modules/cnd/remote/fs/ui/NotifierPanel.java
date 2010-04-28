@@ -57,18 +57,18 @@ public class NotifierPanel extends javax.swing.JPanel {
         txtFilesList.setBackground(getBackground());
         tfHost.setText(env.getHost());
         tfUser.setText(env.getUser());
-        cbRememberPwd.setSelected(PasswordManager.getInstance().isRememberPassword(env));
+//        cbRememberPwd.setSelected(PasswordManager.getInstance().isRememberPassword(env));
         String envString = RemoteUtil.getDisplayName(env);
         lblFiles.setText(NbBundle.getMessage(getClass(), "NotifierPanel.lblFiles.parameterized.text", envString));
     }
 
-    public char[] getPassword() {
-        return tfPassword.getPassword();
-    }
-
-    public boolean isRememberPassword() {
-        return cbRememberPwd.isSelected();
-    }
+//    public char[] getPassword() {
+//        return tfPassword.getPassword();
+//    }
+//
+//    public boolean isRememberPassword() {
+//        return cbRememberPwd.isSelected();
+//    }
 
     public void setPendingFiles(List<String> pendingFiles) {
         StringBuilder sb = new StringBuilder();
@@ -93,11 +93,8 @@ public class NotifierPanel extends javax.swing.JPanel {
         lblFiles = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         txtFilesList = new javax.swing.JTextArea();
-        tfPassword = new javax.swing.JPasswordField();
         tfHost = new javax.swing.JTextField();
-        cbRememberPwd = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
         jLabel0 = new javax.swing.JLabel();
         tfUser = new javax.swing.JTextField();
 
@@ -108,25 +105,13 @@ public class NotifierPanel extends javax.swing.JPanel {
         txtFilesList.setRows(5);
         jScrollPane2.setViewportView(txtFilesList);
 
-        tfPassword.setText(null);
-        tfPassword.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                tfPasswordonPwdFocus(evt);
-            }
-        });
-
         tfHost.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background") /*NOI18N*/);
         tfHost.setEditable(false);
         tfHost.setText(null);
         tfHost.setFocusable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbRememberPwd, org.openide.util.NbBundle.getMessage(NotifierPanel.class, "NotifierPanel.cbRememberPwd.text")); // NOI18N
-
         jLabel1.setLabelFor(tfHost);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(NotifierPanel.class, "NotifierPanel.jLabel1.text")); // NOI18N
-
-        jLabel2.setLabelFor(tfPassword);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(NotifierPanel.class, "NotifierPanel.jLabel2.text")); // NOI18N
 
         jLabel0.setLabelFor(tfUser);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel0, org.openide.util.NbBundle.getMessage(NotifierPanel.class, "NotifierPanel.jLabel0.text")); // NOI18N
@@ -143,18 +128,15 @@ public class NotifierPanel extends javax.swing.JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 547, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
                             .addComponent(jLabel1)
                             .addComponent(jLabel0, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(33, 33, 33)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(tfHost, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
-                            .addComponent(tfUser, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
-                            .addComponent(tfPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)))
-                    .addComponent(cbRememberPwd, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(tfUser, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)))
                     .addComponent(lblFiles, javax.swing.GroupLayout.Alignment.LEADING))
                 .addContainerGap())
         );
@@ -173,30 +155,17 @@ public class NotifierPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(tfHost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(tfPassword))
-                .addGap(8, 8, 8)
-                .addComponent(cbRememberPwd)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void tfPasswordonPwdFocus(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfPasswordonPwdFocus
-        tfPassword.selectAll();
-}//GEN-LAST:event_tfPasswordonPwdFocus
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox cbRememberPwd;
     private javax.swing.JLabel jLabel0;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lblFiles;
     private javax.swing.JTextField tfHost;
-    private javax.swing.JPasswordField tfPassword;
     private javax.swing.JTextField tfUser;
     private javax.swing.JTextArea txtFilesList;
     // End of variables declaration//GEN-END:variables

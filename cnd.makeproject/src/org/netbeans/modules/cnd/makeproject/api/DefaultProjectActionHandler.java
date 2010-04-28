@@ -464,7 +464,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                             res.append(')');
 
                             // use \n\r to correctly move cursor in terminals as well
-                            tab.getOut().printf("\n\r%s\n\r",res.toString()); // NOI18N
+                            tab.getErr().printf("\n\r%s\n\r",res.toString()); // NOI18N
                             closeIO();
 
                             if (listener != null) {

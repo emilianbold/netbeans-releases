@@ -191,7 +191,7 @@ public class RemoteFileSystemNotifier {
 
                 @Override
                 protected void runImpl() {
-                    PasswordManager.getInstance().storePassword(env, panel.getPassword(), panel.isRememberPassword());
+//                    PasswordManager.getInstance().storePassword(env, panel.getPassword(), panel.isRememberPassword());
                     connect();
                 }
             });

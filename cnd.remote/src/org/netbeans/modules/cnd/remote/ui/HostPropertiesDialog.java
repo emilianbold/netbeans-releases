@@ -42,23 +42,24 @@
  *
  * Created on Apr 28, 2009, 1:51:26 AM
  */
-
 package org.netbeans.modules.cnd.remote.ui;
 
 import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.sync.SyncUtils;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.Validateable;
+import org.netbeans.modules.nativeexecution.api.util.ValidationListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,18 +68,26 @@ import org.openide.util.NbBundle;
  */
 public class HostPropertiesDialog extends JPanel {
 
-    private final ServerRecord serverRecord;
-    private boolean forceCleanWasDone = false;
+    private final ValidationListener validationListener;
+    private final JButton ok;
+    private final Validateable vpanel;
 
     public static boolean invokeMe(RemoteServerRecord record) {
         HostPropertiesDialog pane = new HostPropertiesDialog(record);
+
+        Object[] buttons = new Object[]{
+            pane.ok,
+            DialogDescriptor.CANCEL_OPTION
+        };
+
         DialogDescriptor dd = new DialogDescriptor(
                 pane, NbBundle.getMessage(HostPropertiesDialog.class, "TITLE_HostProperties"),
-                true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
+                true, buttons, pane.ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
+
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            record.setRememberPassword(pane.rememberPassword.isSelected());
+        if (dd.getValue() == pane.ok) {
+            pane.vpanel.applyChanges();
             String displayName = pane.tfName.getText();
             boolean changed = false;
             if (!displayName.equals(record.getDisplayName())) {
@@ -91,11 +100,11 @@ public class HostPropertiesDialog extends JPanel {
                 changed = true;
             }
 //            if (record.isX11forwardingPossible()) {
-                boolean x11forwarding = pane.cbX11.isSelected();
-                if (x11forwarding != record.getX11Forwarding()) {
-                    record.setX11Forwarding(x11forwarding);
-                    changed = true;
-                }
+            boolean x11forwarding = pane.cbX11.isSelected();
+            if (x11forwarding != record.getX11Forwarding()) {
+                record.setX11Forwarding(x11forwarding);
+                changed = true;
+            }
 //            }
             if (changed) {
                 RemoteServerList.storePreferences(record);
@@ -105,29 +114,24 @@ public class HostPropertiesDialog extends JPanel {
         return false;
     }
 
-
     /** Creates new form HostPropertiesDialog */
     @org.netbeans.api.annotations.common.SuppressWarnings("Se") // it's never serialized!
     private HostPropertiesDialog(RemoteServerRecord serverRecord) {
-        this.serverRecord = serverRecord;
+        validationListener = new ValidationListenerImpl();
+
         initComponents();
-        tfHost.setBackground(getBackground());
-        tfPort.setBackground(getBackground());
-        tfUser.setBackground(getBackground());
+
+        ok = new JButton("OK"); // NOI18N
+
+        JPanel panel = ConnectionManager.getInstance().getConfigurationPanel(serverRecord.getExecutionEnvironment());
+        vpanel = (panel instanceof Validateable) ? (Validateable) panel : null;
+
+        if (vpanel != null) {
+            vpanel.addValidationListener(validationListener);
+        }
+
+        cfgPanel.add(panel);
         tfName.setText(serverRecord.getDisplayName());
-        tfHost.setText(serverRecord.getServerName());
-        tfUser.setText(serverRecord.getUserName());
-        rememberPassword.setSelected(serverRecord.isRememberPassword());
-        rememberPassword.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (!rememberPassword.isSelected() && !forceCleanWasDone) {
-                    forceCleanWasDone = true;
-                    PasswordManager.getInstance().forceClearPassword(HostPropertiesDialog.this.serverRecord.getExecutionEnvironment());
-                }
-            }
-        });
-        tfPort.setText("" + serverRecord.getExecutionEnvironment().getSSHPort());
         SyncUtils.arrangeComboBox(cbSync, serverRecord.getExecutionEnvironment());
         cbSync.setSelectedItem(serverRecord.getSyncFactory());
         cbX11.setSelected(serverRecord.getX11Forwarding());
@@ -135,14 +139,19 @@ public class HostPropertiesDialog extends JPanel {
 //        // we should at least allow switching it off => || serverRecord.getX11Forwarding()
 //        cbX11.setEnabled(serverRecord.isX11forwardingPossible() || serverRecord.getX11Forwarding());
         addAncestorListener(new AncestorListener() {
+
             @Override
             public void ancestorAdded(AncestorEvent event) {
                 tfName.requestFocus();
             }
+
             @Override
-            public void ancestorRemoved(AncestorEvent event) {}
+            public void ancestorRemoved(AncestorEvent event) {
+            }
+
             @Override
-            public void ancestorMoved(AncestorEvent event) {}
+            public void ancestorMoved(AncestorEvent event) {
+            }
         });
     }
 
@@ -155,39 +164,18 @@ public class HostPropertiesDialog extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lblHost = new javax.swing.JLabel();
-        tfHost = new javax.swing.JTextField();
-        lblPort = new javax.swing.JLabel();
-        tfPort = new javax.swing.JTextField();
-        lblUser = new javax.swing.JLabel();
-        tfUser = new javax.swing.JTextField();
+        jButton2 = new javax.swing.JButton();
         lblName = new javax.swing.JLabel();
         tfName = new javax.swing.JTextField();
         lblSync = new javax.swing.JLabel();
         cbSync = new javax.swing.JComboBox();
         cbX11 = new javax.swing.JCheckBox();
-        rememberPassword = new javax.swing.JCheckBox();
+        cfgPanel = new javax.swing.JPanel();
+
+        jButton2.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.jButton2.text")); // NOI18N
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
         setFocusCycleRoot(true);
-
-        lblHost.setLabelFor(tfHost);
-        org.openide.awt.Mnemonics.setLocalizedText(lblHost, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblHost.text")); // NOI18N
-
-        tfHost.setEditable(false);
-        tfHost.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.tfHost.text")); // NOI18N
-
-        lblPort.setLabelFor(tfPort);
-        org.openide.awt.Mnemonics.setLocalizedText(lblPort, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblPort.text")); // NOI18N
-
-        tfPort.setEditable(false);
-        tfPort.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.tfPort.text")); // NOI18N
-
-        lblUser.setLabelFor(tfUser);
-        org.openide.awt.Mnemonics.setLocalizedText(lblUser, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblUser.text")); // NOI18N
-
-        tfUser.setEditable(false);
-        tfUser.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.tfUser.text")); // NOI18N
 
         lblName.setLabelFor(tfName);
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblName.text")); // NOI18N
@@ -200,7 +188,7 @@ public class HostPropertiesDialog extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(cbX11, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.cbX11.text")); // NOI18N
         cbX11.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(rememberPassword, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.rememberPassword.text")); // NOI18N
+        cfgPanel.setLayout(new java.awt.BorderLayout());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -209,47 +197,24 @@ public class HostPropertiesDialog extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblUser)
-                            .addComponent(lblHost))
-                        .addGap(76, 76, 76)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(tfHost, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(lblPort)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(tfPort, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(tfUser, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(lblName, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblSync, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(12, 12, 12)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbX11, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
-                            .addComponent(tfName, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
-                            .addComponent(cbSync, javax.swing.GroupLayout.Alignment.TRAILING, 0, 288, Short.MAX_VALUE)
-                            .addComponent(rememberPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))))
+                    .addComponent(lblSync)
+                    .addComponent(lblName))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(tfName, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 370, Short.MAX_VALUE)
+                    .addComponent(cbSync, javax.swing.GroupLayout.Alignment.TRAILING, 0, 370, Short.MAX_VALUE))
                 .addContainerGap())
+            .addComponent(cfgPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(cbX11, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(240, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblHost)
-                    .addComponent(tfHost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tfPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblPort))
+                .addComponent(cfgPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblUser)
-                    .addComponent(tfUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
-                .addComponent(rememberPassword)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblName)
                     .addComponent(tfName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -257,25 +222,35 @@ public class HostPropertiesDialog extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblSync)
                     .addComponent(cbSync, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(cbX11))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbSync;
     private javax.swing.JCheckBox cbX11;
-    private javax.swing.JLabel lblHost;
+    private javax.swing.JPanel cfgPanel;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel lblName;
-    private javax.swing.JLabel lblPort;
     private javax.swing.JLabel lblSync;
-    private javax.swing.JLabel lblUser;
-    private javax.swing.JCheckBox rememberPassword;
-    private javax.swing.JTextField tfHost;
     private javax.swing.JTextField tfName;
-    private javax.swing.JTextField tfPort;
-    private javax.swing.JTextField tfUser;
     // End of variables declaration//GEN-END:variables
 
+    private class ValidationListenerImpl implements ValidationListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            if (e.getSource() instanceof Validateable) {
+                Validateable obj = (Validateable) e.getSource();
+                final boolean isOK = !obj.hasProblem();
+                Mutex.EVENT.readAccess(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        ok.setEnabled(isOK);
+                    }
+                });
+            }
+        }
+    }
 }

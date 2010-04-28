@@ -60,7 +60,6 @@ public final class PasswordManager {
     private static final String STORE_PREFIX = "remote.user.info.store."; // NOI18N
     private final Map<String, String> cache = Collections.synchronizedMap(new HashMap<String, String>());
     private boolean keyringIsActivated = false;
-
     private static PasswordManager instance = new PasswordManager();
 
     private PasswordManager() {
@@ -75,7 +74,7 @@ public final class PasswordManager {
      * @param execEnv
      * @return password from memory or from Keyring if user selected "remember password" in previous IDE invocation
      */
-    public char[] get(ExecutionEnvironment execEnv) {
+    public char[] getPassword(ExecutionEnvironment execEnv) {
         String key = execEnv.toString();
         if (keepPasswordsInMemory) {
             String cachedPassword = cache.get(key);
@@ -89,7 +88,7 @@ public final class PasswordManager {
             keyringIsActivated = true;
             char[] keyringPassword = Keyring.read(KEY_PREFIX + key);
             if (keepPasswordsInMemory && keyringPassword != null) {
-                 cache.put(key, String.valueOf(keyringPassword));
+                cache.put(key, String.valueOf(keyringPassword));
             }
             Logger.getInstance().log(Level.FINEST, "PasswordManager.get({0}) found password in keyring", execEnv); // NOI18N
             return keyringPassword;
@@ -132,7 +131,7 @@ public final class PasswordManager {
         if (store) {
             keyringIsActivated = true;
             Keyring.save(KEY_PREFIX + key, password,
-                    NbBundle.getMessage(PasswordManager.class, "PasswordManagerPasswordFor",execEnv.getDisplayName())); // NOI18N
+            NbBundle.getMessage(PasswordManager.class, "PasswordManagerPasswordFor", execEnv.getDisplayName())); // NOI18N
             Logger.getInstance().log(Level.FINEST, "PasswordManager.put({0}, non-null) stored password in keyring", execEnv); // NOI18N
         }
     }
@@ -174,18 +173,18 @@ public final class PasswordManager {
      */
     public void setServerList(List<ExecutionEnvironment> envs) {
         Set<String> keys = new HashSet<String>();
-        for(ExecutionEnvironment env : envs) {
+        for (ExecutionEnvironment env : envs) {
             String key = env.toString();
-            keys.add(KEY_PREFIX+key);
-            keys.add(STORE_PREFIX+key);
+            keys.add(KEY_PREFIX + key);
+            keys.add(STORE_PREFIX + key);
         }
         try {
             String[] allKeys = NbPreferences.forModule(PasswordManager.class).keys();
             for (String aKey : allKeys) {
-                if (!keys.contains(aKey)){
+                if (!keys.contains(aKey)) {
                     if (aKey.startsWith(STORE_PREFIX)) {
                         if (keyringIsActivated) {
-                            Keyring.delete(KEY_PREFIX+aKey.substring(STORE_PREFIX.length()));
+                            Keyring.delete(KEY_PREFIX + aKey.substring(STORE_PREFIX.length()));
                         }
                         if (keepPasswordsInMemory) {
                             cache.remove(aKey.substring(STORE_PREFIX.length()));
@@ -205,7 +204,7 @@ public final class PasswordManager {
      * @param execEnv
      * @return true if user checked "remember password" option.
      */
-    public boolean isRememberPassword(ExecutionEnvironment execEnv){
+    public boolean isRememberPassword(ExecutionEnvironment execEnv) {
         String key = execEnv.toString();
         boolean stored = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
         return stored;

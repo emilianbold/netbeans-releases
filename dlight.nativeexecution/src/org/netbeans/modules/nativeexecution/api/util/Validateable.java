@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,46 +34,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution;
+package org.netbeans.modules.nativeexecution.api.util;
 
-import com.jcraft.jsch.Session;
-import java.io.IOException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.support.Authentication;
+/**
+ *
+ * @author ak119685
+ */
+public interface Validateable {
 
-public abstract class ConnectionManagerAccessor {
+    public void addValidationListener(ValidationListener listener);
 
-    private static volatile ConnectionManagerAccessor DEFAULT;
+    public void removeValidationListener(ValidationListener listener);
 
-    public static void setDefault(ConnectionManagerAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException(
-                    "ConnectionManagerAccessor is already defined"); // NOI18N
-        }
+    public boolean hasProblem();
 
-        DEFAULT = accessor;
-    }
+    public String getProblem();
 
-    public static synchronized ConnectionManagerAccessor getDefault() {
-        if (DEFAULT != null) {
-            return DEFAULT;
-        }
-
-        try {
-            Class.forName(ConnectionManager.class.getName(), true,
-                    ConnectionManager.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-        }
-
-        return DEFAULT;
-    }
-
-    public abstract Session getConnectionSession(final ExecutionEnvironment env, boolean restoreLostConnection);
-
-    public abstract void reconnect(final ExecutionEnvironment env) throws IOException;
-
-    public abstract void changeAuth(ExecutionEnvironment env, Authentication auth);
+    public void applyChanges();
 }
