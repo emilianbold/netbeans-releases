@@ -821,9 +821,12 @@ public class PropertiesOpen extends CloneableOpenSupport
             BundleStructure structure = bundleStructure;
             SaveCookie save;
             for (int i=0; i<structure.getEntryCount();i++) {
-                save = structure.getNthEntry(i).getCookie(SaveCookie.class);
-                if (save != null) {
-                    save.save();
+                PropertiesFileEntry pfe = structure.getNthEntry(i);
+                if(pfe != null) { // #184927
+                    save = pfe.getCookie(SaveCookie.class);
+                    if (save != null) {
+                        save.save();
+                    }
                 }
             }
         }
