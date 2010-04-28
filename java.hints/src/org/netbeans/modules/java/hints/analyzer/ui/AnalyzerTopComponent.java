@@ -48,15 +48,20 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressRunnable;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.hints.analyzer.Analyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -80,6 +85,7 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
     private final ExplorerManager manager = new ExplorerManager();
     private final CheckTreeView btv;
     private final List<FixDescription> fixes = new LinkedList<FixDescription>();
+    private boolean applyingFixes;
 
     private AnalyzerTopComponent() {
         initComponents();
@@ -257,7 +263,7 @@ private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 }//GEN-LAST:event_refreshButtonActionPerformed
 
 private void fixButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fixButtonActionPerformed
-    List<FixDescription> fixes = new LinkedList<FixDescription>();
+    final List<FixDescription> fixes = new LinkedList<FixDescription>();
 
     for (FixDescription fd : this.fixes) {
         if (fd.isSelected()) {
@@ -265,12 +271,13 @@ private void fixButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
     }
 
-    for (FixDescription f : fixes) {
-        try {
-            f.implement();
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    applyingFixes = true;
+
+    try {
+        ProgressUtils.showProgressDialogAndRun(new FixWorker(fixes), NbBundle.getMessage(AnalyzerTopComponent.class, "CAP_ApplyingFixes"), false);
+    } finally {
+        applyingFixes = false;
+        stateChanged(null);
     }
 }//GEN-LAST:event_fixButtonActionPerformed
 
@@ -410,6 +417,8 @@ private void fixOnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     }
 
     public void stateChanged(ChangeEvent e) {
+        if (applyingFixes) return;
+        
         boolean fixEnable = false;
         boolean overFixedEnabled = false;
         for (FixDescription f : fixes) {
@@ -453,6 +462,46 @@ private void fixOnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 previousError.setEnabled(prevAction.isEnabled());
                 nextError.setEnabled(nextAction.isEnabled());
             }
+        }
+        
+    }
+
+    private static final class FixWorker implements ProgressRunnable<Void>, Cancellable {
+
+        private final AtomicBoolean cancel = new AtomicBoolean();
+        private final List<FixDescription> fixes;
+
+        public FixWorker(List<FixDescription> fixes) {
+            this.fixes = fixes;
+        }
+
+        @Override
+        public Void run(ProgressHandle handle) {
+            handle.switchToDeterminate(fixes.size());
+
+            int clock = 0;
+
+            for (FixDescription f : fixes) {
+                if (cancel.get()) break;
+                
+                try {
+                    f.implement();
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    handle.progress(++clock);
+                }
+            }
+
+            handle.finish();
+
+            return null;
+        }
+
+        @Override
+        public boolean cancel() {
+            cancel.set(true);
+            return true;
         }
         
     }
