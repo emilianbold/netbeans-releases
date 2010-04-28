@@ -249,19 +249,19 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         private boolean match(String name, SearchType type, String what, Pattern pattern) {
             switch (type) {
                 case CAMEL_CASE:
-                    return pattern.matcher(name).find();
+                    return pattern.matcher(name).matches();
                 case CASE_INSENSITIVE_EXACT_NAME:
                     return name.toLowerCase().equals(what);
                 case CASE_INSENSITIVE_PREFIX:
                     return name.toLowerCase().startsWith(what);
                 case CASE_INSENSITIVE_REGEXP:
-                    return pattern.matcher(name.toLowerCase()).find();
+                    return pattern.matcher(name.toLowerCase()).matches();
                 case EXACT_NAME:
                     return name.equals(what);
                 case PREFIX:
                     return name.startsWith(what);
                 case REGEXP:
-                    return pattern.matcher(name).find();
+                    return pattern.matcher(name).matches();
             }
             return false;
         }
