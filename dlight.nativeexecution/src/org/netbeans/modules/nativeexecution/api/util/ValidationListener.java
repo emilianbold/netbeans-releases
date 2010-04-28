@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,36 +34,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.nativeexecution.api.util;
 
-package org.netbeans.modules.nativeexecution.support;
+import javax.swing.event.ChangeListener;
 
-import com.jcraft.jsch.UserInfo;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-
-public class RemoteUserInfoProvider {
-    private final static ConcurrentMap<String, UserInfo> cache =
-            new ConcurrentHashMap<String, UserInfo>();
-
-    private RemoteUserInfoProvider() {
-    }
-
-    // @ThreadSafe
-    public static UserInfo getUserInfo(ExecutionEnvironment env, boolean interractive) {
-        String key = env.toString() + (interractive ? "-INT" : "-NOINT"); // NOI18N
-        UserInfo info = cache.get(key);
-
-        if (info == null) {
-            info = interractive ? new RemoteUserInfo.Interractive(env) : new RemoteUserInfo(env);
-            UserInfo oldInfo = cache.putIfAbsent(key, info);
-            if (oldInfo != null) {
-                info = oldInfo;
-            }
-        }
-        
-        return info;
-    }
+/**
+ *
+ * @author ak119685
+ */
+public interface ValidationListener extends ChangeListener {
 }

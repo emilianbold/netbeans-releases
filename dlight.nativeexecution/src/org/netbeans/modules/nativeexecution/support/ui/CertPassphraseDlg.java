@@ -85,12 +85,15 @@ public class CertPassphraseDlg extends javax.swing.JPanel {
 
         promptLabel.setLabelFor(tfPassword);
         org.openide.awt.Mnemonics.setLocalizedText(promptLabel, org.openide.util.NbBundle.getMessage(CertPassphraseDlg.class, "CertPassphraseDlg.promptLabel.text")); // NOI18N
+        promptLabel.setFocusable(false);
 
         jLabel1.setLabelFor(tfHost);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CertPassphraseDlg.class, "CertPassphraseDlg.jLabel1.text")); // NOI18N
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(CertPassphraseDlg.class, "CertPassphraseDlg.jLabel1.text")); // NOI18N
+        jLabel1.setFocusable(false);
 
         jLabel0.setLabelFor(tfUser);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel0, org.openide.util.NbBundle.getMessage(CertPassphraseDlg.class, "CertPassphraseDlg.jLabel0.text")); // NOI18N
+        jLabel0.setText(org.openide.util.NbBundle.getMessage(CertPassphraseDlg.class, "CertPassphraseDlg.jLabel0.text")); // NOI18N
+        jLabel0.setFocusable(false);
 
         tfPassword.setText(null);
         tfPassword.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -167,6 +170,7 @@ public class CertPassphraseDlg extends javax.swing.JPanel {
                 DialogDescriptor.DEFAULT_ALIGN, null, null);
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setResizable(false);
         dialog.setVisible(true);
         return dd.getValue() == DialogDescriptor.OK_OPTION;
     }
