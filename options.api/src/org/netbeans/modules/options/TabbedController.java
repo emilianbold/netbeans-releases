@@ -200,8 +200,11 @@ public class TabbedController extends OptionsPanelController {
                 } else {
                     comp = controller.getComponent(masterLookup);
                 }
+                if( null == comp.getBorder() ) {
+                    comp.setBorder(BorderFactory.createEmptyBorder(11,11,11,11));
+                }
                 JScrollPane scroll = new JScrollPane(comp);
-                scroll.setBorder(BorderFactory.createEmptyBorder(11,11,11,11));
+                scroll.setBorder(BorderFactory.createEmptyBorder());
                 scroll.setOpaque(false);
                 scroll.getViewport().setOpaque(false);
                 pane.setComponentAt(selectedIndex, scroll);

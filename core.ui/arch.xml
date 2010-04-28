@@ -580,7 +580,15 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-   XXX no answer for exec-property
+      <api name="netbeans.indexing.noFileRefresh" group="systemproperty" type="export" category="devel">
+        When set, no check for external file changes is performed on focus gain. Works in
+        concert with Parsing API.
+      </api>
+
+        <api category="devel" group="preferences" name="org.openide.actions.FileSystemRefreshAction.manual" type="import">
+            External changes refresh is only performed when manual refresh is off.
+            Various UI elements can also change the value of this preference setting.
+        </api>
   </p>
  </answer>
 
