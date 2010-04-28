@@ -73,13 +73,10 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
 //        filter.setIncludes(new Filter.IncludeExclude[] { new Filter.IncludeExclude("testGap", "")});
 //        filter.setIncludes(new Filter.IncludeExclude[] { new Filter.IncludeExclude("testNPEInRedo", "")});
 //        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testRandomModsPlainText", "")});
-        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testInsertRemoveSingleChar", "")});
+//        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testInsertRemoveSingleChar", "")});
+//        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testUndo750", "")});
+        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testUndoRedoSimple", "")});
 //        setFilter(filter);
-    }
-
-    @Override
-    protected Level logLevel() {
-        return Level.INFO;
     }
 
     private static void loggingOn() {
@@ -94,8 +91,8 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
     private RandomTestContainer createContainer() throws Exception {
         RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit()); // no problem for both java and plain mime-types
         container.setName(this.getName());
-        container.setLogOp(true);
-        DocumentTesting.setLogDoc(container, true);
+//        container.setLogOp(true);
+//        DocumentTesting.setLogDoc(container, true);
         return container;
     }
 
@@ -106,7 +103,6 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         Document doc = pane.getDocument();
         doc.putProperty("mimeType", "text/plain");
         RandomTestContainer.Context context = container.context();
-        ViewHierarchyRandomTesting.initUndoManager(container);
         ViewHierarchyRandomTesting.disableHighlighting(container);
         DocumentTesting.insert(context, 0, "a");
         DocumentTesting.remove(context, 0, 1);
@@ -120,7 +116,6 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty("mimeType", "text/plain");
-        ViewHierarchyRandomTesting.initUndoManager(container);
         ViewHierarchyRandomTesting.initRandomText(container);
         ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
 
@@ -151,7 +146,6 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty("mimeType", "text/plain");
-        ViewHierarchyRandomTesting.initUndoManager(container);
         ViewHierarchyRandomTesting.initRandomText(container);
         ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
 
@@ -174,7 +168,6 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty("mimeType", "text/plain");
-        ViewHierarchyRandomTesting.initUndoManager(container);
         ViewHierarchyRandomTesting.initRandomText(container);
         ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
         ViewHierarchyRandomTesting.testFixedScenarios(container);
@@ -195,7 +188,6 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty("mimeType", "text/plain");
-        ViewHierarchyRandomTesting.initUndoManager(container);
         ViewHierarchyRandomTesting.initRandomText(container);
         ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
         ViewHierarchyRandomTesting.testFixedScenarios(container);
@@ -237,20 +229,149 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         DocumentTesting.redo(context, 1);
     }
 
+    public void testUndoRedoSimple() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        ViewHierarchyRandomTesting.initRandomText(container);
+        RandomTestContainer.Context context = container.context();
+        DocumentTesting.insert(context, 0, "ab\nglanm\nq\n        \nv  nyk\n    \ndy qucjfn\tfh cdk \t\t \nj\nsm\n t\ngqa \nsjj\n\n\n");
+        EditorPaneTesting.setCaretOffset(context, 38);
+        EditorPaneTesting.moveCaret(context, 31);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, false);
+        EditorPaneTesting.typeChar(context, 'j'); // #1: INSERT: off=38 len=1 "j"
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, true);
+        EditorPaneTesting.typeChar(context, 'q'); // #2: REMOVE: off=23 len=8; INSERT: off=23 len=1 text="q"
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, false);
+        EditorPaneTesting.performAction(context, pane, DefaultEditorKit.insertTabAction); // #3: INSERT: off=24 len=4 "    "
+        // #3.replaceEdit(#2) => false (not replaced; added)
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, true);
+        DocumentTesting.undo(context, 1);
+        // #3.undo() (AtomicCompoundEdit)
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, false);
+        EditorPaneTesting.performAction(context, pane, DefaultEditorKit.insertTabAction); // #4: INSERT: off=28 len=1 " "
+        // 
+        DocumentTesting.undo(context, 1);
+    }
+
+    public void testUndo750Simplified() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        ViewHierarchyRandomTesting.initRandomText(container);
+        RandomTestContainer.Context context = container.context();
+        DocumentTesting.insert(context, 0,
+"  \naxj \n\n\nm hebkinc  krnb\t\tabce\n\nd\t\n\n \t\talja\nj \t\tabcdef\tcdef \t \n\n\n\tabcdf\t\tq tzaicl  \t\tabcdef\t  \nglanm\nq\n        \nv  nyk\n    \ndy qucjfn\tfh cdk \t\t \nj\nsm\n t\ngqa \nsjj\n\n\ncdef\t\n \t\tpabg\to\nkbcvde\tjs\ny\tfw\nr\n\n\nced"
+        );
+        EditorPaneTesting.setCaretOffset(context, 131);
+        EditorPaneTesting.moveCaret(context, 124);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, false);
+        EditorPaneTesting.typeChar(context, 'j');
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, true);
+        EditorPaneTesting.typeChar(context, 'q');
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, false);
+        EditorPaneTesting.performAction(context, pane, DefaultEditorKit.insertTabAction);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, true);
+        DocumentTesting.undo(context, 1);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, false);
+        EditorPaneTesting.performAction(context, pane, DefaultEditorKit.insertTabAction);
+        DocumentTesting.undo(context, 1);
+    }
+
+    public void testUndo750() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        ViewHierarchyRandomTesting.initRandomText(container);
+        RandomTestContainer.Context context = container.context();
+        DocumentTesting.insert(context, 0,
+"  \naxj \n\n\nm hebkinc  krnb\t\tabce\n\nd\t\n\n \t\talja\nj \t\tabcdef\tcdef \t \n\n\n\tabcdf\t\tq tzaicl  \t\tabcdef\t  \nglanm\nq\n        \nv  nyk\n    \ndy qucjfn\tfh cdk \t\t \nj\nsm\n t\ngqa \nsjj\n\n\ncdef\t\n \t\tpabg\to\nkbcvde\tjs\ny\tfw\nr\n\n\nced"
+        );
+        EditorPaneTesting.setCaretOffset(context, 131);
+        EditorPaneTesting.moveCaret(context, 124);
+        DocumentTesting.insert(context, 102, " \t\tabcdef\t");
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, false);
+        DocumentTesting.insert(context, 103, "k\t\n\n ");
+        EditorPaneTesting.typeChar(context, 'j');
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, true);
+        EditorPaneTesting.typeChar(context, 'q');
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, true);
+        DocumentTesting.insert(context, 64, " \t\tabcdef\t");
+        DocumentTesting.remove(context, 121, 1);
+        DocumentTesting.insert(context, 52, "r");
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, false);
+        EditorPaneTesting.performAction(context, pane, DefaultEditorKit.insertTabAction);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, true);
+        DocumentTesting.redo(context, 3);
+        DocumentTesting.undo(context, 1);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, false);
+        EditorPaneTesting.performAction(context, pane, DefaultEditorKit.insertTabAction);
+        DocumentTesting.undo(context, 1);
+    }
+
     public void testRandomModsPlainText() throws Exception {
         loggingOn();
         RandomTestContainer container = createContainer();
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty("mimeType", "text/plain");
-        ViewHierarchyRandomTesting.initUndoManager(container);
         ViewHierarchyRandomTesting.initRandomText(container);
         ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
         ViewHierarchyRandomTesting.testFixedScenarios(container);
+        container.run(1271950385168L); // Failed at op=750
 //        container.run(1270806278503L);
 //        container.run(1270806786819L);
-        container.run(1270806387223L);
-        container.run(1271372510390L);
+//        container.run(1270806387223L);
+//        container.run(1271372510390L);
 
 //        RandomTestContainer.Context context = container.context();
 //        DocumentTesting.undo(context, 2);
@@ -265,10 +386,10 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         Document doc = pane.getDocument();
         doc.putProperty(Language.class, JavaTokenId.language());
         doc.putProperty("mimeType", "text/x-java");
-        ViewHierarchyRandomTesting.initUndoManager(container);
         ViewHierarchyRandomTesting.initRandomText(container);
         ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
         ViewHierarchyRandomTesting.testFixedScenarios(container);
+        container.run(1271946202898L);
         container.run(0L); // Test random ops
     }
 
