@@ -67,17 +67,6 @@ public class KenaiSupportImpl extends KenaiSupport {
         }
 
         KenaiRepository repo = createKenaiRepository(project, project.getDisplayName(), project.getFeatureLocation());
-        if(repo == null) {
-            return null;
-        }
-
-        KenaiConfiguration kc = (KenaiConfiguration) repo.getConfiguration(); // force repo configuration init before controler populate
-        if(kc.getRepositoryConfiguration(repo, false) == null) {
-            // something went wrong, can't use the repo anyway => return null
-            Bugzilla.LOG.fine("KenaiRepository.getRepositoryConfiguration() returned null for KenaiProject ["   // NOI18N
-                    + project.getDisplayName() + "," + project.getName() + "]");                                // NOI18N
-            return null;
-        }
         return repo;
          
     }

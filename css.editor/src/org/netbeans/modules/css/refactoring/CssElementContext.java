@@ -44,6 +44,7 @@ import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -114,13 +115,15 @@ public abstract class CssElementContext {
 	private int selectionFrom, selectionTo;
 	private SimpleNode element;
 	private CssParserResult result;
+        private Snapshot topLevelSnapshot;
 
-	public Editor(CssParserResult result, int caretOffset, int selectionFrom, int selectionTo) {
+	public Editor(CssParserResult result, Snapshot topLevelSnapshot, int caretOffset, int selectionFrom, int selectionTo) {
 	    this.result = result;
 	    this.caretOffset = caretOffset;
 	    this.selectionFrom = selectionFrom;
 	    this.selectionTo = selectionTo;
 	    this.element = findCurrentElement();
+            this.topLevelSnapshot = topLevelSnapshot;
 
 	    assert element != null; //at least the root node should always be found
 	}
@@ -136,6 +139,10 @@ public abstract class CssElementContext {
 
         public Document getDocument() {
             return result.getSnapshot().getSource().getDocument(false);
+        }
+
+        public Snapshot getTopLevelSnapshot() {
+            return topLevelSnapshot;
         }
 
 	public CssParserResult getParserResult() {
