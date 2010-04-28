@@ -50,12 +50,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.api.util.Validateable;
 import org.netbeans.modules.nativeexecution.api.util.ValidationListener;
 import org.netbeans.modules.nativeexecution.support.Authentication;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -370,12 +370,12 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
 
             String key = keyFld.getText();
             if (key.length() == 0) {
-                problem = "Empty key";
+                problem = NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.validationError.emptyKey.text");
                 return false;
             }
 
             if (!Authentication.isValidKey(key)) {
-                problem = "Invalid key";
+                problem = NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.validationError.invalidKey.text", key);
                 return false;
             }
 
