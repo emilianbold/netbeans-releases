@@ -9,15 +9,22 @@
             <attr name="position" intvalue="555"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/testFiles.html"/>
 
-            <!--file name="test.simple.c" url="templates/c/test-simple-c.template">
+            <file name="simpletest.c" url="templates/c/test-simple-c.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.simpleunit.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/testSimpleC.png"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/test-simple-c.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.simpleunit.editor.filecreation.TestSimpleCIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.simpleunit.editor.filecreation.TestSimpleIterator"/>
                 <attr name="templateCategory" stringvalue="cncpp-test-types"/>
-            </file-->
+            </file>
+
+            <file name="simpletestfile.c" url="templates/c/test-simple-file-c.template">
+                <attr name="position" intvalue="110"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+                <attr name="addToLogicalFolder" boolvalue="false"/>
+            </file>
 
             <file name="simpletest.cpp" url="templates/cpp/test-simple-cpp.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.simpleunit.resources.Bundle"/>
@@ -25,7 +32,7 @@
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/test-simple-cpp.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.simpleunit.editor.filecreation.TestSimpleCppIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.simpleunit.editor.filecreation.TestSimpleIterator"/>
                 <attr name="templateCategory" stringvalue="cncpp-test-types"/>
             </file>
 

@@ -69,7 +69,7 @@ import org.openide.loaders.TemplateWizard;
 /**
  * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-public class TestSimpleCppIterator extends CCFSrcFileIterator {
+public class TestSimpleIterator extends CCFSrcFileIterator {
 
     private static final String C_HEADER_MIME_TYPE = "text/x-c/text/x-h"; // NOI18N
 
@@ -82,7 +82,9 @@ public class TestSimpleCppIterator extends CCFSrcFileIterator {
         }
 
         DataFolder targetFolder = wiz.getTargetFolder();
-        DataObject formDataObject = NewTestSimpleCppPanel.getTemplateDataObject("simpletestfile.cpp"); // NOI18N
+        
+        DataObject formDataObject = NewTestSimplePanel.getTemplateDataObject(
+                "simpletestfile." + wiz.getTemplate().getPrimaryFile().getExt()); // NOI18N
         
         DataObject dataObject = formDataObject.createFromTemplate(targetFolder, getTestFileName());
 
@@ -161,7 +163,7 @@ public class TestSimpleCppIterator extends CCFSrcFileIterator {
                 defaultExt = fobj.getExt();
             }
 
-            NewTestSimpleCppPanel panel = new NewTestSimpleCppPanel(project, groups, null, extensions, defaultExt);
+            NewTestSimplePanel panel = new NewTestSimplePanel(project, groups, null, extensions, defaultExt);
             return panel;
         } else {
             return wiz.targetChooser();
@@ -169,11 +171,11 @@ public class TestSimpleCppIterator extends CCFSrcFileIterator {
     }
 
     private String getTestFileName() {
-        return ((NewTestSimpleCppPanelGUI)targetChooserDescriptorPanel.getComponent()).getTestFileName();
+        return ((NewTestSimplePanelGUI)targetChooserDescriptorPanel.getComponent()).getTestFileName();
     }
 
     private String getTestName() {
-        return ((NewTestSimpleCppPanelGUI)targetChooserDescriptorPanel.getComponent()).getTestName();
+        return ((NewTestSimplePanelGUI)targetChooserDescriptorPanel.getComponent()).getTestName();
     }
 
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor(Project p) {

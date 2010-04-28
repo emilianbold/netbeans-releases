@@ -55,13 +55,13 @@ import org.openide.util.NbBundle;
 /**
  * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-public class NewTestSimpleCppPanel extends CndPanel {
+public class NewTestSimplePanel extends CndPanel {
 
     private final MIMEExtensions es;
     private final String defaultExt;
     private final boolean fileWithoutExtension;
 
-    NewTestSimpleCppPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, MIMEExtensions es, String defaultExt) {
+    NewTestSimplePanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, MIMEExtensions es, String defaultExt) {
         super(project, folders, bottomPanel);
         this.es = es;
         this.defaultExt = defaultExt;
@@ -70,7 +70,7 @@ public class NewTestSimpleCppPanel extends CndPanel {
 
     public Component getComponent() {
         if (gui == null) {
-            gui = new NewTestSimpleCppPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), es, defaultExt);
+            gui = new NewTestSimplePanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), es, defaultExt);
             gui.addChangeListener(this);
         }
         return gui;
@@ -79,7 +79,7 @@ public class NewTestSimpleCppPanel extends CndPanel {
     @Override
     protected void doStoreSettings(WizardDescriptor settings) {
         if (getTargetExtension().length() > 0) {
-            if (((NewTestSimpleCppPanelGUI)gui).useTargetExtensionAsDefault()) {
+            if (((NewTestSimplePanelGUI)gui).useTargetExtensionAsDefault()) {
                 es.setDefaultExtension(getTargetExtension());
             } else {
                 es.addExtension(getTargetExtension());
@@ -124,7 +124,7 @@ public class NewTestSimpleCppPanel extends CndPanel {
     }
 
     private String getTargetExtension() {
-        return ((NewTestSimpleCppPanelGUI)gui).getTargetExtension();
+        return ((NewTestSimplePanelGUI)gui).getTargetExtension();
     }
 
     public static FileObject getTemplateFileObject(String formType) {

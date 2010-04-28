@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.simpleunit.editor.filecreation;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,7 +75,7 @@ import org.openide.util.NbBundle;
  * NewCndFileChooserPanelGUI is SimpleTargetChooserPanelGUI extended with extension selector and logic
  * 
  */
-class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
+class NewTestSimplePanelGUI extends CndPanelGUI implements ActionListener{
 
     private final Logger logger;
     private final String defaultExtension;
@@ -87,7 +88,7 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
     protected static final String NEW_TEST_PREFIX = getMessage("LBL_NewTest_NewTestPrefix"); // NOI18N
 
     /** Creates new form NewCndFileChooserPanelGUI */
-    NewTestSimpleCppPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, MIMEExtensions es, String defaultExt) {
+    NewTestSimplePanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, MIMEExtensions es, String defaultExt) {
         super(project, folders);
 
         this.logger = Logger.getLogger("cnd.editor.filecreation"); // NOI18N
@@ -110,7 +111,7 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
         documentNameTextField.getDocument().addDocumentListener( this );
         folderTextField.getDocument().addDocumentListener( this );
         
-        setName (NbBundle.getMessage(NewTestSimpleCppPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
+        setName (NbBundle.getMessage(NewTestSimplePanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
     }
     
     public void initValues( FileObject template, FileObject preselectedFolder, String documentName ) {
@@ -148,6 +149,9 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
         locationComboBox.setSelectedItem( preselectedGroup );               
         // Create OS dependent relative name
         folderTextField.setText( getRelativeNativeName( preselectedGroup.getRootFolder(), preselectedFolder ) );
+        if(folderTextField.getText().isEmpty()) {
+            folderTextField.setText(DEFAULT_TESTS_FOLDER);
+        }
         
         String ext = defaultExtension == null? es.getDefaultExtension() : defaultExtension;
         cbExtension.setSelectedItem(ext);
@@ -196,7 +200,7 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
             if (documentName == null) {
                 final String baseName = NEW_FILE_PREFIX + template.getName ();
                 documentName = baseName;
-                FileObject currentFolder = preselectedFolder != null ? preselectedFolder : getTargetGroup().getRootFolder();
+                FileObject currentFolder = preselectedFolder != null ? preselectedFolder : getTargetGroup().getRootFolder().getFileObject(DEFAULT_TESTS_FOLDER);
                 if (currentFolder != null) {
                     int index = 0;
                     while (true) {
@@ -229,14 +233,12 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
                     if (!exist) {
                         break;
                     }
-                    testName = baseName + ++index;
+                    testName = baseName + " " + (++index); // NOI18N
                 }
             }
             testTextField.setText(testName);
             testTextField.selectAll();
         }
-
-        folderTextField.setText(DEFAULT_TESTS_FOLDER);
     }
 
     private static Folder getTestsRootFolder(Project project) {
@@ -407,7 +409,7 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
         setLayout(new java.awt.GridBagLayout());
 
         jLabel6.setLabelFor(testTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(NewTestSimpleCppPanelGUI.class, "LBL_TargetChooser_Test_Name_Label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(NewTestSimplePanelGUI.class, "LBL_TargetChooser_Test_Name_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
@@ -420,7 +422,7 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
         add(testTextField, gridBagConstraints);
 
         jLabel1.setLabelFor(projectTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(NewTestSimpleCppPanelGUI.class, "LBL_TargetChooser_Project_Label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(NewTestSimplePanelGUI.class, "LBL_TargetChooser_Project_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -436,10 +438,10 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(projectTextField, gridBagConstraints);
-        projectTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimpleCppPanelGUI.class).getString("AD_projectTextField")); // NOI18N
+        projectTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimplePanelGUI.class).getString("AD_projectTextField")); // NOI18N
 
         locationLabel.setLabelFor(locationComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(NewTestSimpleCppPanelGUI.class, "LBL_TargetChooser_Location_Label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(NewTestSimplePanelGUI.class, "LBL_TargetChooser_Location_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -451,10 +453,10 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
         add(locationComboBox, gridBagConstraints);
-        locationComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimpleCppPanelGUI.class).getString("AD_locationComboBox")); // NOI18N
+        locationComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimplePanelGUI.class).getString("AD_locationComboBox")); // NOI18N
 
         jLabel2.setLabelFor(folderTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(NewTestSimpleCppPanelGUI.class, "LBL_TargetChooser_Folder_Label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(NewTestSimplePanelGUI.class, "LBL_TargetChooser_Folder_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -467,21 +469,21 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(folderTextField, gridBagConstraints);
-        folderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimpleCppPanelGUI.class).getString("AD_folderTextField")); // NOI18N
+        folderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimplePanelGUI.class).getString("AD_folderTextField")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(NewTestSimpleCppPanelGUI.class, "LBL_TargetChooser_Browse_Button")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(NewTestSimplePanelGUI.class, "LBL_TargetChooser_Browse_Button")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(browseButton, gridBagConstraints);
         browseButton.getAccessibleContext().setAccessibleName("");
-        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimpleCppPanelGUI.class).getString("AD_browseButton")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimplePanelGUI.class).getString("AD_browseButton")); // NOI18N
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jLabel3.setLabelFor(documentNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(NewTestSimpleCppPanelGUI.class, "LBL_TargetChooser_Test_File_Name_Label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(NewTestSimplePanelGUI.class, "LBL_TargetChooser_Test_File_Name_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel3, gridBagConstraints);
@@ -491,10 +493,10 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(documentNameTextField, gridBagConstraints);
-        documentNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimpleCppPanelGUI.class).getString("AD_documentNameTextField")); // NOI18N
+        documentNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimplePanelGUI.class).getString("AD_documentNameTextField")); // NOI18N
 
         jLabel5.setLabelFor(cbExtension);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(NewTestSimpleCppPanelGUI.class, "LBL_TargetChooser_Extension_Label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(NewTestSimplePanelGUI.class, "LBL_TargetChooser_Extension_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel5, gridBagConstraints);
@@ -512,9 +514,9 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         jPanel1.add(cbExtension, gridBagConstraints);
-        cbExtension.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestSimpleCppPanelGUI.class, "AD_ExtensionTextField")); // NOI18N
+        cbExtension.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestSimplePanelGUI.class, "AD_ExtensionTextField")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbSetAsDefault, org.openide.util.NbBundle.getMessage(NewTestSimpleCppPanelGUI.class, "ACSD_SetAsDefaultCheckBox")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbSetAsDefault, org.openide.util.NbBundle.getMessage(NewTestSimplePanelGUI.class, "ACSD_SetAsDefaultCheckBox")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -529,7 +531,7 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
 
         jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/simpleunit/editor/filecreation/Bundle").getString("LBL_TargetChooser_CreatedFile_Label_Mnemonic").charAt(0));
         jLabel4.setLabelFor(fileTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(NewTestSimpleCppPanelGUI.class, "LBL_TargetChooser_CreatedFile_Label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(NewTestSimplePanelGUI.class, "LBL_TargetChooser_CreatedFile_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
@@ -542,7 +544,7 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(fileTextField, gridBagConstraints);
-        fileTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimpleCppPanelGUI.class).getString("AD_fileTextField")); // NOI18N
+        fileTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimplePanelGUI.class).getString("AD_fileTextField")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -558,7 +560,7 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
         gridBagConstraints.weighty = 1.0;
         add(bottomPanelContainer, gridBagConstraints);
 
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimpleCppPanelGUI.class).getString("AD_SimpleTargetChooserPanelGUI_1")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimplePanelGUI.class).getString("AD_SimpleTargetChooserPanelGUI_1")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void initMnemonics() {
@@ -625,7 +627,7 @@ class NewTestSimpleCppPanelGUI extends CndPanelGUI implements ActionListener{
     }    
 
     protected static String getMessage(String name) {
-        return NbBundle.getMessage( NewTestSimpleCppPanelGUI.class, name);
+        return NbBundle.getMessage( NewTestSimplePanelGUI.class, name);
     }
 
 }
