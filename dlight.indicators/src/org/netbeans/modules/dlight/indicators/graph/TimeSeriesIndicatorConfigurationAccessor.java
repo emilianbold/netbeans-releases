@@ -94,4 +94,6 @@ public abstract class TimeSeriesIndicatorConfigurationAccessor {
     public abstract Aggregation getAggregation(TimeSeriesIndicatorConfiguration conf);
 
     public abstract boolean getLastNonNull(TimeSeriesIndicatorConfiguration conf);
+
+    public abstract String getPersistencePrefix(TimeSeriesIndicatorConfiguration conf);
 }

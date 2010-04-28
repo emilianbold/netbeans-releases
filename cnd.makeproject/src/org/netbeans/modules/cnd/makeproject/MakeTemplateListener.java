@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.makeproject;
 
 import java.io.File;
+import java.util.Enumeration;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -154,6 +155,13 @@ public class MakeTemplateListener implements OperationListener {
         MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(p);
 
         assert makeConfigurationDescriptor != null;
+
+        FileObject primaryFile = copy.getOriginalDataObject().getPrimaryFile();
+        Enumeration<String> attributes = primaryFile.getAttributes();
+        
+        while (attributes.hasMoreElements()) {
+            System.err.println(attributes.nextElement());
+        }
 
         FileObject file = copy.getObject().getPrimaryFile();
         Project owner = FileOwnerQuery.getOwner(file);

@@ -160,11 +160,16 @@ public class AutosTestCase extends ProjectBasedTestCase {
         if (!goldenDataFile.exists()) {
             fail("No golden file " + goldenDataFile.getAbsolutePath() + "\n to check with output file " + output.getAbsolutePath());
         }
+
         if (CndCoreTestUtils.diff(output, goldenDataFile, null)) {
             // copy golden
             File goldenCopyFile = new File(workDir, goldenFileName + ".golden");
             CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenCopyFile); // NOI18N
-            fail("OUTPUT Difference between diff " + output + " " + goldenCopyFile); // NOI18N
+            StringBuilder buf = new StringBuilder("OUTPUT Difference between diff " + output + " " + goldenCopyFile);
+            File diffErrorFile = new File(output.getAbsolutePath() + ".diff");
+            CndCoreTestUtils.diff(output, goldenDataFile, diffErrorFile);
+            showDiff(diffErrorFile, buf);
+            fail(buf.toString());
         }
     }
 
