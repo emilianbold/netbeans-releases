@@ -210,5 +210,34 @@ public class FileNameTest extends NbTestCase {
         assertFalse(f2.equals(f));
         assertTrue (f2.getName().equals("renamed3"));        
     }
-    
+
+    public void testTwoNamingsAreOnlyEqualIfTheyRepresentTheSamePath() {
+        File hc1 = new HashCodeFile("/space/root/myfile", 444);
+        File hc2 = new HashCodeFile("/space/myfile", 444);
+
+        FileNaming nf1 = NamingFactory.fromFile(hc1);
+        FileNaming nf2 = NamingFactory.fromFile(hc2);
+        
+        assertFalse("namings are different", nf1.equals(nf2));
+    }
+
+
+    private static final class HashCodeFile extends File {
+        private final int hash;
+        public HashCodeFile(String path, int hash) {
+            super(path);
+            this.hash = hash;
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return super.equals(obj) && (obj instanceof HashCodeFile) && ((HashCodeFile)obj).hash == hash;
+        }
+
+    }
 }

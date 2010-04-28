@@ -909,6 +909,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
   </target>
           
   <target name="tryme-debug" depends="-jdk-presetdef-nbjpdastart" description="Start IDE in debugger. May only be called from within IDE.">
+    <echo>Searching for JARs in ${netbeans.dest.dir}, this may take a moment...</echo>
     <nbjpdastart name="NetBeans" addressproperty="debug.port" transport="dt_socket">
       <classpath>
         <fileset dir="${netbeans.dest.dir}">

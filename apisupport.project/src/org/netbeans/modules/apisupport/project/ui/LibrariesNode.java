@@ -249,18 +249,24 @@ final class LibrariesNode extends AbstractNode {
                 nodes.add(PlatformNode.create(project, project.evaluator(), "nbjdk.home")); // NOI18N
             } else if (key instanceof ModuleDependency) {
                 ModuleDependency dep = (ModuleDependency) key;
-                File srcF = dep.getModuleEntry().getSourceLocation();
+                ModuleEntry me = dep.getModuleEntry();
+                File srcF = me.getSourceLocation();
                 if (srcF == null) {
-                    File jarF = dep.getModuleEntry().getJarLocation();
+                    File jarF = me.getJarLocation();
                     URL jarRootURL = FileUtil.urlForArchiveOrDir(jarF);
                     assert jarRootURL != null;
                     FileObject root = URLMapper.findFileObject(jarRootURL);
-                    ModuleEntry me = dep.getModuleEntry();
+                    if (root != null) {
                     String name = me.getLocalizedName() + " - " + me.getCodeNameBase(); // NOI18N
                     Icon icon = getLibrariesIcon();
                     Node pvNode = ActionFilterNode.create(
                             PackageView.createPackageView(new LibrariesSourceGroup(root, name, icon, icon)));
                     nodes.add(new LibraryDependencyNode(dep, project, pvNode));
+                    } else {
+                        Node n = new AbstractNode(Children.LEAF);
+                        n.setName(me.getCodeNameBase());
+                        nodes.add(n);
+                    }
                     for (String cpext : me.getClassPathExtensions().split(File.pathSeparator)) {
                         if (cpext.length() > 0) {
                             FileObject jar = FileUtil.toFileObject(new File(cpext));
@@ -285,6 +291,9 @@ final class LibrariesNode extends AbstractNode {
         private Node createLibraryPackageViewNode(FileObject jfo) {
             Icon icon = getLibrariesIcon();
             FileObject root = FileUtil.getArchiveRoot(jfo);
+            if (root == null) {
+                return Node.EMPTY;
+            }
             String name = String.format(getMessage("LBL_WrappedLibraryFmt"), FileUtil.toFile(jfo).getName());
             return ActionFilterNode.create(PackageView.createPackageView(new LibrariesSourceGroup(root, name, icon, icon)));
         }
