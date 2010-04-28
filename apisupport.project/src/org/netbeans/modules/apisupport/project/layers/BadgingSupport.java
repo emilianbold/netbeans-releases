@@ -88,7 +88,7 @@ import org.openide.util.actions.Presenter;
  * Also tries to provide display labels for {@link InstanceDataObject}s.
  * @author Jesse Glick
  */
-final class BadgingSupport implements FileSystem.Status, FileChangeListener {
+final class BadgingSupport implements SynchronousStatus, FileChangeListener {
 
     static final RequestProcessor RP = new RequestProcessor(BadgingSupport.class.getName());
     private static final Logger LOG = Logger.getLogger(BadgingSupport.class.getName());
@@ -155,7 +155,10 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         });
         return name;
     }
-    
+    public @Override String annotateNameSynch(String name, Set<? extends FileObject> files) {
+        // XXX could participate in names cache
+        return annotateNameGeneral(name, files, suffix, null, classpath);
+    }
     private static String annotateNameGeneral(String name, Set<? extends FileObject> files,
             String suffix, FileChangeListener fileChangeListener, ClassPath cp) {
         for (FileObject fo : files) {
@@ -186,6 +189,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                         Properties p = new Properties();
                         p.load(is);
                         String val = p.getProperty(bundleKey);
+                        if (fileChangeListener != null) {
                         // Listen to changes in the origin file if any...
                         FileObject ufo = URLMapper.findFileObject(u[i]);
                         if (ufo != null) {
@@ -194,6 +198,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                             // In case a sibling bundle is added, that may be relevant:
                             ufo.getParent().removeFileChangeListener(fileChangeListener);
                             ufo.getParent().addFileChangeListener(fileChangeListener);
+                        }
                         }
                         if (val != null) {
                             if (fo.getPath().startsWith("Menu/")) { // NOI18N
@@ -339,6 +344,18 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             }
         });
         return icon;
+    }
+    public @Override Image annotateIconSynch(Image icon, int type, Set<? extends FileObject> files) {
+        final boolean big;
+        if (type == BeanInfo.ICON_COLOR_16x16) {
+            big = false;
+        } else if (type == BeanInfo.ICON_COLOR_32x32) {
+            big = true;
+        } else {
+            return icon;
+        }
+        // XXX could participate in bigIcons/smallIcons cache
+        return annotateIconGeneral(icon, big, files);
     }
     private Image annotateIconGeneral(Image icon, boolean big, Set<? extends FileObject> files) {
         for (FileObject fo : files) {
