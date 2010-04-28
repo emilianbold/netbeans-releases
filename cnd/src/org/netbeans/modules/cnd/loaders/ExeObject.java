@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.cnd.loaders;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -57,7 +55,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  */
 public class ExeObject extends MultiDataObject {
-    private static final Logger LOG = Logger.getLogger(ExeObject.class.getName());
+    //private static final Logger LOG = Logger.getLogger(ExeObject.class.getName());
 
     /** Serial version number */
     static final long serialVersionUID = 5848558112012002127L;
@@ -85,15 +83,15 @@ public class ExeObject extends MultiDataObject {
     @Override
     public final <T extends Cookie> T getCookie(Class<T> type) {
         if (!Cookie.class.isAssignableFrom(type)) {
-            Exception exception = new Exception("Class "+Cookie.class.getName()+" does not AssignableFrom "+type.getName()); //NOI18N
-            LOG.log(Level.INFO, exception.getMessage(), exception);
+            //Exception exception = new Exception("Class "+Cookie.class.getName()+" does not AssignableFrom "+type.getName()); //NOI18N
+            //LOG.log(Level.INFO, exception.getMessage(), exception);
             return null;
         }
         Object lookupResult = getLookup().lookup(type);
         if (lookupResult != null) {
             if (!type.isInstance(lookupResult)) {
-                Exception exception = new Exception("Class "+lookupResult.getClass().getName()+" is not instance of "+type.getName()); //NOI18N
-                LOG.log(Level.INFO, exception.getMessage(), exception);
+                //Exception exception = new Exception("Class "+lookupResult.getClass().getName()+" is not instance of "+type.getName()); //NOI18N
+                //LOG.log(Level.INFO, exception.getMessage(), exception);
                 return null;
             }
         }
