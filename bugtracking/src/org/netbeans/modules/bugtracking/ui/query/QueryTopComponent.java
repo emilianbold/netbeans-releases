@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugtracking.ui.query;
 
+import java.util.Collection;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -400,8 +401,28 @@ public final class QueryTopComponent extends TopComponent
         } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
             updateSavedQueries();
         } else if(evt.getPropertyName().equals(BugtrackingConnector.EVENT_REPOSITORIES_CHANGED)) {
+            if(query != null) {
+                Object cNew = evt.getNewValue();
+                Object cOld = evt.getOldValue();
+                if(cNew != null && cOld != null &&
+                   cNew instanceof Collection &&
+                   cOld instanceof Collection)
+                {
+                    Repository thisRepo = query.getRepository();
+                    if(contains((Collection) cOld, thisRepo) && !contains((Collection) cNew, thisRepo)) {
+                        // removed
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                close();
+                            }
+                        });
+                        return;
+                    }
+                }
+            }
             if(!repositoryComboBox.isEnabled()) {
-                // well, looks like there shuold be only one repository available
+                // well, looks like there should be only one repository available
                 return;
             }
             SwingUtilities.invokeLater(new Runnable() {
@@ -413,6 +434,16 @@ public final class QueryTopComponent extends TopComponent
                 }
             });
         }
+    }
+
+    private boolean contains(Collection c, Repository r) {
+        for (Object o : c) {
+            assert o instanceof Repository;
+            if(((Repository)o).getID().equals(r.getID())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

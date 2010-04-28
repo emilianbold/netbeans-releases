@@ -168,6 +168,12 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/initial_indent1.php", options);
     }
 
+   public void testInitialIndent01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/initialIndent01.php", options);
+    }
+
     public void testIfElseAlternativeSyntax() throws Exception {
         reformatFileContents("testfiles/formatting/ifelse_alternative_syntax.php");
     }
@@ -626,6 +632,22 @@ public class PHPFormatterTest extends PHPTestBase {
     public void testBLSimpleClass15() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/blankLines/SimpleClass15.php", options);
+    }
+
+    public void testBLSimpleClass16() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleClass16.php", options);
+    }
+
+    public void testBLSimpleClass17() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleClass17.php", options);
     }
 
     public void testBLSimpleUse01() throws Exception {
@@ -1824,6 +1846,50 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/templates/issue184690_01.php", options, true);
     }
 
+    public void testPrivate_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.initialIndent, 4);
+        reformatFileContents("testfiles/formatting/templates/private_01.php", options, true);
+    }
+
+    public void testPrivate_02() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.initialIndent, 4);
+        reformatFileContents("testfiles/formatting/templates/private_02.php", options, true);
+    }
+
+    public void testFncTemplate_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.initialIndent, 4);
+        reformatFileContents("testfiles/formatting/templates/function_01.php", options, true);
+    }
+
+    public void testImplementsOverwriteTemplate_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.initialIndent, 4);
+        reformatFileContents("testfiles/formatting/templates/implementsOverwrite_01.php", options, true);
+    }
+
+    public void testImplementsOverwriteTemplate_02() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/templates/implementsOverwrite_02.php", options, true);
+    }
+
+    public void testImplementsOverwriteTemplate_03() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        reformatFileContents("testfiles/formatting/templates/implementsOverwrite_03.php", options, true);
+    }
+
+    public void testIssue184141() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.initialIndent, 4);
+        reformatFileContents("testfiles/formatting/templates/issue184141.php", options, true);
+    }
+
     public void testIssue184687_01() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.initialIndent, 4);
@@ -1904,6 +1970,7 @@ public class PHPFormatterTest extends PHPTestBase {
             text = text.substring(0, formatStart) + text.substring(formatStart + FORMAT_START_MARK.length());
             formatEnd = text.indexOf(FORMAT_END_MARK);
             text = text.substring(0, formatEnd) + text.substring(formatEnd + FORMAT_END_MARK.length());
+            formatEnd --;
             if (formatEnd == -1){
                 throw new IllegalStateException();
             }

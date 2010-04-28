@@ -89,11 +89,6 @@ public class KenaiSupportImpl extends KenaiSupport {
         String product = location.substring(idx + "/browse/".length()); // NOI18N
 
         KenaiRepository repo = new KenaiRepository(project, project.getDisplayName(), url, host, product);
-        if(repo.getConfiguration() == null) {
-            // something went wrong, can't use the repo anyway => return null
-            Jira.LOG.log(Level.FINE, "KenaiRepository.getRepositoryConfiguration() returned null for KenaiProject [{0},{1}]", new Object[]{project.getDisplayName(), project.getName()});                            // NOI18N
-            return null;
-        }
         return repo;
         
     }

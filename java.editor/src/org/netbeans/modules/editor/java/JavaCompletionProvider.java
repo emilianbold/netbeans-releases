@@ -1144,46 +1144,18 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                 }
                 if (valueElement != null && names.isEmpty()) {
-                    TreePath gpPath = path.getParentPath().getParentPath();
-                    Tree.Kind gpKind = gpPath.getLeaf().getKind();
-                    if (gpKind == Tree.Kind.CLASS || gpKind == Tree.Kind.METHOD || gpKind == Tree.Kind.VARIABLE) {
-                        Element el = trees.getElement(gpPath);
-                        if (el != null) {
-                            AnnotationMirror annotation = null;
-                            for (AnnotationMirror am : el.getAnnotationMirrors()) {
-                                if (annTypeElement == am.getAnnotationType().asElement()) {
-                                    annotation = am;
-                                    break;
-                                }
-                            }
-                            if (annotation != null)
-                                addAttributeValues(env, el, annotation, valueElement);
+                    Element el = null;
+                    TreePath pPath = path.getParentPath();
+                    if (pPath.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+                        el = trees.getElement(pPath);
+                    } else {
+                        pPath = pPath.getParentPath();
+                        Tree.Kind pKind = pPath.getLeaf().getKind();
+                        if (pKind == Tree.Kind.CLASS || pKind == Tree.Kind.METHOD || pKind == Tree.Kind.VARIABLE) {
+                            el = trees.getElement(pPath);
                         }
                     }
-                    addLocalConstantsAndTypes(env);
-                }
-            }
-        }
-
-        private void insideAnnotationAttribute(Env env, TreePath annotationPath, Name attributeName) throws IOException {
-            TreePath gpPath = annotationPath.getParentPath().getParentPath();
-            Tree.Kind gpKind = gpPath.getLeaf().getKind();
-            if (gpKind == Tree.Kind.CLASS || gpKind == Tree.Kind.METHOD || gpKind == Tree.Kind.VARIABLE) {
-                CompilationController controller = env.getController();
-                controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                Trees trees = controller.getTrees();
-                AnnotationTree at = (AnnotationTree)annotationPath.getLeaf();
-                Element annTypeElement = trees.getElement(new TreePath(annotationPath, at.getAnnotationType()));
-                Element el = trees.getElement(gpPath);
-                if (el != null && annTypeElement != null && annTypeElement.getKind() == ANNOTATION_TYPE) {
-                    ExecutableElement memberElement = null;
-                    for (Element e : ((TypeElement)annTypeElement).getEnclosedElements()) {
-                        if (e.getKind() == METHOD && attributeName.contentEquals(e.getSimpleName())) {
-                            memberElement = (ExecutableElement)e;
-                            break;
-                        }
-                    }
-                    if (memberElement != null) {
+                    if (el != null) {
                         AnnotationMirror annotation = null;
                         for (AnnotationMirror am : el.getAnnotationMirrors()) {
                             if (annTypeElement == am.getAnnotationType().asElement()) {
@@ -1192,8 +1164,48 @@ public class JavaCompletionProvider implements CompletionProvider {
                             }
                         }
                         if (annotation != null)
-                            addAttributeValues(env, el, annotation, memberElement);
+                            addAttributeValues(env, el, annotation, valueElement);
                     }
+                    addLocalConstantsAndTypes(env);
+                }
+            }
+        }
+
+        private void insideAnnotationAttribute(Env env, TreePath annotationPath, Name attributeName) throws IOException {
+            CompilationController controller = env.getController();
+            controller.toPhase(Phase.ELEMENTS_RESOLVED);
+            Trees trees = controller.getTrees();
+            AnnotationTree at = (AnnotationTree)annotationPath.getLeaf();
+            Element annTypeElement = trees.getElement(new TreePath(annotationPath, at.getAnnotationType()));
+            Element el = null;
+            TreePath pPath = annotationPath.getParentPath();
+            if (pPath.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+                el = trees.getElement(pPath);
+            } else {
+                pPath = pPath.getParentPath();
+                Tree.Kind pKind = pPath.getLeaf().getKind();
+                if (pKind == Tree.Kind.CLASS || pKind == Tree.Kind.METHOD || pKind == Tree.Kind.VARIABLE) {
+                    el = trees.getElement(pPath);
+                }
+            }
+            if (el != null && annTypeElement != null && annTypeElement.getKind() == ANNOTATION_TYPE) {
+                ExecutableElement memberElement = null;
+                for (Element e : ((TypeElement)annTypeElement).getEnclosedElements()) {
+                    if (e.getKind() == METHOD && attributeName.contentEquals(e.getSimpleName())) {
+                        memberElement = (ExecutableElement)e;
+                        break;
+                    }
+                }
+                if (memberElement != null) {
+                    AnnotationMirror annotation = null;
+                    for (AnnotationMirror am : el.getAnnotationMirrors()) {
+                        if (annTypeElement == am.getAnnotationType().asElement()) {
+                            annotation = am;
+                            break;
+                        }
+                    }
+                    if (annotation != null)
+                        addAttributeValues(env, el, annotation, memberElement);
                 }
             }
         }

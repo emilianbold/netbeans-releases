@@ -244,6 +244,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                             String entityFQN = classPathProvider.findClassPath(entity, ClassPath.SOURCE).getResourceName(entity, '.', false);
                             pudo.addClass(persistenceUnit, entityFQN, false);
                         }
+                        pudo.save();
                     }
                 }
 

@@ -41,6 +41,7 @@ package org.netbeans.modules.web.common.api;
 
 import java.util.Arrays;
 import java.util.Collection;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
@@ -53,6 +54,41 @@ import org.netbeans.api.lexer.TokenSequence;
  * @author marekfukala
  */
 public class LexerUtils {
+
+    /**
+     * Note: The input text must contain only \n as line terminators.
+     * This is compatible with the netbeans document which never contains \r\n
+     * line separators.
+     *
+     * @param text
+     * @param offset
+     * @return line offset, starting with zero.
+     */
+    public static int getLineOffset(CharSequence text, int offset) throws BadLocationException {
+        if(text == null) {
+            throw new NullPointerException();
+        }
+
+        if(offset < 0 || offset >= text.length()) {
+            throw new BadLocationException("The given offset is out of bounds <0, " + text.length() + ">" , offset); //NOI18N
+        }
+        int line = 0;
+        for(int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if(c == '\r') {
+                throw new IllegalArgumentException("The input text cannot contain carriage return char \\r"); //NOI18N
+            }
+            if(i == offset) {
+                return line;
+            }
+            if(c == '\n') {
+                line++;
+            }
+        }
+
+        assert false; //we cannot get here
+        return -1;
+    }
 
     public static Token followsToken(TokenSequence ts, TokenId searchedId, boolean backwards, boolean repositionBack, TokenId... skipIds) {
         Collection<TokenId> skip = Arrays.asList(skipIds);
