@@ -933,7 +933,7 @@ public abstract class AbstractVariable implements LocalVariable {
 
     private static boolean isNumber(String value) {
         try {
-            Long.parseLong(value);
+            Long.decode(value);
             return true;
         } catch (NumberFormatException ex) {
             return false;
