@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -79,6 +81,26 @@ public class XDMListener implements PropertyChangeListener {
     
     public boolean xamModelHasRoot() {
         return xamModelHasRoot;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        if (!inSync) return;
+
+        NodeInfo oldInfo = (NodeInfo) event.getOldValue();
+        NodeInfo newInfo = (NodeInfo) event.getNewValue();
+
+        Node old = oldInfo!=null?(Node) oldInfo.getNode():null;
+        Node now = newInfo!=null?(Node) newInfo.getNode():null;
+
+        if (old != null) {
+//            processEvent(old, oldInfo.getNewAncestors(), false);
+            processEvent(old, oldInfo, false);
+        }
+
+        if (now != null) {
+            processEvent(now, newInfo, true);
+        }
     }
 
     private XDMModel getXDMModel() {
@@ -134,6 +156,67 @@ public class XDMListener implements PropertyChangeListener {
         return Integer.valueOf(xdmElement.getId());
     }
     
+    protected void processEvent(Node eventNode, NodeInfo nodeInfo, boolean isAdded) {
+        List<Node> pathToRoot = nodeInfo.getNewAncestors();
+        if (pathToRoot.size() == 1) {
+            processRootRelatedEvent(eventNode, pathToRoot, isAdded);
+        } else {
+            if (eventNode.getId() == pathToRoot.get(0).getId()) {
+                throw new IllegalArgumentException("Event node has same id as parent");
+            }
+            //
+            pathToRoot = new ArrayList(pathToRoot);
+            pathToRoot.add(0, eventNode);
+            //
+            // Another path to root which is used for looking for ns prefixes.
+            List<Node> namespacePathToRoot = null;
+            if (isAdded) { 
+                namespacePathToRoot = pathToRoot;
+            } else {
+                // The old tree has to be used for prefix search after deletion.
+                // See issue #166177
+                //
+                namespacePathToRoot = nodeInfo.getOriginalAncestors();
+                namespacePathToRoot = new ArrayList(namespacePathToRoot);
+                namespacePathToRoot.add(0, eventNode);
+                assert namespacePathToRoot.size() == pathToRoot.size();
+            }
+            //
+            ChangeInfo change = prepareChangeInfo(pathToRoot, namespacePathToRoot);
+            change.setAdded(isAdded);
+            processChange(change);
+        }
+    }
+
+    protected void processRootRelatedEvent(Node eventNode, List<Node> pathToRoot, boolean isAdded) {
+        assert pathToRoot.get(0) instanceof Document;
+        if (! (eventNode instanceof Element)) {
+            return;
+        }
+        //assert eventNode.getId() == 1;
+        if (! isAdded) {
+            // It's implied that the root component is deleted here.
+            // model.removeRootComponent();
+            xamModelHasRoot = false;
+            return;
+        }
+        Component rootComponent = null;
+        String errorMessage = null;
+        try {
+            rootComponent = model.createRootComponent((Element) eventNode);
+        } catch(IllegalArgumentException e) {
+            errorMessage = e.getMessage();
+        }
+        if (rootComponent == null) {
+            errorMessage = errorMessage != null ? errorMessage :
+                "Unexpected root element "+AbstractDocumentComponent.getQName(eventNode);
+            throw new IllegalArgumentException(new IOException(errorMessage));
+        }
+        xamModelHasRoot = true;
+        model.firePropertyChangeEvent(new PropertyChangeEvent(model,
+            Model.STATE_PROPERTY, Model.State.NOT_SYNCED, Model.State.VALID));
+    }
+    
     protected void processChange(ChangeInfo change) {
         Integer unitID = getID(change);
         SyncUnit existing = syncUnits.get(unitID);
@@ -173,64 +256,6 @@ public class XDMListener implements PropertyChangeListener {
         }
     }
 
-    protected void processEvent(Node eventNode, List<Node> pathToRoot, boolean isAdded) {
-        if (pathToRoot.size() == 1) {
-            assert pathToRoot.get(0) instanceof Document;
-            if (! (eventNode instanceof Element)) {
-                return;
-            }
-            //assert eventNode.getId() == 1;
-            if (! isAdded) {
-                // It's implied that the root component is deleted here. 
-                // model.removeRootComponent();
-                xamModelHasRoot = false;
-                return;
-            }
-            Component rootComponent = null;
-            String errorMessage = null;
-            try {
-                rootComponent = model.createRootComponent((Element) eventNode);
-            } catch(IllegalArgumentException e) {
-                errorMessage = e.getMessage();
-            }
-            if (rootComponent == null) {
-                errorMessage = errorMessage != null ? errorMessage :
-                    "Unexpected root element "+AbstractDocumentComponent.getQName(eventNode);
-                throw new IllegalArgumentException(new IOException(errorMessage));
-            }
-            xamModelHasRoot = true;
-            model.firePropertyChangeEvent(new PropertyChangeEvent(model,
-                Model.STATE_PROPERTY, Model.State.NOT_SYNCED, Model.State.VALID));
-        } else {
-            if (eventNode.getId() == pathToRoot.get(0).getId()) {
-                throw new IllegalArgumentException("Event node has same id as parent");
-            }
-            pathToRoot = new ArrayList(pathToRoot);
-            pathToRoot.add(0, eventNode);
-            ChangeInfo change = model.prepareChangeInfo(toDomNodes(pathToRoot));
-            change.setAdded(isAdded);
-            processChange(change);
-        }
-    }
-    
-    public void propertyChange(PropertyChangeEvent event) {
-        if (!inSync) return;
-        
-        NodeInfo oldInfo = (NodeInfo) event.getOldValue();
-        NodeInfo newInfo = (NodeInfo) event.getNewValue();
-        
-        Node old = oldInfo!=null?(Node) oldInfo.getNode():null;
-        Node now = newInfo!=null?(Node) newInfo.getNode():null;
-        
-        if (old != null) {			
-            processEvent(old, oldInfo.getNewAncestors(), false);
-        }
-        
-        if (now != null) {
-            processEvent(now, newInfo.getNewAncestors(), true);
-        }
-    }
-
     static List<org.w3c.dom.Node> toDomNodes(List<Node> nodes) {
         List<org.w3c.dom.Node> domNodes = new ArrayList<org.w3c.dom.Node>();
         for (Node n : nodes) {
@@ -238,5 +263,67 @@ public class XDMListener implements PropertyChangeListener {
         }
         return domNodes;
     }
-}
 
+    protected ChangeInfo prepareChangeInfo(List<? extends Node> pathToRoot,
+            List<? extends Node> nsContextPathToRoot) {
+        // we already handle change on root before enter here
+        if (pathToRoot.size() < 1) {
+            throw new IllegalArgumentException("pathToRoot here should be at least 1");
+        }
+        if (pathToRoot.get(pathToRoot.size()-1) instanceof Document) {
+            pathToRoot.remove(pathToRoot.size()-1);
+        }
+
+        if (pathToRoot.size() < 2) {
+            throw new IllegalArgumentException("pathToRoot here should be at least 2");
+        }
+        //
+        org.w3c.dom.Node current = null;
+        org.w3c.dom.Element parent = null;
+        boolean changedIsDomainElement = true;
+        Set<QName> qnames = model.getQNames();
+        if (qnames != null && qnames.size() > 0) {
+            for (int i=pathToRoot.size()-1; i>=0; i--) {
+                //
+                Node n = pathToRoot.get(i);
+                parent = (Element)current;
+                current = n;
+                //
+                if (! (n instanceof Element)) {
+                    changedIsDomainElement = false;
+                    break;
+                }
+
+                QName currentQName = new QName(model.getAccess().lookupNamespaceURI(
+                        current, nsContextPathToRoot), current.getLocalName());
+                if (!(qnames.contains(currentQName))) {
+                    changedIsDomainElement =  false;
+                    break;
+                }
+            }
+        } else {
+            current = pathToRoot.get(0);
+            parent = (org.w3c.dom.Element) pathToRoot.get(1);
+            changedIsDomainElement = current instanceof org.w3c.dom.Element;
+        }
+
+        List<org.w3c.dom.Element> rootToParent = new ArrayList<org.w3c.dom.Element>();
+        if (parent != null) {
+            for (int i = pathToRoot.indexOf(parent); i<pathToRoot.size(); i++) {
+                rootToParent.add(0, (Element)pathToRoot.get(i));
+            }
+        }
+
+        List<org.w3c.dom.Node> otherNodes = new ArrayList<org.w3c.dom.Node>();
+        if (parent != null) {
+            int iCurrent = pathToRoot.indexOf(current);
+            for (int i=0; i < iCurrent; i++) {
+                otherNodes.add(0, pathToRoot.get(i));
+            }
+        }
+
+        return new ChangeInfo(parent, current, changedIsDomainElement,
+                rootToParent, otherNodes);
+    }
+
+}
