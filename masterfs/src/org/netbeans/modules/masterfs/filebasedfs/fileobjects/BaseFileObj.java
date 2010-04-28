@@ -61,8 +61,11 @@ import javax.swing.event.EventListenerList;
 import java.io.*;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.Stack;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
@@ -324,17 +327,25 @@ public abstract class BaseFileObj extends FileObject {
         FileObjectFactory fs = getFactory();
 
         synchronized (FileObjectFactory.AllFactories) {
-            FileNaming[] allRenamed = NamingFactory.rename(getFileName(), newNameExt, handler);
+            FileNaming oldFileName = getFileName();
+            FileNaming[] allRenamed = NamingFactory.rename(oldFileName, newNameExt, handler);
             if (allRenamed == null) {
                 FileObject parentFo = getExistingParent();
                 String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
                 FSException.io("EXC_CannotRename", file.getName(), parentPath, newNameExt);// NOI18N
             }
             fileName = allRenamed[0];
-            fs.rename();
+            Set<BaseFileObj> toRename = new HashSet<BaseFileObj>(allRenamed.length * 2);
+            toRename.add(this);
             BaseFileObj.attribs.renameAttributes(file.getAbsolutePath().replace('\\', '/'), file2Rename.getAbsolutePath().replace('\\', '/'));//NOI18N
             for (int i = 0; i < allRenamed.length; i++) {
-                FolderObj par = (allRenamed[i].getParent() != null) ? (FolderObj) fs.getCachedOnly(allRenamed[i].getParent().getFile()) : null;
+                File affected = allRenamed[i].getFile();
+                BaseFileObj obj = fs.getCachedOnly(affected, false);
+                if (obj != null && i >= 1) {
+                    obj.updateFileName(allRenamed[i], oldFileName, allRenamed[0]);
+                    toRename.add(obj);
+                }
+                FolderObj par = (allRenamed[i].getParent() != null) ? (FolderObj) fs.getCachedOnly(affected.getParentFile(), false) : null;
                 if (par != null) {
                     ChildrenCache childrenCache = par.getChildrenCache();
                     final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
@@ -342,7 +353,9 @@ public abstract class BaseFileObj extends FileObject {
                         mutexPrivileged.enterWriteAccess();
                     }
                     try {
-                        childrenCache.removeChild(allRenamed[i]);
+                        if (i >= 1) {
+                            childrenCache.removeChild(allRenamed[i]);
+                        }
                         childrenCache.getChild(allRenamed[i].getName(), true);
                     } finally {
                         if (mutexPrivileged != null) {
@@ -351,6 +364,7 @@ public abstract class BaseFileObj extends FileObject {
                     }
                 }
             }
+            fs.rename(toRename);
         }
         //TODO: RELOCK
         LockForFile.relock(file, file2Rename);
@@ -712,6 +726,23 @@ public abstract class BaseFileObj extends FileObject {
                 fireFileDeletedEvent(expected);
             }
         } 
+    }
+
+    private void updateFileName(FileNaming oldName, FileNaming oldRoot, FileNaming newRoot) {
+        Stack<String> names = new Stack<String>();
+
+        while (oldRoot != oldName) {
+            names.add(oldName.getName());
+            oldName = oldName.getParent();
+        }
+
+        File prev = newRoot.getFile();
+        while (!names.isEmpty()) {
+            String n = names.pop();
+            newRoot = NamingFactory.fromFile(newRoot, prev = new File(prev, n), true);
+        }
+
+        fileName = newRoot;
     }
     
 

@@ -122,7 +122,7 @@ public class ChildrenSupport {
 
     public synchronized void removeChild(final FileNaming folderName, final FileNaming childName) {
         assert childName != null;
-        assert childName.getParent().equals(folderName);
+        assert childName.getParent().equals(folderName) || getExisting().contains(childName);
         getExisting().remove(childName);
         getNotExisting().add(childName);
     }

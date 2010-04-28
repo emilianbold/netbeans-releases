@@ -103,7 +103,7 @@ public final class NamingFactory {
     }
     
     public static FileNaming[] rename (FileNaming fNaming, String newName, ProvidedExtensions.IOHandler handler) throws IOException {
-        final ArrayList all = new ArrayList();
+        final List<FileNaming> all = new ArrayList<FileNaming>();
         synchronized(NamingFactory.class) {
             removeImpl(fNaming, null);
         }
@@ -113,14 +113,13 @@ public final class NamingFactory {
         
         synchronized(NamingFactory.class) {        
             all.add(newNaming);
-            all.add(fNaming);
             NamingFactory.registerInstanceOfFileNaming(fNaming.getParent(), fNaming.getFile(), fNaming, true, FileType.unknown);
-            renameChildren(all);
+            renameChildren(fNaming, all);
             return (retVal) ? ((FileNaming[]) all.toArray(new FileNaming[all.size()])) : null;
         }
     }
 
-    private static void renameChildren(final ArrayList all) {
+    private static void renameChildren(FileNaming root, List<FileNaming> all) {
         assert Thread.holdsLock(NamingFactory.class);
         HashMap toRename = new HashMap ();
         for (Iterator iterator = nameMap.entrySet().iterator(); iterator.hasNext();) {
@@ -139,13 +138,16 @@ public final class NamingFactory {
             
             for (int i = 0; i < list.size(); i++) {
                 FileNaming fN = (FileNaming)((Reference) list.get(i)).get();
-                if (fN == null) continue;
-                Integer computedId = NamingFactory.createID(fN.getFile());
-                
-                boolean isRenamed = (!computedId.equals(id));
-                if (isRenamed) {
-                    toRename.put(id, fN);
-                }        
+                for (FileNaming up = fN;;) {
+                    if (up == null) {
+                        break;
+                    }
+                    if (root.equals(up)) {
+                        toRename.put(id, fN);
+                        break;
+                    }
+                    up = up.getParent();
+                }
             }
         }
         

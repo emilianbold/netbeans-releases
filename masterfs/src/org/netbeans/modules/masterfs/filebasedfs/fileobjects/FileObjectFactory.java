@@ -528,7 +528,7 @@ public final class FileObjectFactory {
         return tempFile != null;
     }
 
-    public final void rename() {
+    public final void rename(Set<BaseFileObj> changeId) {
         final Map<Integer, Object> toRename = new HashMap<Integer, Object>();
         synchronized (allIBaseFileObjects) {
             final Iterator<Map.Entry<Integer, Object>> it = allIBaseFileObjects.entrySet().iterator();
@@ -541,23 +541,16 @@ public final class FileObjectFactory {
                     final WeakReference<BaseFileObj> ref = (WeakReference<BaseFileObj>) obj;
 
                     final BaseFileObj fo = (ref != null) ? ref.get() : null;
-
-                    if (fo != null) {
-                        Integer computedId = fo.getFileName().getId();
-                        if (!key.equals(computedId)) {
-                            toRename.put(key, fo);
-                        }
+                    if (changeId.contains(fo)) {
+                        toRename.put(key, fo);
                     }
                 } else {
                     for (Iterator<?> iterator = ((List<?>) obj).iterator(); iterator.hasNext();) {
                         @SuppressWarnings("unchecked")
                         WeakReference<BaseFileObj> ref = (WeakReference<BaseFileObj>) iterator.next();
                         final BaseFileObj fo = (ref != null) ? ref.get() : null;
-                        if (fo != null) {
-                            Integer computedId = fo.getFileName().getId();
-                            if (!key.equals(computedId)) {
-                                toRename.put(key, ref);
-                            }
+                        if (changeId.contains(fo)) {
+                            toRename.put(key, ref);
                         }
                     }
 
@@ -580,6 +573,9 @@ public final class FileObjectFactory {
     }
 
     public final BaseFileObj getCachedOnly(final File file) {
+        return getCachedOnly(file, true);
+    }
+    public final BaseFileObj getCachedOnly(final File file, boolean checkExtension) {
         final Object o;
         synchronized (allIBaseFileObjects) {
             final Object value = allIBaseFileObjects.get(NamingFactory.createID(file));
@@ -591,7 +587,7 @@ public final class FileObjectFactory {
             assert (o == null || o instanceof BaseFileObj);
         }
         BaseFileObj retval = (BaseFileObj) o;
-        if (retval != null) {
+        if (retval != null && checkExtension) {
             if (!file.getName().equals(retval.getNameExt())) {
                 if (!file.equals(retval.getFileName().getFile())) {
                     retval = null;
