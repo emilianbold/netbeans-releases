@@ -393,8 +393,10 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
 
         if (chooser.showOpenDialog(WebServiceFromWSDLPanel.this) == JFileChooser.APPROVE_OPTION) {
             File wsdlFile = chooser.getSelectedFile();
-            jTextFieldWSDLFile.setText(wsdlFile.getAbsolutePath());
-            previousDirectory = wsdlFile.getPath();
+            if (wsdlFile != null) {
+                jTextFieldWSDLFile.setText(wsdlFile.getAbsolutePath());
+                previousDirectory = wsdlFile.getPath();
+            }
         }
     }//GEN-LAST:event_jButtonWSDLFileBrowseActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
