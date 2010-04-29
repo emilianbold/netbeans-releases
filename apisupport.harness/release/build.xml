@@ -287,6 +287,7 @@ made subject to such option by the copyright holder.
     <target name="reload" depends="netbeans">
         <ant antfile="${harness.dir}/run.xml" target="run">
             <property name="run.args" value='--reload "${cluster}/${module.jar}"'/>
+            <property name="run.args.extra" value=""/>
             <reference refid="cluster.path.id"/>
         </ant>
     </target>
