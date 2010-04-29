@@ -88,7 +88,7 @@ public class AptSourceFileManager extends SourceFileManager {
         }
         final FileObject aptRoot = getAptRoot(sibling);
         if (aptRoot == null) {
-            throw new UnsupportedOperationException("No apt root for source root: " + getOwnerRoot(sibling)); // NOI18N
+            throw new UnsupportedOperationException(noAptRootDebug(sibling));
         }
         final String nameStr = pkgName.length() == 0 ?
             relativeName :
@@ -108,7 +108,7 @@ public class AptSourceFileManager extends SourceFileManager {
         }
         final FileObject aptRoot = getAptRoot(sibling);
         if (aptRoot == null) {
-            throw new UnsupportedOperationException("No apt root for source root: " + getOwnerRoot(sibling)); // NOI18N
+            throw new UnsupportedOperationException(noAptRootDebug(sibling));
         }
         final String nameStr = className.replace('.', File.separatorChar) + kind.extension;    //NOI18N
         //Always on master fs -> file is save.
@@ -156,6 +156,21 @@ public class AptSourceFileManager extends SourceFileManager {
         //todo: fix me, now supports just 1 src root
         final List<ClassPath.Entry> entries = userRoots.entries();
         return entries.size() == 1 ? entries.get(0).getURL() : null;
+    }
+
+    private String noAptRootDebug(final javax.tools.FileObject sibling) {
+        final StringBuilder sb = new StringBuilder("No apt root for source root: ");    //NOI18N
+        sb.append(getOwnerRoot(sibling));
+        sb.append(" sibling: ");    //NOI18N
+        if (siblings.hasSibling()) {
+            sb.append(siblings.getSibling());
+        } else if (sibling != null) {
+            sb.append(sibling.toUri());
+        }
+        else {
+            sb.append("none");  //NOI18N
+        }
+        return sb.toString();
     }
 
 }

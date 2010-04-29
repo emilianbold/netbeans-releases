@@ -41,12 +41,16 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.net.URL;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Tomas Zezula
  */
 public final class SiblingSupport implements SiblingSource {
+
+    private static final Logger LOG = Logger.getLogger(SiblingSupport.class.getName());
 
     private final Stack<URL> siblings = new Stack<URL>();
     private final SiblingProvider provider = new Provider();
@@ -58,11 +62,14 @@ public final class SiblingSupport implements SiblingSource {
     public void push(URL sibling) {
         assert sibling != null;
         siblings.push(sibling);
+        LOG.log(Level.FINE, "Pushed sibling: {0} size: {1}", new Object[]{sibling, siblings.size()});    //NOI18N
     }
 
     @Override
     public URL pop() {
-        return siblings.pop();
+        final URL removed = siblings.pop();
+        LOG.log(Level.FINE, "Poped sibling: {0} size: {1}", new Object[] {removed, siblings.size()});     //NOI18N
+        return removed;
     }
 
     @Override
@@ -80,12 +87,16 @@ public final class SiblingSupport implements SiblingSource {
 
         @Override
         public URL getSibling() {
-            return siblings.peek();
+            final URL result = siblings.peek();
+            LOG.log(Level.FINER, "Returns sibling: {0}", new Object[] {result});  //NOI18N
+            return result;
         }
 
         @Override
         public boolean hasSibling() {
-            return !siblings.isEmpty();
+            boolean result = !siblings.isEmpty();
+            LOG.log(Level.FINER, "Has sibling: {0}", new Object[] {result});  //NOI18N
+            return result;
         }
     }
 
