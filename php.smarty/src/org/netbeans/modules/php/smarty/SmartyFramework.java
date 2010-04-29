@@ -50,6 +50,7 @@ import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
 public class SmartyFramework extends PhpProgram {
 
     public static final String OPTIONS_SUB_PATH = "Smarty"; // NOI18N
+    public static final String BASE_CLASS_NAME = "Smarty"; // NOI18N
 
     /**
      * Open delimiter in SMARTY templates

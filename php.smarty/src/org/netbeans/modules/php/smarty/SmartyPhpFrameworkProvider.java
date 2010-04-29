@@ -39,14 +39,22 @@
 package org.netbeans.modules.php.smarty;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Set;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
-import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
@@ -57,7 +65,10 @@ import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 /**
  * @author Martin Fousek
@@ -88,7 +99,6 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
      * Currently, it searches source dir and its subdirs.
      * @return {@code false} if not found
      */
-
     public static boolean locatedTplFiles(FileObject fo, int maxDepth, int actualDepth) {
         while (actualDepth <= maxDepth) {
             for (FileObject child : fo.getChildren()) {
@@ -96,8 +106,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
                     if (isSmartyTemplateExtension(child.getExt())) {
                         return true;
                     }
-                }
-                else if (child.isFolder() && actualDepth < maxDepth) {
+                } else if (child.isFolder() && actualDepth < maxDepth) {
                     if (locatedTplFiles(child, maxDepth, actualDepth + 1)) {
                         return true;
                     }
@@ -125,18 +134,44 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     @Override
-    public boolean isInPhpModule(PhpModule phpModule) {
+    public boolean isInPhpModule(final PhpModule phpModule) {
         // get php files within the module
-//        Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(phpModule.getSourceDirectory()));
-//        Set<MethodElement> methods = index.getConstructors(NameKind.exact("Smarty"));
-//        for (MethodElement methodElement : methods) {
-//            System.out.println(methodElement.isConstructor());
-//        }
-//        Set<FileObject> filesWithUsedSmarty = index.getLocationsForIdentifiers("Smarty");
-        
+        final FoundSmarty fs = new FoundSmarty();
+        Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(phpModule.getSourceDirectory()));
+        final Set<FileObject> filesWithUsedSmarty = index.getLocationsForIdentifiers(SmartyFramework.BASE_CLASS_NAME);
+        RequestProcessor.getDefault().create(new Runnable() {
+            @Override
+            public void run() {
+                for (FileObject fileObject : filesWithUsedSmarty) {
+                    try {
+                        ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
 
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        return locatedTplFiles(sourceDirectory, SmartyOptions.getInstance().getScanningDepth(), 0);
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                PHPParseResult result = (PHPParseResult) resultIterator.getParserResult();
+                                if (result.getProgram() != null) {
+                                    SmartyVerificationVisitor smartyVerificationVisitor = new SmartyVerificationVisitor();
+                                    result.getProgram().accept(smartyVerificationVisitor);
+                                    if (smartyVerificationVisitor.isFoundSmarty()) {
+                                        fs.isFound = true;
+                                    }
+                                }
+
+                            }
+                        });
+                    } catch (ParseException e) {
+                        Exceptions.printStackTrace(e);
+                    }
+                }
+            }
+        }).run();
+
+        if (fs.isFound) {
+            return true;
+        } else {
+            FileObject sourceDirectory = phpModule.getSourceDirectory();
+            return locatedTplFiles(sourceDirectory, SmartyOptions.getInstance().getScanningDepth(), 0);
+        }
     }
 
     @Override
@@ -186,5 +221,39 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
     @Override
     public PhpModuleCustomizerExtender createPhpModuleCustomizerExtender(PhpModule phpModule) {
         return new SmartyPhpModuleCustomizerExtender(phpModule);
+    }
+
+    private static final class SmartyVerificationVisitor extends DefaultVisitor {
+
+        private boolean foundSmarty;
+
+        public SmartyVerificationVisitor() {
+            foundSmarty = false;
+        }
+
+        @Override
+        public void visit(ClassInstanceCreation node) {
+            super.visit(node);
+            if (node.getClassName().getName() instanceof NamespaceName) {
+                NamespaceName name = ((NamespaceName) node.getClassName().getName());
+                if (!name.getSegments().isEmpty()) {
+                    if (name.getSegments().iterator().next().getName().equals(SmartyFramework.BASE_CLASS_NAME)) {
+                        foundSmarty = true;
+                    }
+                }
+            }
+        }
+
+        public boolean isFoundSmarty() {
+            return foundSmarty;
+        }
+    }
+
+    private class FoundSmarty {
+        public boolean isFound;
+
+        public FoundSmarty() {
+            isFound = false;
+        }
     }
 }
