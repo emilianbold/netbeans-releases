@@ -55,6 +55,7 @@ import com.sun.source.tree.VariableTree;
 import java.util.Collection;
 import java.util.regex.Matcher;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
@@ -66,13 +67,11 @@ import com.sun.source.util.TreePathScanner;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -695,6 +694,12 @@ public abstract class JavaFix {
 
         OPERATOR_PRIORITIES.put(Kind.IDENTIFIER, 0);
 
+        for (Kind k : Kind.values()) {
+            if (k.asInterface() == LiteralTree.class) {
+                OPERATOR_PRIORITIES.put(k, 0);
+            }
+        }
+
         OPERATOR_PRIORITIES.put(Kind.ARRAY_ACCESS, 1);
         OPERATOR_PRIORITIES.put(Kind.METHOD_INVOCATION, 1);
         OPERATOR_PRIORITIES.put(Kind.MEMBER_SELECT, 1);
@@ -759,7 +764,7 @@ public abstract class JavaFix {
         if (!ExpressionTree.class.isAssignableFrom(inner.getKind().asInterface())) return false;
         if (!ExpressionTree.class.isAssignableFrom(outter.getKind().asInterface())) return false;
 
-        if (outter.getKind() == Kind.PARENTHESIZED) return false;
+        if (outter.getKind() == Kind.PARENTHESIZED || inner.getKind() == Kind.PARENTHESIZED) return false;
 
         Integer innerPriority = OPERATOR_PRIORITIES.get(inner.getKind());
         Integer outterPriority = OPERATOR_PRIORITIES.get(outter.getKind());
