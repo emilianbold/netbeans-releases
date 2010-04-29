@@ -226,7 +226,9 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         if (keymapModel == null) {
             KeymapViewModel tmpModel = new KeymapViewModel();
             synchronized (KeymapPanel.class) {
-                keymapModel = tmpModel;
+                if (keymapModel == null) {
+                    keymapModel = tmpModel;
+                }
             }
         }
         return keymapModel;
