@@ -74,6 +74,8 @@ public class ParserSvnStatus implements ISVNStatus {
     private Date lockCreationDate = null;
     private String lockComment = null;
     private String lockOwner = null;
+    private boolean treeConflict;
+    private final SVNConflictDescriptor conflictDescriptor;
 
     /** Creates a new instance of LocalSvnStatusImpl */
     public ParserSvnStatus(File file, String url, long revision, String kind,
@@ -81,7 +83,8 @@ public class ParserSvnStatus implements ISVNStatus {
             String lastCommitAuthor, long lastChangedRevision, Date lastChangedDate,
             boolean isCopied, String urlCopiedFrom,
             File conflictNew, File conflictOld, File conflictWorking,
-            Date lockCreationDate, String lockComment, String lockOwner) {
+            Date lockCreationDate, String lockComment, String lockOwner,
+            boolean treeConflict, SVNConflictDescriptor conflictDescriptor) {
 
         this.file = file;
 
@@ -118,6 +121,8 @@ public class ParserSvnStatus implements ISVNStatus {
         this.lockCreationDate = lockCreationDate;
         this.lockComment  = lockComment;
         this.lockOwner = lockOwner;
+        this.treeConflict = treeConflict;
+        this.conflictDescriptor = conflictDescriptor;
     }
 
     public boolean isCopied() {
@@ -216,12 +221,12 @@ public class ParserSvnStatus implements ISVNStatus {
 
     @Override
     public boolean hasTreeConflict() {
-        return false;
+        return treeConflict;
     }
 
     @Override
     public SVNConflictDescriptor getConflictDescriptor() {
-        return null;
+        return conflictDescriptor;
     }
 
     public boolean isFileExternal() {
