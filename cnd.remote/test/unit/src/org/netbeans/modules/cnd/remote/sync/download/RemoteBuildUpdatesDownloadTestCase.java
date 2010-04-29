@@ -40,6 +40,9 @@
 package org.netbeans.modules.cnd.remote.sync.download;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -149,7 +152,7 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
             new NameStatePair(new File(projectDirFile, "file_1.hpp"), FileDownloadInfo.State.UNCONFIRMED),
             new NameStatePair(new File(new File(projectDirFile, "subdir"), "Makefile"), FileDownloadInfo.State.UNCONFIRMED)
         };
-        checkInfo(filesToCheck, 10000);
+        checkInfo(filesToCheck, 12000);
     }
 
     @Override
@@ -178,13 +181,16 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
     }
 
     private void checkInfo(NameStatePair[] pairsToCheck, long timeout) {
+        List<NameStatePair> pairs = new ArrayList<NameStatePair>(Arrays.asList(pairsToCheck));
+        pairsToCheck = null; // just to reference only one of them
         long stopTime = System.currentTimeMillis() + timeout;
         while (true) {
             List<FileDownloadInfo> updates = HostUpdates.testGetUpdates(getTestExecutionEnvironment());
             boolean success = true;
             StringBuilder notFoundMessage = new StringBuilder();
             StringBuilder wrongStateFoundMessage = new StringBuilder();
-            for (NameStatePair pair : pairsToCheck) {
+            for (Iterator<NameStatePair> iter = pairs.iterator(); iter.hasNext(); ) {
+                NameStatePair pair = iter.next();
                 FileDownloadInfo info = find(updates, pair.file);
                 if (info == null) {
                     success = false;
@@ -198,6 +204,7 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
                     FileDownloadInfo.State state = info.getState();
                     if (state.equals(pair.state)) {
                         System.err.printf("\tOK state %s for %s at %s\n", info.getState(), info.getLocalFile(), getTestExecutionEnvironment());
+                        iter.remove();
                     } else {
                         success = false;
                         if (wrongStateFoundMessage.length() == 0) {
