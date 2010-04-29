@@ -53,12 +53,10 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author tomas
  */
 public class TreeConflictsTest extends AbstractCommandTest {
-    private File wc1;
-    private File f1;
-    private File wc2;
-    private File f2;
-    private File fcopy1;
-    private File fcopy2;
+    private File wc1, wc2;
+    private File f1, f2;
+    private File fcopy1, fcopy2;
+    private File folder1, folder2;
     
     // XXX terst remote change
     
@@ -78,11 +76,11 @@ public class TreeConflictsTest extends AbstractCommandTest {
         cleanUpRepo(new String[] {CI_FOLDER});
         File ciFolder = importFolder(CI_FOLDER);
         wc1 = checkout(ciFolder.getName(), "checkout1");
-        File folder1 = new File(wc1, "folder");
+        folder1 = new File(wc1, "folder");
         f1 = new File(folder1, "file");
         fcopy1 = new File(folder1, "filecopy");
         wc2 = checkout(ciFolder.getName(), "checkout2");
-        File folder2 = new File(wc2, "folder");
+        folder2 = new File(wc2, "folder");
         f2 = new File(folder2, "file");
         fcopy2 = new File(folder2, "filecopy");
     }
@@ -192,32 +190,74 @@ public class TreeConflictsTest extends AbstractCommandTest {
         assertStatus(fcopy2, false, SVNStatusKind.NORMAL);
     }
 
+    public void testStatusFolderLocalDeleteIncomingDelete () throws Exception {
+        ISVNClientAdapter c = getNbClient();
+        ISVNStatus st1 = c.getSingleStatus(f1);
+        ISVNStatus st2 = c.getSingleStatus(f2);
+        assertFalse(st1.hasTreeConflict());
+        assertFalse(st2.hasTreeConflict());
+        File folderCopy1 = new File(folder1.getParent(), "folderCopy");
+        c.move(folder1, folderCopy1, true);
+        assertTrue(folder1.exists());
+        assertTrue(folderCopy1.exists());
+        commit(wc1);
+        assertFalse(folder1.exists());
+        assertTrue(folderCopy1.exists());
+
+        File folderCopy2 = new File(folder2.getParent(), "folderCopy");
+        c.move(folder2, folderCopy2, true);
+        assertTrue(folder2.exists());
+        assertTrue(folderCopy2.exists());
+
+        update(wc2);
+        assertFalse(folder2.exists());
+        assertTrue(folderCopy2.exists());
+        assertStatus(folder2, true, SVNStatusKind.MISSING);
+        assertStatus(folderCopy2, true, SVNStatusKind.ADDED);
+
+        c.resolved(folder2);
+        assertStatus(folder2, false, SVNStatusKind.UNVERSIONED);
+        assertFalse(folder2.exists());
+        c.resolved(folderCopy2);
+        assertTrue(folderCopy2.exists());
+        assertStatus(folderCopy2, false, SVNStatusKind.ADDED);
+        c.revert(folderCopy2, true);
+        assertStatus(folderCopy2, false, SVNStatusKind.UNVERSIONED);
+        update(folderCopy2);
+        assertTrue(folderCopy2.exists());
+        assertStatus(folderCopy2, false, SVNStatusKind.NORMAL);
+    }
+
     private void assertStatus (File f, boolean hasConflicts, SVNStatusKind svnStatus) throws Exception {
         ISVNClientAdapter c = getNbClient();
         ISVNStatus st = c.getSingleStatus(f);
         assert hasConflicts == st.hasTreeConflict();
+        assert hasConflicts == (st.getConflictDescriptor() != null);
         assertEquals(svnStatus, st.getTextStatus());
         ISVNStatus[] sts = c.getStatus(new File[] {f});
-        assertStatus(f, hasConflicts, sts, svnStatus);
+        assertStatus(f, hasConflicts, false, sts, svnStatus);
         sts = c.getStatus(f.getParentFile(), true, true);
-        assertStatus(f, hasConflicts, sts, svnStatus);
+        assertStatus(f, hasConflicts, hasConflicts, sts, svnStatus);
         sts = c.getStatus(f.getParentFile(), true, true, false);
-        assertStatus(f, hasConflicts, sts, svnStatus);
+        assertStatus(f, hasConflicts, false, sts, svnStatus);
 
         sts = c.getStatus(f, false, true);
-        assertStatus(f, hasConflicts, sts, svnStatus);
+        assertStatus(f, hasConflicts, true, sts, svnStatus);
 
         assert ((getStatus(f) & FileInformation.STATUS_VERSIONED_CONFLICT_TREE) != 0) == hasConflicts;
     }
 
-    private void assertStatus (File f, boolean hasConflicts, ISVNStatus[] sts, SVNStatusKind svnStatus) throws Exception {
+    private void assertStatus (File f, boolean hasConflicts, boolean testConflictDescriptor, ISVNStatus[] sts, SVNStatusKind svnStatus) throws Exception {
         for (ISVNStatus st : sts) {
             if (f.equals(st.getFile())) {
                 assertEquals(svnStatus, st.getTextStatus());
-                if (st.hasTreeConflict() == hasConflicts) {
-                    return;
+                if (st.hasTreeConflict() != hasConflicts) {
+                    fail("hasConflicts !== status.hasTreeConflicts");
                 }
-                fail("hasConflicts !== status.hasTreeConflicts");
+                if (testConflictDescriptor && hasConflicts == (st.getConflictDescriptor() == null)) {
+                    fail("hasConflicts === (status.getConflictDescriptor() == null)");
+                }
+                return;
             }
         }
         if (hasConflicts) {

@@ -46,21 +46,18 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.subversion.client.parser.ConflictDescriptionParser.ParserConflictDescriptor;
 import org.openide.xml.XMLUtil;
+import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -76,6 +73,7 @@ public class EntriesCache {
 
     private static final String SVN_THIS_DIR = "svn:this_dir"; // NOI18N
     private static final String DELIMITER = "\f";
+    static final String ATTR_TREE_CONFLICTS = "tree-conflicts"; //NOI18N
 
     /**
      * The order as it is defined should be the same as how the Subvesion entries handler
@@ -112,6 +110,11 @@ public class EntriesCache {
         "lock-owner",
         "lock-comment",
         "lock-creation-date",
+        "changelist",
+        "keep-local",
+        "working-size",
+        "depth",
+        ATTR_TREE_CONFLICTS
     };
 
     private static final Set<String> BOOLEAN_ATTRIBUTES = new java.util.HashSet<String>();
@@ -144,8 +147,11 @@ public class EntriesCache {
 
     private Entries entries;
     private static EntriesCache instance;
+    private WeakHashMap<String, List<ConflictDescriptionParser.ParserConflictDescriptor>> cachedConflicts;
 
-    private EntriesCache() { }
+    private EntriesCache() {
+        cachedConflicts = new WeakHashMap<String, List<ConflictDescriptionParser.ParserConflictDescriptor>>(5);
+    }
 
     static EntriesCache getInstance() {
         if(instance == null) {
@@ -155,15 +161,19 @@ public class EntriesCache {
     }
 
     Map<String, String> getFileAttributes(File file) throws IOException, SAXException {
+        return getFileAttributes(file, true);
+    }
+
+    private Map<String, String> getFileAttributes(File file, boolean mergeWithParent) throws IOException, SAXException {
         File entriesFile = SvnWcUtils.getEntriesFile(file);
         if(entriesFile==null) {
             return null;
         }
-        return getFileAttributes(entriesFile, file);
+        return getFileAttributes(entriesFile, file, mergeWithParent);
     }
 
-    private synchronized Map<String, String> getFileAttributes(final File entriesFile, final File file) throws IOException, SAXException {
-        EntryAttributes ea = getEntryAttributes(entriesFile, file);
+    private synchronized Map<String, String> getFileAttributes(final File entriesFile, final File file, boolean mergeWithParent) throws IOException, SAXException {
+        EntryAttributes ea = getEntryAttributes(entriesFile, file, mergeWithParent);
         return ea.get(file.isDirectory() ? SVN_THIS_DIR : file.getName());
     }
 
@@ -172,7 +182,7 @@ public class EntriesCache {
         String[] children = new String[0];
         if (entriesFile != null) {
             synchronized (this) {
-                EntryAttributes ea = getEntryAttributes(entriesFile, file);
+                EntryAttributes ea = getEntryAttributes(entriesFile, file, false);
                 if (ea.size() > 1) {
                     children = new String[ea.size() - 1];
                     int i = 0;
@@ -187,7 +197,7 @@ public class EntriesCache {
         return children;
     }
 
-    private EntryAttributes getEntryAttributes (File entriesFile, File file) throws IOException, SAXException {
+    private EntryAttributes getEntryAttributes (File entriesFile, File file, boolean mergeWithParent) throws IOException, SAXException {
         EntriesFile ef = getEntries().get(entriesFile.getAbsolutePath());
         long lastModified = entriesFile.lastModified();
         long fileLength = entriesFile.length();
@@ -196,12 +206,32 @@ public class EntriesCache {
             ef = new EntriesFile(getMergedAttributes(ea), lastModified, fileLength);
             getEntries().put(entriesFile.getAbsolutePath(), ef);
         }
-        if(ef.attributes.get(file.getName()) == null && !file.isDirectory()) { // do not keep directory itself among its entries - it's kept rather as svn:this_dir
+        boolean isDirectory = file.isDirectory();
+        if(ef.attributes.get(file.getName()) == null && !isDirectory) { // do not keep directory itself among its entries - it's kept rather as svn:this_dir
             // file does not exist in the svn metadata and
             // wasn't added to the entires cache yet
             Map<String, String> attributes  = mergeThisDirAttributes(false, file.getName(), ef.attributes);
         }
+
+        if (isDirectory && mergeWithParent) { // sadly, conflicts are always kept in parent's metadata, even for a folder
+            mergeDirWithParent(ef.attributes.get(SVN_THIS_DIR), file);
+        }
+
         return ef.attributes;
+    }
+
+    private void mergeDirWithParent (Map<String, String> folderAttributes, File folder) throws IOException, SAXException {
+        Map<String, String> parentAttributes = getFileAttributes(folder.getParentFile(), false);
+        if (parentAttributes != null) {
+            String treeConflicts = parentAttributes.get(ATTR_TREE_CONFLICTS);
+            String fileName = folder.getName();
+            SVNConflictDescriptor desc = getConflictDescriptor(fileName, treeConflicts);
+            if (desc != null) {
+                folderAttributes.put(WorkingCopyDetails.ATTR_TREE_CONFLICT_DESCRIPTOR, treeConflicts); //NOI18
+            } else {
+                folderAttributes.remove(WorkingCopyDetails.ATTR_TREE_CONFLICT_DESCRIPTOR);
+            }
+        }
     }
 
     private EntryAttributes getMergedAttributes(EntryAttributes ea) throws SAXException {
@@ -240,7 +270,9 @@ public class EntriesCache {
         for(Map.Entry<String, String> entry : ea.get(SVN_THIS_DIR).entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
-            if(isDirectory) {
+            if (WorkingCopyDetails.ATTR_TREE_CONFLICT_DESCRIPTOR.equals(key)) { // do not inherit this flag
+                continue;
+            } else if(isDirectory) {
                 attributes.put(key, value);
             } else {
                 if(key.equals("url")) {
@@ -253,6 +285,12 @@ public class EntriesCache {
                            key.equals(WorkingCopyDetails.VERSION_ATTR_KEY)) {
                     if( attributes.get(key) == null ) {
                         attributes.put(key, value);
+                    }
+                } else if (ATTR_TREE_CONFLICTS.equals(key)) { //NOI18N
+                    SVNConflictDescriptor desc = getConflictDescriptor(fileName, value);
+                    if (desc != null) {
+                        attributes.put(WorkingCopyDetails.ATTR_TREE_CONFLICT_DESCRIPTOR, value);
+                        attributes.put(WorkingCopyDetails.IS_HANDLED, ea.containsKey(fileName) && ea.get("deleted") == null ? "true" : "false");
                     }
                 }
             }
@@ -350,6 +388,30 @@ public class EntriesCache {
 
     private static boolean isBooleanValue(String attribute) {
         return BOOLEAN_ATTRIBUTES.contains(attribute);
+    }
+
+    SVNConflictDescriptor getConflictDescriptor (String fileName, String conflictsDescription) {
+        SVNConflictDescriptor desc = null;
+        if (conflictsDescription != null) {
+            ParserConflictDescriptor[] conflicts = getConflicts(conflictsDescription);
+            for (ParserConflictDescriptor conflict : conflicts) {
+                if (fileName.equals(conflict.getFileName())) {
+                    desc = conflict;
+                    break;
+                }
+            }
+        }
+        return desc;
+    }
+
+    private synchronized ParserConflictDescriptor[] getConflicts (String conflictsDescription) {
+        List<ParserConflictDescriptor> conflicts = cachedConflicts.get(conflictsDescription);
+        if (conflicts == null) {
+            ConflictDescriptionParser cdp = ConflictDescriptionParser.parseDescription(conflictsDescription);
+            conflicts = cdp.getConflicts();
+            cachedConflicts.put(conflictsDescription, conflicts);
+        }
+        return conflicts.toArray(new ParserConflictDescriptor[conflicts.size()]);
     }
 
     private class XmlEntriesHandler extends DefaultHandler {

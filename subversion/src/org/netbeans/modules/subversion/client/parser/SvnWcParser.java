@@ -53,6 +53,7 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
+import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNScheduleKind;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
@@ -70,7 +71,7 @@ public class SvnWcParser {
 
     private WorkingCopyDetails getWCDetails(File file) throws IOException, SAXException {   
         Map<String, String> attributes = EntriesCache.getInstance().getFileAttributes(file);
-        return WorkingCopyDetails.createWorkingCopy(file, attributes);            
+        return WorkingCopyDetails.createWorkingCopy(file, attributes);
     }
 
    /**
@@ -222,6 +223,7 @@ public class SvnWcParser {
                     lockComment = wcDetails.getValue("lock-comment");  // NOI18N
                     lockOwner = wcDetails.getValue("lock-owner");      // NOI18N
                 }
+                SVNConflictDescriptor conflictDesc = wcDetails.getConflictDescriptor();
 
                 return new ParserSvnStatus(
                         file,
@@ -240,7 +242,9 @@ public class SvnWcParser {
                         conflictWorking,
                         lockCreationDate,
                         lockComment,
-                        lockOwner);
+                        lockOwner,
+                        conflictDesc != null,
+                        conflictDesc);
             } else {
                 //File isn't handled.
                 return new ParserSvnStatus(
@@ -260,6 +264,8 @@ public class SvnWcParser {
                         null,
                         null,
                         null,
+                        null,
+                        false,
                         null);
             }
 
