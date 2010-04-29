@@ -162,7 +162,7 @@ public class VCSHooksConfig {
         if(value == null) return null;
         String values[] = value.split(DELIMITER);
         getPreferences().remove(HG_HOOK_PUSH_ + changeset);
-        return new PushOperation(values[0], values[1], values[2].equals("1") ? true : false); // NOI18N
+        return new PushOperation(values[0], !values[1].equals("") ? values[1] : null, values[2].equals("1") ? true : false); // NOI18N
     }
 
     static Format getDefaultHgRevisionTemplate() {
@@ -243,9 +243,10 @@ public class VCSHooksConfig {
         @Override
         public String toString() {
             StringBuffer sb = new StringBuffer();
+            String msg = getMsg();
             sb.append(getIssueID());
             sb.append(DELIMITER);
-            sb.append(getMsg());
+            sb.append(msg != null ? msg.trim() : "");
             sb.append(DELIMITER);
             sb.append(isClose() ? "1" : "0");                                   // NOI18N
             return sb.toString();
