@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.spi;
@@ -62,11 +62,13 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -528,7 +530,16 @@ public abstract class JavaFix {
                             return null;
                         }
                         if (!parameterNames.containsKey(name)) {
-                            wc.rewrite(node, tp.getLeaf());
+                            Tree target = tp.getLeaf();
+                            //TODO: might also remove parenthesis, but needs to ensure the diff will still be minimal
+//                            while (target.getKind() == Kind.PARENTHESIZED
+//                                   && !requiresParenthesis(((ParenthesizedTree) target).getExpression(), getCurrentPath().getParentPath().getLeaf())) {
+//                                target = ((ParenthesizedTree) target).getExpression();
+//                            }
+                            if (requiresParenthesis(target, getCurrentPath().getParentPath().getLeaf())) {
+                                target = wc.getTreeMaker().Parenthesized((ExpressionTree) target);
+                            }
+                            wc.rewrite(node, target);
                             return null;
                         }
                     }
@@ -669,8 +680,29 @@ public abstract class JavaFix {
 
                     return result;
                 }
-            }.scan(new TreePath(new TreePath(tp.getCompilationUnit()), parsed), null);
+            }.scan(new TreePath(tp.getParentPath(), parsed), null);
         }
+    }
+
+    private static final Set<Kind> NO_PARENTHESIS_INNER = EnumSet.of(
+            Kind.ARRAY_ACCESS, Kind.BOOLEAN_LITERAL, Kind.CHAR_LITERAL, Kind.UNARY_PLUS,
+            Kind.UNARY_MINUS, Kind.STRING_LITERAL, Kind.PREFIX_INCREMENT, Kind.PREFIX_DECREMENT,
+            Kind.POSTFIX_INCREMENT, Kind.POSTFIX_DECREMENT, Kind.PRIMITIVE_TYPE, Kind.PARENTHESIZED,
+            Kind.NULL_LITERAL, Kind.NEW_CLASS, Kind.NEW_ARRAY, Kind.METHOD_INVOCATION, Kind.MEMBER_SELECT,
+            Kind.LONG_LITERAL, Kind.INT_LITERAL, Kind.IDENTIFIER, Kind.FLOAT_LITERAL, Kind.DOUBLE_LITERAL);
+    
+    private static final Set<Kind> NO_PARENTHESIS_OUTTER = EnumSet.of(
+            Kind.PARENTHESIZED
+            );
+
+    private static boolean requiresParenthesis(Tree inner, Tree outter) {
+        if (NO_PARENTHESIS_INNER.contains(inner.getKind())) return false;
+        if (NO_PARENTHESIS_OUTTER.contains(outter.getKind())) return false;
+
+        if (!ExpressionTree.class.isAssignableFrom(inner.getKind().asInterface())) return false;
+        if (!ExpressionTree.class.isAssignableFrom(outter.getKind().asInterface())) return false;
+
+        return true;
     }
 
     static {

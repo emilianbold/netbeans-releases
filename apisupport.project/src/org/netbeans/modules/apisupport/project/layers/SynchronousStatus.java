@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,42 +31,27 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.javaee;
+package org.netbeans.modules.apisupport.project.layers;
 
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
+import java.awt.Image;
+import java.util.Set;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem.Status;
 
 /**
- *
- * @author vbk
+ * Status object that can return an accurate result immediately
+ * for clients which cannot listen for changes later.
  */
-public class Hk2ModuleConfigFactory implements ModuleConfigurationFactory {
+public interface SynchronousStatus extends Status {
     
-    /** Creates a new instance of Hk2ModuleConfigFactory */
-    public Hk2ModuleConfigFactory() {
-    }
-    
-    @Override
-    public ModuleConfiguration create(J2eeModule module) throws ConfigurationException {
-        ModuleConfiguration retVal = null;
-        try {
-            retVal = new ModuleConfigurationImpl(module);
-        } catch (ConfigurationException ce) {
-            throw ce;
-        } catch (Exception ex) {
-            ConfigurationException ce = new ConfigurationException(module.toString());
-            ce.initCause(ex);
-            throw ce;
-        }
-        return retVal;
-    }
-    
+    String annotateNameSynch(String name, Set<? extends FileObject> files);
+
+    Image annotateIconSynch(Image icon, int iconType, Set<? extends FileObject> files);
+
 }

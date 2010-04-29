@@ -1340,9 +1340,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     parameter.toPhase(Phase.RESOLVED);
 
                     TreePath resolved = handle.resolve(parameter);
+                    
+                    if (resolved == null) {
+                        return ; //TODO...
+                    }
+
                     TypeMirror tm = parameter.getTrees().getTypeMirror(resolved);
 
-                    if (resolved == null || tm == null) {
+                    if (tm == null) {
                         return ; //TODO...
                     }
 
