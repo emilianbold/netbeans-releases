@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,7 +45,6 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -97,7 +96,7 @@ import org.openide.windows.InputOutput;
  *
  * @author David Van Couvering
  */
-public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListener {
+public final class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListener {
     private static final Object lock = new Object();
     
     private static final Image ICON = ImageUtilities.loadImage("org/netbeans/modules/db/mysql/resources/catalog.gif");
@@ -180,6 +179,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         addPropertyChangeListener(StopManager.getDefault().getStopListener());
 
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 checkRunning();
             }
@@ -188,17 +188,20 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         updateDisplayInformation();
     }
 
+    @Override
     public String getHost() {
         return Utils.isEmpty(OPTIONS.getHost()) ?
             MySQLOptions.getDefaultHost() : OPTIONS.getHost();
     }
 
+    @Override
     public void setHost(String host) {
         OPTIONS.setHost(host);
         updateDisplayInformation();
         notifyChange();
     }
 
+    @Override
     public String getPort() {
         String port = OPTIONS.getPort();
         if (Utils.isEmpty(port)) {
@@ -208,12 +211,14 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         }
     }
 
+    @Override
     public void setPort(String port) {
         OPTIONS.setPort(port);
         updateDisplayInformation();
         notifyChange();
     }
 
+    @Override
     public String getUser() {
         String user = OPTIONS.getAdminUser();
         if (Utils.isEmpty(user)) {
@@ -223,12 +228,14 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         }
     }
 
+    @Override
     public void setUser(String adminUser) {
         OPTIONS.setAdminUser(adminUser);
         updateDisplayInformation();
         notifyChange();
     }
 
+    @Override
     public synchronized String getPassword() {
         if ( adminPassword != null ) {
             return adminPassword;
@@ -237,6 +244,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         }
     }
 
+    @Override
     public synchronized void setPassword(String adminPassword) {
         this.adminPassword = adminPassword == null ? "" : adminPassword;
 
@@ -245,10 +253,12 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         }
     }
 
+    @Override
     public boolean isSavePassword() {
         return OPTIONS.isSavePassword();
     }
 
+    @Override
     public void setSavePassword(boolean savePassword) {
         OPTIONS.setSavePassword(savePassword);
 
@@ -256,56 +266,70 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         OPTIONS.setAdminPassword(getPassword());
     }
 
+    @Override
     public String getAdminPath() {
         return OPTIONS.getAdminPath();
     }
 
+    @Override
     public void setAdminPath(String path) {
         OPTIONS.setAdminPath(path);
     }
 
+    @Override
     public String getStartPath() {
         return OPTIONS.getStartPath();
     }
 
+    @Override
     public void setStartPath(String path) {
         OPTIONS.setStartPath(path);
     }
 
+    @Override
     public String getStopPath() {
         return OPTIONS.getStopPath();
     }
 
+    @Override
     public void setStopPath(String path) {
         OPTIONS.setStopPath(path);
     }
 
+    @Override
     public String getStopArgs() {
         return OPTIONS.getStopArgs();
     }
 
+    @Override
     public void setStopArgs(String args) {
         OPTIONS.setStopArgs(args);
     }
+    @Override
     public String getStartArgs() {
         return OPTIONS.getStartArgs();
     }
 
+    @Override
     public void setStartArgs(String args) {
         OPTIONS.setStartArgs(args);
     }
+    @Override
     public String getAdminArgs() {
         return OPTIONS.getAdminArgs();
     }
 
+    @Override
     public void setAdminArgs(String args) {
         OPTIONS.setAdminArgs(args);
     }
 
+    @Override
     public synchronized boolean isConnected() {
         return runstate == ServerState.CONNECTED;
     }
 
+    @Override
     public String getDisplayName() {
         return displayName;
     }
@@ -335,6 +359,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         closeOutput();
     }
 
+    @Override
     public String getShortDescription() {
         return shortDescription;
     }
@@ -353,10 +378,12 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         return getHost() + port;
    }
 
+    @Override
     public String getURL() {
         return DatabaseUtils.getURL(getHost(), getPort());
     }
 
+    @Override
     public String getURL(String databaseName) {
         return DatabaseUtils.getURL(getHost(), getPort(), databaseName);
     }
@@ -375,11 +402,13 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         Utils.displayErrorMessage(dbe.getMessage());
     }
 
+    @Override
     public void refreshDatabaseList() {
         if ( isConnected() ) {
             final  DatabaseServer server = this;
 
             new DatabaseCommand() {
+                @Override
                 public void execute() throws Exception {
                     try {
                         HashMap<String,Database> dblist = new HashMap<String,Database>();
@@ -428,6 +457,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         databases = list;
     }
 
+    @Override
     public synchronized Collection<Database> getDatabases()
             throws DatabaseException {
         return databases.values();
@@ -439,10 +469,12 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         }
     }
 
+    @Override
     public void disconnectSync() {
         disconnect(false);
     }
 
+    @Override
     public void disconnect() {
         disconnect(true);
     }
@@ -499,10 +531,12 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
 
     }
 
+    @Override
     public void reconnect() throws DatabaseException, TimeoutException {
         reconnect(10000);
     }
 
+    @Override
     public void reconnect(long timeToWait) throws DatabaseException, TimeoutException  {
         ArrayBlockingQueue<Runnable> queue = null;
 
@@ -566,6 +600,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         }
     }
         
+    @Override
     public void checkConfiguration() throws DatabaseException {
         // Make sure the host name is a known host name
         try {
@@ -595,6 +630,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         }
     }
 
+    @Override
     public void validateConnection() throws DatabaseException {
         ArrayBlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(1);
 
@@ -626,12 +662,15 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         }
     }
 
+    @Override
     public boolean databaseExists(String dbname)  throws DatabaseException {
         return databases.containsKey(dbname);
     }
 
+    @Override
     public void createDatabase(final String dbname) {
         new DatabaseCommand(true) {
+            @Override
             public void execute() throws Exception {
                 try {
                     Connection conn = connProcessor.getConnection();
@@ -646,8 +685,10 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
     }
 
 
+    @Override
     public void dropDatabase(final String dbname, final boolean deleteConnections) {
         new DatabaseCommand(true) {
+            @Override
             public void execute() throws Exception {
                 try {
                     Connection conn = connProcessor.getConnection();
@@ -678,6 +719,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
     }
 
 
+    @Override
     public void dropDatabase(final String dbname) {
         dropDatabase(dbname, true);
     }
@@ -690,6 +732,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
      * @throws org.netbeans.api.db.explorer.DatabaseException
      *      if some problem occurred
      */
+    @Override
     public List<DatabaseUser> getUsers() throws DatabaseException {
         final ArrayList<DatabaseUser> users = new ArrayList<DatabaseUser>();
         if ( ! isConnected() ) {
@@ -734,6 +777,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         return users;
     }
 
+    @Override
     public void grantFullDatabaseRights(final String dbname, final DatabaseUser grantUser) {
         new DatabaseCommand(true) {
             @Override
@@ -760,6 +804,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
      *
      * @see #getStartWaitTime()
      */
+    @Override
     public void start() throws DatabaseException {
         if (!Utils.isValidExecutable(getStartPath(), false)) {
             throw new DatabaseException(Utils.getMessage("MSG_InvalidStartCommand"));
@@ -783,6 +828,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         }.postCommand("start"); // NOI18N
     }
 
+    @Override
     public void stop() throws DatabaseException {
         if ( !Utils.isValidExecutable(getStopPath(), false)) {
             throw new DatabaseException(Utils.getMessage("MSG_InvalidStopCommand"));
@@ -801,6 +847,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
      *
      * @throws org.netbeans.api.db.explorer.DatabaseException
      */
+    @Override
     public void startAdmin() throws DatabaseException {
         String adminCommand = getAdminPath();
 
@@ -852,22 +899,27 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         }
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         changeListeners.add(listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         changeListeners.remove(listener);
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
     }
 
+    @Override
     public synchronized ServerState getState() {
         return runstate;
     }
@@ -901,14 +953,17 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         return runstate;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         pcs.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
     }
 
+    @Override
     public Image getIcon() {
         return icon;
     }
 
+    @Override
     public synchronized boolean hasConfigurationError() {
         return runstate == ServerState.CONFIGERR;
     }
@@ -978,6 +1033,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             }
         }
 
+        @Override
         public void run() {
             try {
                 if (checkConnection) {
@@ -1048,6 +1104,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             }
         }
         
+        @Override
         public boolean cancel() {
             proc.destroy();
             closeOutput();
