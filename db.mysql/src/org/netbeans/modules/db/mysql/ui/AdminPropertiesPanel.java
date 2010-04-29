@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.mysql.ui;
@@ -49,7 +49,6 @@ import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.impl.MySQLOptions;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.DialogDescriptor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -75,6 +74,7 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
         revalidate();
 
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 // Issue 142538
                 // Run in background because this is doing I/O.  If the paths
@@ -109,6 +109,7 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
                     final String finalError = error;
 
                     Mutex.EVENT.postReadRequest(new Runnable() {
+                        @Override
                         public void run() {
                             if (finalError != null) {
                                 messageLabel.setForeground(nbErrorForeground);
@@ -183,7 +184,7 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
     private void chooseFile(JTextField txtField) {
         JFileChooser chooser = new JFileChooser();
         
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setCurrentDirectory(null);
         chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
         
         String path = txtField.getText().trim();
