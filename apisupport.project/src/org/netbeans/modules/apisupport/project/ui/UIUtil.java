@@ -102,6 +102,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.layers.SynchronousStatus;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator;
@@ -117,6 +118,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem.Status;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -525,8 +527,12 @@ public final class UIUtil {
         private static String getFileObjectName(FileObject fo) {
             String name = null;
             try {
-                name = fo.getFileSystem().getStatus().annotateName(
-                        fo.getNameExt(), Collections.singleton(fo));
+                Status status = fo.getFileSystem().getStatus();
+                if (status instanceof SynchronousStatus) {
+                    name = ((SynchronousStatus) status).annotateNameSynch(fo.getNameExt(), Collections.singleton(fo));
+                } else {
+                    name = status.annotateName(fo.getNameExt(), Collections.singleton(fo));
+                }
                 LOGGER.log(Level.FINER, "getFileObjectName for '" + fo.getPath() + "': " + name);
             } catch (FileStateInvalidException ex) {
                 name = fo.getName();

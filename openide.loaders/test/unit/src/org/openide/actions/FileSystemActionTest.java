@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,42 +31,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.javaee;
+package org.openide.actions;
 
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
+import java.io.IOException;
+import java.util.prefs.Preferences;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import org.netbeans.junit.NbTestCase;
+import org.openide.awt.DynamicMenuContent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
+import org.openide.util.actions.Presenter;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author vbk
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class Hk2ModuleConfigFactory implements ModuleConfigurationFactory {
-    
-    /** Creates a new instance of Hk2ModuleConfigFactory */
-    public Hk2ModuleConfigFactory() {
+public class FileSystemActionTest extends NbTestCase {
+
+    public FileSystemActionTest(String s) {
+        super(s);
     }
-    
-    @Override
-    public ModuleConfiguration create(J2eeModule module) throws ConfigurationException {
-        ModuleConfiguration retVal = null;
-        try {
-            retVal = new ModuleConfigurationImpl(module);
-        } catch (ConfigurationException ce) {
-            throw ce;
-        } catch (Exception ex) {
-            ConfigurationException ce = new ConfigurationException(module.toString());
-            ce.initCause(ex);
-            throw ce;
-        }
-        return retVal;
+
+    public void testManualRefreshPreference() throws IOException {
+        Preferences pref = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction");
+        assertFalse("Not set", pref.getBoolean("manual", false));
+
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        Lookup lkp = Lookups.singleton(DataFolder.findFolder(fo).getNodeDelegate());
+
+        FileSystemAction fsa = FileSystemAction.get(FileSystemAction.class);
+        Action a = fsa.createContextAwareInstance(lkp);
+
+        assertEquals("Menu presenter ", true, a instanceof Presenter.Menu);
+
+        Presenter.Menu pm = (Presenter.Menu)a;
+        DynamicMenuContent submenu = (DynamicMenuContent)pm.getMenuPresenter();
+        assertEquals("No submenu", 0, submenu.getMenuPresenters().length);
+
+        pref.putBoolean("manual", true);
+
+        DynamicMenuContent submenu2 = (DynamicMenuContent)pm.getMenuPresenter();
+        assertEquals("One action", 1, submenu2.getMenuPresenters().length);
     }
-    
 }
