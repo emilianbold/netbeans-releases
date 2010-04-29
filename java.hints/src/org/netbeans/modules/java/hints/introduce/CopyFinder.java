@@ -212,6 +212,10 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
     //TODO: does not currently support variables:
     public static Collection<? extends MethodDuplicateDescription> computeDuplicatesAndRemap(CompilationInfo info, Collection<? extends TreePath> searchingFor, TreePath scope, Collection<VariableElement> variablesWithAllowedRemap, AtomicBoolean cancel) {
         TreePath first = searchingFor.iterator().next();
+        boolean statement = StatementTree.class.isAssignableFrom(first.getLeaf().getKind().asInterface());
+        
+        assert statement || searchingFor.size() == 1;
+
         List<MethodDuplicateDescription> result = new LinkedList<MethodDuplicateDescription>();
 
         CopyFinder firstStatementSearcher = new CopyFinder(first, info, cancel);
@@ -224,6 +228,12 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
         OUTER: for (Entry<TreePath, VariableAssignments> e : firstStatementSearcher.result.entrySet()) {
             TreePath firstOccurrence = e.getKey();
+
+            if (!statement) {
+                result.add(new MethodDuplicateDescription(firstOccurrence, -1, -1, e.getValue().variablesRemapToElement, e.getValue().variablesRemapToTrees));
+                continue;
+            }
+
             List<? extends StatementTree> statements = getStatements(firstOccurrence);
             int occurrenceIndex = statements.indexOf(firstOccurrence.getLeaf());
 
