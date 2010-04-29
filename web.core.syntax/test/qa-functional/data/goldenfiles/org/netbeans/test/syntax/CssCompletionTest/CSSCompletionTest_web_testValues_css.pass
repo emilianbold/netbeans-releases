@@ -197,7 +197,7 @@ color windowtext
 color yellow
 color yellowgreen
 End cursor position = 118
-[border-right: |, border-style inset, border-right: inset, 170]
+[border-right: |, border-style-inner inset, border-right: inset, 176]
 color color chooser
 color activeborder
 color activecaption
@@ -248,14 +248,14 @@ color darkslategray
 color darkslategrey
 color darkturquoise
 color darkviolet
-border-style dashed
+border-style-inner dashed
 color deeppink
 color deepskyblue
 color dimgray
 color dimgrey
 color dodgerblue
-border-style dotted
-border-style double
+border-style-inner dotted
+border-style-inner double
 color firebrick
 color floralwhite
 color forestgreen
@@ -269,8 +269,8 @@ color graytext
 color green
 color greenyellow
 color grey
-border-style groove
-border-style hidden
+border-style-inner groove
+border-style-inner hidden
 color highlight
 color highlighttext
 color honeydew
@@ -283,7 +283,7 @@ color indigo
 color infobackground
 color infotext
 border-right inherit
-border-style inset
+border-style-inner inset
 color ivory
 color khaki
 color lavender
@@ -328,14 +328,14 @@ color mistyrose
 color moccasin
 color navajowhite
 color navy
-border-style none
+border-style-inner none
 color oldlace
 color olive
 color olivedrab
 color orange
 color orangered
 color orchid
-border-style outset
+border-style-inner outset
 color palegoldenrod
 color palegreen
 color paleturquoise
@@ -349,7 +349,7 @@ color powderblue
 color purple
 color red
 color rgb
-border-style ridge
+border-style-inner ridge
 color rosybrown
 color royalblue
 color saddlebrown
@@ -365,7 +365,7 @@ color slateblue
 color slategray
 color slategrey
 color snow
-border-style solid
+border-style-inner solid
 color springgreen
 color steelblue
 color tan
@@ -390,8 +390,8 @@ color windowframe
 color windowtext
 color yellow
 color yellowgreen
-End cursor position = 190
-[border-bottom-color : |, color red, border-bottom-color : red, 240]
+End cursor position = 196
+[border-bottom-color : |, color red, border-bottom-color : red, 246]
 color color chooser
 color activeborder
 color activecaption
@@ -571,4 +571,4 @@ color windowframe
 color windowtext
 color yellow
 color yellowgreen
-End cursor position = 266
+End cursor position = 272

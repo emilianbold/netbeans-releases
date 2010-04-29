@@ -75,10 +75,10 @@ public class Utilities {
 
     private static HashMap<String, Boolean> chatSupported = new HashMap();
 
-    public static boolean isChatSupported(Kenai kenai) {
+    public static boolean isChatSupported(Kenai kenai, boolean forceCheck) {
         String kenaiHost = kenai.getUrl().getHost();
         Boolean b = chatSupported.get(kenaiHost);
-        if (b==null) {
+        if (forceCheck || b==null) {
             b=Boolean.FALSE;
             try {
                 for (KenaiService service : kenai.getServices()) {
@@ -101,6 +101,10 @@ public class Utilities {
             chatSupported.put(kenaiHost, b);
         }
         return b;
+    }
+
+    public static boolean isChatSupported(Kenai kenai) {
+        return isChatSupported(kenai, false);
     }
 
     public static void assertJid(String name) {

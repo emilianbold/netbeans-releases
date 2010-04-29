@@ -364,7 +364,7 @@ public class IntroduceHint extends AbstractRule {
         static IntroduceClassFix getInstance(String className, Model model, ClassInstanceCreation instanceCreation) {
             FileObject currentFile = model.getFileScope().getFileObject();
             FileObject folder = currentFile.getParent();
-            String templatePath = "Templates/Scripting/PHPClass";//NOI18N
+            String templatePath = "Templates/Scripting/PHPClass.php";//NOI18N
             FileObject template = FileUtil.getConfigFile(templatePath);
             return (template != null && folder != null && folder.canWrite())
                     ? new IntroduceClassFix(className, template, folder, model, instanceCreation) : null;

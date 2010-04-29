@@ -601,7 +601,16 @@ public class ChatTopComponent extends TopComponent {
                             PasswordAuthentication passwordAuthentication = kenai.getPasswordAuthentication();
                             kenai.login(passwordAuthentication.getUserName(), passwordAuthentication.getPassword(), true);
                         } catch (KenaiException ex) {
-                            Exceptions.printStackTrace(ex);
+                            if (!Utilities.isChatSupported(kenai, true)) {
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        JOptionPane.showMessageDialog(retryLink, NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.ChatNotAvailable", kenai.getName()));
+                                    }
+                                });
+                            } else {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
                     }
                 });

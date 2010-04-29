@@ -148,13 +148,7 @@ public abstract class GlassfishConfiguration implements
                 // If module is J2EE 1.4 (or 1.3), or this is a web app (where we have
                 // a default property even for JavaEE5), then copy the default template.
                 if (J2eeModule.Type.WAR.equals(mt) || isPreJavaEE5) {
-                    try {
-                        createDefaultSunDD(primarySunDD);
-                    } catch (IOException ex) {
-                        removeConfiguration(primarySunDD);
-                        ConfigurationException ce = new ConfigurationException(primarySunDD.getAbsolutePath(),ex);
-                        throw ce;
-                    }
+                    createDefaultSunDD(primarySunDD);
                 }
             }
 
@@ -175,8 +169,14 @@ public abstract class GlassfishConfiguration implements
                 addDescriptorListener(getStandardRootDD());
                 addDescriptorListener(getWebServicesRootDD());
             }
+        } catch (IOException ioe) {
+            removeConfiguration(primarySunDD);
+            ConfigurationException ce = new ConfigurationException(primarySunDD.getAbsolutePath(), ioe);
+            throw ce;
         } catch (RuntimeException ex) {
-            Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+            removeConfiguration(primarySunDD);
+            ConfigurationException ce = new ConfigurationException(primarySunDD.getAbsolutePath(), ex);
+            throw ce;
         }
 
     }
