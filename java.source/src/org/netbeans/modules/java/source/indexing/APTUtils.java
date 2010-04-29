@@ -71,6 +71,7 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
@@ -84,14 +85,14 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private static final String PROCESSOR_PATH = "processorPath"; //NOI18N
     private static final String APT_ENABLED = "aptEnabled"; //NOI18N
     private static final String ANNOTATION_PROCESSORS = "annotationProcessors"; //NOI18N
-    private static final Map<FileObject,Reference<APTUtils>> map = new WeakHashMap<FileObject,Reference<APTUtils>>();
+    private static final Map<FileObject, APTUtils> map = new WeakHashMap<FileObject, APTUtils>();
     private static final Lookup HARDCODED_PROCESSORS = Lookups.forPath("Editors/text/x-java/AnnotationProcessors");
-    private final FileObject root;
+    private final Reference<FileObject> root;
     private final ClassPath processorPath;
     private final AnnotationProcessingQuery.Result aptOptions;
 
     private APTUtils(FileObject root, ClassPath preprocessorPath, AnnotationProcessingQuery.Result aptOptions) {
-        this.root = root;
+        this.root = new CleaningWR(root);
         this.processorPath = preprocessorPath;
         this.aptOptions = aptOptions;
     }
@@ -100,8 +101,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         if (root == null) {
             return null;
         }
-        Reference<APTUtils> utilsRef = map.get(root);
-        APTUtils utils = utilsRef != null ? utilsRef.get() : null;
+        APTUtils utils = map.get(root);
         if (utils == null) {
             ClassPath pp = ClassPath.getClassPath(root, JavaClassPathConstants.PROCESSOR_PATH);
             if (pp == null) {
@@ -111,7 +111,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             utils = new APTUtils(root, pp, options);
             pp.addPropertyChangeListener(WeakListeners.propertyChange(utils, pp));
             options.addChangeListener(WeakListeners.change(utils, options));
-            map.put(root, new WeakReference<APTUtils>(utils));
+            map.put(root, utils);
         }
         return utils;
     }
@@ -140,12 +140,12 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        verifyAttributes(root, false);
+        verifyAttributes(root.get(), false);
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        verifyAttributes(root, false);
+        verifyAttributes(root.get(), false);
     }
 
     private Collection<Processor> lookupProcessors(ClassLoader cl) {
@@ -203,6 +203,8 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     }
 
     boolean verifyAttributes(FileObject fo, boolean allFilesIndexing) {
+        if (fo == null)
+            return false;
         try {
             URL url = fo.getURL();
             if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, processorPath.toString()) && !allFilesIndexing) {
@@ -266,5 +268,17 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         }
 
         //getResource and getResources of module classloaders do not return resources from parent's META-INF, so no need to override them
+    }
+
+    private static final class CleaningWR extends WeakReference<FileObject> implements Runnable {
+
+        public CleaningWR(FileObject root) {
+            super(root, Utilities.activeReferenceQueue());
+        }
+
+        @Override
+        public void run() {
+            map.size();
+        }
     }
 }
