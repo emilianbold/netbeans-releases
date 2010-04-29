@@ -139,7 +139,7 @@ public final class UiUtils {
                 //If the offset falls to a position between two tokens with different embeddings,
                 //we should try to use KeystrokeHandler-s for both languages.
                 List<TokenSequence<?>> forward = hi.embeddedTokenSequences(offset, false);
-                List<TokenSequence<?>> backward = hi.embeddedTokenSequences(offset, true); //forward bias
+                List<TokenSequence<?>> backward = hi.embeddedTokenSequences(offset, true);
 
                 final KeystrokeHandler bwHandler = getFirstHandler(backward);
                 final KeystrokeHandler fwHandler = getFirstHandler(forward);
@@ -214,6 +214,8 @@ public final class UiUtils {
         return ref.get();
     }
 
+
+    // Private methods ---------------------------------------------------------
     private static KeystrokeHandler getFirstHandler(List<TokenSequence<?>> embeddedTS) {
         for (int i = embeddedTS.size() - 1; i >= 0; i--) {
             TokenSequence<?> ts = embeddedTS.get(i);
@@ -225,20 +227,6 @@ public final class UiUtils {
         }
         return null;
     }
-
-//    public static KeystrokeHandler getBracketCompletion(Document doc, int offset) {
-//        BaseDocument baseDoc = (BaseDocument)doc;
-//        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
-//        for (Language l : list) {
-//            if (l.getBracketCompletion() != null) {
-//                return l.getBracketCompletion();
-//            }
-//        }
-//
-//        return null;
-//    }
-
-    // Private methods ---------------------------------------------------------
 
     private static final Logger LOG = Logger.getLogger(UiUtils.class.getName());
 
