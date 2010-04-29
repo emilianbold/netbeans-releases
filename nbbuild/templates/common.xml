@@ -682,8 +682,8 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="test-generate-html">
-        <subant target="-test-browse-html" genericantfile="${ant.file}" inheritall="false">
-            <dirset dir="build/test" includes="unit/results, qa-functional/results"/>
+        <subant target="-test-browse-html" genericantfile="${ant.file}" inheritall="true">
+            <dirset dir="build/test" includes="*/results"/>
         </subant>
     </target>
 
