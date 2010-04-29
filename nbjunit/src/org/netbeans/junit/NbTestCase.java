@@ -61,12 +61,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -1407,7 +1409,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     private static int assertSize(String message, Collection<?> roots, int limit,
             org.netbeans.insane.scanner.Filter f) {
         try {
-            CountingVisitor counter = new CountingVisitor();
+            final CountingVisitor counter = new CountingVisitor();
             ScannerUtils.scan(f, counter, roots, false);
             int sum = counter.getTotalSize();
             if (sum > limit) {
@@ -1416,15 +1418,20 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 sb.append(": leak ").append(sum - limit).append(" bytes ");
                 sb.append(" over limit of ");
                 sb.append(limit).append(" bytes");
-                sb.append('\n');
-                for (Class<?> cls : counter.getClasses()) {
-                    sb.append("  ");
+                Set<Class<?>> classes = new TreeSet<Class<?>>(new Comparator<Class<?>>() {
+                    public @Override int compare(Class<?> c1, Class<?> c2) {
+                        int r = counter.getSizeForClass(c2) - counter.getSizeForClass(c1);
+                        return r != 0 ? r : c1.hashCode() - c2.hashCode();
+                    }
+                });
+                classes.addAll(counter.getClasses());
+                for (Class<?> cls : classes) {
                     if (counter.getCountForClass(cls) == 0) {
                         continue;
                     }
-                    sb.append(cls.getName()).append(": ").
+                    sb.append("\n  ").append(cls.getName()).append(": ").
                             append(counter.getCountForClass(cls)).append(", ").
-                            append(counter.getSizeForClass(cls)).append("B\n");
+                            append(counter.getSizeForClass(cls)).append("B");
                 }
                 fail(sb.toString());
             }
