@@ -82,7 +82,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
     private static final int SEARCH_DELAY_TIME_LONG = 300; // < 3 chars
     private static final int SEARCH_DELAY_TIME_SHORT = 20; // >= 3 chars
 
-    private static KeymapViewModel keymapModel;
+    private static volatile KeymapViewModel keymapModel;
     private TableSorter sorter;
 
     private JPopupMenu popup = new JPopupMenu();
