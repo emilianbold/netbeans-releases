@@ -671,47 +671,39 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     @Override
     public void scheduleReparse(Collection<CsmProject> projects) {
-        CsmModelState old = getState();
-        setState(CsmModelState.SUSPENDED);
-        try {
-            CndFileUtils.clearFileExistenceCache();
-            ParserQueue.instance().clearParseWatch();
-            Collection<LibProjectImpl> libs = new HashSet<LibProjectImpl>();
-            Collection<ProjectBase> toReparse = new HashSet<ProjectBase>();
-            for (CsmProject csmProject : projects) {
-                if (csmProject instanceof ProjectBase) {
-                    ProjectBase project = (ProjectBase) csmProject;
-                    toReparse.add(project);
-                    for (CsmProject csmLib : project.getLibraries()) {
-                        if (csmLib instanceof LibProjectImpl) {
-                            LibProjectImpl lib = (LibProjectImpl) csmLib;
-                            if (!libs.contains(lib)) {
-                                lib.initFields();
-                                libs.add(lib);
-                            }
+        CndFileUtils.clearFileExistenceCache();
+        ParserQueue.instance().clearParseWatch();
+        Collection<LibProjectImpl> libs = new HashSet<LibProjectImpl>();
+        Collection<ProjectBase> toReparse = new HashSet<ProjectBase>();
+        for (CsmProject csmProject : projects) {
+            if (csmProject instanceof ProjectBase) {
+                ProjectBase project = (ProjectBase) csmProject;
+                toReparse.add(project);
+                for (CsmProject csmLib : project.getLibraries()) {
+                    if (csmLib instanceof LibProjectImpl) {
+                        LibProjectImpl lib = (LibProjectImpl) csmLib;
+                        if (!libs.contains(lib)) {
+                            lib.initFields();
+                            libs.add(lib);
                         }
                     }
                 }
             }
-            Collection<Object> platformProjects = new ArrayList<Object>();
-            for (ProjectBase projectBase : toReparse) {
-                final Object platformProject = projectBase.getPlatformProject();
-                platformProjects.add(platformProject);
-                closeProject(platformProject, true);
-            }
-            for (ProjectBase lib : libs) {
-                closeProject(lib.getPlatformProject(), true);
-            }
-            LibraryManager.getInstance().cleanLibrariesData(libs);
-            for (Object platformProject : platformProjects) {
-                ProjectBase newPrj = (ProjectBase) _getProject(platformProject);
-                newPrj.scheduleReparse();
-                ListenersImpl.getImpl().fireProjectOpened(newPrj);
-            }
-        } finally {
-            if (getState() == CsmModelState.SUSPENDED) {
-                setState(old);
-            }
+        }
+        Collection<Object> platformProjects = new ArrayList<Object>();
+        for (ProjectBase projectBase : toReparse) {
+            final Object platformProject = projectBase.getPlatformProject();
+            platformProjects.add(platformProject);
+            closeProject(platformProject, true);
+        }
+        for (ProjectBase lib : libs) {
+            closeProject(lib.getPlatformProject(), true);
+        }
+        LibraryManager.getInstance().cleanLibrariesData(libs);
+        for (Object platformProject : platformProjects) {
+            ProjectBase newPrj = (ProjectBase) _getProject(platformProject);
+            newPrj.scheduleReparse();
+            ListenersImpl.getImpl().fireProjectOpened(newPrj);
         }
     }
 
