@@ -36,9 +36,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -60,7 +58,6 @@ import javax.swing.border.Border;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.UIResource;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
@@ -108,7 +105,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     private ProjectConfigurationProvider pcp;
     private Lookup.Result<ProjectConfigurationProvider> currentResult;
 
-    private Lookup lookup;
+    private final Lookup lookup;
 
     private void initConfigListCombo() {
         assert EventQueue.isDispatchThread();
@@ -538,43 +535,23 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     }
 
     private void refreshView(Lookup context) {
-
-        if (OpenProjectList.getDefault().getOpenProjects().length == 0) {
-            activeProjectChanged(null);
-        }
-
-        Project contextPrj = getProjectFromLookup(context);
-        if (contextPrj == null) {
-            contextPrj = OpenProjectList.getDefault().getMainProject();
-        }
-
-        if (contextPrj != null) {
-            activeProjectChanged(contextPrj);
-        } //else {
-          //  currentProject = null;
-          //  activeProjectChanged(null);
-        //}
-
-    }
-
-    private Project getProjectFromLookup(Lookup context) {
-        Project toReturn = null;
-        List<Project> result = new ArrayList<Project>();
-        if (context != null) {
-            for (Project p : context.lookupAll(Project.class)) {
-                result.add(p);
-            }
-        }
-        if (result.size() > 0) {
-            toReturn = result.get(0);
+        // #185033: see MainProjectAction for basic logic.
+        Project p = OpenProjectList.getDefault().getMainProject();
+        if (p != null) {
+            activeProjectChanged(p);
         } else {
-            // find a project via DataObject
-            for (DataObject dobj : context.lookupAll(DataObject.class)) {
-                FileObject primaryFile = dobj.getPrimaryFile();
-                toReturn = FileOwnerQuery.getOwner(primaryFile);
+            Project[] selected = ActionsUtil.getProjectsFromLookup(context, null);
+            if (selected.length == 1) {
+                activeProjectChanged(selected[0]);
+            } else {
+                Project[] open = OpenProjectList.getDefault().getOpenProjects();
+                if (open.length == 1) {
+                    activeProjectChanged(open[0]);
+                } else {
+                    activeProjectChanged(null);
+                }
             }
         }
-        return toReturn;
     }
 
     public @Override void propertyChange(PropertyChangeEvent evt) {
