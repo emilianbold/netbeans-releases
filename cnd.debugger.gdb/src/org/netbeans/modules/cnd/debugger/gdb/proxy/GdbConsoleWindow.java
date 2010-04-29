@@ -66,19 +66,17 @@ import org.openide.windows.WindowManager;
  */
 public class GdbConsoleWindow extends TopComponent implements ActionListener, PropertyChangeListener {
     
-    private GdbDebugger debugger;
     private GdbProxy gdbProxy;
     private JScrollBar scrollBar;
-    private static GdbConsoleWindow instance = null;
-
     private final Object textLock = new String("Console text lock"); // NOI18N
     
     /** Creates new GdbConsoleWindow */
-    private GdbConsoleWindow(GdbDebugger debugger, GdbProxy gdbProxy) {
+    GdbConsoleWindow(GdbDebugger debugger, GdbProxy gdbProxy) {
         initComponents();
         try {
             final TopComponent tc = this;
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     tc.setDisplayName(NbBundle.getMessage(GdbConsoleWindow.class, "TITLE_GdbConsoleWindow")); // NOI18N
                 }
@@ -87,65 +85,41 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
         }
         scrollBar = debuggerLogPane.getVerticalScrollBar();
 
-        this.debugger = debugger;
         this.gdbProxy = gdbProxy;
-        debugger.addPropertyChangeListener(this);
         ProjectActionEvent pae = debugger.getLookup().lookupFirst(null, ProjectActionEvent.class);
         programName.setText(pae.getExecutable());
+        debugger.addPropertyChangeListener(this);
     }
     
-    public static GdbConsoleWindow getInstance(GdbDebugger debugger, GdbProxy gdbProxy) {
-        if (instance == null || instance.debugger != debugger || instance.gdbProxy != gdbProxy) {
-            instance = new GdbConsoleWindow(debugger, gdbProxy);
-            docConsole(instance);
+    private void docConsole() {
+        Mode mode = WindowManager.getDefault().findMode("output"); // NOI18N
+        if (mode != null) {
+            mode.dockInto(this);
         }
-        return instance;
-    }
-    
-    private static void docConsole(final GdbConsoleWindow gcw) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            Mode mode = WindowManager.getDefault().findMode("output"); // NOI18N
-            if (mode != null) {
-                mode.dockInto(instance);
-            }
-            gcw.open();
-            gcw.requestActive();
-        } else {
-            try {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        Mode mode = WindowManager.getDefault().findMode("output"); // NOI18N
-                        if (mode != null) {
-                            mode.dockInto(gcw);
-                        }
-                        gcw.open();
-                        gcw.requestActive();
-                    }
-                });
-            } catch (Exception ex) {}
-        }
+        open();
+        requestActive();
     }
     
     public void openConsole() {
         if (SwingUtilities.isEventDispatchThread()) {
-            open();
+            docConsole();
         } else {
-            final TopComponent tc = this;
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
-                    tc.open();
+                    docConsole();
                 }
             });
         }
     }
     
     public void closeConsole() {
-        instance = null;
         if (SwingUtilities.isEventDispatchThread()) {
             close();
         } else {
             final TopComponent tc = this;
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     tc.close();
                 }
@@ -158,6 +132,7 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
         return this.getClass().getName();
     }
   
+    @Override
     public void propertyChange(PropertyChangeEvent ev) { 
         if (GdbDebugger.PROP_STATE.equals(ev.getPropertyName())) {
             Object state = ev.getNewValue();
@@ -174,6 +149,7 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
         return PERSISTENCE_NEVER;
     }
     
+    @Override
     public void actionPerformed(ActionEvent actionEvent) {
         String command;
         String ac = actionEvent.getActionCommand();
@@ -226,6 +202,7 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
         // Scroll down to show last message
         try {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         scrollBar.setValue(scrollBar.getMaximum());
@@ -250,6 +227,7 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
         public HideTextAction() {
             super("Hide Text", new ImageIcon("cut.gif")); //FIXUP //NOI18N
         }
+        @Override
         public void actionPerformed(ActionEvent ev) {
             //System.out.println("HideTextAction.ActionPerformed(Hide Text)"); //DEBUG
         }
