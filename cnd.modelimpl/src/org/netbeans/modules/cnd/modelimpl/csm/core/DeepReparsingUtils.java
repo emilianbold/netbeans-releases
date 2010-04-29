@@ -215,7 +215,7 @@ public final class DeepReparsingUtils {
             Set<CsmFile> coherence = new HashSet<CsmFile>();
             Set<CsmFile> coherenceLibrary = new HashSet<CsmFile>();
             for (NativeFileItem item : items) {
-                if (project.acceptNativeItem(item)) {
+                if (Utils.acceptNativeItem(item)) {
                     FileImpl file = project.getFile(item.getFile(), false);
                     if (file != null) {
                         file.clearStateCache();

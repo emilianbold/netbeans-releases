@@ -356,4 +356,16 @@ public class Utils {
         }
     }
 
+    public static boolean acceptNativeItem(NativeFileItem item) {
+        if (item.getFile() == null) {
+            return false;
+        }
+        NativeFileItem.Language language = item.getLanguage();
+        return (language == NativeFileItem.Language.C ||
+                language == NativeFileItem.Language.CPP ||
+                language == NativeFileItem.Language.FORTRAN ||
+                language == NativeFileItem.Language.C_HEADER) &&
+                !item.isExcluded();
+    }
+
 }

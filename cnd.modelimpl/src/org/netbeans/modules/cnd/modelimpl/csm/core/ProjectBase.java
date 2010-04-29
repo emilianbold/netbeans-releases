@@ -515,18 +515,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return false;
     }
 
-    public final boolean acceptNativeItem(NativeFileItem item) {
-        if (item.getFile() == null) {
-            return false;
-        }
-        NativeFileItem.Language language = item.getLanguage();
-        return (language == NativeFileItem.Language.C ||
-                language == NativeFileItem.Language.CPP ||
-                language == NativeFileItem.Language.FORTRAN ||
-                language == NativeFileItem.Language.C_HEADER) &&
-                !item.isExcluded();
-    }
-
     protected final synchronized void registerProjectListeners() {
         if (platformProject instanceof NativeProject) {
             if (projectListener == null) {
@@ -791,15 +779,18 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * Isn't intended to be used in #included file processing.
      */
     final protected void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile) {
-        createIfNeed(nativeFile, isSourceFile, null, null, null);
+        FileAndHandler fileAndHandler = preCreateIfNeed(nativeFile, isSourceFile);
+        if (fileAndHandler == null) {
+            return;
+        }
+        // put directly into parser queue if needed
+        ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
     }
 
-    void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile,
-            ProjectSettingsValidator validator, List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged) {
-
+    private FileAndHandler preCreateIfNeed(NativeFileItem nativeFile, boolean isSourceFile){
         assert (nativeFile != null && nativeFile.getFile() != null);
-        if (!acceptNativeItem(nativeFile)) {
-            return;
+        if (!Utils.acceptNativeItem(nativeFile)) {
+            return null;
         }
         File file = nativeFile.getFile();
         FileImpl.FileType fileType = isSourceFile ? Utils.getFileType(nativeFile) : FileImpl.FileType.HEADER_FILE;
@@ -808,6 +799,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         if (fileAndHandler.preprocHandler == null) {
             fileAndHandler.preprocHandler = createPreprocHandler(nativeFile);
+        }
+        return fileAndHandler;
+    }
+
+    final void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile,
+            ProjectSettingsValidator validator, List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged) {
+
+        FileAndHandler fileAndHandler = preCreateIfNeed(nativeFile, isSourceFile);
+        if (fileAndHandler == null) {
+            return;
         }
         if (validator != null) {
             // fill up needed collections based on validation
@@ -1710,7 +1711,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         return null;
                     // nativeFile = new DefaultFileItem(prj, absolutePath);
                     }
-                    if (!acceptNativeItem(nativeFile)) {
+                    if (!Utils.acceptNativeItem(nativeFile)) {
                         return null;
                     }
                     preprocHandler = createPreprocHandler(nativeFile);
@@ -1728,7 +1729,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         File file = nativeFile.getFile().getAbsoluteFile();
         APTPreprocHandler preprocHandler = null;
         if (getFileContainer().getEntry(file) == null) {
-            if (!acceptNativeItem(nativeFile)) {
+            if (!Utils.acceptNativeItem(nativeFile)) {
                 return null;
             }
             // Try to find native file
