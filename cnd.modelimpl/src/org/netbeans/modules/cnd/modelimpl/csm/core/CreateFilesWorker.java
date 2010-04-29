@@ -57,7 +57,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Alexander Simon
  */
-public class CreateFilesWorker {
+final class CreateFilesWorker {
     private final ProjectBase project;
     private final RequestProcessor PROJECT_FILES_WORKER = new RequestProcessor("Project Files", CndUtils.getNumberCndWorkerThreads()); // NOI18N
 
