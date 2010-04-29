@@ -60,7 +60,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
@@ -89,7 +88,7 @@ public final class ConnectionManager {
     private static final boolean USE_JZLIB = Boolean.getBoolean("jzlib"); // NOI18N
     private static final int JSCH_CONNECTION_TIMEOUT = Integer.getInteger("jsch.connection.timeout", 10000); // NOI18N
     private static final int SOCKET_CREATION_TIMEOUT = Integer.getInteger("socket.connection.timeout", 10000); // NOI18N
-    private static final boolean isUnitTest = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
+    private static final boolean UNIT_TEST_MODE = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
     // Connections are always established sequently in connectorThread
     private static final RequestProcessor connectorThread = new RequestProcessor("ConnectionManager queue", 1); // NOI18N
     // Map that contains all connected sessions;
@@ -204,7 +203,7 @@ public final class ConnectionManager {
             // while either connection is established or
             // is cancelled implicitly.
 
-            if (isUnitTest) {
+            if (UNIT_TEST_MODE) {
                 attempts--;
             }
         }
@@ -243,8 +242,15 @@ public final class ConnectionManager {
 
         if (connectionTask.problem != null) {
             if (connectionTask.problem == Problem.AUTH_FAIL) {
+                // Note that AUTH_FAIL is generated not only on bad password,
+                // but on socket timeout as well. These cases are
+                // indistinguishable based on information from JSch.
                 log.log(Level.FINE, "JSch problem: {0}", connectionTask.problem); // NOI18N
-                PasswordManager.getInstance().clearPassword(env);
+                if (!UNIT_TEST_MODE) {
+                    // Do not clean password when running unit tests.
+                    // We want to be able to repeat the connection attempt.
+                    PasswordManager.getInstance().clearPassword(env);
+                }
                 return false;
             } else if (connectionTask.problem == Problem.CONNECTION_TIMEOUT) {
                 throw new IOException("Connection timeout"); // NOI18N
@@ -409,7 +415,7 @@ public final class ConnectionManager {
                     return null;
                 }
 
-                UserInfo userInfo = new RemoteUserInfo(env, !isUnitTest);
+                UserInfo userInfo = new RemoteUserInfo(env, !UNIT_TEST_MODE);
 
                 JSch jsch = jschPool.get(env);
 
