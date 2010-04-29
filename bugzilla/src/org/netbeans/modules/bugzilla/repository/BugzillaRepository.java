@@ -188,8 +188,8 @@ public class BugzillaRepository extends Repository {
         for (Query q : qs) {
             removeQuery((BugzillaQuery) q);
         }
-        resetRepository();
         Bugzilla.getInstance().removeRepository(this);
+        resetRepository(true);
     }
 
     public Lookup getLookup() {
@@ -203,8 +203,10 @@ public class BugzillaRepository extends Repository {
         return new Object[] { getIssueCache() };
     }
 
-    synchronized void resetRepository() {
-        bc = null;
+    synchronized void resetRepository(boolean keepConfiguration) {
+        if(!keepConfiguration) {
+            bc = null;
+        }
         if(getTaskRepository() != null) {
             Bugzilla.getInstance()
                     .getRepositoryConnector()
@@ -410,16 +412,21 @@ public class BugzillaRepository extends Repository {
 
     public void setCredentials(String user, String password, String httpUser, String httpPassword) {
         MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
-        resetRepository(); 
+        resetRepository(false);
     }
 
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
         HashMap<String, Object> oldAttributes = createAttributesMap();
+
+        String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
+        AuthenticationCredentials c = taskRepository != null ? taskRepository.getCredentials(AuthenticationType.REPOSITORY) : null;
+        String oldUser = c != null ? c.getUserName() : "";
+        String oldPassword = c != null ? c.getPassword() : "";
+
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
         Bugzilla.getInstance().addRepository(this);
-        resetRepository(); // XXX only on url, user or passwd change
-                           // XXX reset the configuration only if the host changed
-                           //     on psswd and user change reset only taskrepository
+        resetRepository(oldUrl.equals(url) && oldUser.equals(user) && oldPassword.equals(password)); // XXX reset the configuration only if the host changed
+                                                                                                     //     on psswd and user change reset only taskrepository
         HashMap<String, Object> newAttributes = createAttributesMap();
         fireAttributesChanged(oldAttributes, newAttributes);
     }

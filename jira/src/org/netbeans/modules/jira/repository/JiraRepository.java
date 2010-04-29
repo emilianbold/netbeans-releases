@@ -250,8 +250,8 @@ public class JiraRepository extends Repository {
                 removeQuery((JiraQuery) q);
             }
         }
-        resetRepository();
         Jira.getInstance().removeRepository(this);
+        resetRepository(true);
     }
 
     @Override
@@ -418,8 +418,16 @@ public class JiraRepository extends Repository {
 
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
         HashMap<String, Object> oldAttributes = createAttributesMap();
+
+        String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
+        AuthenticationCredentials c = taskRepository != null ? taskRepository.getCredentials(AuthenticationType.REPOSITORY) : null;
+        String oldUser = c != null ? c.getUserName() : "";
+        String oldPassword = c != null ? c.getPassword() : "";
+
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-        resetRepository(); // only on url, user or passwd change
+        
+        resetRepository(oldUrl.equals(url) && oldUser.equals(user) && oldPassword.equals(password)); // XXX reset the configuration only if the host changed
+                                                                                                     //     on psswd and user change reset only taskrepository
         Jira.getInstance().addRepository(this);
         HashMap<String, Object> newAttributes = createAttributesMap();
         fireAttributesChanged(oldAttributes, newAttributes);
@@ -458,9 +466,11 @@ public class JiraRepository extends Repository {
         return c != null ? c.getPassword() : ""; // NOI18N
     }
 
-    void resetRepository() {
+    void resetRepository(boolean keepConfiguration) {
         // XXX synchronization
-        configuration = null;
+        if(!keepConfiguration) {
+            configuration = null;
+        }
         synchronized (REPOSITORY_LOCK) {
             TaskRepository taskRepo = getTaskRepository();
             if (taskRepo != null) {
