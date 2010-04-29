@@ -85,7 +85,9 @@ public class HostPropertiesDialog extends JPanel {
                 true, buttons, pane.ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setResizable(false);
         dialog.setVisible(true);
+
         if (dd.getValue() == pane.ok) {
             pane.vpanel.applyChanges();
             String displayName = pane.tfName.getText();
@@ -130,7 +132,7 @@ public class HostPropertiesDialog extends JPanel {
             vpanel.addValidationListener(validationListener);
         }
 
-        cfgPanel.add(panel);
+        connectionPanel.add(panel);
         tfName.setText(serverRecord.getDisplayName());
         SyncUtils.arrangeComboBox(cbSync, serverRecord.getExecutionEnvironment());
         cbSync.setSelectedItem(serverRecord.getSyncFactory());
@@ -153,6 +155,8 @@ public class HostPropertiesDialog extends JPanel {
             public void ancestorMoved(AncestorEvent event) {
             }
         });
+
+        setError(null);
     }
 
     /** This method is called from within the constructor to
@@ -164,77 +168,112 @@ public class HostPropertiesDialog extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton2 = new javax.swing.JButton();
-        lblName = new javax.swing.JLabel();
-        tfName = new javax.swing.JTextField();
-        lblSync = new javax.swing.JLabel();
+        connectionPanel = new javax.swing.JPanel();
+        serverRecordPanel = new javax.swing.JPanel();
         cbSync = new javax.swing.JComboBox();
+        tfName = new javax.swing.JTextField();
+        lblName = new javax.swing.JLabel();
         cbX11 = new javax.swing.JCheckBox();
-        cfgPanel = new javax.swing.JPanel();
+        lblSync = new javax.swing.JLabel();
+        errorLabel = new javax.swing.JLabel();
 
-        jButton2.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.jButton2.text")); // NOI18N
+        connectionPanel.setLayout(new java.awt.BorderLayout());
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
-        setFocusCycleRoot(true);
+        serverRecordPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.serverRecordPanel.border.title"))); // NOI18N
+
+        tfName.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.tfName.text")); // NOI18N
 
         lblName.setLabelFor(tfName);
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblName.text")); // NOI18N
 
-        tfName.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.tfName.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbX11, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.cbX11.text")); // NOI18N
+        cbX11.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         lblSync.setLabelFor(cbSync);
         org.openide.awt.Mnemonics.setLocalizedText(lblSync, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblSync.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbX11, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.cbX11.text")); // NOI18N
-        cbX11.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        javax.swing.GroupLayout serverRecordPanelLayout = new javax.swing.GroupLayout(serverRecordPanel);
+        serverRecordPanel.setLayout(serverRecordPanelLayout);
+        serverRecordPanelLayout.setHorizontalGroup(
+            serverRecordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(serverRecordPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(serverRecordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(serverRecordPanelLayout.createSequentialGroup()
+                        .addGroup(serverRecordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(lblName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(lblSync, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(serverRecordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cbSync, 0, 319, Short.MAX_VALUE)
+                            .addComponent(tfName, javax.swing.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE))
+                        .addGap(12, 12, 12))
+                    .addGroup(serverRecordPanelLayout.createSequentialGroup()
+                        .addComponent(cbX11)
+                        .addContainerGap(288, Short.MAX_VALUE))))
+        );
+        serverRecordPanelLayout.setVerticalGroup(
+            serverRecordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(serverRecordPanelLayout.createSequentialGroup()
+                .addGroup(serverRecordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tfName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblName))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(serverRecordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblSync)
+                    .addComponent(cbSync, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(cbX11)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
-        cfgPanel.setLayout(new java.awt.BorderLayout());
+        errorLabel.setForeground(java.awt.Color.red);
+        errorLabel.setText(org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.errorLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblSync)
-                    .addComponent(lblName))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tfName, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 370, Short.MAX_VALUE)
-                    .addComponent(cbSync, javax.swing.GroupLayout.Alignment.TRAILING, 0, 370, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(connectionPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
+                    .addComponent(errorLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
+                    .addComponent(serverRecordPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
-            .addComponent(cfgPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(cbX11, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(240, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(cfgPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(connectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblName)
-                    .addComponent(tfName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(serverRecordPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblSync)
-                    .addComponent(cbSync, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(cbX11))
+                .addComponent(errorLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbSync;
     private javax.swing.JCheckBox cbX11;
-    private javax.swing.JPanel cfgPanel;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JPanel connectionPanel;
+    private javax.swing.JLabel errorLabel;
     private javax.swing.JLabel lblName;
     private javax.swing.JLabel lblSync;
+    private javax.swing.JPanel serverRecordPanel;
     private javax.swing.JTextField tfName;
     // End of variables declaration//GEN-END:variables
+
+    private void setError(final String error) {
+        Mutex.EVENT.readAccess(new Runnable() {
+
+            @Override
+            public void run() {
+                ok.setEnabled(error == null);
+                errorLabel.setText(error == null ? " " : error); // NOI18N
+            }
+        });
+    }
 
     private class ValidationListenerImpl implements ValidationListener {
 
@@ -242,14 +281,7 @@ public class HostPropertiesDialog extends JPanel {
         public void stateChanged(ChangeEvent e) {
             if (e.getSource() instanceof Validateable) {
                 Validateable obj = (Validateable) e.getSource();
-                final boolean isOK = !obj.hasProblem();
-                Mutex.EVENT.readAccess(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        ok.setEnabled(isOK);
-                    }
-                });
+                setError(obj.hasProblem() ? obj.getProblem() : null);
             }
         }
     }
