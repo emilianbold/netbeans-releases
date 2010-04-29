@@ -347,7 +347,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     // TODO: consider using macro map and __cplusplus here instead of just checking file name
     public APTLanguageFilter getLanguageFilter(APTPreprocHandler.State ppState) {
-        FileImpl startFile = ppState == null ? null : ProjectBase.getStartFile(ppState);
+        FileImpl startFile = ppState == null ? null : Utils.getStartFile(ppState);
         if (startFile != null && startFile != this) {
             return startFile.getLanguageFilter(null);
         } else {
@@ -878,7 +878,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return false;
         }
         APTPreprocHandler.State ppState = preprocHandler.getState();
-        ProjectBase startProject = ProjectBase.getStartProject(ppState);
+        ProjectBase startProject = Utils.getStartProject(ppState);
         if (startProject == null) {
             System.err.println(" null project for " + APTHandlersSupport.extractStartEntry(ppState) + // NOI18N
                     "\n while getting TS of file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
@@ -1177,7 +1177,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             // make real parse
             APTPreprocHandler.State ppState = preprocHandler.getState();
-            ProjectBase startProject = ProjectBase.getStartProject(ppState);
+            ProjectBase startProject = Utils.getStartProject(ppState);
             if (startProject == null) {
                 System.err.println(" null project for " + APTHandlersSupport.extractStartEntry(ppState) + // NOI18N
                         "\n while parsing file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N

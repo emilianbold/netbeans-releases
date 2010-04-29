@@ -220,7 +220,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return (flags & mask) == mask;
     }
     
-    protected void setFlags(byte mask, boolean value) {
+    protected final void setFlags(byte mask, boolean value) {
         if (value) {
             flags |= mask;
         } else {
@@ -228,11 +228,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
     }
 
-    public boolean isStatic() {
+    public final boolean isStatic() {
         return hasFlags(FLAGS_STATIC);
     }
     
-    protected void setStatic(boolean value) {
+    protected final void setStatic(boolean value) {
         setFlags(FLAGS_STATIC, value);
     }
     
@@ -256,7 +256,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return findFunctionName(node);
     }
 
-    protected CharSequence[] initRawName(AST node) {
+    protected final CharSequence[] initRawName(AST node) {
         return findFunctionRawName(node);
     }
     
@@ -506,7 +506,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 CsmFunctionDefinition def = (CsmFunctionDefinition) decl;
                 int candidateParamSize = def.getParameters().size();
                 if (!isVoid && parmSize == 0) {
-                    if (!ProjectBase.isCppFile(decl.getContainingFile())){
+                    if (!Utils.isCppFile(decl.getContainingFile())){
                         return def;
                     }
                 }

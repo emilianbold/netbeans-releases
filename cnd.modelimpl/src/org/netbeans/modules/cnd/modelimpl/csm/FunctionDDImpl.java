@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
@@ -178,7 +177,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         FunctionParameterListImpl parameterList = getParameterList();
         if (parameterList != null && !parameterList.isEmpty()) {
             CsmFile file = getContainingFile();
-            if (!ProjectBase.isCppFile(file)){
+            if (!Utils.isCppFile(file)){
                 uname = uname.substring(0,uname.indexOf('('))+"()"; // NOI18N
                 decl = prj.findDeclaration(uname);
                 if( (decl instanceof FunctionImpl<?>) &&

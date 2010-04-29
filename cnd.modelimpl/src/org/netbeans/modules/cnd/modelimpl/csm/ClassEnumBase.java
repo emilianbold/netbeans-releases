@@ -185,7 +185,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
         RepositoryUtils.put(this);
         boolean registerInNamespace = registerUnnamedInNamespace;
-        if (ProjectBase.canRegisterDeclaration(this)) {
+        if (Utils.canRegisterDeclaration(this)) {
             registerInNamespace = registerInProject();
         }
         if (registerInNamespace) {
