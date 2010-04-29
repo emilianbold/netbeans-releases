@@ -164,12 +164,12 @@ public class CLIStatus implements ISVNStatus {
 
     @Override
     public boolean hasTreeConflict() {
-        return false;//status.hasTreeConflicts();
+        return status.hasTreeConflicts();
     }
 
     @Override
     public SVNConflictDescriptor getConflictDescriptor() {
-        return null;//status.getConflictDescriptor();
+        return status.getConflictDescriptor();
     }
 
     public boolean isFileExternal() {

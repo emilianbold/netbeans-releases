@@ -225,7 +225,9 @@ public final class MenuWarmUpTask implements Runnable {
                                 h.switchToDeterminate((Integer)arr[1]);
                                 LOG.log(Level.FINE, "First refresh progress event delivered: {0}/{1} where {2}, goOn: {3}", arr);
                             }
-                            h.progress((Integer)arr[0]);
+                            if ((Integer)arr[0] < (Integer)arr[1]) {
+                                h.progress((Integer)arr[0]);
+                            }
                             FileObject fo = (FileObject)arr[2];
                             if (previous != fo.getParent() && again) {
                                 previous = fo.getParent();

@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.config.KVFile;
+import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor;
 
 /**
  *
@@ -68,6 +69,7 @@ public class WorkingCopyDetails {
     static final String VERSION_UNKNOWN = "";
     static final String VERSION_13 = "1.3";
     static final String VERSION_14 = "1.4";
+    static final String ATTR_TREE_CONFLICT_DESCRIPTOR = "is-in-conflict"; //NOI18N
 
     private final File file;
     //These Map stores the values in the SVN entities file
@@ -82,23 +84,29 @@ public class WorkingCopyDetails {
     protected File propertiesFile = null;
     private File basePropertiesFile = null;
     private File textBaseFile = null;
+    private final SVNConflictDescriptor conflictDescriptor;
 
     /** Creates a new instance of WorkingCopyDetails */
-    private WorkingCopyDetails(File file, Map<String, String> attributes) {
+    private WorkingCopyDetails(File file, Map<String, String> attributes, SVNConflictDescriptor conflictDescriptor) {
         this.file = file;
         this.attributes  = attributes;
+        this.conflictDescriptor = conflictDescriptor;
     }
 
     public static WorkingCopyDetails createWorkingCopy(File file, Map<String, String> attributes) {
+        SVNConflictDescriptor conflictDescriptor = null;
+        if (attributes != null) {
+            conflictDescriptor = EntriesCache.getInstance().getConflictDescriptor(file.getName(), attributes.get(WorkingCopyDetails.ATTR_TREE_CONFLICT_DESCRIPTOR));
+        }
         String version = attributes != null ? attributes.get(VERSION_ATTR_KEY) : VERSION_UNKNOWN;
         if(version != null) {
             if(version.equals(VERSION_13)) {
 
-                return new WorkingCopyDetails(file, attributes);
+                return new WorkingCopyDetails(file, attributes, conflictDescriptor);
                 
             } else if(version.equals(VERSION_14)) {
                 
-                return new WorkingCopyDetails(file, attributes) {
+                return new WorkingCopyDetails(file, attributes, conflictDescriptor) {
                     public boolean propertiesExist() throws IOException {
                         return getAttributes().containsKey("has-props");        // NOI18N
                     }  
@@ -117,7 +125,7 @@ public class WorkingCopyDetails {
 
             } else if(version.equals(VERSION_UNKNOWN)) {
 
-                WorkingCopyDetails wcd = new WorkingCopyDetails(file, attributes);
+                WorkingCopyDetails wcd = new WorkingCopyDetails(file, attributes, conflictDescriptor);
                 if(!wcd.isHandled()) {
                     return wcd;
                 } 
@@ -131,7 +139,7 @@ public class WorkingCopyDetails {
             }   
         } else {
             Subversion.LOG.warning("Could not determine the SVN working copy version for " + file + ". Falling back on 1.3");  // NOI18N
-            return new WorkingCopyDetails(file, attributes);
+            return new WorkingCopyDetails(file, attributes, conflictDescriptor);
         }
     }
 
@@ -305,6 +313,10 @@ public class WorkingCopyDetails {
             return isModifiedByByte();            
         }
         return false;
+    }
+
+    SVNConflictDescriptor getConflictDescriptor() {
+        return conflictDescriptor;
     }
 
     private String getPropertyValue(Map<String, byte[]> props, String key) {
