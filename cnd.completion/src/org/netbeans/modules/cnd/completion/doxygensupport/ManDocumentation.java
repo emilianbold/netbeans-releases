@@ -222,13 +222,11 @@ public class ManDocumentation {
     }
 
     private static String createDocumentationForName(String name, int chapter, NativeProject np) throws IOException {
-        //NativeFileItem nfi = CsmFileInfoQuery.getDefault().getNativeFileItem(file);
-//        NativeProject np = getNativeProject(file);
-//        if (np == null) {
-//            return "";
-//        }
         NativeExitStatus exitStatus = null;
-        if (np.getPlatformName().contains("Solaris")) { // NOI18N
+        if (np.getPlatformName() == null) {
+            exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, name); // NOI18N
+        }
+        else if (np.getPlatformName().contains("Solaris")) { // NOI18N
             NativeExitStatus es = np.execute("man", null, "-l", name); // NOI18N
             String section = null;
             String output = es.output;
