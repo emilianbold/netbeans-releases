@@ -40,6 +40,61 @@
             </file>
         </folder> <!-- End cppFiles folder -->
 
+        <folder name="testFiles">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.cncppunit.resources.Bundle"/>
+            <attr name="position" intvalue="555"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/testFiles.html"/>
+
+            <file name="cunittest.c" url="templates/c/test-cunit-c.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.cncppunit.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/testCUnit.png"/>
+                <attr name="position" intvalue="300"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/test-cunit.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.cncppunit.editor.filecreation.TestCUnitIterator"/>
+                <attr name="templateCategory" stringvalue="cncpp-test-types"/>
+            </file>
+
+            <file name="cunittestfile.c" url="templates/c/test-cunit-file-c.template">
+                <attr name="position" intvalue="310"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+                <attr name="addToLogicalFolder" boolvalue="false"/>
+            </file>
+
+            <file name="cppunittest.cpp" url="templates/cpp/test-cppunit-cpp.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.cncppunit.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/testCppUnit.png"/>
+                <attr name="position" intvalue="400"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/test-cppunit.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.cncppunit.editor.filecreation.TestCppUnitIterator"/>
+                <attr name="templateCategory" stringvalue="cncpp-test-types"/>
+            </file>
+
+            <file name="cppunittestclassfile.cpp" url="templates/cpp/test-cppunit-class-file-cpp.template">
+                <attr name="position" intvalue="410"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+                <attr name="addToLogicalFolder" boolvalue="false"/>
+            </file>
+
+            <file name="cppunittestclassfile.h" url="templates/cpp/test-cppunit-class-file-h.template">
+                <attr name="position" intvalue="420"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+                <attr name="addToLogicalFolder" boolvalue="false"/>
+            </file>
+
+            <file name="cppunittestrunnerfile.cpp" url="templates/cpp/test-cppunit-runner-file-cpp.template">
+                <attr name="position" intvalue="430"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+                <attr name="addToLogicalFolder" boolvalue="false"/>
+            </file>
+
+        </folder> <!-- End testFiles folder -->
+
     </folder> <!-- Templates -->
 
 </filesystem>

@@ -37,7 +37,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.simpleunit.editor.filecreation;
+package org.netbeans.modules.cnd.cncppunit.editor.filecreation;
 
 import java.awt.Component;
 import org.netbeans.api.project.Project;
@@ -55,13 +55,13 @@ import org.openide.util.NbBundle;
 /**
  * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-public class NewTestSimpleCppPanel extends CndPanel {
+public class NewTestCUnitPanel extends CndPanel {
 
     private final MIMEExtensions es;
     private final String defaultExt;
     private final boolean fileWithoutExtension;
 
-    NewTestSimpleCppPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, MIMEExtensions es, String defaultExt) {
+    NewTestCUnitPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, MIMEExtensions es, String defaultExt) {
         super(project, folders, bottomPanel);
         this.es = es;
         this.defaultExt = defaultExt;
@@ -70,7 +70,7 @@ public class NewTestSimpleCppPanel extends CndPanel {
 
     public Component getComponent() {
         if (gui == null) {
-            gui = new NewTestSimpleCppPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), es, defaultExt);
+            gui = new NewTestCUnitPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), es, defaultExt);
             gui.addChangeListener(this);
         }
         return gui;
@@ -79,7 +79,7 @@ public class NewTestSimpleCppPanel extends CndPanel {
     @Override
     protected void doStoreSettings(WizardDescriptor settings) {
         if (getTargetExtension().length() > 0) {
-            if (((NewTestSimpleCppPanelGUI)gui).useTargetExtensionAsDefault()) {
+            if (((NewTestCUnitPanelGUI)gui).useTargetExtensionAsDefault()) {
                 es.setDefaultExtension(getTargetExtension());
             } else {
                 es.addExtension(getTargetExtension());
@@ -124,11 +124,11 @@ public class NewTestSimpleCppPanel extends CndPanel {
     }
 
     private String getTargetExtension() {
-        return ((NewTestSimpleCppPanelGUI)gui).getTargetExtension();
+        return ((NewTestCUnitPanelGUI)gui).getTargetExtension();
     }
 
     public static FileObject getTemplateFileObject(String formType) {
-        return FileUtil.getConfigFile("Templates/cppFiles/" + formType); // NOI18N
+        return FileUtil.getConfigFile("Templates/testFiles/" + formType); // NOI18N
     }
 
     public static DataObject getTemplateDataObject(String formType) {
