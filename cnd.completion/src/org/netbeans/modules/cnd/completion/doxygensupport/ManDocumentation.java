@@ -229,13 +229,26 @@ public class ManDocumentation {
 //        }
         NativeExitStatus exitStatus = null;
         if (np.getPlatformName().contains("Solaris")) { // NOI18N
-            exitStatus = np.execute("man", null, "-s3c", name); // NOI18N
-	    if (exitStatus.output == null || exitStatus.output.length() == 0) {
-                exitStatus = np.execute("man", null, "-s3c++", name); // NOI18N
-	    }
-	    if (exitStatus.output == null || exitStatus.output.length() == 0) {
+            NativeExitStatus es = np.execute("man", null, "-l", name); // NOI18N
+            String section = null;
+            String output = es.output;
+            int index1 = output.indexOf("(3"); // NOI18N
+            int index2;
+            while (section == null && index1 >= 0) {
+                if (output.charAt(index1+2) != 'f') { // Don't want fortran!
+                    index2 = output.substring(index1).indexOf(")"); // NOI18N
+                    section = output.substring(index1+1, index1+index2);
+                    break;
+                }
+                output = output.substring(index1+1);
+                index1 = output.indexOf("(3"); // NOI18N
+            }
+            if (section != null) {
+                exitStatus = np.execute("man", null, "-s" + section, name); // NOI18N
+            }
+            else {
                 exitStatus = np.execute("man", null, name); // NOI18N
-	    }
+            }
         }
         else {
             exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, "-s3", name); // NOI18N
