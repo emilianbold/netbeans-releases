@@ -58,7 +58,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -118,7 +117,6 @@ import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
-import org.openide.util.RequestProcessor;
 
 /**
  * Base class for CsmProject implementation
@@ -752,16 +750,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             projectRoots.addSources(sources);
             projectRoots.addSources(headers);
             projectRoots.addSources(excluded);
-            createProjectFilesIfNeed(sources, true, removedFiles, validator);
+            CreateFilesWorker worker = new CreateFilesWorker(this);
+            worker.createProjectFilesIfNeed(sources, true, removedFiles, validator);
             if (status != Status.Validating  || RepositoryUtils.getRepositoryErrorCount(this) == 0){
-                createProjectFilesIfNeed(headers, false, removedFiles, validator);
+                worker.createProjectFilesIfNeed(headers, false, removedFiles, validator);
             }
             if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) > 0){
                 System.err.println("Clean index for project \""+getUniqueName()+"\" because index was corrupted (was "+RepositoryUtils.getRepositoryErrorCount(this)+" errors)."); // NOI18N
                 validator = null;
                 reopenUnit();
-                createProjectFilesIfNeed(sources, true, removedFiles, validator);
-                createProjectFilesIfNeed(headers, false, removedFiles, validator);
+                worker.createProjectFilesIfNeed(sources, true, removedFiles, validator);
+                worker.createProjectFilesIfNeed(headers, false, removedFiles, validator);
             }
 
         } finally {
@@ -786,82 +785,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         initFields();
     }
 
-    private final RequestProcessor PROJECT_FILES_WORKER = new RequestProcessor("Project Files", CndUtils.getNumberCndWorkerThreads()); // NOI18N
-
-    private void createProjectFilesIfNeed(List<NativeFileItem> items, boolean sources,
-            Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator) {
-
-        List<FileImpl> reparseOnEdit = new ArrayList<FileImpl>();
-        List<NativeFileItem> reparseOnPropertyChanged = new ArrayList<NativeFileItem>();
-        AtomicBoolean enougth = new AtomicBoolean(false);
-        int size = items.size();
-        int threads = CndUtils.getNumberCndWorkerThreads()*3;
-        CountDownLatch countDownLatch = new CountDownLatch(threads);
-        int chunk = (size/threads) + 1;
-        Iterator<NativeFileItem> it = items.iterator();
-        for (int i = 0; i < threads; i++) {
-            ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(chunk);
-            for(int j = 0; j < chunk; j++){
-                if(it.hasNext()){
-                    list.add(it.next());
-                } else {
-                    break;
-                }
-            }
-            CreateFileRunnable r = new CreateFileRunnable(countDownLatch, list, sources, removedFiles,
-                    validator, reparseOnEdit, reparseOnPropertyChanged, enougth);
-            PROJECT_FILES_WORKER.post(r);
-        }
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException ex) {
-        }
-        //for (NativeFileItem nativeFileItem : items) {
-        //    if (!createProjectFilesIfNeedRun(nativeFileItem, sources, removedFiles, validator,
-        //            reparseOnEdit, reparseOnPropertyChanged, enougth)) {
-        //        return;
-        //    }
-        //}
-        if (!reparseOnEdit.isEmpty()) {
-            DeepReparsingUtils.reparseOnEdit(reparseOnEdit, this, true);
-        }
-        if (!reparseOnPropertyChanged.isEmpty()) {
-            DeepReparsingUtils.reparseOnPropertyChanged(reparseOnPropertyChanged, this);
-        }
-    }
-
-    private boolean createProjectFilesIfNeedRun(NativeFileItem nativeFileItem, boolean sources,
-            Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator,
-            List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged, AtomicBoolean enougth){
-        if (enougth.get()) {
-            return false;
-        }
-        if (isDisposing()) {
-            if (TraceFlags.TRACE_MODEL_STATE) {
-                System.err.printf("filling parser queue interrupted for %s\n", getName());
-            }
-            return false;
-        }
-        if (removedFiles.contains(nativeFileItem)) {
-            return true;
-        }
-        assert (nativeFileItem.getFile() != null) : "native file item must have valid File object";
-        if (TraceFlags.DEBUG) {
-            ModelSupport.trace(nativeFileItem);
-        }
-        try {
-            createIfNeed(nativeFileItem, sources, validator, reparseOnEdit, reparseOnPropertyChanged);
-            if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) > 0) {
-                enougth.set(true);
-                return false;
-            }
-        } catch (Exception ex) {
-            DiagnosticExceptoins.register(ex);
-        }
-        return true;
-    }
-
-
     /**
      * Creates FileImpl instance for the given file item if it hasn't yet been created.
      * Is called when initializing the project or new file is added to project.
@@ -871,7 +794,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         createIfNeed(nativeFile, isSourceFile, null, null, null);
     }
 
-    private void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile,
+    void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile,
             ProjectSettingsValidator validator, List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged) {
 
         assert (nativeFile != null && nativeFile.getFile() != null);
@@ -954,6 +877,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     protected final Status getStatus() {
         return status;
+    }
+
+    boolean isValidating(){
+        return status == Status.Validating;
     }
 
     private void onAddedToModelImpl(boolean isRestored) {
@@ -2642,7 +2569,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private final ReadWriteLock disposeLock = new ReentrantReadWriteLock();
     private final CharSequence uniqueName;
     private final Map<CharSequence, CsmUID<CsmNamespace>> namespaces;
-    //private ClassifierContainer classifierContainer = new ClassifierContainer();
     private final Key classifierStorageKey;
 
     // collection of sharable system macros and system includes
@@ -2657,8 +2583,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private final Key graphStorageKey;
     protected final SourceRootContainer projectRoots = new SourceRootContainer();
     private NativeProjectListenerImpl projectListener;
-
-    //private NamespaceImpl fakeNamespace;
 
     // test variables.
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false); // NOI18N
@@ -2767,44 +2691,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     final ClassifierContainer getClassifierSorage() {
         ClassifierContainer cc = weakClassifierContainer.getContainer();
         return cc != null ? cc : ClassifierContainer.empty();
-    }
-
-    private class CreateFileRunnable implements Runnable {
-        private final CountDownLatch countDownLatch;
-        private final List<NativeFileItem> nativeFileItems;
-        private final boolean sources;
-        private final Set<NativeFileItem> removedFiles;
-        private final ProjectSettingsValidator validator;
-        private final List<FileImpl> reparseOnEdit;
-        private final List<NativeFileItem> reparseOnPropertyChanged;
-        private final AtomicBoolean enougth;
-
-        private CreateFileRunnable(CountDownLatch countDownLatch, List<NativeFileItem> nativeFileItems, boolean sources,
-            Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator,
-            List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged, AtomicBoolean enougth){
-            this.countDownLatch = countDownLatch;
-            this.nativeFileItems = nativeFileItems;
-            this.sources = sources;
-            this.removedFiles = removedFiles;
-            this.validator = validator;
-            this.reparseOnEdit = reparseOnEdit;
-            this.reparseOnPropertyChanged = reparseOnPropertyChanged;
-            this.enougth = enougth;
-        }
-
-        @Override
-        public void run() {
-            try {
-                for(NativeFileItem nativeFileItem : nativeFileItems) {
-                    if (!createProjectFilesIfNeedRun(nativeFileItem, sources, removedFiles, validator,
-                                            reparseOnEdit, reparseOnPropertyChanged, enougth)){
-                        return;
-                    }
-                }
-            } finally {
-                countDownLatch.countDown();
-            }
-        }
     }
 
     private static final class WeakContainer<T> {
