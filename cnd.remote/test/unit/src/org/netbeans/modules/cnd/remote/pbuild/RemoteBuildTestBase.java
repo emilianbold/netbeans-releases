@@ -258,6 +258,47 @@ public class RemoteBuildTestBase extends RemoteTestBase {
     }
 
 
+    protected MakeProject openProject(String projectName, final ExecutionEnvironment execEnv, Sync sync, Toolchain toolchain) throws IOException, Exception, IllegalArgumentException {
+        File origBase = getDataFile(projectName).getParentFile();
+        File copiedBase = new File(new File(getWorkDir(), getTestHostName()), origBase.getName());
+        copyDirectory(origBase, copiedBase);
+        File projectDirFile = new File(copiedBase, projectName);
+        // call this only before opening project!
+        changeProjectHost(projectDirFile, execEnv);
+        setupHost(sync.ID);
+        setSyncFactory(sync.ID);
+        assertEquals("Wrong sync factory:", sync.ID, ServerList.get(execEnv).getSyncFactory().getID());
+        setDefaultCompilerSet(toolchain.ID);
+        assertEquals("Wrong tools collection", toolchain.ID, CompilerSetManager.get(execEnv).getDefaultCompilerSet().getName());
+        assertTrue(projectDirFile.exists());
+        FileObject projectDirFO = FileUtil.toFileObject(projectDirFile);
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        //changeProjectHost(makeProject, execEnv);
+        assertNotNull("project is null", makeProject);
+        return makeProject;
+    }
+
+    /** To be called only before opening project! Please do NOT make it protected since this will lead to errors */
+    private void changeProjectHost(File projectDir, ExecutionEnvironment env) throws Exception {
+        File nbproject = new File(projectDir, "nbproject");
+        assertTrue("file does not exist: " + nbproject.getAbsolutePath(), nbproject.exists());
+        File confFile = new File(nbproject, "configurations.xml");
+        assertTrue(confFile.exists());
+        String text = readFile(confFile);
+        String openTag = "<developmentServer>";
+        String closeTag = "</developmentServer>";
+        int start = text.indexOf(openTag);
+        start += openTag.length();
+        assertTrue(start >= 0);
+        int end = text.indexOf(closeTag);
+        assertTrue(end >= 0);
+        StringBuilder newText = new StringBuilder();
+        newText.append(text.substring(0, start));
+        newText.append(ExecutionEnvironmentFactory.toUniqueID(env));
+        newText.append(text.substring(end));
+        writeFile(confFile, newText);
+    }
+
     protected void buildSample(Sync sync, Toolchain toolchain, String sampleName, String projectDirBase, int count) throws Exception {
         int timeout = getSampleBuildTimeout();
         buildSample(sync, toolchain, sampleName, projectDirBase, count, timeout, timeout);
