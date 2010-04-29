@@ -101,7 +101,7 @@ public final class JsfModelFactory {
         ClassPath boot = getClassPath( project , ClassPath.BOOT);
         ClassPath compile = getClassPath(project, ClassPath.COMPILE );
         ClassPath src = getClassPath(project , ClassPath.SOURCE);
-        return ModelUnit.create(boot, compile, src, module);
+        return (src == null) ? null: ModelUnit.create(boot, compile, src, module);
     }
     
     private static ClassPath getClassPath( Project project, String type ) {

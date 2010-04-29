@@ -43,13 +43,17 @@ package org.netbeans.modules.subversion.client.parser;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
+import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNScheduleKind;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
@@ -67,7 +71,7 @@ public class SvnWcParser {
 
     private WorkingCopyDetails getWCDetails(File file) throws IOException, SAXException {   
         Map<String, String> attributes = EntriesCache.getInstance().getFileAttributes(file);
-        return WorkingCopyDetails.createWorkingCopy(file, attributes);            
+        return WorkingCopyDetails.createWorkingCopy(file, attributes);
     }
 
    /**
@@ -82,8 +86,8 @@ public class SvnWcParser {
         List<ISVNStatus> ret = new ArrayList<ISVNStatus>(20);                        
         ret.add(getSingleStatus(path));
         
-        File[] children = path.listFiles();
-        if(children != null && children.length > 0) {        
+        File[] children = getChildren(path);
+        if(children != null) {
             for (int i = 0; i < children.length; i++) {
                 if(!SvnUtils.isPartOfSubversionMetadata(children[i]) && !SvnUtils.isAdministrative(path)) {                                       
                     if(descend && children[i].isDirectory()) {                
@@ -95,7 +99,30 @@ public class SvnWcParser {
             }        
         }        
         return ret;
-    }    
+    }
+
+    /**
+     * Returns an array of existed file's children plus all it's children from metadata
+     */
+    private File[] getChildren (File file) throws LocalSubversionException {
+        File[] children = file.listFiles();
+        if (children != null) { // it is a folder, get all its children from metadata
+            try {
+                String[] entries = EntriesCache.getInstance().getChildren(file);
+                Set<File> childSet = new LinkedHashSet<File>(children.length + entries.length);
+                childSet.addAll(Arrays.asList(children));
+                for (String name : entries) {
+                    childSet.add(new File(file, name));
+                }
+                children = childSet.toArray(new File[childSet.size()]);
+            } catch (IOException ex) {
+                throw new LocalSubversionException(ex);
+            } catch (SAXException ex) {
+                throw new LocalSubversionException(ex);
+            }
+        }
+        return children;
+    }
 
     public ISVNStatus getSingleStatus(File file) throws LocalSubversionException {
         String finalTextStatus = SVNStatusKind.NORMAL.toString();
@@ -196,6 +223,7 @@ public class SvnWcParser {
                     lockComment = wcDetails.getValue("lock-comment");  // NOI18N
                     lockOwner = wcDetails.getValue("lock-owner");      // NOI18N
                 }
+                SVNConflictDescriptor conflictDesc = wcDetails.getConflictDescriptor();
 
                 return new ParserSvnStatus(
                         file,
@@ -214,7 +242,9 @@ public class SvnWcParser {
                         conflictWorking,
                         lockCreationDate,
                         lockComment,
-                        lockOwner);
+                        lockOwner,
+                        conflictDesc != null,
+                        conflictDesc);
             } else {
                 //File isn't handled.
                 return new ParserSvnStatus(
@@ -234,6 +264,8 @@ public class SvnWcParser {
                         null,
                         null,
                         null,
+                        null,
+                        false,
                         null);
             }
 
