@@ -45,6 +45,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -86,6 +87,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 /**
@@ -107,6 +109,8 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
     private volatile Image icon;
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseServer.class.getName());
+
+    private static InputOutput OUTPUT = null;
 
     // guarded by static variable "lock"
     private static volatile DatabaseServer DEFAULT;;
@@ -770,7 +774,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
                 }
                 
                 try {
-                    runProcess(getStartPath(), getStartArgs(), Utils.getMessage("LBL_MySQLOutputTab"));
+                    runProcess(getStartPath(), getStartArgs());
                 } finally {
                     updateDisplayInformation();
                     notifyChange();
@@ -809,9 +813,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         if ( Utils.isValidURL(adminCommand, false)) {
             launchBrowser(adminCommand);
         } else if ( Utils.isValidExecutable(adminCommand, false)) {
-            runProcess(adminCommand, getAdminArgs(),
-                    Utils.getMessage(
-                        "LBL_MySQLOutputTab"));
+            runProcess(adminCommand, getAdminArgs());
             closeOutput();
         } else {
             throw new DatabaseException(NbBundle.getMessage(
@@ -821,7 +823,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
 
     }
 
-    private Process runProcess(String command, String args, String outputLabel) throws DatabaseException {
+    private Process runProcess(String command, String args) throws DatabaseException {
 
         if ( Utilities.isMac() && command.endsWith(".app") ) {  // NOI18N
             // The command is actually the first argument, with /usr/bin/open
@@ -834,7 +836,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             NbProcessDescriptor desc = new NbProcessDescriptor(command, args);
             Process proc = desc.exec();
 
-            new ExecSupport().displayProcessOutputs(proc, outputLabel);
+            new ExecSupport().displayProcessOutputs(proc);
             return proc;
         } catch ( Exception e ) {
             throw new DatabaseException(e);
@@ -911,15 +913,27 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
         return runstate == ServerState.CONFIGERR;
     }
 
-    private static void closeOutput() {
-        InputOutput io = org.openide.windows.IOProvider.getDefault().getIO(
-                Utils.getMessage("LBL_MySQLOutputTab"), false); // NOI18N
-        if (io != null && io.getOut() != null) {
-            if (first) {
-                first = false;
-                io.getOut().println(' ');
+    public static void writeOutput(String msg) {
+        synchronized (MySQLDatabaseServer.class) {
+            getOutput().getOut().println(msg);
+        }
+    }
+
+    public static InputOutput getOutput() {
+        synchronized (MySQLDatabaseServer.class) {
+            if (OUTPUT == null) {
+                OUTPUT = IOProvider.getDefault().getIO(Utils.getMessage("LBL_MySQLOutputTab"), false); // NOI18N
             }
-            io.getOut().close();
+            OUTPUT.select();
+            return OUTPUT;
+        }
+    }
+
+    private static void closeOutput() {
+        synchronized (MySQLDatabaseServer.class) {
+            if (OUTPUT != null) {
+                OUTPUT.getOut().close();
+            }
         }
     }
 
@@ -1022,7 +1036,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             try {
                 handle.start();
                 handle.switchToIndeterminate();
-                proc = runProcess(getStopPath(), getStopArgs(), Utils.getMessage("LBL_MySQLOutputTab"));
+                proc = runProcess(getStopPath(), getStopArgs());
                 // wait until server is shut down
                 proc.waitFor();
             } finally {

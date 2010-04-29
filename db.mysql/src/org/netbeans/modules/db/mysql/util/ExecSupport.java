@@ -53,7 +53,8 @@ import java.util.logging.Logger;
  * Provides utility for rerouting process output to an output window
  * 
  * @author  ludo, David Van Couvering
- */
+ */import org.netbeans.modules.db.mysql.impl.MySQLDatabaseServer;
+
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 public class ExecSupport {
@@ -69,22 +70,18 @@ public class ExecSupport {
      * Redirect the standard output and error streams of the child
      * process to an output window.
      */
-    public InputOutput displayProcessOutputs(final Process child, String displayName)
+    public InputOutput displayProcessOutputs(final Process child)
     throws IOException, InterruptedException {
         // Get a tab on the output window.  If this client has been
         // executed before, the same tab will be returned.
-        final InputOutput io = IOProvider.getDefault().getIO(displayName, false);
-        
+        InputOutput io = MySQLDatabaseServer.getOutput();
         try {
             io.getOut().reset();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             // not a critical error, continue
-            LOGGER.log(Level.INFO, null, e);
+            LOGGER.log(Level.INFO, e.getLocalizedMessage(), e);
         }
-        
-        io.select();
-        
+
         copyMakers = new OutputCopier[3];
         
         (copyMakers[0] = new OutputCopier(
