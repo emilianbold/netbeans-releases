@@ -150,6 +150,7 @@ public final class PasswordManager {
         if (keyringIsActivated) {
             Keyring.delete(KEY_PREFIX + key);
         }
+        Logger.getInstance().log(Level.FINEST, "PasswordManager.clearPassword({0})", execEnv); // NOI18N
     }
 
     /**
@@ -164,6 +165,7 @@ public final class PasswordManager {
         }
         NbPreferences.forModule(PasswordManager.class).remove(STORE_PREFIX + key);
         Keyring.delete(KEY_PREFIX + key);
+        Logger.getInstance().log(Level.FINEST, "PasswordManager.forceClearPassword({0})", execEnv); // NOI18N
     }
 
     /**
