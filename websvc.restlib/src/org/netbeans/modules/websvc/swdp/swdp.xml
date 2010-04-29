@@ -79,5 +79,6 @@ made subject to such option by the copyright holder.
         <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-server/1.1.5.1/jersey-server-1.1.5.1.pom</resource>
         <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-client/1.1.5.1/jersey-client-1.1.5.1.pom</resource>
         <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-oauth/oauth-client/1.1.5.1/oauth-client-1.1.5.1.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-oauth/oauth-signature/1.1.5.1/oauth-signature-1.1.5.1.pom</resource>
     </volume>
 </library>
