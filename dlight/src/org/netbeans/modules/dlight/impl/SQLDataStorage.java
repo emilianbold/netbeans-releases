@@ -53,7 +53,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -613,6 +612,14 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         public String toString(T item);
     }
 
+    public void flush() {
+        try {
+            asyncThread.flush();
+        } catch (InterruptedException ex) {
+            logger.log(Level.INFO, null, ex);
+        }
+    }
+
     private class AsyncThread extends Thread {
 
         private boolean shutdown;
@@ -624,101 +631,47 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
             setName("DLIGHT: SQL Storage AsyncThread"); // NOI18N
         }
 
+        public synchronized void flush() throws InterruptedException {
+            // Proper synchronization is needed to guarantee that
+            // queue.isEmpty() is checked either before commands are
+            // taken from the queue, or after they are executed.
+            while (!requestQueue.isEmpty()) {
+                wait();
+            }
+        }
+
         @Override
         public void run() {
             while (emptyBufferCount < BUFFER_COUNT) {
-                for (int i = 0; i < MAX_BULK_SIZE; i++) {
+                synchronized (this) {
+                    requestQueue.drainTo(requestList, MAX_BULK_SIZE);
+
                     try {
-                        Request request = requestQueue.poll(WAIT_INTERVALS, TimeUnit.MILLISECONDS);
-                        if (request == null) {
-                            break;
-                        }
-                        requestList.add(request);
-                    } catch (InterruptedException e) {
-                    }
-                }
-                try {
-                    if (requestList.isEmpty()) {
-                        if (shutdown) {
-                            emptyBufferCount++;
-                        }
-                    } else {
-                        for (Request request : requestList) {
-                            if (logger.isLoggable(Level.FINE)) {
-                                logger.fine("EXECUTEEEEEEEEEEEEEEE !!!SQL: dispatching request  " + request.toString()); //NOI18N
+                        if (requestList.isEmpty()) {
+                            if (shutdown) {
+                                emptyBufferCount++;
+                            }
+                        } else {
+                            for (Request request : requestList) {
+                                if (logger.isLoggable(Level.FINE)) {
+                                    logger.fine("EXECUTEEEEEEEEEEEEEEE !!!SQL: dispatching request  " + request.toString()); //NOI18N
+                                }
+
+                                request.execute();
                             }
 
-                            request.execute();
                         }
-
+                    } catch (Exception e) {
+                        logger.log(
+                                Level.WARNING,
+                                "SQLDataStorage.async_db_write_failed", //NOI18N
+                                e);
                     }
-                } catch (Exception e) {
-                    logger.log(
-                            Level.WARNING,
-                            "SQLDataStorage.async_db_write_failed", //NOI18N
-                            e);
+
+                    requestList.clear();
+
+                    notifyAll();
                 }
-                requestList.clear();
-
-
-            }
-        }
-
-        private void shutdown() {
-            shutdown = true;
-            while (emptyBufferCount < BUFFER_COUNT) {
-                try {
-                    Thread.sleep(WAIT_INTERVALS);
-                } catch (InterruptedException e) {
-                }
-            }
-        }
-    }
-
-    private class AsyncReadThread extends Thread {
-
-        private boolean shutdown;
-        private int emptyBufferCount;
-        List<Request> requestList = new ArrayList<Request>();
-
-        public AsyncReadThread() {
-            setDaemon(true);
-            setName("DLIGHT: SQL Storage AsyncFillModelThread"); // NOI18N
-        }
-
-        @Override
-        public void run() {
-            while (emptyBufferCount < BUFFER_COUNT) {
-                for (int i = 0; i < MAX_BULK_SIZE; i++) {
-                    try {
-                        Request request = requestQueue.poll(WAIT_INTERVALS, TimeUnit.MILLISECONDS);
-                        if (request == null) {
-                            break;
-                        }
-                        requestList.add(request);
-                    } catch (InterruptedException e) {
-                    }
-                }
-                try {
-                    if (requestList.isEmpty()) {
-                        if (shutdown) {
-                            emptyBufferCount++;
-                        }
-                    } else {
-                        for (Request request : requestList) {
-                            request.execute();
-                        }
-
-                    }
-                } catch (Exception e) {
-                    logger.log(
-                            Level.WARNING,
-                            "SQLDataStorage_db_write_failed", //NOI18N
-                            e);
-                }
-                requestList.clear();
-
-
             }
         }
 
