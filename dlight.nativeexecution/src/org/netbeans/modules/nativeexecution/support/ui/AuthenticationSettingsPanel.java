@@ -44,7 +44,6 @@
  */
 package org.netbeans.modules.nativeexecution.support.ui;
 
-import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -54,6 +53,7 @@ import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.api.util.Validateable;
 import org.netbeans.modules.nativeexecution.api.util.ValidationListener;
 import org.netbeans.modules.nativeexecution.support.Authentication;
+import org.netbeans.modules.nativeexecution.support.SSHKeyFileChooser;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -77,10 +77,8 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
         initComponents();
 
         pwdClearButton.setVisible(showClearPwdButton);
-
-        tfHost.setText(env.getHost());
-        tfPort.setText("" + env.getSSHPort()); // NOI18N
-        tfUser.setText(env.getUser());
+        loginLabel.setText(env.getUser() + "@" + env.getHost() + // NOI18N
+                ((env.getSSHPort() == 22) ? "" : env.getSSHPort())); // NOI18N
 
         if (auth.getType() == Authentication.Type.SSH_KEY) {
             keyRadioButton.setSelected(true);
@@ -129,35 +127,44 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        lblHost = new javax.swing.JLabel();
-        tfHost = new javax.swing.JTextField();
-        lblPort = new javax.swing.JLabel();
-        tfPort = new javax.swing.JTextField();
-        tfUser = new javax.swing.JTextField();
-        lblUser = new javax.swing.JLabel();
-        lblAuth = new javax.swing.JLabel();
-        pwdRadioButton = new javax.swing.JRadioButton();
-        pwdClearButton = new javax.swing.JButton();
+        loginPanel = new javax.swing.JPanel();
+        loginLabel = new javax.swing.JLabel();
+        authPanel = new javax.swing.JPanel();
         keyRadioButton = new javax.swing.JRadioButton();
+        pwdRadioButton = new javax.swing.JRadioButton();
         keyFld = new javax.swing.JTextField();
         keyBrowseButton = new javax.swing.JButton();
+        pwdClearButton = new javax.swing.JButton();
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblHost, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.lblHost.text")); // NOI18N
+        loginPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.loginPanel.border.title"))); // NOI18N
 
-        tfHost.setEditable(false);
-        tfHost.setText(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.tfHost.text")); // NOI18N
+        loginLabel.setText(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.loginLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblPort, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.lblPort.text")); // NOI18N
+        javax.swing.GroupLayout loginPanelLayout = new javax.swing.GroupLayout(loginPanel);
+        loginPanel.setLayout(loginPanelLayout);
+        loginPanelLayout.setHorizontalGroup(
+            loginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(loginPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(loginLabel)
+                .addContainerGap(285, Short.MAX_VALUE))
+        );
+        loginPanelLayout.setVerticalGroup(
+            loginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(loginPanelLayout.createSequentialGroup()
+                .addComponent(loginLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
-        tfPort.setEditable(false);
-        tfPort.setText(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.tfPort.text")); // NOI18N
+        authPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.authPanel.border.title"))); // NOI18N
 
-        tfUser.setEditable(false);
-        tfUser.setText(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.tfUser.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblUser, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.lblUser.text")); // NOI18N
-
-        lblAuth.setText(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.lblAuth.text")); // NOI18N
+        buttonGroup1.add(keyRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(keyRadioButton, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.keyRadioButton.text")); // NOI18N
+        keyRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                keyRadioButtonActionPerformed(evt);
+            }
+        });
 
         buttonGroup1.add(pwdRadioButton);
         pwdRadioButton.setSelected(true);
@@ -168,21 +175,6 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(pwdClearButton, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.pwdClearButton.text_1")); // NOI18N
-        pwdClearButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pwdClearButtonActionPerformed(evt);
-            }
-        });
-
-        buttonGroup1.add(keyRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(keyRadioButton, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.keyRadioButton.text")); // NOI18N
-        keyRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                keyRadioButtonActionPerformed(evt);
-            }
-        });
-
         org.openide.awt.Mnemonics.setLocalizedText(keyBrowseButton, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.keyBrowseButton.text_1")); // NOI18N
         keyBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -190,67 +182,63 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(pwdClearButton, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.pwdClearButton.text_1")); // NOI18N
+        pwdClearButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pwdClearButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout authPanelLayout = new javax.swing.GroupLayout(authPanel);
+        authPanel.setLayout(authPanelLayout);
+        authPanelLayout.setHorizontalGroup(
+            authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(authPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(pwdRadioButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(keyRadioButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(keyFld, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(pwdClearButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(keyBrowseButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        authPanelLayout.setVerticalGroup(
+            authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(authPanelLayout.createSequentialGroup()
+                .addGroup(authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(pwdRadioButton)
+                    .addComponent(pwdClearButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(keyRadioButton)
+                    .addComponent(keyFld, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(keyBrowseButton))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(lblAuth)
-                .addContainerGap(298, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblUser)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tfUser, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblHost)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tfHost, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(keyRadioButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(pwdRadioButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(keyFld, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblPort)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tfPort, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(pwdClearButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(keyBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE))))
+            .addComponent(loginPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(authPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblHost)
-                    .addComponent(tfHost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tfPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblPort))
+                .addComponent(loginPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblUser)
-                    .addComponent(tfUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(lblAuth)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(pwdRadioButton)
-                    .addComponent(pwdClearButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(keyRadioButton)
-                    .addComponent(keyBrowseButton)
-                    .addComponent(keyFld, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addComponent(authPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void keyRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyRadioButtonActionPerformed
         enableControls();
+        keyFld.requestFocus();
     }//GEN-LAST:event_keyRadioButtonActionPerformed
 
     private void pwdClearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pwdClearButtonActionPerformed
@@ -259,9 +247,11 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
     }//GEN-LAST:event_pwdClearButtonActionPerformed
 
     private void keyBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyBrowseButtonActionPerformed
-        File file = openFile();
-        if (file != null) {
-            keyFld.setText(file.getAbsolutePath());
+        JFileChooser chooser = new SSHKeyFileChooser(keyFld.getText());
+        int result = chooser.showOpenDialog(this);
+
+        if (JFileChooser.APPROVE_OPTION == result) {
+            keyFld.setText(chooser.getSelectedFile().getAbsolutePath());
         }
     }//GEN-LAST:event_keyBrowseButtonActionPerformed
 
@@ -269,58 +259,21 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
         enableControls();
     }//GEN-LAST:event_pwdRadioButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel authPanel;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton keyBrowseButton;
     private javax.swing.JTextField keyFld;
     private javax.swing.JRadioButton keyRadioButton;
-    private javax.swing.JLabel lblAuth;
-    private javax.swing.JLabel lblHost;
-    private javax.swing.JLabel lblPort;
-    private javax.swing.JLabel lblUser;
+    private javax.swing.JLabel loginLabel;
+    private javax.swing.JPanel loginPanel;
     private javax.swing.JButton pwdClearButton;
     private javax.swing.JRadioButton pwdRadioButton;
-    private javax.swing.JTextField tfHost;
-    private javax.swing.JTextField tfPort;
-    private javax.swing.JTextField tfUser;
     // End of variables declaration//GEN-END:variables
 
     private void enableControls() {
         keyBrowseButton.setEnabled(keyRadioButton.isSelected());
         keyFld.setEnabled(keyRadioButton.isSelected());
         validationTask.schedule(0);
-    }
-
-    private File openFile() {
-        File dir = null;
-
-        File f = new File(keyFld.getText().trim());
-
-        if (f.exists() && f.isDirectory()) {
-            dir = f;
-        } else {
-            f = f.getParentFile();
-            if (f != null && f.exists() && f.isDirectory()) {
-                dir = f;
-            }
-        }
-
-        if (f == null) {
-            f = new File(System.getProperty("user.home")); // NOI18N
-        }
-
-        JFileChooser chooser = new JFileChooser(dir);
-        chooser.setMultiSelectionEnabled(false);
-        chooser.setFileHidingEnabled(false);
-        int dlgResult = chooser.showOpenDialog(this);
-        if (JFileChooser.APPROVE_OPTION == dlgResult) {
-            File result = chooser.getSelectedFile();
-            if (result != null && !result.exists()) {
-                result = null;
-            }
-            return result;
-        } else {
-            return null;
-        }
     }
 
     @Override
@@ -354,11 +307,8 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
 
         @Override
         public void run() {
-            boolean oldState = !hasProblem();
-            boolean newState = validate();
-            if (oldState != newState) {
-                validationSupport.fireChange();
-            }
+            validate();
+            validationSupport.fireChange();
         }
 
         private boolean validate() {
