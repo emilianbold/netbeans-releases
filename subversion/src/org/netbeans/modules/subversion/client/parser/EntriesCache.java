@@ -163,6 +163,31 @@ public class EntriesCache {
     }
 
     private synchronized Map<String, String> getFileAttributes(final File entriesFile, final File file) throws IOException, SAXException {
+        EntryAttributes ea = getEntryAttributes(entriesFile, file);
+        return ea.get(file.isDirectory() ? SVN_THIS_DIR : file.getName());
+    }
+
+    String[] getChildren (File file) throws IOException, SAXException {
+        File entriesFile = SvnWcUtils.getSvnFile(file, SvnWcUtils.ENTRIES);
+        String[] children = new String[0];
+        if (entriesFile != null) {
+            synchronized (this) {
+                EntryAttributes ea = getEntryAttributes(entriesFile, file);
+                if (ea.size() > 1) {
+                    children = new String[ea.size() - 1];
+                    int i = 0;
+                    for (String child : ea.keySet()) {
+                        if (!SVN_THIS_DIR.equals(child)) {
+                            children[i++] = child;
+                        }
+                    }
+                }
+            }
+        }
+        return children;
+    }
+
+    private EntryAttributes getEntryAttributes (File entriesFile, File file) throws IOException, SAXException {
         EntriesFile ef = getEntries().get(entriesFile.getAbsolutePath());
         long lastModified = entriesFile.lastModified();
         long fileLength = entriesFile.length();
@@ -171,13 +196,12 @@ public class EntriesCache {
             ef = new EntriesFile(getMergedAttributes(ea), lastModified, fileLength);
             getEntries().put(entriesFile.getAbsolutePath(), ef);
         }
-        if(ef.attributes.get(file.getName()) == null) {
+        if(ef.attributes.get(file.getName()) == null && !file.isDirectory()) { // do not keep directory itself among its entries - it's kept rather as svn:this_dir
             // file does not exist in the svn metadata and
             // wasn't added to the entires cache yet
-            Map<String, String> attributes  = mergeThisDirAttributes(file.isDirectory(), file.getName(), ef.attributes);
+            Map<String, String> attributes  = mergeThisDirAttributes(false, file.getName(), ef.attributes);
         }
-
-        return ef.attributes.get(file.isDirectory() ? SVN_THIS_DIR : file.getName());
+        return ef.attributes;
     }
 
     private EntryAttributes getMergedAttributes(EntryAttributes ea) throws SAXException {

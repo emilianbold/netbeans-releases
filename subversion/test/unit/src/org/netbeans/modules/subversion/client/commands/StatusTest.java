@@ -41,13 +41,12 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTest;
 import java.io.File;
-import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import org.netbeans.modules.subversion.Subversion;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNStatusKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -133,14 +132,47 @@ public class StatusTest extends AbstractCommandTest {
      */
     public void testStatusDeletedFile () throws Exception {
         File deleted = createFile("deleted");
+        File folder = createFolder("f");
+        folder = createFolder(folder, "f");
+        File file = createFile(folder, "f");
         add(deleted);
+        add(folder);
+        add(file);
         commit(getWC());
 
         remove(deleted);
         ISVNStatus[] sNb = getNbClient().getStatus(deleted.getParentFile(), true, true);
-        ISVNStatus[] sRef = getReferenceClient().getStatus(deleted.getParentFile(), true, true);
+        assertEquals(5, sNb.length);
+        assertFiles(sNb, new File[] {deleted, deleted.getParentFile()});
+
+        // now test for regression of the fix - no additional statuses may be returned and we should not miss locally new files either
+        sNb = getNbClient().getStatus(folder.getParentFile(), true, true);
+        assertEquals(3, sNb.length);
+        assertFiles(sNb, new File[] {folder, folder.getParentFile(), file});
+
+        sNb = getNbClient().getStatus(folder.getParentFile(), false, true);
         assertEquals(2, sNb.length);
-        assertStatus(sRef, sNb);
+        assertFiles(sNb, new File[] {folder, folder.getParentFile()});
+
+        sNb = getNbClient().getStatus(folder, false, true);
+        assertEquals(2, sNb.length);
+        assertFiles(sNb, new File[] {file, folder});
+
+        File file2 = createFile(folder, "f2");
+        sNb = getNbClient().getStatus(folder, false, true);
+        assertEquals(3, sNb.length);
+        assertFiles(sNb, new File[] {file, file2, folder});
+    }
+
+    private void assertFiles (ISVNStatus[] sNb, File[] files) {
+        int foundFiles = 0;
+        HashSet<File> fileSet = new HashSet<File>(Arrays.asList(files));
+        for (ISVNStatus status : sNb) {
+            if (fileSet.contains(status.getFile())) {
+                ++foundFiles;
+            }
+        }
+        assertEquals(files.length, foundFiles);
     }
     
     public void testStatusFile() throws Exception {

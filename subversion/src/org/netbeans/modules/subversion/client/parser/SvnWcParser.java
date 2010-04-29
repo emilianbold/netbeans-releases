@@ -43,9 +43,12 @@ package org.netbeans.modules.subversion.client.parser;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
@@ -82,8 +85,8 @@ public class SvnWcParser {
         List<ISVNStatus> ret = new ArrayList<ISVNStatus>(20);                        
         ret.add(getSingleStatus(path));
         
-        File[] children = path.listFiles();
-        if(children != null && children.length > 0) {        
+        File[] children = getChildren(path);
+        if(children != null) {
             for (int i = 0; i < children.length; i++) {
                 if(!SvnUtils.isPartOfSubversionMetadata(children[i]) && !SvnUtils.isAdministrative(path)) {                                       
                     if(descend && children[i].isDirectory()) {                
@@ -95,7 +98,30 @@ public class SvnWcParser {
             }        
         }        
         return ret;
-    }    
+    }
+
+    /**
+     * Returns an array of existed file's children plus all it's children from metadata
+     */
+    private File[] getChildren (File file) throws LocalSubversionException {
+        File[] children = file.listFiles();
+        if (children != null) { // it is a folder, get all its children from metadata
+            try {
+                String[] entries = EntriesCache.getInstance().getChildren(file);
+                Set<File> childSet = new LinkedHashSet<File>(children.length + entries.length);
+                childSet.addAll(Arrays.asList(children));
+                for (String name : entries) {
+                    childSet.add(new File(file, name));
+                }
+                children = childSet.toArray(new File[childSet.size()]);
+            } catch (IOException ex) {
+                throw new LocalSubversionException(ex);
+            } catch (SAXException ex) {
+                throw new LocalSubversionException(ex);
+            }
+        }
+        return children;
+    }
 
     public ISVNStatus getSingleStatus(File file) throws LocalSubversionException {
         String finalTextStatus = SVNStatusKind.NORMAL.toString();
