@@ -133,6 +133,25 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
         checkInfo(filesToCheck, 10000);
     }
 
+    @ForAllEnvironments
+    public void testNonProjectUpdates() throws Exception {
+        final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        MakeProject makeProject = openProject("TestNonProjectUpdates", execEnv, Sync.RFS, Toolchain.GNU);
+        changeProjectHost(makeProject, execEnv);
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
+        File projectDirFile = FileUtil.toFile(makeProject.getProjectDirectory());
+        NameStatePair[] filesToCheck = new NameStatePair[] {
+            new NameStatePair(new File(projectDirFile, "file_1.c"), FileDownloadInfo.State.UNCONFIRMED),
+            new NameStatePair(new File(projectDirFile, "file_1.cc"), FileDownloadInfo.State.UNCONFIRMED),
+            new NameStatePair(new File(projectDirFile, "file_1.cpp"), FileDownloadInfo.State.UNCONFIRMED),
+            new NameStatePair(new File(projectDirFile, "file_1.cxx"), FileDownloadInfo.State.UNCONFIRMED),
+            new NameStatePair(new File(projectDirFile, "file_1.h"), FileDownloadInfo.State.UNCONFIRMED),
+            new NameStatePair(new File(projectDirFile, "file_1.hpp"), FileDownloadInfo.State.UNCONFIRMED),
+            new NameStatePair(new File(new File(projectDirFile, "subdir"), "Makefile"), FileDownloadInfo.State.UNCONFIRMED)
+        };
+        checkInfo(filesToCheck, 10000);
+    }
+
     @Override
     protected void buildProject(MakeProject makeProject, String command, long timeout, TimeUnit unit) throws Exception {
         try {
@@ -186,8 +205,8 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
                         } else {
                             wrongStateFoundMessage.append(", ");
                         }
+                        wrongStateFoundMessage.append(pair.file.getName()).append(": expected ").append(pair.state).append(" found ").append(state);
                     }
-                    wrongStateFoundMessage.append(pair.file.getName()).append(": expected ").append(pair.state).append(" found ").append(state);
                 }
             }
             if (success) {
