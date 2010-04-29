@@ -227,7 +227,19 @@ public class ManDocumentation {
 //        if (np == null) {
 //            return "";
 //        }
-        NativeExitStatus exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, name); // NOI18N
+        NativeExitStatus exitStatus = null;
+        if (np.getPlatformName().contains("Solaris")) { // NOI18N
+            exitStatus = np.execute("man", null, "-s3c", name); // NOI18N
+	    if (exitStatus.output == null || exitStatus.output.length() == 0) {
+                exitStatus = np.execute("man", null, "-s3c++", name); // NOI18N
+	    }
+	    if (exitStatus.output == null || exitStatus.output.length() == 0) {
+                exitStatus = np.execute("man", null, name); // NOI18N
+	    }
+        }
+        else {
+            exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, "-s3", name); // NOI18N
+        }
         StringReader sr;
         if (exitStatus != null) {
             if (exitStatus.isOK() && exitStatus.output.length() > 0) {
