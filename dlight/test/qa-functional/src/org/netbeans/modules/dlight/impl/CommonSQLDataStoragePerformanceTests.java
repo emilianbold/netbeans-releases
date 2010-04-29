@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.impl;
 
-import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -73,7 +72,64 @@ public abstract class CommonSQLDataStoragePerformanceTests {
     }
 
     @Test
-    public void testAddData() throws Exception {
+    public void testAddData_thousands_none() throws Exception {
+        doTestAddData("nop", 300000, new Runnable() {
+            @Override
+            public void run() {
+                // do nothing
+            }
+        });
+    }
+
+    @Test
+    public void testAddData_thousands_sin_x10() throws Exception {
+        doTestAddData("sin x10", 300000, new Runnable() {
+            @Override
+            public void run() {
+                for (int j = 0; j < 10; ++j) {
+                    Math.sin(j);
+                }
+            }
+        });
+    }
+
+    @Test
+    public void testAddData_millions_sin_x10() throws Exception {
+        doTestAddData("sin x10", 3000000, new Runnable() {
+            @Override
+            public void run() {
+                for (int j = 0; j < 10; ++j) {
+                    Math.sin(j);
+                }
+            }
+        });
+    }
+
+    @Test
+    public void testAddData_thousands_sin_x100() throws Exception {
+        doTestAddData("sin x100", 300000, new Runnable() {
+            @Override
+            public void run() {
+                for (int j = 0; j < 100; ++j) {
+                    Math.sin(j);
+                }
+            }
+        });
+    }
+
+    @Test
+    public void testAddData_millions_sin_x100() throws Exception {
+        doTestAddData("sin x100", 3000000, new Runnable() {
+            @Override
+            public void run() {
+                for (int j = 0; j < 100; ++j) {
+                    Math.sin(j);
+                }
+            }
+        });
+    }
+
+    private void doTestAddData(String testName, int dataRowCount, Runnable load) throws Exception {
         DataTableMetadata table1 = new DataTableMetadata("t1",
                 Arrays.asList(new Column("t1c1", Long.class), new Column("t1c2", String.class)), null);
 
@@ -90,7 +146,7 @@ public abstract class CommonSQLDataStoragePerformanceTests {
         List<String> columns1 = Arrays.asList("t1c1", "t1c2");
         List<String> columns2 = Arrays.asList("t2c1", "t2c2");
         List<String> columns3 = Arrays.asList("t3c1", "t3c2");
-        for (int i = 0; i < 300000; ++i) {
+        for (int i = 0; i < dataRowCount; ++i) {
             switch (i % 3) {
                 case 0:
                     db.addData("t1", Collections.singletonList(
@@ -105,11 +161,15 @@ public abstract class CommonSQLDataStoragePerformanceTests {
                             new DataRow(columns3, Arrays.asList(Long.valueOf(i), String.valueOf(i)))));
                     break;
             }
+            load.run();
         }
+
+        long addTime = System.currentTimeMillis();
+        System.err.printf("%s: added %d data rows in %d ms\n", testName, dataRowCount, addTime - startTime);
 
         db.flush();
 
-        long finishTime = System.currentTimeMillis();
-        System.err.printf("Adding data took %d ms\n", finishTime - startTime);
+        long flushTime = System.currentTimeMillis();
+        System.err.printf("%s: flushed data in %d ms\n", testName, flushTime - addTime);
     }
 }
