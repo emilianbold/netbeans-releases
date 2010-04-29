@@ -121,7 +121,7 @@ public class AbstractModelTest extends NbTestCase {
         }
     }
     
-    class TestComponentListener implements ComponentListener {
+    static class TestComponentListener implements ComponentListener {
         List<ComponentEvent> accu = new ArrayList<ComponentEvent>();
         public void valueChanged(ComponentEvent evt) {
             accu.add(evt);

@@ -41,36 +41,18 @@
 
 package org.netbeans.modules.server.ui.node;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.netbeans.modules.server.ui.wizard.AddServerInstanceWizard;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.NodeAction;
-import org.openide.util.NbBundle;
 
 /**
  * Add server instance action launches the Add Server wizard.
  *
  * @author Andrei Badea
  */
-public class AddServerInstanceAction extends NodeAction {
-
-    public void performAction(Node[] nodes) {
+public class AddServerInstanceAction implements ActionListener {
+    @Override
+    public void actionPerformed(ActionEvent e) {
         AddServerInstanceWizard.showAddServerInstanceWizard();
-    }
-
-    public String getName() {
-        return NbBundle.getMessage(AddServerInstanceAction.class, "LBL_Add_Server_Instance");
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    public boolean enable(Node[] nodes) {
-        return true;
-    }
-
-    public boolean asynchronous() {
-        return false;
     }
 }

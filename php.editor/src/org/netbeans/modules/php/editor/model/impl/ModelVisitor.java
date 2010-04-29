@@ -670,10 +670,25 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 varN.createLazyFieldAssignment(fieldAccess, node, scope);
                 ClassScope classScope = null;
                 final ASTNodeInfo<FieldAccess> fieldAccessInfo = ASTNodeInfo.create(fieldAccess);
-                if (scope instanceof ClassScope) {
-                    classScope = (ClassScope) scope;
-                } else if (scope.getInScope() instanceof ClassScope) {
-                    classScope = (ClassScope) scope.getInScope();
+                if (varN.representsThis()) {
+                    if (scope instanceof ClassScope) {
+                        classScope = (ClassScope) scope;
+                    } else if (scope.getInScope() instanceof ClassScope) {
+                        classScope = (ClassScope) scope.getInScope();
+                    }
+                } else {
+                    Collection<? extends String> typeNames = varN.getTypeNames(fieldAccessInfo.getRange().getStart());
+                    Set<ElementFilter> filters = new HashSet<ElementFilter>();
+                    for (String tName : typeNames) {
+                        filters.add(ElementFilter.forName(NameKind.exact(QualifiedName.create(tName))));
+                    }
+                    Set<ClassScope> declaredClasses = new HashSet<ClassScope>();
+                    declaredClasses.addAll(ModelUtils.getDeclaredClasses(fileScope));
+                    Set<ClassScope> refClasses = ElementFilter.anyOf(filters).filter(declaredClasses);
+                    if (!refClasses.isEmpty()) {
+                        classScope = refClasses.iterator().next();
+                    }
+
                 }
                 if (classScope != null) {
                     Set<FieldElement> declaredFields = new HashSet<FieldElement>();
