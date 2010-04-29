@@ -65,7 +65,7 @@ public class ExtractInlinedStyleAction extends HtmlRefactoringGlobalAction {
 
     @Override
     protected boolean asynchronous() {
-        return true;
+        return false; //run in AWT
     }
    
 }
