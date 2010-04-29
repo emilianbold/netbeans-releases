@@ -45,12 +45,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.core.Language;
@@ -120,19 +125,108 @@ public final class UiUtils {
         return Icons.getElementIcon(elementKind, modifiers);
     }
 
-    public static KeystrokeHandler getBracketCompletion(Document doc, int offset) {
-        BaseDocument baseDoc = (BaseDocument)doc;
-        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
-        for (Language l : list) {
-            if (l.getBracketCompletion() != null) {
-                return l.getBracketCompletion();
-            }
-        }
 
-        return null;
+
+    public static KeystrokeHandler getBracketCompletion(final Document doc, final int offset) {
+        final AtomicReference<KeystrokeHandler> ref = new AtomicReference<KeystrokeHandler>();
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                TokenHierarchy hi = TokenHierarchy.get(doc);
+
+                //# Bug 184156 -  [69cat][editor][HTML] Typing quote after code completion of CSS definition
+                //If the offset falls to a position between two tokens with different embeddings,
+                //we should try to use KeystrokeHandler-s for both languages.
+                List<TokenSequence<?>> forward = hi.embeddedTokenSequences(offset, false);
+                List<TokenSequence<?>> backward = hi.embeddedTokenSequences(offset, true);
+
+                final KeystrokeHandler bwHandler = getFirstHandler(backward);
+                final KeystrokeHandler fwHandler = getFirstHandler(forward);
+
+                if(fwHandler == null && bwHandler == null) {
+                    return ;
+                }
+
+                //forward bias handler has a precedence to make it compatible
+                //with the former implementation as much as possible.
+                final KeystrokeHandler defaultt = fwHandler == null ? bwHandler : fwHandler;
+
+                if(fwHandler != null && bwHandler != null && fwHandler != bwHandler) {
+                    //we are on a border of two embeddings, there's a need to use both
+                    //keystroke handlers, create a delegating handler
+                    ref.set(new KeystrokeHandler() {
+
+                        @Override
+                        public boolean beforeCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+                            if(!fwHandler.beforeCharInserted(doc, caretOffset, target, ch)) {
+                                return bwHandler.beforeCharInserted(doc, caretOffset, target, ch);
+                            } else {
+                                return true;
+                            }
+                        }
+
+                        @Override
+                        public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+                            if (!fwHandler.afterCharInserted(doc, caretOffset, target, ch)) {
+                                return bwHandler.afterCharInserted(doc, caretOffset, target, ch);
+                            } else {
+                                return true;
+                            }
+                        }
+
+                        @Override
+                        public boolean charBackspaced(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+                            return defaultt.charBackspaced(doc, caretOffset, target, ch);
+                        }
+
+                        @Override
+                        public int beforeBreak(Document doc, int caretOffset, JTextComponent target) throws BadLocationException {
+                            return defaultt.beforeBreak(doc, caretOffset, target);
+                        }
+
+                        @Override
+                        public OffsetRange findMatching(Document doc, int caretOffset) {
+                            return defaultt.findMatching(doc, caretOffset);
+                        }
+
+                        @Override
+                        public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
+                            return defaultt.findLogicalRanges(info, caretOffset);
+                        }
+
+                        @Override
+                        public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
+                            return defaultt.getNextWordOffset(doc, caretOffset, reverse);
+                        }
+
+                    });
+
+                } else {
+                    //common situation
+                    ref.set(defaultt);
+                }
+
+            }
+
+        });
+
+        return ref.get();
     }
 
+
     // Private methods ---------------------------------------------------------
+    private static KeystrokeHandler getFirstHandler(List<TokenSequence<?>> embeddedTS) {
+        for (int i = embeddedTS.size() - 1; i >= 0; i--) {
+            TokenSequence<?> ts = embeddedTS.get(i);
+            Language lang = LanguageRegistry.getInstance().getLanguageByMimeType(ts.language().mimeType());
+            KeystrokeHandler handler = lang.getBracketCompletion();
+            if (lang != null && handler != null) {
+                return handler;
+            }
+        }
+        return null;
+    }
 
     private static final Logger LOG = Logger.getLogger(UiUtils.class.getName());
 
