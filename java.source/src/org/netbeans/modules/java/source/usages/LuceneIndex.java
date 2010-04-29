@@ -106,7 +106,8 @@ import org.openide.util.RequestProcessor;
 //@NotTreadSafe
 class LuceneIndex extends Index implements Evictable {
 
-    private static final boolean debugIndexMerging = Boolean.getBoolean("LuceneIndex.debugIndexMerge");     // NOI18N
+    private static final boolean debugIndexMerging = Boolean.getBoolean("java.index.debugMerge");     // NOI18N
+    private static final boolean useMemoryCache = Boolean.getBoolean("java.index.useMemCache");       //NOI18N
     private static final String REFERENCES = "refs";    // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
@@ -125,6 +126,7 @@ class LuceneIndex extends Index implements Evictable {
     private Analyzer analyzer;  //Analyzer used to store documents
     private volatile boolean closed;
     private volatile Boolean validCache;
+    private Directory memCacheDir;
 
     static Index create (final File cacheRoot) throws IOException {
         assert cacheRoot != null && cacheRoot.exists() && cacheRoot.canRead() && cacheRoot.canWrite();
@@ -516,24 +518,27 @@ class LuceneIndex extends Index implements Evictable {
 
     //<editor-fold desc="Implementation of Evictable interface">
     public void evicted() {
-        //Threading: The called may own the CIM.readAccess, perform by dedicated worker to prevent deadlock
-        RP.post(new Runnable() {
-            public void run () {
-                try {
-                    ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
-                        public Void run() throws IOException, InterruptedException {
-                            close(false);
-                            LOGGER.fine("Evicted index: " + refCacheRoot.getAbsolutePath()); //NOI18N
-                            return null;
-                        }
-                    });
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (InterruptedException ie) {
-                    Exceptions.printStackTrace(ie);
+        //When running from memory cache no need to close the reader, it does not own file handler.
+        if (!useMemoryCache) {
+            //Threading: The called may own the CIM.readAccess, perform by dedicated worker to prevent deadlock
+            RP.post(new Runnable() {
+                public void run () {
+                    try {
+                        ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                            public Void run() throws IOException, InterruptedException {
+                                close(false);
+                                LOGGER.fine("Evicted index: " + refCacheRoot.getAbsolutePath()); //NOI18N
+                                return null;
+                            }
+                        });
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (InterruptedException ie) {
+                        Exceptions.printStackTrace(ie);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
     ///</editor-fold>
 
@@ -1022,14 +1027,23 @@ class LuceneIndex extends Index implements Evictable {
 
     public synchronized void close (boolean closeDir) throws IOException {
         try {
-            if (this.reader != null) {
-                this.reader.close();
-                this.reader = null;
+            try {
+                if (this.reader != null) {
+                    this.reader.close();
+                    this.reader = null;
+                }
+            } finally {
+                if (memCacheDir != null) {
+                    assert useMemoryCache;
+                    final Directory tmpDir = this.memCacheDir;
+                    this.memCacheDir = null;
+                    tmpDir.close();
+                }
             }
         } finally {
             if (closeDir) {
-                this.directory.close();
                 this.closed = true;
+                this.directory.close();
             }
         }
     }
@@ -1046,9 +1060,16 @@ class LuceneIndex extends Index implements Evictable {
             }
             //Issue #149757 - logging
             try {
+                Directory source;
+                if (useMemoryCache) {
+                    source = memCacheDir = new RAMDirectory(this.directory);
+
+                } else {
+                    source = this.directory;
+                }
                 //It's important that no Query will get access to original IndexReader
                 //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
-                this.reader = new NoNormsReader(IndexReader.open(this.directory));
+                this.reader = new NoNormsReader(IndexReader.open(source));
             } catch (final FileNotFoundException fnf) {
                 //pass - returns null
             } catch (IOException ioe) {
@@ -1070,11 +1091,15 @@ class LuceneIndex extends Index implements Evictable {
     }
 
     private synchronized void refreshReader() throws IOException {
-        if (reader != null) {
-            final IndexReader newReader = reader.reopen();
-            if (newReader != reader) {
-                reader.close();
-                reader = newReader;
+        if (useMemoryCache) {
+            close(false);
+        } else {
+            if (reader != null) {
+                final IndexReader newReader = reader.reopen();
+                if (newReader != reader) {
+                    reader.close();
+                    reader = newReader;
+                }
             }
         }
     }
