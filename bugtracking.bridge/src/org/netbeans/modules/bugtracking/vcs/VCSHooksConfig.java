@@ -211,10 +211,10 @@ public class VCSHooksConfig {
         for (int i = 0; i < params.length; i = i + 2) {
             if(l < params[i].length()) l = params[i].length();
         }
-        StringBuffer ret = new StringBuffer();
+        StringBuilder ret = new StringBuilder();
         for (int i = 0; i < params.length; i++) {
             ret.append(params[i]);
-            StringBuffer s = new StringBuffer();
+            StringBuilder s = new StringBuilder();
             for (int j = 0; j < l - params[i].length() + 1; j++) s.append(" "); // NOI18N
             ret.append(s.toString());
             ret.append(params[++i]);
@@ -242,11 +242,11 @@ public class VCSHooksConfig {
         }
         @Override
         public String toString() {
-            StringBuffer sb = new StringBuffer();
-            String msg = getMsg();
+            StringBuilder sb = new StringBuilder();
+            String message = getMsg();
             sb.append(getIssueID());
             sb.append(DELIMITER);
-            sb.append(msg != null ? msg.trim() : "");
+            sb.append(message != null ? message.trim() : "");
             sb.append(DELIMITER);
             sb.append(isClose() ? "1" : "0");                                   // NOI18N
             return sb.toString();
@@ -269,7 +269,7 @@ public class VCSHooksConfig {
 
         @Override
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(above ? "1" : "0");                                       // NOI18N
             sb.append(DELIMITER);
             sb.append(format);
