@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.TreeSet;
+import java.util.jar.Manifest;
 import org.openide.util.test.TestFileUtils;
 
 /**
@@ -189,6 +190,15 @@ public class NetigsoManifestManagerTest extends TestBase {
                 "Export-Package: super.container.features;version=\"1.0\"\n");
         assertEquals("[org.osgi.framework.launch.FrameworkFactory, super.container, super.container.features]",
                 new TreeSet<String>(Arrays.asList(ManifestManager.getInstanceFromJAR(wrapperJar).getProvidedTokens())).toString());
+    }
+
+    public void testImportJREPackage() throws Exception {
+        Manifest m = new Manifest();
+        m.getMainAttributes().putValue("Bundle-SymbolicName", "my.bundle");
+        m.getMainAttributes().putValue("Require-Bundle", "whatever");
+        m.getMainAttributes().putValue("Import-Package", "actual.api, javax.swing");
+        assertEquals("[actual.api, whatever]",
+                new TreeSet<String>(Arrays.asList(ManifestManager.getInstance(m, true).getRequiredTokens())).toString());
     }
 
 }

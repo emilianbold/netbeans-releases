@@ -321,7 +321,12 @@ public final class ManifestManager {
             String pp = attr.getValue(BUNDLE_IMPORT_PACKAGE);
             if (pp != null) {
                 for (String p : pp.replaceAll("\"[^\"]*\"", "").split(",")) {
-                    sb.append(sep).append(p.replaceAll(";.*$", "").trim());
+                    String pkg = p.replaceAll(";.*$", "").trim();
+                    if (pkg.startsWith("javax.")) {
+                        // Crude; would be better to use MakeOSGi.JAVA_PLATFORM_PACKAGES.
+                        continue;
+                    }
+                    sb.append(sep).append(pkg);
                     sep = ",";
                 }
             }
