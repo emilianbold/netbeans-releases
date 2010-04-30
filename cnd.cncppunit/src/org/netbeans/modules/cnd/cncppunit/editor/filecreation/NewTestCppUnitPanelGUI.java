@@ -448,7 +448,6 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(classNameTextField, gridBagConstraints);
@@ -531,7 +530,6 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(fileTextField, gridBagConstraints);
@@ -566,7 +564,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         add(cbHeaderExtension, gridBagConstraints);
@@ -578,7 +576,6 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(headerTextField, gridBagConstraints);
@@ -646,15 +643,15 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         updateCreatedFile();
 }//GEN-LAST:event_cbSourceExtensionActionPerformed
 
-    private void cbHeaderExtensionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbHeaderExtensionActionPerformed
-        headerExt = (String)cbHeaderExtension.getSelectedItem();
-        updateCreatedFile();
-}//GEN-LAST:event_cbHeaderExtensionActionPerformed
-
     private void cbExtensionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbExtensionActionPerformed
         runnerExt = (String)cbExtension.getSelectedItem();
         updateCreatedFile();
 }//GEN-LAST:event_cbExtensionActionPerformed
+
+    private void cbHeaderExtensionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbHeaderExtensionActionPerformed
+        headerExt = (String)cbHeaderExtension.getSelectedItem();
+        updateCreatedFile();
+}//GEN-LAST:event_cbHeaderExtensionActionPerformed
 
     private void initMnemonics() {
     }
