@@ -155,6 +155,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             }
             NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(FileUtil.toFile(file));
             if (platformProject != null) {
+                synchronized (lock) {
+                    if (toBeRmoved.contains(name)){
+                        return null;
+                    }
+                }
                 project = ModelImpl.instance().addProject(platformProject, name, true);
                 if (TRACE) {trace("added project %s", project.toString());} //NOI18N
                 project.ensureFilesCreated();
@@ -262,9 +267,9 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                     if (TRACE) {trace("removing %s", project.toString());} //NOI18N
                     ProjectBase projectBase = (ProjectBase) project;
                     ModelImpl.instance().closeProjectBase(projectBase, false);
-                }
-                synchronized (lock) {
-                    toBeRmoved.remove(root);
+                    synchronized (lock) {
+                        toBeRmoved.remove(root);
+                    }
                 }
             }
         }, "Standalone project removal."); //NOI18N
