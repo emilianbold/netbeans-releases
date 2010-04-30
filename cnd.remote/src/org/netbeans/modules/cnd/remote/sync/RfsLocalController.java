@@ -288,7 +288,7 @@ class RfsLocalController extends NamedRunnable {
             if (extOptions.length() > 0) {
                 extOptions.append(" -o "); // NOI18N
             }
-            extOptions.append(" -name Makefile");
+            extOptions.append(" -name Makefile"); // NOI18N
         }
         
         String script = String.format(
