@@ -150,7 +150,7 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
             new NameStatePair(new File(projectDirFile, "file_1.cxx"), FileDownloadInfo.State.UNCONFIRMED),
             new NameStatePair(new File(projectDirFile, "file_1.h"), FileDownloadInfo.State.UNCONFIRMED),
             new NameStatePair(new File(projectDirFile, "file_1.hpp"), FileDownloadInfo.State.UNCONFIRMED),
-            new NameStatePair(new File(new File(projectDirFile, "subdir"), "Makefile"), FileDownloadInfo.State.UNCONFIRMED)
+            new NameStatePair(new File(projectDirFile, "Makefile"), FileDownloadInfo.State.UNCONFIRMED)
         };
         checkInfo(filesToCheck, 12000);
     }

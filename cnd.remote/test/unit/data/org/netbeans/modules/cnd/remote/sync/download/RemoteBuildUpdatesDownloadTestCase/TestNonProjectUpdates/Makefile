@@ -61,8 +61,7 @@ build: .build-post
 	touch file_1.cxx
 	touch file_1.h
 	touch file_1.hpp
-	mkdir -p subdir
-	touch subdir/Makefile
+	touch Makefile
 
 .build-post: .build-impl
 # Add your post 'build' code here...
