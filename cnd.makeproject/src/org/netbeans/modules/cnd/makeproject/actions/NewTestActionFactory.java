@@ -85,10 +85,13 @@ public class NewTestActionFactory {
                 }
             }
         }
-        actions.add(SystemAction.get(NewEmptyTestAction.class));
         return actions.toArray(new Action[actions.size()]);
     }
 
+    public static Action emptyTestFolderAction() {
+        return SystemAction.get(NewEmptyTestAction.class);
+    }
+    
     public static class NewTestAction extends AbstractAction {
 
         private final FileObject test;
