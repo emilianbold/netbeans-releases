@@ -191,7 +191,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private final Map<Integer, BreakpointImpl<?>> breakpointList = Collections.synchronizedMap(new HashMap<Integer, BreakpointImpl<?>>());
     private final List<String> temporaryBreakpoints = new ArrayList<String>();
     private final Set<Integer> runAfterTokens = Collections.synchronizedSet(new HashSet<Integer>());
-    private static final Map<String, TypeInfo> ticache = new HashMap<String, TypeInfo>();
+//    private static final Map<String, TypeInfo> ticache = new HashMap<String, TypeInfo>();
     private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     private static final Logger tlog = Logger.getLogger("gdb.testlogger"); // NOI18N
     private int currentToken = 0;
@@ -1077,8 +1077,8 @@ public class GdbDebugger implements PropertyChangeListener {
                 localVariables.clear(); // clear old variables so we can store new ones here
             }
             gdb.stack_select_frame(frame);
-            gdb.stack_list_arguments(1);
             gdb.stack_list_locals("--all-values"); // NOI18N
+            gdb.stack_list_arguments(1);
         }
     }
 
@@ -1437,7 +1437,12 @@ public class GdbDebugger implements PropertyChangeListener {
             if (curFrame != null && level == curFrame.getFrameNumber() && !vars.isEmpty()) {
                 log.finest("GD.addArgsToLocalVariables: Starting to add Args to localVariables"); // NOI18N
                 synchronized (localVariables) {
-                    localVariables.addAll(vars);
+                    // do not substitute locals!
+                    for (GdbVariable var : vars) {
+                        if (!localVariables.contains(var)) {
+                            localVariables.add(var);
+                        }
+                    }
                 }
                 log.finest("GD.addArgsToLocalVariables: Added " + vars.size() + " args");
             }
@@ -1445,17 +1450,13 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     private void addLocalsToLocalVariables(String info) {
-        Collection<GdbVariable> v = GdbUtils.createLocalsList(info.substring(1, info.length() - 1));
-        if (!v.isEmpty()) {
+        Collection<GdbVariable> vars = GdbUtils.createLocalsList(info.substring(1, info.length() - 1));
+        if (!vars.isEmpty()) {
             log.finest("GD.addLocalsToLocalVariables: Starting to add locals to localVariables"); // NOI18N
             synchronized (localVariables) {
-                for (GdbVariable var : v) {
-                    if (!localVariables.contains(var)) {
-                        localVariables.add(var);
-                    }
-                }
+                localVariables.addAll(vars);
             }
-            log.finest("GD.addLocalsToLocalVariables: Added " + v.size() + " locals");
+            log.finest("GD.addLocalsToLocalVariables: Added " + vars.size() + " locals");
         }
     }
 
@@ -1677,7 +1678,7 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    private LineBreakpoint rtcBreakpoint = null;
+    private CndBreakpoint rtcBreakpoint = null;
     /**
      * Set the temporary breakpoint at the current line and continue execution
      */
@@ -1693,8 +1694,17 @@ public class GdbDebugger implements PropertyChangeListener {
         }
         if (rtcBreakpoint != null) {
             DebuggerManager.getDebuggerManager().removeBreakpoint(rtcBreakpoint);
+            rtcBreakpoint = null;
         }
-        rtcBreakpoint = LineBreakpoint.create(file, line);
+        if (Disassembly.isInDisasm()) {
+            String address = Disassembly.getCurrent().getLineAddress(line);
+            if (address.isEmpty()) {
+                return;
+            }
+            rtcBreakpoint = AddressBreakpoint.create(address);
+        } else {
+            rtcBreakpoint = LineBreakpoint.create(file, line);
+        }
         rtcBreakpoint.setTemporary();
         rtcBreakpoint.setHidden(true);
         DebuggerManager.getDebuggerManager().addBreakpoint(rtcBreakpoint);
@@ -2478,9 +2488,9 @@ public class GdbDebugger implements PropertyChangeListener {
         return response.length() > 0 ? response : null;
     }
 
-    public Map<String, TypeInfo> getTypeInfoCache() {
-        return ticache;
-    }
+//    public Map<String, TypeInfo> getTypeInfoCache() {
+//        return ticache;
+//    }
 
     public String requestValue(String name) {
         try {

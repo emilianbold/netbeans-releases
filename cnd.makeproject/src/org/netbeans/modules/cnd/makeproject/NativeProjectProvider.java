@@ -562,12 +562,20 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 cInheritIncludes = itemConfiguration.getCCompilerConfiguration().getInheritIncludes();
                 cInheritMacros = itemConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
                 cPpreprocessorOption = itemConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+                if (itemConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
+                    itemConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
+                    cFiles = true;
+                }
             }
             if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                 ccIncludeDirectories = itemConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
                 ccInheritIncludes = itemConfiguration.getCCCompilerConfiguration().getInheritIncludes();
                 ccPreprocessorOption = itemConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
                 ccInheritMacros = itemConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
+                if (itemConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
+                    itemConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
+                    ccFiles = true;
+                }
             }
             if (itemConfiguration.getExcluded().getDirty()) {
                 itemConfiguration.getExcluded().setDirty(false);
@@ -586,15 +594,21 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             cIncludeDirectories = makeConfiguration.getCCompilerConfiguration().getIncludeDirectories();
             cInheritIncludes = makeConfiguration.getCCompilerConfiguration().getInheritIncludes();
             cPpreprocessorOption = makeConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+            if (makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
+                makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
+                cFiles = true;
+            }
             cInheritMacros = makeConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
             ccIncludeDirectories = makeConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
             ccInheritIncludes = makeConfiguration.getCCCompilerConfiguration().getInheritIncludes();
             ccPreprocessorOption = makeConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
             ccInheritMacros = makeConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
+            if (makeConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
+                makeConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
+                ccFiles = true;
+            }
             items = getMakeConfigurationDescriptor().getProjectItems();
             projectChanged = true;
-//            cFiles = true;
-//            ccFiles = true;
         }
 
         if (cIncludeDirectories != null
@@ -789,7 +803,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 arguments += " " + s; // NOI18N
             }
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            StringBuffer output = new StringBuffer();
+            StringBuilder output = new StringBuilder();
 
             try {
                 Process p0 = Runtime.getRuntime().exec(exePath + " " + arguments, env); // NOI18N
@@ -798,7 +812,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 BufferedReader br = new BufferedReader(ist);
                 String line;
                 while ((line = br.readLine()) != null) {
-                    output.append(line + "\n"); // NOI18N
+                    output.append(line).append("\n"); // NOI18N
                 }
                 br.close();
                 ist.close();
@@ -825,6 +839,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
     }
 
+    @Override
     public String getPlatformName() {
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         String platformName = makeConfiguration.getDevelopmentHost().getBuildPlatformName();

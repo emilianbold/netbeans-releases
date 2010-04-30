@@ -313,7 +313,7 @@ public final class MemoryCache {
         Map<String, Integer> statSoft = new TreeMap<String, Integer>();
         int fullSize = 0;
         int nullSize = 0;
-        for(Slice s : cache.slices){
+        for(final Slice s : cache.slices){
             s.r.lock();
             try {
                 fullSize += s.storage.size();

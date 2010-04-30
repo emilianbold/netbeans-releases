@@ -68,7 +68,7 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
     protected final WizardDescriptor.Panel<WizardDescriptor> bottomPanel;
     protected WizardDescriptor wizard;
     
-    CndPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
+    public CndPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
         this.folders = folders;
         this.project = project;
         this.bottomPanel = bottomPanel;

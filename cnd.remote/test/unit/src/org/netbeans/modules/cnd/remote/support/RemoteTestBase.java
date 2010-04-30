@@ -187,7 +187,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         if (! hosts.contains(execEnv)) {
             ToolsCacheManager tcm = ToolsCacheManager.createInstance(true);
             HostValidatorImpl validator = new HostValidatorImpl(tcm);
-            boolean ok = validator.validate(execEnv, null, false, new PrintWriter(System.out));
+            boolean ok = validator.validate(execEnv, /*null, false,*/ new PrintWriter(System.out));
             if (ok) {
                 hosts.add(execEnv);
             }

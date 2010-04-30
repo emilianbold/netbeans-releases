@@ -25,7 +25,7 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.gotodeclaration.util;
+package org.netbeans.modules.cnd.gotodeclaration.matcher;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -59,6 +59,7 @@ public class NameMatcherFactory {
 	    super(patternText);
 	}
 
+        @Override
 	public final boolean accept(String name) {
 	    return patternText.equals(name);
 	}
@@ -70,6 +71,7 @@ public class NameMatcherFactory {
 	    super(patternText);
 	}
 
+        @Override
 	public final boolean accept(String name) {
 	    return patternText.equalsIgnoreCase(name);
 	}
@@ -81,6 +83,7 @@ public class NameMatcherFactory {
 	    super(patternText);
 	}
 	
+        @Override
 	public final boolean accept(String name) {
 	    return name != null && name.startsWith(patternText);
 	}
@@ -92,6 +95,7 @@ public class NameMatcherFactory {
 	    super(patternText.toLowerCase());
 	}
 	
+        @Override
 	public final boolean accept(String name) {
 	    return name != null && name.toLowerCase().startsWith(patternText);
 	}
@@ -105,6 +109,7 @@ public class NameMatcherFactory {
 	    pattern = Pattern.compile(patternText, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
 	}
 	
+        @Override
 	public final boolean accept(String name) {
 	    return name != null && pattern.matcher(name).matches();
 	}
@@ -132,6 +137,7 @@ public class NameMatcherFactory {
             pattern = Pattern.compile(patternString.toString());
 	}
 	
+        @Override
 	public final boolean accept(String name) {
 	    return name != null && pattern.matcher(name).matches();
 	}
@@ -170,6 +176,7 @@ public class NameMatcherFactory {
         final NameMatcher matcher = createNameMatcher(text, type);
         if( matcher != null ) {
             CsmSelect.NameAcceptor acceptor = new CsmSelect.NameAcceptor() {
+                @Override
                 public boolean accept(CharSequence name) {
                     return matcher.accept(name.toString());
                 }

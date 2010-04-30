@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,36 +34,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.dlight.spi.indicator;
 
-import com.jcraft.jsch.UserInfo;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import java.util.List;
+import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 
-public class RemoteUserInfoProvider {
-    private final static ConcurrentMap<String, UserInfo> cache =
-            new ConcurrentHashMap<String, UserInfo>();
+/**
+ * Indicator which can save its state to/load from a {@link DataStorage}.
+ *
+ * @author Alexey Vladykin
+ */
+public abstract class PersistentIndicator<T extends IndicatorConfiguration> extends Indicator<T> {
 
-    private RemoteUserInfoProvider() {
+    public PersistentIndicator(T configuration) {
+        super(configuration);
     }
 
-    // @ThreadSafe
-    public static UserInfo getUserInfo(ExecutionEnvironment env, boolean interractive) {
-        String key = env.toString() + (interractive ? "-INT" : "-NOINT"); // NOI18N
-        UserInfo info = cache.get(key);
+    /**
+     * @return <code>DataStorageType</code> which this indicator can persist to
+     */
+    public abstract DataStorageType getDataStorageType();
 
-        if (info == null) {
-            info = interractive ? new RemoteUserInfo.Interractive(env) : new RemoteUserInfo(env);
-            UserInfo oldInfo = cache.putIfAbsent(key, info);
-            if (oldInfo != null) {
-                info = oldInfo;
-            }
-        }
-        
-        return info;
-    }
+    /**
+     * @return list of tables which are used to persist this indicator's state
+     */
+    public abstract List<DataTableMetadata> getDataTableMetadata();
+
+    /**
+     * Tells indicator to load its state from given storage. Storage must be
+     * of required type and must contain required tables filled with indicator
+     * state.
+     *
+     * @param storage  storage containing previously saved indicator state
+     * @return <code>true</code> on success, <code>false</code> on failure
+     */
+    public abstract boolean loadState(DataStorage storage);
+
+    /**
+     * Tells indicator to save its state to given storage. Storage must be
+     * of required type, and required tables must exist but be empty.
+     *
+     * @param storage  storage to save indicator state to
+     * @return <code>true</code> on success, <code>false</code> on failure
+     */
+    public abstract boolean saveState(DataStorage storage);
 }
