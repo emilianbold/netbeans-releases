@@ -98,7 +98,7 @@ final class CustomizerSources extends NbPropertyPanel.Single {
         });
     }
     
-    void refresh() {
+    protected void refresh() {
         if (getProperties().getSuiteDirectoryPath() == null) {
             moduleSuite.setVisible(false);
             moduleSuiteValue.setVisible(false);

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.apisupport.project.ui.customizer;
+package org.netbeans.modules.apisupport.project.ui.branding;
 
 import java.awt.Image;
 import java.awt.Rectangle;
@@ -337,7 +337,7 @@ public final class SplashBrandingPanel extends AbstractBrandingPanel {
         add(jTextField1, gridBagConstraints);
 
         barColorLabel.setLabelFor(barColor);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/branding/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(barColorLabel, bundle.getString("LBL_BarColor")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;

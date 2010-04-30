@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.apisupport.project.ui.customizer;
+package org.netbeans.modules.apisupport.project.ui.branding;
 
 import java.awt.AlphaComposite;
 import java.awt.Dimension;
@@ -158,7 +158,7 @@ final class BasicBrandingPanel extends AbstractBrandingPanel  {
         setLayout(new java.awt.GridBagLayout());
 
         title.setLabelFor(titleValue);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/branding/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(title, bundle.getString("LBL_AppTitle")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
