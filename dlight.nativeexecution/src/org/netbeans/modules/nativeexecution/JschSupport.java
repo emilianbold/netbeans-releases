@@ -63,7 +63,7 @@ public final class JschSupport {
     public static ChannelStreams execCommand(final ExecutionEnvironment env, final String command, final ChannelParams params)
             throws IOException, JSchException {
 
-        final Session session = ConnectionManagerAccessor.getDefault().
+        Session session = ConnectionManagerAccessor.getDefault().
                 getConnectionSession(env, true);
 
         int retry = 2;
@@ -84,10 +84,9 @@ public final class JschSupport {
                 Throwable cause = ex.getCause();
                 if (cause != null && cause instanceof NullPointerException) {
                     // Jsch bug... retry?
-                    log.log(Level.INFO, "JSch exception", ex);
+                    log.log(Level.INFO, "JSch exception opening channel to " + env + ". Retrying", ex); // NOI18N
                 } else if ("java.io.InterruptedIOException".equals(message)) { // NOI18N
-                    log.log(Level.INFO, "JSch exception", ex);
-                    log.log(Level.FINE, "RETRY to open jsch channel in 0.5 seconds [{0}]...", retry); // NOI18N
+                    log.log(Level.INFO, "JSch exception opening channel to " + env + ". Retrying in 0.5 seconds", ex); // NOI18N
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException ex1) {
@@ -95,19 +94,10 @@ public final class JschSupport {
                         break;
                     }
                 } else if ("channel is not opened.".equals(message)) { // NOI18N
-                    log.log(Level.INFO, "JSch exception", ex);
+                    log.log(Level.INFO, "JSch exception opening channel to " + env + ". Reconnecting and retrying", ex); // NOI18N
                     // Looks like in this case an attempt to
-                    // just re-attempt to open a channel
-                    // will fail - so do disconnect/connect...
-                    ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
-                    cmAccess.reconnect(env);
-                    log.log(Level.FINE, "RETRY to open jsch channel in 0.5 seconds [{0}]...", retry); // NOI18N
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException ex1) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
+                    // just re-open a channel will fail - so create a new session
+                    session = ConnectionManagerAccessor.getDefault().getConnectionSession(env, true);
                 } else {
                     throw ex;
                 }
