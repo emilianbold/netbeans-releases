@@ -390,7 +390,6 @@ class NewTestSimplePanelGUI extends CndPanelGUI implements ActionListener{
         jLabel2 = new javax.swing.JLabel();
         folderTextField = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         documentNameTextField = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
@@ -474,26 +473,29 @@ class NewTestSimplePanelGUI extends CndPanelGUI implements ActionListener{
         browseButton.getAccessibleContext().setAccessibleName("");
         browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimplePanelGUI.class).getString("AD_browseButton")); // NOI18N
 
-        jPanel1.setLayout(new java.awt.GridBagLayout());
-
         jLabel3.setLabelFor(documentNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(NewTestSimplePanelGUI.class, "LBL_TargetChooser_Test_File_Name_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(jLabel3, gridBagConstraints);
+        add(jLabel3, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        jPanel1.add(documentNameTextField, gridBagConstraints);
+        add(documentNameTextField, gridBagConstraints);
         documentNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestSimplePanelGUI.class).getString("AD_documentNameTextField")); // NOI18N
 
         jLabel5.setLabelFor(cbExtension);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(NewTestSimplePanelGUI.class, "LBL_TargetChooser_Extension_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(jLabel5, gridBagConstraints);
+        add(jLabel5, gridBagConstraints);
 
         cbExtension.setEditable(true);
         cbExtension.setModel(getExtensionsCBModel());
@@ -503,18 +505,12 @@ class NewTestSimplePanelGUI extends CndPanelGUI implements ActionListener{
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
-        jPanel1.add(cbExtension, gridBagConstraints);
+        add(cbExtension, gridBagConstraints);
         cbExtension.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestSimplePanelGUI.class, "AD_ExtensionTextField")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 0);
-        add(jPanel1, gridBagConstraints);
 
         jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/simpleunit/editor/filecreation/Bundle").getString("LBL_TargetChooser_CreatedFile_Label_Mnemonic").charAt(0));
         jLabel4.setLabelFor(fileTextField);
@@ -579,7 +575,6 @@ class NewTestSimplePanelGUI extends CndPanelGUI implements ActionListener{
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JComboBox locationComboBox;
     private javax.swing.JLabel locationLabel;
     private javax.swing.JTextField projectTextField;
