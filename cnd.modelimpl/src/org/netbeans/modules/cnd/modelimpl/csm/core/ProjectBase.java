@@ -2146,13 +2146,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /* collection to keep fake ASTs during parse phase */
-    private final Map<CsmUID<CsmFile>, Map<CsmUID<FunctionImplEx>, AST>> fakeASTs = new WeakHashMap<CsmUID<CsmFile>, Map<CsmUID<FunctionImplEx>, AST>>();
-    /*package*/final void trackFakeFunctionAST(CsmUID<CsmFile> fileUID, CsmUID<FunctionImplEx> funUID, AST funAST) {
+    private final Map<CsmUID<CsmFile>, Map<CsmUID<FunctionImplEx<?>>, AST>> fakeASTs = new WeakHashMap<CsmUID<CsmFile>, Map<CsmUID<FunctionImplEx<?>>, AST>>();
+    /*package*/final void trackFakeFunctionAST(CsmUID<CsmFile> fileUID, CsmUID<FunctionImplEx<?>> funUID, AST funAST) {
         synchronized (fakeASTs) {
-            Map<CsmUID<FunctionImplEx>, AST> fileASTs = fakeASTs.get(fileUID);
+            Map<CsmUID<FunctionImplEx<?>>, AST> fileASTs = fakeASTs.get(fileUID);
             if (fileASTs == null) {
                 // create always
-                fileASTs = new HashMap<CsmUID<FunctionImplEx>, AST>();
+                fileASTs = new HashMap<CsmUID<FunctionImplEx<?>>, AST>();
                 if (funAST != null) {
                     // remember new only if not null AST
                     fakeASTs.put(fileUID, fileASTs);
@@ -2178,9 +2178,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    /*package*/AST getFakeFunctionAST(CsmUID<CsmFile> fileUID, CsmUID<FunctionImplEx> fakeUid) {
+    /*package*/AST getFakeFunctionAST(CsmUID<CsmFile> fileUID, CsmUID<FunctionImplEx<?>> fakeUid) {
         synchronized (fakeASTs) {
-            Map<CsmUID<FunctionImplEx>, AST> fileASTs = fakeASTs.get(fileUID);
+            Map<CsmUID<FunctionImplEx<?>>, AST> fileASTs = fakeASTs.get(fileUID);
             return fileASTs == null ? null : fileASTs.get(fakeUid);
         }
     }

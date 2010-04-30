@@ -210,7 +210,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private FileType fileType = FileType.UNDEFINED_FILE;
     private static final class StateLock {}
     private final Object stateLock = new StateLock();
-    private final List<CsmUID<FunctionImplEx>> fakeFunctionRegistrations = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
+    private final List<CsmUID<FunctionImplEx<?>>> fakeFunctionRegistrations = new CopyOnWriteArrayList<CsmUID<FunctionImplEx<?>>>();
     private final List<FakeIncludePair> fakeIncludeRegistrations = new CopyOnWriteArrayList<FakeIncludePair>();
     private FileSnapshot fileSnapshot;
     private final Object snapShotLock = new Object();
@@ -1851,9 +1851,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    public final void onFakeRegisration(FunctionImplEx decl, AST fakeRegistrationAst) {
+    public final void onFakeRegisration(FunctionImplEx<?> decl, AST fakeRegistrationAst) {
         synchronized (fakeFunctionRegistrations) {
-            CsmUID<FunctionImplEx> uidDecl = UIDCsmConverter.declarationToUID(decl);
+            CsmUID<?> aUid = UIDCsmConverter.declarationToUID(decl);
+            @SuppressWarnings("unchecked")
+            CsmUID<FunctionImplEx<?>> uidDecl = (CsmUID<FunctionImplEx<?>>) aUid;
             fakeFunctionRegistrations.add(uidDecl);
             getProjectImpl(true).trackFakeFunctionAST(getUID(), uidDecl, fakeRegistrationAst);
         }
@@ -1906,14 +1908,14 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 }
                 if (fakeFunctionRegistrations.size() > 0) {
                     for (int i = 0; i < fakeFunctionRegistrations.size(); i++) {
-                        CsmUID<FunctionImplEx> fakeUid = fakeFunctionRegistrations.get(i);
+                        CsmUID<FunctionImplEx<?>> fakeUid = fakeFunctionRegistrations.get(i);
                         AST fakeAST = getProjectImpl(true).getFakeFunctionAST(getUID(), fakeUid);
                         CsmDeclaration curElem = fakeUid.getObject();
                         if (curElem != null) {
-                            if (curElem instanceof FunctionImplEx) {
+                            if (curElem instanceof FunctionImplEx<?>) {
                                 wereFakes = true;
                                 incParseCount();
-                                if (((FunctionImplEx) curElem).fixFakeRegistration(projectParsedMode, fakeAST)) {
+                                if (((FunctionImplEx<?>) curElem).fixFakeRegistration(projectParsedMode, fakeAST)) {
                                     getProjectImpl(true).trackFakeFunctionAST(getUID(), fakeUid, null);
                                 }
                                 incParseCount();
