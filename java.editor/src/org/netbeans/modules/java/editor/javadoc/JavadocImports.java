@@ -323,7 +323,7 @@ public final class JavadocImports {
                                 : 0;
                     }
                 }
-            } else if (tag != null && "@param".equals(tag.name())) { // NOI18N
+            } else if (tag instanceof ParamTag && "@param".equals(tag.name())) { // NOI18N
                 ParamTag ptag = (ParamTag) tag;
                 result = paramElementFor(el, ptag);
             }
