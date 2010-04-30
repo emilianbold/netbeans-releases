@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -80,23 +80,34 @@ public class DictionaryImpl implements Dictionary {
     private final Project p;
     private final AuxiliaryConfiguration ac;
     private final Locale locale;
-    
+    private final Comparator<String> dictionaryComparator;
+
     public DictionaryImpl(File source, Locale locale) {
         this.source = source;
         this.p = null;
         this.ac = null;
         this.locale = locale;
+        this.dictionaryComparator = prepareDictionaryComparator(locale);
         loadDictionary(source);
     }
-    
+
     public DictionaryImpl(Project p, AuxiliaryConfiguration ac, Locale locale) {
         this.source = null;
         this.p  = p;
         this.ac = ac;
         this.locale = locale;
+        this.dictionaryComparator = prepareDictionaryComparator(locale);
         loadDictionary(ac);
     }
     
+    private Comparator<String> prepareDictionaryComparator(final Locale locale) {
+        return new Comparator<String>() {
+            public int compare(String s1, String s2) {
+                return s1.toLowerCase(locale).compareTo(s2.toLowerCase(locale));
+            }
+        };
+    }
+
     private void loadDictionary(File source) {
         if (!source.canRead())
             return ;
@@ -123,11 +134,7 @@ public class DictionaryImpl implements Dictionary {
             }
         }
         
-        Collections.sort(getDictionary(), new Comparator<String>() {
-            public int compare(String s1, String s2) {
-                return s1.toLowerCase(locale).compareTo(s2.toLowerCase(locale));
-            }
-        });
+        Collections.sort(getDictionary(), dictionaryComparator);
    }
     
     private static final String WORDLIST = "spellchecker-wordlist";
@@ -154,6 +161,8 @@ public class DictionaryImpl implements Dictionary {
                 return null;
             }
         });
+        
+        Collections.sort(getDictionary(), dictionaryComparator);
     }
     
     public int findLesser(String word) {
@@ -307,7 +316,7 @@ public class DictionaryImpl implements Dictionary {
     
     public synchronized void addEntry(String entry) {
         List<String> dictionary = getDictionary();
-        int index = Collections.binarySearch(dictionary, entry);
+        int index = Collections.binarySearch(dictionary, entry, dictionaryComparator);
         
         if (index >= 0)
             return ;
