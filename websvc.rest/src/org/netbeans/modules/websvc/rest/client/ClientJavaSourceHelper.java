@@ -220,16 +220,13 @@ public class ClientJavaSourceHelper {
                     }
 
                     String baseUrl = saasResource.getSaas().getBaseURL();
-                    if (baseUrl.endsWith("/")) {
-                        baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
-                    }
+
                     ResourcePath resourcePath = getResourcePath(saasResource);
                     PathFormat pf = resourcePath.getPathFormat();
-                    String resourceUri = baseUrl;
                     addJerseyClient(
                             JavaSource.forFileObject(targetFo),
                             className,
-                            resourceUri,
+                            baseUrl,
                             null,
                             saasResource,
                             pf,
@@ -404,7 +401,9 @@ public class ClientJavaSourceHelper {
                 SSLExpr+
                 "   client = "+(clientEl == null ? "com.sun.jersey.api.client.":"")+"Client.create(config);"+ //NOI18N
                 subresourceExpr +
-                "   webResource = client.resource(BASE_URI).path("+resURI+");"+ //NOI18N
+                ("\"\"".equals(resURI) ?
+                "   webResource = client.resource(BASE_URI);" : //NOI18N
+                "   webResource = client.resource(BASE_URI).path("+resURI+");") + //NOI18N
                 "}"; //NOI18N
         MethodTree constructorTree = maker.Constructor (
                 methodModifier,
