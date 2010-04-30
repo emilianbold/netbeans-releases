@@ -225,6 +225,7 @@ public class SvnHookImpl extends SvnHook {
         panel.commitRadioButton.setVisible(false);
         panel.pushRadioButton.setVisible(false);
         panel.changeFormatButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onShowFormat();
             }
@@ -238,7 +239,7 @@ public class SvnHookImpl extends SvnHook {
     }
 
     private String getRevisions(List<LogEntry> entries) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         Iterator<LogEntry> it = entries.iterator();
         while(it.hasNext()) {
             LogEntry logEntry = it.next();

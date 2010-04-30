@@ -1,7 +1,5 @@
 [<h:inputText value="#{|}"/>, cookie[], <h:inputText value="#{cookie[]}"/>, 269]
 MyBean MyBean
-ConversationImpl javax.enterpr
-Model model
 applicationScope[]
 cc
 cookie[]
@@ -18,8 +16,6 @@ sessionScope[]
 End cursor position = 299
 [<h:outputText value="#{|}" title="Hi" />, MyBean MyBean, <h:outputText value="#{MyBean}" title="Hi" />, 384]
 MyBean MyBean
-ConversationImpl javax.enterpr
-Model model
 applicationScope[]
 cc
 cookie[]

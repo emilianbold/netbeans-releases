@@ -171,7 +171,7 @@ public class AbstractComponentTest extends TestCase {
     public void testInsertAtIndex() throws Exception {
         defaultSetup();
         String propertyName = "testInsertAtIndex";
-        TestComponent parent = new TestComponent(model, "test");
+        TestComponent parent = new TestComponent(model, "test", TestComponent.NS_URI);
         B b0 = new B(model, 0);
         B b1 = new B(model, 1);
         B b2 = new B(model, 2);

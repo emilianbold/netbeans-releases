@@ -41,8 +41,11 @@ package org.netbeans.modules.java.hints.jackpot.spi;
 
 import com.sun.javadoc.Doc;
 import com.sun.javadoc.Tag;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -52,6 +55,7 @@ import com.sun.source.tree.VariableTree;
 import java.util.Collection;
 import java.util.regex.Matcher;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
@@ -62,13 +66,12 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -536,7 +539,7 @@ public abstract class JavaFix {
 //                                   && !requiresParenthesis(((ParenthesizedTree) target).getExpression(), getCurrentPath().getParentPath().getLeaf())) {
 //                                target = ((ParenthesizedTree) target).getExpression();
 //                            }
-                            if (requiresParenthesis(target, getCurrentPath().getParentPath().getLeaf())) {
+                            if (requiresParenthesis(target, node, getCurrentPath().getParentPath().getLeaf())) {
                                 target = wc.getTreeMaker().Parenthesized((ExpressionTree) target);
                             }
                             wc.rewrite(node, target);
@@ -684,25 +687,122 @@ public abstract class JavaFix {
         }
     }
 
-    private static final Set<Kind> NO_PARENTHESIS_INNER = EnumSet.of(
-            Kind.ARRAY_ACCESS, Kind.BOOLEAN_LITERAL, Kind.CHAR_LITERAL, Kind.UNARY_PLUS,
-            Kind.UNARY_MINUS, Kind.STRING_LITERAL, Kind.PREFIX_INCREMENT, Kind.PREFIX_DECREMENT,
-            Kind.POSTFIX_INCREMENT, Kind.POSTFIX_DECREMENT, Kind.PRIMITIVE_TYPE, Kind.PARENTHESIZED,
-            Kind.NULL_LITERAL, Kind.NEW_CLASS, Kind.NEW_ARRAY, Kind.METHOD_INVOCATION, Kind.MEMBER_SELECT,
-            Kind.LONG_LITERAL, Kind.INT_LITERAL, Kind.IDENTIFIER, Kind.FLOAT_LITERAL, Kind.DOUBLE_LITERAL);
-    
-    private static final Set<Kind> NO_PARENTHESIS_OUTTER = EnumSet.of(
-            Kind.PARENTHESIZED
-            );
+    private static final Map<Kind, Integer> OPERATOR_PRIORITIES;
 
-    private static boolean requiresParenthesis(Tree inner, Tree outter) {
-        if (NO_PARENTHESIS_INNER.contains(inner.getKind())) return false;
-        if (NO_PARENTHESIS_OUTTER.contains(outter.getKind())) return false;
+    static {
+        OPERATOR_PRIORITIES = new EnumMap<Kind, Integer>(Kind.class);
 
+        OPERATOR_PRIORITIES.put(Kind.IDENTIFIER, 0);
+
+        for (Kind k : Kind.values()) {
+            if (k.asInterface() == LiteralTree.class) {
+                OPERATOR_PRIORITIES.put(k, 0);
+            }
+        }
+
+        OPERATOR_PRIORITIES.put(Kind.ARRAY_ACCESS, 1);
+        OPERATOR_PRIORITIES.put(Kind.METHOD_INVOCATION, 1);
+        OPERATOR_PRIORITIES.put(Kind.MEMBER_SELECT, 1);
+        OPERATOR_PRIORITIES.put(Kind.POSTFIX_DECREMENT, 1);
+        OPERATOR_PRIORITIES.put(Kind.POSTFIX_INCREMENT, 1);
+
+        OPERATOR_PRIORITIES.put(Kind.BITWISE_COMPLEMENT, 2);
+        OPERATOR_PRIORITIES.put(Kind.LOGICAL_COMPLEMENT, 2);
+        OPERATOR_PRIORITIES.put(Kind.PREFIX_DECREMENT, 2);
+        OPERATOR_PRIORITIES.put(Kind.PREFIX_INCREMENT, 2);
+        OPERATOR_PRIORITIES.put(Kind.UNARY_MINUS, 2);
+        OPERATOR_PRIORITIES.put(Kind.UNARY_PLUS, 2);
+
+        OPERATOR_PRIORITIES.put(Kind.NEW_ARRAY, 3);
+        OPERATOR_PRIORITIES.put(Kind.NEW_CLASS, 3);
+        OPERATOR_PRIORITIES.put(Kind.TYPE_CAST, 3);
+
+        OPERATOR_PRIORITIES.put(Kind.DIVIDE, 4);
+        OPERATOR_PRIORITIES.put(Kind.MULTIPLY, 4);
+        OPERATOR_PRIORITIES.put(Kind.REMAINDER, 4);
+
+        OPERATOR_PRIORITIES.put(Kind.MINUS, 5);
+        OPERATOR_PRIORITIES.put(Kind.PLUS, 5);
+
+        OPERATOR_PRIORITIES.put(Kind.LEFT_SHIFT, 6);
+        OPERATOR_PRIORITIES.put(Kind.RIGHT_SHIFT, 6);
+        OPERATOR_PRIORITIES.put(Kind.UNSIGNED_RIGHT_SHIFT, 6);
+
+        OPERATOR_PRIORITIES.put(Kind.INSTANCE_OF, 7);
+        OPERATOR_PRIORITIES.put(Kind.GREATER_THAN, 7);
+        OPERATOR_PRIORITIES.put(Kind.GREATER_THAN_EQUAL, 7);
+        OPERATOR_PRIORITIES.put(Kind.LESS_THAN, 7);
+        OPERATOR_PRIORITIES.put(Kind.LESS_THAN_EQUAL, 7);
+
+        OPERATOR_PRIORITIES.put(Kind.EQUAL_TO, 8);
+        OPERATOR_PRIORITIES.put(Kind.NOT_EQUAL_TO, 8);
+
+        OPERATOR_PRIORITIES.put(Kind.AND, 9);
+        OPERATOR_PRIORITIES.put(Kind.OR, 11);
+        OPERATOR_PRIORITIES.put(Kind.XOR, 10);
+
+        OPERATOR_PRIORITIES.put(Kind.CONDITIONAL_AND, 12);
+        OPERATOR_PRIORITIES.put(Kind.CONDITIONAL_OR, 13);
+
+        OPERATOR_PRIORITIES.put(Kind.CONDITIONAL_EXPRESSION, 14);
+
+        OPERATOR_PRIORITIES.put(Kind.AND_ASSIGNMENT, 15);
+        OPERATOR_PRIORITIES.put(Kind.ASSIGNMENT, 15);
+        OPERATOR_PRIORITIES.put(Kind.DIVIDE_ASSIGNMENT, 15);
+        OPERATOR_PRIORITIES.put(Kind.LEFT_SHIFT_ASSIGNMENT, 15);
+        OPERATOR_PRIORITIES.put(Kind.MINUS_ASSIGNMENT, 15);
+        OPERATOR_PRIORITIES.put(Kind.MULTIPLY_ASSIGNMENT, 15);
+        OPERATOR_PRIORITIES.put(Kind.OR_ASSIGNMENT, 15);
+        OPERATOR_PRIORITIES.put(Kind.PLUS_ASSIGNMENT, 15);
+        OPERATOR_PRIORITIES.put(Kind.REMAINDER_ASSIGNMENT, 15);
+        OPERATOR_PRIORITIES.put(Kind.RIGHT_SHIFT_ASSIGNMENT, 15);
+        OPERATOR_PRIORITIES.put(Kind.UNSIGNED_RIGHT_SHIFT_ASSIGNMENT, 15);
+        OPERATOR_PRIORITIES.put(Kind.XOR_ASSIGNMENT, 15);
+    }
+
+    private static boolean requiresParenthesis(Tree inner, Tree original, Tree outter) {
         if (!ExpressionTree.class.isAssignableFrom(inner.getKind().asInterface())) return false;
         if (!ExpressionTree.class.isAssignableFrom(outter.getKind().asInterface())) return false;
 
-        return true;
+        if (outter.getKind() == Kind.PARENTHESIZED || inner.getKind() == Kind.PARENTHESIZED) return false;
+
+        Integer innerPriority = OPERATOR_PRIORITIES.get(inner.getKind());
+        Integer outterPriority = OPERATOR_PRIORITIES.get(outter.getKind());
+
+        if (innerPriority == null || outterPriority == null) {
+            Logger.getLogger(JavaFix.class.getName()).log(Level.WARNING, "Unknown tree kind(s): {0}/{1}", new Object[] {inner.getKind(), outter.getKind()});
+            return true;
+        }
+
+        if (innerPriority > outterPriority) {
+            return true;
+        }
+
+        if (innerPriority < outterPriority) {
+            return false;
+        }
+
+        //associativity
+        if (BinaryTree.class.isAssignableFrom(outter.getKind().asInterface())) {
+            BinaryTree ot = (BinaryTree) outter;
+
+            //TODO: for + it might be possible to skip the parenthesis:
+            return ot.getRightOperand() == original;
+        }
+
+        if (CompoundAssignmentTree.class.isAssignableFrom(outter.getKind().asInterface())) {
+            CompoundAssignmentTree ot = (CompoundAssignmentTree) outter;
+
+            return ot.getVariable() == original;
+        }
+
+        if (AssignmentTree.class.isAssignableFrom(outter.getKind().asInterface())) {
+            AssignmentTree ot = (AssignmentTree) outter;
+
+            return ot.getVariable() == original;
+        }
+
+        return false;
     }
 
     static {
