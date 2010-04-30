@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.impl;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -135,6 +137,10 @@ public abstract class CommonSQLDataStoragePerformanceTests {
 
         long flushTime = System.currentTimeMillis();
         System.err.printf("%s %d %d %d\n", testName, dataRowCount, addTime - startTime, flushTime - addTime);
+
+        assertTableSize(dataRowCount / 3, table1);
+        assertTableSize(dataRowCount / 3, table2);
+        assertTableSize(dataRowCount / 3, table3);
     }
 
     private void doAddDataParallel(List<DataTableMetadata> tables, final int dataRowCount, final Runnable load) throws Exception {
@@ -169,6 +175,21 @@ public abstract class CommonSQLDataStoragePerformanceTests {
     private void addDataRow(DataTableMetadata table, int i) throws Exception {
         db.addData(table.getName(), Collections.singletonList(
                 new DataRow(table.getColumnNames(), Arrays.asList(Long.valueOf(i), String.valueOf(i)))));
+    }
+
+    private void assertTableSize(int size, DataTableMetadata table) throws Exception {
+        PreparedStatement ps = db.prepareStatement("SELECT COUNT(*) FROM " + table.getName());
+        try {
+            ResultSet rs = ps.executeQuery();
+            try {
+                assertTrue(rs.next());
+                assertEquals(size, rs.getInt(1));
+            } finally {
+                rs.close();
+            }
+        } finally {
+            ps.close();
+        }
     }
 
     private static final class NoOp implements Runnable {
