@@ -301,10 +301,9 @@ public final class RakeRunner {
             if (existingAdditionalArgs != null && existingAdditionalArgs.length > 0) {
                 additionalArgs.addAll(Arrays.asList(existingAdditionalArgs));
             }
-            additionalArgs.add(task.getTask());
-            for (String param : parameters) {
-                additionalArgs.add(param);
-            }
+//            additionalArgs.add(task.getTask());
+            addTaskParameters(task, parameters, additionalArgs);
+            //XXX: why exactly we have parameters both here and in RakeTask??
             additionalArgs.addAll(task.getTaskParameters());
             desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
 
@@ -317,6 +316,30 @@ public final class RakeRunner {
         return result;
     }
 
+    private static void addTaskParameters(RakeTask task, List<String> parameters, List<String> additionalArgs) {
+        if (!task.acceptsExplicitParameters()) {
+            // old style (rake < 0.8.0) params
+            additionalArgs.add(task.getTask());
+            additionalArgs.addAll(parameters);
+        } else {
+            // the task explicitly declares the params 
+            // it accepts, >= rake 0.8.0
+            StringBuilder paramsArg = new StringBuilder();
+            paramsArg.append(task.getTask());
+            if (!parameters.isEmpty()) {
+                Iterator<String> it = parameters.iterator();
+                paramsArg.append("[");
+                paramsArg.append(it.next());
+                while (it.hasNext()) {
+                    paramsArg.append(",");
+                    paramsArg.append(it.next());
+                }
+                paramsArg.append("]");
+            }
+            additionalArgs.add(paramsArg.toString());
+        }
+    }
+    
     private void doStandardConfiguration(RubyExecutionDescriptor desc) {
 
         String charsetName = null;
