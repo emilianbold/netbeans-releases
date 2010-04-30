@@ -72,7 +72,6 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
   
     private String sourceExt;
     private String headerExt;
-    private String runnerExt;
     private final MIMEExtensions sourceExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
     private final MIMEExtensions headerExtensions = MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE);
 
@@ -154,9 +153,6 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         headerExt = headerExtensions.getDefaultExtension();
         cbHeaderExtension.setSelectedItem(headerExt);
 
-        runnerExt = sourceExtensions.getDefaultExtension();
-        cbExtension.setSelectedItem(runnerExt);
-        
         if (template != null) {
             if (documentName == null) {
                 final String baseName = getMessage("NewClassSuggestedName"); // NOI18N
@@ -331,7 +327,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
     }
 
     public String getRunnerFileName() {
-        return runnerNameTextField.getText().trim() + "." + runnerExt; // NOI18N
+        return runnerNameTextField.getText().trim() + "." + sourceExt; // NOI18N
     }
 
     private DefaultComboBoxModel getHeaderExtensionsModel() {
@@ -381,8 +377,6 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         headerTextField = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         runnerNameTextField = new javax.swing.JTextField();
-        jLabel9 = new javax.swing.JLabel();
-        cbExtension = new javax.swing.JComboBox();
         jLabel10 = new javax.swing.JLabel();
         runnerTextField = new javax.swing.JTextField();
 
@@ -585,6 +579,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(jLabel3, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -592,31 +587,8 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(runnerNameTextField, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(NewTestCppUnitPanelGUI.class, "LBL_TargetChooser_Test_Runner_Extension_Label")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jLabel9, gridBagConstraints);
-
-        cbExtension.setEditable(true);
-        cbExtension.setModel(getExtensionsCBModel());
-        cbExtension.setMinimumSize(new java.awt.Dimension(100, 25));
-        cbExtension.setPreferredSize(new java.awt.Dimension(100, 25));
-        cbExtension.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbExtensionActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
-        add(cbExtension, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel10, org.openide.util.NbBundle.getMessage(NewTestCppUnitPanelGUI.class, "LBL_TargetChooser_CreatedFile_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -643,11 +615,6 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         updateCreatedFile();
 }//GEN-LAST:event_cbSourceExtensionActionPerformed
 
-    private void cbExtensionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbExtensionActionPerformed
-        runnerExt = (String)cbExtension.getSelectedItem();
-        updateCreatedFile();
-}//GEN-LAST:event_cbExtensionActionPerformed
-
     private void cbHeaderExtensionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbHeaderExtensionActionPerformed
         headerExt = (String)cbHeaderExtension.getSelectedItem();
         updateCreatedFile();
@@ -659,7 +626,6 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bottomPanelContainer;
     private javax.swing.JButton browseButton;
-    private javax.swing.JComboBox cbExtension;
     private javax.swing.JComboBox cbHeaderExtension;
     private javax.swing.JComboBox cbSourceExtension;
     private javax.swing.JLabel classNameLbl;
@@ -675,7 +641,6 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JComboBox locationComboBox;
     private javax.swing.JLabel locationLabel;
     private javax.swing.JTextField projectTextField;
