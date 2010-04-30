@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -72,64 +73,41 @@ public abstract class CommonSQLDataStoragePerformanceTests {
     }
 
     @Test
-    public void testAddData_thousands_none() throws Exception {
-        doTestAddData("nop", 300000, new Runnable() {
-            @Override
-            public void run() {
-                // do nothing
-            }
-        });
+    public void testAddData_thousands_nonstop() throws Exception {
+        doTestAddData("nonstop", 300000, new NoOp(), false);
     }
 
     @Test
-    public void testAddData_thousands_sin_x10() throws Exception {
-        doTestAddData("sin x10", 300000, new Runnable() {
-            @Override
-            public void run() {
-                for (int j = 0; j < 10; ++j) {
-                    Math.sin(j);
-                }
-            }
-        });
+    public void testAddData_thousands_fast() throws Exception {
+        doTestAddData("fast", 300000, new SinLoop(10), false);
     }
 
     @Test
-    public void testAddData_millions_sin_x10() throws Exception {
-        doTestAddData("sin x10", 3000000, new Runnable() {
-            @Override
-            public void run() {
-                for (int j = 0; j < 10; ++j) {
-                    Math.sin(j);
-                }
-            }
-        });
+    public void testAddData_millions_fast() throws Exception {
+        doTestAddData("fast", 3000000, new SinLoop(10), false);
     }
 
     @Test
-    public void testAddData_thousands_sin_x100() throws Exception {
-        doTestAddData("sin x100", 300000, new Runnable() {
-            @Override
-            public void run() {
-                for (int j = 0; j < 100; ++j) {
-                    Math.sin(j);
-                }
-            }
-        });
+    public void testAddData_thousands_slow() throws Exception {
+        doTestAddData("slow", 300000, new SinLoop(100), false);
     }
 
     @Test
-    public void testAddData_millions_sin_x100() throws Exception {
-        doTestAddData("sin x100", 3000000, new Runnable() {
-            @Override
-            public void run() {
-                for (int j = 0; j < 100; ++j) {
-                    Math.sin(j);
-                }
-            }
-        });
+    public void testAddData_millions_slow() throws Exception {
+        doTestAddData("slow", 3000000, new SinLoop(100), false);
     }
 
-    private void doTestAddData(String testName, int dataRowCount, Runnable load) throws Exception {
+    @Test
+    public void testAddData_thousands_slow_parallel() throws Exception {
+        doTestAddData("slow parallel", 300000, new SinLoop(100), true);
+    }
+
+    @Test
+    public void testAddData_millions_slow_parallel() throws Exception {
+        doTestAddData("slow parallel", 3000000, new SinLoop(100), true);
+    }
+
+    private void doTestAddData(String testName, int dataRowCount, Runnable load, boolean parallel) throws Exception {
         DataTableMetadata table1 = new DataTableMetadata("t1",
                 Arrays.asList(new Column("t1c1", Long.class), new Column("t1c2", String.class)), null);
 
@@ -139,37 +117,78 @@ public abstract class CommonSQLDataStoragePerformanceTests {
         DataTableMetadata table3 = new DataTableMetadata("t3",
                 Arrays.asList(new Column("t3c1", Long.class), new Column("t3c2", String.class)), null);
 
-        db.createTables(Arrays.asList(table1, table2, table3));
+        List<DataTableMetadata> tables = Arrays.asList(table1, table2, table3);
+
+        db.createTables(tables);
 
         long startTime = System.currentTimeMillis();
 
-        List<String> columns1 = Arrays.asList("t1c1", "t1c2");
-        List<String> columns2 = Arrays.asList("t2c1", "t2c2");
-        List<String> columns3 = Arrays.asList("t3c1", "t3c2");
-        for (int i = 0; i < dataRowCount; ++i) {
-            switch (i % 3) {
-                case 0:
-                    db.addData("t1", Collections.singletonList(
-                            new DataRow(columns1, Arrays.asList(Long.valueOf(i), String.valueOf(i)))));
-                    break;
-                case 1:
-                    db.addData("t2", Collections.singletonList(
-                            new DataRow(columns2, Arrays.asList(Long.valueOf(i), String.valueOf(i)))));
-                    break;
-                case 2:
-                    db.addData("t3", Collections.singletonList(
-                            new DataRow(columns3, Arrays.asList(Long.valueOf(i), String.valueOf(i)))));
-                    break;
-            }
-            load.run();
+        if (parallel) {
+            doAddDataParallel(tables, dataRowCount, load);
+        } else {
+            doAddDataSequential(tables, dataRowCount, load);
         }
 
         long addTime = System.currentTimeMillis();
-        System.err.printf("%s: added %d data rows in %d ms\n", testName, dataRowCount, addTime - startTime);
 
         db.flush();
 
         long flushTime = System.currentTimeMillis();
-        System.err.printf("%s: flushed data in %d ms\n", testName, flushTime - addTime);
+        System.err.printf("%s %d %d %d\n", testName, dataRowCount, addTime - startTime, flushTime - addTime);
+    }
+
+    private void doAddDataParallel(List<DataTableMetadata> tables, final int dataRowCount, final Runnable load) throws Exception {
+        List<Thread> threads = new ArrayList<Thread>(tables.size());
+        for (final DataTableMetadata table : tables) {
+            threads.add(new Thread() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < dataRowCount / 3; ++i) {
+                        db.addData(table.getName(), Collections.singletonList(
+                                new DataRow(table.getColumnNames(), Arrays.asList(Long.valueOf(i), String.valueOf(i)))));
+                        load.run();
+                    }
+                }
+            });
+        }
+        for (Thread thread : threads) {
+            thread.start();
+        }
+        for (Thread thread : threads) {
+            thread.join();
+        }
+    }
+
+    private void doAddDataSequential(List<DataTableMetadata> tables, int dataRowCount, Runnable load) throws Exception {
+        for (int i = 0; i < dataRowCount; ++i) {
+            addDataRow(tables.get(i % tables.size()), i);
+            load.run();
+        }
+    }
+
+    private void addDataRow(DataTableMetadata table, int i) throws Exception {
+        db.addData(table.getName(), Collections.singletonList(
+                new DataRow(table.getColumnNames(), Arrays.asList(Long.valueOf(i), String.valueOf(i)))));
+    }
+
+    private static final class NoOp implements Runnable {
+        @Override
+        public void run() {
+            // do nothing
+        }
+    }
+
+    private static final class SinLoop implements Runnable {
+        private final int count;
+        public SinLoop(int count) {
+            this.count = count;
+        }
+
+        @Override
+        public void run() {
+            for (int j = 0; j < count; ++j) {
+                Math.sin(j);
+            }
+        }
     }
 }
