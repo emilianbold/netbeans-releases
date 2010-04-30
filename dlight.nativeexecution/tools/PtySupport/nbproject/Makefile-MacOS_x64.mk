@@ -16,11 +16,11 @@ CC=gcc
 CCC=g++
 CXX=g++
 FC=
-AS=gas
+AS=as
 
 # Macros
-CND_PLATFORM=GNU-Solaris-x86
-CND_CONF=Debug
+CND_PLATFORM=GNU-MacOSX
+CND_CONF=MacOS_x64
 CND_DISTDIR=dist
 
 # Include project Makefile
@@ -54,39 +54,39 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	${MAKE}  -f nbproject/Makefile-Debug.mk dist/Debug/GNU-Solaris-x86/ptysupport
+	${MAKE}  -f nbproject/Makefile-MacOS_x64.mk dist/MacOS_x64/GNU-MacOSX/ptysupport
 
-dist/Debug/GNU-Solaris-x86/ptysupport: ${OBJECTFILES}
-	${MKDIR} -p dist/Debug/GNU-Solaris-x86
+dist/MacOS_x64/GNU-MacOSX/ptysupport: ${OBJECTFILES}
+	${MKDIR} -p dist/MacOS_x64/GNU-MacOSX
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ptysupport ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/src/loop.o: nbproject/Makefile-${CND_CONF}.mk src/loop.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/loop.o src/loop.c
+	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/loop.o src/loop.c
 
 ${OBJECTDIR}/src/pty_fork.o: nbproject/Makefile-${CND_CONF}.mk src/pty_fork.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/pty_fork.o src/pty_fork.c
+	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/pty_fork.o src/pty_fork.c
 
 ${OBJECTDIR}/src/pty.o: nbproject/Makefile-${CND_CONF}.mk src/pty.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/pty.o src/pty.c
+	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/pty.o src/pty.c
 
 ${OBJECTDIR}/src/error.o: nbproject/Makefile-${CND_CONF}.mk src/error.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/error.o src/error.c
+	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/error.o src/error.c
 
 # Subprojects
 .build-subprojects:
 
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
-	${RM} -r build/Debug
-	${RM} dist/Debug/GNU-Solaris-x86/ptysupport
+	${RM} -r build/MacOS_x64
+	${RM} dist/MacOS_x64/GNU-MacOSX/ptysupport
 
 # Subprojects
 .clean-subprojects:

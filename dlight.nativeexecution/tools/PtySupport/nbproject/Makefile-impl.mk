@@ -27,11 +27,11 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 PROJECTNAME=PtySupport
 
 # Active Configuration
-DEFAULTCONF=Debug
+DEFAULTCONF=Solaris_x64
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Debug Release 
+ALLCONFS=Solaris_x64 Solaris_x86 Linux_x64 Linux_x86 MacOS_x64 MacOS_x86 
 
 
 # build

@@ -4,10 +4,23 @@
 #include <unistd.h>
 #include <termios.h>
 #include <stdarg.h>
+#if !defined __APPLE__ && !defined __CYGWIN__
 #include <stropts.h>
+#else
+#include <sys/ioctl.h>
+#endif
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+
+#ifdef __CYGWIN__
+//added for compatibility with cygwin 1.5
+
+int posix_openpt(int flags) {
+    return open("/dev/ptmx", flags);
+}
+
+#endif
 
 static void dup_fd(int pty_fd);
 static int ptm_open(void);
@@ -144,10 +157,11 @@ static void dup_fd(int pty_fd) {
 #if defined(TIOCSCTTY) && !defined(__sun)
     if (ioctl(pty_fd, TIOCSCTTY, 0) == -1) {
         printf("ERROR ioctl(TIOCSCTTY) failed on \"%s\" -- %s\n",
-                pty, strerror(errno));
+                pty_fd, strerror(errno));
         exit(-1);
     }
 #endif
+
     /*
      * Slave becomes stdin/stdout/stderr of child.
      */

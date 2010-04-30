@@ -16,11 +16,11 @@ CC=gcc
 CCC=g++
 CXX=g++
 FC=
-AS=gas
+AS=as
 
 # Macros
-CND_PLATFORM=GNU-Solaris-x86
-CND_CONF=Release
+CND_PLATFORM=GNU-MacOSX
+CND_CONF=MacOS_x86
 CND_DISTDIR=dist
 
 # Include project Makefile
@@ -37,7 +37,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/error.o
 
 # C Compiler Flags
-CFLAGS=--std=c99
+CFLAGS=-m32 --std=c99
 
 # CC Compiler Flags
 CCFLAGS=
@@ -54,10 +54,10 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	${MAKE}  -f nbproject/Makefile-Release.mk dist/Release/GNU-Solaris-x86/ptysupport
+	${MAKE}  -f nbproject/Makefile-MacOS_x86.mk dist/MacOS_x86/GNU-MacOSX/ptysupport
 
-dist/Release/GNU-Solaris-x86/ptysupport: ${OBJECTFILES}
-	${MKDIR} -p dist/Release/GNU-Solaris-x86
+dist/MacOS_x86/GNU-MacOSX/ptysupport: ${OBJECTFILES}
+	${MKDIR} -p dist/MacOS_x86/GNU-MacOSX
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ptysupport ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/src/loop.o: nbproject/Makefile-${CND_CONF}.mk src/loop.c 
@@ -85,8 +85,8 @@ ${OBJECTDIR}/src/error.o: nbproject/Makefile-${CND_CONF}.mk src/error.c
 
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
-	${RM} -r build/Release
-	${RM} dist/Release/GNU-Solaris-x86/ptysupport
+	${RM} -r build/MacOS_x86
+	${RM} dist/MacOS_x86/GNU-MacOSX/ptysupport
 
 # Subprojects
 .clean-subprojects:
