@@ -98,7 +98,11 @@ public class LexerUtils {
             TokenId id = token.id();
             if(id == searchedId) {
                 if(repositionBack) {
-                    assert ts.moveIndex(index) == 0 && ts.moveNext();
+                    int idx = ts.moveIndex(index);
+                    boolean moved = ts.moveNext();
+
+                    assert idx == 0 && moved;
+
                 }
                 return token;
             }
