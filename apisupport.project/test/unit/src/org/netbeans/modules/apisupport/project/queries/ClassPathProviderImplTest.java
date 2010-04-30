@@ -75,6 +75,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.test.TestFileUtils;
 
 // XXX test GPR usage
 
@@ -83,7 +84,7 @@ import org.openide.execution.ExecutorTask;
  * @author Jesse Glick
  */
 public class ClassPathProviderImplTest extends TestBase {
-    
+
     public ClassPathProviderImplTest(String name) {
         super(name);
     }
@@ -1069,4 +1070,18 @@ public class ClassPathProviderImplTest extends TestBase {
 //            expectedRoots, urlsOfCp(cp));
 //    }
     
+    public void testClassPathExtensionChanges() throws Exception { // #179578
+        NbModuleProject p = generateStandaloneModule("prj");
+        ClassPath cp = ClassPath.getClassPath(p.getSourceDirectory(), ClassPath.COMPILE);
+        assertEquals("", cp.toString());
+        FileObject xJar = TestFileUtils.writeZipFile(p.getProjectDirectory(), "release/modules/ext/x.jar", "META-INF/MANIFEST.MF:Manifest-Version: 1.0\n\n");
+        ProjectXMLManager pxm = new ProjectXMLManager(p);
+        pxm.replaceClassPathExtensions(Collections.singletonMap("ext/x.jar", "release/modules/ext/x.jar"));
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals(FileUtil.toFile(xJar).getAbsolutePath(), cp.toString());
+        pxm.replaceClassPathExtensions(Collections.singletonMap("ext/y.jar", (String) null));
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals(p.getHelper().resolveFile("build/cluster/modules/ext/y.jar").getAbsolutePath(), cp.toString());
+    }
+
 }

@@ -607,7 +607,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         Element moduleDependencies = XMLUtil.findElement(data,
             "module-dependencies", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         assert moduleDependencies != null : "Malformed metadata in " + project;
-        StringBuffer cp = new StringBuffer();
+        StringBuilder cp = new StringBuilder();
         for (Element dep : XMLUtil.findSubElements(moduleDependencies)) {
             if (XMLUtil.findElement(dep, "compile-dependency", // NOI18N
                     NbModuleProject.NAMESPACE_SHARED) == null) {
@@ -628,12 +628,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             cp.append(moduleJar.getAbsolutePath());
             cp.append(module.getClassPathExtensions());
         }
-        ModuleEntry myself = ml.getEntry(project.getCodeNameBase());
-        if (myself == null) {
-            // ???
-            return "";
-        }
-        cp.append(myself.getClassPathExtensions());
+        appendMyOwnClassPathExtensions(cp);
         return cp.toString();
     }
     
@@ -645,7 +640,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         Set<String> unprocessed = new HashSet<String>();
         unprocessed.add(project.getCodeNameBase());
         Set<String> processed = new HashSet<String>();
-        StringBuffer cp = new StringBuffer();
+        StringBuilder cp = new StringBuilder();
         while (!unprocessed.isEmpty()) { // crude breadth-first search
             Iterator<String> it = unprocessed.iterator();
             String cnb = it.next();
@@ -667,12 +662,25 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 unprocessed.addAll(Arrays.asList(newDeps));
             }
         }
-        ModuleEntry myself = ml.getEntry(project.getCodeNameBase());
-        if (myself != null) {
-            // #76341: must include <class-path-extension>s in ${run.cp} too.
-            cp.append(myself.getClassPathExtensions());
-        }
+        appendMyOwnClassPathExtensions(cp); // #76341: must include <class-path-extension>s in ${run.cp} too.
         return cp.toString();
+    }
+
+    private void appendMyOwnClassPathExtensions(StringBuilder cp) {
+        // XXX #179578: using ModuleEntry.getClassPathExtensions would be more convenient, but the data is stale;
+        // should ModuleList recreate ModuleEntry's when project.xml (or project.properties, ...) changes?
+        Map<String,String> cpext = new ProjectXMLManager(project).getClassPathExtensions();
+        for (Map.Entry<String,String> entry : cpext.entrySet()) {
+            if (cp.length() > 0) {
+                cp.append(File.pathSeparatorChar);
+            }
+            String binaryOrigin = entry.getValue();
+            if (binaryOrigin != null) {
+                cp.append(project.getHelper().resolveFile(binaryOrigin));
+            } else {
+                cp.append(PropertyUtils.resolveFile(project.getModuleJarLocation().getParentFile(), entry.getKey()));
+            }
+        }
     }
 
     /**
