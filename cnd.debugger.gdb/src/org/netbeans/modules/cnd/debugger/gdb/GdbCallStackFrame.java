@@ -68,7 +68,7 @@ import org.openide.text.NbDocument;
  * @author Gordon Prieur (copied from Jan Jancura's JPDA implementation)
  */
 public class GdbCallStackFrame extends CallStackFrame {
-    public static boolean enableMacros = Boolean.getBoolean("gdb.autos.macros");
+    public static final boolean enableMacros = Boolean.getBoolean("gdb.autos.macros");
 
     private final GdbDebugger debugger;
     private final int lineNumber;

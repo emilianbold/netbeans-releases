@@ -84,7 +84,7 @@ public class GdbLogger {
         }
         
         if (Boolean.getBoolean("gdb.console.window")) { // NOI18N
-            gdbConsoleWindow = GdbConsoleWindow.getInstance(debugger, gdbProxy);
+            gdbConsoleWindow = new GdbConsoleWindow(debugger, gdbProxy);
             gdbConsoleWindow.openConsole();
         }
     }

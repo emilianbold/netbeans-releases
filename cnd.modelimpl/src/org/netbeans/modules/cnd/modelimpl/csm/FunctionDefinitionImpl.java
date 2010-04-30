@@ -192,6 +192,11 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
                         break;
                     }
                 }
+                if (out == null && decl.getName().equals(name)) {
+                    if (!FunctionImplEx.isFakeFunction(decl)) {
+                        out = decl;
+                    }
+                }
             }
         }
         return out;

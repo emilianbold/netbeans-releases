@@ -299,7 +299,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
             if (!clearQueue.isEmpty()) {
                 System.err.println("UNSAVED ENTRIES FOR " + unitName);
                 for (KeyValueQueue.Entry<Key, Persistent> entry : clearQueue) {
-                    System.err.printf("\n\t{0}\n\t{1}", entry.getKey(), entry.getValue());
+                    System.err.printf("\t%s\n\t%s\n", entry.getKey(), entry.getValue());
                 }
             }
         }

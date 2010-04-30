@@ -65,6 +65,7 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
     private Aggregation aggr;
     private ValueFormatter formatter;
     private boolean lastNonNull;
+    private String persistencePrefix;
 
     public TimeSeriesIndicatorConfiguration(IndicatorMetadata metadata, int position) {
         super(metadata, position, true);
@@ -154,6 +155,14 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
         return lastNonNull;
     }
 
+    public void setPersistencePrefix(String persistencePrefix) {
+        this.persistencePrefix = persistencePrefix;
+    }
+
+    private String getPersistencePrefix() {
+        return persistencePrefix;
+    }
+
     private static class TimeSeriesIndicatorConfigurationAccessorImpl extends TimeSeriesIndicatorConfigurationAccessor {
 
         @Override
@@ -199,6 +208,11 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
         @Override
         public boolean getLastNonNull(TimeSeriesIndicatorConfiguration conf) {
             return conf.getLastNonNull();
+        }
+
+        @Override
+        public String getPersistencePrefix(TimeSeriesIndicatorConfiguration conf) {
+            return conf.getPersistencePrefix();
         }
     }
 

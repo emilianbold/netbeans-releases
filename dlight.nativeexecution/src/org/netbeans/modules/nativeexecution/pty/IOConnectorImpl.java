@@ -149,7 +149,7 @@ public class IOConnectorImpl implements IOConnector {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (IOResizable.PROP_SIZE.equals(evt.getPropertyName())) {
-                IOResizable.Size newVal = (IOResizable.Size) evt.getOldValue();
+                IOResizable.Size newVal = (IOResizable.Size) evt.getNewValue();
                 if (newVal != null) {
                     Dimension newCells = newVal.cells;
                     Dimension newPixels = newVal.pixels;

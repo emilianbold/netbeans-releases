@@ -57,7 +57,7 @@ import java.util.*;
  */
 public class CountingVisitor implements Visitor {
     
-    private Map<Class, Info> infoMap = new HashMap<Class, Info>();
+    private Map<Class<?>, Info> infoMap = new HashMap<Class<?>, Info>();
     private int count;
     private int size;
     
@@ -66,7 +66,7 @@ public class CountingVisitor implements Visitor {
     }
     
     
-    public void visitClass(Class cls) {
+    public void visitClass(Class<?> cls) {
         infoMap.put(cls, new Info());
     }
     
@@ -85,7 +85,7 @@ public class CountingVisitor implements Visitor {
     public void visitObjectReference(ObjectMap map, Object from, Object to, java.lang.reflect.Field ref) {}
     public void visitArrayReference(ObjectMap map, Object from, Object to, int index) {}  
 
-    public Set<Class> getClasses() {
+    public Set<Class<?>> getClasses() {
         return Collections.unmodifiableSet(infoMap.keySet());
     }
     

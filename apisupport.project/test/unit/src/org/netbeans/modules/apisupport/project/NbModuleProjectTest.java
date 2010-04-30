@@ -41,20 +41,26 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import java.util.Arrays;
+import java.util.ResourceBundle;
+import java.util.logging.LogManager;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.MemoryFilter;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.RequestProcessor;
 
 /**
  * Test functionality of NbModuleProject.
  * @author Jesse Glick
  */
 public class NbModuleProjectTest extends TestBase {
-    
+
     public NbModuleProjectTest(String name) {
         super(name);
     }
@@ -166,6 +172,29 @@ public class NbModuleProjectTest extends TestBase {
         assertEquals("1.0", m.getSpecVersion());
         m = generateStandaloneModule(getWorkDir(), "bundle", true);
         assertEquals("1.0", m.getSpecVersion()); // #185020
+    }
+
+    public void testMemoryConsumption() throws Exception { // #90195
+        assertSize("java.project is not too big", Arrays.asList(javaProjectProject.evaluator(), javaProjectProject.getHelper()), 1234567, new MemoryFilter() {
+            final Class<?>[] REJECTED = {
+                Project.class,
+                FileObject.class,
+                ClassLoader.class,
+                Class.class,
+                ModuleInfo.class,
+                LogManager.class,
+                RequestProcessor.class,
+                ResourceBundle.class,
+            };
+            public @Override boolean reject(Object obj) {
+                for (Class<?> c : REJECTED) {
+                    if (c.isInstance(obj)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
     }
 
 }

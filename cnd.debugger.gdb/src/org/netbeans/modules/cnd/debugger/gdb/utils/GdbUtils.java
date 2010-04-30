@@ -100,7 +100,7 @@ public class GdbUtils {
     
     /** Test if the type of a type is a keyword type */
     private static boolean isSimpleTypeKeyword(String type) {
-        return type != null && type.equals("char") // NOI18N
+        return type != null && (type.equals("char") // NOI18N
             || type.equals("void") // NOI18N
             || type.equals("short") // NOI18N
             || type.equals("int") // NOI18N
@@ -110,7 +110,7 @@ public class GdbUtils {
             || type.equals("const") // NOI18N
             || type.equals("volatile") // NOI18N
             || type.equals("unsigned") // NOI18N
-            || type.equals("signed"); // NOI18N
+            || type.equals("signed")); // NOI18N
     }
     
 //    /** Test if the type of a type is a keyword type */
