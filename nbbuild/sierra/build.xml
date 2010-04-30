@@ -161,7 +161,7 @@
         <antcall target="do-module"><param name="module" value="xml.catalogsupport"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.xpath"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.xpath.ext"/></antcall>
-        <antcall target="do-module"><param name="module" value="xml.validation"/></antcall>
+        <antcall target="do-module"><param name="module" value="xml.misc"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.xam.ui"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.search"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.nbprefuse"/></antcall>

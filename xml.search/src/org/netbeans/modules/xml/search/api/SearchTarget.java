@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.xml.search.api;
 
-import static org.netbeans.modules.xml.util.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

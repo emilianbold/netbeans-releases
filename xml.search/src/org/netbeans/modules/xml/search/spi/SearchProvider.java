@@ -62,7 +62,7 @@ import org.netbeans.modules.xml.xam.ui.highlight.HighlightManager;
 
 import org.netbeans.modules.xml.search.api.SearchElement;
 import org.netbeans.modules.xml.search.api.SearchTarget;
-import static org.netbeans.modules.xml.util.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
