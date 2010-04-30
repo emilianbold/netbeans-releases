@@ -113,6 +113,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     public MemoryToolConfigurationProvider() {
     }
 
+    @Override
     public DLightToolConfiguration create() {
         DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
         toolConfiguration.setLongName(TOOL_NAME_DETAILED);
@@ -192,10 +193,11 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         ValueFormatter formatter = new BytesFormatter();
         TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION);
+        indicatorConfiguration.setPersistencePrefix("dlight_mem"); // NOI18N
         indicatorConfiguration.setTitle(loc("indicator.title")); // NOI18N
         indicatorConfiguration.setGraphScale(1024);
         indicatorConfiguration.addTimeSeriesDescriptors(
-                new TimeSeriesDescriptor(new Color(0x53, 0x82, 0xA1), loc("graph.description"), TimeSeriesDescriptor.Kind.LINE)); // NOI18N
+                new TimeSeriesDescriptor("mem", loc("graph.description"), new Color(0x53, 0x82, 0xA1), TimeSeriesDescriptor.Kind.LINE)); // NOI18N
         indicatorConfiguration.setDataRowHandler(new DataRowToMemory(indicatorColumns, formatter));
         indicatorConfiguration.addDetailDescriptors(
                 new DetailDescriptor(MAX_HEAP_DETAIL_ID, loc("MemoryTool.Legend.Max"), formatter.format(0))); // NOI18N

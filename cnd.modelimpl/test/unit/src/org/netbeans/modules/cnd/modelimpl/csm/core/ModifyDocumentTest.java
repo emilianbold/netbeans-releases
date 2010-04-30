@@ -81,6 +81,9 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
+            TraceFlags.TRACE_182342_BUG = true;
+        }
         System.err.printf("setUp %s %d\n", getName(), System.currentTimeMillis());
         super.setUp();
         doListener.clear();
@@ -91,7 +94,6 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
 
     @Override
     protected void tearDown() throws Exception {
-        TraceFlags.TRACE_182342_BUG = false;
         System.err.printf("tearDown %s %d\n", getName(), System.currentTimeMillis());
         super.tearDown();
         ModelSupport.instance().shutdown();
@@ -101,9 +103,6 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
     }
 
     public void testInsertDeadBlock() throws Exception {
-        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
-            TraceFlags.TRACE_182342_BUG = true;
-        }
         if (TraceFlags.TRACE_182342_BUG) {
             System.err.printf("TEST INSERT DEAD BLOCK\n");
         }
@@ -298,6 +297,9 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         public void stateChanged(ChangeEvent e) {
             DataObject[] objs = DataObject.getRegistry().getModified();
             modifiedDOs.addAll(Arrays.asList(objs));
+            if (TraceFlags.TRACE_182342_BUG) {
+                System.err.println("ObjectsChangeListener: stateChanged " + e);
+            }
             if (TraceFlags.TRACE_182342_BUG) {
                 ModelSupport.traceDataObjectRegistryStateChanged(e);
             }

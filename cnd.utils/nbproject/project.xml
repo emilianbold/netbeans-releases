@@ -77,6 +77,7 @@
                 <friend>org.netbeans.modules.cnd.apt</friend>
                 <friend>org.netbeans.modules.cnd.asm</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
+                <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
@@ -101,6 +102,7 @@
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.repository</friend>
                 <friend>org.netbeans.modules.cnd.script</friend>
+                <friend>org.netbeans.modules.cnd.simpleunit</friend>
                 <friend>org.netbeans.modules.cnd.source</friend>
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>

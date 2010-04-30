@@ -54,4 +54,13 @@ public class RakeTaskTest extends TestCase {
         assertTrue("comparision of task and namespace", testNS.compareTo(testTask) < 0);
     }
 
+    public void testTaskParams() {
+        RakeTask task = new RakeTask("foo", "foo[with_params]", "foos");
+        assertTrue(task.acceptsExplicitParameters());
+
+        task = new RakeTask("foo", "foo_no_params", "foos");
+        assertFalse(task.acceptsExplicitParameters());
+
+    }
+
 }

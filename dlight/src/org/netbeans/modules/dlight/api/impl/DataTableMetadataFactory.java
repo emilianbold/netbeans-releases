@@ -83,7 +83,7 @@ public final class DataTableMetadataFactory {
         return null;
     }
 
-    static List<Column> createColumnsList(Map map){
+    static List<Column> createColumnsList(Map<?, ?> map){
         try{
             FileObject rootFolder = FileUtil.getConfigRoot();
             String columnsFolderPath = (String)map.get("columns");//NOI18N

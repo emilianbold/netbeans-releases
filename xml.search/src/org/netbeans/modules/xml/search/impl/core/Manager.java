@@ -57,7 +57,7 @@ import org.netbeans.modules.xml.search.spi.SearchProvider;
 import org.netbeans.modules.xml.search.impl.action.SearchAction;
 import org.netbeans.modules.xml.search.impl.ui.Find;
 import org.netbeans.modules.xml.search.impl.ui.Search;
-import static org.netbeans.modules.xml.util.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

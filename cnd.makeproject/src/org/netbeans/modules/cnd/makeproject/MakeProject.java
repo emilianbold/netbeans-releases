@@ -507,7 +507,8 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             "simple-files", // NOI18N
             "fortran-types", // NOI18N
             "asm-types", // NOI18N
-            "qt-types"}; // NOI18N
+            "qt-types", // NOI18N
+            "cncpp-test-types"}; // NOI18N
         private static final String[] PRIVILEGED_NAMES = new String[]{
             "Templates/cFiles/main.c", // NOI18N
             "Templates/cFiles/file.c", // NOI18N

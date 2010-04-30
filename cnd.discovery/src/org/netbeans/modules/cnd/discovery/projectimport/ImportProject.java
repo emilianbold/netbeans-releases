@@ -884,18 +884,16 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void fixMacros(List<ProjectConfiguration> confs) {
-        //NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
         for (ProjectConfiguration conf : confs) {
             List<FileConfiguration> files = conf.getFiles();
             for (FileConfiguration fileConf : files) {
                 if (fileConf.getUserMacros().size() > 0) {
-                    //NativeFileItem item = np.findFileItem(new File(fileConf.getFilePath()));
-                    NativeFileItem item = findByNormalizedName(new File(fileConf.getFilePath()));
-                    if (item instanceof Item) {
+                    Item item = findByNormalizedName(new File(fileConf.getFilePath()));
+                    if (item != null) {
                         if (TRACE) {
                             logger.log(Level.FINE, "#fix macros for file {0}", fileConf.getFilePath()); // NOI18N
                         }
-                        ProjectBridge.fixFileMacros(fileConf.getUserMacros(), (Item) item);
+                        ProjectBridge.fixFileMacros(fileConf.getUserMacros(), item);
                     }
                 }
             }

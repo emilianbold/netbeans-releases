@@ -70,6 +70,7 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
     private static final String TOOL_NAME = loc("ThreadMapTool.ToolName"); // NOI18N
     private static final String DETAILED_TOOL_NAME = loc("ThreadMapTool.DetailedToolName"); // NOI18N
 
+    @Override
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
         toolConfiguration.setLongName(DETAILED_TOOL_NAME);
@@ -84,14 +85,15 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
         final TimeSeriesIndicatorConfiguration indicatorConfig = new TimeSeriesIndicatorConfiguration(
                 new IndicatorMetadata(indicatorDataColumns), INDICATOR_POSITION);
 
+        indicatorConfig.setPersistencePrefix("dlight_msa"); // NOI18N
         indicatorConfig.setTitle(loc("ThreadMapTool.Indicator.Title")); // NOI18N
         indicatorConfig.setGraphScale(1);
 
         indicatorConfig.addTimeSeriesDescriptors(
-                new TimeSeriesDescriptor(ThreadStateResources.THREAD_SLEEPING.color, ThreadStateResources.THREAD_SLEEPING.name, TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
-                new TimeSeriesDescriptor(ThreadStateResources.THREAD_WAITING.color, ThreadStateResources.THREAD_WAITING.name, TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
-                new TimeSeriesDescriptor(ThreadStateResources.THREAD_BLOCKED.color, ThreadStateResources.THREAD_BLOCKED.name, TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
-                new TimeSeriesDescriptor(ThreadStateResources.THREAD_RUNNING.color, ThreadStateResources.THREAD_RUNNING.name, TimeSeriesDescriptor.Kind.REL_SURFACE)); // NOI18N
+                new TimeSeriesDescriptor("sleeping", ThreadStateResources.THREAD_SLEEPING.name, ThreadStateResources.THREAD_SLEEPING.color, TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
+                new TimeSeriesDescriptor("waiting", ThreadStateResources.THREAD_WAITING.name, ThreadStateResources.THREAD_WAITING.color, TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
+                new TimeSeriesDescriptor("blocked", ThreadStateResources.THREAD_BLOCKED.name, ThreadStateResources.THREAD_BLOCKED.color, TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
+                new TimeSeriesDescriptor("running", ThreadStateResources.THREAD_RUNNING.name, ThreadStateResources.THREAD_RUNNING.color, TimeSeriesDescriptor.Kind.REL_SURFACE)); // NOI18N
         indicatorConfig.setDataRowHandler(new IndicatorDataHandler(indicatorDataColumns));
         indicatorConfig.setActionDisplayName(loc("ThreadMapTool.Indicator.Action")); // NOI18N
         indicatorConfig.setActionTooltip(loc("ThreadMapTool.Indicator.Action.Tooltip"));//NOI18N

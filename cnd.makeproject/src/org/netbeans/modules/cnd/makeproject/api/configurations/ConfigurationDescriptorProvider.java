@@ -199,7 +199,7 @@ public class ConfigurationDescriptorProvider {
             // we don't want to count own tests
             return;
         }
-        if (!(descr instanceof MakeConfigurationDescriptor) && makeConfiguration == null) {
+        if (descr == null && makeConfiguration == null) {
             return;
         }
         Logger logger = Logger.getLogger(USG_LOGGER_NAME);

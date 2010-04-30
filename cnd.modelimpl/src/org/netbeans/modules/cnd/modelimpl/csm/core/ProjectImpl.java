@@ -107,7 +107,7 @@ public final class ProjectImpl extends ProjectBase {
     public 
     @Override
     void onFileEditStart(final FileBuffer buf, NativeFileItem nativeFile) {
-        if (!acceptNativeItem(nativeFile)) {
+        if (!Utils.acceptNativeItem(nativeFile)) {
             return;
         }
         if (TraceFlags.DEBUG) {
@@ -146,7 +146,7 @@ public final class ProjectImpl extends ProjectBase {
     public 
     @Override
     void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile) {
-        if (!acceptNativeItem(nativeFile)) {
+        if (!Utils.acceptNativeItem(nativeFile)) {
             return;
         }
         if (TraceFlags.DEBUG) {
@@ -179,7 +179,7 @@ public final class ProjectImpl extends ProjectBase {
 
     @Override
     public void onFilePropertyChanged(NativeFileItem nativeFile) {
-        if (!acceptNativeItem(nativeFile)) {
+        if (!Utils.acceptNativeItem(nativeFile)) {
             return;
         }
         if (TraceFlags.DEBUG) {
@@ -267,7 +267,7 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     private NativeFileItem onFileAddedImpl(NativeFileItem nativeFile, boolean deepReparse) {
-        if (acceptNativeItem(nativeFile)) {
+        if (Utils.acceptNativeItem(nativeFile)) {
             CndFileUtils.clearFileExistenceCache();
             try {
                 //Notificator.instance().startTransaction();

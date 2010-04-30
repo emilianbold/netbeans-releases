@@ -83,6 +83,7 @@ public final class DLightCPUToolConfigurationProvider
     private static final String DETAILED_TOOL_NAME = loc("CPUMonitorTool.DetailedToolName"); // NOI18N
     private static final boolean CPU_TREE_TABLE = Boolean.valueOf(System.getProperty("cpu.tree.table", "false"));
 
+    @Override
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
         toolConfiguration.setLongName(DETAILED_TOOL_NAME);
@@ -159,12 +160,13 @@ public final class DLightCPUToolConfigurationProvider
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(resultColumns);
         TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION);
+        indicatorConfiguration.setPersistencePrefix("dlight_cpu"); // NOI18N
         indicatorConfiguration.setActionTooltip(loc("indicator.action.tooltip"));//NOI18N
         indicatorConfiguration.setTitle(loc("indicator.title")); // NOI18N
         indicatorConfiguration.setGraphScale(100);
         indicatorConfiguration.addTimeSeriesDescriptors(
-                new TimeSeriesDescriptor(new Color(0xFF, 0xC7, 0x26), loc("graph.description.system"), TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
-                new TimeSeriesDescriptor(new Color(0xE7, 0x6F, 0x00), loc("graph.description.user"), TimeSeriesDescriptor.Kind.REL_SURFACE)); // NOI18N
+                new TimeSeriesDescriptor("system", loc("graph.description.system"), new Color(0xFF, 0xC7, 0x26), TimeSeriesDescriptor.Kind.REL_SURFACE), // NOI18N
+                new TimeSeriesDescriptor("user", loc("graph.description.user"), new Color(0xE7, 0x6F, 0x00), TimeSeriesDescriptor.Kind.REL_SURFACE)); // NOI18N
         indicatorConfiguration.setDataRowHandler(
                 new DataRowToCpu(
                 Arrays.asList(ProcDataProviderConfiguration.USR_TIME),

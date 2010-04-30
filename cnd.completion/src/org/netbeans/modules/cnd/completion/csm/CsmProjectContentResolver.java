@@ -1165,12 +1165,16 @@ public final class CsmProjectContentResolver {
                 if (memberName.length() == 0) {
                     if (isKindOf(member.getKind(), memberKinds) &&
                             matchVisibility(member, minVisibility)) {
-                        Map<CharSequence, CsmMember> set = getClassMembers((CsmClass) member, contextDeclaration, kinds, strPrefix, staticOnly, match,
-                                handledClasses, CsmVisibility.PUBLIC, INIT_INHERITANCE_LEVEL, inspectParentClasses, inspectOuterClasses, returnUnnamedMembers);
-                        // replace by own elements in nested set
-                        if (set != null && set.size() > 0) {
-                            set.putAll(res);
-                            res = set;
+                        CsmClass innerClass = (CsmClass) member;
+                        // if inner class doesn't have enclosing variables => iterate it
+                        if (innerClass.getEnclosingVariables().isEmpty()) {
+                            Map<CharSequence, CsmMember> set = getClassMembers(innerClass, contextDeclaration, kinds, strPrefix, staticOnly, match,
+                                    handledClasses, CsmVisibility.PUBLIC, INIT_INHERITANCE_LEVEL, inspectParentClasses, inspectOuterClasses, returnUnnamedMembers);
+                            // replace by own elements in nested set
+                            if (set != null && set.size() > 0) {
+                                set.putAll(res);
+                                res = set;
+                            }
                         }
                     }
                 }

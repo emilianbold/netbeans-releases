@@ -5,8 +5,8 @@
  * Created on %<%DATE%>%, %<%TIME%>%
  */
 
-#ifndef _%<%GUARD_NAME%>%
-#define	_%<%GUARD_NAME%>%
+#ifndef %<%GUARD_NAME%>%
+#define	%<%GUARD_NAME%>%
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -28,5 +28,5 @@ private:
 	void testFailedMethod();
 };
 
-#endif	/* _%<%GUARD_NAME%>% */
+#endif	/* %<%GUARD_NAME%>% */
 

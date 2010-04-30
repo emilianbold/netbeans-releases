@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionStat
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
@@ -78,10 +79,12 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery.class)
 public final class FileInfoQueryImpl extends CsmFileInfoQuery {
 
+    @Override
     public List<String> getSystemIncludePaths(CsmFile file) {
         return getIncludePaths(file, true);
     }
 
+    @Override
     public List<String> getUserIncludePaths(CsmFile file) {
         return getIncludePaths(file, false);
     }
@@ -89,7 +92,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     private List<String> getIncludePaths(CsmFile file, boolean system) {
         List<String> out = Collections.<String>emptyList();
         if (file instanceof FileImpl) {
-            NativeFileItem item = ProjectBase.getCompiledFileItem((FileImpl) file);
+            NativeFileItem item = Utils.getCompiledFileItem((FileImpl) file);
             if (item != null) {
                 if (item.getLanguage() == NativeFileItem.Language.C_HEADER) {
                     // It's an orphan (otherwise the getCompiledFileItem would return C or C++ item, not header).
@@ -116,6 +119,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         return out;
     }
 
+    @Override
     public List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file) {
         List<CsmOffsetable> out = Collections.<CsmOffsetable>emptyList();
         if (file instanceof FileImpl) {
@@ -226,6 +230,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
 
     }
     
+    @Override
     public List<CsmReference> getMacroUsages(CsmFile file) {
         List<CsmReference> out = Collections.<CsmReference>emptyList();
         if (file instanceof FileImpl) {
@@ -286,6 +291,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         return out;
     }
     
+    @Override
     public CsmOffsetable getGuardOffset(CsmFile file) {
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
@@ -341,7 +347,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             Collection<State> states = ((ProjectBase) impl.getProject()).getPreprocStates(impl);
             for (State state : states) {
                 StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
-                ProjectBase startProject = ProjectBase.getStartProject(startEntry);
+                ProjectBase startProject = Utils.getStartProject(startEntry);
                 if (startProject != null) {
                     CharSequence path = startEntry.getStartFile();
                     CsmFile startFile = startProject.getFile(new File(path.toString()), false);
@@ -372,7 +378,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             CndUtils.assertNotNull(state, "state must not be null in non empty collection");// NOI18N
             List<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
             StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
-            ProjectBase startProject = ProjectBase.getStartProject(startEntry);
+            ProjectBase startProject = Utils.getStartProject(startEntry);
             if (startProject != null) {
                 CsmFile startFile = startProject.getFile(new File(startEntry.getStartFile().toString()), false);
                 if (startFile != null) {
@@ -422,6 +428,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
 
     private static class OffsetableComparator<T extends CsmOffsetable> implements Comparator<T> {
+        @Override
         public int compare(CsmOffsetable o1, CsmOffsetable o2) {
             int diff = o1.getStartOffset() - o2.getStartOffset();
             if (diff == 0) {
