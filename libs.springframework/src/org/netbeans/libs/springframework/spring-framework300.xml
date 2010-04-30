@@ -47,26 +47,26 @@ Portions Copyrighted 2008 Sun Microsystems, Inc.
         <resource>jar:nbinst://org.netbeans.libs.commons_logging/modules/ext/commons-logging-1.1.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.cglib/modules/ext/cglib-2.2.jar!/</resource>
 
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-aop-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-asm-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-aspects-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-beans-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-context-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-context-support-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-core-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-expression-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-instrument-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-instrument-tomcat-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-jdbc-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-jms-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-orm-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-oxm-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-test-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-tx-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-web-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-webmvc-portlet-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-webmvc-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-struts-3.0.0.RELEASE.jar!/</resource> 
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-aop-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-asm-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-aspects-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-beans-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-context-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-context-support-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-core-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-expression-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-instrument-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-instrument-tomcat-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-jdbc-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-jms-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-orm-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-oxm-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-test-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-tx-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-web-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-webmvc-portlet-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-webmvc-3.0.2.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-struts-3.0.2.RELEASE.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
@@ -77,25 +77,25 @@ Portions Copyrighted 2008 Sun Microsystems, Inc.
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-aop/3.0.0.RELEASE/spring-aop-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-asm/3.0.0.RELEASE/spring-asm-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-aspects/3.0.0.RELEASE/spring-spects-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-beans/3.0.0.RELEASE/spring-beans-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-context/3.0.0.RELEASE/spring-context-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-context-support/3.0.0.RELEASE/spring-context-support-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-core/3.0.0.RELEASE/spring-core-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-expression/3.0.0.RELEASE/spring-expression-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-instrument/3.0.0.RELEASE/spring-instrument-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-instrument-tomcat/3.0.0.RELEASE/spring-instrument-tomcat-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-jdbc/3.0.0.RELEASE/spring-jdbc-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-jms/3.0.0.RELEASE/spring-jms-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-orm/3.0.0.RELEASE/spring-orm-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-oxm/3.0.0.RELEASE/spring-oxm-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-test/3.0.0.RELEASE/spring-test-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-tx/3.0.0.RELEASE/spring-tx-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-web/3.0.0.RELEASE/spring-web-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-webmvc-portlet/3.0.0.RELEASE/spring-webmvc-portlet-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-webmvc/3.0.0.RELEASE/spring-webmvc-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-struts/3.0.0.RELEASE/spring-struts-3.0.0.RELEASE.pom</resource> 
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-aop/3.0.2.RELEASE/spring-aop-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-asm/3.0.2.RELEASE/spring-asm-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-aspects/3.0.2.RELEASE/spring-spects-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-beans/3.0.2.RELEASE/spring-beans-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-context/3.0.2.RELEASE/spring-context-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-context-support/3.0.2.RELEASE/spring-context-support-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-core/3.0.2.RELEASE/spring-core-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-expression/3.0.2.RELEASE/spring-expression-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-instrument/3.0.2.RELEASE/spring-instrument-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-instrument-tomcat/3.0.2.RELEASE/spring-instrument-tomcat-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-jdbc/3.0.2.RELEASE/spring-jdbc-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-jms/3.0.2.RELEASE/spring-jms-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-orm/3.0.2.RELEASE/spring-orm-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-oxm/3.0.2.RELEASE/spring-oxm-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-test/3.0.2.RELEASE/spring-test-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-tx/3.0.2.RELEASE/spring-tx-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-web/3.0.2.RELEASE/spring-web-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-webmvc-portlet/3.0.2.RELEASE/spring-webmvc-portlet-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-webmvc/3.0.2.RELEASE/spring-webmvc-3.0.2.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-struts/3.0.2.RELEASE/spring-struts-3.0.2.RELEASE.pom</resource>
     </volume>
 </library>

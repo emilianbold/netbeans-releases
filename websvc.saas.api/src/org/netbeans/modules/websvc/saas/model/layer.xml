@@ -60,6 +60,10 @@ made subject to such option by the copyright holder.
                   url="/org/netbeans/modules/websvc/saas/oauth/OAuthAuthorizationPanelNb.template">
                 <attr name="position" intvalue="77"/>
             </file>
+            <file name="OAuthXPathSearchBody.method"
+                  url="/org/netbeans/modules/websvc/saas/oauth/OAuthXPathSearchBody.template">
+                <attr name="position" intvalue="78"/>
+            </file>
         </folder>
     </folder>
 </filesystem>

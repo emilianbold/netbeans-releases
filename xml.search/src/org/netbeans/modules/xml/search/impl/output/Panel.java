@@ -51,7 +51,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.print.PrintManager;
-import static org.netbeans.modules.xml.util.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
