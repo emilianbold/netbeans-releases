@@ -150,12 +150,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.globalNamespaceUID = UIDCsmConverter.namespaceToUID(ns);
         DeclarationContainer declarationContainer = new DeclarationContainer(this);
         CndUtils.assertTrue(declarationsSorageKey.equals(declarationContainer.getKey()));
+        weakDeclarationContainer.clear();
         ClassifierContainer classifierContainer = new ClassifierContainer(this);
         CndUtils.assertTrue(classifierStorageKey.equals(classifierContainer.getKey()));
+        weakClassifierContainer.clear();
         FileContainer fileContainer = new FileContainer(this);
         CndUtils.assertTrue(fileContainerKey.equals(fileContainer.getKey()));
+        weakFileContainer.clear();
         GraphContainer graphContainer = new GraphContainer(this);
         CndUtils.assertTrue(graphStorageKey.equals(graphContainer.getKey()));
+        weakGraphContainer.clear();
         FAKE_GLOBAL_NAMESPACE = new NamespaceImpl(this, true);
     }
 
@@ -2703,6 +2707,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         private WeakContainer(ProjectBase project, Key sorageKey) {
             this.project = project;
             this.sorageKey = sorageKey;
+        }
+
+        void clear() {
+            if (TraceFlags.USE_WEAK_MEMORY_CACHE) {
+                weakContainer.clear();
+            }
         }
 
         @SuppressWarnings("unchecked")
