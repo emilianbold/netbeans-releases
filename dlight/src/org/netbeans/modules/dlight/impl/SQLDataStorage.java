@@ -81,7 +81,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
     private final Map<String, PreparedStatement> insertPreparedStatments;
     private static final int WAIT_INTERVALS = 100;
     private static final int MAX_BULK_SIZE = 10000;
-    private static final int BUFFER_COUNT = 6;
+    private static final int IDLE_ITERATIONS = 2;
     private static final Logger logger = DLightLogger.getLogger(SQLDataStorage.class);
     protected Connection connection;
     protected HashMap<String, DataTableMetadata> tables = new HashMap<String, DataTableMetadata>();
@@ -622,44 +622,49 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
 
     private class AsyncThread extends Thread {
 
-        private boolean shutdown;
-        private int emptyBufferCount;
-        List<Request> requestList = new ArrayList<Request>();
+        private volatile boolean idle; // true if at least IDLE_ITERATIONS previous iterations were idle
+        private volatile boolean stop; // true if it's time to stop
 
         public AsyncThread() {
             setDaemon(true);
             setName("DLIGHT: SQL Storage AsyncThread"); // NOI18N
         }
 
-        public synchronized void flush() throws InterruptedException {
-            // Proper synchronization is needed to guarantee that
-            // queue.isEmpty() is checked either before commands are
-            // taken from the queue, or after they are executed.
-            while (!requestQueue.isEmpty()) {
-                wait();
+        public void flush() throws InterruptedException {
+            while (!idle) {
+                Thread.sleep(WAIT_INTERVALS);
             }
         }
 
         @Override
         public void run() {
-            while (emptyBufferCount < BUFFER_COUNT) {
-                synchronized (this) {
-                    requestQueue.drainTo(requestList, MAX_BULK_SIZE);
+            int idleIterations = 0;
+            List<Request> requestList = new ArrayList<Request>();
+            for (;;) {
+                requestQueue.drainTo(requestList, MAX_BULK_SIZE);
 
+                if (requestList.isEmpty()) {
+                    if (IDLE_ITERATIONS <= ++idleIterations) {
+                        idle = true;
+                        if (stop) {
+                            break;
+                        }
+                        idleIterations = IDLE_ITERATIONS; // to prevent overflow
+                    }
                     try {
-                        if (requestList.isEmpty()) {
-                            if (shutdown) {
-                                emptyBufferCount++;
+                        Thread.sleep(WAIT_INTERVALS);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                } else {
+                    idleIterations = 0;
+                    idle = false;
+                    try {
+                        for (Request request : requestList) {
+                            if (logger.isLoggable(Level.FINE)) {
+                                logger.fine("SQLDataStorage.AsyncThread executes " + request.toString()); //NOI18N
                             }
-                        } else {
-                            for (Request request : requestList) {
-                                if (logger.isLoggable(Level.FINE)) {
-                                    logger.fine("EXECUTEEEEEEEEEEEEEEE !!!SQL: dispatching request  " + request.toString()); //NOI18N
-                                }
-
-                                request.execute();
-                            }
-
+                            request.execute();
                         }
                     } catch (Exception e) {
                         logger.log(
@@ -667,21 +672,17 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
                                 "SQLDataStorage.async_db_write_failed", //NOI18N
                                 e);
                     }
-
                     requestList.clear();
-
-                    notifyAll();
                 }
             }
         }
 
         private void shutdown() {
-            shutdown = true;
-            while (emptyBufferCount < BUFFER_COUNT) {
-                try {
-                    Thread.sleep(WAIT_INTERVALS);
-                } catch (InterruptedException e) {
-                }
+            stop = true;
+            try {
+                flush();
+            } catch (InterruptedException ex) {
+                logger.log(Level.INFO, null, ex);
             }
         }
     }
