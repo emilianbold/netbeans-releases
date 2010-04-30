@@ -239,7 +239,7 @@ import org.openide.util.NbBundle;
         final String variableName = entitySimpleName.toLowerCase().charAt(0) + entitySimpleName.substring(1);
 
         //create the abstract facade class
-        Future<Void> waiter = null;
+        Task<CompilationController> waiter = null;
         final String afName = pkg + "." + FACADE_ABSTRACT;
         FileObject afFO = targetFolder.getFileObject(FACADE_ABSTRACT, "java");
         if (afFO == null){
@@ -317,10 +317,11 @@ import org.openide.util.NbBundle;
                 }
             }).commit();
 
-            waiter = source.runWhenScanFinished(new Task<CompilationController>(){
+            waiter = new Task<CompilationController>(){
                 public void run(CompilationController cc) throws Exception {
+                    cc.toPhase(Phase.ELEMENTS_RESOLVED);
                 }
-            }, true);
+            };
         }
 
         // create the facade
@@ -399,15 +400,14 @@ import org.openide.util.NbBundle;
             }
         };
 
-        JavaSource source = JavaSource.forFileObject(facade);
         if (waiter != null){
             try {
-                waiter.get();
+                JavaSource.forFileObject(afFO).runWhenScanFinished(waiter, true).get();
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
             }
         }
-        source.runModificationTask(modificationTask).commit();
+        JavaSource.forFileObject(facade).runModificationTask(modificationTask).commit();
 
         return createdFiles;
     }
