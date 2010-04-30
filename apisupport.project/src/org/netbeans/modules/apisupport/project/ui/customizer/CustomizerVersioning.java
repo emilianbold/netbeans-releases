@@ -103,7 +103,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         }
     }
     
-    void refresh() {
+    protected void refresh() {
         UIUtil.setText(majorRelVerValue, getProperties().getMajorReleaseVersion());
         UIUtil.setText(tokensValue, getProperties().getProvidedTokens());
         String specVersion = getProperties().getSpecificationVersion();

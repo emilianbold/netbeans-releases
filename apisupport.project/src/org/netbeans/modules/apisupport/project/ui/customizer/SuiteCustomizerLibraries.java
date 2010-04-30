@@ -247,7 +247,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
     private RequestProcessor.Task refreshTask;
 
-    void refresh() {
+    protected void refresh() {
         refreshJavaPlatforms();
         refreshPlatforms();
         if (refreshTask == null) {

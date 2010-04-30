@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.apisupport.project.ui.customizer;
+package org.netbeans.modules.apisupport.project.ui.branding;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -60,6 +60,7 @@ import org.netbeans.modules.apisupport.project.suite.BrandingSupport;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport.BrandedFile;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport.BundleKey;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;

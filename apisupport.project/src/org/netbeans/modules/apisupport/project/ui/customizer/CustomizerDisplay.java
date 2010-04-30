@@ -69,7 +69,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         checkValidity();
     }
     
-    void refresh() {
+    protected void refresh() {
         this.noBundle = getBundle() == null;
         if (noBundle) {
             nameValue.setEnabled(false);

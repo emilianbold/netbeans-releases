@@ -37,7 +37,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.apisupport.project.ui.customizer;
+package org.netbeans.modules.apisupport.project.ui.branding;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -47,6 +47,7 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
