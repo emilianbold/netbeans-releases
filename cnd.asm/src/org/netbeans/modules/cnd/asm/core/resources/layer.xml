@@ -173,6 +173,7 @@
                 <attr name="template" boolvalue="true"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/asm/core/resources/asm-file.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="asm-types"/>
             </file>
 
@@ -180,6 +181,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.asm.core.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="position" intvalue="200"/>
+                <attr name="fixedExtension" stringvalue="il"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/asm/core/resources/il-file.html"/>
                 <attr name="templateCategory" stringvalue="asm-types"/>
             </file>
