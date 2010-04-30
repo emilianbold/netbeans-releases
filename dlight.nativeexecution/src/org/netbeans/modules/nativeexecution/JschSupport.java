@@ -97,6 +97,7 @@ public final class JschSupport {
                     log.log(Level.INFO, "JSch exception opening channel to " + env + ". Reconnecting and retrying", ex); // NOI18N
                     // Looks like in this case an attempt to
                     // just re-open a channel will fail - so create a new session
+                    ConnectionManagerAccessor.getDefault().reconnect(env);
                     session = ConnectionManagerAccessor.getDefault().getConnectionSession(env, true);
                 } else {
                     throw ex;
