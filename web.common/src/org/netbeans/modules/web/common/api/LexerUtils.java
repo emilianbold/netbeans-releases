@@ -41,6 +41,7 @@ package org.netbeans.modules.web.common.api;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
@@ -91,14 +92,22 @@ public class LexerUtils {
     }
 
     public static Token followsToken(TokenSequence ts, TokenId searchedId, boolean backwards, boolean repositionBack, TokenId... skipIds) {
+        return followsToken(ts, Collections.singletonList(searchedId), backwards, repositionBack, skipIds);
+    }
+
+    public static Token followsToken(TokenSequence ts, Collection<? extends TokenId> searchedIds, boolean backwards, boolean repositionBack, TokenId... skipIds) {
         Collection<TokenId> skip = Arrays.asList(skipIds);
         int index = ts.index();
         while(backwards ? ts.movePrevious() : ts.moveNext()) {
             Token token = ts.token();
             TokenId id = token.id();
-            if(id == searchedId) {
+            if(searchedIds.contains(id)) {
                 if(repositionBack) {
-                    assert ts.moveIndex(index) == 0 && ts.moveNext();
+                    int idx = ts.moveIndex(index);
+                    boolean moved = ts.moveNext();
+
+                    assert idx == 0 && moved;
+
                 }
                 return token;
             }

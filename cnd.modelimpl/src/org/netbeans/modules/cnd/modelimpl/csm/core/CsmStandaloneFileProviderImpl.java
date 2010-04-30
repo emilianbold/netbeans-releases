@@ -43,8 +43,9 @@ import java.io.IOException;
 import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import javax.swing.JEditorPane;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
@@ -79,15 +80,21 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     private static final boolean TRACE = Boolean.getBoolean("cnd.standalone.trace"); //NOI18N
+    private static final class Lock{}
+    private static final Lock lock = new Lock();
+    private static final Set<String> toBeRmoved = new HashSet<String>();
 
     private final CsmModelListener listener = new CsmModelListener() {
 
+        @Override
         public void projectOpened(CsmProject project) {
         }
 
+        @Override
         public void projectClosed(CsmProject project) {
         }
 
+        @Override
         public void modelChanged(CsmChangeEvent e) {
             for (CsmFile file : e.getNewFiles()) {
                 clean(file);
@@ -141,10 +148,16 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 if (TRACE) {trace("returns file %s", csmFile);} //NOI18N
                 return csmFile;
             }
-            NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(FileUtil.toFile(file));
-            if (platformProject != null) {
-                if (TRACE) {trace("adding project %s", name);} //NOI18N
-                project = ModelImpl.instance().addProject(platformProject, name, true);
+            synchronized (lock) {
+                if (toBeRmoved.contains(name)){
+                    return null;
+                }
+                NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(FileUtil.toFile(file));
+                if (platformProject != null) {
+                    project = ModelImpl.instance().addProject(platformProject, name, true);
+                    if (TRACE) {trace("added project %s", project.toString());} //NOI18N
+                    project.ensureFilesCreated();
+                }
             }
         }
         if (project != null && project.isValid()) {
@@ -211,8 +224,9 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         return false;
     }
 
+    @Override
     synchronized public void notifyClosed(CsmFile csmFile) {
-        if (TRACE) {trace("checking file %s", csmFile.toString());} //NOI18N
+        //if (TRACE) {trace("checking file %s", csmFile.toString());} //NOI18N
         String closedFilePath = csmFile.getAbsolutePath().toString();
         for (CsmProject csmProject : ModelImpl.instance().projects()) {
             Object platformProject = csmProject.getPlatformProject();
@@ -236,13 +250,22 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
     }
 
     private void scheduleProjectRemoval(final CsmProject project) {
+        final String root = ((NativeProject)project.getPlatformProject()).getProjectRoot();
         if (TRACE) {trace("schedulling removal %s", project.toString());} //NOI18N
+        synchronized (lock) {
+            toBeRmoved.add(root);
+        }
         ModelImpl.instance().enqueueModelTask(new Runnable() {
+            @Override
             public void run() {
                 if (project.isValid()) {
                     if (TRACE) {trace("removing %s", project.toString());} //NOI18N
                     ProjectBase projectBase = (ProjectBase) project;
                     ModelImpl.instance().closeProjectBase(projectBase, false);
+                    synchronized (lock) {
+                        toBeRmoved.remove(root);
+                    }
+                    if (TRACE) {trace("removed %s", project.toString());} //NOI18N
                 }
             }
         }, "Standalone project removal."); //NOI18N
@@ -261,7 +284,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         private final List<String> usrMacros;
         private final List<NativeFileItem> files = new ArrayList<NativeFileItem>();
         private final String projectRoot;
-        boolean pathsRelCurFile;
+        private boolean pathsRelCurFile;
         private List<NativeProjectItemsListener> listeners = new ArrayList<NativeProjectItemsListener>();
         private static final class Lock {}
         private final Object listenersLock = new Lock();
@@ -392,38 +415,46 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             return dobj;
         }
 
+        @Override
         public Object getProject() {
             return null;
         }
 
+        @Override
         public List<String> getSourceRoots() {
             return Collections.<String>emptyList();
         }
 
+        @Override
         public String getProjectRoot() {
             return this.projectRoot;
         }
 
+        @Override
         public String getProjectDisplayName() {
             return getProjectRoot();
         }
 
+        @Override
         public List<NativeFileItem> getAllFiles() {
             return Collections.unmodifiableList(files);
         }
 
+        @Override
         public void addProjectItemsListener(NativeProjectItemsListener listener) {
             synchronized (listenersLock) {
                 listeners.add(listener);
             }
         }
 
+        @Override
         public void removeProjectItemsListener(NativeProjectItemsListener listener) {
             synchronized (listenersLock) {
                 listeners.remove(listener);
             }
         }
 
+        @Override
         public NativeFileItem findFileItem(File file) {
             for (NativeFileItem item : files) {
                 if (item.getFile().equals(file)) {
@@ -433,26 +464,32 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             return null;
         }
 
+        @Override
         public List<String> getSystemIncludePaths() {
             return this.sysIncludes;
         }
 
+        @Override
         public List<String> getUserIncludePaths() {
             return this.usrIncludes;
         }
 
+        @Override
         public List<String> getSystemMacroDefinitions() {
             return this.sysMacros;
         }
 
+        @Override
         public List<String> getUserMacroDefinitions() {
             return this.usrMacros;
         }
 
+        @Override
         public List<NativeProject> getDependences() {
             return Collections.<NativeProject>emptyList();
         }
 
+        @Override
         public void runOnCodeModelReadiness(Runnable task) {
             task.run();
         }
@@ -465,6 +502,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         @Override
         public String getPlatformName() {
             return null;
+        }
+
+        @Override
+        public final String toString() {
+            return projectRoot + ' ' + getClass().getName() + " @" + hashCode() + ":" + System.identityHashCode(this); // NOI18N
         }
     }
 
@@ -481,19 +523,23 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             this.lang = language;
         }
 
+        @Override
         public NativeProject getNativeProject() {
             return project;
         }
 
+        @Override
         public File getFile() {
             return file;
         }
 
+        @Override
         public List<String> getSystemIncludePaths() {
             List<String> result = project.getSystemIncludePaths();
             return project.pathsRelCurFile ? toAbsolute(result) : result;
         }
 
+        @Override
         public List<String> getUserIncludePaths() {
             List<String> result = project.getUserIncludePaths();
             return project.pathsRelCurFile ? toAbsolute(result) : result;
@@ -514,22 +560,27 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             return result;
         }
 
+        @Override
         public List<String> getSystemMacroDefinitions() {
             return project.getSystemMacroDefinitions();
         }
 
+        @Override
         public List<String> getUserMacroDefinitions() {
             return project.getUserMacroDefinitions();
         }
 
+        @Override
         public NativeFileItem.Language getLanguage() {
             return lang;
         }
 
+        @Override
         public NativeFileItem.LanguageFlavor getLanguageFlavor() {
             return NativeFileItem.LanguageFlavor.GENERIC;
         }
 
+        @Override
         public boolean isExcluded() {
             return false;
         }

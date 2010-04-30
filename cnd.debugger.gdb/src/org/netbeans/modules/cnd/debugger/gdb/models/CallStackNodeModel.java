@@ -187,12 +187,12 @@ public class CallStackNodeModel implements NodeModel {
                     sb.append('=');
                     String value = ValuePresenter.getValue(arg.getValue());
                     // collapse structures
-                    if (value != null && value.length() > 2 &&
+                    if (value.length() > 2 &&
                             value.charAt(0) == '{' && value.charAt(value.length()-1) == '}') {
                         value = "{...}"; //NOI18N
                     }
                     // collapse long pointer descriptions
-                    if (value != null && value.length() > POINTER_CLASS_MAX_LENGTH &&
+                    if (value.length() > POINTER_CLASS_MAX_LENGTH &&
                             value.charAt(0) == '(') {
                         int end = GdbUtils.findMatchingParen(value, 0);
                         if (end != -1 && end < value.length()-1) {

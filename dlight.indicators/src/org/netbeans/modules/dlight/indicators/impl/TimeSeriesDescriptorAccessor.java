@@ -75,9 +75,11 @@ private static volatile TimeSeriesDescriptorAccessor DEFAULT;
     public TimeSeriesDescriptorAccessor() {
     }
 
-    public abstract Color getColor(TimeSeriesDescriptor descriptor);
+    public abstract String getName(TimeSeriesDescriptor descriptor);
 
     public abstract String getDisplayName(TimeSeriesDescriptor descriptor);
+
+    public abstract Color getColor(TimeSeriesDescriptor descriptor);
 
     public abstract Kind getKind(TimeSeriesDescriptor descriptor);
 

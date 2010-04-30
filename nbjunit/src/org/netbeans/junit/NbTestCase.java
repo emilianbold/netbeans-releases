@@ -61,16 +61,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
@@ -101,7 +104,14 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     
     /**
      * Constructs a test case with the given name.
-     * @param name name of the testcase
+     * Normally you will just use:
+     * <pre>
+     * public class MyTest extends NbTestCase {
+     *     public MyTest(String name) {super(name);}
+     *     public void testWhatever() {...}
+     * }
+     * </pre>
+     * @param name name of the test case
      */
     public NbTestCase(String name) {
         super(name);
@@ -112,7 +122,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * Sets active filter.
      * @param filter Filter to be set as active for current test, null will reset filtering.
      */
-    public void setFilter(Filter filter) {
+    public @Override void setFilter(Filter filter) {
         this.filter = filter;
     }
     
@@ -120,9 +130,10 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * Returns expected fail message.
      * @return expected fail message if it's expected this test fail, null otherwise.
      */
-    public String getExpectedFail() {
-        if (filter == null)
+    public @Override String getExpectedFail() {
+        if (filter == null) {
             return null;
+        }
         return filter.getExpectedFail(this.getName());
     }
     
@@ -130,7 +141,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * Checks if a test isn't filtered out by the active filter.
      * @return true if the test can run
      */
-    public boolean canRun() {
+    public @Override boolean canRun() {
         if (NbTestSuite.ignoreRandomFailures()) {
             if (getClass().isAnnotationPresent(RandomlyFails.class)) {
                 System.err.println("Skipping " + getClass().getName());
@@ -232,21 +243,27 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         ThreadGroup[] chg = new ThreadGroup[groups];
         tg.enumerate(chg, false);
         for (ThreadGroup inner : chg) {
-            if (inner != null) appendGroup(sb, indent, inner, data);
+            if (inner != null) {
+                appendGroup(sb, indent, inner, data);
+            }
         }
 
         int threads = tg.activeCount();
         Thread[] cht= new Thread[threads];
         tg.enumerate(cht, false);
         for (Thread t : cht) {
-            if (t != null) appendThread(sb, indent, t, data);
+            if (t != null) {
+                appendThread(sb, indent, t, data);
+            }
         }
     }
     
     private static String threadDump() {
         Map<Thread,StackTraceElement[]> all = Thread.getAllStackTraces();
         ThreadGroup root = Thread.currentThread().getThreadGroup();
-        while (root.getParent() != null) root = root.getParent();
+        while (root.getParent() != null) {
+            root = root.getParent();
+        }
 
         StringBuffer sb = new StringBuffer();
         appendGroup(sb, "", root, all);
@@ -269,7 +286,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
 
             public abstract void doSomething() throws Throwable;
             
-            public void run() {
+            public @Override void run() {
                 try {
                     doSomething();
                 } catch (Throwable thrwn) {
@@ -326,7 +343,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         // setUp
         if(runInEQ()) {
             Guard setUp = new Guard() {
-                public void doSomething() throws Throwable {
+                public @Override void doSomething() throws Throwable {
                     setUp();
                 }
             };
@@ -339,7 +356,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         try {
             // runTest
             Guard runTest = new Guard() {
-                public void doSomething() throws Throwable {
+                public @Override void doSomething() throws Throwable {
                     long now = System.nanoTime();
                     try {
                         runTest();
@@ -374,7 +391,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             // tearDown
             if(runInEQ()) {
                 Guard tearDown = new Guard() {
-                    public void doSomething() throws Throwable {
+                    public @Override void doSomething() throws Throwable {
                         tearDown();
                     }
                 };
@@ -458,13 +475,13 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
 
     /** Parses the test name to find out whether it encodes a number. The
-     * testSomeName1343 represents nubmer 1343.
+     * testSomeName1343 represents number 1343.
      * @return the number
      * @exception may throw AssertionFailedError if the number is not found in the test name
      */
     protected final int getTestNumber() {
         try {
-            java.util.regex.Matcher m = java.util.regex.Pattern.compile("test[a-zA-Z]*([0-9]+)").matcher(getName());
+            Matcher m = Pattern.compile("test[a-zA-Z]*([0-9]+)").matcher(getName());
             assertTrue("Name does not contain numbers: " + getName(), m.find());
             return Integer.valueOf(m.group(1)).intValue();
         } catch (Exception ex) {
@@ -490,7 +507,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * <b>diff</b> param.
      * @param message the detail message for this assertion
      * @param test first file to be compared, by the convention this should be the test-generated file
-     * @param pass second file to be comapred, it should be so called 'golden' file, which defines
+     * @param pass second file to be compared, it should be so called 'golden' file, which defines
      * the correct content for the test-generated file.
      * @param diff file, where differences will be stored, when null differences will not be stored. In case
      * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
@@ -508,11 +525,13 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         } else {
             try {
                 if (null == diffFile) {
-                    if (diffImpl.diff(test, pass, null))
+                    if (diffImpl.diff(test, pass, null)) {
                         throw new AssertionFileFailedError(message, "");
+                    }
                 } else {
-                    if (diffImpl.diff(test, pass, diffFile.getAbsolutePath()))
+                    if (diffImpl.diff(test, pass, diffFile.getAbsolutePath())) {
                         throw new AssertionFileFailedError(message, diffFile.getAbsolutePath());
+                    }
                 }
             } catch (IOException e) {
                 fail("exception in assertFile : " + e.getMessage());
@@ -521,9 +540,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
     /**
      * Asserts that two files are the same, it uses specific {@link org.netbeans.junit.diff.Diff Diff} implementation to
-     * compare two files and stores possible differencies in the output file.
+     * compare two files and stores possible differences in the output file.
      * @param test first file to be compared, by the convention this should be the test-generated file
-     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * @param pass second file to be compared, it should be so called 'golden' file, which defines the
      * correct content for the test-generated file.
      * @param diff file, where differences will be stored, when null differences will not be stored. In case
      * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
@@ -536,11 +555,11 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         assertFile(null, test, pass, diff, externalDiff);
     }
     /**
-     * Asserts that two files are the same, it compares two files and stores possible differencies
+     * Asserts that two files are the same, it compares two files and stores possible differences
      * in the output file, the message is displayed when assertion fails.
      * @param message the detail message for this assertion
      * @param test first file to be compared, by the convention this should be the test-generated file
-     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * @param pass second file to be compared, it should be so called 'golden' file, which defines the
      * correct content for the test-generated file.
      * @param diff file, where differences will be stored, when null differences will not be stored. In case
      * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
@@ -551,10 +570,10 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         assertFile(message, test, pass, diff, null);
     }
     /**
-     * Asserts that two files are the same, it compares two files and stores possible differencies
+     * Asserts that two files are the same, it compares two files and stores possible differences
      * in the output file.
      * @param test first file to be compared, by the convention this should be the test-generated file
-     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * @param pass second file to be compared, it should be so called 'golden' file, which defines the
      * correct content for the test-generated file.
      * @param diff file, where differences will be stored, when null differences will not be stored. In case
      * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
@@ -567,7 +586,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     /**
      * Asserts that two files are the same, it just compares two files and doesn't produce any additional output.
      * @param test first file to be compared, by the convention this should be the test-generated file
-     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * @param pass second file to be compared, it should be so called 'golden' file, which defines the
      * correct content for the test-generated file.
      */
     static public void assertFile(String test, String pass) {
@@ -581,7 +600,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * <b>diff</b> param.
      * @param message the detail message for this assertion
      * @param test first file to be compared, by the convention this should be the test-generated file
-     * @param pass second file to be comapred, it should be so called 'golden' file, which defines
+     * @param pass second file to be compared, it should be so called 'golden' file, which defines
      * the correct content for the test-generated file.
      * @param diff file, where differences will be stored, when null differences will not be stored. In case
      * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
@@ -614,9 +633,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
     /**
      * Asserts that two files are the same, it uses specific {@link org.netbeans.junit.diff.Diff Diff} implementation to
-     * compare two files and stores possible differencies in the output file.
+     * compare two files and stores possible differences in the output file.
      * @param test first file to be compared, by the convention this should be the test-generated file
-     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * @param pass second file to be compared, it should be so called 'golden' file, which defines the
      * correct content for the test-generated file.
      * @param diff file, where differences will be stored, when null differences will not be stored. In case
      * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
@@ -629,11 +648,11 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         assertFile(null, test, pass, diff, externalDiff);
     }
     /**
-     * Asserts that two files are the same, it compares two files and stores possible differencies
+     * Asserts that two files are the same, it compares two files and stores possible differences
      * in the output file, the message is displayed when assertion fails.
      * @param message the detail message for this assertion
      * @param test first file to be compared, by the convention this should be the test-generated file
-     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * @param pass second file to be compared, it should be so called 'golden' file, which defines the
      * correct content for the test-generated file.
      * @param diff file, where differences will be stored, when null differences will not be stored. In case
      * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
@@ -644,10 +663,10 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         assertFile(message, test, pass, diff, null);
     }
     /**
-     * Asserts that two files are the same, it compares two files and stores possible differencies
+     * Asserts that two files are the same, it compares two files and stores possible differences
      * in the output file.
      * @param test first file to be compared, by the convention this should be the test-generated file
-     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * @param pass second file to be compared, it should be so called 'golden' file, which defines the
      * correct content for the test-generated file.
      * @param diff file, where differences will be stored, when null differences will not be stored. In case
      * it points to directory the result file name is constructed from the <b>pass</b> argument and placed to that
@@ -660,7 +679,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     /**
      * Asserts that two files are the same, it just compares two files and doesn't produce any additional output.
      * @param test first file to be compared, by the convention this should be the test-generated file
-     * @param pass second file to be comapred, it should be so called 'golden' file, which defines the
+     * @param pass second file to be compared, it should be so called 'golden' file, which defines the
      * correct content for the test-generated file.
      */
     static public void assertFile(File test, File pass) {
@@ -670,13 +689,15 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     /**
      */
     static private File getDiffName(String pass, File diff) {
-        if (null == diff)
+        if (null == diff) {
             return null;
+        }
         
-        if (!diff.exists() || diff.isFile())
+        if (!diff.exists() || diff.isFile()) {
             return diff;
+        }
         
-        StringBuffer d = new StringBuffer();
+        StringBuilder d = new StringBuilder();
         int i1, i2;
         
         d.append(diff.getAbsolutePath());
@@ -688,8 +709,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         i2 = pass.lastIndexOf('.');
         i2 = -1 == i2 ? pass.length() : i2;
         
-        if (0 < d.length())
+        if (0 < d.length()) {
             d.append("/");
+        }
         
         d.append(pass.substring(i1, i2));
         d.append(".diff");
@@ -757,7 +779,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     private static Set<String> usedPaths = new HashSet<String>();
     
     private static String abbrevDots(String dotted) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String sep = "";
         for (String item : dotted.split("\\.")) {
             sb.append(sep);
@@ -771,7 +793,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         if (name.startsWith("test")) {
             name = name.substring(4);
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < name.length(); i++) {
             if (Character.isUpperCase(name.charAt(i))) {
                 sb.append(Character.toLowerCase(name.charAt(i)));
@@ -1156,6 +1178,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      *            URL, which can be converted to a disk path using <code>new File(URI)</code>; or
      *            use <code>FileUtil.toFile</code>.
      */
+    @Deprecated
     public static String convertNBFSURL(URL url) {
         if(url == null) {
             throw new IllegalArgumentException("Given URL should not be null.");
@@ -1185,7 +1208,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             path = externalForm.substring("nbfs://".length());
         }
         // convert separators (%2f = /,  etc.)
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int i = 0;
         int len = path.length();
         while (i < len) {
@@ -1194,7 +1217,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 char h1 = path.charAt(i++);
                 char h2 = path.charAt(i++);
                 // convert d1+d2 hex number to char
-                ch = (char)Integer.parseInt(new String(""+h1+h2), radix);
+                ch = (char)Integer.parseInt("" + h1 + h2, radix);
                 
             }
             sb.append(ch);
@@ -1213,7 +1236,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 path = path.substring(path.indexOf(prefixFS)+prefixFS.length());
             }
             // convert separators ("QB="/" etc.)
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             int i = 0;
             int len = path.length();
             while (i < len) {
@@ -1281,7 +1304,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      */
     public static void assertGC(final String text, final Reference<?> ref, final Set<?> rootsHint) {
         NbModuleLogHandler.whileIgnoringOOME(new Runnable() {
-            public void run() {
+            @SuppressWarnings("SleepWhileHoldingLock")
+            public @Override void run() {
         List<byte[]> alloc = new ArrayList<byte[]>();
         int size = 100000;
         for (int i = 0; i < 50; i++) {
@@ -1305,7 +1329,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 size = size / 2;
             }
             try {
-                if (i % 3 == 0) Thread.sleep(321);
+                if (i % 3 == 0) {
+                    Thread.sleep(321);
+                }
             } catch (InterruptedException t) {
                 // ignore
             }
@@ -1373,7 +1399,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      */
     public static int assertSize(String message, Collection<?> roots, int limit, final MemoryFilter skip) {
         org.netbeans.insane.scanner.Filter f = new org.netbeans.insane.scanner.Filter() {
-            public boolean accept(Object o, Object refFrom, Field ref) {
+            public @Override boolean accept(Object o, Object refFrom, Field ref) {
                 return !skip.reject(o);
             }
         };
@@ -1383,23 +1409,29 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     private static int assertSize(String message, Collection<?> roots, int limit,
             org.netbeans.insane.scanner.Filter f) {
         try {
-            CountingVisitor counter = new CountingVisitor();
+            final CountingVisitor counter = new CountingVisitor();
             ScannerUtils.scan(f, counter, roots, false);
             int sum = counter.getTotalSize();
             if (sum > limit) {
-                StringBuffer sb = new StringBuffer(4096);
+                StringBuilder sb = new StringBuilder(4096);
                 sb.append(message);
-                sb.append(": leak " + (sum-limit) + " bytes ");
+                sb.append(": leak ").append(sum - limit).append(" bytes ");
                 sb.append(" over limit of ");
-                sb.append(limit + " bytes");
-                sb.append('\n');
-                for(Iterator it = counter.getClasses().iterator(); it.hasNext(); ) {
-                    sb.append("  ");
-                    Class cls = (Class)it.next();
-                    if (counter.getCountForClass(cls) == 0) continue;
-                    sb.append(cls.getName()).append(": ").
+                sb.append(limit).append(" bytes");
+                Set<Class<?>> classes = new TreeSet<Class<?>>(new Comparator<Class<?>>() {
+                    public @Override int compare(Class<?> c1, Class<?> c2) {
+                        int r = counter.getSizeForClass(c2) - counter.getSizeForClass(c1);
+                        return r != 0 ? r : c1.hashCode() - c2.hashCode();
+                    }
+                });
+                classes.addAll(counter.getClasses());
+                for (Class<?> cls : classes) {
+                    if (counter.getCountForClass(cls) == 0) {
+                        continue;
+                    }
+                    sb.append("\n  ").append(cls.getName()).append(": ").
                             append(counter.getCountForClass(cls)).append(", ").
-                            append(counter.getSizeForClass(cls)).append("B\n");
+                            append(counter.getSizeForClass(cls)).append("B");
                 }
                 fail(sb.toString());
             }
@@ -1429,24 +1461,30 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     private static String findRefsFromRoot(final Object target, final Set<?> rootsHint) throws Exception {
         int count = Integer.getInteger("assertgc.paths", 1);
         StringBuilder sb = new StringBuilder();
-        final Map<Object,Boolean> skip = new IdentityHashMap<Object, Boolean>();
+        final Map<Object,Void> skip = new IdentityHashMap<Object,Void>();
         
         org.netbeans.insane.scanner.Filter knownPath = new org.netbeans.insane.scanner.Filter() {
-            public boolean accept(Object obj, Object referredFrom, Field reference) {
+            public @Override boolean accept(Object obj, Object referredFrom, Field reference) {
                 return !skip.containsKey(obj);
             }
         };
         
         while (count-- > 0) {
             @SuppressWarnings("unchecked")
-            Map m = LiveReferences.fromRoots(Collections.singleton(target), (Set<Object>)rootsHint, null, knownPath);
-            Path p = (Path)m.get(target);
-            if (p == null) break;
-            if (sb.length() > 0) sb.append("\n\n");
+            Map<Object,Path> m = LiveReferences.fromRoots(Collections.singleton(target), (Set<Object>)rootsHint, null, knownPath);
+            Path p = m.get(target);
+            if (p == null) {
+                break;
+            }
+            if (sb.length() > 0) {
+                sb.append("\n\n");
+            }
             sb.append(p);
             for (; p != null; p=p.nextNode()) {
                 Object o = p.getObject();
-                if (o != target) skip.put(o, Boolean.TRUE);
+                if (o != target) {
+                    skip.put(o, null);
+                }
             }
         }
         return sb.length() > 0 ? sb.toString() : "Not found!!!";

@@ -721,6 +721,7 @@ public class AstRenderer {
                             if (container1 != null) {
                                 container1.addDeclaration(var);
                             }
+                            classifier.addEnclosingVariable(var);
                             ptrOperator = null;
                         }
                     }
@@ -737,6 +738,7 @@ public class AstRenderer {
                             if (container1 != null) {
                                 container1.addDeclaration(var);
                             }
+                            classifier.addEnclosingVariable(var);
                         }
                     }
                     default:

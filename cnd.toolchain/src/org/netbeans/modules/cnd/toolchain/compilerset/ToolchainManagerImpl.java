@@ -180,7 +180,7 @@ public final class ToolchainManagerImpl {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-        if (CREATE_SHADOW & !NbPreferences.forModule(ToolchainManagerImpl.class).getBoolean(SHADOW_KEY, false)) {
+        if (CREATE_SHADOW && !NbPreferences.forModule(ToolchainManagerImpl.class).getBoolean(SHADOW_KEY, false)) {
             try {
                 writeToolchains();
                 NbPreferences.forModule(ToolchainManagerImpl.class).putBoolean(SHADOW_KEY, true);

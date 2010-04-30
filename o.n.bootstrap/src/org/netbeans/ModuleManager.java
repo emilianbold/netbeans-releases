@@ -927,6 +927,8 @@ public final class ModuleManager {
             } else {
                 Util.err.fine("enable: no class loader yet, not appending");
             }
+            Util.err.fine("enable: fixing classloader");
+            installer.classLoaderUp(classLoader);
             Util.err.fine("enable: continuing to installation");
             Set<Module> enableMore = NetigsoFramework.turnOn(classLoader, this.modules);
             if (!enableMore.isEmpty()) {

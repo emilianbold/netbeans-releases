@@ -425,7 +425,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
 
     public void addDeclaration(CsmOffsetableDeclaration declaration) {
-        boolean unnamed = !ProjectBase.canRegisterDeclaration(declaration);
+        boolean unnamed = !Utils.canRegisterDeclaration(declaration);
         // allow to register any enum
         if(unnamed && !CsmKindUtilities.isEnum(declaration) ) {
             return;

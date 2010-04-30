@@ -80,6 +80,15 @@ public abstract class ModuleInstaller {
      * better not to use it.
      */
     public abstract void dispose(Module m);
+
+    /** Tells the installer that new classloader is ready for use.
+     * This does not mean that all modules are ready to be used yet,
+     * but the classloader will be allowed to load classes from those
+     * modules already prepared.
+     * @since 2.32
+     */
+    protected void classLoaderUp(ClassLoader cl) {
+    }
     
     /** Actually load some modules into the IDE.
      * They will all have been prepared already, and their classloaders
