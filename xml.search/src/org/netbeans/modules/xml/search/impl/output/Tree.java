@@ -77,7 +77,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.print.PrintManager;
 import org.netbeans.modules.xml.search.api.SearchElement;
 import org.netbeans.modules.xml.search.impl.ui.Export;
-import static org.netbeans.modules.xml.util.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

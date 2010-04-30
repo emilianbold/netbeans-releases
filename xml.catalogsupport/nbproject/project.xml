@@ -172,7 +172,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.wlm.editor</friend>
                 <friend>org.netbeans.modules.wlm.model</friend>
                 <friend>org.netbeans.modules.wlm.project</friend>
-                <friend>org.netbeans.modules.xml.validation</friend>
+                <friend>org.netbeans.modules.xml.misc</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <friend>org.netbeans.modules.soa.wsdlui.api</friend>
                 <friend>org.netbeans.modules.xml.xam.ui</friend>

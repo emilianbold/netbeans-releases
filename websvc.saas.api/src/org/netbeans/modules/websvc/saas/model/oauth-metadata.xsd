@@ -88,7 +88,6 @@
           </xsd:documentation>
         </xsd:annotation>
         <xsd:attribute name="method-name" type="xsd:string" use="required"/>
-        <xsd:attribute name="verifier-param-name" type="xsd:string"/>
         <xsd:attribute name="request-style" use="required">
           <xsd:simpleType>
             <xsd:restriction base="xsd:string">
@@ -99,6 +98,8 @@
             </xsd:restriction>
           </xsd:simpleType>
         </xsd:attribute>
+        <!-- request parameter. Default: "method" -->
+        <xsd:attribute name="request-param" type="xsd:string"/>
         <xsd:attribute name="response-style" use="required">
           <xsd:simpleType>
             <xsd:restriction base="xsd:string">
@@ -131,7 +132,6 @@
             </xsd:choice>
             <xsd:element name="param" type="oauth:paramType" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
-        <xsd:attribute name="verifier-param-name" type="xsd:string"/>
       </xsd:complexType>
 
       <xsd:complexType name="dynamic-urlType">
