@@ -492,9 +492,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             while (iter.hasNext()) {
                 vec.add(CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), iter.next()));
             }
-            if (cccCompilerConfiguration instanceof AllOptionsProvider) {
-                vec = SPI_ACCESSOR.getItemUserIncludePaths(vec, (AllOptionsProvider) cccCompilerConfiguration, compiler, makeConfiguration);
-            }
+            vec = SPI_ACCESSOR.getItemUserIncludePaths(vec, cccCompilerConfiguration, compiler, makeConfiguration);
         }
         return vec;
     }
@@ -550,9 +548,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 }
             }
             vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
-            if (cccCompilerConfiguration instanceof AllOptionsProvider) {
-                vec = SPI_ACCESSOR.getItemUserMacros(vec, (AllOptionsProvider) cccCompilerConfiguration, compiler, makeConfiguration);
-            }
+            vec = SPI_ACCESSOR.getItemUserMacros(vec, cccCompilerConfiguration, compiler, makeConfiguration);
         }
         return vec;
     }
