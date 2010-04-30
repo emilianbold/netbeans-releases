@@ -245,7 +245,7 @@ public final class ConnectionManager {
                 // Note that AUTH_FAIL is generated not only on bad password,
                 // but on socket timeout as well. These cases are
                 // indistinguishable based on information from JSch.
-                log.log(Level.FINE, "JSch problem: {0}", connectionTask.problem); // NOI18N
+                log.log(Level.FINE, "JSch problem connecting to {0}: {1}", new Object[] {env, connectionTask.problem}); // NOI18N
                 if (!UNIT_TEST_MODE) {
                     // Do not clean password when running unit tests.
                     // We want to be able to repeat the connection attempt.
@@ -253,9 +253,9 @@ public final class ConnectionManager {
                 }
                 return false;
             } else if (connectionTask.problem == Problem.CONNECTION_TIMEOUT) {
-                throw new IOException("Connection timeout"); // NOI18N
+                throw new IOException("Timeout connecting to " + env); // NOI18N
             } else {
-                throw new IOException(connectionTask.problem.name());
+                throw new IOException("Problem connecting to " + env + ": " + connectionTask.problem.name()); // NOI18N
             }
         }
 
@@ -440,7 +440,7 @@ public final class ConnectionManager {
                     // only after 6th attempt it throws an exception
                     newSession.connect(JSCH_CONNECTION_TIMEOUT);
                 } catch (JSchException e) {
-                    log.log(Level.FINE, "JSchException", e); // NOI18N
+                    log.log(Level.FINE, "JSchException connecting to " + env, e); // NOI18N
                     if (e.getMessage().equals("Auth fail")) { // NOI18N
                         problem = Problem.AUTH_FAIL;
                         return null;
