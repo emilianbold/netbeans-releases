@@ -129,7 +129,9 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
 
     private void initSteps() {
         String[] thisSteps = new String[] {
-            NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.name") }; // NOI18N
+            NbBundle.getMessage(DisclaimerPanel.class, "DisclaimerPanel.name"), // NOI18N
+            NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.name") // NOI18N
+        };
         if (appShellIterator != null) {
             Object data = ((JComponent)appShellIterator.current().getComponent())
                     .getClientProperty(WIZARD_PANEL_CONTENT_DATA);
@@ -154,7 +156,7 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
     public void initialize(WizardDescriptor wiz) {
         wizard = wiz;
         panelIndex = 0;
-        panels = new WizardDescriptor.Panel[] { new ConfigureProjectPanel(this) };
+        panels = new WizardDescriptor.Panel[] { new DisclaimerPanel(), new ConfigureProjectPanel(this) };
         initSteps();
         updateSteps();
     }

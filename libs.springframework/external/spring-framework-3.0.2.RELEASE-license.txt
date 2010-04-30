@@ -1,5 +1,5 @@
 Name: Spring Framework
-Version: 3.0.0.RELEASE
+Version: 3.0.2.RELEASE
 License: Apache-2.0
 OSR: 8070
 Description: Java/J2EE application framework
