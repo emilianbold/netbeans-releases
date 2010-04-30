@@ -64,6 +64,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
@@ -90,8 +91,8 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.modules.PatchedPublic;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -821,6 +822,36 @@ public final class JavaSource {
         @Override
         public AnnotationTree makeTypeAnnotation(TreeMaker make, AnnotationTree t) {
             return make.TypeAnnotation(t);
+        }
+
+        @Override
+        public ModificationResult.Difference createDifference(ModificationResult.Difference.Kind kind, PositionRef startPos, PositionRef endPos, String oldText, String newText, String description) {
+            return new ModificationResult.Difference(kind, startPos, endPos, oldText, newText, description);
+        }
+
+        @Override
+        public ModificationResult.Difference createNewFileDifference(JavaFileObject fileObject, String text) {
+            return new ModificationResult.CreateChange(fileObject, text);
+        }
+
+        @Override
+        public ModificationResult createModificationResult(Map<FileObject, List<ModificationResult.Difference>> diffs, Map<?, int[]> tag2Span) {
+            ModificationResult result = new ModificationResult(null);
+
+            result.diffs = diffs;
+            result.tag2Span = tag2Span;
+
+            return result;
+        }
+
+        @Override
+        public Map<FileObject, List<ModificationResult.Difference>> getDiffsFromModificationResult(ModificationResult mr) {
+            return mr.diffs;
+        }
+
+        @Override
+        public Map<?, int[]> getTagsFromModificationResult(ModificationResult mr) {
+            return mr.tag2Span;
         }
     }                                                
 }
