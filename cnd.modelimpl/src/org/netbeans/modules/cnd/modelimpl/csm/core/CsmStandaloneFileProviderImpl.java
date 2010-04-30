@@ -152,17 +152,12 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 if (toBeRmoved.contains(name)){
                     return null;
                 }
-            }
-            NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(FileUtil.toFile(file));
-            if (platformProject != null) {
-                synchronized (lock) {
-                    if (toBeRmoved.contains(name)){
-                        return null;
-                    }
+                NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(FileUtil.toFile(file));
+                if (platformProject != null) {
+                    project = ModelImpl.instance().addProject(platformProject, name, true);
+                    if (TRACE) {trace("added project %s", project.toString());} //NOI18N
+                    project.ensureFilesCreated();
                 }
-                project = ModelImpl.instance().addProject(platformProject, name, true);
-                if (TRACE) {trace("added project %s", project.toString());} //NOI18N
-                project.ensureFilesCreated();
             }
         }
         if (project != null && project.isValid()) {
@@ -255,10 +250,10 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
     }
 
     private void scheduleProjectRemoval(final CsmProject project) {
-        if (TRACE) {trace("schedulling removal %s", project.toString());} //NOI18N
         final String root = ((NativeProject)project.getPlatformProject()).getProjectRoot();
+        if (TRACE) {trace("schedulling removal %s", project.toString());} //NOI18N
         synchronized (lock) {
-           toBeRmoved.add(root);
+            toBeRmoved.add(root);
         }
         ModelImpl.instance().enqueueModelTask(new Runnable() {
             @Override
@@ -270,6 +265,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                     synchronized (lock) {
                         toBeRmoved.remove(root);
                     }
+                    if (TRACE) {trace("removed %s", project.toString());} //NOI18N
                 }
             }
         }, "Standalone project removal."); //NOI18N
