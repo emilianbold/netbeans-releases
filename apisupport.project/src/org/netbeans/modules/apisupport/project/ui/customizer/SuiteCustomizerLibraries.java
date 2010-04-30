@@ -247,7 +247,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
     private RequestProcessor.Task refreshTask;
 
-    void refresh() {
+    protected void refresh() {
         refreshJavaPlatforms();
         refreshPlatforms();
         if (refreshTask == null) {
@@ -1637,8 +1637,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             fi.fixable = false;
             // chain of original warnings ended up in unfixable problem,
             // but we have to show root cause (otherwise it can complain about unsatisifed
-            // dep. of excluded module; just disable "Resolve" button; 
-            // fi.warning = warning;
+            // dep. of excluded module; just disable "Resolve" button;
+            if (fi.warning == null) {
+                fi.warning = warning;
+            }
         }
 
         String[] warning;

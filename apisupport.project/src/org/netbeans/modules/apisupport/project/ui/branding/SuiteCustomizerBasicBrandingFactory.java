@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,78 +37,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.apisupport.project.ui.customizer;
+package org.netbeans.modules.apisupport.project.ui.branding;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
+import org.netbeans.modules.apisupport.project.ui.customizer.BasicCustomizer;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
- * A tab in branding editor window.
  *
- * @author S. Aubrecht
+ * @author mkleint
  */
-abstract class AbstractBrandingPanel extends JPanel {
-
-    private final BasicBrandingModel model;
-    private BrandingEditorPanel editor;
-    private final String displayName;
-    private boolean brandingValid = true;
-    private String errMessage = null;
-
-    /**
-     * C'tor
-     * @param displayName Tab's display name.
-     * @param model Branding model
-     */
-    protected AbstractBrandingPanel( String displayName, BasicBrandingModel model ) {
-        this.displayName = displayName;
-        this.model = model;
+@ProjectCustomizer.CompositeCategoryProvider.Registration(
+    projectType="org-netbeans-modules-apisupport-project-suite",
+    position=300,
+    category="Build",
+    categoryLabel="#LBL_Application"
+)
+public class SuiteCustomizerBasicBrandingFactory implements ProjectCustomizer.CompositeCategoryProvider {
+    
+    public ProjectCustomizer.Category createCategory(Lookup context) {
+        return ProjectCustomizer.Category.create(
+                SuiteCustomizer.APPLICATION, 
+                NbBundle.getMessage(SuiteCustomizerBasicBrandingFactory.class, "LBL_Application"),
+                null);
     }
 
-    final void init( BrandingEditorPanel editor ) {
-        this.editor = editor;
+    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        SuiteProperties props = context.lookup(SuiteProperties.class);
+        BasicCustomizer.SubCategoryProvider prov = context.lookup(BasicCustomizer.SubCategoryProvider.class);
+        assert props != null;
+        assert prov != null;
+        return new SuiteCustomizerBasicBranding(props, category, prov);
     }
 
-    protected final BasicBrandingModel getBranding() {
-        return model;
-    }
-
-    public abstract void store();
-
-    protected final void setErrorMessage( String errMessage ) {
-        this.errMessage = errMessage;
-        notifyEditor();
-    }
-
-    final String getErrorMessage() {
-        return errMessage;
-    }
-
-    protected final void setValid( boolean valid ) {
-        this.brandingValid = valid;
-        notifyEditor();
-    }
-
-    final boolean isBrandingValid() {
-        return brandingValid && null == errMessage;
-    }
-
-    protected final void setModified() {
-        editor.setModified();
-    }
-
-    public final String getDisplayName() {
-        return displayName;
-    }
-
-    private void notifyEditor() {
-        if( null == editor )
-            return;
-        editor.onBrandingValidation();
-    }
 }

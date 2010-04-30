@@ -87,7 +87,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         }
     }
     
-    void refresh() {
+    protected void refresh() {
         UIUtil.setText(jarFileValue, getProperties().getJarFile());
         needsRestart.setSelected(getBooleanProperty(SingleModuleProperties.NBM_NEEDS_RESTART));
         UIUtil.setText(homePageValue, getProperty(SingleModuleProperties.NBM_HOMEPAGE));
