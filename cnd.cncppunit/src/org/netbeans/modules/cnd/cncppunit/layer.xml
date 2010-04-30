@@ -41,11 +41,8 @@
         </folder> <!-- End cppFiles folder -->
 
         <folder name="testFiles">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.cncppunit.resources.Bundle"/>
-            <attr name="position" intvalue="555"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/testFiles.html"/>
 
-            <file name="cunittest.c" url="templates/c/test-cunit-c.template">
+            <file name="cunittest.c">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.cncppunit.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/testCUnit.png"/>
                 <attr name="position" intvalue="300"/>
@@ -62,7 +59,7 @@
                 <attr name="addToLogicalFolder" boolvalue="false"/>
             </file>
 
-            <file name="cppunittest.cpp" url="templates/cpp/test-cppunit-cpp.template">
+            <file name="cppunittest.cpp">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.cncppunit.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/testCppUnit.png"/>
                 <attr name="position" intvalue="400"/>
