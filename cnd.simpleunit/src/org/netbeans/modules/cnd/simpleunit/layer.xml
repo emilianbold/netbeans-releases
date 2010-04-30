@@ -9,7 +9,7 @@
             <attr name="position" intvalue="555"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/testFiles.html"/>
 
-            <file name="simpletest.c" url="templates/c/test-simple-c.template">
+            <file name="simpletest.c">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.simpleunit.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/testSimpleC.png"/>
                 <attr name="position" intvalue="100"/>
@@ -26,7 +26,7 @@
                 <attr name="addToLogicalFolder" boolvalue="false"/>
             </file>
 
-            <file name="simpletest.cpp" url="templates/cpp/test-simple-cpp.template">
+            <file name="simpletest.cpp">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.simpleunit.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/testSimpleCpp.png"/>
                 <attr name="position" intvalue="200"/>
