@@ -2033,7 +2033,7 @@ outer:  do {
 
         /** @see "#20467" */
         private static void doNotify(RequestProcessor.Task todo, Throwable ex) {
-            if (SLOW && todo.item.message == null) {
+            if (SLOW && todo.item != null && todo.item.message == null) {
                 todo.item.message = "task failed due to: " + ex;
                 todo.item.initCause(ex);
                 ex = todo.item;
