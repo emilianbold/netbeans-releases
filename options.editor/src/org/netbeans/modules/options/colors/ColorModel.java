@@ -74,6 +74,8 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.AnnotationType;
@@ -85,6 +87,7 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
+import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
@@ -364,7 +367,10 @@ public final class ColorModel {
             document.putProperty(NbEditorDocument.MIME_TYPE_PROP, hackMimeType);
             editorPane.setEditorKit(kit);
             editorPane.setDocument(document);
-            
+            InputAttributes inputAttributes = new InputAttributes ();
+            Language language = Language.find (exampleMimeType);
+            inputAttributes.setValue (language, "OptionsDialog", Boolean.TRUE, true);
+            document.putProperty (InputAttributes.class, inputAttributes);
             editorPane.addCaretListener (new CaretListener () {
                 public void caretUpdate (CaretEvent e) {
                     int offset = e.getDot ();
