@@ -44,6 +44,8 @@ package org.netbeans.modules.apisupport.project;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.TreeSet;
+import org.openide.util.test.TestFileUtils;
 
 /**
  * Test functionality of ManifestManager when it sees OSGi bundles.
@@ -174,4 +176,19 @@ public class NetigsoManifestManagerTest extends TestBase {
         assertEquals("admin.cli", mm.getRequiredTokens()[1]);
     }
     
+    public void testProvidedTokensOfOSGiContainer() throws Exception {
+        File wrapperJar = new File(getWorkDir(), "wrapper.jar");
+        TestFileUtils.writeZipFile(wrapperJar, "META-INF/MANIFEST.MF:" +
+                "OpenIDE-Module: wrapper\n" +
+                "OpenIDE-Module-Provides: org.osgi.framework.launch.FrameworkFactory\n" +
+                "Class-Path: ext/container.jar\n");
+        File ext = new File(getWorkDir(), "ext");
+        ext.mkdir();
+        TestFileUtils.writeZipFile(new File(ext, "container.jar"), "META-INF/MANIFEST.MF:" +
+                "Bundle-SymbolicName: super.container; singleton:=true\n" +
+                "Export-Package: super.container.features;version=\"1.0\"\n");
+        assertEquals("[org.osgi.framework.launch.FrameworkFactory, super.container, super.container.features]",
+                new TreeSet<String>(Arrays.asList(ManifestManager.getInstanceFromJAR(wrapperJar).getProvidedTokens())).toString());
+    }
+
 }

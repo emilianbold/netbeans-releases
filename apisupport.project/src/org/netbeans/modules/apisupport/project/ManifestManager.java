@@ -46,6 +46,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -196,7 +197,29 @@ public final class ManifestManager {
                     throw new IOException("No manifest in " + jar); // NOI18N
                 }
                 withGeneratedLayer = withGeneratedLayer && (jf.getJarEntry(GENERATED_LAYER_PATH) != null);
-                return ManifestManager.getInstance(m, true, withGeneratedLayer);
+                ManifestManager mm = ManifestManager.getInstance(m, true, withGeneratedLayer);
+                if (Arrays.asList(mm.getProvidedTokens()).contains("org.osgi.framework.launch.FrameworkFactory")) { // NOI18N
+                    // This looks to be a wrapper for an OSGi container.
+                    // Add in anything provided by the container itself.
+                    // Otherwise some bundles might be expressing container dependencies
+                    // which can actually be resolved at runtime but which look like missing deps.
+                    String cp = m.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
+                    if (cp != null) {
+                        for (String piece : cp.split("[, ]+")) {
+                            if (piece.isEmpty()) {
+                                continue;
+                            }
+                            File ext = new File(jar.getParentFile().toURI().resolve(piece.trim()));
+                            if (ext.isFile()) {
+                                ManifestManager mm2 = getInstanceFromJAR(ext);
+                                List<String> toks = new ArrayList<String>(Arrays.asList(mm.provTokens));
+                                toks.addAll(Arrays.asList(mm2.provTokens));
+                                mm.provTokens = toks.toArray(new String[toks.size()]);
+                            }
+                        }
+                    }
+                }
+                return mm;
             } finally {
                 jf.close();
             }
@@ -274,13 +297,12 @@ public final class ManifestManager {
             codenamebase = codenamebase.substring(0, semicolon);
         }
         codenamebase = codenamebase.replace('-', '_');
-        PackageExport[] publicPackages = null;
         String requires = null;
         String provides = null;
-        publicPackages = EMPTY_EXPORTED_PACKAGES;
-        {
+        PackageExport[] publicPackages = EMPTY_EXPORTED_PACKAGES;
+        if (loadPublicPackages) {
             String pp = attr.getValue(BUNDLE_EXPORT_PACKAGE);
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(codenamebase);
             if (pp != null) {
                 List<PackageExport> arr = new ArrayList<PackageExport>();
@@ -314,9 +336,6 @@ public final class ManifestManager {
             requires = sb.length() == 0 ? null : sb.toString().replace('-', '_');
         }
 
-        if (!loadPublicPackages) {
-            publicPackages = EMPTY_EXPORTED_PACKAGES;
-        }
         return new ManifestManager(
                 codenamebase, null,
                 just3dots(attr.getValue(BUNDLE_VERSION)),
