@@ -59,7 +59,7 @@ import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNod
 import org.netbeans.modules.xml.validation.ui.ShowCookie;
 import org.netbeans.modules.xml.search.api.SearchTarget;
 import org.openide.filesystems.FileObject;
-import static org.netbeans.modules.xml.util.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
