@@ -36,18 +36,31 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.spi.pty;
+package org.netbeans.modules.nativeexecution.api.pty;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.spi.ExecutionEnvironmentServiceProvider;
 
 /**
- * SPI for allocating unconnected ptys
- * 
+ *
  * @author ak119685
  */
-public interface PtyAllocator extends ExecutionEnvironmentServiceProvider {
+public interface Pty {
 
-    public PtyImpl allocate(ExecutionEnvironment env) throws IOException;
+    public String getSlaveName();
+
+    public InputStream getInputStream();
+
+    public InputStream getErrorStream();
+
+    public OutputStream getOutputStream();
+
+    public ExecutionEnvironment getEnv();
+
+    public void close() throws IOException;
+
+    @Override
+    public String toString();
 }
