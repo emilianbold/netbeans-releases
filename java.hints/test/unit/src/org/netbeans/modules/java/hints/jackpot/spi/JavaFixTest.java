@@ -151,6 +151,18 @@ public class JavaFixTest extends TestBase {
 		           "}\n");
     }
 
+    public void testRewriteWithParenthesis2() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    int i = Integer.valueOf(1 + 2) * 3;\n" +
+                           "}\n",
+                           "Integer.valueOf($1)=>$1",
+                           "package test;\n" +
+                           "public class Test {\n" +
+		           "    int i = (1 + 2) * 3;\n" +
+		           "}\n");
+    }
+
     public void testRewriteWithoutParenthesis1() throws Exception {
         performRewriteTest("package test;\n" +
                            "public class Test {\n" +
@@ -172,6 +184,30 @@ public class JavaFixTest extends TestBase {
                            "package test;\n" +
                            "public class Test {\n" +
 		           "    String s = \"a\" + \"b\";\n" +
+		           "}\n");
+    }
+
+    public void testRewriteWithoutParenthesis3() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    int i = Integer.valueOf(1 + 2) + 3;\n" +
+                           "}\n",
+                           "Integer.valueOf($1)=>$1",
+                           "package test;\n" +
+                           "public class Test {\n" +
+		           "    int i = 1 + 2 + 3;\n" +
+		           "}\n");
+    }
+
+    public void testRewriteWithoutParenthesis4() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    int i = Integer.valueOf(1 * 2) + 3;\n" +
+                           "}\n",
+                           "Integer.valueOf($1)=>$1",
+                           "package test;\n" +
+                           "public class Test {\n" +
+		           "    int i = 1 * 2 + 3;\n" +
 		           "}\n");
     }
 

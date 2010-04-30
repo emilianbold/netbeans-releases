@@ -432,7 +432,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     exceptionHandles.add(TypeMirrorHandle.create(tm));
                 }
 
-                methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles);
+                int duplicatesCount = CopyFinder.computeDuplicatesAndRemap(info, Collections.singletonList(resolved), new TreePath(info.getCompilationUnit()), scanner.usedLocalVariables, cancel).size();
+
+                methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount);
             }
 
             if (fixesMap != null) {
@@ -1979,17 +1981,19 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
     private static final class IntroduceExpressionBasedMethodFix implements Fix {
 
-        private JavaSource js;
+        private final JavaSource js;
 
-        private TreePathHandle expression;
-        private List<TreePathHandle> parameters;
-        private Set<TypeMirrorHandle> thrownTypes;
+        private final TreePathHandle expression;
+        private final List<TreePathHandle> parameters;
+        private final Set<TypeMirrorHandle> thrownTypes;
+        private final int duplicatesCount;
 
-        public IntroduceExpressionBasedMethodFix(JavaSource js, TreePathHandle expression, List<TreePathHandle> parameters, Set<TypeMirrorHandle> thrownTypes) {
+        public IntroduceExpressionBasedMethodFix(JavaSource js, TreePathHandle expression, List<TreePathHandle> parameters, Set<TypeMirrorHandle> thrownTypes, int duplicatesCount) {
             this.js = js;
             this.expression = expression;
             this.parameters = parameters;
             this.thrownTypes = thrownTypes;
+            this.duplicatesCount = duplicatesCount;
         }
 
         public String getText() {
@@ -2003,7 +2007,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         public ChangeInfo implement() throws Exception {
             JButton btnOk = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Ok" ) );
             JButton btnCancel = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Cancel" ) );
-            IntroduceMethodPanel panel = new IntroduceMethodPanel("", 0); //NOI18N
+            IntroduceMethodPanel panel = new IntroduceMethodPanel("", duplicatesCount); //NOI18N
             panel.setOkButton( btnOk );
             String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceMethod");
             DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[] {btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -2012,6 +2016,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             }
             final String name = panel.getMethodName();
             final Set<Modifier> access = panel.getAccess();
+            final boolean replaceOther = panel.getReplaceOther();
 
             js.runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy copy) throws Exception {
@@ -2078,6 +2083,47 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
                     copy.rewrite(expression.getLeaf(), invocation);
+
+                    if (replaceOther) {
+                        //handle duplicates
+                        Document doc = copy.getDocument();
+
+                        for (MethodDuplicateDescription mdd : CopyFinder.computeDuplicatesAndRemap(copy, Collections.singletonList(expression), new TreePath(copy.getCompilationUnit()), parameters, new AtomicBoolean())) {
+                            int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), mdd.firstLeaf.getLeaf());
+                            int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), mdd.firstLeaf.getLeaf());
+
+                            introduceBag(doc).clear();
+                            introduceBag(doc).addHighlight(startOff, endOff, DUPE);
+
+                            String title = NbBundle.getMessage(IntroduceHint.class, "TTL_DuplicateMethodPiece");
+                            String message = NbBundle.getMessage(IntroduceHint.class, "MSG_DuplicateMethodPiece");
+
+                            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);
+
+                            if (DialogDisplayer.getDefault().notify(nd) != NotifyDescriptor.YES_OPTION) {
+                                continue;
+                            }
+
+                            //XXX:
+                            List<Union2<VariableElement, TreePath>> dupeParameters = new LinkedList<Union2<VariableElement, TreePath>>();
+
+                            for (VariableElement ve : parameters) {
+                                if (mdd.variablesRemapToTrees.containsKey(ve)) {
+                                    dupeParameters.add(Union2.<VariableElement, TreePath>createSecond(mdd.variablesRemapToTrees.get(ve)));
+                                } else {
+                                    dupeParameters.add(Union2.<VariableElement, TreePath>createFirst(ve));
+                                }
+                            }
+
+                            List<ExpressionTree> dupeRealArguments = realArgumentsForTrees(make, dupeParameters);
+                            ExpressionTree dupeInvocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), dupeRealArguments);
+
+                            copy.rewrite(mdd.firstLeaf.getLeaf(), dupeInvocation);
+                        }
+
+                        introduceBag(doc).clear();
+                        //handle duplicates end
+                    }
                 }
             }).commit();
 
