@@ -1264,6 +1264,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             null,
                             ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null),
                             null,
+                            NewTestActionFactory.emptyTestFolderAction(),
                             SystemAction.get(NewFolderAction.class),
                             SystemAction.get(org.openide.actions.FindAction.class),
                             null,
@@ -1273,40 +1274,25 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             else if (folder.isTestLogicalFolder() && !folder.isDiskFolder()) {
                 result = new Action[]{ //
                             null,
-                            SystemAction.get(RunTestAction.class),
-                            null,
+                            NewTestActionFactory.emptyTestFolderAction(),
                             SystemAction.get(NewFolderAction.class),
                             SystemAction.get(org.openide.actions.FindAction.class),
-                            null,
-                            SystemAction.get(CutAction.class),
-                            SystemAction.get(CopyAction.class),
-                            SystemAction.get(PasteAction.class),
                             null,
                             SystemAction.get(RemoveFolderAction.class),
                             createRenameAction(),
                             null,
                             SystemAction.get(PropertiesFolderAction.class),};
                 result = insertAfter(NewTestActionFactory.getTestCreationActions(folder.getProject()), result);
-            }
-            else if (folder.isTest()) {
+            } else if (folder.isTest()) {
                 result = new Action[]{ //
                             CommonProjectActions.newFileAction(), //
                             SystemAction.get(AddExistingItemAction.class),
+                            SystemAction.get(org.openide.actions.FindAction.class), //
                             null,
                             SystemAction.get(RunTestAction.class),
                             SystemAction.get(DebugTestAction.class),
                             SystemAction.get(StepIntoTestAction.class),
-                            null,
-                            SystemAction.get(org.openide.actions.FindAction.class), //
-                            null, //
-                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
-                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N
-                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), //
-                            null,
-                            SystemAction.get(CutAction.class),
-                            SystemAction.get(CopyAction.class),
-                            SystemAction.get(PasteAction.class),
-                            null,
+                            null, 
                             SystemAction.get(RemoveFolderAction.class),
                             createRenameAction(),
                             null,
