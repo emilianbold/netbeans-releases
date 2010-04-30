@@ -40,6 +40,9 @@
 package org.netbeans.modules.cnd.remote.sync.download;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -133,6 +136,25 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
         checkInfo(filesToCheck, 10000);
     }
 
+    @ForAllEnvironments
+    public void testNonProjectUpdates() throws Exception {
+        final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        MakeProject makeProject = openProject("TestNonProjectUpdates", execEnv, Sync.RFS, Toolchain.GNU);
+        changeProjectHost(makeProject, execEnv);
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
+        File projectDirFile = FileUtil.toFile(makeProject.getProjectDirectory());
+        NameStatePair[] filesToCheck = new NameStatePair[] {
+            new NameStatePair(new File(projectDirFile, "file_1.c"), FileDownloadInfo.State.UNCONFIRMED),
+            new NameStatePair(new File(projectDirFile, "file_1.cc"), FileDownloadInfo.State.UNCONFIRMED),
+            new NameStatePair(new File(projectDirFile, "file_1.cpp"), FileDownloadInfo.State.UNCONFIRMED),
+            new NameStatePair(new File(projectDirFile, "file_1.cxx"), FileDownloadInfo.State.UNCONFIRMED),
+            new NameStatePair(new File(projectDirFile, "file_1.h"), FileDownloadInfo.State.UNCONFIRMED),
+            new NameStatePair(new File(projectDirFile, "file_1.hpp"), FileDownloadInfo.State.UNCONFIRMED)
+            //new NameStatePair(new File(projectDirFile, "Makefile"), FileDownloadInfo.State.UNCONFIRMED)
+        };
+        checkInfo(filesToCheck, 12000);
+    }
+
     @Override
     protected void buildProject(MakeProject makeProject, String command, long timeout, TimeUnit unit) throws Exception {
         try {
@@ -159,13 +181,16 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
     }
 
     private void checkInfo(NameStatePair[] pairsToCheck, long timeout) {
+        List<NameStatePair> pairs = new ArrayList<NameStatePair>(Arrays.asList(pairsToCheck));
+        pairsToCheck = null; // just to reference only one of them
         long stopTime = System.currentTimeMillis() + timeout;
         while (true) {
             List<FileDownloadInfo> updates = HostUpdates.testGetUpdates(getTestExecutionEnvironment());
             boolean success = true;
             StringBuilder notFoundMessage = new StringBuilder();
             StringBuilder wrongStateFoundMessage = new StringBuilder();
-            for (NameStatePair pair : pairsToCheck) {
+            for (Iterator<NameStatePair> iter = pairs.iterator(); iter.hasNext(); ) {
+                NameStatePair pair = iter.next();
                 FileDownloadInfo info = find(updates, pair.file);
                 if (info == null) {
                     success = false;
@@ -179,6 +204,7 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
                     FileDownloadInfo.State state = info.getState();
                     if (state.equals(pair.state)) {
                         System.err.printf("\tOK state %s for %s at %s\n", info.getState(), info.getLocalFile(), getTestExecutionEnvironment());
+                        iter.remove();
                     } else {
                         success = false;
                         if (wrongStateFoundMessage.length() == 0) {
@@ -186,8 +212,8 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
                         } else {
                             wrongStateFoundMessage.append(", ");
                         }
+                        wrongStateFoundMessage.append(pair.file.getName()).append(": expected ").append(pair.state).append(" found ").append(state);
                     }
-                    wrongStateFoundMessage.append(pair.file.getName()).append(": expected ").append(pair.state).append(" found ").append(state);
                 }
             }
             if (success) {

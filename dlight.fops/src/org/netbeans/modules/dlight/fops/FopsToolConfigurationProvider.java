@@ -76,6 +76,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
     public FopsToolConfigurationProvider() {
     }
 
+    @Override
     public DLightToolConfiguration create() {
         final String toolName = getMessage("Tool.Name"); // NOI18N
         final DLightToolConfiguration toolConfiguration =
@@ -138,11 +139,12 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
 
         TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION);
+        indicatorConfiguration.setPersistencePrefix("dlight_fops"); // NOI18N
         indicatorConfiguration.setTitle(getMessage("Indicator.Title")); // NOI18N
         indicatorConfiguration.setGraphScale(1024);
         indicatorConfiguration.addTimeSeriesDescriptors(
-                new TimeSeriesDescriptor(new Color(0xE7, 0x6F, 0x00), getMessage("Indicator.Write"), TimeSeriesDescriptor.Kind.LINE), // NOI18N
-                new TimeSeriesDescriptor(new Color(0xFF, 0xC7, 0x26), getMessage("Indicator.Read"), TimeSeriesDescriptor.Kind.LINE)); // NOI18N
+                new TimeSeriesDescriptor("write", getMessage("Indicator.Write"), new Color(0xE7, 0x6F, 0x00), TimeSeriesDescriptor.Kind.LINE), // NOI18N
+                new TimeSeriesDescriptor("read", getMessage("Indicator.Read"), new Color(0xFF, 0xC7, 0x26), TimeSeriesDescriptor.Kind.LINE)); // NOI18N
         indicatorConfiguration.setDataRowHandler(
                 new DataRowToFops(opColumn, sizeColumn, fileCountColumn));
         indicatorConfiguration.setAggregation(Aggregation.SUM);

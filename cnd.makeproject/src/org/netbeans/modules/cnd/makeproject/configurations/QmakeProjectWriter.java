@@ -159,6 +159,8 @@ public class QmakeProjectWriter {
     }
 
     private void write(BufferedWriter bw) throws IOException {
+        bw.write("# This file is generated automatically. Do not edit.\n"); // NOI18N
+        bw.write("# Use project properties -> Build -> Qt -> Expert -> Custom Definitions.\n"); // NOI18N
         write(bw, Variable.TEMPLATE, Operation.SET, getTemplate());
         write(bw, Variable.DESTDIR, Operation.SET, expandAndQuote(configuration.getQmakeConfiguration().getDestdirValue()));
         write(bw, Variable.TARGET, Operation.SET, expandAndQuote(configuration.getQmakeConfiguration().getTargetValue()));

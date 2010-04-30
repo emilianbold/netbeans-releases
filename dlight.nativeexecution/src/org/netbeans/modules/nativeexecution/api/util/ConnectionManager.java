@@ -60,15 +60,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.support.Authentication;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
-import org.netbeans.modules.nativeexecution.support.RemoteUserInfoProvider;
+import org.netbeans.modules.nativeexecution.support.RemoteUserInfo;
+import org.netbeans.modules.nativeexecution.support.ui.AuthTypeSelectorDlg;
+import org.netbeans.modules.nativeexecution.support.ui.AuthenticationSettingsPanel;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -80,19 +84,17 @@ import org.openide.util.RequestProcessor;
  */
 public final class ConnectionManager {
 
-    public static final String SSH_KNOWN_HOSTS_FILE;
-    public static final String SSH_KEYS_FILE;
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final boolean USE_JZLIB = Boolean.getBoolean("jzlib"); // NOI18N
     private static final int JSCH_CONNECTION_TIMEOUT = Integer.getInteger("jsch.connection.timeout", 10000); // NOI18N
     private static final int SOCKET_CREATION_TIMEOUT = Integer.getInteger("socket.connection.timeout", 10000); // NOI18N
-    private static final boolean isUnitTest = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
+    private static final boolean UNIT_TEST_MODE = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
     // Connections are always established sequently in connectorThread
     private static final RequestProcessor connectorThread = new RequestProcessor("ConnectionManager queue", 1); // NOI18N
     // Map that contains all connected sessions;
     private static final HashMap<ExecutionEnvironment, Session> sessions = new HashMap<ExecutionEnvironment, Session>();
-    // Actual sessions pool
-    private static final JSch jsch;
+    // Actual sessions pools. One per host
+    private static final HashMap<ExecutionEnvironment, JSch> jschPool = new HashMap<ExecutionEnvironment, JSch>();
     private static List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
     private static HashMap<ExecutionEnvironment, ConnectToAction> connectionActions = new HashMap<ExecutionEnvironment, ConnectToAction>();
     // Instance of the ConnectionManager
@@ -100,31 +102,9 @@ public final class ConnectionManager {
 
     static {
         ConnectionManagerAccessor.setDefault(new ConnectionManagerAccessorImpl());
-        String defaultKnonwHosts = System.getProperty("user.home") + "/.ssh/known_hosts"; // NOI18N
-        String defaultKeys = System.getProperty("user.home") + "/.ssh/id_rsa"; // NOI18N
-        SSH_KNOWN_HOSTS_FILE = System.getProperty("ssh.knonwhosts.file", defaultKnonwHosts);
-        SSH_KEYS_FILE = System.getProperty("ssh.keys.file", defaultKeys);
 
-        jsch = new JSch();
-
-        try {
-            jsch.setKnownHosts(SSH_KNOWN_HOSTS_FILE);
-        } catch (JSchException ex) {
-            if (!SSH_KNOWN_HOSTS_FILE.equals(defaultKnonwHosts)) {
-                log.log(Level.WARNING, "Unable to setKnownHosts for jsch. {0}", ex.getMessage()); // NOI18N
-            }
-        }
-
-        try {
-            jsch.addIdentity(SSH_KEYS_FILE);
-        } catch (JSchException ex) {
-            if (!SSH_KEYS_FILE.equals(defaultKeys)) {
-                {
-                    log.log(Level.WARNING, "Unable to addIdentity for jsch. {0}", ex.getMessage()); // NOI18N
-                }
-            }
-        }
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
             @Override
             public void run() {
                 shutdown();
@@ -223,7 +203,7 @@ public final class ConnectionManager {
             // while either connection is established or
             // is cancelled implicitly.
 
-            if (isUnitTest) {
+            if (UNIT_TEST_MODE) {
                 attempts--;
             }
         }
@@ -262,13 +242,20 @@ public final class ConnectionManager {
 
         if (connectionTask.problem != null) {
             if (connectionTask.problem == Problem.AUTH_FAIL) {
-                log.log(Level.FINE, "JSch problem: {0}", connectionTask.problem); // NOI18N
-                PasswordManager.getInstance().clearPassword(env);
+                // Note that AUTH_FAIL is generated not only on bad password,
+                // but on socket timeout as well. These cases are
+                // indistinguishable based on information from JSch.
+                log.log(Level.FINE, "JSch problem connecting to {0}: {1}", new Object[] {env, connectionTask.problem}); // NOI18N
+                if (!UNIT_TEST_MODE) {
+                    // Do not clean password when running unit tests.
+                    // We want to be able to repeat the connection attempt.
+                    PasswordManager.getInstance().clearPassword(env);
+                }
                 return false;
             } else if (connectionTask.problem == Problem.CONNECTION_TIMEOUT) {
-                throw new IOException("Connection timeout"); // NOI18N
+                throw new IOException("Timeout connecting to " + env); // NOI18N
             } else {
-                throw new IOException(connectionTask.problem.name());
+                throw new IOException("Problem connecting to " + env + ": " + connectionTask.problem.name()); // NOI18N
             }
         }
 
@@ -368,6 +355,12 @@ public final class ConnectionManager {
                 session.disconnect();
                 fireDisconnected(env);
             }
+
+            JSch jsch = jschPool.get(env);
+
+            if (jsch != null) {
+                jschPool.remove(env);
+            }
         }
     }
 
@@ -380,6 +373,12 @@ public final class ConnectionManager {
         for (ExecutionEnvironment env : connectedEnvs) {
             ConnectionManager.getInstance().disconnect(env);
         }
+    }
+
+    public JPanel getConfigurationPanel(ExecutionEnvironment env) {
+        Authentication auth = Authentication.getFor(env);
+        AuthenticationSettingsPanel panel = new AuthenticationSettingsPanel(auth, true);
+        return panel;
     }
 
     private static final class ConnectionTask implements Callable<Session>, Cancellable {
@@ -416,8 +415,15 @@ public final class ConnectionManager {
                     return null;
                 }
 
-                boolean askForPassword = !isUnitTest;
-                UserInfo userInfo = RemoteUserInfoProvider.getUserInfo(env, askForPassword);
+                UserInfo userInfo = new RemoteUserInfo(env, !UNIT_TEST_MODE);
+
+                JSch jsch = jschPool.get(env);
+
+                if (jsch == null) {
+                    jsch = new JSch();
+                    jschPool.put(env, jsch);
+                    initJsch(env);
+                }
 
                 newSession = jsch.getSession(env.getUser(), env.getHostAddress(), env.getSSHPort());
                 newSession.setUserInfo(userInfo);
@@ -434,7 +440,7 @@ public final class ConnectionManager {
                     // only after 6th attempt it throws an exception
                     newSession.connect(JSCH_CONNECTION_TIMEOUT);
                 } catch (JSchException e) {
-                    log.log(Level.FINE, "JSchException", e); // NOI18N
+                    log.log(Level.FINE, "JSchException connecting to " + env, e); // NOI18N
                     if (e.getMessage().equals("Auth fail")) { // NOI18N
                         problem = Problem.AUTH_FAIL;
                         return null;
@@ -528,6 +534,18 @@ public final class ConnectionManager {
         }
     }
 
+    private static void initJsch(ExecutionEnvironment env) {
+        Authentication auth = Authentication.getFor(env);
+
+        if (auth.isDefined()) {
+            auth.apply();
+        } else {
+            AuthTypeSelectorDlg dlg = new AuthTypeSelectorDlg();
+            dlg.initAuthentication(auth);
+            auth.apply();
+        }
+    }
+
     /**
      * onConnect will be invoked ONLY if this action has initiated a new
      * connection.
@@ -590,6 +608,37 @@ public final class ConnectionManager {
         @Override
         public void reconnect(final ExecutionEnvironment env) throws IOException {
             instance.reconnect(env);
+        }
+
+        @Override
+        public void changeAuth(ExecutionEnvironment env, Authentication auth) {
+            JSch jsch = jschPool.get(env);
+
+            if (jsch != null) {
+                try {
+                    jsch.removeAllIdentity();
+                } catch (JSchException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+                try {
+                    String knownHosts = auth.getKnownHosts();
+                    if (knownHosts != null) {
+                        jsch.setKnownHosts(knownHosts);
+                    }
+                } catch (JSchException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+                switch (auth.getType()) {
+                    case SSH_KEY:
+                        try {
+                            jsch.addIdentity(auth.getKey());
+                        } catch (JSchException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                }
+            }
         }
     }
 }

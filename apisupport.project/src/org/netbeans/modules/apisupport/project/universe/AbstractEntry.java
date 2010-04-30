@@ -192,7 +192,12 @@ abstract class AbstractEntry implements ModuleEntry {
 
     /** Checks whether a .class file is marked as public or not. */
     private static boolean isPublic(JarFile jf, JarEntry entry) throws IOException {
-        InputStream is = jf.getInputStream(entry);
+        InputStream is;
+        try {
+            is = jf.getInputStream(entry);
+        } catch (SecurityException x) {
+            throw new IOException(x);
+        }
         try {
             DataInput input = new DataInputStream(is);
             skip(input, 8); // magic, minor_version, major_version

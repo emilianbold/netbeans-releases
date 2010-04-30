@@ -132,7 +132,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
 
         lCamelCaseBehavior.setText("Camel Case  Behavior");
 
-        cbCamelCaseBehavior.setText("Enable Camel Case Navigation For Java");
+        cbCamelCaseBehavior.setText("Enable Camel Case Navigation");
 
         lCamelCaseBehaviorExample.setText("Example: Caret stops at J, T, N in \"JavaTypeName\" when using next/previous word acctions");
 
@@ -143,11 +143,11 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
             .add(layout.createSequentialGroup()
                 .add(lCodeFolding)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE))
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 671, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(lCamelCaseBehavior)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE))
+                .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 612, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

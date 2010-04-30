@@ -81,7 +81,9 @@ import org.openide.util.Utilities;
 
 public final class BuildInstallersAction extends AbstractAction implements ContextAwareAction {
 
-    public BuildInstallersAction() {}
+    public BuildInstallersAction() {
+        putValue(NAME, NbBundle.getMessage(BuildInstallersAction.class, "CTL_BuildInstallers"));
+    }
 
     public @Override void actionPerformed(ActionEvent e) {
         assert false;

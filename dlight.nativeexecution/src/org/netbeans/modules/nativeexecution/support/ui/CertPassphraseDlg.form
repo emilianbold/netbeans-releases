@@ -78,6 +78,7 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/nativeexecution/support/ui/Bundle.properties" key="CertPassphraseDlg.promptLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
+        <Property name="focusable" type="boolean" value="false"/>
       </Properties>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
@@ -91,9 +92,10 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/nativeexecution/support/ui/Bundle.properties" key="CertPassphraseDlg.jLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
+        <Property name="focusable" type="boolean" value="false"/>
       </Properties>
       <AuxValues>
-        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel0">
@@ -104,9 +106,10 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/nativeexecution/support/ui/Bundle.properties" key="CertPassphraseDlg.jLabel0.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
+        <Property name="focusable" type="boolean" value="false"/>
       </Properties>
       <AuxValues>
-        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JPasswordField" name="tfPassword">

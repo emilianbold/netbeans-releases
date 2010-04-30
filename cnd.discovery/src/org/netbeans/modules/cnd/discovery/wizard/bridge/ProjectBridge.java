@@ -304,15 +304,14 @@ public class ProjectBridge {
     }
     
     public void setupProject(List<String> includes, List<String> macros, boolean isCPP){
-        Configuration c = makeConfigurationDescriptor.getActiveConfiguration();
-        if (c instanceof MakeConfiguration) {
+        MakeConfiguration extConf = makeConfigurationDescriptor.getActiveConfiguration();
+        if (extConf != null) {
             for(int i = 0; i < includes.size(); i++) {
                 includes.set(i, getString(includes.get(i)));
             }
             for(int i = 0; i < macros.size(); i++) {
                 macros.set(i, getString(macros.get(i)));
             }
-            MakeConfiguration extConf = (MakeConfiguration)c;
             if (isCPP) {
                 extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(includes);
                 extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);

@@ -68,7 +68,12 @@ public final class SiblingSupport implements SiblingSource {
     @Override
     public URL pop() {
         final URL removed = siblings.pop();
-        LOG.log(Level.FINE, "Poped sibling: {0} size: {1}", new Object[] {removed, siblings.size()});     //NOI18N
+        if (LOG.isLoggable(Level.FINEST)) {
+            StackTraceElement[] td = Thread.currentThread().getStackTrace();
+            LOG.log(Level.FINEST, "Poped sibling: {0} size: {1} caller:\n{2}", new Object[] {removed, siblings.size(), formatCaller(td)});     //NOI18N
+        } else {
+            LOG.log(Level.FINE, "Poped sibling: {0} size: {1}", new Object[] {removed, siblings.size()});     //NOI18N
+        }
         return removed;
     }
 
@@ -98,6 +103,18 @@ public final class SiblingSupport implements SiblingSource {
             LOG.log(Level.FINER, "Has sibling: {0}", new Object[] {result});  //NOI18N
             return result;
         }
+    }
+
+    private static String formatCaller (final StackTraceElement[] elements) {
+        final StringBuilder sb = new StringBuilder();
+        for (StackTraceElement element : elements) {
+            sb.append(String.format("%s.%s (%s:%d)\n",
+                    element.getClassName(),
+                    element.getMethodName(),
+                    element.getFileName(),
+                    element.getLineNumber()));
+        }
+        return sb.toString();
     }
 
 }

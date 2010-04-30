@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
  * Simple man output to HTML formatter. 
  */
 public class Man2HTML {
-    public static int MAX_WIDTH = 65;
+    public static final int MAX_WIDTH = 65;
 
     private static final Pattern ESC_PATTERN = Pattern.compile("\u001B\\[[0-9;]*m"); // NOI18N
 
