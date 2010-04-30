@@ -94,21 +94,22 @@ public class InstallerPanel extends javax.swing.JPanel {
         jSeparator2 = new javax.swing.JSeparator();
         pack200Info = new javax.swing.JLabel();
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.Platforms.Label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.Platforms.Label")); // NOI18N
 
-        jCheckBox1.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelWindows")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelWindows")); // NOI18N
 
-        jCheckBox2.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelLinux")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox2, org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelLinux")); // NOI18N
 
-        jCheckBox3.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelMacOS")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox3, org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelMacOS")); // NOI18N
 
-        jCheckBox4.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelSolaris")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox4, org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelSolaris")); // NOI18N
 
-        licenseLabel.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.licenseLabel.text")); // NOI18N
+        licenseLabel.setLabelFor(licenseComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(licenseLabel, org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.licenseLabel.text")); // NOI18N
 
-        jCheckBox5.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.pack200checkBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox5, org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.pack200checkBox.text")); // NOI18N
 
-        pack200Info.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.Pack200.Description.Text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(pack200Info, org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.Pack200.Description.Text")); // NOI18N
         pack200Info.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         pack200Info.setFocusable(false);
 
@@ -134,7 +135,7 @@ public class InstallerPanel extends javax.swing.JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(licenseLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(licenseComboBox, 0, 941, Short.MAX_VALUE)))
+                                .addComponent(licenseComboBox, 0, 1027, Short.MAX_VALUE)))
                         .addGap(0, 0, 0))))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
@@ -177,6 +178,13 @@ public class InstallerPanel extends javax.swing.JPanel {
         );
 
         jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.Platforms.Label")); // NOI18N
+        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelWindows.AccessibleContext.accessible")); // NOI18N
+        jCheckBox2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelLinux.AccessibleContext.accessible")); // NOI18N
+        jCheckBox3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelMacOS.AccessibleContext.accessible")); // NOI18N
+        jCheckBox4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelSolaris.AccessibleContext.accessible")); // NOI18N
+        licenseComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.licenseComboBox.AccessibleContext.accessibleName")); // NOI18N
+        licenseComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.licenseComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        jCheckBox5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.jCheckBox5.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
