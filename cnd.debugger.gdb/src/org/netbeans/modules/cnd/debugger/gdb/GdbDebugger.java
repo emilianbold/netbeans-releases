@@ -191,7 +191,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private final Map<Integer, BreakpointImpl<?>> breakpointList = Collections.synchronizedMap(new HashMap<Integer, BreakpointImpl<?>>());
     private final List<String> temporaryBreakpoints = new ArrayList<String>();
     private final Set<Integer> runAfterTokens = Collections.synchronizedSet(new HashSet<Integer>());
-    private static final Map<String, TypeInfo> ticache = new HashMap<String, TypeInfo>();
+//    private static final Map<String, TypeInfo> ticache = new HashMap<String, TypeInfo>();
     private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     private static final Logger tlog = Logger.getLogger("gdb.testlogger"); // NOI18N
     private int currentToken = 0;
@@ -2488,9 +2488,9 @@ public class GdbDebugger implements PropertyChangeListener {
         return response.length() > 0 ? response : null;
     }
 
-    public Map<String, TypeInfo> getTypeInfoCache() {
-        return ticache;
-    }
+//    public Map<String, TypeInfo> getTypeInfoCache() {
+//        return ticache;
+//    }
 
     public String requestValue(String name) {
         try {
