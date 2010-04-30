@@ -39,6 +39,7 @@
 package org.netbeans.modules.nativeexecution.pty;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -47,26 +48,29 @@ import org.netbeans.modules.nativeexecution.JschSupport;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.pty.Pty;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.PtyOpenUtility.PtyInfo;
-import org.netbeans.modules.nativeexecution.spi.pty.PtyAllocator;
-import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author ak119685
  */
-@ServiceProvider(service = PtyAllocator.class)
-public class PtyCreatorImpl implements PtyAllocator {
+public final class PtyAllocator {
 
-    @Override
-    public PtyImplementation allocate(final ExecutionEnvironment env) throws IOException {
+    private static final PtyAllocator instance = new PtyAllocator();
+
+    private PtyAllocator() {
+    }
+
+    public static PtyAllocator getInstance() {
+        return instance;
+    }
+
+    public Pty allocate(final ExecutionEnvironment env) throws IOException {
         PtyImplementation result = null;
         OutputStream output = null;
         InputStream input = null;
@@ -146,36 +150,26 @@ public class PtyCreatorImpl implements PtyAllocator {
         return result;
     }
 
-    @Override
-    public boolean isApplicable(ExecutionEnvironment env) {
-        return true;
-    }
-
-    public final static class PtyImplementation implements PtyImpl {
+    public final static class PtyImplementation implements Pty {
 
         private final String tty;
         private final int pid;
         private final InputStream istream;
         private final OutputStream ostream;
         private final ExecutionEnvironment env;
-        private final boolean pxlsAware;
+        private final ByteArrayInputStream bis = new ByteArrayInputStream(new byte[0]);
 
-        PtyImplementation(ExecutionEnvironment env, String tty, int pid, InputStream istream, OutputStream ostream) throws IOException {
+        public PtyImplementation(ExecutionEnvironment env, String tty, int pid, InputStream istream, OutputStream ostream) throws IOException {
             this.tty = tty;
             this.pid = pid;
             this.istream = istream;
             this.ostream = ostream;
             this.env = env;
+        }
 
-            try {
-                if (OSFamily.SUNOS.equals(HostInfoUtils.getHostInfo(env).getOSFamily())) {
-                    pxlsAware = true;
-                } else {
-                    pxlsAware = false;
-                }
-            } catch (Exception ex) {
-                throw new IOException(ex);
-            }
+        @Override
+        public ExecutionEnvironment getEnv() {
+            return env;
         }
 
         @Override
@@ -199,23 +193,9 @@ public class PtyCreatorImpl implements PtyAllocator {
             return ostream;
         }
 
-        InputStream getErrorStream() {
-            return null;
-        }
-
-        public void slaveTIOCSWINSZ(int rows, int cols, int height, int width) {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-        }
-
-        public void masterTIOCSWINSZ(int cols, int rows, int xpixels, int ypixels) {
-            String cmd = pxlsAware
-                    ? String.format("cols %d rows %d xpixels %d ypixels %d", cols, rows, xpixels, ypixels) // NOI18N
-                    : String.format("cols %d rows %d", cols, rows); // NOI18N
-            try {
-                SttySupport.getFor(env).apply(this, cmd);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        @Override
+        public InputStream getErrorStream() {
+            return bis;
         }
 
         @Override

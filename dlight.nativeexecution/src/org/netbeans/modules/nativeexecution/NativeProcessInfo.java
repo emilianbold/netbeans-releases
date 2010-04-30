@@ -49,7 +49,7 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
-import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
+import org.netbeans.modules.nativeexecution.api.pty.Pty;
 import org.openide.util.Utilities;
 
 /**

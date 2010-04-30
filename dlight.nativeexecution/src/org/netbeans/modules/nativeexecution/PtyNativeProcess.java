@@ -38,18 +38,16 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
-import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
-import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
+import org.netbeans.modules.nativeexecution.api.pty.Pty;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.netbeans.modules.nativeexecution.pty.PtyProcessStartUtility;
-import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
-import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.pty.PtyUtility;
 
 /**
  *
@@ -57,8 +55,7 @@ import org.openide.util.Exceptions;
  */
 public final class PtyNativeProcess extends AbstractNativeProcess {
 
-    private Pty pty = null;
-    private PtyImpl ptyImpl = null;
+    private String tty;
     private AbstractNativeProcess delegate = null;
     private volatile boolean cancelled;
 
@@ -67,49 +64,31 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         cancelled = false;
     }
 
-    public Pty getPty() {
-        return pty;
+    public String getTTY() {
+        return tty;
     }
 
     @Override
     protected void create() throws Throwable {
         ExecutionEnvironment env = info.getExecutionEnvironment();
-        Pty _pty = info.getPty();
+        Pty pty = info.getPty();
 
-        if (_pty == null) {
-            try {
-                _pty = PtySupport.allocate(env);
-            } catch (IOException ex) {
-                String msg = "Unable to allocate a pty for the process: " + info.getExecutable() + " [" + ex.getMessage() + "]";
-                throw new IOException(msg); // NOI18N
-            }
-        }
-
-        if (cancelled) {
-            return;
-        }
-
-        pty = _pty;
-        ptyImpl = PtyImplAccessor.getDefault().getImpl(pty);
-
-        if (ptyImpl != null) {
-            setInputStream(ptyImpl.getInputStream());
-            setOutputStream(ptyImpl.getOutputStream());
-        }
-
-        String executable = PtyProcessStartUtility.getInstance().getPath(env);
-
+        String executable = PtyUtility.getInstance().getPath(env);
         List<String> newArgs = new ArrayList<String>();
-        newArgs.add("-p"); // NOI18N
-        newArgs.add(pty.getSlaveName());
+
+        if (pty != null) {
+            newArgs.add("-p"); // NOI18N
+            newArgs.add(pty.getSlaveName());
+        }
 
         String processExecutable = info.getExecutable();
+
         if (hostInfo.getOSFamily() == OSFamily.WINDOWS) {
-            // process_start requires Unix style executable path
+            // pty requires Unix style executable path
             processExecutable = WindowsSupport.getInstance().convertToShellPath(processExecutable);
         }
-        newArgs.add(processExecutable);
 
+        newArgs.add(processExecutable);
         newArgs.addAll(info.getArguments());
 
         // TODO: Clone Info!!!!
@@ -134,7 +113,17 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
         delegate.createAndStart();
 
-        readPID(delegate.getInputStream());
+        if (pty != null) {
+            setInputStream(pty.getInputStream());
+            setOutputStream(pty.getOutputStream());
+        } else {
+            setInputStream(delegate.getInputStream());
+            setOutputStream(delegate.getOutputStream());
+        }
+
+        tty = readTTYLine(delegate.getInputStream());
+        ByteArrayInputStream bis = new ByteArrayInputStream(("" + delegate.getPID()).getBytes()); // NOI18N
+        readPID(bis);
     }
 
     @Override
@@ -156,16 +145,25 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
             return 1;
         }
 
-        return delegate.waitResult();
+        int result = delegate.waitResult();
+
+        return result;
     }
 
-    public void closePty() {
-        try {
-            if (ptyImpl != null) {
-                ptyImpl.close();
+    private String readTTYLine(final InputStream is) throws IOException {
+        int c = -1;
+        StringBuilder sb = new StringBuilder(20);
+
+        while (!isInterrupted()) {
+            c = is.read();
+
+            if (c == '\n') {
+                break;
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+
+            sb.append((char) c);
         }
+
+        return sb.toString().trim();
     }
 }

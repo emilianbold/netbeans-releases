@@ -41,62 +41,60 @@ package org.netbeans.modules.nativeexecution.pty;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import org.netbeans.modules.nativeexecution.PtyNativeProcess;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
-import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
+import org.netbeans.modules.nativeexecution.api.pty.Pty;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.terminal.api.IOResizable;
-import org.netbeans.modules.nativeexecution.pty.PtyCreatorImpl.PtyImplementation;
-import org.netbeans.modules.nativeexecution.spi.pty.IOConnector;
-import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
-import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
-import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOTerm;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
-import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.InputOutput;
 
 /**
  *
  * @author ak119685
  */
-@ServiceProvider(service = IOConnector.class)
-public class IOConnectorImpl implements IOConnector {
+public final class IOConnector {
 
     private static final RequestProcessor rp = new RequestProcessor("IOConnectorImpl", 2); // NOI18N
+    private static final IOConnector instance = new IOConnector();
 
-    public IOConnectorImpl() {
+    private IOConnector() {
     }
 
-    @Override
+    public static IOConnector getInstance() {
+        return instance;
+    }
+
     public boolean connect(final InputOutput io, final NativeProcess process) {
         if (!IOTerm.isSupported(io)) {
             return false;
         }
 
-        final Pty pty = PtySupport.getPty(process);
-        final PtyImpl ptyImpl = PtyImplAccessor.getDefault().getImpl(pty);
-
-        if ((ptyImpl == null) && IOEmulation.isSupported(io)) {
-            IOEmulation.setDisciplined(io);
-        }
-
-        if (ptyImpl == null || !(ptyImpl instanceof PtyImplementation)) {
-            IOTerm.connect(io, process.getOutputStream(), process.getInputStream(), process.getErrorStream());
-        } else {
-            PtyImplementation impl = (PtyImplementation) ptyImpl;
-            IOTerm.connect(io, impl.getOutputStream(), impl.getInputStream(), process.getErrorStream());
-
-            if (IOResizable.isSupported(io)) {
-                IONotifier.addPropertyChangeListener(io, new ResizeListener(impl));
+        if (IOResizable.isSupported(io) && (process instanceof PtyNativeProcess)) {
+            PtyNativeProcess p = (PtyNativeProcess) process;
+            String tty = p.getTTY();
+            if (tty != null) {
+                try {
+                    IONotifier.addPropertyChangeListener(io, new ResizeListener(p.getExecutionEnvironment(), tty));
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
+
+
+        IOTerm.connect(io, process.getOutputStream(), process.getInputStream(), process.getErrorStream());
 
         return true;
     }
 
-    @Override
     public boolean connect(final InputOutput io, final Pty pty) {
         if (pty == null || io == null) {
             throw new NullPointerException();
@@ -106,17 +104,14 @@ public class IOConnectorImpl implements IOConnector {
             return false;
         }
 
-        final PtyImpl ptyImpl = PtyImplAccessor.getDefault().getImpl(pty);
-
-        if (!(ptyImpl instanceof PtyImplementation)) {
-            return false;
-        }
-
-        PtyImplementation impl = (PtyImplementation) ptyImpl;
-        IOTerm.connect(io, impl.getOutputStream(), impl.getInputStream(), impl.getErrorStream());
+        IOTerm.connect(io, pty.getOutputStream(), pty.getInputStream(), pty.getErrorStream());
 
         if (IOResizable.isSupported(io)) {
-            IONotifier.addPropertyChangeListener(io, new ResizeListener(impl));
+            try {
+                IONotifier.addPropertyChangeListener(io, new ResizeListener(pty.getEnv(), pty.getSlaveName()));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
         return true;
@@ -127,8 +122,15 @@ public class IOConnectorImpl implements IOConnector {
         private Task task = null;
         private Dimension cells;
         private Dimension pixels;
+        private final boolean pxlsAware;
 
-        ResizeListener(final PtyImplementation pty) {
+        ResizeListener(final ExecutionEnvironment env, final String tty) throws IOException {
+            if (OSFamily.SUNOS.equals(HostInfoUtils.getHostInfo(env).getOSFamily())) {
+                pxlsAware = true;
+            } else {
+                pxlsAware = false;
+            }
+
             this.task = rp.create(new Runnable() {
 
                 @Override
@@ -140,8 +142,14 @@ public class IOConnectorImpl implements IOConnector {
                         p = new Dimension(pixels);
                     }
 
-                    pty.masterTIOCSWINSZ(c.width, c.height,
-                            p.width, p.height);
+                    String cmd = pxlsAware
+                            ? String.format("cols %d rows %d xpixels %d ypixels %d", c.width, c.height, p.width, p.height) // NOI18N
+                            : String.format("cols %d rows %d", c.width, c.height); // NOI18N
+                    try {
+                        SttySupport.getFor(env).apply(tty, cmd);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }, true);
         }
@@ -149,7 +157,7 @@ public class IOConnectorImpl implements IOConnector {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (IOResizable.PROP_SIZE.equals(evt.getPropertyName())) {
-                IOResizable.Size newVal = (IOResizable.Size) evt.getOldValue();
+                IOResizable.Size newVal = (IOResizable.Size) evt.getNewValue();
                 if (newVal != null) {
                     Dimension newCells = newVal.cells;
                     Dimension newPixels = newVal.pixels;
@@ -168,6 +176,4 @@ public class IOConnectorImpl implements IOConnector {
             }
         }
     }
-
-
 }
