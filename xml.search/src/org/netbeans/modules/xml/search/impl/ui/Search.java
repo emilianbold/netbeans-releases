@@ -60,7 +60,7 @@ import org.netbeans.modules.xml.search.api.SearchTarget;
 import org.netbeans.modules.xml.search.spi.SearchEngine;
 import org.netbeans.modules.xml.search.spi.SearchProvider;
 import org.netbeans.modules.xml.search.impl.output.View;
-import static org.netbeans.modules.xml.util.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

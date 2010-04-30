@@ -45,7 +45,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 
 import org.netbeans.modules.xml.search.api.SearchEvent;
 import org.netbeans.modules.xml.search.spi.SearchListener;
-import static org.netbeans.modules.xml.util.UI.*;
+import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

@@ -79,7 +79,7 @@
                 <friend>org.netbeans.modules.wlm.validation</friend>
                 <friend>org.netbeans.modules.xslt.tmap</friend>
                 <friend>org.netbeans.modules.xml.wsdl.extensions</friend>
-                <friend>org.netbeans.modules.xml.validation</friend>
+                <friend>org.netbeans.modules.xml.misc</friend>
                 <package>org.netbeans.modules.xml.xpath.ext</package>
                 <package>org.netbeans.modules.xml.xpath.ext.metadata</package>
                 <package>org.netbeans.modules.xml.xpath.ext.metadata.impl.images</package>
