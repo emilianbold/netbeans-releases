@@ -79,32 +79,32 @@ public abstract class CommonSQLDataStoragePerformanceTests {
 
     @Test
     public void testAddData_thousands_fast() throws Exception {
-        doTestAddData("fast", 300000, new SinLoop(10), false);
+        doTestAddData("fast", 300000, new MathLoop(10), false);
     }
 
     @Test
     public void testAddData_millions_fast() throws Exception {
-        doTestAddData("fast", 3000000, new SinLoop(10), false);
+        doTestAddData("fast", 3000000, new MathLoop(10), false);
     }
 
     @Test
     public void testAddData_thousands_slow() throws Exception {
-        doTestAddData("slow", 300000, new SinLoop(100), false);
+        doTestAddData("slow", 300000, new MathLoop(100), false);
     }
 
     @Test
     public void testAddData_millions_slow() throws Exception {
-        doTestAddData("slow", 3000000, new SinLoop(100), false);
+        doTestAddData("slow", 3000000, new MathLoop(100), false);
     }
 
     @Test
     public void testAddData_thousands_slow_parallel() throws Exception {
-        doTestAddData("slow parallel", 300000, new SinLoop(100), true);
+        doTestAddData("slow_parallel", 300000, new MathLoop(100), true);
     }
 
     @Test
     public void testAddData_millions_slow_parallel() throws Exception {
-        doTestAddData("slow parallel", 3000000, new SinLoop(100), true);
+        doTestAddData("slow_parallel", 3000000, new MathLoop(100), true);
     }
 
     private void doTestAddData(String testName, int dataRowCount, Runnable load, boolean parallel) throws Exception {
@@ -178,9 +178,9 @@ public abstract class CommonSQLDataStoragePerformanceTests {
         }
     }
 
-    private static final class SinLoop implements Runnable {
+    private static final class MathLoop implements Runnable {
         private final int count;
-        public SinLoop(int count) {
+        public MathLoop(int count) {
             this.count = count;
         }
 
