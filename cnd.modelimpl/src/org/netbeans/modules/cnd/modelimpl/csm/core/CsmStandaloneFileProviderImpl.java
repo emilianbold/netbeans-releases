@@ -43,7 +43,9 @@ import java.io.IOException;
 import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
@@ -78,6 +80,9 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     private static final boolean TRACE = Boolean.getBoolean("cnd.standalone.trace"); //NOI18N
+    private static final class Lock{}
+    private static final Lock lock = new Lock();
+    private static final Set<String> toBeRmoved = new HashSet<String>();
 
     private final CsmModelListener listener = new CsmModelListener() {
 
@@ -142,6 +147,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             if (csmFile != null) {
                 if (TRACE) {trace("returns file %s", csmFile);} //NOI18N
                 return csmFile;
+            }
+            synchronized (lock) {
+                if (toBeRmoved.contains(name)){
+                    return null;
+                }
             }
             NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(FileUtil.toFile(file));
             if (platformProject != null) {
@@ -241,6 +251,10 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     private void scheduleProjectRemoval(final CsmProject project) {
         if (TRACE) {trace("schedulling removal %s", project.toString());} //NOI18N
+        final String root = ((NativeProject)project.getPlatformProject()).getProjectRoot();
+        synchronized (lock) {
+           toBeRmoved.add(root);
+        }
         ModelImpl.instance().enqueueModelTask(new Runnable() {
             @Override
             public void run() {
@@ -248,6 +262,9 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                     if (TRACE) {trace("removing %s", project.toString());} //NOI18N
                     ProjectBase projectBase = (ProjectBase) project;
                     ModelImpl.instance().closeProjectBase(projectBase, false);
+                }
+                synchronized (lock) {
+                    toBeRmoved.remove(root);
                 }
             }
         }, "Standalone project removal."); //NOI18N
