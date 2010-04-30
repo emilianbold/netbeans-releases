@@ -40,16 +40,6 @@
 
 package org.netbeans.modules.apisupport.installer.ui;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ResourceBundle;
-import javax.swing.ComboBoxModel;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
-import org.openide.util.NbBundle;
-
 /**
  *
  * @author Dmitry Lipin
