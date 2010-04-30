@@ -43,6 +43,7 @@ package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Test functionality of ManifestManager when it sees OSGi bundles.
@@ -90,10 +91,12 @@ public class NetigsoManifestManagerTest extends TestBase {
         String mfContent = "Manifest-Version: 1.0\n" +
                 "Ant-Version: Apache Ant 1.6.5\n" +
                 "Created-By: 1.4.2_10-b03 (Sun Microsystems Inc.)\n" +
-                "Bundle-SymbolicName: org.netbeans.send-opts; singleton:=true\n";
+                "Bundle-SymbolicName: org.netbeans.send-opts; singleton:=true\n" +
+                "Require-Bundle: org.netbeans.some-lib;version=\"[1.0,2)\"\n";
         dump(manifest, mfContent);
         ManifestManager mm = ManifestManager.getInstance(manifest, true);
         assertEquals("cnb", "org.netbeans.send_opts", mm.getCodeNameBase());
+        assertEquals(Collections.singletonList("org.netbeans.some_lib"), Arrays.asList(mm.getRequiredTokens()));
     }
 
     public void testSingletonBundle() throws Exception {

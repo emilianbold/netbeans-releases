@@ -311,7 +311,7 @@ public final class ManifestManager {
                 }
             }
 
-            requires = sb.length() == 0 ? null : sb.toString();
+            requires = sb.length() == 0 ? null : sb.toString().replace('-', '_');
         }
 
         if (!loadPublicPackages) {
