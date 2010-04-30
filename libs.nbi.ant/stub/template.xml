@@ -2,12 +2,26 @@
     <!--<property file="${basedir}/template.properties"/>-->
     
     <target name="build" depends="init,prepare-sources,prepare-zip,-build,post-build,run-build"/>
-    
-    <target name="init" depends="-clean">
-        <property name="installer.build.dir" value="${suite.location}/build/installer"/>
-        <property file="${suite.location}/nbproject/project.properties" prefix="suite.props."/>
-        <property name="suite.dist.directory" value="${suite.location}/dist"/>
 
+    <target name="-init-props">
+        <available file="${suite.location}/nbproject/project.properties" property="do.load.ant.props"/>    
+        <available file="${suite.location}/pom.xml" property="do.load.maven.props"/>    
+    </target>
+
+    <target name="-init-ant-props" if="do.load.ant.props" depends="-init-props">
+        <property file="${suite.location}/nbproject/project.properties" prefix="suite.props."/>    
+    </target>
+    <target name="-init-maven-props" if="do.load.maven.props" depends="-init-props">
+        <xmlproperty file="${suite.location}/pom.xml" prefix="pom.props"/>
+        <property name="suite.props.app.name"  value="${pom.props.project.properties.brandingToken}"/>
+        <property name="suite.props.app.title" value="${pom.props.project.artifactId}"/>
+    </target>
+    
+    <target name="init" depends="-clean,-init-ant-props,-init-maven-props">
+        <property name="installer.build.dir" value="${suite.location}/build/installer"/>
+        <property name="suite.dist.directory" value="${suite.location}/dist"/>
+        <property name="suite.dist.zip"       value="${suite.dist.directory}/${suite.props.app.name}.zip"/>
+        <property name="${installers.file.prefix}" value="${suite.props.app.name}"/>
         <delete dir="${installer.build.dir}" includeemptydirs="yes" failonerror="false"/>
 
         <mkdir dir="${installer.build.dir}"/>
@@ -29,11 +43,27 @@
 
     <target name="-init-zip">
         <condition property="do.build.zip">
-            <available file="${suite.dist.directory}/${suite.props.app.name}.zip"/>
+            <available file="${suite.dist.zip}"/>
         </condition>
     </target>
     <target name="-build-zip" depends="-init-zip" unless="do.build.zip">
+        <antcall target="-build-zip-ant"/>
+        <antcall target="-build-zip-maven"/>
+    </target>
+
+    <target name="-build-zip-ant" depends="-init-zip"  if="do.load.ant.props">
         <subant buildpath="${suite.location}" inheritAll="false" target="build-zip"/>
+    </target>
+
+    <target name="-build-zip-maven" depends="-init-zip" if="do.load.maven.props">
+        <condition property="mvn.executable" value="mvn.bat" else="mvn">
+            <os family="windows"/>
+        </condition>
+
+        <exec executable="${mvn.executable}" dir="${suite.location}">
+           <arg value="install"/>
+           <env key="JAVA_HOME" value="${java.home}"/>
+        </exec>
     </target>
 
     <target name="prepare-zip" depends="-init-zip,-build-zip"/>
@@ -83,7 +113,7 @@
             <replacefilter token="{generator-jdk-location-forward-slashes}"         value="${generator-jdk-location-forward-slashes}"/>
             <replacefilter token="{generated-installers-location-forward-slashes}"  value="${suite.dist.directory}"/>
             <replacefilter token="{pack200.enabled}"               value="${pack200.enabled}"/>
-            <replacefilter token="{generated-installers-prefix}"   value="${suite.props.app.name}"/>
+            <replacefilter token="{generated-installers-prefix}"   value="${installers.file.prefix}"/>
             <replacefilter token="{product-uid}"                   value="${product-uid}"/>
         </replace>
 
@@ -97,7 +127,7 @@
 
         <replace dir="${installer.build.dir}/ext/infra/build/products" encoding="utf-8">
             <replacefilter token="{product.platforms}"        value="${generate.installer.for.platforms}"/>
-            <replacefilter token="{product-data-path}"        value="${suite.dist.directory}/${suite.props.app.name}.zip"/>
+            <replacefilter token="{product-data-path}"        value="${suite.dist.zip}"/>
             <replacefilter token="{product-data-sub-dir}"     value="${suite.props.app.name}"/>
             <replacefilter token="{product-uid}"              value="${product-uid}"/>
             <replacefilter token="{product-install-directory-name}"         value="${suite.props.app.name}"/>

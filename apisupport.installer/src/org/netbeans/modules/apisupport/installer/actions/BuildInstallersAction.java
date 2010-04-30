@@ -107,7 +107,6 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                 for (Project prj : actionContext.lookupAll(Project.class)) {
                         Preferences prefs = SuiteInstallerProjectProperties.prefs(prj);
                         File suiteLocation = FileUtil.toFile(prj.getProjectDirectory());
-                        FileObject propertiesFile = prj.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         String appName = "";
                         String appIcon = null;
                         String appIconIcns = null;
@@ -124,6 +123,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         boolean usePack200 = prefs.getBoolean(SuiteInstallerProjectProperties.USE_PACK200_COMPRESSION, false);
 
                         try {
+                            FileObject propertiesFile = prj.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             InputStream is = propertiesFile.getInputStream();
                             Properties ps = new Properties();
                             try {
@@ -229,24 +229,24 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
 
                         props.put("nbi.stub.location", InstalledFileLocator.getDefault().locate(
                                 "nbi/stub",
-                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
+                                "org.netbeans.libs.nbi.ant", false).getAbsolutePath().replace("\\", "/"));
                         props.put(
                                 "nbi.stub.common.location", InstalledFileLocator.getDefault().locate(
                                 "nbi/.common",
-                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
+                                "org.netbeans.libs.nbi.ant", false).getAbsolutePath().replace("\\", "/"));
 
                         props.put(
                                 "nbi.ant.tasks.jar", InstalledFileLocator.getDefault().locate(
                                 "modules/ext/nbi-ant-tasks.jar",
-                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
+                                "org.netbeans.libs.nbi.ant", false).getAbsolutePath().replace("\\", "/"));
                         props.put(
                                 "nbi.registries.management.jar", InstalledFileLocator.getDefault().locate(
                                 "modules/ext/nbi-registries-management.jar",
-                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
+                                "org.netbeans.libs.nbi.ant", false).getAbsolutePath().replace("\\", "/"));
                         props.put(
                                 "nbi.engine.jar", InstalledFileLocator.getDefault().locate(
                                 "modules/ext/nbi-engine.jar",
-                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
+                                "org.netbeans.libs.nbi.engine", false).getAbsolutePath().replace("\\", "/"));
                         if (licenseFile != null) {
                             Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.FINE,
                                     "License file is at {0}, exist = {1}", new Object[] {licenseFile, licenseFile.exists()});
