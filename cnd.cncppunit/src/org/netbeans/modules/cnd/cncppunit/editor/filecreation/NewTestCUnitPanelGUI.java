@@ -317,16 +317,10 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
     }
 
     public boolean useTargetExtensionAsDefault() {
-        return cbSetAsDefault.isSelected();
+        return false;
     }
         
     protected void updateCreatedFile() {
-        if (fileWithoutExtension && getTargetExtension().length() == 0 || es.getDefaultExtension().equals(getTargetExtension())) {
-            cbSetAsDefault.setEnabled(false);
-        } else {
-            cbSetAsDefault.setEnabled(true);
-        }
-
         FileObject root = getTargetGroup().getRootFolder();
 
         String folderName = folderTextField.getText().trim();
@@ -399,7 +393,6 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
         documentNameTextField = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         cbExtension = new javax.swing.JComboBox();
-        cbSetAsDefault = new javax.swing.JCheckBox();
         jLabel4 = new javax.swing.JLabel();
         fileTextField = new javax.swing.JTextField();
         targetSeparator = new javax.swing.JSeparator();
@@ -515,13 +508,6 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
         jPanel1.add(cbExtension, gridBagConstraints);
         cbExtension.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestCUnitPanelGUI.class, "AD_ExtensionTextField")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbSetAsDefault, org.openide.util.NbBundle.getMessage(NewTestCUnitPanelGUI.class, "ACSD_SetAsDefaultCheckBox")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
-        jPanel1.add(cbSetAsDefault, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -582,7 +568,6 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
     private javax.swing.JPanel bottomPanelContainer;
     private javax.swing.JButton browseButton;
     private javax.swing.JComboBox cbExtension;
-    private javax.swing.JCheckBox cbSetAsDefault;
     private javax.swing.JTextField documentNameTextField;
     private javax.swing.JTextField fileTextField;
     private javax.swing.JTextField folderTextField;

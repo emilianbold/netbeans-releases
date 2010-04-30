@@ -159,7 +159,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         
         if (template != null) {
             if (documentName == null) {
-                final String baseName = getMessage("NewClassSuggestedName");
+                final String baseName = getMessage("NewClassSuggestedName"); // NOI18N
                 documentName = baseName;
                 FileObject currentFolder = preselectedFolder != null ? preselectedFolder : getTargetGroup().getRootFolder().getFileObject(DEFAULT_TESTS_FOLDER);
                 if (currentFolder != null) {
@@ -173,7 +173,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         }
 
         if (template != null) {
-            String baseName = getMessage("NewRunnerSuggestedName");
+            String baseName = getMessage("NewRunnerSuggestedName"); // NOI18N
             String runnerName = baseName;
             FileObject currentFolder = preselectedFolder != null ? preselectedFolder : getTargetGroup().getRootFolder().getFileObject(DEFAULT_TESTS_FOLDER);
             if (currentFolder != null) {
@@ -452,7 +452,6 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(classNameTextField, gridBagConstraints);
-        classNameTextField.getAccessibleContext().setAccessibleDescription("N/A");
 
         jLabel2.setLabelFor(folderTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(NewTestCppUnitPanelGUI.class, "LBL_TargetChooser_Folder_Label")); // NOI18N

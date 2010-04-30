@@ -88,7 +88,7 @@ import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingItemAction;
 import org.netbeans.modules.cnd.makeproject.actions.DebugTestAction;
 import org.netbeans.modules.cnd.makeproject.actions.NewFolderAction;
-import org.netbeans.modules.cnd.makeproject.actions.NewTestAction;
+import org.netbeans.modules.cnd.makeproject.actions.NewTestActionFactory;
 import org.netbeans.modules.cnd.makeproject.actions.RunTestAction;
 import org.netbeans.modules.cnd.makeproject.actions.StepIntoTestAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
@@ -1261,17 +1261,18 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
             if (folder.isTestRootFolder()) {
                 result = new Action[]{ //
-                            SystemAction.get(NewTestAction.class),
+                            null,
                             ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null),
                             null,
                             SystemAction.get(NewFolderAction.class),
                             SystemAction.get(org.openide.actions.FindAction.class),
                             null,
                             SystemAction.get(PropertiesFolderAction.class),};
+                result = insertAfter(NewTestActionFactory.getTestCreationActions(folder.getProject()), result);
             }
             else if (folder.isTestLogicalFolder() && !folder.isDiskFolder()) {
                 result = new Action[]{ //
-                            SystemAction.get(NewTestAction.class),
+                            null,
                             SystemAction.get(RunTestAction.class),
                             null,
                             SystemAction.get(NewFolderAction.class),
@@ -1285,6 +1286,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             createRenameAction(),
                             null,
                             SystemAction.get(PropertiesFolderAction.class),};
+                result = insertAfter(NewTestActionFactory.getTestCreationActions(folder.getProject()), result);
             }
             else if (folder.isTest()) {
                 result = new Action[]{ //
@@ -2237,4 +2239,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
+    private static Action[] insertAfter(Action[] actions, Action[] actionsToInsert) {
+        if (actionsToInsert == null || actionsToInsert.length == 0) {
+            return actions;
+        }
+        Action[] newActions = new Action[actions.length+actionsToInsert.length];
+        System.arraycopy(actions, 0, newActions, 0, actions.length);
+        System.arraycopy(actionsToInsert, 0, newActions, actions.length, actionsToInsert.length);
+        return newActions;
+    }
 }
