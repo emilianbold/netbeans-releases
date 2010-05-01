@@ -152,7 +152,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         pxml = new ProjectXMLManager((NbModuleProject) getProperties().getProject());
     }
 
-    void refresh() {
+    protected void refresh() {
         refreshJavaPlatforms();
         refreshPlatforms();
         platformValue.setEnabled(getProperties().isStandalone());

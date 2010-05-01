@@ -44,8 +44,13 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Enter;
+import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCErroneous;
@@ -63,7 +68,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.FileObject;
 import javax.tools.ForwardingJavaFileManager;
@@ -248,5 +255,33 @@ public class Hacks {
         //XXX end
         
         return info.getTreeUtilities().parseType(spec, /*XXX: jlObject*/scope);
+    }
+
+    public static VariableElement attributeThis(CompilationInfo info, TreePath tp) {
+        //XXX:
+        while (tp != null) {
+            if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                Element currentElement = info.getTrees().getElement(tp);
+
+                if (currentElement == null || !(currentElement instanceof ClassSymbol)) return null;
+
+                Enter enter = Enter.instance(JavaSourceAccessor.getINSTANCE().getJavacTask(info).getContext());
+                Env<AttrContext> env = enter.getEnv((ClassSymbol) currentElement);
+
+                if (env == null) return null;
+
+                for (Element el : env.info.getLocalElements()) {
+                    if (el.getSimpleName().contentEquals("this")) {
+                        return (VariableElement) el;
+                    }
+                }
+
+                return null;
+            }
+
+            tp = tp.getParentPath();
+        }
+
+        return null;
     }
 }

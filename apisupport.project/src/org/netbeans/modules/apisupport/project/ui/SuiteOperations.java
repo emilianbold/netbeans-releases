@@ -61,7 +61,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
+import org.netbeans.modules.apisupport.project.ui.branding.BasicBrandingModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.project.ActionProvider;

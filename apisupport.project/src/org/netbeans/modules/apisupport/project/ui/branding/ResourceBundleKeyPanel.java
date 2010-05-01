@@ -37,7 +37,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.apisupport.project.ui.customizer;
+package org.netbeans.modules.apisupport.project.ui.branding;
 
 /**
  *

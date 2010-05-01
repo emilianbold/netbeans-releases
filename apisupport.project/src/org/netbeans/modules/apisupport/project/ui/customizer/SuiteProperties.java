@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ui.branding.BasicBrandingModel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import java.io.File;

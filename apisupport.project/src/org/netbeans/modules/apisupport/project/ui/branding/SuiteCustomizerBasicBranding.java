@@ -39,11 +39,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.apisupport.project.ui.customizer;
+package org.netbeans.modules.apisupport.project.ui.branding;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.modules.apisupport.project.ui.customizer.BasicCustomizer;
+import org.netbeans.modules.apisupport.project.ui.customizer.NbPropertyPanel;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.NbBundle;
 
@@ -105,7 +109,7 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
     }
     
     @Override
-    void refresh() {
+    protected void refresh() {
         getBrandingModel().brandingEnabledRefresh();        
         getBrandingModel().initName(true);
         getBrandingModel().initTitle(true);
@@ -146,7 +150,7 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
         setLayout(new java.awt.GridBagLayout());
 
         name.setLabelFor(nameValue);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/branding/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(name, bundle.getString("LBL_AppName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
