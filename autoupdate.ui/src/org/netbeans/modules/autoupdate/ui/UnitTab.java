@@ -1271,7 +1271,10 @@ public class UnitTab extends javax.swing.JPanel {
                 if (wizardFinished) {
                     reloadTask (false).schedule (10);
                 } else {
-                    UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
+                    fireUpdataUnitChange ();
+                    if (!wizardFinished) {
+                        UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
+                    }
                     restoreSelectedRow(row);                
                     refreshState ();
                 }
