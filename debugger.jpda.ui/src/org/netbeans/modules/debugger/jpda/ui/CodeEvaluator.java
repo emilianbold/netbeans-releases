@@ -159,7 +159,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 .add(evaluateButton))
         );
         
-        setupContext();
+        //setupContext();
         editorScrollPane.setViewportView(codePane);
         codePane.addKeyListener(this);
         dbgManagerListener = new DbgManagerListener (this);
@@ -387,6 +387,9 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                     debugger = de.lookupFirst(null, JPDADebugger.class);
                 }
                 JPDADebugger lastDebugger = debuggerRef.get();
+                if (debugger != lastDebugger) {
+                    setupContext();
+                }
                 if (lastDebugger != null && debugger != lastDebugger) {
                     lastDebugger.removePropertyChangeListener(JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, CodeEvaluator.this);
                     lastDebugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, CodeEvaluator.this);
