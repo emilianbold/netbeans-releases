@@ -62,6 +62,7 @@ import org.openide.util.NbBundle;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.class, position=20)
 public class IncludeErrorProvider extends CsmErrorProvider {
 
+    @Override
     public String getName() {
         return "include-errors"; //NOI18N
     }
@@ -78,20 +79,23 @@ public class IncludeErrorProvider extends CsmErrorProvider {
             this.severity = severity;
         }
 
+        @Override
         public int getEndOffset() {
             return end;
         }
 
+        @Override
         public int getStartOffset() {
             return start;
         }
 
+        @Override
         public Severity getSeverity() {
             return severity;
         }
     }
 
-    private final static String decorateWithExtraHyperlinkTip(String tooltip) {
+    private static String decorateWithExtraHyperlinkTip(String tooltip) {
         Preferences prefs = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
         int altShortCut = prefs.getInt(SimpleValueNames.ALT_HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK);
         return NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_HyperlinkActionsHints", tooltip,  InputEvent.getModifiersExText(altShortCut));// NOI18N
@@ -106,6 +110,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
             this.message = decorateWithExtraHyperlinkTip(NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_IncludeMissed", getIncludeText(incl)));
         }
 
+        @Override
         public String getMessage() {
             return message;
         }
@@ -128,6 +133,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
             this.message = decorateWithExtraHyperlinkTip(NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_IncludeMissedWarning", getIncludeText(incl)));
         }
 
+        @Override
         public String getMessage() {
             return message;
         }
@@ -150,6 +156,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
             this.message = NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_ErrorDirective");
         }
 
+        @Override
         public String getMessage() {
             return message;
         }
