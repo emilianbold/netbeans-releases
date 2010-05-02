@@ -250,7 +250,7 @@ public final class MenuWarmUpTask implements Runnable {
 
                 @Override
                 public void run() {
-                    h.progress(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh_Suspend"));
+                    h.suspend(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh_Suspend"));
                 }
             }
             ActionEvent handleBridge = new HandleBridge(this);
