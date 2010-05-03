@@ -104,6 +104,7 @@ public class OAuthHelper {
         Set<Modifier> modifiersSet = new HashSet<Modifier>();
         modifiersSet.add(Modifier.PRIVATE);
         modifiersSet.add(Modifier.STATIC);
+        ModifiersTree privateStaticModif =  maker.Modifiers(modifiersSet);
         modifiersSet.add(Modifier.FINAL);
         ModifiersTree privateStaticFinalModif =  maker.Modifiers(modifiersSet);
         ExpressionTree stringType = maker.Identifier("String"); //NOI18N
@@ -259,9 +260,6 @@ public class OAuthHelper {
 
             modifiedClass = maker.addClassMember(modifiedClass, methodTree);
         } else if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(projectType)) {
-            modifiersSet = new HashSet<Modifier>();
-            modifiersSet.add(Modifier.PRIVATE); modifiersSet.add(Modifier.STATIC);
-            ModifiersTree privateStaticModif =  maker.Modifiers(modifiersSet);
 
             modifiersSet = new HashSet<Modifier>();
             modifiersSet.add(Modifier.PUBLIC); modifiersSet.add(Modifier.STATIC);
@@ -357,10 +355,6 @@ public class OAuthHelper {
             modifiedClass = maker.addClassMember(modifiedClass, methodTree);
 
         } else if (Wadl2JavaHelper.PROJEC_TYPE_NB_MODULE.equals(projectType)) {
-
-            modifiersSet = new HashSet<Modifier>();
-            modifiersSet.add(Modifier.PRIVATE); modifiersSet.add(Modifier.STATIC);
-            ModifiersTree privateStaticModif =  maker.Modifiers(modifiersSet);
 
             modifiersSet = new HashSet<Modifier>();
             modifiersSet.add(Modifier.PUBLIC); modifiersSet.add(Modifier.STATIC);
@@ -473,20 +467,25 @@ public class OAuthHelper {
 
         }
 
-        List<VariableTree> paramList = new ArrayList<VariableTree>();
-        VariableTree paramTree = maker.Variable(paramModifier, "response", stringType, null); //NOI18N
-        paramList.add(paramTree);
-        paramTree = maker.Variable(paramModifier, "xPath", stringType, null); //NOI18N
-        paramList.add(paramTree);
-        if (needXPath(oauthMetadata)) {
-             MethodTree methodTree = maker.Method (
-                privateModif,
-                "xPathSearch", //NOI18N
+        if (needXPath(oauthRequestTokenMethod)) {
+
+            String format = oauthRequestTokenMethod.getResponseStyle();
+
+            List<VariableTree> paramList = new ArrayList<VariableTree>();
+            VariableTree paramTree = maker.Variable(paramModifier, "response", stringType, null); //NOI18N
+            paramList.add(paramTree);
+            String paramName = ("JSON".equals(format) ? "jsonPath" : "xPath"); //NOI18N
+            paramTree = maker.Variable(paramModifier, paramName, stringType, null);
+            paramList.add(paramTree);
+
+            MethodTree methodTree = maker.Method (
+                privateStaticModif,
+                ("JSON".equals(format) ? "jsonSearch" : "xPathSearch"), //NOI18N
                 stringType,
                 Collections.<TypeParameterTree>emptyList(),
                 paramList,
                 Collections.<ExpressionTree>emptyList(),
-                getBodyForXPathSearch(),
+                getBodyForSearchMethod("JSON".equals(format) ? "JSON" : "XML"), //NOI18N
                 null);
             modifiedClass = maker.addClassMember(modifiedClass, methodTree);
         }
@@ -733,8 +732,11 @@ public class OAuthHelper {
             if (xPath != null) {
                 return "xPathSearch("+responseFieldName+",\""+xPath+"\")"; //NOI18N
             }
-        } else if ("JSON".equals(responseStyle)) {
-            // PENDING: need to implement this
+        } else if ("JSON".equals(responseStyle)) { //NOI18N
+            String xPath = getXPathForParam(oauthMetadata, oauthName);
+            if (xPath != null) {
+                return "jsonSearch("+responseFieldName+",\""+xPath+"\")"; //NOI18N
+            }
         }
         return ""; //NOI18N
     }
@@ -1083,7 +1085,7 @@ public class OAuthHelper {
         buf.append("response.setContentType(\"text/html;charset=UTF-8\");");  //NOI18N
         buf.append("java.io.PrintWriter out = response.getWriter();"); //NOI18N
         buf.append("try {");  //NOI18N
-        buf.append("Form requestTokenResponse = null;");  //NOI18N
+        buf.append(getResponseClass(responseStyle, false)+" requestTokenResponse = null;");  //NOI18N
         buf.append("UniformInterfaceException uiEx = null;");  //NOI18N
         buf.append("try {");  //NOI18N
         buf.append("    requestTokenResponse = getOAuthRequestToken();"); //NOI18N
@@ -1125,7 +1127,7 @@ public class OAuthHelper {
         if (isVerifier) {
             buf.append("String oauth_verifier = request.getParameter(\"oauth_verifier\");"); //NOI18N
         }
-        buf.append("Form accessTokenResponse = null;"); //NOI18N
+        buf.append(getResponseClass(responseStyle, false)+" accessTokenResponse = null;"); //NOI18N
         buf.append("UniformInterfaceException uiEx = null;"); //NOI18N
         buf.append("try {"); //NOI18N
         buf.append("    javax.servlet.http.HttpSession session = request.getSession(true);"); //NOI18N
@@ -1161,13 +1163,8 @@ public class OAuthHelper {
         return buf.toString();
     }
 
-    private static boolean needXPath(Metadata oauthMetadata) {
-        for (ParamType p : oauthMetadata.getParam()) {
-            if (p.getXpath() != null) {
-                return true;
-            }
-        }
-        return false;
+    private static boolean needXPath(MethodType method) {
+        return !"FORM".equals(method.getResponseStyle());
     }
 
     private static String getXPathForParam(Metadata oauthMetadata, String oathParamName) {
@@ -1179,7 +1176,7 @@ public class OAuthHelper {
         return null;
     }
 
-    private static String getBodyForXPathSearch() {
-        return Wadl2JavaHelper.getMethodBody("Templates/SaaSServices/OAuthXPathSearchBody.method");
+    private static String getBodyForSearchMethod(String format) {
+        return Wadl2JavaHelper.getMethodBody("Templates/SaaSServices/OAuthSearch"+format+".method");
     }
 }
