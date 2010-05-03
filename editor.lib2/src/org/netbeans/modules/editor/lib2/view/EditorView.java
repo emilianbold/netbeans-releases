@@ -479,7 +479,8 @@ public abstract class EditorView extends View {
         sb.append(getEndOffset()).append('>');
         View parent = getParent();
         if (parent instanceof EditorBoxView) {
-            EditorBoxView boxView = (EditorBoxView) parent;
+            @SuppressWarnings("unchecked")
+            EditorBoxView<EditorView> boxView = (EditorBoxView<EditorView>) parent;
             String axis = (boxView.getMajorAxis() == X_AXIS) ? "X" : "Y";
             sb.append(' ').append(axis).append('=').append(boxView.getViewVisualOffset(this));
             // Also append raw visual offset value

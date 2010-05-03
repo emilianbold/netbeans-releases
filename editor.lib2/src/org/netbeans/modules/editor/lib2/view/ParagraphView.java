@@ -59,12 +59,14 @@ import javax.swing.text.View;
  * @author Miloslav Metelka
  */
 
-public class ParagraphView extends EditorBoxView {
+public class ParagraphView extends EditorBoxView<EditorView> {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.ParagraphView.level=FINE
     private static final Logger LOG = Logger.getLogger(ParagraphView.class.getName());
 
     private Position startPos; // 40 + 4 = 44 bytes
+
+    private int length; // 44 + 4 = 48 bytes
 
     public ParagraphView(Position startPos) {
         super(null);
@@ -93,12 +95,12 @@ public class ParagraphView extends EditorBoxView {
 
     @Override
     public int getLength() { // Total length of contained child views
-        return (children != null) ? children.getLength() : 0;
+        return length;
     }
 
     @Override
     public boolean setLength(int length) {
-        // Ignore the length setting
+        this.length = length;
         return true; // ParagraphView may grow
     }
 
@@ -113,7 +115,7 @@ public class ParagraphView extends EditorBoxView {
     }
 
     @Override
-    protected EditorBoxViewChildren createChildren(int capacity) {
+    protected EditorBoxViewChildren<EditorView> createChildren(int capacity) {
         return new ParagraphViewChildren(capacity);
     }
 
@@ -142,7 +144,23 @@ public class ParagraphView extends EditorBoxView {
     }
 
     void recomputeSpans() {
-        ((ParagraphViewChildren)children).recomputeSpans(this);
+        if (children != null) {
+            ((ParagraphViewChildren) children).recomputeSpans(this);
+        }
+    }
+
+    @Override
+    public String findIntegrityError() {
+        String err = super.findIntegrityError();
+        if (err == null) {
+            if (children != null) {
+                int childrenLength = children.getLength();
+                if (getLength() != childrenLength) {
+                    err = "length=" + getLength() + " != childrenLength=" + childrenLength; // NOI18N
+                }
+            }
+        }
+        return err;
     }
 
     @Override

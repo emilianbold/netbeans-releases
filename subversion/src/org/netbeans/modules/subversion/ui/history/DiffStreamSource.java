@@ -110,6 +110,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         this.repoUrl = repoUrl;
     }
 
+    @Override
     public String getName() {
         if (baseFile != null) {
             return baseFile.getName();
@@ -118,10 +119,12 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         }
     }
 
+    @Override
     public String getTitle() {
         return title;
     }
 
+    @Override
     public synchronized String getMIMEType() {
         try {
             init();
@@ -132,6 +135,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         return mimeType;
     }
 
+    @Override
     public synchronized Reader createReader() throws IOException {
         init();
         if (revision == null || remoteFile == null) return null;
@@ -142,10 +146,12 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         }
     }
 
+    @Override
     public Writer createWriter(Difference[] conflicts) throws IOException {
         throw new IOException("Operation not supported"); // NOI18N
     }
 
+    @Override
     public boolean isEditable() {
         return false;
     }
@@ -163,6 +169,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         return true;
     }
 
+    @Override
     public synchronized Lookup getLookup() {
         try {
             init();
@@ -213,6 +220,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         }
     }
 
+    @Override
     public boolean cancel() {
         if(client != null) {
             client.cancel();

@@ -76,6 +76,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
 //        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testInsertRemoveSingleChar", "")});
 //        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testUndo750", "")});
         filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testUndoRedoSimple", "")});
+//        filter.setIncludes(new Filter.IncludeExclude[] { new Filter.IncludeExclude("testInsertSimpleRemoveContent", "")});
 //        setFilter(filter);
     }
 
@@ -91,8 +92,9 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
     private RandomTestContainer createContainer() throws Exception {
         RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit()); // no problem for both java and plain mime-types
         container.setName(this.getName());
-//        container.setLogOp(true);
-//        DocumentTesting.setLogDoc(container, true);
+        boolean logOpAndDoc = false;
+        container.setLogOp(logOpAndDoc);
+        DocumentTesting.setLogDoc(container, logOpAndDoc);
         return container;
     }
 
@@ -108,6 +110,18 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         DocumentTesting.remove(context, 0, 1);
         DocumentTesting.insert(context, 0, "b");
         DocumentTesting.undo(context, 1);
+    }
+
+    public void testInsertSimpleRemoveContent() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        RandomTestContainer.Context context = container.context();
+//        ViewHierarchyRandomTesting.disableHighlighting(container);
+        DocumentTesting.insert(context, 0, "\n\n\n");
+        DocumentTesting.remove(context, 0, doc.getLength());
     }
 
     public void testGap() throws Exception {

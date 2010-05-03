@@ -170,6 +170,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
 
         selectTask = new RequestProcessor ("SyntaxColoringPanel1").create (
             new Runnable () {
+            @Override
                 public void run () {
                     refreshUI ();
                     if (!blink) return;
@@ -651,6 +652,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     private int                     blinkSequence = 0;
     private RequestProcessor.Task   task = new RequestProcessor 
         ("SyntaxColoringPanel").create (new Runnable () {
+        @Override
         public void run () {
             updatePreview ();
             if (blinkSequence == 0) return;
@@ -1061,6 +1063,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     }
     
     private static final class LanguagesComparator implements Comparator<String> {
+        @Override
         public int compare(String o1, String o2) {
             if (o1.equals(ColorModel.ALL_LANGUAGES))
                 return o2.equals(ColorModel.ALL_LANGUAGES) ? 0 : -1;
