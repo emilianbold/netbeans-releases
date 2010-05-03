@@ -42,6 +42,7 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,6 +74,8 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.test.TestFileUtils;
@@ -236,7 +239,6 @@ public class ClassPathProviderImplTest extends TestBase {
 //        cp = ClassPath.getClassPath(src, ClassPath.SOURCE);
 //        assertNotNull("have a SOURCE classpath", cp);
 //        assertEquals("right SOURCE classpath", Collections.singleton(src), new HashSet<FileObject>(Arrays.asList(cp.getRoots())));
-//        // XXX test BOOT
 //    }
 
     /**
@@ -468,7 +470,6 @@ public class ClassPathProviderImplTest extends TestBase {
         cp = ClassPath.getClassPath(srcbridge, ClassPath.SOURCE);
         assertNotNull("have a SOURCE classpath", cp);
         assertEquals("right SOURCE classpath", Collections.singleton(srcbridge), new HashSet<FileObject>(Arrays.asList(cp.getRoots())));
-        // XXX test BOOT
     }
      */
 
@@ -1085,6 +1086,18 @@ public class ClassPathProviderImplTest extends TestBase {
         pxm.replaceClassPathExtensions(Collections.singletonMap("ext/y.jar", (String) null));
         ProjectManager.getDefault().saveProject(p);
         assertEquals(p.getHelper().resolveFile("build/cluster/modules/ext/y.jar").getAbsolutePath(), cp.toString());
+    }
+
+    public void testBootClasspath() throws Exception {
+        NbModuleProject p = generateStandaloneModule("prj");
+        ClassPath boot = ClassPath.getClassPath(p.getSourceDirectory(), ClassPath.BOOT);
+        // XXX test that it is sane... although by default, ${nbjdk.home} will be undefined
+        FileObject xtra = TestFileUtils.writeZipFile(FileUtil.toFileObject(getWorkDir()), "xtra.jar", "META-INF/MANIFEST.MF:Manifest-Version: 1.0\n\n");
+        EditableProperties ep = p.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.put(ClassPathProviderImpl.BOOTCLASSPATH_PREPEND, FileUtil.toFile(xtra).getAbsolutePath());
+        p.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ProjectManager.getDefault().saveProject(p);
+        assertTrue(boot.toString(), Arrays.asList(boot.getRoots()).contains(FileUtil.getArchiveRoot(xtra)));
     }
 
 }

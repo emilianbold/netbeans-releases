@@ -78,6 +78,8 @@ import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 public final class ClassPathProviderImpl implements ClassPathProvider {
+
+    static final String BOOTCLASSPATH_PREPEND = "bootclasspath.prepend";
     
     private final NbModuleProject project;
     
@@ -103,7 +105,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     public @Override ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(ClassPath.BOOT)) {
             if (boot == null) {
-                boot = ClassPathFactory.createClassPath(createPathFromProperty(Evaluator.NBJDK_BOOTCLASSPATH));
+                boot = ClassPathFactory.createClassPath(ClassPathSupport.createProxyClassPathImplementation(
+                        createPathFromProperty(BOOTCLASSPATH_PREPEND),
+                        createPathFromProperty(Evaluator.NBJDK_BOOTCLASSPATH)));
             }
             return boot;
         }
