@@ -119,7 +119,7 @@ final class AnalyzeStackTopComponent extends TopComponent {
                     if (r.contains (e.getPoint ())) {
                         String line = (String) list.getModel ().getElementAt (i);
                         Link link = StackLineAnalyser.analyse (line);
-                        if (link != null && link.hasSource ()) {
+                        if (link != null) {
                             list.setCursor (Cursor.getPredefinedCursor (Cursor.HAND_CURSOR));
                             return;
                         }
@@ -157,6 +157,9 @@ final class AnalyzeStackTopComponent extends TopComponent {
                     if (lastLine == null) {
                         lastLine = currentLine;
                     } else {
+                        if (lastLine.equals("at")) { // NOI18N
+                            lastLine = "at ";        // NOI18N
+                        }
                         String together = lastLine + currentLine;
                         if (StackLineAnalyser.matches(together)) {
                             model.addElement(together);
