@@ -159,16 +159,12 @@ public class EvaluatorTest extends TestBase {
     }
 
     private class ModuleListLogHandler extends Handler {
-        private boolean cacheUsed = true;
         private Set<String> scannedDirs = Collections.synchronizedSet(new HashSet<String>(1000));
         String error;
 
         @Override
         public synchronized void publish(LogRecord record) {
             String msg = record.getMessage();
-            if (msg.startsWith("Due to previous call of refresh(), not using nbbuild cache in")) {
-                cacheUsed = false;
-            }
             assertFalse("Duplicate scan of project tree detected: " + msg,
                     msg.startsWith("Warning: two modules found with the same code name base"));
             if (msg.startsWith("scanPossibleProject: ") && msg.endsWith("scanned successfully")
@@ -187,7 +183,6 @@ public class EvaluatorTest extends TestBase {
 
         @Override
         public void close() throws SecurityException {
-            assertFalse("Using nbbuild cache, which should be disabled", cacheUsed);
         }
 
     }
