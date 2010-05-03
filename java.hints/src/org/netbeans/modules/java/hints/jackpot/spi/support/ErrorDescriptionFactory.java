@@ -48,7 +48,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -59,12 +58,12 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
@@ -187,7 +186,7 @@ public class ErrorDescriptionFactory {
             }
 
             if (result.isEmpty()) {
-                result.add(org.netbeans.spi.editor.hints.ErrorDescriptionFactory.attachSubfixes(new DisableConfigure(ctx.getHintMetadata(), false), auxiliaryFixes));
+                result.add(org.netbeans.spi.editor.hints.ErrorDescriptionFactory.attachSubfixes(new TopLevelConfigureFix(ctx.getHintMetadata()), auxiliaryFixes));
             }
 
             return result;
@@ -196,11 +195,11 @@ public class ErrorDescriptionFactory {
         return Arrays.asList(provided);
     }
 
-    private static final class DisableConfigure implements Fix {
+    private static class DisableConfigure implements Fix {
         private final @NonNull HintMetadata metadata;
         private final boolean disable;
 
-        public DisableConfigure(@NonNull HintMetadata metadata, boolean disable) {
+        DisableConfigure(@NonNull HintMetadata metadata, boolean disable) {
             this.metadata = metadata;
             this.disable = disable;
         }
@@ -236,6 +235,19 @@ public class ErrorDescriptionFactory {
 
             return null;
         }
+    }
+
+    private static final class TopLevelConfigureFix extends DisableConfigure implements EnhancedFix {
+
+        public TopLevelConfigureFix(@NonNull HintMetadata metadata) {
+            super(metadata, false);
+        }
+
+        @Override
+        public CharSequence getSortText() {
+            return "\uFFFFzz";
+        }
+        
     }
 
 }
