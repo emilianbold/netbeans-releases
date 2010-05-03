@@ -43,11 +43,12 @@ package org.netbeans.modules.php.editor.indent;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.api.editor.EditorUtilities;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.php.editor.indent.TokenFormatter.DocumentOptions;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -61,6 +62,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
  */
 public class FormatVisitor extends DefaultVisitor {
 
+    private static final Logger LOGGER = Logger.getLogger(FormatVisitor.class.getName());
+
     private BaseDocument document;
     private final List<FormatToken> formatTokens;
     TokenSequence<PHPTokenId> ts;
@@ -69,6 +72,7 @@ public class FormatVisitor extends DefaultVisitor {
     private DocumentOptions options;
     private boolean includeWSBeforePHPDoc;
     private boolean isCurly; // whether the last visited block is curly or standard syntax.
+    private boolean isMethodInvocationShifted; // is continual indentation already included ?
 
     public FormatVisitor(BaseDocument document) {
 	this.document = document;
@@ -79,6 +83,7 @@ public class FormatVisitor extends DefaultVisitor {
 	includeWSBeforePHPDoc = true;
 	formatTokens = new ArrayList<FormatToken>();
 	formatTokens.add(new FormatToken.InitToken());
+        isMethodInvocationShifted = false;
     }
 
     public List<FormatToken> getFormatTokens() {
@@ -748,6 +753,34 @@ public class FormatVisitor extends DefaultVisitor {
 	}
 	ts.movePrevious();
 	super.visit(node);
+    }
+
+    @Override
+    public void visit(MethodInvocation node) {
+        boolean shift = false;
+        if (!isMethodInvocationShifted) {
+            try {
+                int startText = node.getDispatcher().getEndOffset();
+                int endText = node.getMethod().getStartOffset();
+                if (document.getText(startText, endText - startText).contains("\n")) {
+                    shift = true;
+                    addAllUntilOffset(node.getStartOffset());
+                    formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
+                    isMethodInvocationShifted = true;
+                    super.visit(node);
+                    addAllUntilOffset(indentLevel);
+                    formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * options.continualIndentSize));
+                    isMethodInvocationShifted = false;
+                }
+            } catch (BadLocationException ex) {
+                LOGGER.log(Level.WARNING, "Exception in scanning method invocation", ex);  //NOI18N
+                shift = false;
+            }
+
+        }
+        if (!shift) {
+            super.visit(node);
+        }
     }
 
     @Override
