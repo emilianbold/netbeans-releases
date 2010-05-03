@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.subversion.ui.history;
 
+import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.history.RepositoryRevision.Event;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -64,6 +65,8 @@ import org.netbeans.api.diff.DiffController;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.util.Cancellable;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -260,7 +263,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     }
 
     protected void showContainerDiff(RepositoryRevision container, boolean showLastDifference) {
-        List<RepositoryRevision.Event> revs = container.getEvents();
+        List<RepositoryRevision.Event> revs = container.getEvents(true);
 
         RepositoryRevision.Event newest = getEventForRoots(container);
         if(newest == null) {
@@ -271,7 +274,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
     protected RepositoryRevision.Event getEventForRoots(RepositoryRevision container) {
         RepositoryRevision.Event event = null;
-        List<RepositoryRevision.Event> revs = container.getEvents();
+        List<RepositoryRevision.Event> revs = container.getEvents(true);
 
         //try to get the root
         File[] roots = parent.getRoots();
@@ -343,7 +346,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         
         private final RepositoryRevision.Event header;
         private final String revision1;
-        private final String revision2;
+        private String revision2;
         private boolean showLastDifference;
 
         public ShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
@@ -359,10 +362,42 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             final Diff diff = Diff.getDefault();
             SVNUrl repotUrl = header.getLogInfoHeader().getRepositoryRootUrl();
             SVNUrl fileUrl = repotUrl.appendPath(header.getChangedPath().getPath());
+            File file = header.getFile();
+
+            String title1 = revision1;
+            String title2 = revision2;
+
+            String pegRevision1 = header.getChangedPath().getAction() == 'D' ? revision1 : revision2;
+            String pegRevision2 = revision2;
+            if(header.isFakeRoot()) {
+                try {
+                    SvnClient client = Subversion.getInstance().getClient(file);
+                    ISVNInfo info = client.getInfoFromWorkingCopy(file);
+                    if(info != null) {
+                        pegRevision1 = info.getRevision().toString();
+                        pegRevision2 = pegRevision1;
+                    }
+                } catch (SVNClientException ex) {
+                    Subversion.LOG.log(Level.WARNING, file != null ? file.getAbsolutePath() : "null", ex); // NOI18N
+                }
+            }
+
             // through peg revision always except from 'deleting the file', since the file does not exist in the newver revision
-            final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), repotUrl, fileUrl, revision1,
-                    header.getChangedPath().getAction() == 'D' ? revision1 : revision2, revision1);
-            final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), repotUrl, fileUrl, revision2, revision2);
+            final DiffStreamSource s1 = new DiffStreamSource(
+                    file,
+                    repotUrl,
+                    fileUrl,
+                    revision1,
+                    pegRevision1, title1);
+
+            final DiffStreamSource s2 = 
+                    new DiffStreamSource(
+                        file,
+                        repotUrl, fileUrl,
+                        revision2,
+                        pegRevision2,
+                        title2);
+
             this.setCancellableDelegate(new Cancellable() {
                 public boolean cancel() {
                     s1.cancel();
