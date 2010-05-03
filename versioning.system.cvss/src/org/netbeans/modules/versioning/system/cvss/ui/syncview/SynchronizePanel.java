@@ -423,9 +423,10 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
                 }
             }
         });
+        final ExecutorGroup grp = refreshCommandGroup;
         CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
-                refreshCommandGroup.execute();
+                grp.execute();
             }
         });
     }
