@@ -370,7 +370,8 @@ public final class ColorModel {
             editorPane.setDocument(document);
             InputAttributes inputAttributes = new InputAttributes ();
             Language language = Language.find (exampleMimeType);
-            inputAttributes.setValue (language, "OptionsDialog", Boolean.TRUE, true);
+            if (language != null)
+                inputAttributes.setValue (language, "OptionsDialog", Boolean.TRUE, true);
             document.putProperty (InputAttributes.class, inputAttributes);
             editorPane.addCaretListener (new CaretListener () {
                 @Override
