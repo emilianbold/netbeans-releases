@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  */
 public class Tiny {
 
-    @Hint(category="general", hintKind=Kind.SUGGESTION, severity=HintSeverity.CURRENT_LINE_WARNING)
+    @Hint(category="suggestions", hintKind=Kind.SUGGESTION, severity=HintSeverity.CURRENT_LINE_WARNING)
     @TriggerPattern(value="$this.equals($other)",
                     constraints={
                         @Constraint(variable="$this", type="java.lang.Object"),
