@@ -58,6 +58,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.modules.apisupport.project.Evaluator;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -102,7 +103,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     public ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(ClassPath.BOOT)) {
             if (boot == null) {
-                boot = ClassPathFactory.createClassPath(createPathFromProperty("nbjdk.bootclasspath")); // NOI18N
+                boot = ClassPathFactory.createClassPath(createPathFromProperty(Evaluator.NBJDK_BOOTCLASSPATH));
             }
             return boot;
         }
@@ -261,7 +262,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     
     /** &lt;compile-dependency&gt; is what we care about. */
     private ClassPathImplementation createCompileClasspath() {
-        return createPathFromProperty("cp"); // NOI18N
+        return createPathFromProperty(Evaluator.CP);
     }
     
     private void addPathFromProjectEvaluated(List<PathResourceImplementation> entries, String path) {
@@ -284,7 +285,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     }
     
     private ClassPathImplementation createExecuteClasspath() {
-        return createPathFromProperty("run.cp"); // NOI18N
+        return createPathFromProperty(Evaluator.RUN_CP);
     }
     
     private void calculateExtraCompilationUnits() {

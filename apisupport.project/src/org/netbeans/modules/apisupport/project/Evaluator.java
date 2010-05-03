@@ -97,7 +97,11 @@ import org.w3c.dom.Element;
  * 2. Is reset upon project.xml changes.
  * @author Jesse Glick, Martin Krauskopf
  */
-final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntProjectListener {
+public final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntProjectListener {
+    
+    public static final String CP = "cp";
+    public static final String NBJDK_BOOTCLASSPATH = "nbjdk.bootclasspath";
+    public static final String RUN_CP = "run.cp";
     
     private final NbModuleProject project;
     private final NbModuleProvider typeProvider;
@@ -142,7 +146,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         }
     }
     
-    public Evaluator(NbModuleProject project, NbModuleProvider typeProvider) {
+    Evaluator(NbModuleProject project, NbModuleProvider typeProvider) {
         this.project = project;
         this.typeProvider = typeProvider;
         delegate = createEvaluator(null);
@@ -176,7 +180,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
 
     private boolean isModuleListDependentProperty(String p) {
         return p.equals("module.classpath") || // NOI18N
-                p.equals("cp") || p.endsWith(".cp") || p.endsWith(".cp.extra"); // NOI18N
+                p.equals(CP) || p.endsWith(".cp") || p.endsWith(".cp.extra"); // NOI18N
     }
     
     private static final Pattern ANT_PROP_REGEX = Pattern.compile("\\$\\{([a-zA-Z0-9._-]+)\\}"); // NOI18N
@@ -207,7 +211,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 if (reset && !loadedModuleList) {
                     reset();
                     if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                        Util.err.log("Needed to reset evaluator in " + project + "due to use of module-list-dependent property; now cp=" + delegate.getProperty("cp"));
+                        Util.err.log("Needed to reset evaluator in " + project + "due to use of module-list-dependent property; now cp=" + delegate.getProperty(CP));
                     }
                 }
                 synchronized (Evaluator.this) {
@@ -438,8 +442,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("module.run.classpath", computeRuntimeModuleClasspath(ml)))); // NOI18N
             Map<String,String> buildDefaults = new HashMap<String,String>();
             buildDefaults.put("cp.extra", ""); // NOI18N
-            buildDefaults.put("cp", "${module.classpath}:${cp.extra}"); // NOI18N
-            buildDefaults.put("run.cp", "${module.run.classpath}:${cp.extra}:${build.classes.dir}"); // NOI18N
+            buildDefaults.put(CP, "${module.classpath}:${cp.extra}"); // NOI18N
+            buildDefaults.put(RUN_CP, "${module.run.classpath}:${cp.extra}:${build.classes.dir}"); // NOI18N
             
             baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
 
@@ -541,7 +545,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 // Real fallback...
                 bootcp = "${sun.boot.class.path}"; // NOI18N
             }
-            props.put("nbjdk.bootclasspath", bootcp); // NOI18N
+            props.put(NBJDK_BOOTCLASSPATH, bootcp); // NOI18N
             if (home != null && !Utilities.isMac()) {   //On Mac everything is in classes.jar, there is no tools.jar
                 props.put("tools.jar", home + "/lib/tools.jar".replace('/', File.separatorChar)); // NOI18N
             }

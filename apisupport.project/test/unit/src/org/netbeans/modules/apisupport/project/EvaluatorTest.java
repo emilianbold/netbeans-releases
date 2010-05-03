@@ -134,22 +134,22 @@ public class EvaluatorTest extends TestBase {
         PropertyEvaluator eval = p.evaluator();
         TestBase.TestPCL l = new TestBase.TestPCL();
         eval.addPropertyChangeListener(l);
-        String bootcp = eval.getProperty("nbjdk.bootclasspath");
+        String bootcp = eval.getProperty(Evaluator.NBJDK_BOOTCLASSPATH);
         String origbootcp = bootcp;
         assertNotNull(bootcp); // who knows what actual value will be inside a unit test - probably empty
         ep = p.getHelper().getProperties("nbproject/platform.properties");
         ep.setProperty("nbjdk.active", "testjdk");
         p.getHelper().putProperties("nbproject/platform.properties", ep);
-        assertTrue("got a change in bootcp", l.changed.contains("nbjdk.bootclasspath"));
+        assertTrue("got a change in bootcp", l.changed.contains(Evaluator.NBJDK_BOOTCLASSPATH));
         l.reset();
-        bootcp = eval.getProperty("nbjdk.bootclasspath");
+        bootcp = eval.getProperty(Evaluator.NBJDK_BOOTCLASSPATH);
         assertEquals("correct bootcp", new File(testjdk, "jre/lib/rt.jar".replace('/', File.separatorChar)).getAbsolutePath(), bootcp);
         ep = p.getHelper().getProperties("nbproject/platform.properties");
         ep.setProperty("nbjdk.active", "default");
         p.getHelper().putProperties("nbproject/platform.properties", ep);
-        assertTrue("got a change in bootcp", l.changed.contains("nbjdk.bootclasspath"));
+        assertTrue("got a change in bootcp", l.changed.contains(Evaluator.NBJDK_BOOTCLASSPATH));
         l.reset();
-        bootcp = eval.getProperty("nbjdk.bootclasspath");
+        bootcp = eval.getProperty(Evaluator.NBJDK_BOOTCLASSPATH);
         assertEquals(origbootcp, bootcp);
     }
 
