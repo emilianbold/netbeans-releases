@@ -119,7 +119,21 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     @Override
     public EditorView createView(int startOffset, int limitOffset) {
         assert (startOffset == foldStartOffset) : "startOffset=" + startOffset + " != foldStartOffset=" + foldStartOffset; // NOI18N
-        return new FoldView(textComponent(), fold);
+        if (fold.getEndOffset() <= limitOffset) {
+            return new FoldView(textComponent(), fold);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public int viewEndOffset(int startOffset, int limitOffset) {
+        int foldEndOffset = fold.getEndOffset();
+        if (foldEndOffset <= limitOffset) {
+            return foldEndOffset;
+        } else {
+            return -1;
+        }
     }
 
     @Override

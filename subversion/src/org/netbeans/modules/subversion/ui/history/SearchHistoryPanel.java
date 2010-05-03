@@ -65,9 +65,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dimension;
-import java.io.FileFilter;
+import java.awt.EventQueue;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.ui.history.RepositoryRevision.EventDetails;
 import org.netbeans.modules.versioning.util.Utils;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -95,7 +96,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     
     private AbstractAction nextAction;
     private AbstractAction prevAction;
-    private FileFilter fileFilter;
+    private EventDetails eventsFilter;
+    private boolean alreadyHasDetails;
 
     /** Creates new form SearchHistoryPanel */
     public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
@@ -213,19 +215,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         } else {
             fileInfoCheckBox.setSelected(true);
         }
-        fileFilter = new FileFilter() {
+        eventsFilter = new EventDetails(roots[0]) {
             @Override
-            public boolean accept(File file) {
-                boolean retval = fileInfoCheckBox.isSelected();
-                if (!retval) {
-                    for (File root : roots) {
-                        if (root.equals(file)) {
-                            retval = true;
-                            break;
-                        }
-                    }
-                }
-                return retval;
+            protected boolean showDetails() {
+                return fileInfoCheckBox.isSelected();
             }
         };
     }
@@ -237,9 +230,13 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             refreshComponents(false);
         } else if (e.getSource() == fileInfoCheckBox && fileInfoCheckBox.isEnabled()) {
             SvnModuleConfig.getDefault().setShowFileAllInfo(fileInfoCheckBox.isSelected());
-            diffView = null;
-            summaryView = null;
-            refreshComponents(true);
+            if(!alreadyHasDetails) {
+                search();
+            } else {
+                diffView = null;
+                summaryView = null;
+                refreshComponents(true);
+            }
         }
     }
 
@@ -288,10 +285,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                             if (fileInfoCheckBox.isSelected()) {
                                 rev.sort(new RepositoryRevision.EventFullNameComparator());
                             }
-                            rev.setFilter(fileFilter);
+                            rev.setEventDetails(eventsFilter);
                         }
                         summaryView = new SummaryView(this, results);
-                    }
+                    } 
                     resultsPanel.add(summaryView.getComponent());
                 } else {
                     if (diffView == null) {
@@ -300,7 +297,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                             if (fileInfoCheckBox.isSelected()) {
                                 rev.sort(new RepositoryRevision.EventBaseNameComparator());
                             }
-                            rev.setFilter(fileFilter);
+                            rev.setEventDetails(eventsFilter);
                         }
                         diffView = diffViewFactory.createDiffResultsView(this, results);
                     }
@@ -353,24 +350,47 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         if (currentSearchTask != null) {
             currentSearchTask.cancel();
         }
+        if(!alreadyHasDetails) {
+            alreadyHasDetails = fileInfoCheckBox.isSelected();
+        }
         setResults(null, true);
-        currentSearchTask = Subversion.getInstance().getParallelRequestProcessor().post(new SearchExecutor(this));
+        Subversion.getInstance().getParallelRequestProcessor().post(new SearchExecutor(this));
     }
     
     void executeSearch() {
         search();
     }
 
-    void showDiff(RepositoryRevision.Event revision) {
-        tbDiff.setSelected(true);
-        refreshComponents(true);
-        diffView.select(revision);
+    void showDiff(final RepositoryRevision.Event revision) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                tbDiff.setSelected(true);
+                refreshComponents(true);
+                diffView.select(revision);
+            }
+        };
+        if(EventQueue.isDispatchThread()) {
+            r.run();
+        } else {
+            EventQueue.invokeLater(r);
+        }
     }
 
-    public void showDiff(RepositoryRevision container) {
-        tbDiff.setSelected(true);
-        refreshComponents(true);
-        diffView.select(container);
+    public void showDiff(final RepositoryRevision container) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                tbDiff.setSelected(true);
+                refreshComponents(true);
+                diffView.select(container);
+            }
+        };
+        if(EventQueue.isDispatchThread()) {
+            r.run();
+        } else {
+            EventQueue.invokeLater(r);
+        }
     }
 
     /**

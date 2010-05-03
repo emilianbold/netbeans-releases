@@ -88,7 +88,7 @@ import javax.swing.text.ViewFactory;
  * @author Miloslav Metelka
  */
 
-public abstract class EditorBoxView extends EditorView implements EditorView.Parent {
+public abstract class EditorBoxView<V extends EditorView> extends EditorView implements EditorView.Parent {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.EditorBoxView.level=FINE
     private static final Logger LOG = Logger.getLogger(EditorBoxView.class.getName());
@@ -105,7 +105,7 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
      * Maintainer of children view infos. They may be computed lazily and dropped
      * once they are unnecessary or if they become obsolete.
      */
-    EditorBoxViewChildren children; // 36 + 4 = 40 bytes
+    EditorBoxViewChildren<V> children; // 36 + 4 = 40 bytes
 
     /**
      * Construct a composite box view over the given element.
@@ -194,7 +194,7 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
         return (children != null) ? children.get(index) : null;
     }
     
-    public final EditorView getEditorView(int index) {
+    public final V getEditorView(int index) {
         return children.get(index);
     }
 
@@ -203,7 +203,7 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
         return children.getViewVisualOffset(this, index);
     }
 
-    final double getViewVisualOffset(EditorView view) {
+    final double getViewVisualOffset(V view) {
         checkChildrenNotNull();
         return children.getViewVisualOffset(view.getRawVisualOffset());
     }
@@ -213,14 +213,8 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
         return children.getViewMajorAxisSpan(this, index);
     }
 
-    public void releaseChildren() {
-        if (children != null) {
-            children = null;
-        }
-    }
-
-    protected EditorBoxViewChildren createChildren(int capacity) {
-        return new EditorBoxViewChildren(capacity);
+    protected EditorBoxViewChildren<V> createChildren(int capacity) {
+        return new EditorBoxViewChildren<V>(capacity);
     }
 
     /*
@@ -233,6 +227,19 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
     @Override
     public void replace(int index, int length, View[] views) {
         replace(index, length, views, 0, null);
+    }
+
+    /**
+     * Initialize null <code>EditorBoxView.children</code> of child views
+     * at given range of indices.
+     * <br/>
+     * The view may increase the interval to be initialized.
+     *
+     * @param startIndex index >= 0.
+     * @param endIndex index >= startIndex.
+     */
+    protected void initChildren(int startIndex, int endIndex) {
+        throw new IllegalStateException("Not expected to have child views with null children");
     }
 
     /**
@@ -257,7 +264,7 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
             assert (length == 0) : "Attempt to remove from null children length=" + length; // NOI18N
             children = createChildren(views.length);
         }
-        return children.replace(this, new ReplaceResult(), index, length, (EditorView[]) views, offsetDelta, alloc);
+        return children.replace(this, new ReplaceResult(), index, length, views, offsetDelta, alloc);
     }
 
     /**
@@ -266,7 +273,7 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
      * for layout.
      *
      * @param childView the child view of this view or null to signal
-     *  change in this view. 
+     *  change in this view.
      * @param width true if the width preference has changed
      * @param height true if the height preference has changed
      * @see javax.swing.JComponent#revalidate
@@ -420,7 +427,7 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
         if (offset == -1) {
             // Start from the first View.
             int childIndex = (topOrLeft) ? viewCount - 1 : 0;
-            EditorView child = getEditorView(childIndex);
+            V child = getEditorView(childIndex);
             Shape childAlloc = getChildAllocation(childIndex, alloc);
             retValue = child.getNextVisualPositionFromChecked(offset, bias, childAlloc, direction, biasRet);
             if (retValue == -1 && !topOrLeft && viewCount > 1) {
@@ -440,7 +447,7 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
             } else {
                 childIndex = getViewIndex(offset, Position.Bias.Forward);
             }
-            EditorView child = getEditorView(childIndex);
+            V child = getEditorView(childIndex);
             Shape childAlloc = getChildAllocation(childIndex, alloc);
             retValue = child.getNextVisualPositionFromChecked(offset, bias, childAlloc, direction, biasRet);
             // [TODO] For RTL check direction == EAST | WEST && ((CompositeView)v).flipEastAndWestAtEnds(pos, b))
@@ -536,7 +543,7 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
                 int viewCount = getViewCount();
                 double lastVisualOffset = 0d;
                 for (int i = 0; i < viewCount; i++) {
-                    EditorView child = (EditorView) getView(i);
+                    V child = getEditorView(i);
                     double childVisualOffset = getViewVisualOffset(child);
                     String err = null;
                     // Do not examine child.getPreferredSpan() since it may be expensive (for HighlightsView calls getTextLayout())
@@ -551,9 +558,7 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
                     lastVisualOffset = childVisualOffset;
                 }
             }
-        } else {
-            return "children==null";
-        }
+        } // Children == null permitted
         return null;
     }
 

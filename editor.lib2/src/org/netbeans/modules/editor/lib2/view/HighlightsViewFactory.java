@@ -143,13 +143,10 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     public void restart(int startOffset, int matchOffset) {
         Document doc = textComponent().getDocument();
         docText = DocumentUtilities.getText(doc);
-
         lineElementRoot = doc.getDefaultRootElement();
         lineIndex = lineElementRoot.getElementIndex(startOffset);
         newLineOffset = lineElementRoot.getElement(lineIndex).getEndOffset() - 1;
-
-        highlightsSequence = highlightsContainer.getHighlights(startOffset, Integer.MAX_VALUE);
-        fetchNextHighlight(startOffset);
+        highlightEndOffset = Integer.MIN_VALUE; // Makes the highlightsSequence to be inited
     }
 
     @Override
@@ -173,6 +170,12 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
             int endOffset = Math.min(Math.min(highlightEndOffset, limitOffset), newLineOffset);
             return createHighlightsView(startOffset, endOffset - startOffset, highlightAttributes);
         }
+    }
+
+    @Override
+    public int viewEndOffset(int startOffset, int limitOffset) {
+        updateNewLineOffset(startOffset);
+        return Math.min(newLineOffset + 1, limitOffset);
     }
 
     private EditorView createHighlightsView(int startOffset, int length, AttributeSet attrs) {
@@ -208,6 +211,9 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     }
 
     private void fetchNextHighlight(int offset) {
+        if (highlightsSequence == null && highlightEndOffset == Integer.MIN_VALUE) { // HS not yet created
+            highlightsSequence = highlightsContainer.getHighlights(offset, Integer.MAX_VALUE);
+        }
         while (highlightsSequence != null) {
             while (highlightsSequence instanceof HighlightsSequenceEx && ((HighlightsSequenceEx) highlightsSequence).isStale()) {
                 highlightsSequence = highlightsContainer.getHighlights(offset, Integer.MAX_VALUE);
