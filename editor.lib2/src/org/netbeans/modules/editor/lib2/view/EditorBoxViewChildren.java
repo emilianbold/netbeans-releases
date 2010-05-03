@@ -61,7 +61,7 @@ import org.netbeans.lib.editor.util.GapList;
  * @author Miloslav Metelka
  */
 
-public class EditorBoxViewChildren extends GapList<EditorView> {
+public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.EditorBoxViewChildren.level=FINE
     private static final Logger LOG = Logger.getLogger(EditorBoxViewChildren.class.getName());
@@ -107,8 +107,8 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
     /**
      * @see {@link EditorBoxView#replace(int, int, javax.swing.text.View[], int, java.awt.Shape, float)}
      */
-    public EditorBoxView.ReplaceResult replace(EditorBoxView boxView, EditorBoxView.ReplaceResult result,
-            int index, int removeCount, EditorView[] addedViews,
+    public EditorBoxView.ReplaceResult replace(EditorBoxView<V> boxView, EditorBoxView.ReplaceResult result,
+            int index, int removeCount, View[] addedViews,
             int offsetDelta, Shape alloc)
     {
         boolean modified = false;
@@ -156,7 +156,8 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
             double viewVisualOffset = visualOffset;
             TabExpander tabExpander = boxView.getTabExpander();
             for (int i = 0; i < addedViews.length; i++) {
-                EditorView view = addedViews[i];
+                @SuppressWarnings("unchecked")
+                V view = (V) addedViews[i];
                 if (supportsRawOffsetUpdate) {
                     int offset = view.getRawOffset();
                     // Below gap => do not use offsetGapLength
@@ -200,6 +201,13 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                     minorAxisChildrenSpanChange, alloc
             );
         } // Otherwise the repaint bounds and other vars in result stay unfilled
+        // Update boxView's length to actual length of children.
+        // It cannot be done relatively by just adding offsetDelta to original boxView's length
+        // since box views with unitialized children already have proper length
+        // so later children initialization would double the boxView's length.
+        // Also this must be done after updateSpans() was called since it updates
+        // relative offsets of the local views necessary for proper getLength() result.
+        boxView.setLength(getLength());
         return result;
     }
 
@@ -270,6 +278,27 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         }
     }
 
+    /**
+     * Get view at given index and if that view is a box view then make sure
+     * its children are initialized.
+     *
+     * @param index
+     * @return view with its children initialized.
+     */
+    protected V getWithChildrenValid(EditorBoxView boxView, int index) {
+        V child = get(index);
+        if (child instanceof EditorBoxView) {
+            EditorBoxView boxChild = (EditorBoxView) child;
+            if (boxChild.children == null) {
+                boxView.initChildren(index, index + 1);
+                // Reget the view since the rebuild could replace it
+                child = get(index);
+                assert (((EditorBoxView)child).children != null);
+            }
+        }
+        return child;
+    }
+
     int getViewIndex(int offset, Position.Bias bias) {
 	if(bias == Position.Bias.Backward) {
 	    offset -= 1;
@@ -312,7 +341,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
     int getLength() { // Total length of contained child views
         int size = size();
         if (size > 0) {
-            EditorView lastChildView = get(size - 1);
+            V lastChildView = get(size - 1);
             return raw2RelOffset(lastChildView.getRawOffset()) + lastChildView.getLength();
         } else {
             return 0;
@@ -457,7 +486,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                 double tabVisualDelta = 0d;
                 boolean tabVisualUpdate = false;
                 for (int i = index; i < viewCount; i++) {
-                    EditorView view = get(i);
+                    V view = get(i);
                     if (tabVisualUpdate) {
                         view.setRawVisualOffset(view.getRawVisualOffset() + tabVisualDelta);
                     }
@@ -490,7 +519,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
             boolean offsetUpdate = rawOffsetUpdate() && (offsetDelta != 0);
             TabExpander tabExpander = boxView.getTabExpander();
             for (int i = index; i < viewCount; i++) {
-                EditorView view = get(i);
+                V view = get(i);
                 if (offsetUpdate) {
                     view.setRawOffset(view.getRawOffset() + offsetDelta);
                 }
@@ -531,7 +560,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                 int lastOffset = 0;
                 double lastVisualOffset = 0d;
                 for (int i = gapStorage.gapIndex - 1; i >= index; i--) {
-                    EditorView view = get(i);
+                    V view = get(i);
                     if (supportsRawOffsetUpdate) {
                         lastOffset = view.getRawOffset();
                         view.setRawOffset(lastOffset + gapStorage.offsetGapLength);
@@ -546,14 +575,14 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
 
             } else { // index > gapStorage.gapIndex
                 for (int i = gapStorage.gapIndex; i < index; i++) {
-                    EditorView view = get(i);
+                    V view = get(i);
                     view.setRawVisualOffset(view.getRawVisualOffset() - gapStorage.visualGapLength);
                     if (supportsRawOffsetUpdate) {
                         view.setRawOffset(view.getRawOffset() - gapStorage.offsetGapLength);
                     }
                 }
                 if (index < size()) { // Gap moved to existing view - the view is right above gap => subtract gap-lengths
-                    EditorView view = get(index);
+                    V view = get(index);
                     if (supportsRawOffsetUpdate) {
                         gapStorage.offsetGapStart = view.getRawOffset() - gapStorage.offsetGapLength;
                     }
@@ -582,7 +611,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                 error = "gapIndex=" + gapIndex + " > size()=" + size(); // NOI18N
             } else {
                 for (int i = 0; i < size(); i++) {
-                    EditorView view = get(i);
+                    V view = get(i);
                     int rawOffset = view.getRawOffset();
                     int relOffset = raw2RelOffset(rawOffset);
                     double rawVisualOffset = view.getRawVisualOffset();
@@ -670,7 +699,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         if (index >= 0) { // When at least one child the index will fit one of them
             Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
             // Forward to the child view
-            EditorView child = get(index);
+            V child = getWithChildrenValid(boxView, index);
             // Update the bounds with child.modelToView()
             return child.modelToViewChecked(offset, childAlloc, bias);
         } else { // No children => fallback by leaving the given bounds
@@ -684,7 +713,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         if (index >= 0) {
             Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
             // forward to the child view
-            EditorView view = get(index);
+            V view = getWithChildrenValid(boxView, index);
             offset = view.viewToModelChecked(x, y, childAlloc, biasReturn);
         } else { // at the end
             offset = boxView.getStartOffset();
@@ -724,7 +753,10 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
 
         while (index < endIndex) {
             Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
-            EditorView view = get(index);
+            // Ensure chlidren are initialized. If they are not the batch size should cover
+            // a visible screen height at minimum so there should be just one initialization
+            // at maximum for regular painting requests.
+            V view = getWithChildrenValid(boxView, index);
             view.paint(g, childAlloc, clipBounds);
             index++;
         }
@@ -749,7 +781,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
             sb.append('\n');
             ArrayUtilities.appendSpaces(sb, indent);
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
-            EditorView view = get(i);
+            V view = get(i);
             view.appendViewInfo(sb, indent, childImportantIndex);
             boolean appendDots = false;
             if (i == 4) { // After showing first 5 items => possibly skip to important index
