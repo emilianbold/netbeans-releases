@@ -220,8 +220,8 @@ public final class UiUtils {
         for (int i = embeddedTS.size() - 1; i >= 0; i--) {
             TokenSequence<?> ts = embeddedTS.get(i);
             Language lang = LanguageRegistry.getInstance().getLanguageByMimeType(ts.language().mimeType());
-            KeystrokeHandler handler = lang.getBracketCompletion();
-            if (lang != null && handler != null) {
+            KeystrokeHandler handler = lang != null ? lang.getBracketCompletion() : null;
+            if (handler != null) {
                 return handler;
             }
         }

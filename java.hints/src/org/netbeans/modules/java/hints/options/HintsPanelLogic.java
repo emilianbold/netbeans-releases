@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.hints.options;
 
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Kind;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import java.awt.BorderLayout;
@@ -300,13 +301,18 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             
             Preferences p = getCurrentPrefernces(hint.id);
 
-            HintSeverity severity = HintsSettings.getSeverity(hint, p);
-            if (severity != null) {
-                severityComboBox.setSelectedIndex(severity2index.get(severity));
-                severityComboBox.setEnabled(true);
-            } else {
-                severityComboBox.setSelectedIndex(severity2index.get(HintSeverity.ERROR));
+            if (hint.kind == Kind.SUGGESTION) {
+                severityComboBox.setSelectedIndex(severity2index.get(HintSeverity.CURRENT_LINE_WARNING));
                 severityComboBox.setEnabled(false);
+            } else {
+                HintSeverity severity = HintsSettings.getSeverity(hint, p);
+                if (severity != null) {
+                    severityComboBox.setSelectedIndex(severity2index.get(severity));
+                    severityComboBox.setEnabled(true);
+                } else {
+                    severityComboBox.setSelectedIndex(severity2index.get(HintSeverity.ERROR));
+                    severityComboBox.setEnabled(false);
+                }
             }
             
             boolean toTasklist = HintsSettings.isShowInTaskList(hint, p);
