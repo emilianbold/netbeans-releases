@@ -41,13 +41,17 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.project.uiapi.ActionsFactory;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
-import org.openide.actions.DeleteAction;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -223,13 +227,25 @@ public class Actions implements ActionsFactory {
     }
     
     public static synchronized Action deleteProject() {
-        Action a = new ProjectAction(
+        final Action a = new ProjectAction(
             ActionProvider.COMMAND_DELETE, 
             NbBundle.getMessage(Actions.class, "LBL_DeleteProjectAction_Name"),
             null,
             null );
-        
-        a.putValue(Action.ACCELERATOR_KEY, DeleteAction.get(DeleteAction.class).getValue(Action.ACCELERATOR_KEY));
+
+        try {
+            final Action delete = (Action) DataObject.find(FileUtil.getConfigFile("Actions/Edit/org-openide-actions-DeleteAction.instance")).
+                    // XXX #169338 would make this nicer
+                    getLookup().lookup(InstanceCookie.class).instanceCreate();
+            a.putValue(Action.ACCELERATOR_KEY, delete.getValue(Action.ACCELERATOR_KEY));
+            delete.addPropertyChangeListener(new PropertyChangeListener() {
+                public @Override void propertyChange(PropertyChangeEvent evt) {
+                    a.putValue(Action.ACCELERATOR_KEY, delete.getValue(Action.ACCELERATOR_KEY));
+                }
+            });
+        } catch (Exception x) {
+            Exceptions.printStackTrace(x);
+        }
         
         return a;
     }
