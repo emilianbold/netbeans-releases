@@ -67,6 +67,7 @@ import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -152,11 +153,6 @@ public class ErrorDescriptionFactory {
 
     //XXX: should not be public:
     public static List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
-        if (   ctx.getHintMetadata().kind == HintMetadata.Kind.SUGGESTION
-            || ctx.getHintMetadata().kind == HintMetadata.Kind.SUGGESTION_NON_GUI) {
-            //suggestions do not currently have customizers, and cannot be suppressed.
-            return Arrays.asList(provided);
-        }
         List<Fix> auxiliaryFixes = new LinkedList<Fix>();
 
         if (ctx.getHintMetadata() != null) {
@@ -212,9 +208,21 @@ public class ErrorDescriptionFactory {
         @Override
         public String getText() {
             String displayName = metadata.displayName;
-            String pattern = disable ? "Disable \"{0}\" Hint" : "Configure \"{0}\" Hint";
-            
-            return MessageFormat.format(pattern, displayName);
+            String key;
+            switch (metadata.kind) {
+                case HINT:
+                case HINT_NON_GUI:
+                    key = disable ? "FIX_DisableHint" : "FIX_ConfigureHint";
+                    break;
+                case SUGGESTION:
+                case SUGGESTION_NON_GUI:
+                    key = disable ? "FIX_DisableSuggestion" : "FIX_ConfigureSuggestion";
+                    break;
+                default:
+                    throw new IllegalStateException();
+            }
+
+            return NbBundle.getMessage(ErrorDescriptionFactory.class, key, displayName);
         }
 
         @Override
