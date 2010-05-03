@@ -326,6 +326,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     if (ve != null) {
                         param2hints.put(param, INSTANCE_OF);
                         TypeMirror tm = ve.getEnclosingElement().asType();
+                        tm = cInfo.getTypes().erasure(tm);
                         if (containsDeclaredType(tm))
                             param2types.put(param, tm);
                         return Utilities.getTypeName(tm, true) + "." + ve.getSimpleName();
