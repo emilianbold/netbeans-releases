@@ -1,4 +1,4 @@
-NETBEANS IDE 6.8 ("Product")
+NETBEANS IDE 6.9 Beta ("Product")
 
 Please review the complete list of open-source licenses
 governing software  included in the Product. They can be
@@ -14,13 +14,14 @@ unspecified.
 Please review the list of libraries and licenses provided
 for use. This license file contains six distinct licenses.
 
-Unless specified below, the use of NetBeans IDE is governed 
-by the terms of either the GNU General Public License
-Version 2 with Classpath Exception ("GPLv2 with Classpath
-Exception") or the Common Development and Distribution
-License ("CDDL"). The Product also contains components which
-are governed exclusively by the terms of the GPLv2 with
-Classpath Exception (e.g., components from OpenJDK) .
+Unless specified below, the use of NetBeans IDE and
+components from the GlassFish runtime are governed by the
+terms of either the GNU General Public License Version 2 
+with Classpath Exception ("GPLv2 with Classpath Exception")
+or the Common Development and Distribution License ("CDDL").
+The Product also contains components  which are governed
+exclusively by the terms of the GPLv2 with Classpath
+Exception (e.g., components from OpenJDK) .
 
 LICENSE #1: GPLv2 with Classpath Exception. 
 
@@ -33,12 +34,12 @@ License Agreement and Entitlement.
 LICENSE #4: The use of the Java ME SDK 3.0 is subject to
 this Software License Agreement and Entitlement.
 
-LICENSE #5: The use of the JavaFX SDK 1.2.1 is subject to
-this Software License Agreement and Entitlement.
-
-LICENSE #6: The use of the Sun GlassFish Enterprise Server
-V3 is subject to this Software License Agreement and
+LICENSE #5: The use of the JavaFX Software Development Kit
+(SDK) is subject to this Software License Agreement and
 Entitlement.
+
+LICENSE #6: The use of the NetBeans JavaFX Composer  Plugin
+is subject to this Software Evaluation License Agreement
 
 ************************************************************
 
@@ -1510,18 +1511,15 @@ Santa Clara, California 95054 if you have questions.
 
 LICENSE #5:
 
-JAVAFX 1.2.1 SOFTWARE DEVELOPMENT KIT (SDK).
-
-Sun Microsystems, Inc. ("Sun") ENTITLEMENT for SOFTWARE
+Oracle Corporation ("Oracle") ENTITLEMENT for SOFTWARE
 
 Licensee/Company: Entity receiving Software.
 
 Effective Date: Date of delivery of the Software to You.
 
-Software: JavaFX 1.2.1 Software Development Kit (SDK).
+Software: JavaFX Software Development Kit (SDK).
 
-License Term: Perpetual (subject to termination under the
-SLA).
+License Term: Perpetual (subject to termination under the SLA).
 
 Licensed Unit: Software Copy.
 
@@ -1563,20 +1561,21 @@ apply to Software under this Agreement.
 
 4. JavaFX Technology Restrictions.  You may not create,
 modify, or change the behavior of classes, interfaces, or
-subpackages that are in any way identified as javafx,
-sun or similar convention as specified by Sun in any
+subpackages that are in any way identified as "javafx",
+"Oracle" or similar convention as specified by Oracle in any
 naming convention designation.
 
 5. Installation and Auto-Update.  The Software's
 installation and auto-update processes transmit a limited
-amount of data to Sun (or its service provider) about those
-specific processes to help Sun understand and optimize them. 
-Sun does not associate the data with personally identifiable
-information.  You can find more information about the data
-Sun collects at http://java.com/data/.
+amount of data to Oracle (or its service provider) about
+those specific processes to help Oracle understand and
+optimize them.  Oracle does not associate the data with
+personally identifiable information.  You can find more
+information about the data Oracle collects at
+http://java.com/data/.
 
 
-Sun Microsystems, Inc. ("Sun")
+Oracle Corporation ("Oracle")
 SOFTWARE LICENSE AGREEMENT
 
 READ THE TERMS OF THIS AGREEMENT ("AGREEMENT") CAREFULLY
@@ -1597,7 +1596,7 @@ AND SUPERSEDE THE MASTER TERMS IN RELATION TO THIS SOFTWARE.
 1.	Definitions.
 
 (a) 	"Entitlement" means the collective set of applicable
-documents authorized by Sun evidencing your obligation to
+documents authorized by Oracle evidencing your obligation to
 pay associated fees (if any) for the license, associated
 Services, and the authorized scope of use of Software under
 this Agreement.
@@ -1608,18 +1607,18 @@ described in your Entitlement.
 
 (c)	"Permitted Use" means the licensed Software use(s)
 authorized in this Agreement as specified in your
-Entitlement. The Permitted Use for any bundled Sun software
-not specified in your Entitlement will be evaluation use as
-provided in Section 3.
+Entitlement. The Permitted Use for any bundled Oracle
+software not specified in your Entitlement will be
+evaluation use as provided in Section 3.
 
 
-(d) 	"Service" means the service(s) that Sun or its
+(d) 	"Service" means the service(s) that Oracle or its
 delegate will provide, if any, as selected in your
 Entitlement and as further described in the applicable
-service listings at www.sun.com/service/servicelist.
+service listings at www.oracle.com/support.
 
-(e) 	"Software" means the Sun software described in your
-Entitlement. Also, certain software may be included for
+(e) 	"Software" means the Oracle software described in
+your Entitlement. Also, certain software may be included for
 evaluation use under Section 3. 
 
 (f)	"You" and "Your" means the individual or legal
@@ -1628,8 +1627,8 @@ purposes, the entity performing the evaluation.
 
 2.	License Grant and Entitlement.
 
-Subject to the terms of your Entitlement, Sun grants you a
-nonexclusive, nontransferable limited license to use
+Subject to the terms of your Entitlement, Oracle grants you
+a nonexclusive, nontransferable limited license to use
 Software for its Permitted Use for the license term. Your
 Entitlement will specify (a) Software licensed, (b) the
 Permitted Use, (c) the license term, and (d) the Licensed
@@ -1646,9 +1645,9 @@ date(s).
 The Entitlement may be delivered to you in various ways
 depending on the manner in which you obtain Software and
 Services, for example, the Entitlement may be provided in
-your receipt, invoice or your contract with Sun or
-authorized Sun reseller. It may also be in electronic format
-if you download Software.
+your receipt, invoice or your contract with Oracle or
+authorized Oracle reseller. It may also be in electronic
+format if you download Software.
 
 3.	Permitted Use.
 
@@ -1688,43 +1687,43 @@ Licensed Units, you will need additional Entitlement(s).
 5.	Restrictions.
 
 (a) The copies of Software provided to you under this
-Agreement are licensed, not sold, to you by Sun. Sun
+Agreement are licensed, not sold, to you by Oracle. Oracle
 reserves all rights not expressly granted. (b) You may make
 a single archival copy of Software, but otherwise may not
-copy, modify, or distribute Software. However if the Sun
+copy, modify, or distribute Software. However if the Oracle
 documentation accompanying Software lists specific portions
 of Software, such as header files, class libraries,
 reference source code, and/or redistributable files, that
 may be handled differently, you may do so only as provided
-in the Sun documentation. (c) You may not rent, lease, lend
-or encumber Software. (d) Unless enforcement is prohibited
-by applicable law, you may not decompile, or reverse
-engineer Software. (e) The terms and conditions of this
-Agreement will apply to any Software updates, provided to
-you at Sun's discretion, that replace and/or supplement the
-original Software, unless such update contains a separate
-license. (f) You may not publish or provide the results of
-any benchmark or comparison tests run on Software to any
-third party without the prior written consent of Sun. (g)
-Software is confidential and copyrighted. (h) Unless
-otherwise specified, if Software is delivered with embedded
-or bundled software that enables functionality of Software,
-you may not use such software on a stand-alone basis or use
-any portion of such software to interoperate with any
-program(s) other than Software. (i) Software may contain
-programs that perform automated collection of system data
-and/or automated software updating services. System data
-collected through such programs may be used by Sun, its
-subcontractors, and its service delivery partners for the
-purpose of providing you with remote system services and/or
-improving Sun's software and systems. (j) Software is not
-designed, licensed or intended for use in the design,
-construction, operation or maintenance of any nuclear
-facility and Sun and its licensors disclaim any express or
-implied warranty of fitness for such uses. (k) No right,
-title or interest in or to any trademark, service mark, logo
-or trade name of Sun or its licensors is granted under this
-Agreement.
+in the Oracle documentation. (c) You may not rent, lease,
+lend or encumber Software. (d) Unless enforcement is
+prohibited by applicable law, you may not decompile, or
+reverse engineer Software. (e) The terms and conditions of
+this Agreement will apply to any Software updates, provided
+to you at Oracle's discretion, that replace and/or
+supplement the original Software, unless such update
+contains a separate license. (f) You may not publish or
+provide the results of any benchmark or comparison tests run
+on Software to any third party without the prior written
+consent of Oracle. (g) Software is confidential and
+copyrighted. (h) Unless otherwise specified, if Software is
+delivered with embedded or bundled software that enables
+functionality of Software, you may not use such software on
+a stand-alone basis or use any portion of such software to
+interoperate with any program(s) other than Software. (i)
+Software may contain programs that perform automated
+collection of system data and/or automated software updating
+services. System data collected through such programs may be
+used by Oracle, its subcontractors, and its service delivery
+partners for the purpose of providing you with remote system
+services and/or improving Oracle's software and systems. (j)
+Software is not designed, licensed or intended for use in
+the design, construction, operation or maintenance of any
+nuclear facility and Oracle and its licensors disclaim any
+express or implied warranty of fitness for such uses. (k) No
+right, title or interest in or to any trademark, service
+mark, logo or trade name of Oracle or its licensors is
+granted under this Agreement.
 
 6.	Java Compatibility and Open Source.
 
@@ -1734,10 +1733,10 @@ technology, except under compatibility requirements
 available under a separate agreement available at
 www.java.net.
 
-Sun supports and benefits from the global community of open
-source developers, and thanks the community for its
+Oracle supports and benefits from the global community of
+open source developers, and thanks the community for its
 important contributions and open standards-based technology,
-which Sun has adopted into many of its products.
+which Oracle has adopted into many of its products.
 
 Please note that portions of Software may be provided with
 notices and open source licenses from such communities and
@@ -1752,31 +1751,31 @@ Software in this distribution.
 
 The license and service term are set forth in your
 Entitlement(s). Your rights under this Agreement will
-terminate immediately without notice from Sun if you
+terminate immediately without notice from Oracle if you
 materially breach it or take any action in derogation of
-Sun's and/or its licensors' rights to Software. Sun may
-terminate this Agreement should any Software become, or in
-Sun's reasonable opinion likely to become, the subject of a
-claim of intellectual property infringement or trade secret
-misappropriation. Upon termination, you will cease use of,
-and destroy, Software and confirm compliance in writing to
-Sun. Sections 1, 5, 6, 7, and 9-15 will survive termination
-of the Agreement.
+Oracle's and/or its licensors' rights to Software. Oracle
+may terminate this Agreement should any Software become, or
+in Oracle's reasonable opinion likely to become, the subject
+of a claim of intellectual property infringement or trade
+secret misappropriation. Upon termination, you will cease
+use of, and destroy, Software and confirm compliance in
+writing to Oracle. Sections 1, 5, 6, 7, and 9-15 will
+survive termination of the Agreement.
 
 8. 	Limited Warranty. 
 
-Sun warrants to you that for a period of 90 days from the
+Oracle warrants to you that for a period of 90 days from the
 date of purchase, as evidenced by a copy of the receipt, the
 media on which Software is furnished (if any) will be free
 of defects in materials and workmanship under normal use.
 Except for the foregoing, Software is provided "AS IS". Your
-exclusive remedy and Sun's entire liability under this
-limited warranty will be at Sun's option to replace Software
-media or refund the fee paid for Software. Some states do
-not allow limitations on certain implied warranties, so the
-above may not apply to you. This limited warranty gives you
-specific legal rights. You may have others, which vary from
-state to state.
+exclusive remedy and Oracle's entire liability under this
+limited warranty will be at Oracle's option to replace
+Software media or refund the fee paid for Software. Some
+states do not allow limitations on certain implied
+warranties, so the above may not apply to you. This limited
+warranty gives you specific legal rights. You may have
+others, which vary from state to state.
 
 9.	Disclaimer of Warranty. 
 
@@ -1789,20 +1788,20 @@ LEGALLY INVALID.
 
 10. 	Limitation of Liability. 
 
-TO THE EXTENT NOT PROHIBITED BY LAW, IN NO EVENT WILL SUN OR
-ITS LICENSORS BE LIABLE FOR ANY LOST REVENUE, PROFIT OR
+TO THE EXTENT NOT PROHIBITED BY LAW, IN NO EVENT WILL ORACLE
+OR ITS LICENSORS BE LIABLE FOR ANY LOST REVENUE, PROFIT OR
 DATA, OR FOR SPECIAL, INDIRECT, CONSEQUENTIAL, INCIDENTAL OR
 PUNITIVE DAMAGES, HOWEVER CAUSED REGARDLESS OF THE THEORY OF
 LIABILITY, ARISING OUT OF OR RELATED TO THE USE OF OR
-INABILITY TO USE SOFTWARE, EVEN IF SUN HAS BEEN ADVISED OF
-THE POSSIBILITY OF SUCH DAMAGES. In no event will Sun's
-liability to you, whether in contract, tort (including
-negligence), or otherwise, exceed the amount paid by you for
-Software under this Agreement. The foregoing limitations
-will apply even if the above stated warranty fails of its
-essential purpose. Some states do not allow the exclusion of
-incidental or consequential damages, so some of the terms
-above may not be applicable to you. 
+INABILITY TO USE SOFTWARE, EVEN IF ORACLE HAS BEEN ADVISED
+OF THE POSSIBILITY OF SUCH DAMAGES. In no event will
+Oracle's liability to you, whether in contract, tort
+(including negligence), or otherwise, exceed the amount paid
+by you for Software under this Agreement. The foregoing
+limitations will apply even if the above stated warranty
+fails of its essential purpose. Some states do not allow the
+exclusion of incidental or consequential damages, so some of
+the terms above may not be applicable to you. 
 
 11. 	Export Regulations. 
 
@@ -1843,7 +1842,7 @@ immediately terminate.
 15. 	Integration. 
 
 This Agreement, including any terms contained in your
-Entitlement, is the entire agreement between you and Sun
+Entitlement, is the entire agreement between you and Oracle
 relating to its subject matter. It supersedes all prior or
 contemporaneous oral or written communications, proposals,
 representations and warranties and prevails over any
@@ -1854,432 +1853,282 @@ Agreement. No modification of this Agreement will be
 binding, unless in writing and signed by an authorized
 representative of each party.
 
-Please contact Sun Microsystems, Inc. 4150 Network Circle,
-Santa Clara, California 95054 if you have questions.
+Please contact Oracle Corporation, 500 Oracle Parkway,
+Redwood Shores, California 94065 if you have questions.
+
 
 ************************************************************
 
-LICENSE #6: SUN GLASSFISH ENTERPRISE SERVER V3
+LICENSE #6:
+Software Evaluation License Agreement
 
-Sun Microsystems, Inc. ("Sun") SOFTWARE LICENSE AGREEMENT
-("SLA") and ENTITLEMENT for SOFTWARE
+READ THE TERMS OF THIS SOFTWARE EVALUATION LICENSE
+AGREEMENT, INCLUDING EXHIBIT A ("AGREEMENT"), CAREFULLY
+BEFORE DOWNLOADING SUN TECHNOLOGY OR OPENING SUN TECHNOLOGY
+MEDIA PACKAGE. BY OPENING SUN TECHNOLOGY MEDIA PACKAGE, YOU
+AGREE TO THE TERMS OF THIS AGREEMENT. IF YOU ARE ACCESSING
+SUN TECHNOLOGY ELECTRONICALLY, INDICATE YOUR ACCEPTANCE OF
+THESE TERMS BY SELECTING THE "ACCEPT" (OR EQUIVALENT) BUTTON
+AT THE END OF THIS AGREEMENT. IF YOU DO NOT AGREE TO ALL OF
+THE TERMS, PROMPTLY RETURN THE UNUSED SUN TECHNOLOGY TO SUN
+OR, IF SUN TECHNOLOGY IS ACCESSED ELECTRONICALLY, SELECT THE
+"DECLINE" (OR EQUIVALENT) BUTTON AT THE END OF THIS
+AGREEMENT.
 
-A. ENTITLEMENT for SOFTWARE. Capitalized terms not defined
-in this Entitlement have the meanings ascribed to them in
-the SLA (attached below as Section B). These terms will
-supersede any inconsistent or conflicting terms in the SLA.
+This Agreement is entered into by and between Sun
+Microsystems, Inc., a Delaware corporation having its
+principal place of business at 4150 Network Circle, Santa
+Clara, CA 95054 and its affiliates ("Sun"), and  the
+individual, corporation, partnership or other legal entity
+receiving the Sun Technology ("Licensee"). The parties agree
+as follows: 
 
-Licensee ("You"): The entity receiving the Software from
-Sun.
+I. EXHIBIT A:
 
-Effective Date: Date You receive the Software.
+Purpose: Internal evaluation and/or testing only. 
 
-Software: Sun Software Portfolio, which may include the
-following: Solaris 10, Sun OpenSSO Enterprise, Sun Java
-System Directory Server Enterprise Edition, Directory Server
-Enterprise Edition, Sun Java System Identity Manager, Sun
-Identity Manager, Sun Identity Manager Resource Adapters
-(formerly Sun Java System Identity Manager Resource
-Adapters): (a) Windows Gateway Script Resource Adapter, (b)
-SQL Script Resource Adapter, (c) Unix Script Resource
-Adapter, (d) Database Table Resource Adapter, (e) Host
-Mainframe Resource Adapter, (f) JMS Resource Adapter, (g)
-Simulated Resource Adapter, and (h) Resource Extension
-Facility (REF) kit, Sun Java Identity Auditor, Sun Java
-System Application Server Enterprise Edition, Sun Java
-System Application Server, Sun GlassFish Enterprise Server,
-Sun Java System Message Queue, Sun GlassFish Message Queue,
-Sun Java System Web Server, Sun Java System Web Proxy
-Server, Sun Java System Portal Server, Sun Portal Server,
-Service Registry, Sun Java System Connector for Microsoft
-Outlook, Sun Java System Communications Sync, Solaris
-Cluster, Solaris Cluster Agents, Solaris Cluster Geographic
-Edition, Sun N1 Service Provisioning System, Sun N1 Advanced
-Architecture for SAP Solutions, Sun Studio, Java DB, Sun
-Management Center, Sun Management Center Add-On Packages,
-Sun Java System Calendar Server, Sun Java System Instant
-Messaging Server, Sun Java System Messaging Server and
-Netbeans IDE.
+Effective Date: The date upon which Licensee receives the
+Sun Technology.
 
-Software includes only the versions of the above products
-that are made initially available to You.
+Sun Technology:  NetBeans JavaFX Composer Plugin.
 
-License Term: Perpetual (subject to termination under the
-SLA).
+Version:  1.0.
 
-Licensed Unit: Software Copy.
+The Sun Technology is Pre-Release.
 
-Licensed Unit Count: Unlimited.
+Term:  90 days.
 
-Permitted Uses: You may reproduce and use the Software
-internally for Your own Individual, Commercial, Service
-Provider, or Research and Instructional Use, subject to and
-conditioned on Your compliance with the Additional Terms
-below.
+Feedback Frequency: Licensee will provide feedback at the
+frequency requested by Sun.
 
-Additional Terms:
+Feedback Alias (if any): Licensee will provide feedback to
+the individual or alias specified by Sun.
 
-1. The scope of Your license does not include any right,
-express or implied, (i) to access, copy, distribute, display
-or use the Software to provide diagnostic, maintenance,
-repair or technical support services for Sun software or Sun
-hardware on behalf of any third party for Your direct or
-indirect commercial gain or advantage, without Sun's prior
-written authorization, or (ii) for any third party to
-access, copy, distribute, display or use the Software to
-provide diagnostic, maintenance, repair or technical support
-services for Sun software or Sun hardware on Your behalf for
-such party's direct or indirect commercial gain or
-advantage, without Sun's prior written authorization. The
-limitations set forth in this paragraph apply to any and all
-error corrections, patches, updates, and upgrades to the
-Software You may receive, access, download or otherwise
-obtain from Sun.
+II. Software Evaluation License Agreement
 
-2. Notwithstanding anything to the contrary in any Master
-Terms between the parties or in the SLA, Master Terms do not
-apply to Software under this Agreement. For Solaris 10, Sun
-Management Center, Sun Studio, and Netbeans IDE only, any
-Master Terms purporting to cover those products shall apply,
-as supplemented and superseded by Sections 1-6 of the SLA.
+1. Use And Location of Sun Technology Licensee shall use 
+the Sun Technology listed on Exhibit A of this Agreement 
+solely for the Purpose listed in Exhibit A, and only until
+expiration of the term of this Agreement listed on Exhibit
+A, unless terminated earlier in accordance with Section 2
+herein. Licensee shall be solely responsible for
+installation of the Sun Technology.
 
-3. If You would like to purchase Service for the Software,
-You must first purchase a separate Entitlement to the
-Software. Sun will not provide Service to You for Software
-provided under this Entitlement. You may, however, purchase
-support under this Entitlement for Solaris 10, Sun
-Management Center, Sun Studio, and Netbeans IDE.
+2. Term and Termination 2.1 This Agreement shall remain in
+force for the term listed on Exhibit A, unless terminated
+earlier in accordance with this Section 2. Either party may
+terminate this Agreement at any time for any reason. 
+Licensee's right to use the Sun Technology shall terminate
+immediately and without notice if Licensee breaches Sections
+1("Use and Location of Sun Technology"), 3 ("Software
+License"), 4 ("Restrictions"), 5 ("Feedback"), 6
+("Confidential Information"), 10 ("Import and Export Laws"),
+or 11 ("Miscellaneous"). 2.2 Upon the termination or
+expiration of this Agreement for any reason, Licensee shall
+immediately terminate use of the Sun Technology, and destroy
+the Sun Technology and any copies thereof (unless otherwise
+requested by Sun), and, upon written request by Sun, provide
+Sun with a written statement certifying that Licensee has
+complied with the preceding obligations. 
 
-4. Sun reserves the right to End of Life (EOL), End of
-Service Life (EOSL), add to, take away, re-brand and
-otherwise change the components in any subsequent version or
-update of the Software.
-
-5. Your Service Provider Use is limited to a ratio of two
-hundred non-Employees for each Employee (200:1) accessing
-the Software.
-
-6. You are authorized to develop software programs utilizing
-Solaris 10. If You desire to develop software programs which
-incorporate portions of Solaris 10 ("Developed Programs"),
-the following provisions apply: (i) You may not modify or
-add to application programming interfaces associated with
-Solaris 10; (ii) You are not licensed to use fonts within
-Solaris 10 to develop printing applications unless You have
-secured valid licenses from the appropriate font suppliers;
-(iii) incorporation of portions of Motif in Developed
-Programs may require reporting of copies of Developed
-Programs to Sun; and (iv) You will indemnify and defend Sun
-and its licensors from any claims, including attorneys'
-fees, which arise from or relate to distribution or use of
-Developed Programs to the extent these claims arise from or
-relate to the development performed by You.
-
-7. Sun Management Center includes third party database
-software which is provided to support Solaris' operating
-system services only. The third party database software may
-not be used to provide any other type of data storage nor
-may the interfaces from the third party database software be
-accessed or used by any third party applications.
-
-8. You may use Java Compilers contained in Software provided
-that for a particular version of the Java platform, any
-executable output generated by a Java compiler contained in
-the Software (i) is compiled from source code that conforms
-to the corresponding version of the OEM Java Language
-Specification; (ii) is in the class file format defined by
-the corresponding version of the OEM Java Virtual Machine
-Specification; and (iii) executes properly on a reference
-runtime, as specified by Sun, associated with such version
-of the Java platform.
-
-9. During the term of the SLA and Entitlement, and for a
-period of three (3) years thereafter, You agree to keep
-proper records and documentation of Your compliance with the
-SLA and Entitlement. Upon Sun's reasonable request, You will
-provide copies of such records and documentation to Sun for
-the purpose of confirming Your compliance with the terms and
-conditions of the SLA and Entitlement. This section will
-survive any termination of the SLA and Entitlement. You may
-terminate this SLA and Entitlement at any time by destroying
-all copies of the Software in which case the obligations set
-forth in Section 7 of the SLA shall apply.
-
-B. SOFTWARE LICENSE AGREEMENT
-
-READ THE TERMS OF THIS AGREEMENT ("AGREEMENT") CAREFULLY
-BEFORE OPENING SOFTWARE MEDIA PACKAGE. BY OPENING SOFTWARE
-MEDIA PACKAGE, YOU AGREE TO THE TERMS OF THIS AGREEMENT. IF
-YOU ARE ACCESSING SOFTWARE ELECTRONICALLY, INDICATE YOUR
-ACCEPTANCE OF THESE TERMS BY SELECTING THE "ACCEPT" (OR
-EQUIVALENT) BUTTON AT THE END OF THIS AGREEMENT. IF YOU DO
-NOT AGREE TO ALL OF THE TERMS, PROMPTLY RETURN THE UNUSED
-SOFTWARE TO YOUR PLACE OF PURCHASE FOR A REFUND OR, IF
-SOFTWARE IS ACCESSED ELECTRONICALLY, SELECT THE "DECLINE"
-(OR EQUIVALENT) BUTTON AT THE END OF THIS AGREEMENT. IF YOU
-HAVE SEPARATELY AGREED TO LICENSE TERMS ("MASTER TERMS") FOR
-YOUR LICENSE TO THIS SOFTWARE, THEN SECTIONS 1-6 OF THIS
-AGREEMENT ("SUPPLEMENTAL LICENSE TERMS") SHALL SUPPLEMENT
-AND SUPERSEDE THE MASTER TERMS IN RELATION TO THIS SOFTWARE.
-
-1. Definitions.
-
-(a) "Entitlement" means the collective set of applicable
-documents authorized by Sun evidencing your obligation to
-pay associated fees (if any) for the license, associated
-Services, and the authorized scope of use of Software under
-this Agreement.
-
-(b) "Licensed Unit" means the unit of measure by which your
-use of Software and/or Service is licensed, as described in
-your Entitlement.
-
-(c) "Permitted Use" means the licensed Software use(s)
-authorized in this Agreement as specified in your
-Entitlement. The Permitted Use for any bundled Sun software
-not specified in your Entitlement will be evaluation use as
-provided in Section 3.
-
-(d) "Service" means the service(s) that Sun or its delegate
-will provide, if any, as selected in your Entitlement and as
-further described in the applicable service listings at
-www.sun.com/service/servicelist.
-
-(e) "Software" means the Sun software described in your
-Entitlement. Also, certain software may be included for
-evaluation use under Section 3.
-
-(f) "You" and "Your" means the individual or legal entity
-specified in the Entitlement, or for evaluation purposes,
-the entity performing the evaluation.
-
-2. License Grant and Entitlement.
-
-Subject to the terms of your Entitlement, Sun grants you a
-nonexclusive, nontransferable limited license to use
-Software for its Permitted Use for the license term. Your
-Entitlement will specify (a) Software licensed, (b) the
-Permitted Use, (c) the license term, and (d) the Licensed
-Units.
-
-Additionally, if your Entitlement includes Services, then it
-will also specify the (e) Service and (f) service term.
-
-If your rights to Software or Services are limited in
-duration and the date such rights begin is other than the
-purchase date, your Entitlement will provide that beginning
-date(s).
-
-The Entitlement may be delivered to you in various ways
-depending on the manner in which you obtain Software and
-Services, for example, the Entitlement may be provided in
-your receipt, invoice or your contract with Sun or
-authorized Sun reseller. It may also be in electronic format
-if you download Software.
-
-3. Permitted Use.
-
-As selected in your Entitlement, one or more of the
-following Permitted Uses will apply to your use of Software.
-Unless you have an Entitlement that expressly permits it,
-you may not use Software for any of the other Permitted
-Uses. If you don't have an Entitlement, or if your
-Entitlement doesn't cover additional software delivered to
-you, then such software is for your Evaluation Use.
-
-(a) Evaluation Use. You may evaluate Software internally for
-a period of 90 days from your first use.
-
-(b) Research and Instructional Use. You may use Software
-internally to design, develop and test, and also to provide
-instruction on such uses.
-
-(c) Individual Use. You may use Software internally for
-personal, individual use.
-
-(d) Commercial Use. You may use Software internally for your
-own commercial purposes.
-
-(e) Service Provider Use. You may make Software
-functionality accessible (but not by providing Software
-itself or through outsourcing services) to your end users in
-an extranet deployment, but not to your affiliated companies
-or to government agencies.
-
-4. Licensed Units.
-
-Your Permitted Use is limited to the number of Licensed
-Units stated in your Entitlement. If you require additional
-Licensed Units, you will need additional Entitlement(s).
-
-5. Restrictions.
-
-(a) The copies of Software provided to you under this
-Agreement is licensed, not sold, to you by Sun. Sun reserves
-all rights not expressly granted. (b) You may make a single
-archival copy of Software, but otherwise may not copy,
-modify, or distribute Software. However if the Sun
-documentation accompanying Software lists specific portions
-of Software, such as header files, class libraries,
-reference source code, and/or redistributable files, that
-may be handled differently, you may do so only as provided
-in the Sun documentation. (c) You may not rent, lease, lend
-or encumber Software. (d) Unless enforcement is prohibited
-by applicable law, you may not decompile, or reverse
-engineer Software. (e) The terms and conditions of this
-Agreement will apply to any Software updates, provided to
-you at Sun's discretion, that replace and/or supplement the
-original Software, unless such update contains a separate
-license. (f) You may not publish or provide the results of
-any benchmark or comparison tests run on Software to any
-third party without the prior written consent of Sun. (g)
-Software is confidential and copyrighted. (h) Unless
-otherwise specified, if Software is delivered with embedded
-or bundled software that enables functionality of Software,
-you may not use such software on a stand-alone basis or use
-any portion of such software to interoperate with any
-program(s) other than Software. (i) Software may contain
-programs that perform automated collection of system data
-and/or automated software updating services. System data
-collected through such programs may be used by Sun, its
-subcontractors, and its service delivery partners for the
-purpose of providing you with remote system services and/or
-improving Sun's software and systems. (j) Software is not
-designed, licensed or intended for use in the design,
-construction, operation or maintenance of any nuclear
-facility and Sun and its licensors disclaim any express or
-implied warranty of fitness for such uses. (k) No right,
-title or interest in or to any trademark, service mark, logo
-or trade name of Sun or its licensors is granted under this
-Agreement.
-
-6. Java Compatibility and Open Source.
-
-Software may contain Java technology. You may not create
-additional classes to, or modifications of, the Java
-technology, except under compatibility requirements
-available under a separate agreement available at
-www.java.net.
-
-Sun supports and benefits from the global community of open
-source developers, and thanks the community for its
-important contributions and open standards-based technology,
-which Sun has adopted into many of its products.
-
-Please note that portions of Software may be provided with
-notices and open source licenses from such communities and
-third parties that govern the use of those portions, and any
+3. SOFTWARE LICENSE 3.1 If Sun provides to Licensee software
+Sun Technology, whether loaded on hardware Sun Technology or
+as a standalone item, Sun hereby grants to Licensee a
+nontransferable, nonexclusive, limited license to use the
+software Sun Technology solely for the Purpose, except as
+further limited in Exhibit A. Sun retains all right, title,
+and interest in all copies of the software Sun Technology.
+3.2 Portions of software Sun Technology may be provided with
+notices and open source licenses from communities and third
+parties that govern the use of those portions, and any
 licenses granted hereunder do not alter any rights and
-obligations you may have under such open source licenses,
-however, the disclaimer of warranty and limitation of
-liability provisions in this Agreement will apply to all
-Software in this distribution.
+obligations Licensee may have under such open source
+licenses, however, the disclaimer of warranty and limitation
+of liability provisions in this Agreement will apply to all
+software Sun Technology. Such notices and licenses are
+available upon Licensee's request to Sun, in the event
+Licensee is unable to locate them in or accompanying the Sun
+Technology.
 
-7. Term and Termination.
+4. RESTRICTIONS 4.1 Licensee shall not modify, create
+derivative works, decompile, disassemble, decrypt, extract,
+or otherwise reverse engineer Sun Technology, except to the
+extent any of the preceding limitations are unenforceable
+under applicable law.  Licensee is not authorized to: a)
+disclose, distribute, or transfer the Sun Technology; b) use
+the Sun Technology in development activities (except to the
+extent necessary to enable the interoperability of
+Licensee's products with the Sun Technology for evaluation
+purposes), for commercial uses or in a production
+environment, or c) make public any benchmarking or results
+of evaluating the Sun Technology. 
 
-The license and service term are set forth in your
-Entitlement(s). Your rights under this Agreement will
-terminate immediately without notice from Sun if you
-materially breach it or take any action in derogation of
-Sun's and/or its licensors' rights to Software. Sun may
-terminate this Agreement should any Software become, or in
-Sun's reasonable opinion likely to become, the subject of a
-claim of intellectual property infringement or trade secret
-misappropriation. Upon termination, you will cease use of,
-and destroy, Software and confirm compliance in writing to
-Sun. Sections 1, 5, 6, 7, and 9-15 will survive termination
-of the Agreement.
+5. FEEDBACK "Feedback" means all test results, data,
+comments, enhancements, and any other form of feedback that
+Licensee may provide to Sun relating to the Sun Technology.
+If any of the components of the Sun Technology is in
+pre-release phase, as designated on Exhibit A, then Licensee
+shall supply Sun with Feedback regarding its evaluation of
+the Sun Technology as reasonably requested by Sun, but no
+more frequently than weekly unless otherwise agreed by the
+parties. Feedback becomes the exclusive property of Sun and
+is Sun Confidential Information. Any Licensee materials
+included with the Feedback, in the form of software code or
+documents separately marked as "Licensee Confidential &
+Proprietary," shall not be considered Feedback for purposes
+of this Agreement, and shall remain the property of Licensee
+(or its licensors), unless Licensee has agreed in writing to
+treat them as Feedback.
 
-8. Limited Warranty.
+6. CONFIDENTIAL INFORMATION 6.1 "Confidential Information"
+means: (a) all information disclosed in tangible form during
+the term of this Agreement, pertaining to the Purpose, and
+clearly labeled as confidential or proprietary at the time
+of disclosure; (b) all information pertaining to the Purpose
+that is disclosed in non-tangible form during the term of
+this Agreement, identified as confidential or proprietary at
+the time of disclosure, and summarized in writing,
+designated as confidential or proprietary, and delivered to
+the other party within thirty (30) days after disclosure;
+(c) the Sun Technology;  (d) Feedback; and (e) the terms of
+this Agreement. 6.2  A party receiving Confidential
+Information (the "Recipient") must keep it confidential
+using the same degree of care that it exercises with respect
+to its own  information of like importance but in no event
+less than reasonable care, and may use it only for the
+purposes for which it was provided under this Agreement.
+Confidential Information may be disclosed only to employees
+and individual subcontractors in furtherance of this
+Agreement, that are obligated to the Recipient under similar 
+restrictions and only for the purposes for which it was
+provided under this Agreement.  Recipient's obligations
+under this Section will expire five (5) years from the date
+of receipt of the Confidential Information, except for Sun
+source code which will be protected in perpetuity. The
+parties agree that the Sun Technology contains trade secrets
+of Sun. Recipient may disclose Confidential Information
+pursuant to statute, regulation, or the order of a court of
+competent jurisdiction, provided that Recipient provides the
+other party with prior notice and cooperates with the other
+party in taking appropriate protective measures. These
+obligations do not apply to information which: (i) was in
+the possession of, or was known by, the Recipient prior to
+its receipt from the other party, without an obligation to
+maintain its confidentiality, (ii) is rightfully obtained by
+the Recipient without breach of any obligation to maintain
+its confidentiality; (iii) is or becomes known to the public
+through no act or omission of the Recipient; or (iv) the
+Recipient develops independently without using Confidential
+Information of the other party.  
 
-Sun warrants to you that for a period of 90 days from the
-date of purchase, as evidenced by a copy of the receipt, the
-media on which Software is furnished (if any) will be free
-of defects in materials and workmanship under normal use.
-Except for the foregoing, Software is provided "AS IS". Your
-exclusive remedy and Sun's entire liability under this
-limited warranty will be at Sun's option to replace Software
-media or refund the fee paid for Software. Some states do
-not allow limitations on certain implied warranties, so the
-above may not apply to you. This limited warranty gives you
-specific legal rights. You may have others, which vary from
-state to state.
+7. NO SUPPORT Sun is under no obligation to provide support
+for the Sun Technology or to provide any error corrections
+or updates to the Sun Technology under this Agreement.
 
-9. Disclaimer of Warranty.
+8. DISCLAIMER OF WARRANTIES 8.1 THE SUN TECHNOLOGY IS
+PROVIDED "AS IS" AND WITHOUT WARRANTY OF ANY KIND.  ALL
+EXPRESS AND IMPLIED CONDITIONS, REPRESENTATIONS, AND
+WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF 
+MERCHANTABILITY, SATISFACTORY QUALITY, FITNESS FOR A
+PARTICULAR PURPOSE, AND  NON-INFRINGEMENT, ARE DISCLAIMED,
+TO THE FULLEST EXTENT PERMITTED BY LAW. 8.2 Licensee
+acknowledges that the Sun Technology may be experimental.
+Licensee further acknowledges that the Sun Technology may
+have defects or deficiencies that cannot or will not be
+corrected by Sun. Licensee acknowledges that the Sun
+Technology may not have been approved by the United States
+Federal Communications Commission, any other governmental
+agency, or any test laboratory (for example without
+limitation, Underwriter's Laboratories, and TUV). Neither
+Sun nor its licensors are under any obligation to release a
+commercial version of any of the Sun Technology.
 
-UNLESS SPECIFIED IN THIS AGREEMENT, ALL EXPRESS OR IMPLIED
-CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING ANY
-IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
-PARTICULAR PURPOSE OR NON-INFRINGEMENT ARE DISCLAIMED,
-EXCEPT TO THE EXTENT THAT THESE DISCLAIMERS ARE HELD TO BE
-LEGALLY INVALID.
+9.  LIMITATION OF LIABILITY TO THE EXTENT ALLOWED BY LAW:
+EXCEPT FOR MISAPPROPRIATION OR INFRINGEMENT OF INTELLECTUAL
+PROPERTY RIGHTS OR BREACHES OF LICENSE GRANTS, (a) NEITHER
+PARTY WILL BE LIABLE UNDER ANY LEGAL THEORY FOR ANY SPECIAL,
+INDIRECT, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES
+RELATED TO THIS AGREEMENT OR THE USE OF THE SUN TECHNOLOGY,
+EVEN IF THAT PARTY HAS PREVIOUSLY BEEN ADVISED OF OR
+OTHERWISE HAS REASON TO KNOW OF THE POSSIBILITY OF SUCH
+DAMAGES AND (b) NEITHER PARTY WILL BE LIABLE FOR ANY DIRECT
+DAMAGES RELATED TO THIS AGREEMENT OR THE USE OF THE SUN
+TECHNOLOGY, EXCEPT FOR LICENSEE'S LIABILITY FOR LOSS OF OR
+DAMAGE TO THE SUN TECHNOLOGY OR FAILURE TO RETURN THE SUN
+TECHNOLOGY TO SUN, NOT TO EXCEED THE GREATER OF THE MARKET
+VALUE OF SUCH SUN TECHNOLOGY OR USD$10,000.  (c) THE
+PRECEDING LIMITATIONS IN THIS ENTIRE ARTICLE WILL APPLY EVEN
+IF A PARTY KNEW OR SHOULD HAVE KNOWN OF THE POSSIBILITY OF
+SUCH LIABILITY, LOSSES OR DAMAGES, AND REGARDLESS  OF
+WHETHER THE LIABILITY, LOSS, OR DAMAGE ARISES IN TORT,
+CONTRACT, NEGLIGENCE OR BREACH OF WARRANTY OR OTHERWISE, AND
+EVEN IF ANY EXCLUSIVE REMEDY FAILS OF ITS ESSENTIAL PURPOSE.
 
-10. Limitation of Liability.
+10. IMPORT AND EXPORT LAWS The Sun Technology and technical
+data (including technical data released through access to
+Sun Technology) delivered under the Agreement are subject to
+U.S. export laws and applicable laws of other countries.
+Licensee shall strictly comply with all such laws and assume
+responsibility to obtain licenses and to provide all
+appropriate documentation or information to export,
+re-export, or import as may be required. Licensee agrees not
+to export or re-export to entities on the most current U.S.
+export exclusion lists or to any country subject to U.S.
+embargo or terrorist controls as specified in the U.S.
+export laws. Licensee warrants that it is not identified on
+any U.S. Government export exclusions list. Licensee will
+not use or provide the Sun Technology, materials, tools, and
+technical data for nuclear, missile, or chemical and
+biological weaponry end uses. Licensee agrees not to
+transfer any technical data that is controlled by the
+International Traffic in Arms Regulations (ITAR) of the U.S.
+Department of State (22 CFR Subchapter M Parts 120-130) to
+Sun without prior written notice. These obligations shall
+survive expiration or termination of this Agreement.
 
-TO THE EXTENT NOT PROHIBITED BY LAW, IN NO EVENT WILL SUN OR
-ITS LICENSORS BE LIABLE FOR ANY LOST REVENUE, PROFIT OR
-DATA, OR FOR SPECIAL, INDIRECT, CONSEQUENTIAL, INCIDENTAL OR
-PUNITIVE DAMAGES, HOWEVER CAUSED REGARDLESS OF THE THEORY OF
-LIABILITY, ARISING OUT OF OR RELATED TO THE USE OF OR
-INABILITY TO USE SOFTWARE, EVEN IF SUN HAS BEEN ADVISED OF
-THE POSSIBILITY OF SUCH DAMAGES. In no event will Sun's
-liability to you, whether in contract, tort (including
-negligence), or otherwise, exceed the amount paid by you for
-Software under this Agreement. The foregoing limitations
-will apply even if the above stated warranty fails of its
-essential purpose. Some states do not allow the exclusion of
-incidental or consequential damages, so some of the terms
-above may not be applicable to you.
+11. MISCELLANEOUS 11.1 Licensee may not assign or transfer
+its rights or obligations hereunder without the prior
+written consent of Sun, not to be unreasonably withheld. Sun
+may assign or transfer its rights and obligations under this
+Agreement without consent in the event of a merger,
+acquisition, combination or sale of substantially all of the
+assets of Sun or a Sun business unit.   11.2 If any term or
+provision of this Agreement is found to be invalid under any
+applicable statute or rule of law, then, that provision will
+be enforced to the maximum extent possible to effect the
+intent of the parties, and the remaining provisions of this
+Agreement shall remain in full force and effect. 11.3 Any
+action related to this Agreement will be governed by
+California law and controlling federal law.  No choice of
+law rules of any jurisdiction will apply. 11.4 In addition
+to any other relief, the prevailing party in any action
+arising out of this Agreement shall be entitled to
+reasonable attorneys' fees and costs. 11.5 Licensee is
+granted no rights to use any of Sun's trademarks under this
+Agreement. Sun's trademarks include company names, product
+or service names, marks, logos, designs and trade dress.
+Licensee may not remove, alter, or add to any of Sun's
+trademarks that appear on the Sun Technology. 11.6 U.S.
+GOVERNMENT RIGHTS IN SOFTWARE SUN TECHNOLOGY AND
+DOCUMENTATION. In accordance with FAR 12.212(a) and DFARS
+227.7202-3(a), use, duplication, and disclosure of software
+Sun Technology and related documentation by or for the U.S.
+Government are subject to the license terms set forth in
+this Agreement. No other rights are granted to the U.S.
+Government. 11.7 Rights and obligations under the Agreement
+that by their nature should survive will remain in effect
+after termination or expiration of this Agreement. 11.8 This
+Agreement is the parties' entire agreement relating to the
+license of the Sun Technology and supersedes all prior and
+contemporaneous oral and written communications, proposals,
+conditions, representations, and warranties, and prevails
+over any conflicting or additional terms of any quote,
+order, purchase order, acknowledgment, or other
+communication between the parties relating to the license of
+the Sun Technology during the term of this Agreement.  No
+modification to this Agreement will be binding, unless in
+writing and signed by an authorized representative of each
+party. 
 
-11. Export Regulations.
-
-All Software, documents, technical data, and any other
-materials delivered under this Agreement are subject to U.S.
-export control laws and may be subject to export or import
-regulations in other countries. You agree to comply strictly
-with these laws and regulations and acknowledge that you
-have the responsibility to obtain any licenses to export,
-re-export, or import as may be required after delivery to
-you.
-
-12. U.S. Government Restricted Rights.
-
-If Software is being acquired by or on behalf of the U.S.
-Government or by a U.S. Government prime contractor or
-subcontractor (at any tier), then the Government's rights in
-Software and accompanying documentation will be only as set
-forth in this Agreement; this is in accordance with 48 CFR
-227.7201 through 227.7202-4 (for Department of Defense (DOD)
-acquisitions) and with 48 CFR 2.101 and 12.212 (for non-DOD
-acquisitions).
-
-13. Governing Law.
-
-Any action related to this Agreement will be governed by
-California law and controlling U.S. federal law. No choice
-of law rules of any jurisdiction will apply.
-
-14. Severability.
-
-If any provision of this Agreement is held to be
-unenforceable, this Agreement will remain in effect with the
-provision omitted, unless omission would frustrate the
-intent of the parties, in which case this Agreement will
-immediately terminate.
-
-15. Integration.
-
-This Agreement, including any terms contained in your
-Entitlement, is the entire agreement between you and Sun
-relating to its subject matter. It supersedes all prior or
-contemporaneous oral or written communications, proposals,
-representations and warranties and prevails over any
-conflicting or additional terms of any quote, order,
-acknowledgment, or other communication between the parties
-relating to its subject matter during the term of this
-Agreement. No modification of this Agreement will be
-binding, unless in writing and signed by an authorized
-representative of each party.
-
-Please contact Sun Microsystems, Inc. 4150 Network Circle,
-Santa Clara, California 95054 if you have questions.
+Rev. 3.2_1Oct09.SO-BK
+************************************************************
