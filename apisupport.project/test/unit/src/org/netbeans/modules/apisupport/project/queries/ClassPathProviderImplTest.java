@@ -146,20 +146,22 @@ public class ClassPathProviderImplTest extends TestBase {
             T t1 = null, t2 = null;
             if (it1.hasNext()) {
                 t1 = it1.next();
-                sb1.append("\t" + t1.toString() + "\n");
+                sb1.append("\t").append(t1.toString()).append("\n");
             } else {
                 dif = true;
             }
             if (it2.hasNext()) {
                 t2 = it2.next();
-                sb2.append("\t" + t2.toString() + "\n");
+                sb2.append("\t").append(t2.toString()).append("\n");
             } else {
                 dif = true;
             }
             if (!dif && !t1.equals(t2)) {
                 dif = true;
             }
-            if (! dif) i++;
+            if (!dif) {
+                i++;
+            }
             cnt++;
         }
         if (!dif) {
@@ -654,8 +656,9 @@ public class ClassPathProviderImplTest extends TestBase {
         public int c;
         @Override
         public void publish(LogRecord record) {
-            if (record.getMessage().startsWith("computeTestType: processing "))
+            if (record.getMessage().startsWith("computeTestType: processing ")) {
                 c++;
+            }
         }
         @Override
         public void flush() {

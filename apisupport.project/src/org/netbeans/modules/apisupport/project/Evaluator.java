@@ -136,8 +136,8 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
             return runtime + ':' + testRuntime;
         }
         
-        private static TestClasspath getOrEmpty(Map testsCPs, String testtype) {
-            TestClasspath tcp = (TestClasspath) testsCPs.get(testtype);
+        private static TestClasspath getOrEmpty(Map<String,TestClasspath> testsCPs, String testtype) {
+            TestClasspath tcp = testsCPs.get(testtype);
             if (tcp == null ) {
                 // create with empty classpaths
                 tcp = new TestClasspath("", "", "", ""); // NOI18N
@@ -146,6 +146,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
         }
     }
     
+    @SuppressWarnings("LeakingThisInConstructor")
     Evaluator(NbModuleProject project, NbModuleProvider typeProvider) {
         this.project = project;
         this.typeProvider = typeProvider;
@@ -154,7 +155,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
         project.getHelper().addAntProjectListener(this);
     }
     
-    public String getProperty(String prop) {
+    public @Override String getProperty(String prop) {
         PropertyEvaluator eval = delegatingEvaluator(false);
         assert eval != this;
         String v = eval.getProperty(prop);
@@ -165,7 +166,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
         }
     }
     
-    public String evaluate(String text) {
+    public @Override String evaluate(String text) {
         String v = delegatingEvaluator(false).evaluate(text);
         if (isModuleListDependentValue(v)) {
             return delegatingEvaluator(true).evaluate(text);
@@ -174,7 +175,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
         }
     }
     
-    public Map<String,String> getProperties() {
+    public @Override Map<String,String> getProperties() {
         return delegatingEvaluator(true).getProperties();
     }
 
@@ -197,17 +198,17 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
         return false;
     }
     
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    public @Override void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
     }
     
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
+    public @Override void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
     }
     
     private PropertyEvaluator delegatingEvaluator(final boolean reset) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<PropertyEvaluator>() {
-            public PropertyEvaluator run() {
+            public @Override PropertyEvaluator run() {
                 if (reset && !loadedModuleList) {
                     reset();
                     if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -223,7 +224,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
     
     private void reset() {
         ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
-            public Void run() {
+            public @Override Void run() {
                 ModuleList moduleList;
                 try {
                     moduleList = project.getModuleList();
@@ -245,7 +246,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
         });
     }
     
-    public void propertyChange(PropertyChangeEvent evt) {
+    public @Override void propertyChange(PropertyChangeEvent evt) {
         if ("netbeans.dest.dir".equals(evt.getPropertyName()) || evt.getPropertyName() == null) {
             // Module list may have changed.
             reset();
@@ -255,16 +256,17 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
         }
     }
     
-    public void configurationXmlChanged(AntProjectEvent ev) {
+    public @Override void configurationXmlChanged(AntProjectEvent ev) {
         if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
-            if (runInAtomicAction)
+            if (runInAtomicAction) {
                 pendingReset = true;
-            else
+            } else {
                 reset();
+            }
         }
     }
     
-    public void propertiesChanged(AntProjectEvent ev) {
+    public @Override void propertiesChanged(AntProjectEvent ev) {
         /* TODO: Not needed now? Put here at least some comment. */
     }
     
@@ -364,8 +366,9 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
             suiteEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
             clusterDir = FileUtil.normalizeFile(new File(suiteEval.evaluate(clusterDir))).getAbsolutePath();
         }
-        if (clusterDir != null)
+        if (clusterDir != null) {
             providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("cluster", clusterDir)));
+        }
 
         if (type == NbModuleProvider.SUITE_COMPONENT) {
             String suiteDirS = suiteEval.getProperty("suite.dir"); // NOI18N
@@ -386,7 +389,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                 public DestDirProvider(PropertyEvaluator eval) {
                     super(eval);
                 }
-                protected Map<String,String> getProperties(Map<String,String> inputPropertyValues) {
+                protected @Override Map<String,String> getProperties(Map<String,String> inputPropertyValues) {
                     String platformS = inputPropertyValues.get("nbplatform.active"); // NOI18N
                     if (platformS != null) {
                         return Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"); // NOI18N
@@ -394,7 +397,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                         return Collections.emptyMap();
                     }
                 }
-                protected Set<String> inputProperties() {
+                protected @Override Set<String> inputProperties() {
                     return Collections.singleton("nbplatform.active"); // NOI18N
                 }
             }
@@ -479,7 +482,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
             JavaPlatformManager.getDefault().addPropertyChangeListener(weakListener);
         }
         
-        public final Map<String,String> getProperties() {
+        public @Override final Map<String,String> getProperties() {
             Map<String,String> props = new HashMap<String,String>();
             String home = eval.getProperty("nbjdk.home"); // NOI18N
             if (home == null) {
@@ -523,15 +526,16 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                         File jHome;
                         if (home != null && (jHome = new File(home, "jre/lib")).isDirectory()) {
                             String[] jars = jHome.list(new FilenameFilter() {
-                                public boolean accept(File dir, String name) {
+                                public @Override boolean accept(File dir, String name) {
                                     String n = name.toLowerCase(Locale.US);
                                     return n.endsWith(".jar"); // NOI18N
                                 }
                             });
                             StringBuilder sb = new StringBuilder();
                             for (String jar : jars) {
-                                if (sb.length() > 0)
+                                if (sb.length() > 0) {
                                     sb.append(File.pathSeparator);
+                                }
                                 sb.append("${nbjdk.home}/jre/lib/").append(jar);
                             }
                             bootcp = sb.toString().replace('/', File.separatorChar); // NOI18N
@@ -564,15 +568,15 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
             return props;
         }
         
-        public final void addChangeListener(ChangeListener l) {
+        public @Override final void addChangeListener(ChangeListener l) {
             changeSupport.addChangeListener(l);
         }
         
-        public final void removeChangeListener(ChangeListener l) {
+        public @Override final void removeChangeListener(ChangeListener l) {
             changeSupport.removeChangeListener(l);
         }
         
-        public final void propertyChange(PropertyChangeEvent evt) {
+        public @Override final void propertyChange(PropertyChangeEvent evt) {
             String p = evt.getPropertyName();
             if (p != null && !p.startsWith("nbjdk.") && !p.startsWith("platforms.") && // NOI18N
                     !p.equals(ClassPath.PROP_ENTRIES) && !p.equals(JavaPlatformManager.PROP_INSTALLED_PLATFORMS)) {
@@ -582,7 +586,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                 return;
             }
             final Mutex.Action<Void> action = new Mutex.Action<Void>() {
-                public Void run() {
+                public @Override Void run() {
                     changeSupport.fireChange();
                     return null;
                 }
@@ -594,7 +598,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                 action.run();
             } else {
                 RP.post(new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         ProjectManager.mutex().readAccess(action);
                     }
                 });
@@ -740,7 +744,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
         // #139339: optimization using processedRecursive set was too bold, removed
         for (TestModuleDependency td : ttModules) {
             String cnb = td.getModule().getCodeNameBase();
-            logger.fine("computeTestType: processing '" + cnb + "'");
+            logger.log(Level.FINE, "computeTestType: processing ''{0}''", cnb);
             if (td.isRecursive()) {
                 // scan cp recursively
                 Set<String> unprocessed = new HashSet<String>();
@@ -755,10 +759,11 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                     // if we've put recursiveCNB module only to runtime CP and now should be also added to compile CP, process once more
                     Boolean alreadyInCompileCP = processedRecursive.get(recursiveCNB);
                     if (Boolean.TRUE.equals(alreadyInCompileCP)
-                            || (Boolean.FALSE.FALSE.equals(alreadyInCompileCP) && ! td.isCompile()))
+                            || (Boolean.FALSE.equals(alreadyInCompileCP) && ! td.isCompile())) {
                         continue;
+                    }
 
-                    logger.fine("computeTestType: processing '" + recursiveCNB + "'");
+                    logger.log(Level.FINE, "computeTestType: processing ''{0}''", recursiveCNB);
                     ModuleEntry module = ml.getEntry(recursiveCNB);
                     if (module == null) {
                         Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + recursiveCNB + " for " + FileUtil.getFileDisplayName(project.getProjectDirectory()));
@@ -832,12 +837,12 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
 
    private static final Set<String> warnedModules = Collections.synchronizedSet(new HashSet<String>());
     private String mergePaths(Set<String> cnbs, boolean test,String testtype,File testDistDir,ModuleList ml) {
-        StringBuffer cps = new StringBuffer();
+        StringBuilder cps = new StringBuilder();
         for (String cnb : cnbs) {
                 ModuleEntry module = ml.getEntry(cnb);
                 if (module == null) {
                     if (warnedModules.add(cnb)) {
-                        Logger.getLogger(Evaluator.class.getName()).warning("Cannot find test module dependency: " + cnb);
+                        Logger.getLogger(Evaluator.class.getName()).log(Level.WARNING, "Cannot find test module dependency: {0}", cnb);
                     }
                     continue;
                 }
