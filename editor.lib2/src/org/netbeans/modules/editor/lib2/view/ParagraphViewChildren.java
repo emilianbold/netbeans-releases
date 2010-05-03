@@ -57,7 +57,7 @@ import javax.swing.text.View;
  * @author Miloslav Metelka
  */
 
-public final class ParagraphViewChildren extends EditorBoxViewChildren {
+public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorView> {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.ParagraphViewChildren.level=FINE
     private static final Logger LOG = Logger.getLogger(ParagraphViewChildren.class.getName());
@@ -109,6 +109,11 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
         } else {
             super.setMinorAxisChildrenSpan(boxView, minorAxisSpan);
         }
+    }
+
+    @Override
+    protected EditorView getWithChildrenValid(EditorBoxView boxView, int index) {
+        return get(index);
     }
 
     @Override

@@ -44,7 +44,6 @@ package org.netbeans.modules.editor.lib2.view;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.event.DocumentEvent;
@@ -55,6 +54,18 @@ import org.netbeans.lib.editor.util.ListenerList;
  * SPI class allowing to produce views.
  * <br/>
  * There are two main factories: for folds and for highlights (the default one).
+ * The factories have a priority and factory with highest priority
+ * will always "win" in terms that its view will surely be created as desired.
+ * Factories at lower levels will receive a limitOffset into createView()
+ * being a start offset of the view produced by a higher level factory.
+ * The factory may decide whether it will create view with limiting offset or not.
+ * <br/>
+ * Factory generally operates in two modes:<ul>
+ * <li>Regular mode when the factory produces views</li>
+ * <li>Offset mode when the factory only returns bounds of the produced views
+ *   but it does not create them. This helps the view hierarchy infrastructure
+ *   to do estimates (e.g. how many lines a fold view will span etc.).</li>
+ * </ul>
  *
  * @author Miloslav Metelka
  */
@@ -129,16 +140,28 @@ public abstract class EditorViewFactory {
      * Create a view at the given offset. The view factory must determine
      * the appropriate end offset of the produced view and create a position for it
      * and return it from {@link EditorView#getEndOffset()}.
+     * <br/>
+     * This method is only called if offsetSpanMode in {@link #restart(int, int, boolean)}
+     * was set to false.
      *
      * @param startOffset start offset at which the view must start
-     *  (it was previously returned from {@link #nextViewStartOffset(int)}
+     *  (it was previously returned from {@link #nextViewStartOffset(int)} by this factory
      *   and {@link EditorView#getStartOffset()} must return it).
-     * @param limitOffset suggested maximum end offset of the created view.
-     *  The view factory may however return view with higher end offset if necessary
-     *  - for example a collapsed fold view may insist on a fold's end offset.
-     * @return non-null EditorView instance.
+     * @param limitOffset maximum end offset that the created view can have.
+     * @return EditorView instance or null if limitOffset is too limiting
+     *  for the view that would be otherwise created.
      */
     public abstract EditorView createView(int startOffset, int limitOffset);
+
+    /**
+     * Return to-be-created view's end offset.
+     *
+     * @param startOffset start offset at which the view would start
+     *  (it was previously returned from {@link #nextViewStartOffset(int)} by this factory).
+     * @param limitOffset maximum end offset that the created view can have.
+     * @param end offset of the view to be created or -1 if view's creation is refused by the factory.
+     */
+    public abstract int viewEndOffset(int startOffset, int limitOffset);
 
     /**
      * Finish this round of views creation.
