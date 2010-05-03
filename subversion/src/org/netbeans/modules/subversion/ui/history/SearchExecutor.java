@@ -46,8 +46,6 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.client.SvnClient;
-import org.openide.util.RequestProcessor.Task;
-import org.openide.util.TaskListener;
 import org.tigris.subversion.svnclientadapter.*;
 import javax.swing.*;
 import java.text.SimpleDateFormat;
@@ -156,8 +154,7 @@ class SearchExecutor implements Runnable {
         return a.length() - ai - 1;
     }
 
-
-
+    @Override
     public void run() {
         populatePathToRoot();
 
@@ -168,6 +165,7 @@ class SearchExecutor implements Runnable {
         if (searchingUrl()) {
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(master.getRepositoryUrl());
             SvnProgressSupport support = new SvnProgressSupport() {
+                @Override
                 public void perform() {
                     search(master.getRepositoryUrl(), null, fromRevision, toRevision, this, master.fileInfoCheckBox.isSelected());
                 }
@@ -179,6 +177,7 @@ class SearchExecutor implements Runnable {
                 final Set<File> files = workFiles.get(rootUrl);
                 RequestProcessor rp = Subversion.getInstance().getRequestProcessor(rootUrl);
                 SvnProgressSupport support = new SvnProgressSupport() {
+                    @Override
                     public void perform() {
                         search(rootUrl, files, fromRevision, toRevision, this, master.fileInfoCheckBox.isSelected());
                     }
@@ -311,6 +310,7 @@ class SearchExecutor implements Runnable {
         completedSearches++;
         if (searchingUrl() && completedSearches >= 1 || workFiles.size() == completedSearches) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     master.setResults(results);
                 }

@@ -48,7 +48,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
-import org.openide.util.TaskListener;
 import org.openide.windows.TopComponent;
 import org.openide.awt.Mnemonics;
 import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;

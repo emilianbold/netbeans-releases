@@ -128,8 +128,9 @@ class RepositoryRevision {
         return message;
     }
 
+    @Override
     public String toString() {
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
         text.append(getLog().getRevision().getNumber());
         text.append("\t");
         text.append(getLog().getDate());
@@ -199,8 +200,9 @@ class RepositoryRevision {
             return path;
         }
 
+        @Override
         public String toString() {
-            StringBuffer text = new StringBuffer();
+            StringBuilder text = new StringBuilder();
             text.append("\t");
             text.append(getPath());
             return text.toString();
@@ -208,25 +210,23 @@ class RepositoryRevision {
     }
 
     public static class EventFullNameComparator implements Comparator<Event> {
-
+        @Override
         public int compare(Event e1, Event e2) {
             if (e1 == null || e2 == null || e1.getChangedPath() == null || e2.getChangedPath() == null) {
                 return 0;
             }
             return e1.getChangedPath().getPath().compareTo(e1.getChangedPath().getPath());
         }
-
     }
 
     public static class EventBaseNameComparator implements Comparator<Event> {
-
+        @Override
         public int compare(Event e1, Event e2) {
             if (e1 == null || e2 == null || e1.getName() == null || e2.getName() == null) {
                 return 0;
             }
             return e1.getName().compareTo(e2.getName());
         }
-
     }
 
     public List<Event> getFakeRootEvent() {
