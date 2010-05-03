@@ -48,7 +48,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -59,14 +58,15 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -152,11 +152,6 @@ public class ErrorDescriptionFactory {
 
     //XXX: should not be public:
     public static List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
-        if (   ctx.getHintMetadata().kind == HintMetadata.Kind.SUGGESTION
-            || ctx.getHintMetadata().kind == HintMetadata.Kind.SUGGESTION_NON_GUI) {
-            //suggestions do not currently have customizers, and cannot be suppressed.
-            return Arrays.asList(provided);
-        }
         List<Fix> auxiliaryFixes = new LinkedList<Fix>();
 
         if (ctx.getHintMetadata() != null) {
@@ -191,7 +186,7 @@ public class ErrorDescriptionFactory {
             }
 
             if (result.isEmpty()) {
-                result.add(org.netbeans.spi.editor.hints.ErrorDescriptionFactory.attachSubfixes(new DisableConfigure(ctx.getHintMetadata(), false), auxiliaryFixes));
+                result.add(org.netbeans.spi.editor.hints.ErrorDescriptionFactory.attachSubfixes(new TopLevelConfigureFix(ctx.getHintMetadata()), auxiliaryFixes));
             }
 
             return result;
@@ -200,11 +195,11 @@ public class ErrorDescriptionFactory {
         return Arrays.asList(provided);
     }
 
-    private static final class DisableConfigure implements Fix {
+    private static class DisableConfigure implements Fix {
         private final @NonNull HintMetadata metadata;
         private final boolean disable;
 
-        public DisableConfigure(@NonNull HintMetadata metadata, boolean disable) {
+        DisableConfigure(@NonNull HintMetadata metadata, boolean disable) {
             this.metadata = metadata;
             this.disable = disable;
         }
@@ -212,9 +207,21 @@ public class ErrorDescriptionFactory {
         @Override
         public String getText() {
             String displayName = metadata.displayName;
-            String pattern = disable ? "Disable \"{0}\" Hint" : "Configure \"{0}\" Hint";
-            
-            return MessageFormat.format(pattern, displayName);
+            String key;
+            switch (metadata.kind) {
+                case HINT:
+                case HINT_NON_GUI:
+                    key = disable ? "FIX_DisableHint" : "FIX_ConfigureHint";
+                    break;
+                case SUGGESTION:
+                case SUGGESTION_NON_GUI:
+                    key = disable ? "FIX_DisableSuggestion" : "FIX_ConfigureSuggestion";
+                    break;
+                default:
+                    throw new IllegalStateException();
+            }
+
+            return NbBundle.getMessage(ErrorDescriptionFactory.class, key, displayName);
         }
 
         @Override
@@ -228,6 +235,19 @@ public class ErrorDescriptionFactory {
 
             return null;
         }
+    }
+
+    private static final class TopLevelConfigureFix extends DisableConfigure implements EnhancedFix {
+
+        public TopLevelConfigureFix(@NonNull HintMetadata metadata) {
+            super(metadata, false);
+        }
+
+        @Override
+        public CharSequence getSortText() {
+            return "\uFFFFzz";
+        }
+        
     }
 
 }
