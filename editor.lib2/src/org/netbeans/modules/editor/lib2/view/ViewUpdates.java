@@ -126,8 +126,30 @@ public final class ViewUpdates implements DocumentListener {
         // First update factories since they may fire rebuilding
         Document doc = documentView.getDocument();
         checkFactoriesComponentInited();
+        // Build views lazily
         ViewBuilder viewBuilder = new ViewBuilder(
-                null, documentView, 0, viewFactories, 0, doc.getLength() + 1, -1, 0);
+                null, documentView, 0, viewFactories, 0, doc.getLength() + 1, doc.getLength() + 1, 0, false);
+        try {
+            viewBuilder.createViews();
+            viewBuilder.repaintAndReplaceViews();
+        } finally {
+            viewBuilder.finish(); // Includes factory.finish() in each factory
+        }
+    }
+
+    void initChildren(int startIndex, int endIndex, int lazyChildrenBatch) {
+        int endIndexBatch = Math.min(Math.max(endIndex, startIndex + lazyChildrenBatch), documentView.getViewCount());
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Lazy-children init: [" + startIndex + "," + endIndex + "=>" + endIndexBatch + // NOI18N
+                    "] batch=" + lazyChildrenBatch + "\n"); // NOI18N
+        }
+        assert (endIndexBatch > startIndex) : "endIndexBatch=" + endIndexBatch + " > startIndex=" + startIndex; // NOI18N
+        ParagraphView startChild = documentView.getEditorView(startIndex);
+        ParagraphView lastChild = documentView.getEditorView(endIndexBatch - 1);
+        int startOffset = startChild.getStartOffset();
+        int endOffset = lastChild.getEndOffset();
+        ViewBuilder viewBuilder = new ViewBuilder(
+                null, documentView, startIndex, viewFactories, startOffset, endOffset, endOffset, 0, true);
         try {
             viewBuilder.createViews();
             viewBuilder.repaintAndReplaceViews();
@@ -214,33 +236,48 @@ public final class ViewUpdates implements DocumentListener {
                             ", docLen=" + evt.getDocument().getLength(); // NOI18N
                     paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
                 }
-
-                if (paragraphView != null && !rebuildNecessary) { // Attempt to update just a single view locally
-                    // Just inform the view at the offset to contain more data
-                    // Use rebuildEndOffset if there was a move inside views
-                    int childViewIndex = paragraphView.getViewIndex(rEndOffset);
-                    EditorView childView = paragraphView.getEditorView(childViewIndex);
-                    if (insertOffset == childView.getStartOffset()) { // View starting right at insertOffset => use previous
-                        childViewIndex--;
-                        if (childViewIndex < 0) {
-                            rebuildNecessary = true;
-                        } else {
-                            childView = paragraphView.getEditorView(childViewIndex); // re-get childView at new index
-                        }
+                boolean createLocalViews = true;
+                if (paragraphView != null) {
+                    if (paragraphView.children == null) {
+                        rebuildNecessary = true;
+                        int paragraphStartOffset = paragraphView.getStartOffset();
+                        assert (paragraphStartOffset <= rStartOffset) :
+                                "paragraphStartOffset=" + paragraphStartOffset + " > rStartOffset=" + rStartOffset; // NOI18N
+                        rStartOffset = paragraphStartOffset;
+                        rEndOffset = Math.max(rEndOffset, paragraphStartOffset + paragraphView.getLength());
+                        paragraphView = null;
+                        createLocalViews = false;
                     }
-                    if (!rebuildNecessary) {
-                        // Possibly clear text layout for the child view
-                        if (childView instanceof TextLayoutView) {
-                            documentView.getTextLayoutCache().put(paragraphView, (TextLayoutView)childView, null);
+                    if (!rebuildNecessary) { // Attempt to update just a single view locally
+                        // Just inform the view at the offset to contain more data
+                        // Use rebuildEndOffset if there was a move inside views
+                        int childViewIndex = paragraphView.getViewIndex(rEndOffset);
+                        EditorView childView = paragraphView.getEditorView(childViewIndex);
+                        if (insertOffset == childView.getStartOffset()) { // View starting right at insertOffset => use previous
+                            childViewIndex--;
+                            if (childViewIndex < 0) {
+                                rebuildNecessary = true;
+                            } else {
+                                childView = paragraphView.getEditorView(childViewIndex); // re-get childView at new index
+                            }
                         }
-                        // View may refuse length setting in which case it must be rebuilt
-                        rebuildNecessary = !childView.setLength(childView.getLength() + insertLength);
-                        // Update offsets of the views that follow the modified one
                         if (!rebuildNecessary) {
-                            double visualDelta = childView.getPreferredSpan(paragraphView.getMajorAxis()) -
-                                    paragraphView.getViewMajorAxisSpan(childViewIndex);
-                            // [TODO] fix line wrap info
-                            paragraphView.fixSpans(childViewIndex + 1, insertLength, visualDelta);
+                            // Possibly clear text layout for the child view
+                            if (childView instanceof TextLayoutView) {
+                                documentView.getTextLayoutCache().put(paragraphView, (TextLayoutView)childView, null);
+                            }
+                            // View may refuse length setting in which case it must be rebuilt
+                            rebuildNecessary = !childView.setLength(childView.getLength() + insertLength);
+                            // Update offsets of the views that follow the modified one
+                            if (!rebuildNecessary) {
+                                // Update length of paragraph view as well
+                                paragraphView.setLength(paragraphView.getLength() + insertLength);
+                                double visualDelta = childView.getPreferredSpan(paragraphView.getMajorAxis()) -
+                                        paragraphView.getViewMajorAxisSpan(childViewIndex);
+                                // [TODO] fix line wrap info
+                                paragraphView.fixSpans(childViewIndex + 1, insertLength, visualDelta);
+                                documentView.checkIntegrity();
+                            }
                         }
                     }
                 }
@@ -248,16 +285,15 @@ public final class ViewUpdates implements DocumentListener {
                 if (rebuildNecessary) {
                     ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
                             viewFactories, rStartOffset, rEndOffset,
-                            insertOffset + insertLength, insertLength);
+                            insertOffset + insertLength, insertLength, true);
                     try {
                         viewBuilder.createViews();
                         viewBuilder.repaintAndReplaceViews();
                     } finally {
-                        viewBuilder.finish(); // Includes factory.finish() in each factory
+                        viewBuilder.finish(); // Includes factory.finish() in each factory and checkIntegrity()
                     }
                 }
-
-                documentView.checkIntegrity();
+                resetRebuildInfo();
             } finally {
                 incomingModification = false;
                 mutex.unlock();
@@ -330,6 +366,17 @@ public final class ViewUpdates implements DocumentListener {
                 int paragraphViewIndex = documentView.getViewIndexFirst(rStartOffset);
                 assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
                 ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
+                boolean createLocalViews = true;
+                if (paragraphView.children == null) { // Cannot do local rebuild in such case
+                    rebuildNecessary = true;
+                    int paragraphStartOffset = paragraphView.getStartOffset();
+                    assert (paragraphStartOffset <= rStartOffset) :
+                            "paragraphStartOffset=" + paragraphStartOffset + " > rStartOffset=" + rStartOffset; // NOI18N
+                    rStartOffset = paragraphStartOffset;
+                    rEndOffset = Math.max(rEndOffset, paragraphStartOffset + paragraphView.getLength());
+                    paragraphView = null;
+                    createLocalViews = false;
+                }
 
                 if (!rebuildNecessary) {
                     // Just inform the view at the offset to contain more data
@@ -350,10 +397,13 @@ public final class ViewUpdates implements DocumentListener {
                         rebuildNecessary = !childView.setLength(childView.getLength() - removeLength);
                         // Update offsets of the views that follow the modified one
                         if (!rebuildNecessary) {
+                            // Update length of paragraph view as well
+                            paragraphView.setLength(paragraphView.getLength() - removeLength);
                             double visualDelta = childView.getPreferredSpan(paragraphView.getMajorAxis()) -
                                     paragraphView.getViewMajorAxisSpan(childViewIndex);
                             // [TODO] fix line wrap info
                             paragraphView.fixSpans(childViewIndex + 1, -removeLength, visualDelta);
+                            documentView.checkIntegrity();
                         }
                     }
                 }
@@ -361,16 +411,15 @@ public final class ViewUpdates implements DocumentListener {
                 if (rebuildNecessary) {
                     ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
                             viewFactories, rStartOffset, rEndOffset, 
-                            removeOffset + removeLength, -removeLength);
+                            removeOffset + removeLength, -removeLength, createLocalViews);
                     try {
                         viewBuilder.createViews();
                         viewBuilder.repaintAndReplaceViews();
                     } finally {
-                        viewBuilder.finish(); // Includes factory.finish() in each factory
+                        viewBuilder.finish(); // Includes factory.finish() in each factory and checkIntegrity()
                     }
                 }
                 resetRebuildInfo();
-                documentView.checkIntegrity();
             } finally {
                 incomingModification = false;
                 mutex.unlock();
@@ -457,9 +506,29 @@ public final class ViewUpdates implements DocumentListener {
                         int paragraphViewIndex = documentView.getViewIndexFirst(rStartOffset);
                         assert (paragraphViewIndex >= 0) : "Paragraph view index is " + paragraphViewIndex; // NOI18N
                         ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
+                        // If children are not initialized the local views would not be rebuilt
+                        // so in that case rebuild at paragraph level
+                        boolean createLocalViews = (paragraphView.children != null);
+                        if (createLocalViews) {
+                            // Only do non-lazy rebuild if rebuild area is not too long
+                            int endParagraphIndex = paragraphViewIndex + DocumentView.MAX_NON_LAZY_REBUILD;
+                            if (endParagraphIndex < documentView.getViewCount() &&
+                                    documentView.getEditorView(endParagraphIndex).getStartOffset() < rebuildEndOffset)
+                            {
+                                createLocalViews = false;
+                            }
+                        }
+                        if (!createLocalViews) { // Rebuild must include whole paragraphView
+                            int paragraphStartOffset = paragraphView.getStartOffset();
+                            assert (paragraphStartOffset <= rStartOffset) :
+                                "paragraphStartOffset=" + paragraphStartOffset + " > rStartOffset=" + rStartOffset; // NOI18N
+                            rStartOffset = paragraphView.getStartOffset();
+                            rEndOffset = Math.max(rEndOffset, paragraphStartOffset + paragraphView.getLength());
+                            paragraphView = null;
+                        }
                         ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
                                 viewFactories, rStartOffset, rEndOffset,
-                                rEndOffset, 0);
+                                rEndOffset, 0, createLocalViews);
                         try {
                             viewBuilder.createViews();
                             viewBuilder.repaintAndReplaceViews();

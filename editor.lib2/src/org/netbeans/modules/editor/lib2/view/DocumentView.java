@@ -44,6 +44,7 @@ package org.netbeans.modules.editor.lib2.view;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -100,7 +101,7 @@ import org.openide.util.WeakListeners;
  */
 
 @SuppressWarnings("ClassWithMultipleLoggers") //NOI18N
-public final class DocumentView extends EditorBoxView
+public final class DocumentView extends EditorBoxView<ParagraphView>
         implements PropertyChangeListener, ChangeListener
 {
 
@@ -108,6 +109,19 @@ public final class DocumentView extends EditorBoxView
     private static final Logger LOG = Logger.getLogger(DocumentView.class.getName());
 
     private static final Logger REPAINT_LOG = Logger.getLogger(DebugRepaintManager.class.getName());
+
+    /**
+     * How many lines should be inited at once at minimum. For some embedded editor panes
+     * this may be a reasonable value although generally the batch is derived
+     * from visible number of lines in a viewport.
+     */
+    private static final int LAZY_CHILDREN_MIN_BATCH = 10; // How many lines init at once
+
+    /**
+     * Maximum number of lines that a ViewUpdates.checkRebuild() may span
+     * for a rebuild to be non-lazy. Otherwise the whole rebuild will become lazy.
+     */
+    static final int MAX_NON_LAZY_REBUILD = 3;
 
     static final boolean REQUIRE_EDT = Boolean.getBoolean("org.netbeans.editor.linewrap.edt");
 
@@ -177,9 +191,11 @@ public final class DocumentView extends EditorBoxView
     private float height;
 
     /**
-     * Visible width of the viewport.
+     * Visible width of the viewport or a text component if there is no viewport.
      */
-    private float visibleWidth;
+    private int visibleWidth;
+
+    private int visibleHeight;
 
     /**
      * Cached font render context (in order not to call getContainer().getGraphics() etc. each time).
@@ -244,6 +260,8 @@ public final class DocumentView extends EditorBoxView
     private PreferenceChangeListener prefsListener;
 
     private Map<?, ?> renderingHints;
+
+    private int lazyChildrenBatch = LAZY_CHILDREN_MIN_BATCH;
 
     public DocumentView(Element elem, boolean previewOnly) {
         super(elem);
@@ -363,7 +381,7 @@ public final class DocumentView extends EditorBoxView
             Graphics graphics = textComponent.getGraphics();
             if (graphics != null) {
                 assert (graphics instanceof Graphics2D) : "Not Graphics2D";
-                updateVisibleWidth();
+                updateVisibleDimension();
                 checkSettingsInfo();
                 // Use rendering hints (antialiasing etc.)
                 if (renderingHints != null) {
@@ -397,6 +415,19 @@ public final class DocumentView extends EditorBoxView
         });
     }
 
+    @Override
+    protected void initChildren(int startIndex, int endIndex) {
+        viewUpdates.initChildren(startIndex, endIndex, lazyChildrenBatch);
+    }
+
+    private void updateLazyChildrenBatch() {
+        if (defaultLineHeight > 0f) {
+            lazyChildrenBatch = Math.max((int) (visibleHeight / defaultLineHeight + 2),
+                    LAZY_CHILDREN_MIN_BATCH);
+            LOG.log(Level.FINE, "lazyChildrenBatch={0}\n", lazyChildrenBatch);
+        }
+    }
+
     void recomputeSpans() {
         checkDocumentLocked();
         int viewCount = getViewCount();
@@ -404,7 +435,7 @@ public final class DocumentView extends EditorBoxView
         float origWidth = getMinorAxisSpan();
         float newWidth = 0f;
         for (int i = 0; i < viewCount; i++) {
-            ParagraphView paragraphView = (ParagraphView) getEditorView(i);
+            ParagraphView paragraphView = getEditorView(i);
             double origChildWidth = paragraphView.getMajorAxisSpan();
             float origChildHeight = paragraphView.getMinorAxisSpan();
             paragraphView.recomputeSpans();
@@ -427,9 +458,9 @@ public final class DocumentView extends EditorBoxView
         }
     }
 
-    private void updateVisibleWidth() { // Called only with textComponent != null
+    private void updateVisibleDimension() { // Called only with textComponent != null
         Component parent = textComponent.getParent();
-        float newWidth;
+        Dimension newSize;
         if (parent instanceof JViewport) {
             JViewport viewport = (JViewport) parent;
             if (listeningOnViewport != viewport) {
@@ -439,13 +470,25 @@ public final class DocumentView extends EditorBoxView
                 viewport.addChangeListener(this);
                 listeningOnViewport = viewport;
             }
-            newWidth = viewport.getExtentSize().width;
+            newSize = viewport.getExtentSize();
+
         } else {
-            newWidth = textComponent.getWidth();
+            newSize = textComponent.getSize();
         }
 
-        if (newWidth != visibleWidth) {
-            visibleWidth = newWidth;
+        boolean widthDiffers = (newSize.width != visibleWidth);
+        boolean heightDiffers = (newSize.height != visibleHeight);
+        if (widthDiffers) {
+            visibleWidth = newSize.width;
+        }
+        if (heightDiffers) {
+            visibleHeight = newSize.height;
+        }
+        // After visible* vars are updated update other things
+        if (heightDiffers) {
+            updateLazyChildrenBatch();
+        }
+        if (widthDiffers) {
             recomputeSpans();
         }
     }
@@ -463,7 +506,7 @@ public final class DocumentView extends EditorBoxView
                     // checkDocumentLocked() - unnecessary - doc.render() called
                     try {
                         if (textComponent != null) {
-                            updateVisibleWidth();
+                            updateVisibleDimension();
                         }
                     } finally {
                         mutex.unlock();
@@ -620,6 +663,7 @@ public final class DocumentView extends EditorBoxView
             tabTextLayout = null;
             singleCharTabTextLayout = null;
             lineContinuationTextLayout = null;
+            updateLazyChildrenBatch();
             if (LOG.isLoggable(Level.FINE)) {
                 FontMetrics fm = textComponent.getFontMetrics(defaultFont);
                 LOG.fine("Font: " + defaultFont + "\nLine-height=" + defaultLineHeight + // NOI18N
@@ -643,19 +687,11 @@ public final class DocumentView extends EditorBoxView
                 checkDocumentLocked();
                 checkViewsInited();
                 if (isActive()) {
-                    boolean ok = false;
-                    try {
-                        // Use rendering hints (antialiasing etc.)
-                        if (renderingHints != null) {
-                            g.setRenderingHints(renderingHints);
-                        }
-                        super.paint(g, alloc, clipBounds);
-                        ok = true;
-                    } finally {
-                        if (!ok) {
-                            errorInHierarchy();
-                        }
+                    // Use rendering hints (antialiasing etc.)
+                    if (renderingHints != null) {
+                        g.setRenderingHints(renderingHints);
                     }
+                    super.paint(g, alloc, clipBounds);
                 }
             } finally {
                 mutex.unlock();
@@ -674,15 +710,7 @@ public final class DocumentView extends EditorBoxView
                 checkDocumentLocked();
                 checkViewsInited();
                 if (isActive()) {
-                    boolean ok = false;
-                    try {
-                        offset = super.getNextVisualPositionFromChecked(offset, bias, alloc, direction, biasRet);
-                        ok = true;
-                    } finally {
-                        if (!ok) {
-                            errorInHierarchy();
-                        }
-                    }
+                    offset = super.getNextVisualPositionFromChecked(offset, bias, alloc, direction, biasRet);
                 }
             } finally {
                 mutex.unlock();
@@ -700,21 +728,33 @@ public final class DocumentView extends EditorBoxView
                 checkDocumentLocked();
                 checkViewsInited();
                 if (isActive()) {
-                    boolean ok = false;
-                    try {
-                        alloc = super.modelToViewChecked(offset, alloc, bias);
-                        ok = true;
-                    } finally {
-                        if (!ok) {
-                            errorInHierarchy();
-                        }
-                    }
+                    alloc = super.modelToViewChecked(offset, alloc, bias);
                 }
             } finally {
                 mutex.unlock();
             }
         }
         return alloc;
+    }
+
+    public double modelToY(int offset, Shape alloc) {
+        PriorityMutex mutex = getMutex();
+        if (mutex != null) {
+            mutex.lock();
+            try {
+                checkDocumentLocked();
+                checkViewsInited();
+                if (isActive()) {
+                    int index = getViewIndexFirst(offset);
+                    if (index >= 0) {
+                        return getViewVisualOffset(index);
+                    }
+                }
+            } finally {
+                mutex.unlock();
+            }
+        }
+        return 0.0d;
     }
 
     @Override
@@ -726,31 +766,13 @@ public final class DocumentView extends EditorBoxView
                 checkDocumentLocked();
                 checkViewsInited();
                 if (isActive()) {
-                    boolean ok = false;
-                    try {
-                        int offset = super.viewToModelChecked(x, y, alloc, biasReturn);
-                        ok = true;
-                        return offset;
-                    } finally {
-                        if (!ok) {
-                            errorInHierarchy();
-                        }
-                    }
+                    return super.viewToModelChecked(x, y, alloc, biasReturn);
                 }
             } finally {
                 mutex.unlock();
             }
         }
         return 0;
-    }
-
-    private static boolean warningShown;
-    private void errorInHierarchy() {
-        if (!warningShown) {
-            LOG.info("An error occurred in the new view hierarchy. Please consider running with the old view hierarchy " +
-                    "by adding \"-J-Dorg.netbeans.editor.linewrap.disable=true\" to your netbeans.conf.");
-            warningShown = true;
-        }
     }
 
     boolean isActive() {
