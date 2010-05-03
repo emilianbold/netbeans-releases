@@ -42,11 +42,16 @@ package org.netbeans.modules.subversion.ui.history;
 
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessageChangePath;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.*;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.util.SvnUtils;
 
 /**
  * Describes log information for a file. This is the result of doing a
@@ -63,9 +68,10 @@ class RepositoryRevision {
 
     /**
      * List of events associated with the revision.
-     */ 
+     */
     private final List<Event> events = new ArrayList<Event>(1);
-    private FileFilter eventsFilter;
+    private EventDetails eventDetails;
+    private List<Event> fakeRootEvent;
 
     public RepositoryRevision(ISVNLogMessage message, SVNUrl rootUrl) {
         this.message = message;
@@ -82,8 +88,8 @@ class RepositoryRevision {
      * Filter is disabled by default.
      * @param filter a file which is included in filtered events. If <code>null</code> is passed, filter will be disabled.
      */
-    public void setFilter(FileFilter filter) {
-        this.eventsFilter = filter;
+    public void setEventDetails(EventDetails filter) {
+        this.eventDetails = filter;
     }
 
     private void initEvents() {
@@ -94,33 +100,37 @@ class RepositoryRevision {
         }
     }
 
+    public boolean showDetails() {
+        return eventDetails != null ? eventDetails.showDetails() : true;
+    }
+
+    List<Event> getEvents() {
+        return getEvents(false);
+    }
+
     /**
      * Returns a list of filtered repository events for this revision. If a filter has been set (by <code>setFilter</code> method),
      * events on files different from the filter will not be returned. To disable the filter, set the filter to <code>null</code>.
      * @return a list of filtered repository events
      */
-    public List<Event> getEvents() {
-        List<Event> retval = null;
-        if (eventsFilter == null) {
-            retval = events;
+    List<Event> getEvents(boolean forDiff) {
+        if (showDetails()) {
+            return events;
         } else {
-            retval = new ArrayList<Event>(1);
-            for (Event event : events) {
-                File f = event.getFile();
-                if (eventsFilter.accept(event.getFile())) {
-                    retval.add(event);
-                }
+            if(forDiff) {
+                return getFakeRootEvent();
             }
-        }
-        return retval;
+            return Collections.EMPTY_LIST;
+        }       
     }
 
     public ISVNLogMessage getLog() {
         return message;
     }
 
-    public String toString() {        
-        StringBuffer text = new StringBuffer();
+    @Override
+    public String toString() {
+        StringBuilder text = new StringBuilder();
         text.append(getLog().getRevision().getNumber());
         text.append("\t");
         text.append(getLog().getDate());
@@ -137,14 +147,14 @@ class RepositoryRevision {
         }
         Collections.sort(events, comparator);
     }
-    
+
     public class Event {
-    
+
         /**
          * The file or folder that this event is about. It may be null if the File cannot be computed.
-         */ 
+         */
         private File    file;
-    
+
         private ISVNLogMessageChangePath changedPath;
 
         private String name;
@@ -162,6 +172,10 @@ class RepositoryRevision {
 
         public ISVNLogMessageChangePath getChangedPath() {
             return changedPath;
+        }
+
+        public boolean isFakeRoot() {
+            return false;
         }
 
         /** Getter for property file.
@@ -185,36 +199,81 @@ class RepositoryRevision {
         public String getPath() {
             return path;
         }
-        
+
+        @Override
         public String toString() {
-            StringBuffer text = new StringBuffer();            
+            StringBuilder text = new StringBuilder();
             text.append("\t");
             text.append(getPath());
             return text.toString();
         }
-
-        
     }
 
     public static class EventFullNameComparator implements Comparator<Event> {
-
+        @Override
         public int compare(Event e1, Event e2) {
             if (e1 == null || e2 == null || e1.getChangedPath() == null || e2.getChangedPath() == null) {
                 return 0;
             }
             return e1.getChangedPath().getPath().compareTo(e1.getChangedPath().getPath());
         }
-
     }
 
     public static class EventBaseNameComparator implements Comparator<Event> {
-
+        @Override
         public int compare(Event e1, Event e2) {
             if (e1 == null || e2 == null || e1.getName() == null || e2.getName() == null) {
                 return 0;
             }
             return e1.getName().compareTo(e2.getName());
         }
+    }
 
+    public List<Event> getFakeRootEvent() {
+        if(fakeRootEvent == null) {
+            Event e = new Event(new ISVNLogMessageChangePath() {
+                private String path;
+                @Override
+                public String getPath() {
+                    if(path == null) {
+                        try {
+                            return SvnUtils.getRelativePath(eventDetails.root);
+                        } catch (SVNClientException ex) {
+                            Subversion.LOG.log(Level.WARNING, eventDetails.root.getAbsolutePath(), ex);
+                        }
+                    }
+                    return path;
+                }
+                @Override
+                public Number getCopySrcRevision() {
+                    return message.getRevision();
+                }
+                @Override
+                public String getCopySrcPath() {
+                    return "";
+                }
+                @Override
+                public char getAction() {
+                    return '?';
+                }
+            }) {
+                @Override
+                public boolean isFakeRoot() {
+                    return true;
+                }
+            };
+            e.setFile(eventDetails.root);
+            fakeRootEvent = new LinkedList<Event>();
+            fakeRootEvent.add(e);
+        }
+        return fakeRootEvent;
+    }
+
+    static abstract class EventDetails {
+        private final File root;
+        EventDetails(File root) {
+            this.root = root;
+        }
+        protected abstract boolean showDetails();
     }
 }
