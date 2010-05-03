@@ -1238,6 +1238,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         protected void createPasteTypes(Transferable transferable, List<PasteType> list) {
+            if (folder.isTestLogicalFolder()) {
+                // Don't drop items into a regular test folder (IZ 185173)
+                return;
+            }
             DataFlavor[] flavors = transferable.getTransferDataFlavors();
             for (int i = 0; i < flavors.length; i++) {
                 if (flavors[i].getSubType().equals(SUBTYPE)) {
