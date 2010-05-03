@@ -149,6 +149,12 @@ public class AptSourceFileManager extends SourceFileManager {
                 return rootURL;
             }
         }
+        for (ClassPath.Entry entry : sourceRoots.entries()) {
+            final URL rootURL = entry.getURL();
+            if (FileObjects.isParentOf(rootURL, sibling)) {
+                return rootURL;
+            }
+        }
         return null;
     }
 
