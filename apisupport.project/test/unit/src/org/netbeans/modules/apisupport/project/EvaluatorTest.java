@@ -79,7 +79,7 @@ public class EvaluatorTest extends TestBase {
     private NbModuleProject loadersProject;
     private File userPropertiesFile;
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
         super.setUp();
         userPropertiesFile = TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
@@ -166,8 +166,9 @@ public class EvaluatorTest extends TestBase {
         @Override
         public synchronized void publish(LogRecord record) {
             String msg = record.getMessage();
-            if (msg.startsWith("Due to previous call of refresh(), not using nbbuild cache in"))
+            if (msg.startsWith("Due to previous call of refresh(), not using nbbuild cache in")) {
                 cacheUsed = false;
+            }
             assertFalse("Duplicate scan of project tree detected: " + msg,
                     msg.startsWith("Warning: two modules found with the same code name base"));
             if (msg.startsWith("scanPossibleProject: ") && msg.endsWith("scanned successfully")
@@ -204,7 +205,7 @@ public class EvaluatorTest extends TestBase {
             PropertyEvaluator eval = javaProjectProject.evaluator();
             assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
             String js = eval.getProperty("javac.source");      // does not scan ML
-            assertTrue("Valid javac.source value", js != null && ! js.equals("") && ! js.equals("javac.source"));
+            assertTrue("Valid javac.source value", js != null && !js.isEmpty() && !js.equals("javac.source"));
             assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
             /* No longer calculated due to #172203 optimization:
             String coreStartupDir = eval.getProperty("core.startup.dir");   // does not scan ML after rev #797729b2749e
@@ -355,7 +356,7 @@ public class EvaluatorTest extends TestBase {
             public void run() {
                 try {
                     ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                        public Void run() throws Exception {
+                        public @Override Void run() throws Exception {
                             LOG.log(Level.FINE, "got PM write access");
                             NbPlatform.getPlatforms();
                             LOG.log(Level.FINE, "after NbPlatform.getPlatforms");
