@@ -1115,14 +1115,14 @@ class OccurenceBuilder {
                     ASTNodeInfo<StaticMethodInvocation> nodeInfo = entry.getKey();
                     QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = entry.getValue().getInScope();
-                    if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-                        if (clzName.getName().equalsIgnoreCase("self")) {
-                            clzName = ((TypeScope) scope).getFullyQualifiedName();
-                        } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
-                            clzName = ((ClassScope) scope).getSuperClassName();
-                        }
-                    }
                     if (clzName != null) {
+                        if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
+                            if (clzName.getName().equalsIgnoreCase("self")) {
+                                clzName = ((TypeScope) scope).getFullyQualifiedName();
+                            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
+                                clzName = ((ClassScope) scope).getSuperClassName();
+                            }
+                        }
                         if (methodName.matchesName(PhpElementKind.METHOD, nodeInfo.getName())) {
                             final Exact typeName = NameKind.exact(clzName);
                             boolean isTheSame = false;
