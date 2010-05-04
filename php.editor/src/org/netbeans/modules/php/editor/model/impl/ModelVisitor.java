@@ -474,8 +474,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(StaticMethodInvocation node) {
         Scope scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
-        occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
-        //scan(node.getClassName());
+        Expression className = node.getClassName();
+        if (className instanceof Variable) {
+            scan(className);
+        } else {
+            occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
+        }
         scan(node.getMethod().getParameters());
 
     }
