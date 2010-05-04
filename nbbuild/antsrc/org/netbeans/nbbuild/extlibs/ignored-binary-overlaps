@@ -36,3 +36,6 @@ javacard/JCDK3.0.2_ConnectedEdition/lib/commons-codec-1.3.jar ide/modules/ext/ap
 javacard/JCDK3.0.2_ConnectedEdition/lib/commons-logging-1.1.jar ide/modules/ext/commons-logging-1.1.jar
 javacard/JCDK3.0.2_ConnectedEdition/lib/ant-contrib-1.0b3.jar mobility/modules/ext/ant-contrib-1.0b3.jar
 javacard/JCDK3.0.2_ConnectedEdition/lib/commons-httpclient-3.0.jar mobility/modules/ext/commons-httpclient-3.0.jar
+
+# #185394
+java/modules/ext/spring-3.0/spring-webmvc-3.0.2.RELEASE.jar enterprise/modules/ext/spring/spring-webmvc-3.0.2.RELEASE.jar
