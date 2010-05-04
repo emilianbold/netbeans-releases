@@ -58,6 +58,7 @@ import org.openide.util.NbBundle;
     private ExecutionEnvironment lastValidatedHost;
     private final CreateHostData data;
     private Future<Boolean> validationTask;
+    private WizardDescriptor settings;
 
     public CreateHostWizardPanel2(CreateHostData data) {
         this.data = data;
@@ -67,6 +68,7 @@ import org.openide.util.NbBundle;
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
+    @Override
     public CreateHostVisualPanel2 getComponent() {
         if (component == null) {
             component = new CreateHostVisualPanel2(data, this);
@@ -74,10 +76,12 @@ import org.openide.util.NbBundle;
         return component;
     }
 
+    @Override
     public void prepareValidation() {
         component.enableControls(false);
     }
 
+    @Override
     public void validate() throws WizardValidationException {
         ExecutionEnvironment host = component.getHost();
 
@@ -105,17 +109,27 @@ import org.openide.util.NbBundle;
         lastValidatedHost = host;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx("NewRemoteDevelopmentHostWizardP2");
     }
 
+    @Override
     public boolean isValid() {
-        return component.canValidateHost();
+        boolean res = component.canValidateHost();
+        if (res) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
+        } else {
+            String message = NbBundle.getMessage(getClass(), "MSG_HostAlreadyAdded"); // NOI18N
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+        }
+        return res;
     }
     ////////////////////////////////////////////////////////////////////////////
     // change support
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
@@ -131,6 +145,7 @@ import org.openide.util.NbBundle;
     //
     // So here we should interrupt the validation process.
     //
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
 
@@ -143,16 +158,20 @@ import org.openide.util.NbBundle;
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // settings
+    @Override
     public void readSettings(WizardDescriptor settings) {
+        this.settings = settings;
         getComponent().init();
     }
 
+    @Override
     public void storeSettings(WizardDescriptor settings) {
         data.setExecutionEnvironment(getComponent().getHost());
         data.setRunOnFinish(getComponent().getRunOnFinish());

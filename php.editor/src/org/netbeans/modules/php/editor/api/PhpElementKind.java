@@ -61,7 +61,7 @@ public enum PhpElementKind {
             case FUNCTION:
                 return ElementKind.METHOD;
             case IFACE:
-                return ElementKind.CLASS;
+                return ElementKind.INTERFACE;
             case METHOD:
                 return ElementKind.METHOD;
             case VARIABLE:

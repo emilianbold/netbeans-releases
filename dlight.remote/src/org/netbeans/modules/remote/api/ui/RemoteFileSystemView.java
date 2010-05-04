@@ -43,11 +43,19 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.concurrent.CancellationException;
+import javax.swing.Icon;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileSystemView;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.impl.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -58,8 +66,15 @@ import org.openide.filesystems.FileSystem;
     public static final String LOADING_STATUS = "ls"; //  NOI18N
     private final FileSystem fs;
     private final PropertyChangeSupport changeSupport;
+     final ExecutionEnvironment env;
+    private static final String newFolderString =
+            UIManager.getString("FileChooser.other.newFolder");
+    private static final String newFolderNextString  =
+            UIManager.getString("FileChooser.other.newFolder.subsequent");
+
 
     public RemoteFileSystemView(final String root, final ExecutionEnvironment execEnv) {
+        this.env = execEnv;
         fs = FileSystemProvider.getFileSystem(execEnv, root);
         assert (fs != null);
         changeSupport = new PropertyChangeSupport(this);
@@ -73,9 +88,9 @@ import org.openide.filesystems.FileSystem;
     public File createFileObject(String path) {
         FileObject fo = fs.findResource(path);
         if (fo == null) {
-            return new FileObjectBasedFile(path);
+            return new FileObjectBasedFile(env, path);
         } else {
-            return new FileObjectBasedFile(fo);
+            return new FileObjectBasedFile(env, fo);
         }
     }
 
@@ -87,7 +102,7 @@ import org.openide.filesystems.FileSystem;
 
     @Override
     public File[] getRoots() {
-        return new File[]{new FileObjectBasedFile(fs.getRoot())};
+        return new File[]{new FileObjectBasedFile(env, fs.getRoot())};
     }
 
     @Override
@@ -97,27 +112,42 @@ import org.openide.filesystems.FileSystem;
 
     @Override
     public File getDefaultDirectory() {
-        return new FileObjectBasedFile(fs.getRoot());
+        return new FileObjectBasedFile(env, fs.getRoot());
     }
 
     @Override
     public File getHomeDirectory() {
-        return new FileObjectBasedFile(fs.getRoot());
+        try {
+            if (!HostInfoUtils.isHostInfoAvailable(env) && !ConnectionManager.getInstance().isConnectedTo(env)){
+                return getDefaultDirectory();
+            }
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+            return new FileObjectBasedFile(env, fs.findResource(hostInfo.getUserDir()));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return getDefaultDirectory();
     }
 
     @Override
     public boolean isFileSystem(File f) {
         return true;
     }
-
+    
+    
     @Override
     public File getParentDirectory(File dir) {
         File parentFile = dir.getParentFile();
         return parentFile == null ? null : createFileObject(parentFile.getPath());
     }
-
+   
     @Override
     public File[] getFiles(File dir, boolean useFileHiding) {
+        if (!(dir instanceof FileObjectBasedFile)) {
+            dir = new FileObjectBasedFile(env, fs.findResource(dir.getAbsolutePath()));
+        }
         FileObjectBasedFile rdir = (FileObjectBasedFile) dir;
         File[] result = null;
 
@@ -132,17 +162,49 @@ import org.openide.filesystems.FileSystem;
         return result;
     }
 
-    @Override
+
+
+    /**
+     * Creates a new folder with a default folder name.
+     */
     public File createNewFolder(File containingDir) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+	if(containingDir == null) {
+	    throw new IOException("Containing directory is null:"); // NOI18N
+	}
+	File newFolder = null;
+	// Unix - using OpenWindows' default folder name. Can't find one for Motif/CDE.
+	newFolder = createFileObject(containingDir, newFolderString);
+	int i = 1;
+	while (newFolder.exists() && (i < 100)) {
+	    newFolder = createFileObject(containingDir, MessageFormat.format(
+                    newFolderNextString, new Object[] { new Integer(i) }));
+	    i++;
+	}
+
+	if(newFolder.exists()) {
+	    throw new IOException("Directory already exists:" + newFolder.getAbsolutePath()); // NOI18N
+	} else {
+	    newFolder.mkdirs();
+	}
+	return newFolder;
     }
+
+    
+    
 
     @Override
     protected File createFileSystemRoot(File f) {
-        return new FileObjectBasedFile(fs.getRoot());
+        return new FileObjectBasedFile(env, fs.getRoot());
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.addPropertyChangeListener(listener);
     }
+
+    @Override
+    public Icon getSystemIcon(File f) {
+        return UIManager.getIcon(f == null || f.isDirectory() ? "FileView.directoryIcon" : "FileView.fileIcon");//NOI18N
+    }
+
+
 }

@@ -39,7 +39,6 @@
 package org.netbeans.modules.dlight.indicators;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.indicators.impl.TimeSeriesDescriptorAccessor;
@@ -55,14 +54,16 @@ public final class TimeSeriesDescriptor {
         TimeSeriesDescriptorAccessor.setDefault(new TimeSeriesDescriptorAccessorImpl());
     }
 
-    private final Color color;
+    private final String name;
     private final String displayName;
+    private final Color color;
     private final Kind kind;
     private Collection<Column> columns;
 
-    public TimeSeriesDescriptor(Color color, String displayName, Kind kind) {
-        this.color = color;
+    public TimeSeriesDescriptor(String name, String displayName, Color color, Kind kind) {
+        this.name = name;
         this.displayName = displayName;
+        this.color = color;
         this.kind = kind;
     }
 
@@ -70,15 +71,17 @@ public final class TimeSeriesDescriptor {
         this.columns = columns;
     }
 
-    private Color getColor() {
-        return color;
+    private String getName() {
+        return name;
     }
 
     private String getDisplayName() {
         return displayName;
     }
 
-    
+    private Color getColor() {
+        return color;
+    }
 
     private Kind getKind() {
         return kind;
@@ -90,16 +93,21 @@ public final class TimeSeriesDescriptor {
         REL_SURFACE
     }
 
-    private static class TimeSeriesDescriptorAccessorImpl extends TimeSeriesDescriptorAccessor{
+    private static class TimeSeriesDescriptorAccessorImpl extends TimeSeriesDescriptorAccessor {
 
         @Override
-        public Color getColor(TimeSeriesDescriptor descriptor) {
-            return descriptor.getColor();
+        public String getName(TimeSeriesDescriptor descriptor) {
+            return descriptor.getName();
         }
 
         @Override
         public String getDisplayName(TimeSeriesDescriptor descriptor) {
             return descriptor.getDisplayName();
+        }
+
+        @Override
+        public Color getColor(TimeSeriesDescriptor descriptor) {
+            return descriptor.getColor();
         }
 
         @Override

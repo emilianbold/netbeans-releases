@@ -62,14 +62,29 @@ public class SimpleNode implements Node {
         return image(false);
     }
 
-    public String image(boolean debug) {
+    public String image(int... filteredTokenKinds) {
+        return image(false, filteredTokenKinds);
+    }
+
+    public String image(boolean debug, int... filteredTokenKinds) {
+        //optimize filtered tokens kinds search speed a bit
+        boolean[] filtered = new boolean[CssParserConstants.tokenImage.length];
+        for(int i = 0; i < filteredTokenKinds.length; i++) {
+            int kind = filteredTokenKinds[i];
+            filtered[kind] = true;
+        }
+        //now just use if(filtered[node.kind]) { //filter }
+        
         synchronized (this) {
             //do not cache or use cached if debugged
             String retVal = image;
             if (retVal == null || debug) {
+                retVal = "";
                 StringBuffer sb = new StringBuffer();
                 if (jjtGetFirstToken() == jjtGetLastToken()) {
-                    retVal = jjtGetFirstToken().image;
+                    if(!filtered[jjtGetFirstToken().kind]) {
+                        retVal = jjtGetFirstToken().image;
+                    }
                 } else {
                     Token t = jjtGetFirstToken();
                     Token last = jjtGetLastToken();
@@ -79,7 +94,14 @@ public class SimpleNode implements Node {
                             sb.append(t.offset);
                             sb.append(",");
                         }
-                        sb.append(t.image);
+                        if(!filtered[t.kind]) {
+                            sb.append(t.image);
+                        } else {
+                            if(debug) {
+                                sb.append("filtered node:");
+                                sb.append(t.image);
+                            }
+                        }
                         if(debug) {
                             sb.append(">");
                         }

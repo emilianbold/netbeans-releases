@@ -56,6 +56,7 @@ public class RefreshPhpModuleRunnable implements Runnable {
         this.phpModule = phpModule;
     }
 
+    @Override
     public void run() {
         refresh(phpModule.getSourceDirectory());
         refresh(phpModule.getTestDirectory());

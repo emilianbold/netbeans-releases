@@ -63,7 +63,8 @@ import org.openide.util.lookup.Lookups;
  *
  * @author sherold
  */
-public class EjbDeploymentConfiguration implements ModuleConfiguration, DeploymentPlanConfiguration {
+public class EjbDeploymentConfiguration extends WLDeploymentConfiguration
+        implements ModuleConfiguration, DeploymentPlanConfiguration {
 
     private final File file;
     private final J2eeModule j2eeModule;
@@ -75,6 +76,7 @@ public class EjbDeploymentConfiguration implements ModuleConfiguration, Deployme
      * Creates a new instance of EjbDeploymentConfiguration 
      */
     public EjbDeploymentConfiguration(J2eeModule j2eeModule) {
+        super(j2eeModule);
         this.j2eeModule = j2eeModule;
         file = j2eeModule.getDeploymentConfigurationFile("META-INF/weblogic-ejb-jar.xml"); // NOI18N
         getWeblogicEjbJar();

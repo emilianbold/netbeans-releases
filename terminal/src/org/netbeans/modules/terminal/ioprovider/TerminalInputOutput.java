@@ -6,26 +6,24 @@
 package org.netbeans.modules.terminal.ioprovider;
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.event.InputEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.beans.VetoableChangeListener;
+import java.beans.VetoableChangeSupport;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.Writer;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.Icon;
 
-import org.netbeans.lib.terminalemulator.ActiveRegion;
-import org.netbeans.lib.terminalemulator.ActiveTerm;
-import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.Coord;
-import org.netbeans.lib.terminalemulator.Extent;
-import org.netbeans.lib.terminalemulator.LineDiscipline;
 import org.netbeans.lib.terminalemulator.StreamTerm;
 import org.netbeans.lib.terminalemulator.Term;
-import org.netbeans.lib.terminalemulator.TermListener;
 
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -36,13 +34,18 @@ import org.openide.windows.IOContainer;
 import org.openide.windows.IOPosition;
 import org.openide.windows.IOTab;
 import org.openide.windows.InputOutput;
-import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOEmulation;
+import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOTerm;
+import org.netbeans.modules.terminal.api.IOVisibility;
+
+import org.netbeans.modules.terminal.api.IOConnect;
+import org.netbeans.modules.terminal.ioprovider.Task.ValueTask;
+import org.netbeans.modules.terminal.test.IOTest;
 
 /**
  * An implementation of {@link InputOutput} based on
@@ -79,10 +82,12 @@ import org.netbeans.modules.terminal.api.IOTerm;
 public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     private final IOContainer ioContainer;
+    private final String name;
 
     private final Terminal terminal;
-    private final StreamTerm term;
+
     private OutputWriter outputWriter;
+    private OutputWriter errWriter;
 
     // shadow copies in support of IOTab
     private Icon icon;
@@ -94,7 +99,11 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 						new MyIOResizable(),
 						new MyIOEmulation(),
 						new MyIOTerm(),
-                                                new MyIOTab()
+                                                new MyIOTab(),
+						new MyIOVisibility(),
+						new MyIOConnect(),
+						new MyIONotifier(),
+						new MyIOTest()
                                                 );
 
 
@@ -102,13 +111,28 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     private int allocatedColors = 0;
 
     private final Map<IOColors.OutputType, Color> typeColorMap =
-        new HashMap<IOColors.OutputType, Color>();
+        new EnumMap<IOColors.OutputType, Color>(IOColors.OutputType.class);
 
     private int outputColor = 0;
+
+    private PropertyChangeSupport pcs;
+    private VetoableChangeSupport vcs;
 
     @Override
     public Lookup getLookup() {
         return lookup;
+    }
+
+    /* package */ PropertyChangeSupport pcs() {
+	if (pcs == null)
+	    pcs = new PropertyChangeSupport(this);
+	return pcs;
+    }
+
+    /* package */ VetoableChangeSupport vcs() {
+	if (vcs == null)
+	    vcs = new VetoableChangeSupport(this);
+	return vcs;
     }
 
     /**
@@ -123,11 +147,19 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         if (!colorMap.containsKey(color)) {
             if (allocatedColors >= 8)
                 return -1;  // ran out of slots for custom colors
-            term().setCustomColor(allocatedColors, color);
+	    Task task = new Task.SetCustomColor(terminal, allocatedColors, color);
+	    task.post();
             colorMap.put(color, (allocatedColors++)+50);
         }
         int customColor = colorMap.get(color);
         return customColor;
+    }
+
+    private void setColor(int color) {
+	getOut().append((char) 27);
+	getOut().append('[');
+	getOut().append(Integer.toString(color));
+	getOut().append('m');
     }
 
     private void println(CharSequence text, Color color) {
@@ -135,16 +167,13 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         if (customColor == -1) {        // ran out of colors
             getOut().println(text);
         } else {
-            term().setAttribute(customColor);
+	    setColor(customColor);
             getOut().println(text);
-            term().setAttribute(outputColor);
+	    setColor(outputColor);
         }
     }
 
     private void println(CharSequence text, OutputListener listener, boolean important, Color color) {
-        if ( !(term instanceof ActiveTerm))
-            throw new UnsupportedOperationException("Term is not an ActiveTerm");	// NOI18N
-
         if (color == null) {
             // If color isn't overriden, use default colors.
             if (listener != null) {
@@ -157,20 +186,21 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
             }
         }
 
-        ActiveTerm at = (ActiveTerm) term;
         if (listener != null) {
-            ActiveRegion ar = at.beginRegion(true);
-            ar.setUserObject(listener);
-            ar.setLink(true);
+	    // This splitting of the transaction won't work well if we
+	    // have two separate threads writing to the same IO.
+	    // But everything else willbe garbled as well ... won't it?
+	    Task task = new Task.BeginActiveRegion(terminal, listener);
+	    task.post();
+
+	    // this println will block!
             println(text, color);
-            at.endRegion();
+
+	    task = new Task.EndActiveRegion(terminal);
+	    task.post();
         } else {
             println(text, color);
         }
-    }
-
-    private void scrollTo(Coord coord) {
-        term.possiblyNormalize(coord);
     }
 
     private class MyIOColorLines extends IOColorLines {
@@ -194,23 +224,26 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
                 outputColor = customColor(color);
                 if (outputColor == -1)
                     outputColor = 0;
-                term.setAttribute(outputColor);
+		TerminalInputOutput.this.setColor(outputColor);
             }
         }
     }
 
     private static class MyPosition implements IOPosition.Position {
-        private final TerminalInputOutput back;
+        private final Terminal terminal;
         private final Coord coord;
 
-        MyPosition(TerminalInputOutput back, Coord coord) {
-            this.back = back;
+        MyPosition(Terminal terminal, Coord coord) {
+            this.terminal = terminal;
             this.coord = coord;
         }
 
 	@Override
         public void scrollTo() {
-            back.scrollTo(coord);
+	    if (coord == null)
+		return;
+	    Task task = new Task.Scroll(terminal, coord);
+	    task.post();
         }
     }
 
@@ -218,7 +251,10 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
         @Override
         protected Position currentPosition() {
-            return new MyPosition(TerminalInputOutput.this, term.getCursorCoord());
+	    ValueTask<Coord> task = new Task.GetPosition(terminal);
+	    task.post();
+	    Coord coord = task.get();
+            return new MyPosition(TerminalInputOutput.this.terminal, coord);
         }
     }
 
@@ -232,7 +268,8 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         @Override
         protected void setIcon(Icon icon) {
 	    TerminalInputOutput.this.icon = icon;
-	    ioContainer.setIcon(terminal, icon);
+	    Task task = new Task.SetIcon(ioContainer, terminal, icon);
+	    task.post();
         }
 
         @Override
@@ -242,8 +279,9 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
         @Override
         protected void setToolTipText(String text) {
-	    TerminalInputOutput.this.toolTipText = toolTipText;
-	    ioContainer.setToolTipText(terminal, toolTipText);
+	    TerminalInputOutput.this.toolTipText = text;
+	    Task task = new Task.SetToolTipText(ioContainer, terminal, text);
+	    task.post();
         }
     }
 
@@ -294,33 +332,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     }
     */
 
-    private class MyIOResizable extends IOResizable {
-
-	// We need a map to help use remove TermListeners from 'term'
-	// based on IOResizable.Listener.
-	private Map<Listener, TermListener> listenerMap =
-		new HashMap<Listener, TermListener>();
-
-	@Override
-	protected void addListener(final Listener listener) {
-	    TermListener termListener = new TermListener() {
-		@Override
-		public void sizeChanged(Dimension cells, Dimension pixels) {
-		    // propagate size change notifications from Term
-		    // to Listener
-		    listener.sizeChanged(cells, pixels);
-		}
-	    };
-	    term.addListener(termListener);
-	    listenerMap.put(listener, termListener);
-	}
-
-	@Override
-	protected void removeListener(Listener listener) {
-	    TermListener termListener = listenerMap.remove(listener);
-	    if (termListener != null)
-		term.removeListener(termListener);
-	}
+    private static final class MyIOResizable extends IOResizable {
     }
 
     private class MyIOEmulation extends IOEmulation {
@@ -329,7 +341,9 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
 	@Override
 	protected String getEmulation() {
-	    return term.getEmulation();
+	    // Use ValueTask LATER because emulation is at the
+	    // moment an immutable value
+	    return term().getEmulation();
 	}
 
 	@Override
@@ -342,8 +356,57 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	    if (this.disciplined)
 		return;
 	    this.disciplined = true;
-	    if (disciplined)
-		term.pushStream(new LineDiscipline());
+	    if (disciplined) {
+		Task task = new Task.SetDisciplined(terminal, disciplined);
+		task.post();
+	    }
+	}
+    }
+
+    private class MyIOVisibility extends IOVisibility {
+
+	@Override
+	protected void setVisible(boolean visible) {
+	    final Task task;
+	    if (visible) {
+		task = new Task.Select(ioContainer, terminal);
+	    } else {
+		task = new Task.DeSelect(ioContainer, terminal);
+	    }
+	    task.post();
+	}
+
+	@Override
+	protected void setClosable(boolean closable) {
+	    Task task = new Task.SetClosable(ioContainer, terminal, closable);
+	    task.post();
+	}
+
+	@Override
+	protected boolean isSupported() {
+	    return true;
+	    // LATER return ioContainer instanceof TerminalContainerImpl;
+	    // We really can't do the above.
+	    // However after IOVisibilityControl.isClosable() switches to
+	    // the push model we'll be able to answer this question more
+	    // accurately by asking ioContainer if it has the IOClosability
+	    // capability.
+	}
+    }
+
+    private class MyIOConnect extends IOConnect {
+
+	@Override
+	protected boolean isConnected() {
+	    return terminal.isConnected();
+	}
+
+	@Override
+	protected void disconnectAll(Runnable continuation) {
+	    // don't use getOut().close() as convenient as that might be
+	    // because getOut() will change states and fire properties.
+	    terminal.setOutConnected(false);	// also "closes" Err
+	    IOTerm.disconnect(TerminalInputOutput.this, continuation);
 	}
     }
 
@@ -351,34 +414,62 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
 	@Override
 	protected Term term() {
-	    return term;
+	    return terminal.term();
 	}
 
 	@Override
 	protected void connect(OutputStream pin, InputStream pout, InputStream perr) {
-	    term.connect(pin, pout, perr);
+	    Task task = new Task.Connect(terminal, pin, pout, perr);
+	    task.post();
+	}
+
+	@Override
+	protected void disconnect(final Runnable continuation) {
+	    Task task = new Task.Disconnect(terminal, continuation);
+	    task.post();
 	}
     }
 
+    private class MyIONotifier extends IONotifier {
 
-    /* OLD
-    private class MyIOExecution extends IOExecution {
+	@Override
+	protected void addPropertyChangeListener(PropertyChangeListener listener) {
+	    pcs().addPropertyChangeListener(listener);
+	}
 
-        @Override
-        protected void execute(Program program) {
-	    terminal.startProgram(program, true);
-        }
+	@Override
+	protected void removePropertyChangeListener(PropertyChangeListener listener) {
+	    pcs().removePropertyChangeListener(listener);
+	}
+
+	@Override
+	public void addVetoableChangeListener(VetoableChangeListener listener ) {
+	    vcs().addVetoableChangeListener(listener);
+	}
+
+	@Override
+	public void removeVetoableChangeListener(VetoableChangeListener listener ) {
+	    vcs().removeVetoableChangeListener(listener);
+	}
     }
-     */
 
+    private class MyIOTest extends IOTest {
+	@Override
+	protected boolean isQuiescent() {
+	    return Task.isQuiescent();
+	}
+    }
 
 
     /**
      * Delegate prints and writes to a Term via TermWriter.
      */
     private class TermOutputWriter extends OutputWriter {
-        TermOutputWriter() {
-            super(term.getOut());
+	private final Terminal owner;
+
+        TermOutputWriter(Terminal owner, Writer writer) {
+            super(writer);
+	    this.owner = owner;
         }
 
         @Override
@@ -393,54 +484,65 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
         @Override
         public void reset() throws IOException {
-            term.clearHistory();
+	    Task task = new Task.ClearHistory(terminal);
+	    task.post();
         }
+
+	@Override
+	public void close() {
+	    // Don't really close it
+	    // super.close();
+	    owner.setOutConnected(false);
+	}
     }
 
-    private static class TerminalOutputEvent extends OutputEvent {
-        private final String text;
+    /**
+     * Delegate prints and writes to a Term via TermWriter.
+     */
+    private final class TermErrWriter extends OutputWriter {
+	private final Terminal owner;
 
-        public TerminalOutputEvent(InputOutput io, String text) {
-            super(io);
-            this.text = text;
-        }
+	TermErrWriter(Terminal owner, Writer writer) {
+	    super(writer);
+	    this.owner = owner;
+	}
 
-        @Override
-        public String getLine() {
-            return text;
-        }
+	@Override
+	public void println(String s, OutputListener l) throws IOException {
+	    TerminalInputOutput.this.println(s, l, false, Color.red);
+	}
+
+	@Override
+	public void println(String s, OutputListener l, boolean important) throws IOException {
+	    TerminalInputOutput.this.println(s, l, important, Color.red);
+	}
+
+	@Override
+	public void println(String x) {
+	    TerminalInputOutput.this.println(x, Color.red);
+	}
+
+	@Override
+	public void reset() throws IOException {
+	    // no-op
+	}
+
+	@Override
+	public void close() {
+	    // Don't really close it
+	    // super.close();
+	    owner.setErrConnected(false);
+	}
     }
 
     TerminalInputOutput(String name, Action[] actions, IOContainer ioContainer) {
+	this.name = name;
         this.ioContainer = ioContainer;
 
-        terminal = new Terminal(ioContainer, actions, name);
+        terminal = new Terminal(ioContainer, this, actions, name);
 
 	Task task = new Task.Add(ioContainer, terminal);
-	task.dispatch();
-
-        term = terminal.term();
-
-        if (! (term instanceof ActiveTerm))
-            return;
-
-        ActiveTerm at = (ActiveTerm) term;
-
-        // Set up to convert clicks on active regions, created by OutputWriter.
-        // println(), to outputLineAction notifications.
-        at.setActionListener(new ActiveTermListener() {
-	    @Override
-            public void action(ActiveRegion r, InputEvent e) {
-                OutputListener ol = (OutputListener) r.getUserObject();
-                if (ol == null)
-                    return;
-                Extent extent = r.getExtent();
-                String text = term.textWithin(extent.begin, extent.end);
-                OutputEvent oe =
-                    new TerminalOutputEvent(TerminalInputOutput.this, text);
-                ol.outputLineAction(oe);
-            }
-        });
+	task.post();
 
         // preset standard colors
         colorMap.put(Color.black, 30);
@@ -453,20 +555,26 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         colorMap.put(Color.white, 37);
     }
 
-    public StreamTerm term() {
-        return term;
+    void dispose() {
+	if (outputWriter != null) {
+	    // LATER outputWriter.dispose();
+	    outputWriter = null;
+	}
+	// LATER getIn().eof();
+	// LATER focusTaken = null;
     }
-    
-    /**
-     * Stream to write to stuff being output by the proceess destined for the
-     * terminal.
-     * @return the writer.
-     */
-    @Override
-    public OutputWriter getOut() {
-        if (outputWriter == null)
-            outputWriter = new TermOutputWriter();
-        return outputWriter;
+
+
+    private StreamTerm term() {
+        return terminal.term();
+    }
+
+    Terminal terminal() {
+        return terminal;
+    }
+
+    String name() {
+	return name;
     }
 
     /**
@@ -475,7 +583,31 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
      */
     @Override
     public Reader getIn() {
-	return term.getIn();
+	ValueTask<Reader> task = new Task.GetIn(terminal);
+	task.post();
+	Reader reader = task.get();
+	return reader;
+    }
+
+    /**
+     * Stream to write to stuff being output by the process destined for the
+     * terminal.
+     * @return the writer.
+     */
+    @Override
+    public OutputWriter getOut() {
+	// Ensure we  don't get two of them due to requests on
+	// different threads.
+	synchronized (this) {
+	    if (outputWriter == null) {
+		ValueTask<Writer> task = new Task.GetOut(terminal);
+		task.post();
+		Writer writer = task.get();
+		outputWriter = new TermOutputWriter(terminal, writer);
+	    }
+	}
+	terminal.setOutConnected(true);
+        return outputWriter;
     }
 
     /**
@@ -493,17 +625,32 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
      */
     @Override
     public OutputWriter getErr() {
-        throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
+	// Ensure we  don't get two of them due to requests on
+	// different threads.
+	synchronized (this) {
+	    // workaround for #182063: -  UnsupportedOperationException
+	    if (errWriter == null) {
+		ValueTask<Writer> task = new Task.GetOut(terminal);
+		task.post();
+		Writer writer = task.get();
+		errWriter = new TermErrWriter(terminal, writer);
+	    }
+	}
+	terminal.setErrConnected(true);
+	return errWriter;
     }
 
     @Override
     public void closeInputOutput() {
-        terminal.close();
+	if (outputWriter != null)
+	    outputWriter.close();
+	Task task = new Task.StrongClose(ioContainer, terminal);
+	task.post();
     }
 
     @Override
     public boolean isClosed() {
-        return terminal.isClosed();
+        return ! terminal.isVisibleInContainer();
     }
 
     @Override
@@ -523,9 +670,8 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     @Override
     public void select() {
-        // OLD terminal.select();
 	Task task = new Task.Select(ioContainer, terminal);
-	task.dispatch();
+	task.post();
     }
 
     @Override
@@ -555,6 +701,6 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     @Deprecated
     @Override
     public Reader flushReader() {
-	return term.getIn();
+	return getIn();
     }
 }

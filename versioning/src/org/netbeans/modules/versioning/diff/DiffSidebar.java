@@ -653,27 +653,32 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                     line = rootElem.getElementIndex(view.getStartOffset());
                     line++; // make it 1-based
                     Difference ad = getDifference(line, paintDiff);
+                    Rectangle rec1 = component.modelToView(view.getStartOffset());
+                    Rectangle rec2 = component.modelToView(view.getEndOffset() - 1);
+                    if (rec2  == null || rec1 == null) break;
+                    y = rec1.y;
+                    double height = (rec2.getY() + rec2.getHeight() - rec1.getY());
                     if (ad != null) {
                         g.setColor(getColor(ad));
                         if (ad.getType() == Difference.DELETE) {
-                            yCoords[0] = y + editorUI.getLineAscent();
-                            yCoords[1] = y + editorUI.getLineAscent() * 3 / 2;
-                            yCoords[2] = y + editorUI.getLineAscent() * 2;
-                            g.fillPolygon(new int [] { 2, BAR_WIDTH, 2 }, yCoords, 3);
+                            yCoords[0] = (int) y + editorUI.getLineAscent();
+                            yCoords[1] = (int) y + editorUI.getLineAscent() * 3 / 2;
+                            yCoords[2] = (int) y + editorUI.getLineAscent() * 2;
+                            g.fillPolygon(new int[]{2, BAR_WIDTH, 2}, yCoords, 3);
                             g.setColor(colorBorder);
                             g.drawLine(2, yCoords[0], 2, yCoords[2] - 1);
                         } else {
-                            g.fillRect(3, y, BAR_WIDTH - 3, editorUI.getLineHeight());
+                            g.fillRect(3, (int) y, BAR_WIDTH - 3, (int) height);
                             g.setColor(colorBorder);
-                            int y1 = y + editorUI.getLineHeight();
-                            g.drawLine(2, y, 2, y1);
+                            int y1 = (int) (y + height);
+                            g.drawLine(2, (int) y, 2, y1);
                             if (ad.getSecondStart() == line) {
-                                g.drawLine(2, y, BAR_WIDTH - 1, y);
+                                g.drawLine(2, (int) y, BAR_WIDTH - 1, (int) y);
                             }
                             g.drawLine(2, y1, BAR_WIDTH - 1, y1);
                         }
                     }
-                    y += editorUI.getLineHeight();
+                    y += height;
                     if (y >= clipEndY) {
                         break;
                     }
@@ -791,8 +796,13 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
         public void run() {
             computeDiff();
-            repaint();
-            markProvider.refresh();
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    repaint();
+                    markProvider.refresh();
+                }
+            });
         }
 
         private void computeDiff() {

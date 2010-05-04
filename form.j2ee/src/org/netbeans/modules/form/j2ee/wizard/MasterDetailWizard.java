@@ -64,6 +64,9 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressRunnable;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.j2ee.J2EEUtils;
@@ -303,6 +306,28 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
      */
     @Override
     public Set instantiate() throws IOException {
+        final IOException[] ex = new IOException[1];
+        String msgKey = (delegateIterator==null) ? "MSG_DBAppCreate" : "MSG_MasterDetailCreate"; // NOI18N
+        String msg = NbBundle.getMessage(MasterDetailWizard.class, msgKey);
+        Set set = ProgressUtils.showProgressDialogAndRun(new ProgressRunnable<Set>() {
+            @Override
+            public Set run(ProgressHandle handle) {
+                Set innerSet = null;
+                try {
+                    innerSet = instantiate0();
+                } catch (IOException ioex) {
+                    ex[0] = ioex;
+                }
+                return innerSet;
+            }
+        }, msg, false);
+        if (ex[0] != null) {
+            throw ex[0];
+        }
+        return set;
+    }
+
+    public Set instantiate0() throws IOException {
         needClassPathInit = (delegateIterator == null);
         Set resultSet = null;
         try {
@@ -348,11 +373,13 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             String[][] entity = instantiatePersitence(javaFile.getParent(), connection, masterTableName, detailFKTable);
 
             if (entity[0] == null) {
-                System.err.println("WARNING: Cannot find entity: " + masterTableName); // NOI18N
+                Logger.getLogger(getClass().getName()).log(
+                    Level.INFO, "WARNING: Cannot find entity: {0}", masterTableName); // NOI18N
                 entity[0] = new String[] {"Object", Object.class.getName()}; // NOI18N
             }
             if ((detailFKTable != null) && (entity[1] == null)) {
-                System.err.println("WARNING: Cannot find entity: " + detailFKTable); // NOI18N
+                Logger.getLogger(getClass().getName()).log(
+                    Level.INFO, "WARNING: Cannot find entity: {0}", detailFKTable); // NOI18N
                 entity[1] = new String[] {"Object", Object.class.getName()}; // NOI18N
             }
 

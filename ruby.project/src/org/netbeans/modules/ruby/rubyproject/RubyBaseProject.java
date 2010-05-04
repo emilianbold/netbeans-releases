@@ -98,6 +98,8 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
      */
     public static final String SOURCES_TYPE_RUBY = "ruby"; // NOI18N
 
+    private static final RequestProcessor requestProcessor = new RequestProcessor("Ruby refresh rake tasks");
+
     protected final RakeProjectHelper helper;
     private final PropertyEvaluator eval;
     protected final ReferenceHelper refHelper;
@@ -302,7 +304,7 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     private void updateRakeTasks() {
         RubyPlatform platform = getPlatform();
         if (hasRakeFile() && platform != null && platform.hasValidRake(false)) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            requestProcessor.post(new Runnable() {
                 public void run() {
                     RakeSupport.refreshTasks(RubyBaseProject.this, false);
                 }

@@ -190,7 +190,7 @@ public final class TestSupport {
                 assert false : "Shared not implemented";
             }
             Element root = xml.getDocumentElement ();
-            Element data = findElement (root, elementName, namespace);
+            Element data = XMLUtil.findElement (root, elementName, namespace);
             if (data != null) {
                 return  (Element) data.cloneNode (true);
             } else {
@@ -205,7 +205,7 @@ public final class TestSupport {
             }
             
             Element root = xml.getDocumentElement ();
-            Element existing = findElement (root, fragment.getLocalName (), fragment.getNamespaceURI ());
+            Element existing = XMLUtil.findElement (root, fragment.getLocalName (), fragment.getNamespaceURI ());
             // XXX first compare to existing and return if the same
             if (existing != null) {
                 root.removeChild (existing);
@@ -236,7 +236,7 @@ public final class TestSupport {
             }
 
             Element root = xml.getDocumentElement ();
-            Element data = findElement (root, elementName, namespace);
+            Element data = XMLUtil.findElement (root, elementName, namespace);
             if (data != null) {
                 root.removeChild (data);
                 return true;
@@ -244,25 +244,5 @@ public final class TestSupport {
                 return false;
             }
         }
-    }
-    
-    // copied from org.netbeans.modules.project.ant.Util
-    private static Element findElement(Element parent, String name, String namespace) {
-        Element result = null;
-        NodeList l = parent.getChildNodes();
-        int len = l.getLength();
-        for (int i = 0; i < len; i++) {
-            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                Element el = (Element)l.item(i);
-                if (name.equals(el.getLocalName()) && namespace.equals(el.getNamespaceURI())) {
-                    if (result == null) {
-                        result = el;
-                    } else {
-                        return null;
-                    }
-                }
-            }
-        }
-        return result;
     }
 }

@@ -109,7 +109,7 @@ public class PortTypePanel extends javax.swing.JPanel {
     private void initComponents() {
 
         portTypeConfigurationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.OperationConfigurationPanel(this.mProject, true, mModel, true);
-        commonMessagePanel1 = new org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel();
+        commonMessagePanel1 = new org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel();
 
         portTypeConfigurationPanel1.setFocusCycleRoot(false);
 
@@ -396,7 +396,7 @@ public class PortTypePanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel commonMessagePanel1;
+    private org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel commonMessagePanel1;
     private org.netbeans.modules.xml.wsdl.ui.view.OperationConfigurationPanel portTypeConfigurationPanel1;
     // End of variables declaration//GEN-END:variables
     

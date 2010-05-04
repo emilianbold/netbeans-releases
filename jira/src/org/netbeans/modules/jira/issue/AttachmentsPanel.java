@@ -74,6 +74,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.jira.Jira;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -175,7 +176,7 @@ public class AttachmentsPanel extends JPanel {
                 filenameButton.setAction(new DefaultAttachmentAction(attachment));
                 filenameButton.setText(filename);
                 filenameButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AttachmentsPanel.class, "AttachmentsPanel.filenameButton.AccessibleContext.accessibleDescription")); // NOI18N
-                dateLabel = new JLabel(DateFormat.getDateInstance().format(date));
+                dateLabel = new JLabel(date != null ? DateFormat.getDateInstance().format(date) : ""); // NOI18N
                 authorLabel = new JLabel(author);
                 filenameButton.setComponentPopupMenu(menu);
                 dateLabel.setComponentPopupMenu(menu);
@@ -350,9 +351,9 @@ public class AttachmentsPanel extends JPanel {
                 updateCreateNewButton(false);
             }
             newAttachments.add(nameField);
-            BugtrackingUtil.keepFocusedComponentVisible(nameField);
-            BugtrackingUtil.keepFocusedComponentVisible(browseButton);
-            BugtrackingUtil.keepFocusedComponentVisible(deleteButton);
+            UIUtils.keepFocusedComponentVisible(nameField);
+            UIUtils.keepFocusedComponentVisible(browseButton);
+            UIUtils.keepFocusedComponentVisible(deleteButton);
             revalidate();
         }
     }

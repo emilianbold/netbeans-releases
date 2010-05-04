@@ -160,4 +160,16 @@ public class LoggerStringConcatTest extends TestBase {
                         "    }\n" +
                         "}\n").replaceAll("[ \t\n]+", " "));
     }
+
+    public void testErroneous() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "import java.util.logging.Level;\n" +
+                            "import java.util.logging.Logger;\n" +
+                            "public class Test {\n" +
+                            "    private void t(Logger l, int a, int b, int c) {\n" +
+                            "        l.severe(\"a=\" + \", b='\" + );\n" +
+                            "    }\n" +
+                            "}\n");
+    }
 }

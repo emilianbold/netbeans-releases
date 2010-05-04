@@ -89,8 +89,8 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        new RunnableImpl();\n" +
                 "    }\n" +
                 "    private static class RunnableImpl implements Runnable {\n" +
-                "        public RunnableImpl() {\n" + 
-                "        }\n" + 
+                "        public RunnableImpl() {\n" +
+                "        }\n" +
                 "        public void run() {\n" +
                 "        }\n" +
                 "    }\n" +
@@ -104,7 +104,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    public void taragui() {\n" +
                 "        final int i = 0;\n"+
                 "        new Runnable() {\n" +
-                "            public void run() {\n" + 
+                "            public void run() {\n" +
                 "                System.err.println(i);\n" +
                 "            }\n" +
                 "        };\n" +
@@ -118,16 +118,16 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    }\n" +
                 "    private static class RunnableImpl implements Runnable {\n" +
                 "        private final int i;\n" +
-                "        public RunnableImpl(int i) {\n" + 
+                "        public RunnableImpl(int i) {\n" +
                 "            this.i = i;\n" +
-                "        }\n" + 
+                "        }\n" +
                 "        public void run() {\n" +
                 "            System.err.println(i);\n" +
                 "        }\n" +
                 "    }\n" +
                 "}\n");
     }
-    
+
     public void testDetectLocalVars2() throws Exception {
         performTest(
                 "package hierbas.del.litoral;\n\n" +
@@ -136,10 +136,10 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        final int i = 0;\n"+
                 "        final String s = \"\";\n"+
                 "        new Runnable() {\n" +
-                "            public void run() {\n" + 
+                "            public void run() {\n" +
                 "                for (int cntr = 0; cntr < i; cntr++) {\n" +
                 "                    System.err.println(s);\n" +
-                "                }\n" + 
+                "                }\n" +
                 "            }\n" +
                 "        };\n" +
                 "    }\n" +
@@ -154,19 +154,19 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    private static class RunnableImpl implements Runnable {\n" +
                 "        private final int i;\n" +
                 "        private final String s;\n" +
-                "        public RunnableImpl(int i, String s) {\n" + 
+                "        public RunnableImpl(int i, String s) {\n" +
                 "            this.i = i;\n" +
                 "            this.s = s;\n" +
-                "        }\n" + 
-                "        public void run() {\n" + 
+                "        }\n" +
+                "        public void run() {\n" +
                 "            for (int cntr = 0; cntr < i; cntr++) {\n" +
                 "                System.err.println(s);\n" +
-                "            }\n" + 
+                "            }\n" +
                 "        }\n" +
                 "    }\n" +
                 "}\n");
     }
-    
+
     public void testNonStatic() throws Exception {
         performTest(
                 "package hierbas.del.litoral;\n\n" +
@@ -187,15 +187,15 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        new RunnableImpl();\n" +
                 "    }\n" +
                 "    private class RunnableImpl implements Runnable {\n" +
-                "        public RunnableImpl() {\n" + 
-                "        }\n" + 
+                "        public RunnableImpl() {\n" +
+                "        }\n" +
                 "        public void run() {\n" +
                 "            System.err.println(x);\n" +
                 "        }\n" +
                 "    }\n" +
                 "}\n");
     }
-    
+
     public void testConstructorWithParameters1() throws Exception {
         performTest(
                 "package hierbas.del.litoral;\n\n" +
@@ -213,11 +213,11 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    private static class ArrayListImpl extends ArrayList {\n" +
                 "        public ArrayListImpl(int i) {\n" +
                 "            super(i);\n" +
-                "        }\n" + 
+                "        }\n" +
                 "    }\n" +
                 "}\n");
     }
-    
+
     public void testConstructorWithParameters2() throws Exception {
         performTest(
                 "package hierbas.del.litoral;\n\n" +
@@ -237,11 +237,11 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    private static class ArrayListImpl extends ArrayList {\n" +
                 "        public ArrayListImpl(int i) {\n" +
                 "            super(i);\n" +
-                "        }\n" + 
+                "        }\n" +
                 "    }\n" +
                 "}\n");
     }
-    
+
     public void testConstructorWithParameters3() throws Exception {
         performTest(
                 "package hierbas.del.litoral;\n\n" +
@@ -261,11 +261,11 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    private static class ArrayListImpl extends ArrayList {\n" +
                 "        public ArrayListImpl(int i) {\n" +
                 "            super(i);\n" +
-                "        }\n" + 
+                "        }\n" +
                 "    }\n" +
                 "}\n");
     }
-    
+
     public void testConstructorWithParameters4() throws Exception {
         performTest(
                 "package hierbas.del.litoral;\n\n" +
@@ -286,11 +286,11 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    private static class ArrayListImpl extends ArrayList<CharSequence> {\n" +
                 "        public ArrayListImpl(Collection<? extends CharSequence> clctn) {\n" +
                 "            super(clctn);\n" +
-                "        }\n" + 
+                "        }\n" +
                 "    }\n" +
                 "}\n");
     }
-    
+
     public void testInnerClass1() throws Exception {
         performTest(
                 "package hierbas.del.litoral;\n\n" +
@@ -312,7 +312,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    }\n" +
                 "}\n");
     }
-    
+
     public void testInnerClass2() throws Exception {
         performTest(
                 "package hierbas.del.litoral;\n\n" +
@@ -332,7 +332,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    }\n" +
                 "}\n");
     }
-    
+
     public void testInnerClass3() throws Exception {
         performTest(
                 "package hierbas.del.litoral;\n\n" +
@@ -354,7 +354,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    }\n" +
                 "}\n");
     }
-    
+
     public void testInnerClass4() throws Exception {
         performTest(
                 "package hierbas.del.litoral;\n\n" +
@@ -376,7 +376,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    }\n" +
                 "}\n");
     }
-    
+
     public void test114079() throws Exception {
         performTest(
         "package hierbas.del.litoral;\n\n" +
@@ -415,7 +415,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
         "class SubClass extends SuperClass {\n" +
         "}\n");
     }
-    
+
     public void test114737() throws Exception {
         performTest(
         "package hierbas.del.litoral;\n\n" +
@@ -436,15 +436,15 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
         "    }\n" +
         "    private void test() {}\n" +
         "    private class RunnableImpl implements Runnable {\n" +
-        "        public RunnableImpl() {\n" + 
-        "        }\n" + 
+        "        public RunnableImpl() {\n" +
+        "        }\n" +
         "        public void run() {\n" +
         "            test();\n" +
         "        }\n" +
         "    }\n" +
         "}\n");
     }
-    
+
     public void test106801a() throws Exception {
         performTest(
         "package hierbas.del.litoral;\n\n" +
@@ -466,14 +466,14 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
         "    private class RunnableImpl implements Runnable {\n" +
         "    }\n" +
         "    private static class RunnableImpl1 implements Runnable {\n" +
-        "        public RunnableImpl1() {\n" + 
-        "        }\n" + 
+        "        public RunnableImpl1() {\n" +
+        "        }\n" +
         "        public void run() {\n" +
         "        }\n" +
         "    }\n" +
         "}\n");
     }
-    
+
     public void test106801b() throws Exception {
         performTest(
         "package hierbas.del.litoral;\n\n" +
@@ -503,8 +503,8 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
         "    private class RunnableImpl2 implements Runnable {\n" +
         "    }\n" +
         "    private static class RunnableImpl3 implements Runnable {\n" +
-        "        public RunnableImpl3() {\n" + 
-        "        }\n" + 
+        "        public RunnableImpl3() {\n" +
+        "        }\n" +
         "        public void run() {\n" +
         "        }\n" +
         "    }\n" +
@@ -547,7 +547,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                     "    }\n" +
                     "}\n");
     }
-    
+
     public void test171386() throws Exception {
         performTest("package hierbas.del.litoral;\n\n" +
                     "public class TestClass {\n" +
@@ -578,6 +578,26 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                     "            //alskjdflkasjdlfkasdf\n" +
                     "        }\n" +
                     "        //dddddddddddd\n" +
+                    "    }\n" +
+                    "}\n");
+    }
+
+    public void test177186() throws Exception {
+        performTest("package hierbas.del.litoral;\n\n" +
+                    "public class TestClass {\n" +
+                    "    public static void method(String str) {\n" +
+                    "        new TestClass(str) {};\n" +
+                    "    }\n" +
+                    "}\n",
+                    "package hierbas.del.litoral;\n\n" +
+                    "public class TestClass {\n" +
+                    "    public static void method(String str) {\n" +
+                    "        new TestClassImpl(str);\n" +
+                    "    }\n" +
+                    "    private static class TestClassImpl extends TestClass {\n" +
+                    "        public TestClassImpl(String str) {\n" +
+		    "            super(str);\n" +
+                    "        }\n" +
                     "    }\n" +
                     "}\n");
     }

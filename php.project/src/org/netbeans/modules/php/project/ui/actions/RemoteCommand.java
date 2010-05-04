@@ -82,6 +82,7 @@ public abstract class RemoteCommand extends Command {
     private static final RequestProcessor RP = new RequestProcessor("Remote connection", 1); // NOI18N
     private static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<Runnable>();
     private static final RequestProcessor.Task TASK = RP.create(new Runnable() {
+        @Override
         public void run() {
             Runnable toRun = RUNNABLES.poll();
             while (toRun != null) {
@@ -378,9 +379,11 @@ public abstract class RemoteCommand extends Command {
             this.processMessageKey = processMessageKey;
         }
 
+        @Override
         public void operationStart(Operation operation, Collection<TransferFile> forFiles) {
         }
 
+        @Override
         public void operationProcess(Operation operation, TransferFile forFile) {
             long size = forFile.getSize();
             if (size > 0) {
@@ -390,6 +393,7 @@ public abstract class RemoteCommand extends Command {
             }
         }
 
+        @Override
         public void operationFinish(Operation operation, Collection<TransferFile> forFiles) {
         }
     }

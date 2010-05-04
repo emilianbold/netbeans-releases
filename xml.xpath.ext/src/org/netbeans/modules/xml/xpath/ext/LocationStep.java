@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.xml.xpath.ext;
 
+import javax.xml.namespace.NamespaceContext;
+
 /**
  * Represents a step in a location path.
  * 
@@ -59,6 +61,14 @@ public interface LocationStep extends XPathExpression, XPathSchemaContextHolder 
      * @return the string representation
      */
     String getString();
+
+    /**
+     * Does almost the same as the previous method but use the specified
+     * namespace context while building locaiton steps' prefixes.
+     * 
+     * @return the string representation
+     */
+    String getString(NamespaceContext nc);
 
     XPathPredicateExpression[] getPredicates();
 

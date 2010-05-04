@@ -243,8 +243,8 @@ public final class CoverageVO {
 
         @Override
         public String toString() {
-            return String.format("CoverageMetricsVO{files: %d, loc: %d, ncloc: %d, classes: %d, methods: %d, coveredMethods: %d, "
-                    + "statements: %d, coveredStatements: %d, elements: %d, coveredElements: %d}",
+            return String.format("CoverageMetricsVO{files: %d, loc: %d, ncloc: %d, classes: %d, methods: %d, coveredMethods: %d, " // NOI18N
+                    + "statements: %d, coveredStatements: %d, elements: %d, coveredElements: %d}", // NOI18N
                     files, loc, ncloc, classes, methods, coveredMethods, statements, coveredStatements, elements, coveredElements);
         }
     }

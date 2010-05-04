@@ -702,7 +702,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             // if names are equal, show these from main project first
             if (t1Name.equals(t2Name)) {
                 String t1projectName = t1.getProjectName();
-                String t2projectName = t1.getProjectName();
+                String t2projectName = t2.getProjectName();
                 if (t1projectName != null && t2projectName != null) {
                     // prioritize types from main project
                     if (mainProjectname != null && t1projectName.equals(mainProjectname)) {

@@ -17,6 +17,12 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class ${name} extends HttpServlet {
 
+    /**
+     * Processes requests for <code>GET</code> method.
+     * @param request servlet request
+     * @param response servlet response
+     * @throws IOException if an I/O error occurs
+     */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {

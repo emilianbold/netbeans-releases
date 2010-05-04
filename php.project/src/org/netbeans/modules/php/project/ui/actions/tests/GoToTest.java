@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.project.ui.actions.tests;
 
 import java.util.Collection;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -68,23 +69,27 @@ public class GoToTest implements TestLocator {
     public GoToTest() {
     }
 
+    @Override
     public boolean appliesTo(FileObject fo) {
         return FileUtils.isPhpFile(fo);
     }
 
+    @Override
     public boolean asynchronous() {
         return false;
     }
 
+    @Override
     public void findOpposite(FileObject fo, int caretOffset, LocationListener callback) {
         throw new UnsupportedOperationException("GotoTest is synchronous");
     }
 
+    @Override
     public LocationResult findOpposite(FileObject fo, int caretOffset) {
         PhpProject project = findPhpProject(fo);
         if (project == null) {
             // XXX what to do now??
-            LOGGER.info("PHP project was not found for file" + fo);
+            LOGGER.log(Level.INFO, "PHP project was not found for file {0}", fo);
             return null;
         }
 
@@ -96,11 +101,11 @@ public class GoToTest implements TestLocator {
         return null;
     }
 
-
+    @Override
     public FileType getFileType(FileObject fo) {
         PhpProject project = findPhpProject(fo);
         if (project == null) {
-            LOGGER.info("PHP project was not found for file" + fo);
+            LOGGER.log(Level.INFO, "PHP project was not found for file {0}", fo);
             return FileType.NEITHER;
         }
 

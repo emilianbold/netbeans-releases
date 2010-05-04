@@ -39,17 +39,13 @@
 
 package org.netbeans.modules.bugzilla.repository;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
-import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
+import org.netbeans.modules.bugzilla.commands.GetConfigurationCommand;
 
 /**
  *
@@ -66,23 +62,9 @@ public class BugzillaConfiguration {
     }
 
     protected RepositoryConfiguration getRepositoryConfiguration(final BugzillaRepository repository, final boolean forceRefresh) {
-        final RepositoryConfiguration[] conf = new RepositoryConfiguration[1];
-        BugzillaCommand cmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                boolean refresh = forceRefresh;
-                String b = System.getProperty("org.netbeans.modules.bugzilla.persistentRepositoryConfiguration", "false"); // NOI18N
-                if("true".equals(b)) {
-                    refresh = true;
-                }
-                conf[0] = Bugzilla.getInstance().getRepositoryConfiguration(repository, refresh);
-            }
-        };
+        GetConfigurationCommand cmd = new GetConfigurationCommand(forceRefresh, repository);
         repository.getExecutor().execute(cmd, true, false);
-        if(!cmd.hasFailed()) {
-            return conf[0];
-        }
-        return null;
+        return cmd.getConf();
     }
 
     public boolean isValid() {
@@ -332,13 +314,24 @@ public class BugzillaConfiguration {
             fields.add(IssueField.REMOVECC);
             fields.add(IssueField.COMMENT_COUNT);
             fields.add(IssueField.ATTACHEMENT_COUNT);
-            // Custom fields
-            for (BugzillaCustomField field : rc.getCustomFields()) {
-                fields.add(new CustomIssueField(field));
+            
+            if(rc != null) {
+                // Custom fields
+                for (BugzillaCustomField field : rc.getCustomFields()) {
+                    fields.add(new CustomIssueField(field));
+                }
             }
             issueFields = fields;
         }
         return issueFields;
     }
 
+    public IssueField getField(String key) {
+        for (IssueField issueField : getFields()) {
+            if(issueField.getKey().equals(key)) {
+                return issueField;
+            }
+        }
+        return null;
+    }
 }

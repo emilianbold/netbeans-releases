@@ -39,6 +39,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.View;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.editor.lib.drawing.DrawEngineDocView;
 import org.netbeans.modules.editor.lib.drawing.DrawEngineLineView;
 
@@ -103,6 +104,7 @@ public class DrawEngineTest extends NbTestCase {
     }
 
     // checks that offset == viewToModel(modelToView(offset)) for all offsets in a document
+    @RandomlyFails
     public void testModelToViewConsistency() throws Throwable {
         for(String text : TEXTS) {
             JEditorPane jep = createJep(text);
@@ -142,6 +144,7 @@ public class DrawEngineTest extends NbTestCase {
     }
     
     // checks that point == modelToView(viewToModel(point)) for interesting points in a component
+    @RandomlyFails
     public void testViewToModelConsistency() throws Throwable {
         for(String text : TEXTS) {
             JEditorPane jep = createJep(text);
@@ -223,6 +226,7 @@ public class DrawEngineTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails
     public void testModelToViewCorrectness() throws Throwable {
         for(String text : TEXTS) {
             JEditorPane jep = createJep(text);
@@ -286,6 +290,7 @@ public class DrawEngineTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails
     public void testViewToModelCorrectness() throws Throwable {
         for(String text : TEXTS) {
             JEditorPane jep = createJep(text);
@@ -355,6 +360,7 @@ public class DrawEngineTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails
     public void testBackwardBias() throws Throwable {
         JEditorPane jep = createJep(PYRAMID);
         View rootView = Utilities.getRootView(jep, DrawEngineDocView.class);

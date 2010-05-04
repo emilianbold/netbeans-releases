@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -315,6 +316,8 @@ public final class GenerateAction extends NodeAction {
                                     ExecutionService.newService(rpc, descriptor.toExecutionDescriptor(), displayName).run();
                             try {
                                 execution.get();
+                            } catch (CancellationException ex) {
+                                // do nothing, the user cancelled the generator process
                             } catch (InterruptedException ex) {
                                 Exceptions.printStackTrace(ex);
                             } catch (ExecutionException ex) {

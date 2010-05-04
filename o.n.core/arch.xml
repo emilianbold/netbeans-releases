@@ -865,13 +865,17 @@ made subject to such option by the copyright holder.
   <p>
    <api name="org.netbeans.core.TimeableEventQueue" category="private" group="systemproperty" type="export">
    This module contains a hook to identify long running tasks inside the AWT
-   dispatch thread. It observers the Swing event queue and if a task takes longer
-   than expected (right now 5s, but that is configurable via
-   <code>org.netbeans.core.TimeableEventQueue.quantum=xyz</code> ms), it reports
-   a warning exception with <code>Level.INFO</code> logging level. This exception
-   shall contain a thread dump taken at the time the AWT event queue was occupied.
-   After such exception the <q>watch dog</q> is disabled for next 
-   <code>org.netbeans.core.TimeableEventQueue.pause</code> milliseconds, by default 60s.
+   dispatch thread. It observers the AWT event queue and if a task takes longer
+   than expected, it invokes a sampler that creates a profiling snapshot of the IDE
+   until the task returns back to the event queue. Time limits can be
+   configured via system properties (in milliseconds):
+   <ul>
+    <li><code>org.netbeans.core.TimeableEventQueue.quantum=xyz</code> - for how long the event queue must be blocked to start the self-sampler (by default 100ms),</li>
+    <li><code>org.netbeans.core.TimeableEventQueue.report=xyz</code> - total time of blocked event queue to report a problem (by default 3s),</li>
+    <li><code>org.netbeans.core.TimeableEventQueue.waitcursor=xyz</code> - time for which a problem is not reported if mouse wait cursor is in place (by default 15s),</li>
+    <li><code>org.netbeans.core.TimeableEventQueue.pause=xyz</code> - time after reporting a problem for which the detection is disabled (by default 15s).</li>
+   </ul>
+   In production builds the default time limits are different (10s to start sampler, 20s to report a problem).
    </api>
   </p>
  </answer>

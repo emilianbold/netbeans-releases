@@ -56,8 +56,8 @@ public class CallNode extends AbstractNode {
     private CallGraphState model;
     private boolean isCalls;
 
-    public CallNode(Call element, CallGraphState model, boolean isCalls) {
-        super(new CallChildren(element, model, isCalls));
+    public CallNode(Call element, CallGraphState model, boolean isCalls, boolean showOverriding) {
+        super(new CallChildren(element, model, isCalls, showOverriding));
         object = element;
         this.model = model;
         this.isCalls = isCalls;

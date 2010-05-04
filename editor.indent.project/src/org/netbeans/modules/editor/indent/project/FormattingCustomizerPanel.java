@@ -187,10 +187,14 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
                 JTextComponent lastFocused = EditorRegistry.lastFocusedComponent();
                 if (lastFocused != null) {
                     lastFocused.getDocument().putProperty(SimpleValueNames.TEXT_LINE_WRAP, ""); //NOI18N
+                    lastFocused.getDocument().putProperty(SimpleValueNames.TAB_SIZE, ""); //NOI18N
+                    lastFocused.getDocument().putProperty(SimpleValueNames.TEXT_LIMIT_WIDTH, ""); //NOI18N
                 }
                 for(JTextComponent jtc : EditorRegistry.componentList()) {
                     if (lastFocused == null || lastFocused != jtc) {
                         jtc.getDocument().putProperty(SimpleValueNames.TEXT_LINE_WRAP, ""); //NOI18N
+                        jtc.getDocument().putProperty(SimpleValueNames.TAB_SIZE, ""); //NOI18N
+                        jtc.getDocument().putProperty(SimpleValueNames.TEXT_LIMIT_WIDTH, ""); //NOI18N
                     }
                 }
             }

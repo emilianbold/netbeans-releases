@@ -293,8 +293,8 @@ public class OverridesPopup extends JPanel implements FocusListener {
         Collections.sort(elements);
 
         DefaultListModel model = new DefaultListModel();
-        if (mainDeclaration != null) {
-            model.addElement(new Item(mainDeclaration, Kind.MAIN));
+        if (this.mainDeclaration != null) {
+            model.addElement(new Item(this.mainDeclaration, Kind.MAIN));
         }
         for (Item element : elements) {
             model.addElement(element);
@@ -324,7 +324,7 @@ public class OverridesPopup extends JPanel implements FocusListener {
         });
 
         list.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        addFocusListener(this);
+        addFocusListener(OverridesPopup.this);
     }
 
     private void openSelected() {

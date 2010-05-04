@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.persistence.provider;
 import java.util.Collections;
 import java.util.Map;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 
 /**
  * This class represents Hibernate provider.
@@ -52,49 +53,68 @@ import org.openide.util.NbBundle;
  */
 class HibernateProvider extends Provider{
     
-    protected HibernateProvider(){
-        super("org.hibernate.ejb.HibernatePersistence");
+    protected HibernateProvider(String version){
+        super("org.hibernate.ejb.HibernatePersistence", version);
     }
 
+    protected HibernateProvider(){
+        this(null);
+    }
+
+    @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(HibernateProvider.class, "LBL_Hibernate"); //NOI18N
+        return NbBundle.getMessage(HibernateProvider.class, "LBL_Hibernate") + (getVersion()!=null ? "(JPA "+getVersion()+")" : ""); //NOI18N
     }
     
+    @Override
     public String getJdbcUrl() {
-        return "hibernate.connection.url";
+        return Persistence.VERSION_1_0.equals(getVersion()) ? "hibernate.connection.url" : super.getJdbcUrl();
     }
     
+    @Override
     public String getJdbcDriver() {
-        return "hibernate.connection.driver_class";
+        return Persistence.VERSION_1_0.equals(getVersion()) ? "hibernate.connection.driver_class" : super.getJdbcDriver();
     }
     
+    @Override
     public String getJdbcUsername() {
-        return "hibernate.connection.username";
+        return Persistence.VERSION_1_0.equals(getVersion()) ? "hibernate.connection.username" : super.getJdbcUsername();
     }
     
+    @Override
     public String getJdbcPassword() {
-        return "hibernate.connection.password";
+        return Persistence.VERSION_1_0.equals(getVersion()) ? "hibernate.connection.password" : super.getJdbcPassword();
     }
     
+    @Override
     public String getTableGenerationPropertyName() {
         return "hibernate.hbm2ddl.auto";
     }
     
+    @Override
     public String getTableGenerationDropCreateValue() {
         return "create-drop";
     }
     
+    @Override
     public String getTableGenerationCreateValue() {
         return "update";
     }
 
+    @Override
     public Map getUnresolvedVendorSpecificProperties() {
         return Collections.EMPTY_MAP;
     }
     
+    @Override
     public Map getDefaultVendorSpecificProperties() {
         return Collections.singletonMap(
                 "hibernate.cache.provider_class",
                 "org.hibernate.cache.NoCacheProvider");
+    }
+    
+    @Override
+    public String getAnnotationProcessor() {
+        return Persistence.VERSION_2_0.equals(getVersion()) ? "org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor" : super.getAnnotationProcessor();
     }
 }

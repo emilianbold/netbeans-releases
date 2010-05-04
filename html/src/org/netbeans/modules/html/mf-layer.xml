@@ -112,7 +112,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="FileSystemAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="800"/>
+                        <attr name="position" intvalue="1750"/>
                     </file>
                     <file name="OpenAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
@@ -166,7 +166,7 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="xhtml">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-html-HtmlLoader.instance">
+                    <file name="org-netbeans-modules-html-XhtmlLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.Bundle"/>
                     </file>
                 </folder>
@@ -190,7 +190,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="FileSystemAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="800"/>
+                        <attr name="position" intvalue="1750"/>
                     </file>
                     <file name="OpenAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
@@ -331,4 +331,16 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+
+    <folder name="Plugins">
+        <folder name="XML">
+            <folder name="UserCatalogs">
+                <file name="org-netbeans-modules-catalog-HtmlCatalog.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.html.catalog.HtmlCatalog"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>

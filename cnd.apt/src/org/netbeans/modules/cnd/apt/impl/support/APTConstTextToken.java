@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.apt.impl.support;
 
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -132,7 +132,7 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
 
         for (int i = 0; i < constText.length; i++) {
             String str = constText[i];
-            constTextID[i] = CharSequenceKey.create(str);
+            constTextID[i] = CharSequences.create(str);
             if (str != null) {
                 if (i > LAST_CONST_TEXT_TOKEN) {
                     System.err.printf("APTConstTextToken: token %s [%d] is higher than LAST_CONST_TEXT_TOKEN [%d]\n", str, i, LAST_CONST_TEXT_TOKEN);

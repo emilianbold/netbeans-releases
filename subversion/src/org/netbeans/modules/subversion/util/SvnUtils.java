@@ -273,25 +273,29 @@ public class SvnUtils {
      * @return <code>true</code> if
      * <ul>
      *  <li> the node contains a project in its lookup and
-     *  <li> the project contains at least one CVS versioned source group
+     *  <li> the project contains at least one SVN versioned source group
      * </ul>
      * otherwise <code>false</code>.
+     * @param project
+     * @param checkStatus if set to true, cache.getStatus is called and can take significant amount of time
      */
-    public static boolean isVersionedProject(Node node) {
+    public static boolean isVersionedProject(Node node, boolean checkStatus) {
         Lookup lookup = node.getLookup();
         Project project = (Project) lookup.lookup(Project.class);
-        return isVersionedProject(project);
+        return isVersionedProject(project, checkStatus);
     }
 
     /**
      * @return <code>true</code> if
      * <ul>
      *  <li> the project != null and
-     *  <li> the project contains at least one CVS versioned source group
+     *  <li> the project contains at least one SVN versioned source group
      * </ul>
      * otherwise <code>false</code>.
+     * @param project
+     * @param checkStatus if set to true, cache.getStatus is called and can take significant amount of time
      */
-    public static boolean isVersionedProject(Project project) {
+    public static boolean isVersionedProject(Project project, boolean checkStatus) {
         if (project != null) {
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
             Sources sources = ProjectUtils.getSources(project);
@@ -299,7 +303,13 @@ public class SvnUtils {
             for (int j = 0; j < sourceGroups.length; j++) {
                 SourceGroup sourceGroup = sourceGroups[j];
                 File f = FileUtil.toFile(sourceGroup.getRootFolder());
-                if (f != null && (cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
+                if (f != null) {
+                    if (checkStatus && (cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                        return true;
+                    } else if (!checkStatus && SvnUtils.isManaged(f)) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
@@ -1210,6 +1220,27 @@ public class SvnUtils {
         return ret;
     }
 
+    /**
+     * Lists all children of a given dir with the exception of metadata files or folders
+     * @param root given folder
+     * @return list of all direct children
+     */
+    public static List<File> listChildren (File root) {
+        List<File> ret = new ArrayList<File>();
+        if(root == null) {
+            return ret;
+        }
+        File[] files = root.listFiles();
+        if(files != null) {
+            for (File file : files) {
+                if(!(isPartOfSubversionMetadata(file) || isAdministrative(file))) {
+                    ret.add(file);
+                }
+            }
+        }
+        return ret;
+    }
+
     public static SvnFileNode [] getNodes(Context context, int includeStatus) {
         File [] files = Subversion.getInstance().getStatusCache().listFiles(context, includeStatus);
         SvnFileNode [] nodes = new SvnFileNode[files.length];
@@ -1489,5 +1520,29 @@ public class SvnUtils {
         }
         // open project selection
         ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
+    }
+
+    /*
+     * Refreshes all parents for given files
+     * XXX move to versioning.utils if needed in other modules
+     */
+    public static void refreshFS (File... files) {
+        final Set<File> parents = new HashSet<File>();
+        for (File f : files) {
+            File parent = f.getParentFile();
+            if (parent != null) {
+                parents.add(parent);
+                Subversion.LOG.log(Level.FINE, "scheduling for fs refresh: [{0}]", parent); // NOI18N
+            }
+        }
+        if (parents.size() > 0) {
+            // let's give the filesystem some time to wake up and to realize that the file has really changed
+            Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    FileUtil.refreshFor(parents.toArray(new File[parents.size()]));
+                }
+            }, 100);
+        }
     }
 }

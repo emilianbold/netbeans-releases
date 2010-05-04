@@ -205,11 +205,12 @@ public class TaskComparator {
             this.asc = asc;
         }
 
+        @Override
         public int compare( Task t1, Task t2 ) {
             int result = 0;
             
-            String f1 = Accessor.getLocation(t1);
-            String f2 = Accessor.getLocation(t2);
+            String f1 = Accessor.getPath(t1);
+            String f2 = Accessor.getPath(t2);
             if( null == f1 && null != f2 )
                 result = -1;
             else if( null != f1 && null == f2 ) 
@@ -217,6 +218,9 @@ public class TaskComparator {
             else if( null != f1 && null != f2 ) {
                 result = f1.compareTo( f2 );
             }
+
+            if( 0 == result )
+                result = Accessor.getLine(t1) - Accessor.getLine(t2);
             
             if( 0 == result )
                 result = getDefault().compare( t1, t2 );

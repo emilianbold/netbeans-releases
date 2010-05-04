@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.netbeans.napi.gsfret.source.Phase;
+import org.netbeans.napi.gsfret.source.SourceTaskFactory;
 import org.netbeans.napi.gsfret.source.support.LookupBasedSourceTaskFactory;
 
 /**
@@ -74,7 +75,12 @@ public final class ClassMemberNavigatorSourceFactory extends LookupBasedSourceTa
     };
     
     static ClassMemberNavigatorSourceFactory getInstance() {
-        return Lookup.getDefault().lookup(ClassMemberNavigatorSourceFactory.class);
+        for(SourceTaskFactory t : Lookup.getDefault().lookupAll(SourceTaskFactory.class)) {
+            if (t instanceof ClassMemberNavigatorSourceFactory) {
+                return (ClassMemberNavigatorSourceFactory) t;
+            }
+        }
+        return null;
     }
     
     public ClassMemberNavigatorSourceFactory() {        

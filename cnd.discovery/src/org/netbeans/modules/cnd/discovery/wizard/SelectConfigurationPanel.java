@@ -84,6 +84,7 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public final class SelectConfigurationPanel extends JPanel {
+    private static final RequestProcessor RP = new RequestProcessor(SelectConfigurationPanel.class.getName(), 1);
     private SelectConfigurationWizard wizard;
     private String oldConsolidation;
     private boolean showResulting;
@@ -101,11 +102,13 @@ public final class SelectConfigurationPanel extends JPanel {
     
     private void addListeners(){
         configurationTree.addTreeSelectionListener(new TreeSelectionListener(){
+            @Override
             public void valueChanged(TreeSelectionEvent e) {
                 updateListModels();
             }
         });
         showInherited.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
                 showResulting = showInherited.isSelected();
                 updateListModels();
@@ -338,7 +341,7 @@ public final class SelectConfigurationPanel extends JPanel {
             configurationTree.setModel(model);
             // count configurations in other thread.
             AnalyzingTask task = new AnalyzingTask(wizardDescriptor);
-            RequestProcessor.getDefault().post(task);
+            RP.post(task);
             //task.start();
             isStoped = false;
             wasTerminated = true;
@@ -369,25 +372,31 @@ public final class SelectConfigurationPanel extends JPanel {
         String consolidation = wizardDescriptor.getLevel();
         assert consolidation != null;
         List<Configuration> configs = provider.analyze(new ProjectProxy() {
+            @Override
             public boolean createSubProjects() {
                 return false;
             }
+            @Override
             public Project getProject() {
                 return wizardDescriptor.getProject();
             }
 
+            @Override
             public String getMakefile() {
                 return null;
             }
 
+            @Override
             public String getSourceRoot() {
                 return wizardDescriptor.getRootFolder();
             }
 
+            @Override
             public String getExecutable() {
                 return wizardDescriptor.getBuildResult();
             }
 
+            @Override
             public String getWorkingFolder() {
                 return null;
             }
@@ -470,9 +479,11 @@ public final class SelectConfigurationPanel extends JPanel {
     }
     
     public static class EmptyListModel extends AbstractListModel {
+        @Override
         public int getSize() {
             return 0;
         }
+        @Override
         public Object getElementAt(int i) {
             return null;
         }

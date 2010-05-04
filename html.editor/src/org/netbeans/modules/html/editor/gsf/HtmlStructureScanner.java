@@ -277,16 +277,8 @@ public class HtmlStructureScanner implements StructureScanner {
         }
 
         public boolean isLeaf() {
-            //potentialy incorrect workaround for ElementNode.updateRecursively(StructureItem) method.
-            //If the StructureItem says it is a leaf then if a new node is created inside
-            //the navigator representation - ElementNode still holds empty children list 
-            //which is not an instance of ElementChildren and then the subnodes are not refreshed.
-            //possible fix would be to modify the ElementNode constructor to always create 
-            //ElementChildren even if the node is a leaf, but I am not sure whether it may 
-            //have some bad influence on other things.
-            return false;
-            
-            //return handle.node().children().isEmpty();
+            //The child if empty if it hasn't any nested items. If it has only text it's empty.
+            return getNestedItems().isEmpty();
         }
 
         @Override

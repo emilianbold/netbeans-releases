@@ -107,7 +107,7 @@ public class RecentFilesTest extends TestCase {
         List<HistoryItem> recentFiles = RecentFiles.getRecentFiles();
         assertTrue("Expected " + files.length + " recent files, got " + recentFiles.size(), files.length == recentFiles.size());
         for (FileObject fo : files) {
-            assertEquals(RecentFiles.convertFile2URL(fo), recentFiles.get(i).getURL());
+            assertEquals(RecentFiles.convertFile2Path(fo), recentFiles.get(i).getPath());
             i++;
         }
 
@@ -132,7 +132,7 @@ public class RecentFilesTest extends TestCase {
         // store, load and check for equality
         for (int i=0; i < files.length; i++) {
             FileObject file = files[i];
-            RecentFiles.addFile(RecentFiles.convertFile2URL(file));
+            RecentFiles.addFile(RecentFiles.convertFile2Path(file));
             Thread.sleep(100);
         }
         RecentFiles.store();
@@ -141,7 +141,7 @@ public class RecentFilesTest extends TestCase {
         int i = files.length - 1;
         for (FileObject fileObject : files) {
             assertTrue("File #" + (i + 1) + " differs", 
-                    fileObject.equals(RecentFiles.convertURL2File(loaded.get(i--).getURL())));
+                    fileObject.equals(RecentFiles.convertPath2File(loaded.get(i--).getPath())));
         }
     }
     
@@ -165,7 +165,7 @@ public class RecentFilesTest extends TestCase {
         List<HistoryItem> recentFiles = RecentFiles.getRecentFiles();
         boolean contained = false;
         for (HistoryItem historyItem : recentFiles) {
-            if (fo.equals(RecentFiles.convertURL2File(historyItem.getURL()))) {
+            if (fo.equals(RecentFiles.convertPath2File(historyItem.getPath()))) {
                 contained = true;
                 break;
             }

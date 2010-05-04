@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.cnd.testrunner.ui;
 
+import org.netbeans.modules.cnd.testrunner.spi.TestRecognizerHandler;
+import org.netbeans.modules.cnd.testrunner.spi.TestHandlerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -59,10 +61,13 @@ public final class TestRunnerLineConvertor implements LineConvertor {
     private TestSession session;
     private final List<TestRecognizerHandler> handlers;
 
-    public TestRunnerLineConvertor(Manager manager, TestSession session, TestHandlerFactory handlerFactory) {
+    public TestRunnerLineConvertor(Manager manager, TestSession session, List<TestHandlerFactory> handlerFactories) {
         this.manager = manager;
         this.session = session;
-        this.handlers = handlerFactory.createHandlers();
+        this.handlers = new ArrayList<TestRecognizerHandler>();
+        for (TestHandlerFactory testHandlerFactory : handlerFactories) {
+            this.handlers.addAll(testHandlerFactory.createHandlers());
+        }
     }
 
     public synchronized void refreshSession() {
@@ -71,6 +76,7 @@ public final class TestRunnerLineConvertor implements LineConvertor {
         session.setRerunHandler(handler);
     }
 
+    @Override
     public synchronized List<ConvertedLine> convert(String line) {
 
         for (TestRecognizerHandler handler : handlers) {
@@ -88,6 +94,8 @@ public final class TestRunnerLineConvertor implements LineConvertor {
                     // IOOBE is thrown when there is no group with the expected index.
                     LOGGER.log(Level.WARNING, "Failed to process line: " + line + " with handler: " + handler, ioobe);
                 }
+
+                break;
             }
         }
 

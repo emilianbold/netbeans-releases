@@ -47,7 +47,7 @@ import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
@@ -411,15 +411,19 @@ implements java.net.URLStreamHandlerFactory {
     }
 
     public void testCreatedShadowFoundInParent() throws Exception {
-        final FileObject r = FileUtil.getConfigRoot();
-        r.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+        class R implements FileSystem.AtomicAction {
+            @Override
             public void run() throws IOException {
-                FileObject orig = FileUtil.createData(r, "orig/file.txt");
-                DataFolder f = DataFolder.findFolder(r.createFolder("copy"));
-                DataShadow sh = DataShadow.create(f, DataObject.find(orig));
-                assertEquals(Collections.singletonList(sh), Arrays.asList(f.getChildren()));
+                DataObject[] old = folder.getChildren();
+                assertEquals("No children yet", 0, old.length);
+                DataShadow ds = original.createShadow(folder);
+                assertEquals("Parent is OK", folder, ds.getFolder());
+                DataObject[] arr = folder.getChildren();
+                List<DataObject> all = Arrays.asList(arr);
+                assertTrue("Newly created " + ds + " shall be in list of children", all.contains(ds));
             }
-        });
+        }
+        R action = new R();
+        FileUtil.runAtomicAction(action);
     }
-
 }

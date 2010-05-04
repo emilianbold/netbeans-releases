@@ -39,18 +39,17 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.PtyProcessStartUtility;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -58,26 +57,14 @@ import org.openide.util.RequestProcessor;
  */
 public final class PtyNativeProcess extends AbstractNativeProcess {
 
-    private final Pty pty;
-    private final PtyImpl ptyImpl;
+    private Pty pty = null;
+    private PtyImpl ptyImpl = null;
     private AbstractNativeProcess delegate = null;
+    private volatile boolean cancelled;
 
-    public PtyNativeProcess(NativeProcessInfo info) throws IOException {
+    public PtyNativeProcess(NativeProcessInfo info) {
         super(info);
-
-        ExecutionEnvironment env = info.getExecutionEnvironment();
-        Pty _pty = info.getPty();
-
-        if (_pty == null) {
-            _pty = PtySupport.allocate(env);
-        }
-
-        if (_pty == null) {
-            throw new IOException("Unable to allocate a pty for the process " + info.getExecutable()); // NOI18N
-        }
-
-        pty = _pty;
-        ptyImpl = PtyImplAccessor.getDefault().getImpl(pty);
+        cancelled = false;
     }
 
     public Pty getPty() {
@@ -87,17 +74,57 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
     @Override
     protected void create() throws Throwable {
         ExecutionEnvironment env = info.getExecutionEnvironment();
+        Pty _pty = info.getPty();
+
+        if (_pty == null) {
+            try {
+                _pty = PtySupport.allocate(env);
+            } catch (IOException ex) {
+                String msg = "Unable to allocate a pty for the process: " + info.getExecutable() + " [" + ex.getMessage() + "]";
+                throw new IOException(msg); // NOI18N
+            }
+        }
+
+        if (cancelled) {
+            return;
+        }
+
+        pty = _pty;
+        ptyImpl = PtyImplAccessor.getDefault().getImpl(pty);
+
+        if (ptyImpl != null) {
+            setInputStream(ptyImpl.getInputStream());
+            setOutputStream(ptyImpl.getOutputStream());
+        }
+
         String executable = PtyProcessStartUtility.getInstance().getPath(env);
 
         List<String> newArgs = new ArrayList<String>();
         newArgs.add("-p"); // NOI18N
         newArgs.add(pty.getSlaveName());
-        newArgs.add(info.getExecutable());
+
+        String processExecutable = info.getExecutable();
+        if (hostInfo.getOSFamily() == OSFamily.WINDOWS) {
+            // process_start requires Unix style executable path
+            processExecutable = WindowsSupport.getInstance().convertToShellPath(processExecutable);
+        }
+        newArgs.add(processExecutable);
+
         newArgs.addAll(info.getArguments());
 
         // TODO: Clone Info!!!!
         info.setExecutable(executable);
         info.setArguments(newArgs.toArray(new String[0]));
+
+        // Listeners...
+        // listeners are copied already in super()
+        // and never accessed via info anymore...
+        // so when we change listeners here,
+        // this change has effect on delegate only...
+
+        if (info.getListeners() != null) {
+            info.getListeners().clear();
+        }
 
         if (env.isLocal()) {
             delegate = new LocalNativeProcess(info);
@@ -105,65 +132,40 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
             delegate = new RemoteNativeProcess(info);
         }
 
-        delegate.create();
+        delegate.createAndStart();
 
         readPID(delegate.getInputStream());
-
-        RequestProcessor.getDefault().post(new Reaper());
     }
 
     @Override
     protected void cancel() {
-        delegate.destroy();
+        cancelled = true;
+
+        if (delegate != null) {
+            delegate.destroy();
+        }
     }
 
     @Override
     protected int waitResult() throws InterruptedException {
+        if (cancelled) {
+            throw new InterruptedException();
+        }
+
+        if (delegate == null) {
+            return 1;
+        }
+
         return delegate.waitResult();
     }
 
-    @Override
-    public OutputStream getOutputStream() {
-        return ptyImpl.getOutputStream();
-    }
-
-    @Override
-    public InputStream getInputStream() {
-        return ptyImpl.getInputStream();
-    }
-
-    @Override
-    public InputStream getErrorStream() {
-        return new InputStream() {
-
-            @Override
-            public int read() throws IOException {
-                return -1;
-            }
-        };
-    }
-
-    private final class Reaper implements Runnable {
-
-        @Override
-        public void run() {
-
-            try {
-                Thread.currentThread().setName("Reaper for " + getPID()); // NOI18N
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            try {
-                waitFor();
-            } catch (InterruptedException ex) {
-            }
-
-            try {
+    public void closePty() {
+        try {
+            if (ptyImpl != null) {
                 ptyImpl.close();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 }

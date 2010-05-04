@@ -48,6 +48,7 @@ import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.zend.commands.ZendCommandSupport;
+import org.netbeans.modules.php.zend.editor.ZendEditorExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -113,6 +114,6 @@ public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public EditorExtender getEditorExtender(PhpModule phpModule) {
-        return null;
+        return new ZendEditorExtender();
     }
 }

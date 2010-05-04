@@ -143,7 +143,7 @@ public class DnDImportPanel extends javax.swing.JPanel {
         namespaceTextField = new javax.swing.JTextField();
         prefixLabel = new javax.swing.JLabel();
         prefixTextField = new javax.swing.JTextField();
-        errorWarningMessagePanel = new org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel();
+        errorWarningMessagePanel = new org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel();
 
         setName("Form"); // NOI18N
 
@@ -236,7 +236,7 @@ public class DnDImportPanel extends javax.swing.JPanel {
         prefixTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DnDImportPanel.class, "DnDImportPanel.prefixTextField.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel errorWarningMessagePanel;
+    private org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel errorWarningMessagePanel;
     private javax.swing.JLabel fileNameLabel;
     private javax.swing.JTextField fileTextField;
     private javax.swing.JLabel namespaceLabel;

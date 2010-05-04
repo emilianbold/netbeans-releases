@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
+Use is subject to license terms.
+ -->
+<html>
+  <head>
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <link rel="StyleSheet" type="text/css" href="/org/netbeans/modules/usersguide/ide.css">
+    <title>Analyzing Memory Usage of C/C++/Fortran Applications</title>
+  </head>
+  <body>
+    <h2>
+       Analyzing Memory Usage of C/C++/Fortran Applications
+    </h2>
+    <p>
+       <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
+    </p> 
+     <p>The Memory Usage profiling tool runs by default for C, C++, and Fortran projects,
+   and shows how your application's memory heap changes over its runtime.
+     You can use it to identify memory leaks, which are points in your
+     program where memory that is no longer needed fails to be released.
+     Memory leaks can lead to increased memory consumption in your program.</p>
+     <p><b>Note:</b> The profiling tools are supported only on platforms shown in
+       <a href="OverviewOfCandC++Profiling.html">Overview of C and C++ Profiling</a>.</p>
+
+    <p><b>To view more detailed information about memory usage:</b></p>
+
+    <ul>
+        <li>In the Run Monitor window, click the Memory Leaks button to open the Memory Leak Details tab to display the locations
+            of memory leaks, the number of bytes lost through leaks, and the number of leaks. The leak locations
+            are listed as <code>function-name at filename:nn</code>, where <code>nn</code> is the line number
+            in the source file.</li>      
+    <li>Click a column heading to sort the list of functions using the information in that column.</li>
+    <li>Double-click functions shown in bold to open the source files where they are called. Numbers
+    displayed in the left margin are the memory leak metrics for that function.</li>
+    <li>Use the Time Filter controls in the Memory Leak Details tab to specify Start and End times to select a particular
+    time period of the run time to look at. You can also use the orange controls in the Run Monitor window
+    to select the time period.</li>
+    </ul>
+       <p><b>If you see a message that detailed information is not available in the current profile configuration:</b>
+       <ol>
+        <li>Right-click the project and select Properties.</li>
+        <li>Click the Profile node in the Project Properties dialog.</li>
+        <li>In the Profile Configuration list, select the C/C++ DTrace Standard configuration
+        if you are running on Oracle Solaris, or C/C++ Oracle Solaris Studio Standard if you are running
+        on Linux with the Oracle Solaris Studio tool collection.<br>
+        <b>Tip:</b> If you do not see these configurations, your operating system and tool collection
+        do not support the advanced profiling features.<br></li>
+        <li>Click OK.</li>
+        <li>Run the project and you should be able to click the Memory Leaks button and see detailed
+        information.</li>
+        </ol>
+       
+    <p><b>To disable Memory Usage profiling in the Run Monitor:</b></p>
+    <ul><li>Modify an existing profile configuration to deselect the Memory Usage tool. For information
+            about modifying a profile configuration, see
+            <a href="ManagingProfileConfigurations.html">Managing Profile Configurations</a>.
+        </li>
+    </ul>
+
+  <p><b>To disable all Run Monitor profiling tools:</b>
+    <ul>
+        <li>See <a href="ProfilingCandC++Projects.html">Profiling C and C++ Projects</a>.</li>
+
+    </ul>
+    <table>
+      <tr>
+        <th colspan="2" align="left">
+          <a name="seealso">See also</a> 
+        </th>
+      </tr>
+      <tr>
+        <td width="23">
+          &nbsp;
+        </td>
+        <td>
+          <a href="ManagingProfileConfigurations.html">Managing C/C++/Fortran Profile Configurations</a><br>
+          <a href="ProfilingCandC++Projects.html">Profiling C/C++/Fortran Projects</a><br>
+          <a href="RunMonitorWindowforCandC++Fort.html">Run Monitor Window for C/C++/Fortran Projects</a><br>
+          <a href="../WorkingWithCandC++Projects/ProjectPropsProfile.html">C/C++/Fortran Project Properties Dialog Box: Profile</a>
+             </td>
+      </tr>
+    </table>
+    <hr>
+    <p>
+       <a href="../credits.html"><small>Legal Notices</small></a>
+    </p>
+    <table border="0" cellpadding="20">
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

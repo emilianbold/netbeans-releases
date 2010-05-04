@@ -294,7 +294,8 @@ public class CreateElementTest extends HintsTestBase {
 
     public void test92419() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.Bug92419", 123, new HashSet<String>(Arrays.asList(
-                "CreateClass:org.netbeans.test.java.hints.XXXX:[]:CLASS"
+                "CreateClass:org.netbeans.test.java.hints.XXXX:[]:CLASS",
+		"CreateInnerClass:org.netbeans.test.java.hints.Bug92419.XXXX:[private, static]:CLASS"
         )));
     }
 

@@ -46,8 +46,8 @@ package org.netbeans.modules.cnd.dwarfdump;
  * @author Alexander Simon
  */
 public class MemberHeader {
-    private long offset;
-    private int length;
+    private final long offset;
+    private final int length;
     
     /** Creates a new instance of MemberHeader */
     public MemberHeader(long offset, int length) {

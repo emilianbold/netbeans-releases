@@ -51,8 +51,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.TinySingletonMap;
 
 /**
@@ -111,7 +110,7 @@ public final class APTMacroMapSnapshot {
     }
     
     /*package*/ final APTMacro getMacro(CharSequence key) {
-        assert key instanceof TinyCharSequence : "string can't be here " + key;
+        assert CharSequences.isCompact(key) : "string can't be here " + key;
         APTMacroMapSnapshot currentSnap = this;
         while (currentSnap != null) {
             APTMacro macro = currentSnap.macros.get(key);
@@ -125,17 +124,21 @@ public final class APTMacroMapSnapshot {
     
     @Override
     public String toString() {
-        Map<CharSequence, APTMacro> tmpMap = new HashMap<CharSequence, APTMacro>();
-        addAllMacros(this, tmpMap);
+        Map<CharSequence, APTMacro> tmpMap = addAllMacros(this, null);
         return APTUtils.macros2String(tmpMap);
     }
     
-    public static void addAllMacros(APTMacroMapSnapshot snap, Map<CharSequence, APTMacro> out) {
+    public static Map<CharSequence, APTMacro> addAllMacros(APTMacroMapSnapshot snap, Map<CharSequence, APTMacro> out) {
         if (snap != null) {
+            int i = 0;
             LinkedList<APTMacroMapSnapshot> stack = new LinkedList<APTMacroMapSnapshot>();
             while(snap != null) {
+                i += snap.macros.size();
                 stack.add(snap);
                 snap = snap.parent;
+            }
+            if (out == null) {
+                out = new HashMap<CharSequence, APTMacro>(i);
             }
             while(!stack.isEmpty()) {
                 snap = stack.removeLast();
@@ -148,6 +151,10 @@ public final class APTMacroMapSnapshot {
                 }
             }
         }
+        if (out == null) {
+            out = new HashMap<CharSequence, APTMacro>();
+        }
+        return out;
     }
 
     public static int getMacroSize(APTMacroMapSnapshot snap) {
@@ -189,7 +196,7 @@ public final class APTMacroMapSnapshot {
         }
 
         public CharSequence getFile() {
-            return CharSequenceKey.empty();
+            return CharSequences.empty();
         }
         
         public Kind getKind() {

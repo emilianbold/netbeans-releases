@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 public class APTGnuCppFilter extends APTBaseLanguageFilter {
     
     public APTGnuCppFilter() {
+        super(false);
         initialize();
     }
     

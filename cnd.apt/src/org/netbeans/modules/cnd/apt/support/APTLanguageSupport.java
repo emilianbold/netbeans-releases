@@ -56,6 +56,7 @@ public class APTLanguageSupport {
     public static final String GNU_CPP  = "Gnu C++ Language"; // NOI18N
     public static final String STD_CPP  = "Std C++ Language"; // NOI18N
     public static final String FORTRAN  = "Fortran Language"; // NOI18N
+    public static final String UNKNOWN  = "Unknown Language"; // NOI18N
     
     private APTLanguageSupport() {
     }

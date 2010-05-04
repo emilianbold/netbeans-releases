@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.structure.APT;
@@ -53,8 +54,12 @@ import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTError;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
-import org.netbeans.modules.cnd.apt.support.*;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
+import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
+import org.netbeans.modules.cnd.apt.support.APTMacroMap;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
@@ -158,6 +163,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         return needMacroAndIncludes();
     }
 
+    @Override
     protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, APTMacroMap.State postIncludeState) throws IOException {
         try {
             return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), postIncludeState, mode, isTriggerParsingActivity());
@@ -184,11 +190,14 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         List<CharSequence> params = null;
         Collection<APTToken> paramTokens = define.getParams();
         if (paramTokens != null) {
-            params = new ArrayList<CharSequence>();
+            params = new ArrayList<CharSequence>(paramTokens.size());
             for (APTToken elem : paramTokens) {
                 if (APTUtils.isID(elem)) {
                     params.add(NameCache.getManager().getString(elem.getTextID()));
                 }
+            }
+            if (params.isEmpty()) {
+                params = Collections.<CharSequence>emptyList();
             }
         }
 

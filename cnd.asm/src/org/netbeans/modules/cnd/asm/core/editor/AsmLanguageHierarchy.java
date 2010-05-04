@@ -49,6 +49,7 @@ import java.util.EnumSet;
 import org.netbeans.modules.cnd.asm.model.AsmSyntax;
 import org.netbeans.modules.cnd.asm.model.lang.syntax.AsmBaseTokenId;
 import org.netbeans.modules.cnd.asm.model.lang.syntax.AsmTokenId;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -77,6 +78,6 @@ public class AsmLanguageHierarchy extends LanguageHierarchy<AsmTokenId> {
 
     @Override
     protected String mimeType() {
-        return AsmEditorKit.MIME_TYPE;
+        return MIMENames.ASM_MIME_TYPE;
     }       
 }

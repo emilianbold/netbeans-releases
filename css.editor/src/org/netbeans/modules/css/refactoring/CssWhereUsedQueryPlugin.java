@@ -60,6 +60,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
@@ -169,12 +170,13 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
                             source = Source.create(file);
                         }
 
-                        CssFileModel model = new CssFileModel(source);
+                        CssFileModel model = CssFileModel.create(source);
                         Collection<Entry> entries = model.get(type);
 
                         boolean related = relatedFiles.contains(file);
                         for (Entry entry : entries) {
-                            if (entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
+                            if (entry.isValidInSourceDocument() && 
+                                    LexerUtils.equals(elementImage, entry.getName(), type == RefactoringElementType.COLOR, false)) {
                                 WhereUsedElement elem = WhereUsedElement.create(file, entry, kind, related);
                                 elements.add(refactoring, elem);
                             }
@@ -202,7 +204,7 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
             for (Node referingNode : deps.getSourceNode().getReferingNodes()) {
                 try {
                     FileObject file = referingNode.getFile();
-                    CssFileModel model = new CssFileModel(Source.create(file));
+                    CssFileModel model = CssFileModel.create(Source.create(file));
                     Collection<Entry> imports = model.getImports();
                     //find the import of the base file
                     for(Entry e : imports) {

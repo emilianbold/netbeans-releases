@@ -246,6 +246,9 @@ public class ContextTreeView extends TreeView {
          * return true if there is still something changed.
          */
         private boolean filterEvent(Object[] path, int[] childIndices, Object[] children) {
+            if (path.length == 1 && path[0] == root && childIndices == null) {
+                return true;
+            }
             assert (childIndices != null) && (children != null) : " ch: " + children + " indices: " + childIndices; // NOI18N
             assert children.length == childIndices.length : "They should be the same: " + children.length + " == " +
             childIndices.length; // NOI18N

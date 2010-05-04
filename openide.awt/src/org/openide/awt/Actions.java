@@ -190,6 +190,7 @@ public class Actions {
             ((Actions.MenuItem)item).setBridge(b);
         }
         b.updateState(null);
+        item.putClientProperty(DynamicMenuContent.HIDE_WHEN_DISABLED, action.getValue(DynamicMenuContent.HIDE_WHEN_DISABLED));
     }
 
     /** Attaches checkbox menu item to boolean state action.
@@ -282,6 +283,10 @@ public class Actions {
      */
     public static String cutAmpersand(String text) {
         // XXX should this also be deprecated by something in Mnemonics?
+
+        if( null == text )
+            return null;
+
         int i;
         String result = text;
 
@@ -505,7 +510,7 @@ public class Actions {
      * &lt;file name="action-pkg-ClassName.instance"&gt;
      *   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/&gt;
      *   &lt;attr name="type" stringvalue="org.netbeans.api.actions.Openable"/&gt;
-     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Action.inject"/&gt;
+     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/&gt;
      *   &lt;attr name="selectionType" stringvalue="EXACTLY_ONE"/&gt;
      *   &lt;attr name="injectable" stringvalue="pkg.YourClass"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
@@ -537,7 +542,7 @@ public class Actions {
      * <pre>
      * &lt;file name="action-pkg-ClassName.instance"&gt;
      *   &lt;attr name="type" stringvalue="org.netbeans.api.actions.Openable"/&gt;
-     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Action.inject"/&gt;
+     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/&gt;
      *   &lt;attr name="selectionType" stringvalue="ANY"/&gt;
      *   &lt;attr name="injectable" stringvalue="pkg.YourClass"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;

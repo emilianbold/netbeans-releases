@@ -48,6 +48,7 @@ import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
@@ -61,6 +62,7 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,6 +81,8 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
+
+    private static final Logger LOGGER = Logger.getLogger(NewRubyProjectWizardIterator.class.getName());
     
     public NewRubyProjectWizardIterator() {
         this(Type.APPLICATION);
@@ -149,6 +153,10 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
         String name = (String)wiz.getProperty("name");        //NOI18N
         handle.progress (NbBundle.getMessage (NewRubyProjectWizardIterator.class, "LBL_NewRubyProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         RubyPlatform platform = (RubyPlatform) wiz.getProperty("platform"); // NOI18N
+        if (platform == null) {
+            LOGGER.severe("Can not find the selected plaform for the project. Check the platform configurations in Tools | Ruby Platforms");
+            return resultSet;
+        }
         if (this.type == Type.EXISTING) {
             File[] sourceFolders = (File[])wiz.getProperty("sourceRoot");        //NOI18N
             File[] testFolders = (File[])wiz.getProperty("testRoot");            //NOI18N

@@ -97,11 +97,13 @@ public class PhpActionProvider implements ActionProvider {
         }
     }
 
+    @Override
     public String[] getSupportedActions() {
         Set<String> commandIds = commands.keySet();
         return commandIds.toArray(new String[commandIds.size()]);
     }
 
+    @Override
     public void invokeAction(final String commandId, final Lookup lookup) {
         final Command command = getCommand(commandId);
         if (!command.getProject().getCopySupport().waitFinished()) {
@@ -114,6 +116,7 @@ public class PhpActionProvider implements ActionProvider {
             command.invokeAction(lookup);
         } else {
             submitTask(new Runnable() {
+                @Override
                 public void run() {
                     command.invokeAction(lookup);
                 }
@@ -126,6 +129,7 @@ public class PhpActionProvider implements ActionProvider {
         EXECUTOR.submit(runnable);
     }
 
+    @Override
     public boolean isActionEnabled(String commandId, Lookup lookup) {
         return getCommand(commandId).isActionEnabled(lookup);
     }

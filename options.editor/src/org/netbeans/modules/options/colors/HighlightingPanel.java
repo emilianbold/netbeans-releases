@@ -78,12 +78,12 @@ import org.openide.util.NbBundle;
 public class HighlightingPanel extends JPanel implements ActionListener, PropertyChangeListener, FontsColorsController {
     
     private ColorModel          colorModel = null;
-    private boolean		listen = false;
+    private boolean             listen = false;
     private String              currentProfile;
     /** cache Map (String (profile name) > Vector (AttributeSet)). */
     private Map<String, Vector<AttributeSet>> profileToCategories = new HashMap<String, Vector<AttributeSet>>();
     /** Set (String (profile name)) of changed profile names. */
-    private Set<String> toBeSaved = new HashSet<String>();
+    private Set<String>         toBeSaved = new HashSet<String>();
     private boolean             changed = false;
 
     
@@ -105,6 +105,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         lCategories.setVisibleRowCount (3);
         lCategories.addListSelectionListener (new ListSelectionListener () {
+            @Override
             public void valueChanged (ListSelectionEvent e) {
                 if (!listen) return;
                 refreshUI ();
@@ -112,14 +113,14 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         });
         lCategories.setCellRenderer (new CategoryRenderer ());
         cbForeground.addActionListener (this);
-        ((JComponent)cbForeground.getEditor()).addPropertyChangeListener (this);
+        ((JComponent) cbForeground.getEditor ()).addPropertyChangeListener (this);
         cbBackground.addActionListener (this);
-        ((JComponent)cbBackground.getEditor()).addPropertyChangeListener (this);
+        ((JComponent) cbBackground.getEditor ()).addPropertyChangeListener (this);
 
         lCategory.setLabelFor (lCategories);
         loc (lCategory, "CTL_Category");
-        loc(lForeground, "CTL_Foreground_label");
-        loc(lBackground, "CTL_Background_label");
+        loc (lForeground, "CTL_Foreground_label");
+        loc (lBackground, "CTL_Background_label");
     }
     
     /** This method is called from within the constructor to
@@ -197,20 +198,23 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
     // End of variables declaration//GEN-END:variables
     
  
+    @Override
     public void actionPerformed (ActionEvent evt) {
         if (!listen) return;
         updateData ();
         changed = true;
     }
     
+    @Override
     public void propertyChange (PropertyChangeEvent evt) {
         if (!listen) return;
-        if (evt.getPropertyName () == ColorComboBox.PROP_COLOR) {
+        if (ColorComboBox.PROP_COLOR.equals (evt.getPropertyName ())) {
             updateData ();
             changed = true;
         }
     }
     
+    @Override
     public void update (ColorModel colorModel) {
         this.colorModel = colorModel;
         currentProfile = colorModel.getCurrentProfile ();
@@ -223,12 +227,14 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         changed = false;
     }
     
+    @Override
     public void cancel () {
         toBeSaved = new HashSet<String>();
         profileToCategories = new HashMap<String, Vector<AttributeSet>>();        
         changed = false;
     }
     
+    @Override
     public void applyChanges() {
         if (colorModel == null) return;
         for(String profile : toBeSaved) {
@@ -238,10 +244,12 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         profileToCategories = new HashMap<String, Vector<AttributeSet>>();
     }
     
+    @Override
     public boolean isChanged () {
         return changed;
     }
     
+    @Override
     public void setCurrentProfile (String currentProfile) {
         String oldScheme = this.currentProfile;
         this.currentProfile = currentProfile;
@@ -249,7 +257,6 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
             !profileToCategories.containsKey (currentProfile)
         ) {
             // clone profile
-            System.out.println("clone profile !!!!");
             Vector<AttributeSet> categories = getCategories (oldScheme);
             profileToCategories.put (currentProfile, new Vector<AttributeSet>(categories));
             toBeSaved.add (currentProfile);
@@ -257,9 +264,10 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         refreshUI ();
     }
 
+    @Override
     public void deleteProfile (String profile) {
         if (colorModel.isCustomProfile (profile))
-            profileToCategories.put (profile, null);
+            profileToCategories.remove (profile);
         else {
             profileToCategories.put (profile, getDefaults (profile));
             refreshUI ();
@@ -267,6 +275,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         toBeSaved.add (profile);
     }
     
+    @Override
     public JComponent getComponent() {
         return this;
     }

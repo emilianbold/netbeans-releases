@@ -26,7 +26,7 @@ box.</li>
 </li>
 <li>If you want the source files added to the project in logical 
 subfolders matching the directory structure in the source folder, 
-leave the Add Subfolders check box selecte. To add the files to the 
+leave the Add Subfolders check box selected. To add the files to the
 project folder with no logical subfolders, deselect the check box.
 </li>
 <li>Click Select.
@@ -34,8 +34,18 @@ project folder with no logical subfolders, deselect the check box.
 </ol>
 <p><b>To remove a source folder from your project:</b></p>
 <ul>
-<li>Select the folder and click Remove Folder.</li>
+<li>Select the folder and click Remove.</li>
 </ul>
+<p>
+The Ignored Folders Pattern specifies any folders in the project's directory
+that you do not want the IDE to use for source files. Type POSIX-style regular
+expressions to specify the files you want the IDE to ignore. The IDE includes
+some default patterns for files that are ignored by default. Click the Default
+button to restore the default patterns.</p>
+<p>If the existing sources include test files, you can add them using the Add Folders
+    button for the Test File Folders.
+</p>
+
 <table>
 <tr>
 <th colspan="2" align="left"><a name="seealso">See also</a></th>
@@ -43,6 +53,7 @@ project folder with no logical subfolders, deselect the check box.
 <tr>
 <td width="23"></td>
 <td>
+<a href="NewMakeWizardP0.html">New C/C++ Project With Existing Sources Wizard: Select Mode</a><br>
 <a href="NewMakeWizardP1.html">New C/C++ Project With Existing Sources Wizard: Build Tool</a><br>
 <a href="NewMakeWizardP2.html">New C/C++ Project With Existing Sources Wizard: Build Actions</a><br>
 <a href="NewMakeWizardP4.html">New C/C++ Project With Existing Sources Wizard: Code Assistance</a><br>

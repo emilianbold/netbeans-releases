@@ -267,7 +267,7 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
                 ProjectTypeInfo projectTypeInfo = ProjectTypeInfo.getProjectTypeInfoFor (IOSupport.getDataObjectContext (dataObject).getProjectType ());
                 tc.setIcon (projectTypeInfo != null ? ImageUtilities.loadImage (projectTypeInfo.getIconResource ()) : null);
 
-                String displayName = messageName();
+                String displayName = messageHtmlName();
                 if (! displayName.equals(tc.getDisplayName()))
                     tc.setDisplayName(displayName);
                 // XXX should probably set htmlDisplayName too, from messageHtmlName

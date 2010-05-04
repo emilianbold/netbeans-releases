@@ -24,12 +24,12 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="lCodeFolding" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jSeparator1" pref="530" max="32767" attributes="0"/>
+              <Component id="jSeparator1" pref="671" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="lCamelCaseBehavior" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jSeparator3" pref="488" max="32767" attributes="0"/>
+              <Component id="jSeparator3" pref="612" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
@@ -161,7 +161,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbCamelCaseBehavior">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Enable Camel Case Navigation For Java"/>
+        <Property name="text" type="java.lang.String" value="Enable Camel Case Navigation"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="lCamelCaseBehaviorExample">

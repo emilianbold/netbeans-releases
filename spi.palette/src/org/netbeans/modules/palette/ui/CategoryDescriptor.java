@@ -74,6 +74,7 @@ class CategoryDescriptor implements CategoryListener {
     private boolean opened;
     private boolean resetItems = true;
     private Settings settings;
+    private String searchString;
 
     CategoryDescriptor( PalettePanel palettePanel, Category category ) {
         assert palettePanel != null : "No palette panel"; // NOI18N
@@ -160,7 +161,8 @@ class CategoryDescriptor implements CategoryListener {
         if( items != null ) {
             for( int i=0; i<items.length; i++ ) {
                 if( settings.isVisible( items[i] ) ) {
-                    newModel.addElement( items[i] );
+                    if( null == searchString || items[i].getDisplayName().toLowerCase().contains(searchString) )
+                        newModel.addElement( items[i] );
                 }
             }
         }
@@ -266,6 +268,26 @@ class CategoryDescriptor implements CategoryListener {
     
     CategoryButton getButton() {
         return categoryButton;
+    }
+
+    private boolean wasOpened;
+    boolean match(String searchString) {
+        if( null == searchString && this.searchString == null )
+            return true;
+        if( null != searchString && searchString.equals(this.searchString) )
+            return itemsList.getModel().getSize() > 0;
+        if( null == this.searchString && null != searchString )
+            wasOpened = opened;
+        this.searchString = searchString;
+        computeItems();
+
+        if( null != searchString )
+            opened = true;
+        else if( null == searchString && this.searchString != null )
+            opened = wasOpened;
+        itemsList.setVisible( opened );
+        categoryButton.setSelected( opened );
+        return itemsList.getModel().getSize() > 0 ||  null == searchString;
     }
 
     private static class MyFocusTraversal extends FocusTraversalPolicy {

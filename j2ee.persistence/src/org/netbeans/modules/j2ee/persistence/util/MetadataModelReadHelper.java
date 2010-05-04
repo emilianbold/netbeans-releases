@@ -175,6 +175,7 @@ public class MetadataModelReadHelper<T, R> {
     private volatile R result;
     private volatile ExecutionException executionException;
 
+    private static RequestProcessor RP = new RequestProcessor(MetadataModelReadHelper.class.getName(), 100);//100 will work rarely, in general it's used only once and only multile reinvocation of the dialog may cause problems
     /**
      * Creates a new instance of <code>MetadataModelReadHelper</code>.
      *
@@ -223,7 +224,8 @@ public class MetadataModelReadHelper<T, R> {
         changeSupport.fireChange();
         // ensure the model is not accessed in the calling thread in case
         // the calling thread is the AWT thread
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
+            @Override
             public void run() {
                 reader.run();
             }

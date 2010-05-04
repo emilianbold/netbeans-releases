@@ -435,10 +435,13 @@ public final class CsmRefactoringUtils {
     }      
     
     private static CsmObject findInnerFileObject(CsmOffsetable csmOffsetable) {
-        CsmObject obj = findInnerFileObject(csmOffsetable.getContainingFile(), csmOffsetable.getStartOffset()-1);
-        if (obj == null) {
-            obj = csmOffsetable.getContainingFile();
+        final CsmFile containingFile = csmOffsetable.getContainingFile();
+        if (containingFile != null) {
+            CsmObject obj = findInnerFileObject(containingFile, csmOffsetable.getStartOffset()-1);
+            if (obj != null) {
+                return obj;
+            }
         }
-        return obj;
+        return containingFile;
     } 
 }

@@ -81,11 +81,12 @@ final class JumpToTestAction extends BaseTestMethodNodeAction {
 
         String absPath = null;
         if (testRootFolder != null) {
-            for (Folder folder : testRootFolder.getAllTests()) {
+            loop : for (Folder folder : testRootFolder.getAllTests()) {
                 Item[] items = folder.getAllItemsAsArray();
                 for (int k = 0; k < items.length; k++) {
                     if(items[k].getName().replaceAll("(.*)\\..*", "$1").equals(testcase.getClassName())) { // NOI18N
                         absPath = items[k].getAbsPath();
+                        break loop;
                     }
                 }
             }

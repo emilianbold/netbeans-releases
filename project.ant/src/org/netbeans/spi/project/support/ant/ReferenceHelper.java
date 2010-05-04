@@ -70,7 +70,6 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
-import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
@@ -569,7 +568,7 @@ public final class ReferenceHelper {
         // Linear search; always keeping references sorted first by foreign project
         // name, then by target name.
         Element nextRefEl = null;
-        Iterator<Element> it = Util.findSubElements(references).iterator();
+        Iterator<Element> it = XMLUtil.findSubElements(references).iterator();
         while (it.hasNext()) {
             Element testRefEl = it.next();
             RawReference testRef = RawReference.create(testRefEl);
@@ -816,7 +815,7 @@ public final class ReferenceHelper {
     
     private static boolean removeRawReferenceElement(String foreignProjectName, String id, Element references, boolean escaped) throws IllegalArgumentException {
         // As with addRawReference, do a linear search through.
-        for (Element testRefEl : Util.findSubElements(references)) {
+        for (Element testRefEl : XMLUtil.findSubElements(references)) {
             RawReference testRef = RawReference.create(testRefEl);
             String refID = testRef.getID();
             String refName = testRef.getForeignProjectName();
@@ -869,7 +868,7 @@ public final class ReferenceHelper {
     }
     
     private static RawReference[] getRawReferences(Element references) throws IllegalArgumentException {
-        List<Element> subEls = Util.findSubElements(references);
+        List<Element> subEls = XMLUtil.findSubElements(references);
         List<RawReference> refs = new ArrayList<RawReference>(subEls.size());
         for (Element subEl : subEls) {
             refs.add(RawReference.create(subEl));
@@ -911,7 +910,7 @@ public final class ReferenceHelper {
     }
     
     private static RawReference getRawReference(String foreignProjectName, String id, Element references, boolean escaped) throws IllegalArgumentException {
-        for (Element subEl : Util.findSubElements(references)) {
+        for (Element subEl : XMLUtil.findSubElements(references)) {
             RawReference ref = RawReference.create(subEl);
             String refID = ref.getID();
             String refName = ref.getForeignProjectName();
@@ -1693,7 +1692,7 @@ public final class ReferenceHelper {
                 if (idx == -1) {
                     throw new IllegalArgumentException("bad subelement name: " + elName); // NOI18N
                 }
-                String val = Util.findText(el);
+                String val = XMLUtil.findText(el);
                 if (val == null) {
                     throw new IllegalArgumentException("empty subelement: " + el); // NOI18N
                 }
@@ -1711,7 +1710,7 @@ public final class ReferenceHelper {
             if (!REF_NAME.equals(xml.getLocalName()) || !REFS_NS2.equals(xml.getNamespaceURI())) {
                 throw new IllegalArgumentException("bad element name: " + xml); // NOI18N
             }
-            List nl = Util.findSubElements(xml);
+            List nl = XMLUtil.findSubElements(xml);
             if (nl.size() < 6) {
                 throw new IllegalArgumentException("missing or extra data: " + xml); // NOI18N
             }
@@ -1726,7 +1725,7 @@ public final class ReferenceHelper {
                 if (idx == -1) {
                     throw new IllegalArgumentException("bad subelement name: " + elName); // NOI18N
                 }
-                String val = Util.findText(el);
+                String val = XMLUtil.findText(el);
                 if (val == null) {
                     throw new IllegalArgumentException("empty subelement: " + el); // NOI18N
                 }
@@ -1744,9 +1743,9 @@ public final class ReferenceHelper {
                 if (!"properties".equals(el.getLocalName())) { // NOI18N
                     throw new IllegalArgumentException("bad subelement. expected 'properties': " + el); // NOI18N
                 }
-                for (Element el2 : Util.findSubElements(el)) {
+                for (Element el2 : XMLUtil.findSubElements(el)) {
                     String key = el2.getAttribute("name");
-                    String value = Util.findText(el2);
+                    String value = XMLUtil.findText(el2);
                     // #53553: NPE
                     if (value == null) {
                         value = ""; // NOI18N

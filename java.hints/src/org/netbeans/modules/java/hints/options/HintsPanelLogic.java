@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.hints.options;
 
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Kind;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import java.awt.BorderLayout;
@@ -174,10 +175,15 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     }
     
     synchronized void applyChanges() {
+	boolean containsChanges = false;
         for (String hint : changes.keySet()) {
             ModifiedPreferences mn = changes.get(hint);
+	    containsChanges |= !mn.isEmpty();
             mn.store(RulesManager.getPreferences(hint, HintsSettings.getCurrentProfileId()));
         }
+	if (containsChanges) {
+	    HintsSettings.fireChangeEvent();
+	}
         if (depScn != null)
             DepScanningSettings.setDependencyTracking(depScn);
     }
@@ -295,13 +301,18 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             
             Preferences p = getCurrentPrefernces(hint.id);
 
-            HintSeverity severity = HintsSettings.getSeverity(hint, p);
-            if (severity != null) {
-                severityComboBox.setSelectedIndex(severity2index.get(severity));
-                severityComboBox.setEnabled(true);
-            } else {
-                severityComboBox.setSelectedIndex(severity2index.get(HintSeverity.ERROR));
+            if (hint.kind == Kind.SUGGESTION) {
+                severityComboBox.setSelectedIndex(severity2index.get(HintSeverity.CURRENT_LINE_WARNING));
                 severityComboBox.setEnabled(false);
+            } else {
+                HintSeverity severity = HintsSettings.getSeverity(hint, p);
+                if (severity != null) {
+                    severityComboBox.setSelectedIndex(severity2index.get(severity));
+                    severityComboBox.setEnabled(true);
+                } else {
+                    severityComboBox.setSelectedIndex(severity2index.get(HintSeverity.ERROR));
+                    severityComboBox.setEnabled(false);
+                }
             }
             
             boolean toTasklist = HintsSettings.isShowInTaskList(hint, p);
@@ -543,7 +554,10 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         protected void flushSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
+
+	boolean isEmpty() {
+	    return map.isEmpty();
+	}
     }
 
 }

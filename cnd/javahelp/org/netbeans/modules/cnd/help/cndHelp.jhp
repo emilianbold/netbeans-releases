@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/Users/smorgan/cnd-help">
+		<directory title="/Users/smorgan/netbeans-dev/cnd-main-merge/cnd/javahelp/org/netbeans/modules/cnd/help">
 			<directory title="CandC++ProjectBasics">
 				<file title="AddtlIncludeDirectories.html"/>
 				<file title="AddtlLibraryDirectories.html"/>
@@ -17,7 +17,6 @@
 				<file title="BuildingCorC++Project.html"/>
 				<file title="CandC++Breakpoints.html"/>
 				<file title="CandC++BreakpointsWindow.html"/>
-				<file title="CandC++BuildingTasks.html"/>
 				<file title="CandC++CallStackWindow.html"/>
 				<file title="CandC++DebuggerContext.html"/>
 				<file title="CandC++DebuggingTasks.html"/>
@@ -76,11 +75,9 @@
 				<file title="type_and_platform.html"/>
 			</directory>
 			<directory title="EditingSourceFiles">
-				<file title="AbbreviationsQuickRef.html"/>
 				<file title="CandC++CodeFolding.html"/>
 				<file title="Commenting.html"/>
-				<file title="CreatingCodeTemplates.html"/>
-				<file title="DisablingAutoCodeCompletion.html"/>
+				<file title="EditingFortranSourceFiles.html"/>
 				<file title="EditingSourceFiles.html"/>
 				<file title="ErrorHighlighting.html"/>
 				<file title="FindingUsages.html"/>
@@ -91,7 +88,6 @@
 				<file title="GoToType.html"/>
 				<file title="Icons.html"/>
 				<file title="IncludeView.html"/>
-				<file title="SettingCompletionBoxDelay.html"/>
 				<file title="SourceHeaderSwitch.html"/>
 				<file title="TypeView.html"/>
 				<file title="UsagesWindow.html"/>
@@ -104,9 +100,9 @@
 				<file title="UsingPairCompletion.html"/>
 			</directory>
 			<directory title="GettingStarted">
-				<file title="CandC++Overview.html"/>
+				<file title="CandC++ProjectsMakefiles.html"/>
 				<file title="FilesWindow.html"/>
-				<file title="KeyCandC++Concepts.html"/>
+				<file title="IDEToolsCandC++Development.html"/>
 				<file title="Memory.html"/>
 				<file title="ProjectsWindow.html"/>
 			</directory>
@@ -114,6 +110,7 @@
 				<file title="appclient.gif"/>
 				<file title="application_assembler_16.gif"/>
 				<file title="arrow.gif"/>
+				<file title="AutoLocalVariables.png"/>
 				<file title="blue-ball-mid.gif"/>
 				<file title="blue-sqr-mid.gif"/>
 				<file title="Breakpoint.gif"/>
@@ -158,6 +155,7 @@
 				<file title="enumeration_16.png"/>
 				<file title="enumeration_item_16.png"/>
 				<file title="error-glyph.png"/>
+				<file title="EvaluatorInVariables.png"/>
 				<file title="expand.gif"/>
 				<file title="extern_variable_16.png"/>
 				<file title="Field.gif"/>
@@ -177,6 +175,7 @@
 				<file title="global_operator.png"/>
 				<file title="global_operator_static.png"/>
 				<file title="global_variable.png"/>
+				<file title="importantFiles.png"/>
 				<file title="include_sys_16.png"/>
 				<file title="include_user_16.png"/>
 				<file title="j2seProject.gif"/>
@@ -185,6 +184,7 @@
 				<file title="local_variable.png"/>
 				<file title="LocalVariable.gif"/>
 				<file title="logical.png"/>
+				<file title="logicalFolder.png"/>
 				<file title="makeProject.gif"/>
 				<file title="methods.png"/>
 				<file title="methods_private.png"/>
@@ -195,6 +195,7 @@
 				<file title="module.gif"/>
 				<file title="namespace_16.png"/>
 				<file title="namespace_alias.png"/>
+				<file title="newWatch.png"/>
 				<file title="next.png"/>
 				<file title="NonLineBreakpoint.gif"/>
 				<file title="operator_privat.png"/>
@@ -239,18 +240,27 @@
 				<file title="union_16.png"/>
 				<file title="using_declaration_16.png"/>
 				<file title="using_namespace_16.png"/>
+				<file title="visibleColumns.png"/>
 				<file title="warn.gif"/>
 				<file title="Watch.gif"/>
+				<file title="WatchesInVariables.png"/>
 				<file title="webPages.gif"/>
 				<file title="webProjectIcon.gif"/>
 				<file title="who_includes.png"/>
 				<file title="who_is_included.png"/>
 			</directory>
 			<directory title="ProfilingCandC++Projects">
+				<file title="AnalyzingCPUUsageCandC++FortanApps.html"/>
+				<file title="AnalyzingIOUsageCandC++FortranApps.html"/>
+				<file title="AnalyzingMemoryUsageCandC++FortranApps.html"/>
+				<file title="AnalyzingThreadMicrostatesCandC++FortranApps.html"/>
+				<file title="AnalyzingThreadUsageCandC++FortranApps.html"/>
+				<file title="EnablingDTraceForProfilingCandC++FortranApps.html"/>
 				<file title="ManagingProfileConfigurations.html"/>
 				<file title="OverviewOfCandC++Profiling.html"/>
 				<file title="ProfilingCandC++Projects.html"/>
 				<file title="ProfilingThreadedCandC++Apps.html"/>
+				<file title="RunMonitorWindowforCandC++Fort.html"/>
 			</directory>
 			<directory title="WorkingWithCandC++Projects">
 				<file title="AboutCandC++Projects.html"/>
@@ -264,12 +274,11 @@
 				<file title="CodeAssistanceWizardP4.html"/>
 				<file title="CodeAssistanceWizardP5.html"/>
 				<file title="CodeAssistanceWizardP6.html"/>
-				<file title="CompilingSingleCandC++File.html"/>
-				<file title="Configuring.html"/>
 				<file title="ConfiguringBuildTools.html"/>
 				<file title="ConfiguringCodeStyle.html"/>
 				<file title="ConfiguringFileExtensions.html"/>
 				<file title="ConfiguringParsingSettings.html"/>
+				<file title="ConfiguringProjectDefaults.html"/>
 				<file title="ConfiguringProjectSettings.html"/>
 				<file title="ConfiguringSemanticHighlighting.html"/>
 				<file title="CreatingCorC++Project.html"/>
@@ -302,6 +311,7 @@
 				<file title="ProjectPropsRunning.html"/>
 				<file title="ProjectTasks.html"/>
 				<file title="RemoteDevelopment.html"/>
+				<file title="RemoteDevelopmentFileSharing.html"/>
 				<file title="RunningCorC++Project.html"/>
 				<file title="SettingCandC++FileProperties.html"/>
 				<file title="SettingCandC++ProjectProperties.html"/>

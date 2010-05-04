@@ -60,7 +60,10 @@ class FortranCompilerCustomizerNode extends CustomizerNode {
         switch (getContext().getKind()){
             case Item:
                 ItemConfiguration itemConfiguration = getContext().getItem().getItemConfiguration(configuration);
-                return itemConfiguration.getFortranCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
+                if (itemConfiguration != null) {
+                    return itemConfiguration.getFortranCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
+                }
+                break;
             case Project:
                 return ((MakeConfiguration) configuration).getFortranCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
         }

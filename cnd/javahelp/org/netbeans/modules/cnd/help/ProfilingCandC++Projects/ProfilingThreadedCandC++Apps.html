@@ -7,7 +7,7 @@ Use is subject to license terms.
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
     <link rel="StyleSheet" type="text/css" href="/org/netbeans/modules/usersguide/ide.css">
-    <meta content="Helen" name="generator">
+     
     <title>Profiling Threaded C and C++ Applications</title>
   </head>
   <body>
@@ -17,15 +17,15 @@ Use is subject to license terms.
        <p>
        <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
     </p>
-      <p>If you are running the IDE on a Solaris 10 OS, OpenSolaris OS, or Linux OS, you have several tools available to help
-      find problems in your threaded C/C++ applications.</p>
+      <p>If you are running the IDE on Oracle Solaris 10, OpenSolaris, or Linux, you
+          have several tools available to help find problems in your threaded C/C++ applications.</p>
       <ul>
           <li>The Thread Usage tool can be used to find places in your code where threads are waiting to obtain a mutex lock.  When you click
           the tool's Sync Problems button, you can see the functions in your application that waited to obtain a lock, and click the functions
-          to go to the source file. This tool also works on Linux systems that have the Sun Studio toolchain installed.</li>
+          to go to the source file. This tool also works on Linux systems that have the Oracle Solaris Studio tool collection installed.</li>
           <li>The Thread Microstates tool can be used to examine the changing states of all your application's threads. When
           you click the tool's Thread Details button, you can see the changing state of individual threads throughout the project run time.
-         This tool requires the DTrace utility, which is only available on Solaris operating systems. </li>
+         This tool requires the DTrace utility, which is only available on Oracle Solaris operating systems. </li>
       </ul>
       <table>
       <tr>

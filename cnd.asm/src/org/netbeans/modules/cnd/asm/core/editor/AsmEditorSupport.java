@@ -50,6 +50,7 @@ import org.openide.text.*;
 import org.openide.loaders.DataObject;
 
 import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
@@ -63,7 +64,8 @@ import org.openide.windows.CloneableOpenSupport;
  *  Simple editor for Asm files.
  * @author  Vladimir Voskresensky
  */
-public class AsmEditorSupport extends DataEditorSupport implements EditorCookie, EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie, ReadOnlySupport {
+public class AsmEditorSupport extends DataEditorSupport implements EditCookie,
+        EditorCookie, EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie, ReadOnlySupport {
 
     /**
      *  Create a new Editor support for the given C/C++/Fortran source.

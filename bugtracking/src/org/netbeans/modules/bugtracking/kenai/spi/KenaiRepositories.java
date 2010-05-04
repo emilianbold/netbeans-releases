@@ -42,15 +42,22 @@ package org.netbeans.modules.bugtracking.kenai.spi;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport.BugtrackingType;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -59,12 +66,19 @@ import org.openide.util.Lookup;
  * @author Marian Petras
  */
 abstract class KenaiRepositories {
+
     private static KenaiRepositories instance;
-    private Map<String, Repository> repositoriesMap = new HashMap<String, Repository>();
+
+    private final Map<String, Object> kenaiLocks = new HashMap<String, Object>(1);
+
+    /**
+     * Holds already created kenai repositories
+     */
+    private Map<String, Repository> repositoriesMap = Collections.synchronizedMap(new HashMap<String, Repository>());
 
     protected KenaiRepositories() { }
 
-    public static KenaiRepositories getInstance() {
+    public synchronized static KenaiRepositories getInstance() {
         if(instance == null) {
             instance = Lookup.getDefault().lookup(KenaiRepositories.class);
             if (instance == null) {
@@ -95,38 +109,63 @@ abstract class KenaiRepositories {
      * @return
      */
     public Repository getRepository(KenaiProject kp, boolean forceCreate) {
-        Repository repository = repositoriesMap.get(kp.getName());
-        if(repository != null) {
-            return repository;
-        }
-        if(!forceCreate) {
+
+        String repositoryKey = kp.getWebLocation().toString();
+        BugtrackingManager.LOG.log(Level.FINER, "requesting repository for {0}", repositoryKey);  // NOI18N
+
+        KenaiSupport support = getSupport(kp);
+        if(support == null) {
+            BugtrackingManager.LOG.log(Level.FINER, "no repository available for {0}", repositoryKey);  // NOI18N
             return null;
         }
-        BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
-        for (BugtrackingConnector c : connectors) {
-            KenaiSupport support = c.getLookup().lookup(KenaiSupport.class);
-            if(support != null) {
+
+        Object lock = getKenaiLock(kp, support);
+        synchronized(lock) { // synchronize for a kenai instance and bugtracking type
+            Repository repository = repositoriesMap.get(repositoryKey);
+            if(repository == null && forceCreate) {
                 repository = support.createRepository(kp);
                 if(repository != null) {
                     // XXX what if more repos?!
-                    repositoriesMap.put(kp.getName(), repository);
-                    return repository;
+                    repositoriesMap.put(repositoryKey, repository);
                 }
             }
+            BugtrackingManager.LOG.log(
+                    Level.FINER,
+                    "returning repository {0}:{1} for {2}", // NOI18N
+                    new Object[]{repository != null ? repository.getDisplayName() : "null", repository != null ? repository.getUrl() : "", repositoryKey});  // NOI18N
+            return repository;
         }
-        return null;
     }
 
-    /**
-     * Returns bugtracking repositories of all Kenai projects currently opened
-     * in the Kenai dashboard.
-     *
-     * @return  array of repositories collected from the projects
-     *          (never {@code null})
-     */
-    public Repository[] getRepositories() {
-        return getRepositories(false);
+    private KenaiSupport getSupport(KenaiProject kp) {
+        // find the support corresponding with the given project
+        KenaiSupport support = null;
+        BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
+        for (BugtrackingConnector c : connectors) {
+            support = c.getLookup().lookup(KenaiSupport.class);
+            if (support != null && support.getType() == kp.getType()) {
+                BugtrackingManager.LOG.log(Level.FINER, "found suport for {0}", kp.getWebLocation().toString()); // NOI18N
+                break;
+            }
+            support = null;
+        }
+        return support;
     }
+
+    private Object getKenaiLock(KenaiProject kp, KenaiSupport support) {
+        synchronized(kenaiLocks) {
+            BugtrackingType type = support.getType();
+            final String key = kp.getWebLocation().getHost() + ":" + type;  // NOI18N
+            BugtrackingManager.LOG.log(Level.FINER, "requesting lock for {0}", key); // NOI18N
+            Object lock = kenaiLocks.get(key);
+            if(lock == null) {
+                lock = new Object();
+                kenaiLocks.put(key, lock);
+            }
+            BugtrackingManager.LOG.log(Level.FINER, "returning lock {0} for {1}", new Object[]{lock, key}); // NOI18N
+            return lock;
+        }
+    }   
 
     /**
      * Returns bugtracking repositories of all Kenai projects.
@@ -150,6 +189,9 @@ abstract class KenaiRepositories {
     private static class DefaultImpl extends KenaiRepositories {
 
         public Repository[] getRepositories(boolean allOpenProjects) {
+            if("true".equals(System.getProperty("netbeans.bugtracking.noOpenProjects", "false"))) {
+                allOpenProjects = false; 
+            }
             KenaiProject[] kenaiProjects = allOpenProjects
                                            ? union(getDashboardProjects(),
                                                    getProjectsViewProjects())
@@ -157,11 +199,33 @@ abstract class KenaiRepositories {
 
             Repository[] result = new Repository[kenaiProjects.length];
 
+            EnumSet<BugtrackingType> reluctantSupports = EnumSet.noneOf(BugtrackingType.class);
             int count = 0;
             for (KenaiProject p : kenaiProjects) {
-                Repository repo = getRepository(p);
-                if (repo != null) {
-                    result[count++] = repo;
+                if(!reluctantSupports.contains(p.getType())) {
+                    Repository repo = getRepository(p);
+                    if (repo != null) {
+                        result[count++] = repo;
+                    } else {
+                        KenaiSupport support = super.getSupport(p);
+                        if(support != null) {
+                            BugtrackingManager.LOG.log(
+                                    Level.WARNING,
+                                    "could not get repository for project {0} with {1} bugtracking type ",
+                                    new Object[]{p.getWebLocation(), p.getType()});
+                            // there is a support available for the projects bugtracking type, yet
+                            // we weren't able to create a repository for the project.
+                            // lets assume there is something with the bugracker or that the user canceled
+                            // the authorisation (see also issue #182946) and skip all other projects with the same
+                            // support in this one call.
+                            reluctantSupports.add(support.getType());
+                        }
+                    }
+                } else {
+                    BugtrackingManager.LOG.log(
+                                    Level.WARNING,
+                                    "skipping getRepository for project {0} with {1} bugtracking type ",
+                                    new Object[]{p.getWebLocation(), p.getType()});
                 }
             }
             return stripTrailingNulls(result);
@@ -197,55 +261,38 @@ abstract class KenaiRepositories {
                 return null;
             }
 
-            KenaiProject kenaiProject;
+            String url = (String) attValue;
+            KenaiProject kenaiProject = null;
             try {
-                kenaiProject = KenaiUtil.getKenaiProjectForRepository((String) attValue);
+                if(BugtrackingUtil.isNbRepository(url)) {
+                    OwnerInfo owner = KenaiUtil.getKenaiAccessor().getOwnerInfo(FileUtil.toFile(p.getProjectDirectory()));
+                    if(owner != null) {
+                        kenaiProject = KenaiUtil.getKenaiProject(url, owner.getOwner());
+                    }
+                } else {
+                    kenaiProject = KenaiUtil.getKenaiProjectForRepository(url);
+                }
+
             } catch (IOException ex) {
                 kenaiProject = null;
-                BugtrackingManager.LOG.warning(
+                BugtrackingManager.LOG.log(Level.WARNING,
                         "No Kenai project is available for bugtracking repository " //NOI18N
-                        + " [" + attValue + "]");                           //NOI18N
+                        + " [" + url + "]", ex);                           //NOI18N
             }
             return kenaiProject;
         }
 
         private static KenaiProject[] union(KenaiProject[]... projectArrays) {
-            int totalSize = 0;
-            KenaiProject[] nonEmpty = null;
-
-            /* Count the sum of all array sizes: */
-            for (KenaiProject[] projectArray : projectArrays) {
-                if (projectArray.length == 0) {
-                    continue;
-                }
-
-                totalSize += projectArray.length;
-                nonEmpty = projectArray;
-            }
-            assert (totalSize == 0) == (nonEmpty == null);
-
-            /* Trivial cases: */
-            if (totalSize == 0) {
-                return new KenaiProject[0];
-            }
-            if (totalSize == nonEmpty.length) {
-                return nonEmpty;        //all other arrays were empty
-            }
-
-            int count = 0;
-            Collection<String> ids = new ArrayList<String>(totalSize);
-
-            KenaiProject[] union = new KenaiProject[totalSize];
+            Map<String, KenaiProject> union = new HashMap<String, KenaiProject>();
             for (KenaiProject[] projectArray : projectArrays) {
                 for (KenaiProject p : projectArray) {
-                    if (!ids.contains(p.getName())) {
-                        union[count++] = p;
-                        ids.add(p.getName());
+                    String name = p.getName();
+                    if (!union.keySet().contains(name)) {
+                        union.put(name, p);
                     }
                 }
             }
-
-            return stripTrailingNulls(union);
+            return union.values().toArray(new KenaiProject[union.values().size()]);
         }
 
         private static <T> T[] stripTrailingNulls(T[] array) {

@@ -33,7 +33,15 @@ import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
  * - for Location Paths or Expression Paths it means the schema type of the last Step.
  * - for XPath model it means the context in which the model is defined as a whole.
  * - for Predicates it means the context in which the predicate is applied.
- * 
+ *
+ * TODO: Two new interfaces should be derived: XPathSchemaContextOwner and
+ * BaseSchemaContextHolder. They should be empty because they will derive
+ * the methods from this one. In most places where this interface is used it
+ * has to be replaced with XPathSchemaContextOwner. The XPathModel and
+ * XpathPredicateExpression has to extend BaseSchemaContextHolder.
+ * The meaning of such changes is to prevent mess up with this 2 notions.
+ * The changes affects many modules so it worth doing it when code will be stable. 
+ *
  * @author nk160297
  */
 public interface XPathSchemaContextHolder {
@@ -42,6 +50,9 @@ public interface XPathSchemaContextHolder {
      * Returnes the calculated or assigned Schema context.
      * The null will be returned if the schema context can't 
      * be resolved or it is not assigned.
+     *
+     * WARNING!!! Always check the result to null!
+     * It is very common mistake when the check to null is missed. 
      */ 
     XPathSchemaContext getSchemaContext();
     

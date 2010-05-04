@@ -16,28 +16,25 @@ type="text/css">
 <p>The New C/C++ Project With Existing Sources wizard enables you to 
 create a project using an existing makefile.</p>
 <p>In the Code Assistance page, you choose how your code will be parsed to 
-create the configuration used by the code assistance features of the IDE.. 
+create the configuration used by the code assistance features of the IDE.
+ Code assistance features help you navigate and edit source code:
+    <a href="../EditingSourceFiles/UsingCodeCompletion.html">code completion</a>,
+    <a href="../EditingSourceFiles/FindingUsages.html">find usages</a>,
+    <a href="../EditingSourceFiles/UsingHyperlinks.html">hyperlinking to declaration</a>,
+    <a href="../EditingSourceFiles/UsingNavigator.html">viewing current file structure
+        in the Navigator window</a>, <a href="../EditingSourceFiles/UsingClassView.html">investigating a class inheritance hierarchy, viewing header's
+            include hierarchy</a>, <a href="../EditingSourceFiles/TypeView.html">viewing a type hierarchy</a>,
+            and so on.
 </p>
 <ul>
-<li><b>Manual Configuration.</b> Lets you specify the include files and 
-macro definitions that will be used by the built-in parser to create the 
+<li><b>Automatic Configuration.</b> If the project has been
+built with debug information, the built-in parser searches for
+the include files and macro definitions for each compiled source file.</li>
+<li><b>Manual Configuration.</b> Lets you specify the location of include files and
+add macro definitions to be used by the built-in parser to create the
 configuration. The configuration will be for the entire project.</li>
-<li><b>Automatic Configuration.</b> If the project has been 
-built with debug information, the built-in parser searches for 
-the include files and macro definitions for each compiled source file.
-You can specify the configuration level:
-<ul>
-<li><b>Configure File Properties.</b> A configuration is created for 
-each file. This level creates the most precise configuration but makes 
-project maintenance more difficult. </li>
-<li><b>Configure Folder Properties.</b> A configuration is created for 
-each folder from a union of file configurations. 
-</li>
-<li><b>Configure Project Properties.</b> A configuration is created for 
-the entire project from a union of file configurations.
-</li> 
 </ul>
-</ul>
+
 <table>
 <tr>
 <th colspan="2" align="left"><a name="seealso">See also</a></th>
@@ -45,6 +42,7 @@ the entire project from a union of file configurations.
 <tr>
 <td width="23"></td>
 <td>
+<a href="NewMakeWizardP0.html">New C/C++ Project With Existing Sources Wizard: Select Mode</a><br>
 <a href="NewMakeWizardP1.html">New C/C++ Project With Existing Sources Wizard: Build Tool</a><br>
 <a href="NewMakeWizardP2.html">New C/C++ Project With Existing Sources Wizard: Build Actions</a><br>
 <a href="NewMakeWizardP3.html">New C/C++ Project With Existing Sources Wizard: Source Files</a><br>

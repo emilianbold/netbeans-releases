@@ -57,8 +57,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
-import org.netbeans.modules.apisupport.project.ui.customizer.BrandingEditor;
+import org.netbeans.modules.apisupport.project.ui.branding.BasicBrandingModel;
+import org.netbeans.modules.apisupport.project.ui.branding.BrandingEditor;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
@@ -110,7 +110,8 @@ public final class SuiteActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction("run-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_jnlp"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction("debug-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_jnlp"), null));
         actions.add(null);
-        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V69) >= 0 && platform.getModule("org.netbeans.core.osgi") != null) {
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V69) >= 0
+                /* #181143 (too slow): && platform.getModule("org.netbeans.core.osgi") != null*/) {
             actions.add(new OSGiSubMenuAction());
             actions.add(null);
         }

@@ -76,17 +76,16 @@ import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
  * @author ak119685
  */
 public class CompilationUnit {
-    private DwarfReader reader;
+    private final DwarfReader reader;
     
-    public long debugInfoSectionOffset;
-    public long unit_offset;
-    public long unit_length;
-    public long unit_total_length;
-    public int  version;
-    public long debug_abbrev_offset;
-    public long info_offset;
-    public byte address_size;
-    public DwarfEntry root = null;
+    private final long debugInfoSectionOffset;
+    public final long unit_offset;
+    private long unit_length;
+    private long unit_total_length;
+    private int  version;
+    private long debug_abbrev_offset;
+    private byte address_size;
+    private DwarfEntry root = null;
     
     private DwarfAbbriviationTable abbr_table = null;
     private DwarfStatementList statement_list = null;
@@ -95,8 +94,8 @@ public class CompilationUnit {
     private DwarfNameLookupTable pubnamesTable = null;
     private long debugInfoOffset;
     
-    private Map<Long, Long> specifications = new HashMap<Long, Long>();
-    private Map<Long, DwarfEntry> entries = new HashMap<Long, DwarfEntry>();
+    private final Map<Long, Long> specifications = new HashMap<Long, Long>();
+    private final Map<Long, DwarfEntry> entries = new HashMap<Long, DwarfEntry>();
     
     /** Creates a new instance of CompilationUnit */
     public CompilationUnit(DwarfReader reader, long sectionOffset, long unitOffset) throws IOException {
@@ -447,7 +446,7 @@ public class CompilationUnit {
     
     
     private DwarfEntry getDebugInfo(boolean readChildren) throws IOException {
-        if (root == null || (readChildren && root.getChildren().size() == 0)) {
+        if (root == null || (readChildren && root.getChildren().isEmpty())) {
             //getPubnamesTable();
             reader.seek(debugInfoOffset);
             root = readEntry(0, readChildren);

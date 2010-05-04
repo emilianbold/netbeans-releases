@@ -12,7 +12,6 @@ import java.io.OutputStream;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyAllocator;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
@@ -42,7 +41,7 @@ public class PtyCreatorImpl implements PtyAllocator {
                 input = satellite.getInputStream();
             } else {
                 ConnectionManagerAccessor access = ConnectionManagerAccessor.getDefault();
-                Session session = access.getConnectionSession(ConnectionManager.getInstance(), env, false);
+                Session session = access.getConnectionSession(env, false);
                 ChannelExec echannel = null;
 
                 if (session != null) {

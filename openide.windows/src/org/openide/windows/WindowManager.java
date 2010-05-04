@@ -349,20 +349,15 @@ public abstract class WindowManager extends Object implements Serializable {
         }
     }
     
-    /** #113391: catch all we can but ThreadDeath, as even java.lang.Error may come 
+    /** #113158: even errors may come
      * from TopComponent.componentOpened or componentClosed.
      */
     private static void logThrowable (Throwable th, String message) {
-        if (th instanceof ThreadDeath) {
+        if (th instanceof ThreadDeath || th instanceof OutOfMemoryError) {
             // let us R.I.P. :-)
-            throw (ThreadDeath)th;
+            throw (Error) th;
         }
-        StackTraceElement[] stackTrace = th.getStackTrace();
-        String cause = stackTrace.length > 0 
-                ? " Probable cause is at " + stackTrace[0].toString() : "";
-        IllegalStateException ise = new IllegalStateException(message + cause); // NOI18N
-        ise.initCause(th);
-        Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
+        Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, message, th);
     }
 
     /** Provides opening of specified <code>TopComponent</code>.

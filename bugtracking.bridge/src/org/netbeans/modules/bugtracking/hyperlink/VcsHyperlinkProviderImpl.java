@@ -40,17 +40,17 @@
 package org.netbeans.modules.bugtracking.hyperlink;
 
 import java.io.File;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * Provides hyperlink functionality on issue reference in VCS artefects as e.g. log messages in Serach History
+ * Provides hyperlink functionality on issue reference in VCS artefacts as e.g. log messages in Search History
  *
  * @author Tomas Stupka
  */
@@ -69,20 +69,17 @@ public class VcsHyperlinkProviderImpl extends VCSHyperlinkProvider {
 
     @Override
     public void onClick(final File file, final String text, int offsetStart, int offsetEnd) {
-        // XXX run async
         final String issueId = getIssueId(text, offsetStart, offsetEnd);
-        if(issueId == null) return;
-
-        class IssueDisplayer implements Runnable {
-            public void run() {
-                final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
-                if(repo == null) return;
-
-                BugtrackingOwnerSupport.getInstance().setFirmAssociation(file, repo);
-                Issue.open(repo, issueId);
-            }
+        if(issueId == null) {
+            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "No issue found for {0}", text.substring(offsetStart, offsetEnd));
+            return;
         }
-        RequestProcessor.getDefault().post(new IssueDisplayer());
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                BugtrackingUtil.openIssue(file, issueId);
+            }
+        });
     }
 
     private String getIssueId(String text, int offsetStart, int offsetEnd) {        

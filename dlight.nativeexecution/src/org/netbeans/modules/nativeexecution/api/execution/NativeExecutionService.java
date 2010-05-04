@@ -38,25 +38,31 @@
  */
 package org.netbeans.modules.nativeexecution.api.execution;
 
+import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
+import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.terminal.api.IOTerm;
-import org.openide.util.RequestProcessor;
 
 /**
  * This is a wrapper over an <tt>Executionservice</tt> that handles running
  * NativeProcesses in a terminal output window.
  *
  * It also can be used for running in an output windows - in this case it just
- * delegares execution to the <tt>ExecutionService</tt>
+ * delegates execution to the <tt>ExecutionService</tt>
  *
  * @see ExecutionService
  * @see NativeExecutionDescriptor
@@ -68,6 +74,19 @@ public final class NativeExecutionService {
     private final NativeProcessBuilder processBuilder;
     private final String displayName;
     private final NativeExecutionDescriptor descriptor;
+    private static final Charset execCharset;
+
+    static {
+        String charsetName = System.getProperty("org.netbeans.modules.nativeexecution.execcharset", "UTF-8"); // NOI18N
+        Charset cs = null;
+        try {
+            cs = Charset.forName(charsetName);
+        } catch (Exception ex) {
+            cs = Charset.defaultCharset();
+        } finally {
+            execCharset = cs;
+        }
+    }
 
     private NativeExecutionService(NativeProcessBuilder processBuilder, String displayName, NativeExecutionDescriptor descriptor) {
         this.processBuilder = processBuilder;
@@ -97,13 +116,17 @@ public final class NativeExecutionService {
             processBuilder.getEnvironment().put("TERM", "dumb"); // NOI18N
         }
 
-        FutureTask<Integer> runTask = new FutureTask<Integer>(new Callable<Integer>() {
+        final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
+        Callable<Integer> callable = new Callable<Integer>() {
 
             @Override
             public Integer call() throws Exception {
                 try {
-                    final NativeProcess process = processBuilder.call();
-
+                    final NativeProcess process;
+                    synchronized (processRef) {
+                        process = processBuilder.call();
+                        processRef.set(process);
+                    }
                     if (descriptor.frontWindow) {
                         SwingUtilities.invokeLater(new Runnable() {
 
@@ -112,37 +135,75 @@ public final class NativeExecutionService {
                                 descriptor.inputOutput.select();
                             }
                         });
-                        
+
+                    }
+
+                    if (process.getState() == State.ERROR) {
+                        descriptor.inputOutput.getErr().println(ProcessUtils.readProcessErrorLine(process));
+                        return 1;
                     }
 
                     PtySupport.connect(descriptor.inputOutput, process);
-                    return process.waitFor();
+
+                    try {
+                        return process.waitFor();
+                    } finally {
+                        // TODO: Workaround!!!
+                        // TODO: The problem with the lost output is not solved yet
+                        Thread.sleep(500);
+                        PtySupport.closePty(process);
+                    }
                 } finally {
                     if (descriptor.postExecution != null) {
-                        descriptor.postExecution.run();
+                        synchronized (processRef) {
+                            descriptor.postExecution.run();
+                        }
                     }
                 }
             }
-        });
+        };
+        FutureTask<Integer> runTask = new FutureTask<Integer>(callable) {
 
-        RequestProcessor.getDefault().post(runTask);
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                synchronized (processRef) {
+                    boolean ret = super.cancel(mayInterruptIfRunning);
+                    NativeProcess process = processRef.get();
+                    if (process != null) {
+                        process.destroy();
+                    }
+                    return ret;
+                }
+            }
+        };
+
+        NativeTaskExecutorService.submit(runTask, "start process in term"); // NOI18N
 
         return runTask;
     }
 
     private Future<Integer> runRegular() {
-            ExecutionDescriptor descr = new ExecutionDescriptor()
-                    .controllable(descriptor.controllable)
-                    .frontWindow(descriptor.frontWindow)
-                    .inputVisible(descriptor.inputVisible)
-                    .inputOutput(descriptor.inputOutput)
-                    .outLineBased(descriptor.outLineBased)
-                    .showProgress(descriptor.showProgress)
-                    .postExecution(descriptor.postExecution)
-                    .noReset(descriptor.noReset)
-                    .errConvertorFactory(descriptor.errConvertorFactory)
-                    .outConvertorFactory(descriptor.outConvertorFactory);
+        Charset charset = descriptor.charset;
+        
+        if (charset == null) {
+            charset = execCharset;
+        }
+        
+        Logger.getInstance().log(Level.FINE, "Input stream charset: {0}", charset);
 
+        ExecutionDescriptor descr = new ExecutionDescriptor()
+                .controllable(descriptor.controllable)
+                .frontWindow(descriptor.frontWindow)
+                .inputVisible(descriptor.inputVisible)
+                .inputOutput(descriptor.inputOutput)
+                .outLineBased(descriptor.outLineBased)
+                .showProgress(descriptor.showProgress)
+                .postExecution(descriptor.postExecution)
+                .noReset(descriptor.noReset)
+                .errConvertorFactory(descriptor.errConvertorFactory)
+                .outConvertorFactory(descriptor.outConvertorFactory)
+                .charset(charset);
+        
         ExecutionService es = ExecutionService.newService(processBuilder, descr, displayName);
         return es.run();
     }

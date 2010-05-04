@@ -56,6 +56,8 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.ui.actions.ActionUtils;
+import org.netbeans.modules.subversion.util.ClientCheckSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningOutputManager;
@@ -85,7 +87,7 @@ public class UpdateAction extends ContextAction {
 
     @Override
     protected int getFileEnabledStatus() {
-        return FileInformation.STATUS_IN_REPOSITORY;
+        return FileInformation.STATUS_VERSIONED | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY; // updating locally new file is permitted, it either does nothing or exchanges the local file with the one in repository
     }
 
     @Override
@@ -95,11 +97,14 @@ public class UpdateAction extends ContextAction {
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
-    protected void performContextAction(Node[] nodes) {        
-        if(!Subversion.getInstance().checkClientAvailable()) {            
-            return;
-        }        
-        performUpdate(nodes);
+    @Override
+    protected void performContextAction(final Node[] nodes) {
+        ClientCheckSupport.getInstance().runInAWTIfAvailable(ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
+            @Override
+            public void run() {
+                performUpdate(nodes);
+            }
+        });
     }
 
     protected void performUpdate(final Node[] nodes) {
@@ -150,6 +155,9 @@ public class UpdateAction extends ContextAction {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
         }        
+        if (repositoryUrl == null) {
+            return;
+        }
 
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         cache.refreshCached(ctx);
@@ -201,13 +209,16 @@ public class UpdateAction extends ContextAction {
                 client.removeNotifyListener(l);
                 client.removeNotifyListener(progress);
             }
-            if (!l.existedFiles.isEmpty()) {
+            if (!l.existedFiles.isEmpty() || !l.conflictedFiles.isEmpty()) {
                 // status of replaced files should be refreshed
                 // because locally added files can be replaced with those in repository and their status would be still the same in the cache
-                Subversion.getInstance().getStatusCache().refreshAsync(l.existedFiles.toArray(new File[l.existedFiles.size()]));
+                HashSet<File> filesToRefresh = new HashSet<File>(l.existedFiles);
+                filesToRefresh.addAll(l.conflictedFiles);
+                Subversion.getInstance().getStatusCache().refreshAsync(filesToRefresh.toArray(new File[filesToRefresh.size()]));
             }
-            if (l.causedConflict) {
+            if (!l.conflictedFiles.isEmpty()) {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         NotifyDescriptor nd = new NotifyDescriptor.Message(
                                 org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_UpdateCausedConflicts_Prompt"), //NOI18N
@@ -398,9 +409,9 @@ public class UpdateAction extends ContextAction {
     };
 
     private static class UpdateNotifyListener implements ISVNNotifyListener {
-        private Pattern p = Pattern.compile("C   (.+)");
-        private Pattern existedFilePattern = Pattern.compile("E   (.+)"); //NOI18N
-        boolean causedConflict = false;
+        private static Pattern conflictFilePattern = Pattern.compile("(C[ C][ C][ C]|[ C]C[ C][ C]|[ C][ C]C[ C]|[ C][ C][ C]C) ?(.+)"); //NOI18N
+        private static Pattern existedFilePattern = Pattern.compile("E    ?(.+)"); //NOI18N
+        HashSet<File> conflictedFiles = new HashSet<File>();
         HashSet<File> existedFiles = new HashSet<File>();
         public void logMessage(String msg) {
             catchMessage(msg);
@@ -415,16 +426,16 @@ public class UpdateAction extends ContextAction {
         public void onNotify(File arg0, SVNNodeKind arg1)   { /* boring */  }
 
         private void catchMessage (String message) {
-            if (!causedConflict) {
-                Matcher m = p.matcher(message);
-                if (m.matches()) {
-                    causedConflict = true;
+            Matcher m = conflictFilePattern.matcher(message);
+            if (m.matches() && m.groupCount() > 1) {
+                String filePath = m.group(2);
+                conflictedFiles.add(FileUtil.normalizeFile(new File(filePath)));
+            } else {
+                m = existedFilePattern.matcher(message);
+                if (m.matches() && m.groupCount() > 0) {
+                    String filePath = m.group(1);
+                    existedFiles.add(FileUtil.normalizeFile(new File(filePath)));
                 }
-            }
-            Matcher m = existedFilePattern.matcher(message);
-            if (m.matches() && m.groupCount() > 0) {
-                String filePath = m.group(1);
-                existedFiles.add(FileUtil.normalizeFile(new File(filePath)));
             }
         }
     }

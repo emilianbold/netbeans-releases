@@ -86,7 +86,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.UnresolvedFileUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.UnresolvedNamespaceUID;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
 /**
@@ -913,7 +913,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             this.manager = manager;
         }
         public Comparator<? super CharSequence> comparator() {
-            return CharSequenceKey.Comparator;
+            return CharSequences.comparator();
         }
         public SortedMap<CharSequence, Object> subMap(CharSequence fromKey, CharSequence toKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
@@ -1066,7 +1066,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             this.manager = manager;
         }
         public Comparator<? super CharSequence> comparator() {
-            return CharSequenceKey.Comparator;
+            return CharSequences.comparator();
         }
         public SortedMap<CharSequence, CsmUID<CsmNamespaceDefinition>> subMap(CharSequence fromKey, CharSequence toKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N

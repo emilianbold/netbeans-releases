@@ -117,8 +117,11 @@ public class HtmlHintsProvider implements HintsProvider {
                     HintFix disableChecksFix = new DisableErrorChecksFix(snapshot);
 
                     //tweak the error position if close to embedding boundary
-                    int from = e.getStartPosition();
-                    int to = e.getEndPosition();
+                    int astFrom = e.getStartPosition();
+                    int astTo = e.getEndPosition();
+
+                    int from = snapshot.getOriginalOffset(astFrom);
+                    int to = snapshot.getOriginalOffset(astTo);
 
                     if (from == -1 && to == -1) {
                         //completely unknown position, give up

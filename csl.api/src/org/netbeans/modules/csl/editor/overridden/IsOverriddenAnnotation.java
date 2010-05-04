@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,23 +40,12 @@
  */
 package org.netbeans.modules.csl.editor.overridden;
 
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.SwingUtilities;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
-import org.netbeans.modules.csl.api.UiUtils;
-import org.netbeans.modules.csl.editor.hyperlink.PopupUtil;
-import org.openide.filesystems.FileObject;
 import org.openide.text.Annotation;
 import org.openide.text.NbDocument;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -68,9 +57,9 @@ public class IsOverriddenAnnotation extends Annotation {
     private final Position pos;
     private final String shortDescription;
     private final AnnotationType type;
-    private final Collection<? extends AlternativeLocation> declarations;
+    private final Collection<? extends OverrideDescription> declarations;
     
-    public IsOverriddenAnnotation(StyledDocument document, Position pos, AnnotationType type, String shortDescription, Collection<? extends AlternativeLocation> declarations) {
+    public IsOverriddenAnnotation(StyledDocument document, Position pos, AnnotationType type, String shortDescription, Collection<? extends OverrideDescription> declarations) {
         //#166351 -- null pos for some reason
         assert pos != null;
 
@@ -133,55 +122,12 @@ public class IsOverriddenAnnotation extends Annotation {
 //        return "IsOverriddenAnnotation: type=" + type.name() + ", elements:" + elementNames.toString(); //NOI18N
 //    }
     
-    void mouseClicked(JTextComponent c, Point p) {
-        Point position = new Point(p);
-        
-        SwingUtilities.convertPointToScreen(position, c);
-        
-        performGoToAction(type, declarations, position, shortDescription);
-    }
-
     public AnnotationType getType() {
         return type;
     }
 
-    public Collection<? extends AlternativeLocation> getDeclarations() {
+    public Collection<? extends OverrideDescription> getDeclarations() {
         return declarations;
     }
     
-    static void performGoToAction(AnnotationType type, Collection<? extends AlternativeLocation> declarations, Point position, String shortDescription/*XXX*/) {
-        if (type == AnnotationType.IMPLEMENTS || type == AnnotationType.OVERRIDES) {
-            if (declarations.size() == 1) {
-                AlternativeLocation desc = declarations.iterator().next();
-                FileObject file = desc.getLocation().getFileObject();
-                
-                if (file != null) {
-                    UiUtils.open(file, desc.getLocation().getOffset());
-                } else {
-                    Toolkit.getDefaultToolkit().beep();
-                }
-                
-                return ;
-            }
-        }
-        
-        String caption;
-        
-        switch (type) {
-            case IMPLEMENTS:
-                caption = NbBundle.getMessage(IsOverriddenAnnotation.class, "CAP_Implements");
-                break;
-            case OVERRIDES:
-                caption = NbBundle.getMessage(IsOverriddenAnnotation.class, "CAP_Overrides");
-                break;
-            case HAS_IMPLEMENTATION:
-            case IS_OVERRIDDEN:
-                caption = shortDescription;
-                break;
-            default:
-                throw new IllegalStateException("Currently not implemented: " + type); //NOI18N
-        }
-        
-        PopupUtil.showPopup(new IsOverriddenPopup(caption, new ArrayList<AlternativeLocation>(declarations)), caption, position.x, position.y, true, 0);
-    }
 }

@@ -42,6 +42,7 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -223,14 +224,12 @@ public class LoginPanel extends javax.swing.JPanel {
         progressBar = new javax.swing.JProgressBar();
         chkIsOnline = new javax.swing.JCheckBox();
         kenaiLabel = new javax.swing.JLabel();
-        kenaiCombo = new KenaiCombo(Kenai.Status.OFFLINE, true);
+        kenaiCombo = new KenaiCombo(true);
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         lblUserName.setLabelFor(username);
         org.openide.awt.Mnemonics.setLocalizedText(lblUserName, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblUserName.text")); // NOI18N
-
-        username.setText(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.username.text")); // NOI18N
 
         lblPassword.setLabelFor(password);
         org.openide.awt.Mnemonics.setLocalizedText(lblPassword, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblPassword.text")); // NOI18N
@@ -361,7 +360,13 @@ public class LoginPanel extends javax.swing.JPanel {
     private void kenaiComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kenaiComboActionPerformed
         if (kenaiCombo.getSelectedItem() instanceof Kenai) {
             this.kenai = ((Kenai) kenaiCombo.getSelectedItem());
+            for (ActionListener l:forgotPassword.getActionListeners()) {
+                forgotPassword.removeActionListener(l);
+            }
             forgotPassword.setAction(new URLDisplayerAction("", getForgetPasswordUrl()));
+            for (ActionListener l:signUp.getActionListeners()) {
+                signUp.removeActionListener(l);
+            }
             signUp.setAction(new URLDisplayerAction("", getRegisterUrl()));
 
             forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));
@@ -381,7 +386,13 @@ public class LoginPanel extends javax.swing.JPanel {
                     LoginPanel.this.kenai = ((Kenai) kenaiCombo.getSelectedItem());
                     if (LoginPanel.this.kenai==null)
                         return;
+                    for (ActionListener l : forgotPassword.getActionListeners()) {
+                        forgotPassword.removeActionListener(l);
+                    }
                     forgotPassword.setAction(new URLDisplayerAction("", getForgetPasswordUrl()));
+                    for (ActionListener l : signUp.getActionListeners()) {
+                        signUp.removeActionListener(l);
+                    }
                     signUp.setAction(new URLDisplayerAction("", getRegisterUrl()));
 
                     forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));

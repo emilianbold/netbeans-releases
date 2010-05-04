@@ -39,12 +39,6 @@
  * made subject to such option by the copyright holder.
  */
 
-/*
- * JavadocSearchEngineImpl.java
- *
- * Created on 18. ?erven 2001, 14:55
- */
-
 package org.netbeans.modules.javadoc.search;
 
 import java.util.ArrayList;
@@ -55,9 +49,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 /**
- *
  * @author  Petr Suchomel
- * @version 0.1
  */
 final class JavadocSearchEngineImpl extends JavadocSearchEngine {
 
@@ -70,18 +62,15 @@ final class JavadocSearchEngineImpl extends JavadocSearchEngine {
      * @param items to search for
      * @throws NoJavadocException if no javadoc directory is mounted, nothing can be searched
      */
-    public void search(String[] items, final SearchEngineCallback callback) throws NoJavadocException {
+    public @Override void search(String[] items, final SearchEngineCallback callback) throws NoJavadocException {
         diiConsumer = new IndexSearchThread.DocIndexItemConsumer() {
-                          public void addDocIndexItem( final DocIndexItem dii ) {
+                          public @Override void addDocIndexItem(DocIndexItem dii) {
                               callback.addItem(dii);
                           }
-
-                          public void indexSearchThreadFinished( IndexSearchThread t ) {
+                          public @Override void indexSearchThreadFinished(IndexSearchThread t) {
                               boolean isEmpty;
                               synchronized(JavadocSearchEngineImpl.this) {
-                                  if (IndexSearch.LOG.isLoggable(Level.FINE)) {
-                                      IndexSearch.LOG.fine("JavadocSearchEngineImpl.indexSearchThreadFinished: tasks: " + tasks.size());
-                                  }
+                                  IndexSearch.LOG.log(Level.FINE, "JavadocSearchEngineImpl.indexSearchThreadFinished: tasks: {0}", tasks.size());
                                   tasks.remove( t );
                                   isEmpty = tasks.isEmpty();
                               }
@@ -143,7 +132,7 @@ final class JavadocSearchEngineImpl extends JavadocSearchEngine {
     
     /** Stops execution of Javadoc search thread
      */
-    public void stop() {
+    public @Override void stop() {
         IndexSearchThread[] tasksArray = null;
         boolean noTask;
         synchronized(this) {

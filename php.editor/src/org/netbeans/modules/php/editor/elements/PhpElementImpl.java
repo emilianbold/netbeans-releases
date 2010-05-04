@@ -140,7 +140,7 @@ public abstract class PhpElementImpl implements PhpElement {
     }
 
     @Override
-    public final synchronized FileObject getFileObject() {
+    public synchronized FileObject getFileObject() {
         String urlStr = fileUrl;
         if ((fileObject == null) && (fileUrl != null)) {
             fileObject = resolveFileObject(urlStr);

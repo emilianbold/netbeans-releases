@@ -79,7 +79,7 @@ public class EvaluatorTest extends TestBase {
     private NbModuleProject loadersProject;
     private File userPropertiesFile;
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
         super.setUp();
         userPropertiesFile = TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
@@ -134,22 +134,22 @@ public class EvaluatorTest extends TestBase {
         PropertyEvaluator eval = p.evaluator();
         TestBase.TestPCL l = new TestBase.TestPCL();
         eval.addPropertyChangeListener(l);
-        String bootcp = eval.getProperty("nbjdk.bootclasspath");
+        String bootcp = eval.getProperty(Evaluator.NBJDK_BOOTCLASSPATH);
         String origbootcp = bootcp;
         assertNotNull(bootcp); // who knows what actual value will be inside a unit test - probably empty
         ep = p.getHelper().getProperties("nbproject/platform.properties");
         ep.setProperty("nbjdk.active", "testjdk");
         p.getHelper().putProperties("nbproject/platform.properties", ep);
-        assertTrue("got a change in bootcp", l.changed.contains("nbjdk.bootclasspath"));
+        assertTrue("got a change in bootcp", l.changed.contains(Evaluator.NBJDK_BOOTCLASSPATH));
         l.reset();
-        bootcp = eval.getProperty("nbjdk.bootclasspath");
+        bootcp = eval.getProperty(Evaluator.NBJDK_BOOTCLASSPATH);
         assertEquals("correct bootcp", new File(testjdk, "jre/lib/rt.jar".replace('/', File.separatorChar)).getAbsolutePath(), bootcp);
         ep = p.getHelper().getProperties("nbproject/platform.properties");
         ep.setProperty("nbjdk.active", "default");
         p.getHelper().putProperties("nbproject/platform.properties", ep);
-        assertTrue("got a change in bootcp", l.changed.contains("nbjdk.bootclasspath"));
+        assertTrue("got a change in bootcp", l.changed.contains(Evaluator.NBJDK_BOOTCLASSPATH));
         l.reset();
-        bootcp = eval.getProperty("nbjdk.bootclasspath");
+        bootcp = eval.getProperty(Evaluator.NBJDK_BOOTCLASSPATH);
         assertEquals(origbootcp, bootcp);
     }
 
@@ -159,15 +159,12 @@ public class EvaluatorTest extends TestBase {
     }
 
     private class ModuleListLogHandler extends Handler {
-        private boolean cacheUsed = true;
         private Set<String> scannedDirs = Collections.synchronizedSet(new HashSet<String>(1000));
         String error;
 
         @Override
         public synchronized void publish(LogRecord record) {
             String msg = record.getMessage();
-            if (msg.startsWith("Due to previous call of refresh(), not using nbbuild cache in"))
-                cacheUsed = false;
             assertFalse("Duplicate scan of project tree detected: " + msg,
                     msg.startsWith("Warning: two modules found with the same code name base"));
             if (msg.startsWith("scanPossibleProject: ") && msg.endsWith("scanned successfully")
@@ -186,7 +183,6 @@ public class EvaluatorTest extends TestBase {
 
         @Override
         public void close() throws SecurityException {
-            assertFalse("Using nbbuild cache, which should be disabled", cacheUsed);
         }
 
     }
@@ -204,7 +200,7 @@ public class EvaluatorTest extends TestBase {
             PropertyEvaluator eval = javaProjectProject.evaluator();
             assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
             String js = eval.getProperty("javac.source");      // does not scan ML
-            assertTrue("Valid javac.source value", js != null && ! js.equals("") && ! js.equals("javac.source"));
+            assertTrue("Valid javac.source value", js != null && !js.isEmpty() && !js.equals("javac.source"));
             assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
             /* No longer calculated due to #172203 optimization:
             String coreStartupDir = eval.getProperty("core.startup.dir");   // does not scan ML after rev #797729b2749e
@@ -355,7 +351,7 @@ public class EvaluatorTest extends TestBase {
             public void run() {
                 try {
                     ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                        public Void run() throws Exception {
+                        public @Override Void run() throws Exception {
                             LOG.log(Level.FINE, "got PM write access");
                             NbPlatform.getPlatforms();
                             LOG.log(Level.FINE, "after NbPlatform.getPlatforms");

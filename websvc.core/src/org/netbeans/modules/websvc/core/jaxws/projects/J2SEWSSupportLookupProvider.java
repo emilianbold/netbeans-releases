@@ -26,7 +26,7 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
+ *System.out.println("JAX-WS-MODEL ......... constructor "+fo);
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -47,71 +47,75 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportImpl;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportImpl;
-import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.Lookups;
 
 /** Lookup Provider for WS Support
  *
  * @author mkuchtiak
  */
-// XXX could probably be converted to use @ProjectServiceProvider instead
-// (would need to do some refactoring first)
-@LookupProvider.Registration(projectType="org-netbeans-modules-java-j2seproject")
-public class J2SEWSSupportLookupProvider implements LookupProvider {
-    
+@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-java-j2seproject")
+public class J2SEWSSupportLookupProvider extends ProjectOpenedHook {
+    private Project project;
+
     /** Creates a new instance of JaxWSLookupProvider */
-    public J2SEWSSupportLookupProvider() {
+    public J2SEWSSupportLookupProvider(Project project) {
+        this.project = project;
     }
-    
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        final Project project = baseContext.lookup(Project.class);
-        JAXWSClientSupportImpl j2seJAXWSClientSupport = new J2SEProjectJAXWSClientSupport(project);
-        final JAXWSClientSupport jaxWsClientSupportApi = JAXWSClientSupportFactory.createJAXWSClientSupport(j2seJAXWSClientSupport);
-        
-        WebServicesClientSupportImpl jaxrpcClientSupport = new J2SEProjectJaxRpcClientSupport(project);
-        final WebServicesClientSupport jaxRpcClientSupportApi = WebServicesClientSupportFactory.createWebServicesClientSupport(jaxrpcClientSupport);
-        
-        ProjectOpenedHook openHook = new ProjectOpenedHook() {
-            @Override
-            protected void projectOpened() {
-                if(jaxRpcClientSupportApi.isBroken(project)) {
-                    jaxRpcClientSupportApi.showBrokenAlert(project);
-                }
-                if (jaxWsClientSupportApi.getServiceClients().size() > 0) {
+
+    @Override
+    protected void projectOpened() {
+        if(WebServicesClientSupport.isBroken(project)) {
+            WebServicesClientSupport.showBrokenAlert(project);
+        }
+        FileObject jaxWsFo = WSUtils.findJaxWsFileObject(project);
+        try {
+            if (jaxWsFo != null && WSUtils.hasClients(jaxWsFo)) {
+                final JAXWSClientSupport jaxWsClientSupport = project.getLookup().lookup(JAXWSClientSupport.class);
+                if (jaxWsClientSupport != null) {
                     FileObject wsdlFolder = null;
                     try {
-                        wsdlFolder = jaxWsClientSupportApi.getWsdlFolder(false);
+                        wsdlFolder = jaxWsClientSupport.getWsdlFolder(false);
                     } catch (IOException ex) {}
                     if (wsdlFolder == null || wsdlFolder.getParent().getFileObject("jax-ws-catalog.xml") == null) { //NOI18N
                         RequestProcessor.getDefault().post(new Runnable() {
+                            @Override
                             public void run() {
                                 try {
-                                    JaxWsCatalogPanel.generateJaxWsCatalog(project, jaxWsClientSupportApi);
+                                    JaxWsCatalogPanel.generateJaxWsCatalog(project, jaxWsClientSupport);
                                 } catch (IOException ex) {
                                     Logger.getLogger(JaxWsCatalogPanel.class.getName()).log(Level.WARNING, "Cannot create jax-ws-catalog.xml", ex);
                                 }
                             }
                         });
                     }
-
                 }
             }
+        } catch (IOException ex) {
+             Logger.getLogger(JaxWsCatalogPanel.class.getName()).log(Level.WARNING, "Cannot read nbproject/jax-ws.xml file", ex);
+        }
+    }
 
-            @Override
-            protected void projectClosed() {
-            }
-        };
-        return Lookups.fixed(new Object[] {
-            jaxWsClientSupportApi,
-            jaxRpcClientSupportApi,
-            openHook});
+    @Override
+    protected void projectClosed() {
+    }
+
+    @ProjectServiceProvider(service=JAXWSClientSupport.class, projectType="org-netbeans-modules-java-j2seproject")
+    public static JAXWSClientSupport createJAXWSClientSupport(Project project) {
+        JAXWSClientSupportImpl j2seJAXWSClientSupport = new J2SEProjectJAXWSClientSupport(project);
+        return JAXWSClientSupportFactory.createJAXWSClientSupport(j2seJAXWSClientSupport);
+    }
+
+    @ProjectServiceProvider(service=WebServicesClientSupport.class, projectType="org-netbeans-modules-java-j2seproject")
+    public static WebServicesClientSupport createWebServicesClientSupport(Project project) {
+        WebServicesClientSupportImpl jaxrpcClientSupport = new J2SEProjectJaxRpcClientSupport(project);
+        return WebServicesClientSupportFactory.createWebServicesClientSupport(jaxrpcClientSupport);
     }
 }

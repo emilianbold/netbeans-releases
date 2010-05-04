@@ -128,7 +128,6 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
 
     void setIntermediatePanelKind(IntermediatePanelKind kind) {
         assert !EventQueue.isDispatchThread();
-        System.err.println("setIntermediatePanelKind " + kind);
         synchronized (this) {
             this.intermediatePanelKind = kind;
         }
@@ -138,9 +137,7 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
             //get the previously computed set of panels
             EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
-                    System.err.println("Firing steps change");
                     supp.fireChange();
-                    System.err.println("GetPanels length returns " + getPanels().length);
                 }
             });
         } catch (InterruptedException ex) {

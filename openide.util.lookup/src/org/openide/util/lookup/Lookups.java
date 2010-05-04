@@ -214,7 +214,7 @@ public class Lookups {
      * <p>
      * Read more about the <a href="@org-openide-util@/org/openide/util/doc-files/api.html#folderlookup">usage of this method</a>.
      * 
-     * @param path the path identifying the lookup, e.g. <code>Projects/Actions</code>
+     * @param path the path identifying the lookup, e.g. <code>Servers/J2EEWrapper</code>
      * @return lookup associated with this path
      * @since 7.9
      */

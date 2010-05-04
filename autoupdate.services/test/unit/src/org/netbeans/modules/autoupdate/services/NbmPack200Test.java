@@ -67,6 +67,7 @@ import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -115,15 +116,15 @@ public class NbmPack200Test extends NbTestCase {
                 + (dependency != null ? " OpenIDE-Module-Module-Dependencies=\"" + dependency.replace(">", "&gt;") + "\" " : "")
                 + "\n       OpenIDE-Module-Requires='org.openide.modules.ModuleFormat1' "
                 + "\n       OpenIDE-Module-Specification-Version='" + specVersion + "'/>"
-                + "\n    <license name='AD9FBBC9'>[NO LICENSE SPECIFIED]"
-                + "\n</license>"
-                + "\n</module>\n";
+                + "\n</module>";
     }
 
     private String createInfoXML(boolean visible, String codeName, String releaseVersion, String implVersion, String moduleName, String distr, String specVersion, String dependency) {
         String moduleElement = getModuleElement(visible, codeName, releaseVersion, implVersion, moduleName, distr, specVersion, dependency);
 
         moduleElements.add(moduleElement);
+        moduleElements.add("\n    <license name='AD9FBBC9'>[NO LICENSE SPECIFIED]"
+                         + "\n</license>\n");
         return "<?xml version='1.0' encoding='UTF-8'?>"
                 + "<!DOCTYPE module PUBLIC '-//NetBeans//DTD Autoupdate Module Info 2.5//EN' 'http://www.netbeans.org/dtds/autoupdate-info-2_5.dtd'>"
                 + moduleElement;
@@ -291,7 +292,7 @@ public class NbmPack200Test extends NbTestCase {
         assertNull("Installing new element require restarting though it should not", r);
     }
 
-    
+    @RandomlyFails // NB-Core-Build #4218 and interactively: module was not enabled after installation from NBM with pack200 compression
     public void testNbmWithPack200Compression() throws Exception {
         String moduleCNB = "org.netbeans.modules.mymodule";
         String moduleReleaseVersion = "1";

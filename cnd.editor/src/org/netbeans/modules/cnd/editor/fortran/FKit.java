@@ -60,12 +60,16 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
-import org.netbeans.editor.*;
+import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.Utilities;
 
 import org.netbeans.modules.cnd.editor.fortran.indent.FortranHotCharIndent;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
-import org.netbeans.modules.editor.*;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.util.Exceptions;
@@ -104,23 +108,22 @@ public class FKit extends NbEditorKit {
         doc.putProperty(Language.class, getLanguage());
     }
 
-    protected Language<FortranTokenId> getLanguage() {
+    private Language<FortranTokenId> getLanguage() {
         return FortranTokenId.languageFortran();
     }
 
-    protected final synchronized InputAttributes getLexerAttributes(BaseDocument doc) {
-        // for now use shared attributes for all documents to save memory
-        // in future we can make attributes per document based on used compiler info
+    private synchronized InputAttributes getLexerAttributes(BaseDocument doc) {
         if (lexerAttrs == null) {
             lexerAttrs = new InputAttributes();
-            lexerAttrs.setValue(getLanguage(), CndLexerUtilities.LEXER_FILTER, getFilter(), true);
-            lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH, FSettingsFactory.MAXIMUM_TEXT_WIDTH, true);
         }
-        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_FREE_FORMAT, FortranCodeStyle.get(doc).isFreeFormatFortran(), true);
+        FortranCodeStyle codeStyle = FortranCodeStyle.get(doc);
+        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.LEXER_FILTER, getFilter(), true);
+        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH, codeStyle.getRrightMargin(), true);
+        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_FREE_FORMAT, codeStyle.isFreeFormatFortran(), true);
         return lexerAttrs;
     }
 
-    protected Filter<FortranTokenId> getFilter() {
+    private Filter<FortranTokenId> getFilter() {
         return CndLexerUtilities.getFortranFilter();
     }
 
@@ -136,7 +139,7 @@ public class FKit extends NbEditorKit {
 	int index = 0;
 	if (actionClasses != null) {
 	    for (int i = 0; i < numAddClasses; i++) {
-		Class c = actionClasses.get(i);
+		Class<?> c = actionClasses.get(i);
 		try {
 		    fortranActions[index] = (Action)c.newInstance();
 		} catch (java.lang.InstantiationException e) {
@@ -159,12 +162,12 @@ public class FKit extends NbEditorKit {
         This allows dependent modules to add editor actions to this
         kit on startup.
     */
-    private static ArrayList<Class> actionClasses = null;
+    private static ArrayList<Class<?>> actionClasses = null;
 
 
-    public static void addActionClass(Class action) {
+    public static void addActionClass(Class<?> action) {
 	if (actionClasses == null) {
-	    actionClasses = new ArrayList<Class>(2);
+	    actionClasses = new ArrayList<Class<?>>(2);
 	}
 	actionClasses.add(action);
     }
@@ -184,6 +187,7 @@ public class FKit extends NbEditorKit {
 	}
 
         
+        @Override
    	public void actionPerformed(ActionEvent evt, final JTextComponent target) {
 	    if (target != null) {
 
@@ -198,6 +202,7 @@ public class FKit extends NbEditorKit {
                 target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 
                 doc.runAtomic(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             Caret caret = target.getCaret();

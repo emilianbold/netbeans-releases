@@ -64,9 +64,11 @@ import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -288,6 +290,24 @@ public class ElementNode extends AbstractNode {
             }
             public Class<? extends FileObject> type(Description obj) {
                 return FileObject.class;
+            }
+            public String id(Description obj) {
+                return "IL[" + obj.toString();
+            }
+            public String displayName(Description obj) {
+                return id(obj);
+            }
+        });
+        ic.add(d,new InstanceContent.Convertor<Description, DataObject>(){
+            public DataObject convert(Description d) {
+                try {
+                    return DataObject.find(d.getFileObject());
+                } catch (DataObjectNotFoundException ex) {
+                    return null;
+                }
+            }
+            public Class<? extends DataObject> type(Description obj) {
+                return DataObject.class;
             }
             public String id(Description obj) {
                 return "IL[" + obj.toString();

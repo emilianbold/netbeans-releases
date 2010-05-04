@@ -80,6 +80,7 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.basic.BasicListUI;
+import javax.swing.text.Position;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Item;
 import org.netbeans.modules.palette.Utils;
@@ -309,6 +310,7 @@ public class CategoryList extends JList implements Autoscroll {
             }
         }
 
+        @Override
         public Component getListCellRendererComponent (JList list,
                 Object value,
                 int index,
@@ -352,6 +354,7 @@ public class CategoryList extends JList implements Autoscroll {
     }
     
     /** notify the Component to autoscroll */
+    @Override
     public void autoscroll( Point cursorLoc ) {
         if( null != getParent() && null != getParent().getParent() ) {
             Point p = SwingUtilities.convertPoint( this, cursorLoc, getParent().getParent() );
@@ -363,6 +366,7 @@ public class CategoryList extends JList implements Autoscroll {
      * region or border relative to the geometry of the
      * implementing Component.
      */
+    @Override
     public Insets getAutoscrollInsets() {
         return getSupport().getAutoscrollInsets();
     }
@@ -393,7 +397,11 @@ public class CategoryList extends JList implements Autoscroll {
             ensureIndexIsVisible( indexToSelect );
         }
     }
-
+    
+    @Override
+    public int getNextMatch(String prefix, int startIndex, Position.Bias bias) {
+        return -1;
+    }
     
     // ---------
     // list UI
@@ -520,6 +528,7 @@ public class CategoryList extends JList implements Autoscroll {
             this.list = list;
         }
 
+        @Override
         public void actionPerformed( ActionEvent e ) {
             Item item = list.getItemAt( list.getSelectedIndex() );
             item.invokePreferredAction( e );
@@ -533,6 +542,7 @@ public class CategoryList extends JList implements Autoscroll {
     
     private class PopupAction extends AbstractAction {
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             int posX = 0;
             int posY = 0;
@@ -563,6 +573,7 @@ public class CategoryList extends JList implements Autoscroll {
             this.focusNext = focusNext;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             int selIndexBefore = getSelectedIndex();
             defaultAction.actionPerformed( e );
@@ -570,7 +581,7 @@ public class CategoryList extends JList implements Autoscroll {
             if( selIndexBefore != selIndexCurrent )
                 return;
             
-            if( focusNext && 0 == selIndexCurrent )
+            if( focusNext && 0 == selIndexCurrent && getModel().getSize() > 1 )
                 return;
             
             KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
@@ -596,6 +607,7 @@ public class CategoryList extends JList implements Autoscroll {
             this.selectNext = selectNext;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             int selIndexBefore = getSelectedIndex();
             defaultAction.actionPerformed( e );
@@ -627,6 +639,7 @@ public class CategoryList extends JList implements Autoscroll {
             this.doCopy = doCopy;
         }
 
+        @Override
         public void actionPerformed( ActionEvent e ) {
             Item item = getItemAt( getSelectedIndex() );
             if( null == item )

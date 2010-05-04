@@ -312,16 +312,16 @@ final class NbInstaller extends ModuleInstaller {
             }
         }
     }
+
+    @Override
+    protected void classLoaderUp(ClassLoader cl) {
+        MainLookup.systemClassLoaderChanged(cl);
+        ev.log(Events.PERF_TICK, "META-INF/services/ additions registered"); // NOI18N
+    }
     
+    @Override
     public void load(List<Module> modules) {
         ev.log(Events.START_LOAD, modules);
-        
-        // we need to update the classloader as otherwise we might not find
-        // all the needed classes
-        if (mgr != null) { // could be null during tests
-            MainLookup.systemClassLoaderChanged(/* #61107: do not use Thread.cCL here! */mgr.getClassLoader());
-        }
-        ev.log(Events.PERF_TICK, "META-INF/services/ additions registered"); // NOI18N
         
         checkForDeprecations(modules);
         

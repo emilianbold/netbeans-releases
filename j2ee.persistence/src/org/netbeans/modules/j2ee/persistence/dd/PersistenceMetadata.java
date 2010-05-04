@@ -120,4 +120,12 @@ public final class PersistenceMetadata {
         return persistence;
     }
 
+    /**
+     * provide a way to refresh metadata in cashe if required
+     * @param fo
+     */
+    public void refresh(FileObject fo){
+        if( fo!=null )ddMap.remove(fo);
+    }
+
 }

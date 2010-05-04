@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.db.explorer.action;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
@@ -58,6 +60,7 @@ import org.openide.util.actions.SystemAction;
  */
 public class CreateViewAction extends BaseAction {
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes == null || activatedNodes.length != 1) {
             return false;
@@ -78,10 +81,12 @@ public class CreateViewAction extends BaseAction {
         return new HelpCtx(CreateViewAction.class);
     }
 
+    @Override
     public void performAction (Node[] activatedNodes) {
         final BaseNode node = activatedNodes[0].getLookup().lookup(BaseNode.class);
         RequestProcessor.getDefault().post(
             new Runnable() {
+            @Override
                 public void run() {
                     perform(node);
                 }
@@ -110,6 +115,7 @@ public class CreateViewAction extends BaseAction {
                 SystemAction.get(RefreshAction.class).performAction(new Node[]{node});
             }
         } catch(Exception exc) {
+            Logger.getLogger(CreateViewAction.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);
             DbUtilities.reportError(NbBundle.getMessage (CreateViewAction.class, "ERR_UnableToCreateView"), exc.getMessage()); // NOI18N
         }
      }

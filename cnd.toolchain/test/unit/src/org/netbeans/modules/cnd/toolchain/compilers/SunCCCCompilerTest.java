@@ -85,7 +85,7 @@ public class SunCCCCompilerTest {
 
     @Test
     public void testParseCompilerOutputSunCC() {
-        System.setProperty("os.name", "SunOS");
+        //System.setProperty("os.name", "SunOS");
         String s =
                 "###     command line files and options (expanded):\n" +
                 "### -dryrun -E xxx.c " +
@@ -123,7 +123,7 @@ public class SunCCCCompilerTest {
 
     @Test
     public void testParseCompilerOutputSunC() {
-        System.setProperty("os.name", "SunOS");
+        //System.setProperty("os.name", "SunOS");
         String s =
                 "/opt/SUNWspro/prod/bin/acomp -xldscope=global -i xxx.c -o - -xdbggen=no%stabs+dwarf2+usedonly -E -m32 -fparam_ir -Qy -D__SunOS_5_11 -D__SUNPRO_C=0x5100 -D__SVR4 -D__sun -D__SunOS -D__unix -D__i386 -D__BUILTIN_VA_ARG_INCR -D__C99FEATURES__ -Xa -D__PRAGMA_REDEFINE_EXTNAME -Dunix -Dsun -Di386 -D__RESTRICT -xc99=%all,no%lib -D__FLT_EVAL_METHOD__=-1 -I/opt/SUNWspro/prod/include/cc \"-g/opt/SUNWspro/prod/bin/cc -xdryrun -E \" -fsimple=0 -D__SUN_PREFETCH -destination_ir=%none\n";
 
@@ -154,7 +154,7 @@ public class SunCCCCompilerTest {
 
     @Test
     public void testParseCompilerOutputSunC2() {
-        System.setProperty("os.name", "SunOS");
+        //System.setProperty("os.name", "SunOS");
         String s =
 "/shared/dp/sstrunk/090219/inst/intel-Linux.inst/opt/sun/sunstudioceres/prod/bin/acomp -Qy -Xa -xc99=%all -i /dev/null "+
 "-D__SUNPRO_C=0x5100 -D__unix -D__unix__ -Dlinux -D__linux -D__linux__ -D__gnu__linux__ \"-D__builtin_expect(e,x)=e\" "+

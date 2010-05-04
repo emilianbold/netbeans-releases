@@ -64,16 +64,19 @@ import org.netbeans.api.project.Project;
  * The project type is not required to put an implementation of this interface into the project's
  * lookup if the above two cases should not be supported.
  *
+ * <p><strong>Implementations are encouraged to implement {@link MoveOrRenameOperationImplementation} instead.</strong>
+ *
  * @author Jan Lahoda
  * @since 1.7
  */
 public interface MoveOperationImplementation extends DataFilesProviderImplementation {
     
     /**Pre-move notification. The exact meaning is left on the project implementors, but
-     * typically this means to undeloy the application and remove all artifacts
+     * typically this means to undeploy the application and remove all artifacts
      * created by the build project.
      *
      * @throws IOException if an I/O operation fails.
+     * @see MoveOrRenameOperationImplementation#notifyRenaming
      */
     public void notifyMoving() throws IOException;
     
@@ -87,6 +90,7 @@ public interface MoveOperationImplementation extends DataFilesProviderImplementa
      * @param nueName new name for the newly created project.
      *
      * @throws IOException if an I/O operation fails.
+     * @see MoveOrRenameOperationImplementation#notifyRenamed
      */
     public void notifyMoved(Project original, File originalPath, String nueName) throws IOException;
     

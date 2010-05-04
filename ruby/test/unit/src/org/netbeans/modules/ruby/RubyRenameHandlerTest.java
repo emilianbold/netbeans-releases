@@ -28,6 +28,8 @@
 
 package org.netbeans.modules.ruby;
 
+import java.util.concurrent.Callable;
+
 /**
  *
  * @author Tor Norbye
@@ -43,7 +45,14 @@ public class RubyRenameHandlerTest extends RubyTestBase {
     }
 
     public void testRename2() throws Exception {
-        checkRenameSections("testfiles/postgresql_adapter.rb", "  def indexes(table_name, na^me = nil) #:nodoc:");
+        failsDueToIssue182494(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                checkRenameSections("testfiles/postgresql_adapter.rb", "  def indexes(table_name, na^me = nil) #:nodoc:");
+                return null;
+            }
+        });
     }
 
     public void testRename3() throws Exception {

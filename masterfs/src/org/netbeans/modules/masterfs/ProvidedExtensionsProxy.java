@@ -43,8 +43,10 @@ package org.netbeans.modules.masterfs;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -267,6 +269,28 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
             }
         }
         return null;
+    }
+
+    @Override
+    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ? provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                ProvidedExtensions pe = (ProvidedExtensions)iListener;
+                int prev = children.size();
+                long ret = pe.refreshRecursively(dir, lastTimeStamp, children);
+                assert ret != -1 || prev == children.size() : "When returning -1 from refreshRecursively, you cannot modify children: " + pe;
+                if (ret != -1) {
+                    return ret;
+                }
+            }
+        }
+        final File[] arr = dir.listFiles();
+        if (arr != null) {
+            children.addAll(Arrays.asList(arr));
+        }
+        return 0;
     }
     
     public static void checkReentrancy() {

@@ -260,30 +260,61 @@ public class CsmFinderImpl implements CsmFinder {
             if (checkStopAfterAppendAllNamespaceElements(ns, name, exactMatch, searchNested, searchFirst, true, csmFile, contResolver, ret, false, new HashSet<CharSequence>(), vasitedNamespaces)) {
                 return ret;
             }
-            final Collection<CsmProject> libraries = prj.getLibraries();
-            if (!libraries.isEmpty()) {
-                HashSet<CharSequence> set = new HashSet<CharSequence>();
-                for (Object o : ret) {
-                    if (CsmKindUtilities.isQualified((CsmObject) o)) {
-                        set.add(((CsmQualifiedNamedElement) o).getQualifiedName());
+            final Collection<CsmProject> projets = new ArrayList<CsmProject>();
+            projets.add(prj);
+            projets.addAll(getProjectsWithLibrary(prj));
+            for (CsmProject csmProject : projets) {
+                final Collection<CsmProject> libraries = csmProject.getLibraries();
+                if (!libraries.isEmpty()) {
+                    HashSet<CharSequence> set = new HashSet<CharSequence>();
+                    for (Object o : ret) {
+                        if (CsmKindUtilities.isQualified((CsmObject) o)) {
+                            set.add(((CsmQualifiedNamedElement) o).getQualifiedName());
+                        }
                     }
-                }
-                for (CsmProject lib : libraries) {
-                    CsmNamespace libNmsp;
-                    if (ns.isGlobal()) {
-                        libNmsp = lib.getGlobalNamespace();
-                    } else {
-                        libNmsp = lib.findNamespace(ns.getQualifiedName());
-                    }
-                    if (libNmsp != null) {
-                        if (checkStopAfterAppendAllNamespaceElements(libNmsp, name, exactMatch, searchNested, searchFirst, false, null, contResolver, ret, true, set, vasitedNamespaces)) {
-                            return ret;
+                    for (CsmProject lib : libraries) {
+                        CsmNamespace libNmsp;
+                        if (ns.isGlobal()) {
+                            libNmsp = lib.getGlobalNamespace();
+                        } else {
+                            libNmsp = lib.findNamespace(ns.getQualifiedName());
+                        }
+                        if (libNmsp != null) {
+                            if (checkStopAfterAppendAllNamespaceElements(libNmsp, name, exactMatch, searchNested, searchFirst, false, null, contResolver, ret, true, set, vasitedNamespaces)) {
+                                return ret;
+                            }
                         }
                     }
                 }
             }
         }
         return ret;
+    }
+
+    public Collection<CsmProject> getProjectsWithLibrary(CsmProject lib) {
+        Collection<CsmProject> res = new ArrayList<CsmProject>();
+        Collection<CsmProject> projects = CsmModelAccessor.getModel().projects();
+        boolean changed = true;
+        while(changed) {
+            changed = false;
+            loop : for (CsmProject project : projects) {
+                if(!res.contains(project)) {
+                    if(project.getLibraries().contains(lib)) {
+                        res.add(project);
+                        changed = true;
+                        continue loop;
+                    }
+                    for (CsmProject resProject : res) {
+                        if(project.getLibraries().contains(resProject)) {
+                            res.add(project);
+                            changed = true;
+                            continue loop;
+                        }
+                    }
+                }
+            }
+        }
+        return res;
     }
 
     public List<CsmObject> findStaticNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch) {

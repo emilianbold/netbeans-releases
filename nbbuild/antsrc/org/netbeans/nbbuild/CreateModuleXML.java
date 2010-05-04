@@ -227,8 +227,12 @@ public class CreateModuleXML extends Task {
             JarFile jar = new JarFile(module);
             try {
                 Manifest m = jar.getManifest();
-                Attributes attr = m.getMainAttributes();
-                String codename = JarWithModuleAttributes.extractCodeName(attr);
+                Attributes attr = null;
+                String codename = null;
+                if (m != null) {
+                    attr = m.getMainAttributes();
+                    codename = JarWithModuleAttributes.extractCodeName(attr);
+                }
                 if (codename == null) {
                     if (failOnMissingManifest) {
                         throw new BuildException("Missing manifest tag OpenIDE-Module; " + module + " is not a module", getLocation());

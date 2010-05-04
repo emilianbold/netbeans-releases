@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -89,20 +90,24 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
+    @Override
     public synchronized List<PathResourceImplementation> getResources() {
         assert resources != null;
         return resources;
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
 
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String prop = evt.getPropertyName();
         if (prop != null && !propertyNames.contains(evt.getPropertyName())) {
@@ -115,6 +120,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         }
     }
 
+    @Override
     public void run() {
         dirty.set(false);
         List<PathResourceImplementation> newRoots = getPath();
@@ -141,7 +147,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
                     if (entry != null) {
                         result.add(ClassPathSupport.createResource(entry));
                     } else {
-                        Logger.getLogger(ProjectClassPathImplementation.class.getName()).warning(f + " does not look like a valid archive file");
+                        Logger.getLogger(ProjectClassPathImplementation.class.getName()).log(Level.WARNING, "{0} does not look like a valid archive file", f);
                     }
                 }
             }

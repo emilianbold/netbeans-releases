@@ -63,6 +63,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.HierarchyBoundsListener;
 import java.awt.event.HierarchyListener;
 import java.awt.event.MouseEvent;
+import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
@@ -963,17 +964,20 @@ final class RendererFactory {
             //do nothing
         }
 
+        @Override
         public void reset() {
             setText(editor.getAsText());
 
             Image i = null;
+            FeatureDescriptor fd;
 
             if (env != null) {
-                if (env.getState() == env.STATE_INVALID) {
+                if (env.getState() == PropertyEnv.STATE_INVALID) {
                     setForeground(PropUtils.getErrorColor());
                     i = ImageUtilities.loadImage("org/openide/resources/propertysheet/invalid.gif"); //NOI18N
                 } else {
-                    Object o = env.getFeatureDescriptor().getValue("valueIcon"); //NOI18N
+                    fd = env.getFeatureDescriptor();
+                    Object o = fd == null ? null : fd.getValue("valueIcon"); //NOI18N
 
                     if (o instanceof Icon) {
                         setIcon((Icon) o);

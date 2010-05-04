@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
 
     <target name="compile-lib" depends="init,fake-jdbc-40">
         <mkdir dir="build/lib-classes" />
-        <javac srcdir="libsrc" destdir="build/lib-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+        <javac srcdir="libsrc" destdir="build/lib-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.6">
             <classpath>
                 <pathelement path="${lib.cp}"/>
             </classpath>

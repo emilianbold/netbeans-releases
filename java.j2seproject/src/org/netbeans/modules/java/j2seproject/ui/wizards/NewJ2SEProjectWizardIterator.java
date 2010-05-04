@@ -54,7 +54,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
-import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -214,13 +213,13 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
         int ind = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         switch (type) {
             case APP:
-                FoldersListSettings.getDefault().setNewApplicationCount(ind);
+                WizardSettings.setNewApplicationCount(ind);
                 break;
             case LIB:
-                FoldersListSettings.getDefault().setNewLibraryCount(ind);
+                WizardSettings.setNewLibraryCount(ind);
                 break;
             case EXT:
-                FoldersListSettings.getDefault().setNewProjectCount(ind);
+                WizardSettings.setNewProjectCount(ind);
                 break;
         }        
         resultSet.add (dir);

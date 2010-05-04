@@ -70,6 +70,7 @@ import javax.swing.JEditorPane;
 import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Keymap;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseTextUI;
@@ -179,6 +180,10 @@ public class ToolTipSupport {
     private final Action HIDE_ACTION = new TextAction("tooltip-hide-action") { //NOI18N
         public @Override void actionPerformed(ActionEvent e) {
             ToolTipSupport.this.setToolTipVisible(false);
+            JTextComponent jtc = extEditorUI.getComponent();
+            if (jtc != null) {
+                Utilities.requestFocus(jtc);
+            }
         }
     };
 
@@ -307,6 +312,13 @@ public class ToolTipSupport {
                 }
                 super.setSize(width, height);
             }
+            @Override
+            public void setKeymap(Keymap map) {
+                //#181722: keymaps are shared among components with the same UI
+                //a default action will be set to the Keymap of this component below,
+                //so it is necessary to use a Keymap that is not shared with other components
+                super.setKeymap(addKeymap(null, map));
+            }
         }
 
         JEditorPane tt = new HtmlTextToolTip();
@@ -390,6 +402,13 @@ public class ToolTipSupport {
                     }
                 }
                 super.setSize(width, height);
+            }
+            @Override
+            public void setKeymap(Keymap map) {
+                //#181722: keymaps are shared among components with the same UI
+                //a default action will be set to the Keymap of this component below,
+                //so it is necessary to use a Keymap that is not shared with other JTextAreas
+                super.setKeymap(addKeymap(null, map));
             }
         }
 
@@ -508,10 +527,6 @@ public class ToolTipSupport {
                 }
 
                 setStatus(STATUS_HIDDEN);
-                JTextComponent jtc = extEditorUI.getComponent();
-                if (jtc != null) {
-                    jtc.requestFocusInWindow();
-                }
             }
         }
     }

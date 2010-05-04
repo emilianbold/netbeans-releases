@@ -57,6 +57,7 @@ import java.util.HashMap;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
@@ -160,10 +161,15 @@ class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementa
             if (gensrc) { // #105645
                 String buildGeneratedDirS = evaluator.getProperty("build.generated.sources.dir"); // NOI18N
                 if (buildGeneratedDirS != null) {
+		    final String apSourcesDirS = evaluator.getProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT);
+		    final FileObject apSourcesDir = apSourcesDirS != null ? helper.resolveFileObject(apSourcesDirS) : null;
                     FileObject buildGeneratedDir = helper.resolveFileObject(buildGeneratedDirS);
                     if (buildGeneratedDir != null) {
                         List<FileObject> roots = new ArrayList<FileObject>(Arrays.asList(sourceRoots.getRoots()));
                         for (FileObject root : buildGeneratedDir.getChildren()) {
+			    if (root.equals(apSourcesDir)) {
+				continue;
+			    }
                             if (root.isFolder()) {
                                 roots.add(root);
                             }

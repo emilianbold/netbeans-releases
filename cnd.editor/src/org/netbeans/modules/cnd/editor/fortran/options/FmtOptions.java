@@ -68,8 +68,8 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.openide.text.CloneableEditorSupport;
@@ -91,8 +91,7 @@ public class FmtOptions {
     public static final String indentSize = SimpleValueNames.INDENT_SHIFT_WIDTH;
     public static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
     public static final String freeFormat = "freeFormat"; //NOI18N
-    
-    public static Preferences lastValues;
+    public static final String autoDetect = "autoDetect"; //NOI18N
     
     static final String CODE_STYLE_PROFILE = "CodeStyle"; // NOI18N
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
@@ -145,7 +144,8 @@ public class FmtOptions {
             { spacesPerTab, "4"}, //NOI18N
             { indentSize, "4"}, //NOI18N
             { rightMargin, "80"}, //NOI18N
-            { freeFormat, TRUE }
+            { freeFormat, TRUE },
+            { autoDetect, TRUE }
         };
         
         defaults = new HashMap<String,String>();
@@ -197,11 +197,11 @@ public class FmtOptions {
             addListeners();
         }
         
-        protected void addListeners() {
+        private void addListeners() {
             scan(ADD_LISTENERS, null);
         }
         
-        protected void loadFrom(Preferences preferences) {
+        private void loadFrom(Preferences preferences) {
             scan(LOAD, preferences);
         }
 
@@ -216,26 +216,31 @@ public class FmtOptions {
 
         // ActionListener implementation ---------------------------------------
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             notifyChanged();
         }
         
         // DocumentListener implementation -------------------------------------
         
+        @Override
         public void insertUpdate(DocumentEvent e) {
             notifyChanged();
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             notifyChanged();
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             notifyChanged();
         }
 
         // PreviewProvider methods -----------------------------------------------------
         
+        @Override
         public JComponent getPreviewComponent() {
             if (previewPane == null) {
                 previewPane = new JEditorPane();
@@ -248,6 +253,7 @@ public class FmtOptions {
             return previewPane;
         }
 
+        @Override
         public void refreshPreview() {
             JEditorPane jep = (JEditorPane) getPreviewComponent();
             try {
@@ -262,16 +268,12 @@ public class FmtOptions {
             jep.setText(previewText);
             
             BaseDocument bd = (BaseDocument)jep.getDocument();
-            Reformat reformat = Reformat.get(bd);
-            reformat.lock();
+            FortranCodeStyle codeStyle = FortranCodeStyle.get(bd, previewPrefs);
+            codeStyle.setupLexerAttributes(bd);
             try {
-                reformat.reformat(0, bd.getLength());
-                String x = bd.getText(0, bd.getLength());
-                jep.setText(x);
+                new FortranReformatter(bd, codeStyle).reformat();
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
-            } finally {
-                reformat.unlock();
             }
 
             jep.setIgnoreRepaint(false);
@@ -281,18 +283,22 @@ public class FmtOptions {
 
         // PreferencesCustomizer implementation --------------------------------
         
+        @Override
         public JComponent getComponent() {
             return panel;
         }
 
+        @Override
         public String getDisplayName() {
             return panel.getName();
         }
 
+        @Override
         public String getId() {
             return id;
         }
         
+        @Override
         public HelpCtx getHelpCtx() {
             return null;
         }
@@ -313,6 +319,7 @@ public class FmtOptions {
                 this.forcedOptions = forcedOptions;
             }
 
+            @Override
             public PreferencesCustomizer create(Preferences preferences) {
                 try {
                     return new CategorySupport(preferences, id, panelClass.newInstance(), previewText, forcedOptions);
@@ -496,8 +503,8 @@ public class FmtOptions {
 
         private static class ComboItem {
             
-            String value;
-            String displayName;
+            private String value;
+            private String displayName;
 
             public ComboItem(String value, String key) {
                 this.value = value;
@@ -520,39 +527,48 @@ public class FmtOptions {
             super(null, ""); // NOI18N
         }
         
+        @Override
         protected void putSpi(String key, String value) {
             map.put(key, value);            
         }
 
+        @Override
         protected String getSpi(String key) {
             return (String)map.get(key);                    
         }
 
+        @Override
         protected void removeSpi(String key) {
             map.remove(key);
         }
 
+        @Override
         protected void removeNodeSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
+        @Override
         protected String[] keysSpi() throws BackingStoreException {
             String array[] = new String[map.keySet().size()];
             return map.keySet().toArray( array );
         }
 
+        @Override
         protected String[] childrenNamesSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
+        @Override
         protected AbstractPreferences childSpi(String name) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
+        @Override
         protected void syncSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
+        @Override
         protected void flushSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
@@ -568,10 +584,12 @@ public class FmtOptions {
             this.delegates = delegates;
         }
         
+        @Override
         protected void putSpi(String key, String value) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
+        @Override
         protected String getSpi(String key) {
             for(Preferences p : delegates) {
                 String value = p.get(key, null);
@@ -582,14 +600,17 @@ public class FmtOptions {
             return null;
         }
 
+        @Override
         protected void removeSpi(String key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
+        @Override
         protected void removeNodeSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
+        @Override
         protected String[] keysSpi() throws BackingStoreException {
             Set<String> keys = new HashSet<String>();
             for(Preferences p : delegates) {
@@ -598,18 +619,22 @@ public class FmtOptions {
             return keys.toArray(new String[ keys.size() ]);
         }
 
+        @Override
         protected String[] childrenNamesSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
+        @Override
         protected AbstractPreferences childSpi(String name) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
+        @Override
         protected void syncSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
+        @Override
         protected void flushSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }

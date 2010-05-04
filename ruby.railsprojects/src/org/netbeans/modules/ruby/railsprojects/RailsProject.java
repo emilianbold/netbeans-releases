@@ -64,6 +64,7 @@ import org.netbeans.modules.ruby.rubyproject.TemplateAttributesProviderImpl;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.spi.PropertiesProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
+import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -145,8 +146,8 @@ public class RailsProject extends RubyBaseProject {
                 public SharedRubyProjectProperties getProperties() {
                     return new RailsProjectProperties(RailsProject.this, updateHelper, evaluator(), refHelper, genFilesHelper);
                 }
-        }
-
+            },
+            new ProjectWebRootProviderImpl()
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-ruby-railsprojects/Lookup"); //NOI18N
     }
@@ -252,5 +253,13 @@ public class RailsProject extends RubyBaseProject {
             return PRIVILEGED_NAMES;
         }
         
+    }
+
+    private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
+
+        @Override
+        public FileObject getWebRoot(FileObject file) {
+            return getProjectDirectory().getFileObject("public"); // NOI18N
+        }
     }
 }

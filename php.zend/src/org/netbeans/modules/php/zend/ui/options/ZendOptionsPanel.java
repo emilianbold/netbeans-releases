@@ -37,12 +37,6 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-/*
- * ZendOptionsPanel.java
- *
- * Created on 11.6.2009, 13:02:10
- */
-
 package org.netbeans.modules.php.zend.ui.options;
 
 import java.awt.Component;
@@ -101,12 +95,15 @@ public final class ZendOptionsPanel extends JPanel {
         errorLabel.setText(" "); // NOI18N
 
         zendTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 processUpdate();
             }
@@ -371,22 +368,27 @@ public final class ZendOptionsPanel extends JPanel {
 
     private void searchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
          String zendScript = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
+            @Override
             public List<String> detect() {
                 return FileUtils.findFileOnUsersPath(ZendScript.SCRIPT_NAME);
             }
 
+            @Override
             public String getWindowTitle() {
                 return NbBundle.getMessage(ZendOptionsPanel.class, "LBL_ZendScriptsTitle");
             }
 
+            @Override
             public String getListTitle() {
                 return NbBundle.getMessage(ZendOptionsPanel.class, "LBL_ZendScripts");
             }
 
+            @Override
             public String getPleaseWaitPart() {
                 return NbBundle.getMessage(ZendOptionsPanel.class, "LBL_ZendScriptsPleaseWaitPart");
             }
 
+            @Override
             public String getNoItemsFound() {
                 return NbBundle.getMessage(ZendOptionsPanel.class, "LBL_NoZendScriptsFound");
             }

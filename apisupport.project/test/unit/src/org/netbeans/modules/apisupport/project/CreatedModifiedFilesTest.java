@@ -63,10 +63,10 @@ import java.util.SortedSet;
 import junit.framework.TestCase;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.Operation;
 import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -127,7 +127,8 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
 
         cmf.run();
     }
-    
+
+    @RandomlyFails // NB-Core-Build #4355: display name after from bundle expected:<[Much Better Nam]e> but was:<[Testing Modul]e>
     public void testBundleKeyDefaultBundle() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         ProjectInformation pi = ProjectUtils.getInformation(project);
@@ -172,6 +173,36 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         
         EditableManifest em = Util.loadManifest(FileUtil.toFileObject(TestBase.file(getWorkDir(), "module1/manifest.mf")));
         assertEquals("loader section was added", "Loader", em.getAttribute("OpenIDE-Module-Class", "org/example/module1/MyExtLoader.class"));
+    }
+
+    public void testAddManifestToken() throws Exception {
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
+        Operation op = cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, "api1");
+        assertRelativePath("manifest.mf", op.getModifiedPaths());
+        op.run();
+        FileObject manifest = FileUtil.toFileObject(TestBase.file(getWorkDir(), "module/manifest.mf"));
+        assertEquals("api1", Util.loadManifest(manifest).getAttribute("OpenIDE-Module-Requires", null));
+        op = cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, "api2");
+        assertRelativePath("manifest.mf", op.getModifiedPaths());
+        op.run();
+        assertEquals("api1, api2", Util.loadManifest(manifest).getAttribute("OpenIDE-Module-Requires", null));
+        op = cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, "api1");
+        assertRelativePath("manifest.mf", op.getModifiedPaths());
+        op.run();
+        assertEquals("api1, api2", Util.loadManifest(manifest).getAttribute("OpenIDE-Module-Requires", null));
+        op = cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, "api2");
+        assertRelativePath("manifest.mf", op.getModifiedPaths());
+        op.run();
+        assertEquals("api1, api2", Util.loadManifest(manifest).getAttribute("OpenIDE-Module-Requires", null));
+        op = cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, "api3");
+        assertRelativePath("manifest.mf", op.getModifiedPaths());
+        op.run();
+        assertEquals("api1, api2, api3", Util.loadManifest(manifest).getAttribute("OpenIDE-Module-Requires", null));
+        op = cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, "api2");
+        assertRelativePath("manifest.mf", op.getModifiedPaths());
+        op.run();
+        assertEquals("api1, api2, api3", Util.loadManifest(manifest).getAttribute("OpenIDE-Module-Requires", null));
     }
     
     public void testAddLookupRegistration() throws Exception {
@@ -291,7 +322,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         assertEquals("release version", "3", antDep.getReleaseVersion());
         assertEquals("specification version", "3.9", antDep.getSpecificationVersion());
         assertTrue("compile dependeny", antDep.hasCompileDependency());
-        assertFalse("implementation dependeny", antDep.hasImplementationDepedendency());
+        assertFalse("implementation dependeny", antDep.hasImplementationDependency());
     }
     
     public void testTheSameModuleDependencyTwice() throws Exception {

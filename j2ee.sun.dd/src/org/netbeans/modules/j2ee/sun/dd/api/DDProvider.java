@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -214,7 +214,7 @@ public final class DDProvider {
     private Map<Object, RootInterface> ddMap = new WeakHashMap<Object, RootInterface>();
     private Map<FileObject, DDProviderDataObject> dObjMap = new WeakHashMap<FileObject, DDProviderDataObject>();
 
-    /** This method retrieves the root of the XML DOM for a Glassfish (SJSAS)
+    /** This method retrieves the root of the XML DOM for a sun-*
      *  deployment descriptor file.
      * 
      *  Caveat: Calling code should hold a strong reference to the FileObject

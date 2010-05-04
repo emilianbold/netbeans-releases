@@ -51,6 +51,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -77,14 +78,14 @@ public class FreeformTemplateAttributesProvider implements CreateFromTemplateAtt
     
     public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
         Element primData = Util.getPrimaryConfigurationData(helper);
-        Element licenseEl = Util.findElement(primData, "project-license", Util.NAMESPACE); // NOI18N
+        Element licenseEl = XMLUtil.findElement(primData, "project-license", Util.NAMESPACE); // NOI18N
         Charset charset = encodingQuery.getEncoding(target.getPrimaryFile());
         if (licenseEl == null && charset == null) {
             return null;
         } else {
             Map<String, String> values = new HashMap<String, String>();
             if (licenseEl != null) {
-                values.put("license", evaluator.evaluate(Util.findText(licenseEl))); // NOI18N
+                values.put("license", evaluator.evaluate(XMLUtil.findText(licenseEl))); // NOI18N
             }
             if (charset != null) {
                 values.put("encoding", charset.name()); // NOI18N

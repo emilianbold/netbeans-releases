@@ -213,6 +213,12 @@ public final class JavacardPlatformKeyNames {
      * to provide the rest.
      */
     public static final String PLATFORM_RI_HOME = "javacard.ri.home"; //NOI18N
+
+    /**
+     * Version of the <i>Reference Implementation</i> - used to determine if the
+     * Ant tasks JAR needs to be upgraded only for the Java Card RI 3.0.2.
+     */
+    public static final String PLATFORM_RI_VERSION = "javacard.referenceimplementation.version";
     /**
      * Path on disk to the Java Card Reference implementation's definition properties
      * file.  Not needed in SDK platform.properties files.  The IDE will set this
@@ -242,6 +248,11 @@ public final class JavacardPlatformKeyNames {
     public static final String PLATFORM_DEVICE_FILE_NOT_REQUIRED = "javacard.build.no.device.file"; //NOI18N
     public static final String PLATFORM_JAVACARD_VERSION = "javacard.version"; //NOI18N
     public static final String PLATFORM_SUPPORTED_PROJECT_KINDS = "javacard.supported.project.kinds"; //NOI18N
+
+    public static final String PLATFORM_302_ANT_TASKS_UPDATED = "javacard.platform.302.ant.tasks.updated"; //NOI18N
+
+    public static final String PLATFORM_PROCESSOR_CLASSIC_CLASSPATH = "javacard.platform.classic.processorpath"; //NOI18N
+    public static final String PLATFORM_PROCESSOR_EXT_CLASSPATH = "javacard.platform.processorpath"; //NOI18N
     /**
      * Get the list of property names representing unix-style, : delimited 
      * relative paths underneath the platform root, which need to be absolutized.
@@ -312,7 +323,9 @@ public final class JavacardPlatformKeyNames {
             PLATFORM_HOME,
             PLATFORM_RI_HOME,
             PLATFORM_DEBUG_PROXY,
-            PLATFORM_DEBUG_PROXY_CLASSPATH
+            PLATFORM_DEBUG_PROXY_CLASSPATH,
+            PLATFORM_PROCESSOR_CLASSIC_CLASSPATH,
+            PLATFORM_PROCESSOR_EXT_CLASSPATH
         ));
     }
 

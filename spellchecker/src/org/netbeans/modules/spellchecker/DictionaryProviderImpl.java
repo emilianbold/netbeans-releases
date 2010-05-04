@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -61,8 +60,6 @@ import java.util.StringTokenizer;
 import org.netbeans.modules.spellchecker.spi.dictionary.Dictionary;
 import org.netbeans.modules.spellchecker.spi.dictionary.DictionaryProvider;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 
@@ -88,7 +85,7 @@ public class DictionaryProviderImpl implements DictionaryProvider {
     }
     
     public synchronized Dictionary getDictionary(Locale locale) {
-        Iterator suffixes = getLocalizingSuffixes(locale);
+        Iterator<String> suffixes = getLocalizingSuffixes(locale);
         
         while (suffixes.hasNext()) {
             Dictionary current = dictionaries.get(suffixes.next());
@@ -186,7 +183,7 @@ public class DictionaryProviderImpl implements DictionaryProvider {
             File file = InstalledFileLocator.getDefault().locate("modules/dict/dictionary" + currentSuffix + ".txt", null, false);
             
             if (file != null) {
-                streams.add(file.toURL());
+                streams.add(file.toURI().toURL());
                 return currentSuffix;
             }
 
@@ -230,7 +227,7 @@ public class DictionaryProviderImpl implements DictionaryProvider {
      * @return a read-only iterator of type <code>String</code>
      * @since 1.1.5
      */
-    static Iterator getLocalizingSuffixes(Locale locale) {
+    static Iterator<String> getLocalizingSuffixes(Locale locale) {
         return new LocaleIterator(locale);
     }
     
@@ -254,7 +251,7 @@ public class DictionaryProviderImpl implements DictionaryProvider {
      * Branding tokens with underscores are broken apart naturally: so e.g.
      * branding "f4j_ce" looks first for "f4j_ce" branding, then "f4j" branding, then none.
      */
-    private static class LocaleIterator extends Object implements Iterator {
+    private static class LocaleIterator extends Object implements Iterator<String> {
 //        /** this flag means, if default locale is in progress */
 //        private boolean defaultInProgress = false;
         
@@ -289,7 +286,7 @@ public class DictionaryProviderImpl implements DictionaryProvider {
         /** @return next sufix.
          * @exception NoSuchElementException if there is no more locale sufix.
          */
-        public Object next() throws NoSuchElementException {
+        public String next() throws NoSuchElementException {
             if (current == null)
                 throw new NoSuchElementException();
             

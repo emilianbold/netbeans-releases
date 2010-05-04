@@ -68,6 +68,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -171,18 +172,20 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                TemplateSelector ts = new TemplateSelector(SvnModuleConfig.getDefault().getPreferences());
-                if(ts.isAutofill()) {
-                    messageTextArea.setText(ts.getTemplate());
-                } else {
-                    messageTextArea.setText(SvnModuleConfig.getDefault().getLastCommitMessage());
+        TemplateSelector ts = new TemplateSelector(SvnModuleConfig.getDefault().getPreferences());
+        if (ts.isAutofill()) {
+            messageTextArea.setText(ts.getTemplate());
+        } else {
+            String lastCommitMessage = SvnModuleConfig.getDefault().getLastCanceledCommitMessage();
+            if (lastCommitMessage.isEmpty() && new StringSelector.RecentMessageSelector(SvnModuleConfig.getDefault().getPreferences()).isAutoFill()) {
+                List<String> messages = Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
+                if (messages.size() > 0) {
+                    lastCommitMessage = messages.get(0);
                 }
-                messageTextArea.selectAll();
             }
-        });
+            messageTextArea.setText(lastCommitMessage);
+        }
+        messageTextArea.selectAll();
         initCollapsibleSections();
     }
 
@@ -307,7 +310,8 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     }
 
     private void onBrowseRecentMessages() {
-        String message = StringSelector.select(getMessage("CTL_CommitForm_RecentTitle"),
+        StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(SvnModuleConfig.getDefault().getPreferences());
+        String message = selector.getRecentMessage(getMessage("CTL_CommitForm_RecentTitle"),
                                                getMessage("CTL_CommitForm_RecentPrompt"),
             Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
         if (message != null) {

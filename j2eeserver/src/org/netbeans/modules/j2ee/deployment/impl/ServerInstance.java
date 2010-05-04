@@ -127,7 +127,10 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private static final long DEFAULT_TIMEOUT = 1200000; // in millis
     
     private static final Logger LOGGER = Logger.getLogger(ServerInstance.class.getName());
-    
+
+    private static final RequestProcessor REFRESH_PROCESSOR =
+            new RequestProcessor("Java EE server registry refresh", 5);
+
     private final String url;
     private final Server server;
     private DeploymentManager manager;
@@ -347,7 +350,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
     
     public void refresh() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        REFRESH_PROCESSOR.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     int oldState = getServerState();

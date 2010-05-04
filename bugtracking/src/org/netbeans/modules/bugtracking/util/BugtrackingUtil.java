@@ -86,7 +86,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
@@ -95,6 +94,7 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.issue.PatchContextChooser;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
+import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
 import org.openide.DialogDescriptor;
@@ -188,7 +188,7 @@ public class BugtrackingUtil {
     }
 
     /**
-     * Determines if the gives issue opened in the editor area
+     * Determines if the gives issue is opened in the editor area
      * @param issue
      * @return true in case the given issue is opened in the editor are, otherwise false
      */
@@ -198,7 +198,7 @@ public class BugtrackingUtil {
     }
 
     /**
-     * Determines if the gives issue opened in the editor area and
+     * Determines if the gives issue is opened in the editor area and
      * showing on the screen
      * @param issue
      * @return true in case the given issue is opened in the editor area
@@ -206,6 +206,27 @@ public class BugtrackingUtil {
      */
     public static boolean isShowing(Issue issue) {
         IssueTopComponent tc = IssueTopComponent.find(issue, false);
+        return tc != null ? tc.isShowing() : false;
+    }
+
+    /**
+     * Determines if the gives query is opened in the editor area
+     * @param query
+     * @return
+     */
+    public static boolean isOpened(Query query) {
+        QueryTopComponent tc = QueryTopComponent.find(query);
+        return tc != null ? tc.isOpened() : false;
+    }
+
+    /**
+     * Determines if the gives query is opened in the editor area and
+     * showing on the screen
+     * @param query
+     * @return
+     */
+    public static boolean isShowing(Query query) {
+        QueryTopComponent tc = QueryTopComponent.find(query);
         return tc != null ? tc.isShowing() : false;
     }
 
@@ -343,28 +364,6 @@ public class BugtrackingUtil {
         }
         return context;
     }
-//
-//    public static void applyPatch(File patch, File context) {
-//        try {
-//            ContextualPatch cp = ContextualPatch.create(patch, context);
-//            cp.patch(false);
-//        } catch (PatchException ex) {
-//            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-//        } catch (IOException ex) {
-//            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-//        }
-//    }
-//
-//    public static boolean isPatch(FileObject fob) throws IOException {
-//        boolean isPatch = false;
-//        Reader reader = new BufferedReader(new InputStreamReader(fob.getInputStream()));
-//        try {
-//            isPatch = (Patch.parse(reader).length > 0);
-//        } finally {
-//            reader.close();
-//        }
-//        return isPatch;
-//    }
 
     /**
      * Recursively deletes all files and directories under a given file/directory.
@@ -379,167 +378,6 @@ public class BugtrackingUtil {
             }
         }
         file.delete();
-    }
-
-    public static File getLargerContext() {
-        FileObject openFile = getOpenFileObj();
-        if (openFile != null) {
-            File largerContext = getLargerContext(openFile);
-            if (largerContext != null) {
-                return largerContext;
-            }
-        }
-
-        return getContextFromProjects();
-    }
-
-    public static File getContextFromProjects() {
-        final OpenProjects projects = OpenProjects.getDefault();
-
-        Project mainProject = projects.getMainProject();
-        if (mainProject != null) {
-            return getLargerContext(mainProject);       //null or non-null
-        }
-
-        Project[] openProjects = projects.getOpenProjects();
-        if ((openProjects != null) && (openProjects.length == 1)) {
-            return getLargerContext(openProjects[0]);
-        }
-
-        return null;
-    }
-
-    public static File getLargerContext(File file) {
-        return getLargerContext(file, null);
-    }
-
-    public static File getLargerContext(FileObject fileObj) {
-        return getLargerContext(null, fileObj);
-    }
-
-    public static File getLargerContext(File file, FileObject fileObj) {
-        if ((file == null) && (fileObj == null)) {
-            throw new IllegalArgumentException(
-                    "both File and FileObject are null");               //NOI18N
-        }
-
-        assert (file == null)
-               || (fileObj == null)
-               || FileUtil.toFileObject(file).equals(fileObj);
-
-        if (fileObj == null) {
-            fileObj = getFileObjForFileOrParent(file);
-        } else if (file == null) {
-            file = FileUtil.toFile(fileObj);
-        }
-
-        if (fileObj == null) {
-            return null;
-        }
-        if (!fileObj.isValid()) {
-            return null;
-        }
-
-        Project parentProject = FileOwnerQuery.getOwner(fileObj);
-        if (parentProject != null) {
-            FileObject parentProjectFolder = parentProject.getProjectDirectory();
-            if (parentProjectFolder.equals(fileObj) && (file != null)) {
-                return file;
-            }
-            File folder = FileUtil.toFile(parentProjectFolder);
-            if (folder != null) {
-                return folder;
-            }
-        }
-
-        if (fileObj.isFolder()) {
-            return file;                        //whether it is null or non-null
-        } else {
-            fileObj = fileObj.getParent();
-            assert fileObj != null;      //every non-folder should have a parent
-            return FileUtil.toFile(fileObj);    //whether it is null or non-null
-        }
-    }
-
-    private static FileObject getFileObjForFileOrParent(File file) {
-        FileObject fileObj = FileUtil.toFileObject(file);
-        if (fileObj != null) {
-            return fileObj;
-        }
-
-        File closestParentFile = file.getParentFile();
-        while (closestParentFile != null) {
-            fileObj = FileUtil.toFileObject(closestParentFile);
-            if (fileObj != null) {
-                return fileObj;
-            }
-            closestParentFile = closestParentFile.getParentFile();
-        }
-
-        return null;
-    }
-
-    public static File getLargerContext(Project project) {
-        FileObject projectFolder = project.getProjectDirectory();
-        assert projectFolder != null;
-
-        return FileUtil.toFile(projectFolder);
-    }
-
-    private static FileObject getOpenFileObj() {
-        TopComponent activatedTopComponent = TopComponent.getRegistry()
-                                             .getActivated();
-        if (activatedTopComponent == null) {
-            return null;
-        }
-
-        DataObject dataObj = activatedTopComponent.getLookup()
-                             .lookup(DataObject.class);
-        if ((dataObj == null) || !dataObj.isValid()) {
-            return null;
-        }
-
-        return dataObj.getPrimaryFile();
-    }
-
-    public static void keepFocusedComponentVisible(JScrollPane scrollPane) {
-        keepFocusedComponentVisible(scrollPane.getViewport().getView());
-    }
-
-    public static void keepFocusedComponentVisible(Component component) {
-        FocusListener listener= getScrollingFocusListener();
-        component.removeFocusListener(listener); // Making sure that it is not added twice
-        component.addFocusListener(listener);
-        if (component instanceof Container) {
-            for (Component subComponent : ((Container)component).getComponents()) {
-                keepFocusedComponentVisible(subComponent);
-            }
-        }
-    }
-
-    private static FocusListener scrollingFocusListener;
-    private static FocusListener getScrollingFocusListener() {
-        if (scrollingFocusListener == null) {
-            scrollingFocusListener = new FocusAdapter() {
-                @Override
-                public void focusGained(FocusEvent e) {
-                    if (!e.isTemporary()) {
-                        Component comp = e.getComponent();
-                        Container cont = comp.getParent();
-                        if (cont instanceof JViewport) {
-                            // comp is JViewport's view;
-                            // we want the viewport itself to be shown in this case
-                            comp = cont;
-                            cont = cont.getParent();
-                        }
-                        if (cont instanceof JComponent) {
-                            ((JComponent)cont).scrollRectToVisible(comp.getBounds());
-                        }
-                    }
-                }
-            };
-        }
-        return scrollingFocusListener;
     }
 
     public static void logQueryEvent(String connector, String name, int count, boolean isKenai, boolean isAutoRefresh) {
@@ -610,40 +448,6 @@ public class BugtrackingUtil {
         return null;
     }
 
-    public static int getColumnWidthInPixels(int widthInLeters, JComponent comp) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < widthInLeters; i++, sb.append("w"));                // NOI18N
-        return getColumnWidthInPixels(sb.toString(), comp);
-    }
-
-    public static int getColumnWidthInPixels(String str, JComponent comp) {
-        FontMetrics fm = comp.getFontMetrics(comp.getFont());
-        return fm.stringWidth(str);
-    }
-
-    public static int getLongestWordWidth(String header, List<String> values, JComponent comp) {
-        return getLongestWordWidth(header, values, comp, false);
-    }
-
-    public static int getLongestWordWidth(String header, List<String> values, JComponent comp, boolean regardIcon) {
-        String[] valuesArray = values.toArray(new String[values.size()]);
-        return getLongestWordWidth(header, valuesArray, comp, regardIcon);
-    }
-
-    public static int getLongestWordWidth(String header, String[] values, JComponent comp) {
-        return getLongestWordWidth(header, values, comp, false);
-    }
-
-    public static int getLongestWordWidth(String header, String[] values, JComponent comp, boolean regardIcon) {
-        int size = header.length();
-        for (String s : values) {
-            if(size < s.length()) {
-                size = s.length();
-            }
-        }
-        return getColumnWidthInPixels(size, comp) + (regardIcon ? 16 : 0);
-    }
-
     /**
      * Logs bugtracking events
      *
@@ -687,31 +491,6 @@ public class BugtrackingUtil {
         return name;
     }
 
-    // A11Y - Issues 163597 and 163598
-    public static void fixFocusTraversalKeys(JComponent component) {
-        Set<AWTKeyStroke> set = component.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
-        set = new HashSet<AWTKeyStroke>(set);
-        set.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
-        component.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
-    }
-
-    public static void issue163946Hack(final JScrollPane scrollPane) {
-        MouseWheelListener listener = new MouseWheelListener() {
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                if (scrollPane.getVerticalScrollBar().isShowing()) {
-                    if (e.getSource() != scrollPane) {
-                        e.setSource(scrollPane);
-                        scrollPane.dispatchEvent(e);
-                    }
-                } else {
-                    scrollPane.getParent().dispatchEvent(e);
-                }
-            }
-        };
-        scrollPane.addMouseWheelListener(listener);
-        scrollPane.getViewport().getView().addMouseWheelListener(listener);
-    }
-
     public static void openPluginManager() {
         try {
             ClassLoader cl = Lookup.getDefault ().lookup (ClassLoader.class);
@@ -742,7 +521,6 @@ public class BugtrackingUtil {
      * @return true if the given repository is the netbenas bugzilla, otherwise false
      */
     public static boolean isNbRepository(Repository repo) {
-        // XXX dummy implementation
         String url = repo.getUrl();
         return isNbRepository(url);
     }
@@ -817,6 +595,10 @@ public class BugtrackingUtil {
         QueryAction.openQuery(query, repository, suggestedSelectionOnly);
     }
 
+    public static void openIssue(File file, String issueId) {
+        IssueAction.openIssue(file, issueId);
+    }
+
     public static Map<String, List<RecentIssue>> getAllRecentIssues() {
         return BugtrackingManager.getInstance().getAllRecentIssues();
     }
@@ -833,5 +615,14 @@ public class BugtrackingUtil {
         IssueAction.createIssue(repo);
     }
 
+    public static String getPasswordLog(String psswd) {
+        if(psswd == null) {
+            return ""; // NOI18N
+        }
+        if("true".equals(System.getProperty("org.netbeans.modules.bugtracking.logPasswords", "false"))) { // NOI18N
+            return psswd; 
+        }
+        return "******"; // NOI18N
+    }
     
 }

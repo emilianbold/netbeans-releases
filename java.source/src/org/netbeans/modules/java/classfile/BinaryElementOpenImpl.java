@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.classfile;
@@ -31,7 +31,6 @@ package org.netbeans.modules.java.classfile;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.java.BinaryElementOpen;
 import org.openide.filesystems.FileObject;
 
@@ -46,10 +45,15 @@ public class BinaryElementOpenImpl implements BinaryElementOpen {
     public boolean open(ClasspathInfo cpInfo, ElementHandle<? extends Element> toOpen) {
         FileObject source = CodeGenerator.generateCode(cpInfo, toOpen);
         if (source != null) {
-            return UiUtils.open(source, 0);
+            return open(source, toOpen);
         } else {
             return false;
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    private boolean open(FileObject source, ElementHandle<? extends Element> toOpen) {
+        return org.netbeans.api.java.source.UiUtils.open(source, toOpen);
     }
 
 }

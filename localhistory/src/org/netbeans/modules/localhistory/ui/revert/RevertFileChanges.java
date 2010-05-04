@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import javax.swing.JButton;
+import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.LocalHistorySettings;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.localhistory.ui.view.LocalHistoryFileView;
@@ -57,7 +58,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -108,7 +108,7 @@ public class RevertFileChanges implements PropertyChangeListener {
     }        
     
     private void revert(final StoreEntry entry) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {                 
                 Utils.revert(entry);   
             }

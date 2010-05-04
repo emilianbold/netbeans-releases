@@ -49,8 +49,6 @@ package org.netbeans.modules.cnd.debugger.gdb.actions;
 import java.util.Collections;
 import java.util.Set;
 
-import org.openide.util.RequestProcessor;
-
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -67,6 +65,7 @@ public class PauseActionProvider extends GdbDebuggerActionProvider {
      */
     public PauseActionProvider(ContextProvider lookupProvider) {
         super(lookupProvider);
+        setProviderToDisableOnLazyAction(this);
     }
     
     // ActionProviderSupport ...................................................
@@ -86,13 +85,7 @@ public class PauseActionProvider extends GdbDebuggerActionProvider {
      * @param action an action which has been called
      */
     public void doAction(Object action) {
-        if (getDebugger() != null) {
-            synchronized (getDebugger().LOCK) {
-                if (action == ActionsManager.ACTION_PAUSE) {
-                    getDebugger().interrupt();
-                }
-            }
-        }
+        getDebugger().interrupt();
     }
     
     /**
@@ -107,7 +100,7 @@ public class PauseActionProvider extends GdbDebuggerActionProvider {
      */
     @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        doLazyAction(new Runnable() {
             public void run() {
                 try {
                     doAction(action);

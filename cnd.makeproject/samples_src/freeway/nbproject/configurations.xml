@@ -29,15 +29,19 @@
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
                    projectFiles="false">
-      <itemPath>GtkFreeway-Makefile.mk</itemPath>
       <itemPath>Makefile</itemPath>
       <itemPath>README.txt</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceEncoding>UTF-8</sourceEncoding>
-  <projectmakefile>GtkFreeway-Makefile.mk</projectmakefile>
+  <projectmakefile>Makefile</projectmakefile>
   <confs>
       <conf name="Default" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <compileType>
         <ccTool>
           <commandLine>`pkg-config --cflags gtk+-2.0`</commandLine>

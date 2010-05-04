@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.keyring.fallback;
 
+import java.awt.GraphicsEnvironment;
 import java.security.Key;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.KeySpec;
@@ -55,6 +56,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import org.netbeans.modules.keyring.Utils;
 import org.netbeans.modules.keyring.spi.EncryptionProvider;
+import org.openide.util.Mutex;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -66,15 +68,20 @@ public class MasterPasswordEncryption implements EncryptionProvider {
 
     private static final Logger LOG = Logger.getLogger(MasterPasswordEncryption.class.getName());
     private static final String ENCRYPTION_ALGORITHM = "PBEWithSHA1AndDESede"; // NOI18N
-    private static SecretKeyFactory KEY_FACTORY;
-    private static AlgorithmParameterSpec PARAM_SPEC;
+    private SecretKeyFactory KEY_FACTORY;
+    private AlgorithmParameterSpec PARAM_SPEC;
 
     private Cipher encrypt, decrypt;
     private boolean unlocked;
     private Callable<Void> encryptionChanging;
     private char[] newMasterPassword;
+    private boolean fresh;
 
-    public boolean enabled() {
+    public @Override boolean enabled() {
+        if (GraphicsEnvironment.isHeadless()) {
+            LOG.fine("disabling master password encryption in headless mode");
+            return false;
+        }
         try {
             KEY_FACTORY = SecretKeyFactory.getInstance(ENCRYPTION_ALGORITHM);
             encrypt = Cipher.getInstance(ENCRYPTION_ALGORITHM);
@@ -88,6 +95,8 @@ public class MasterPasswordEncryption implements EncryptionProvider {
                 prefs.putByteArray(saltKey, salt);
             }
             PARAM_SPEC = new PBEParameterSpec(salt, 20);
+            LOG.warning("Falling back to master password encryption; " +
+                    "add -J-Dorg.netbeans.modules.keyring.level=0 to netbeans.conf to see why native keyrings could not be loaded");
             return true;
         } catch (Exception x) {
             LOG.log(Level.INFO, "Cannot initialize security using " + ENCRYPTION_ALGORITHM, x);
@@ -95,11 +104,11 @@ public class MasterPasswordEncryption implements EncryptionProvider {
         }
     }
 
-    public String id() {
+    public @Override String id() {
         return "general"; // NOI18N
     }
 
-    public byte[] encrypt(char[] cleartext) throws Exception {
+    public @Override byte[] encrypt(char[] cleartext) throws Exception {
         if (!unlockIfNecessary()) {
             throw new Exception("cannot unlock");
         }
@@ -111,7 +120,7 @@ public class MasterPasswordEncryption implements EncryptionProvider {
         }
     }
 
-    public char[] decrypt(byte[] ciphertext) throws Exception {
+    public @Override char[] decrypt(byte[] ciphertext) throws Exception {
         AtomicBoolean callEncryptionChanging = new AtomicBoolean();
         if (!unlockIfNecessary(callEncryptionChanging)) {
             throw new Exception("cannot unlock");
@@ -148,7 +157,11 @@ public class MasterPasswordEncryption implements EncryptionProvider {
         if (unlocked) {
             return true;
         }
-        char[][] passwords = new MasterPasswordPanel().display();
+        char[][] passwords = Mutex.EVENT.readAccess(new Mutex.Action<char[][]>() {
+            public @Override char[][] run() {
+                return new MasterPasswordPanel().display(fresh);
+            }
+        });
         if (passwords == null) {
             LOG.fine("cancelled master password dialog");
             return false;
@@ -193,16 +206,16 @@ public class MasterPasswordEncryption implements EncryptionProvider {
         return cleartext;
     }
 
-    public boolean decryptionFailed() {
+    public @Override boolean decryptionFailed() {
         unlocked = false;
         return unlockIfNecessary();
     }
 
-    public void encryptionChangingCallback(Callable<Void> callback) {
+    public @Override void encryptionChangingCallback(Callable<Void> callback) {
         encryptionChanging = callback;
     }
 
-    public void encryptionChanged() {
+    public @Override void encryptionChanged() {
         assert newMasterPassword != null;
         LOG.fine("encryption changed");
         try {
@@ -212,6 +225,10 @@ public class MasterPasswordEncryption implements EncryptionProvider {
         }
         Arrays.fill(newMasterPassword, '\0');
         newMasterPassword = null;
+    }
+
+    public @Override void freshKeyring(boolean fresh) {
+        this.fresh = fresh;
     }
 
 }

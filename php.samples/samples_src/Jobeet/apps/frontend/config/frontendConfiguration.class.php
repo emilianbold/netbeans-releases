@@ -1,8 +1,9 @@
 <?php
 
-class frontendConfiguration extends sfApplicationConfiguration
-{
-  public function configure()
-  {
-  }
+class frontendConfiguration extends sfApplicationConfiguration {
+
+    public function configure() {
+        
+    }
+
 }

@@ -123,12 +123,11 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
             return "";
         }
         AbstractCompiler compiler = (AbstractCompiler) tool;
-        CCCompilerConfiguration master;
         
         StringBuilder options = new StringBuilder();
         options.append(getCCFlagsBasic(compiler));
         options.append(" "); // NOI18N
-        master = (CCCompilerConfiguration)getMaster();
+        CCCompilerConfiguration master = this;
         while (master != null) {
             options.append(master.getCommandLineConfiguration().getValue());
             options.append(" "); // NOI18N

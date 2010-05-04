@@ -358,7 +358,11 @@ public class WebProjectRestSupport extends WebRestSupport {
     private String getApplicationPathFromAnnotations(final String applPathFromDD) {
         List<RestApplication> restApplications = getRestApplications();
         if (applPathFromDD == null) {
-            return getApplicationPathFromDialog(restApplications);
+            if (restApplications.size() == 0) {
+                return null;
+            } else {
+                return getApplicationPathFromDialog(restApplications);
+            }
         } else {
             if (restApplications.size() == 0) {
                 return applPathFromDD;

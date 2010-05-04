@@ -437,7 +437,7 @@ public class ExtensibilityElementCreatorVisitor extends AbstractXSDVisitor {
                 }
                 SchemaModel primitiveTypesModel =
                         SchemaModelFactory.getDefault().getPrimitiveTypesModel();
-                
+                //
                 if (simpleType.getModel() == primitiveTypesModel &&
                         "boolean".equals(simpleTypeName)) {//NOI18N
                     //

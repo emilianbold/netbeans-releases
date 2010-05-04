@@ -330,7 +330,9 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
                                             ErrorDescription errorDesc = manager.createDescription(hint, ruleContext, allowDisableEmpty, i == hints.size()-1);
                                             descriptions.add(errorDesc);
                                         } else {
-                                            String msg = provider + " supplied hint " + hint + " with invalid range " + range; //NOI18N
+                                            String msg = provider + " supplied hint " + hint + " with invalid range " + range + //NOI18N
+                                                    ", topLevelSnapshot.length=" + topLevelSnapshot.getText().length() +
+                                                    ", file=" + topLevelSnapshot.getSource().getFileObject(); //NOI18N
                                             assert false : msg;
                                             LOG.log(Level.INFO, msg);
                                         }

@@ -83,11 +83,7 @@ public final class UiUtils {
             final String message,
             final String title,
             final MessageType messageType) {
-        try {
-            initializeLookAndFeel();
-        } catch (InitializationException  e) {
-            ErrorManager.notifyWarning(e.getMessage(), e.getCause());
-        }
+        initLAF();
         
         switch (UiMode.getCurrentUiMode()) {
             case SWING:
@@ -137,7 +133,7 @@ public final class UiUtils {
             final String title,
             final String message,
             final boolean silentDefault) {
-        
+        initLAF();
         switch (UiMode.getCurrentUiMode()) {
             case SWING:
                 LogManager.logIndent("... showing Yes/No dialog");
@@ -177,7 +173,7 @@ public final class UiUtils {
             final String title,
             final String message,
             final int silentDefault) {
-        
+        initLAF();
         switch (UiMode.getCurrentUiMode()) {
             case SWING:
                 LogManager.logIndent("... show Yes/No/Cancel dialog");
@@ -513,6 +509,14 @@ public final class UiUtils {
             }
         }
         return lookAndFeelType;
+    }
+
+    private static void initLAF() {
+        try {
+            initializeLookAndFeel();
+        } catch (InitializationException  e) {
+            ErrorManager.notifyWarning(e.getMessage(), e.getCause());
+        }
     }
     /////////////////////////////////////////////////////////////////////////////////
     // Instance

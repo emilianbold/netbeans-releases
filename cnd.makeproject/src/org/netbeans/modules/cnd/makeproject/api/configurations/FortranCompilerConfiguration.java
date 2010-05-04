@@ -112,12 +112,13 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration {
             return "";
         }
         AbstractCompiler compiler = (AbstractCompiler) tool;
-        CCompilerConfiguration master = (CCompilerConfiguration) getMaster();
 
         String options = ""; // NOI18N
         options += getFFlagsBasic(compiler) + " "; // NOI18N
-        if (master != null) {
+        FortranCompilerConfiguration master = this;
+        while (master != null) {
             options += master.getCommandLineConfiguration().getValue() + " "; // NOI18N
+            master = (FortranCompilerConfiguration)master.getMaster();
         }
         options += getAllOptions2(compiler) + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);

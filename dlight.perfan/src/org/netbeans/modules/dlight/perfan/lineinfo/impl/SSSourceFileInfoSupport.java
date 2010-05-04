@@ -135,7 +135,6 @@ public final class SSSourceFileInfoSupport {
 
             sourceFile = params.functionCall.getSourceFile();
             line = (int) params.functionCall.getOffset();
-
             if (!"(unknown)".equals(sourceFile)) { // NOI18N
                 if (sourceFile == null || line < 0 || !(sourceFile.startsWith("/"))) { // NOI18N
                     // i.e. if no source info or file that we have is without full path
@@ -143,7 +142,8 @@ public final class SSSourceFileInfoSupport {
 
                     if (fStatistics != null) {
                         sourceFile = fStatistics.getSourceFile();
-                        line = fStatistics.getSrcFileLine();
+
+                        line = line < 0 ? fStatistics.getSrcFileLine() : line;
                         if (sourceFile != null && params.pathMapper != null && !"(unknown)".equals(sourceFile)) { // NOI18N
                             String localFile = params.pathMapper.getLocalPath(sourceFile);
                             if (localFile != null) {
@@ -151,6 +151,7 @@ public final class SSSourceFileInfoSupport {
                                 sourceFile = localFileFile.exists() ? localFileFile.getAbsolutePath() : null;
                             }
                         }
+
                     }
                 }
 

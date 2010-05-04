@@ -562,8 +562,14 @@ public class FilterNode extends Node {
     * @param type constants from <CODE>java.bean.BeanInfo</CODE>
     * @return icon to use to represent the bean
     */
-    public Image getIcon(int type) {
-        return original.getIcon(type);
+    public @Override Image getIcon(int type) {
+        Image icon = original.getIcon(type);
+        if (icon != null) {
+            return icon;
+        } else {
+            LOGGER.log(Level.WARNING, "Cannot return null from {0}.getIcon", original.getClass().getName());
+            return Node.EMPTY.getIcon(type);
+        }
     }
 
     /* Finds an icon for this node. This icon should represent the node
@@ -1319,6 +1325,7 @@ public class FilterNode extends Node {
 
             if (support != null) {
                 // get original support without lock
+                assert !Thread.holdsLock(org.openide.nodes.Children.class);
                 EntrySupport origSupport = original.getChildren().entrySupport();
                 synchronized (org.openide.nodes.Children.class) {
                     if (getEntrySupport() == support && support.originalSupport() != origSupport) {
@@ -1344,8 +1351,9 @@ public class FilterNode extends Node {
                     return getEntrySupport();
                 }
                 lazySupport = osIsLazy;
-                setEntrySupport(lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os));
-                postInitializeEntrySupport();
+                EntrySupport es = lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os);
+                setEntrySupport(es);
+                postInitializeEntrySupport(es);
                 return getEntrySupport();
             }
         }

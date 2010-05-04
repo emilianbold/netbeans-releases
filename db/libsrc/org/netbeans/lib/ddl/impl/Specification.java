@@ -48,6 +48,8 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.util.NbBundle;
 
@@ -109,33 +111,39 @@ public class Specification implements DatabaseSpecification {
     }
 
     /** Returns all database properties */
+    @Override
     public Map getProperties()
     {
         return (Map)desc;
     }
 
     /** Returns command description */
+    @Override
     public Map getCommandProperties(String command)
     {
         return (Map)desc.get(command);
     }
 
     /** Returns used connection */
+    @Override
     public DBConnection getConnection()
     {
         return (DBConnection)desc.get("connection"); // NOI18N
     }
 
+    @Override
     public DatabaseSpecificationFactory getSpecificationFactory()
     {
         return factory;
     }
 
+    @Override
     public void setSpecificationFactory(DatabaseSpecificationFactory fac)
     {
         factory = (SpecificationFactory)fac;
     }
 
+    @Override
     public String getMetaDataAdaptorClassName()
     {
         if (adaptorClass == null || adaptorClass.length() == 0) {
@@ -145,6 +153,7 @@ public class Specification implements DatabaseSpecification {
         return adaptorClass;
     }
 
+    @Override
     public void setMetaDataAdaptorClassName(String name)
     {
         if (name.startsWith("Database.Adaptors.")) // NOI18N
@@ -156,6 +165,7 @@ public class Specification implements DatabaseSpecification {
     }
 
     /** Returns database metadata */
+    @Override
     public DatabaseMetaData getMetaData() throws SQLException
     {
         try {
@@ -176,7 +186,7 @@ public class Specification implements DatabaseSpecification {
             return dmdAdaptor;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(Specification.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             throw new SQLException(ex.getMessage());
         }
     }
@@ -186,6 +196,7 @@ public class Specification implements DatabaseSpecification {
     * But you can call it explicitly and leave connection open until last
     * command gets executed. Don't forget to close it.
     */
+    @Override
     public Connection openJDBCConnection()
     throws DDLException
     {
@@ -207,11 +218,13 @@ public class Specification implements DatabaseSpecification {
     * a DDLException throws. This is a self-checking mechanism; you must always
     * close used connection.
     */ 
+    @Override
     public Connection getJDBCConnection()
     {
         return jdbccon;
     }
 
+    @Override
     public void closeJDBCConnection()
     throws DDLException
     {
@@ -230,6 +243,7 @@ public class Specification implements DatabaseSpecification {
     * system allows developers to extend db-specification files and simply 
     * address new commands (everybody can implement createXXXCommand()).
     */
+    @Override
     public DDLCommand createCommand(String commandName)
     throws CommandNotSupportedException
     {
@@ -251,13 +265,13 @@ public class Specification implements DatabaseSpecification {
         if (cprops != null) classname = (String)cprops.get("Class"); // NOI18N
         //else throw new CommandNotSupportedException(commandName, "command "+commandName+" is not supported by system");
         else throw new CommandNotSupportedException(commandName,
-            MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_CommandNotSupported"), new String[] {commandName})); // NOI18N
+            MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_CommandNotSupported"), commandName)); // NOI18N
         try {
             cmdclass = Class.forName(classname);
             cmd = (AbstractCommand)cmdclass.newInstance();
         } catch (Exception e) {
             throw new CommandNotSupportedException(commandName,
-                MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableFindOrInitCommand"), new String[] {classname, commandName, e.getMessage()})); // NOI18N
+                MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableFindOrInitCommand"), classname, commandName, e.getMessage())); // NOI18N
         }
 
         cmd.setObjectName(tableName);
@@ -482,6 +496,7 @@ public class Specification implements DatabaseSpecification {
     }
 
     /** Returns DBType where maps specified java type */
+    @Override
     public String getType(int type)
     {
         String typestr = "";
@@ -494,6 +509,7 @@ public class Specification implements DatabaseSpecification {
         case java.sql.Types.BINARY: typestr = "BINARY"; break; // NOI18N
         case java.sql.Types.BIT: typestr = "BIT"; break; // NOI18N
         case java.sql.Types.BLOB: typestr = "BLOB"; break; // NOI18N
+        case java.sql.Types.BOOLEAN: typestr = "BOOLEAN"; break; // NOI18N
         case java.sql.Types.CHAR: typestr = "CHAR"; break; // NOI18N
         case java.sql.Types.CLOB: typestr = "CLOB"; break; // NOI18N
         case java.sql.Types.DATE: typestr = "DATE"; break; // NOI18N
@@ -504,17 +520,27 @@ public class Specification implements DatabaseSpecification {
         case java.sql.Types.INTEGER: typestr = "INTEGER"; break; // NOI18N
         case java.sql.Types.JAVA_OBJECT: typestr = "JAVA_OBJECT"; break; // NOI18N
         case java.sql.Types.LONGVARBINARY: typestr = "LONGVARBINARY"; break; // NOI18N
+        case java.sql.Types.LONGNVARCHAR: typestr = "LONGNVARCHAR"; break; // NOI18N
         case java.sql.Types.LONGVARCHAR: typestr = "LONGVARCHAR"; break; // NOI18N
         case java.sql.Types.NUMERIC: typestr = "NUMERIC"; break; // NOI18N
+        case java.sql.Types.NCHAR: typestr = "NCHAR"; break; // NOI18N
+        case java.sql.Types.NCLOB: typestr = "NCLOB"; break; // NOI18N
+        case java.sql.Types.NULL: typestr = "NULL"; break; // NOI18N
+        case java.sql.Types.NVARCHAR: typestr = "NVARCHAR"; break; // NOI18N
         case java.sql.Types.OTHER: typestr = "OTHER"; break; // NOI18N        
         case java.sql.Types.REAL: typestr = "REAL"; break; // NOI18N
         case java.sql.Types.REF: typestr = "REF"; break; // NOI18N
+        case java.sql.Types.ROWID: typestr = "ROWID"; break; // NOI18N
         case java.sql.Types.SMALLINT: typestr = "SMALLINT"; break; // NOI18N
+        case java.sql.Types.SQLXML: typestr = "SQLXML"; break; // NOI18N
         case java.sql.Types.TIME: typestr = "TIME"; break; // NOI18N
         case java.sql.Types.TIMESTAMP: typestr = "TIMESTAMP"; break; // NOI18N
         case java.sql.Types.TINYINT: typestr = "TINYINT"; break; // NOI18N
         case java.sql.Types.VARBINARY: typestr = "VARBINARY"; break; // NOI18N
         case java.sql.Types.VARCHAR: typestr = "VARCHAR"; break; // NOI18N
+        default:
+            Logger.getLogger(Specification.class.getName()).log(Level.INFO, "Unknown type {0}", type);
+            assert false : "Unknown type " + type;
         }
 
         ret = (String) typemap.get("java.sql.Types." + typestr); // NOI18N
@@ -532,6 +558,7 @@ public class Specification implements DatabaseSpecification {
         if (type.equals("java.sql.Types.BINARY")) return java.sql.Types.BINARY; // NOI18N
         if (type.equals("java.sql.Types.BIT")) return java.sql.Types.BIT; // NOI18N
         if (type.equals("java.sql.Types.BLOB")) return java.sql.Types.BLOB; // NOI18N
+        if (type.equals("java.sql.Types.BOOLEAN")) return java.sql.Types.BOOLEAN; // NOI18N
         if (type.equals("java.sql.Types.CHAR")) return java.sql.Types.CHAR; // NOI18N
         if (type.equals("java.sql.Types.CLOB")) return java.sql.Types.CLOB; // NOI18N
         if (type.equals("java.sql.Types.DATE")) return java.sql.Types.DATE; // NOI18N
@@ -542,18 +569,26 @@ public class Specification implements DatabaseSpecification {
         if (type.equals("java.sql.Types.INTEGER")) return java.sql.Types.INTEGER; // NOI18N
         if (type.equals("java.sql.Types.JAVA_OBJECT")) return java.sql.Types.JAVA_OBJECT; // NOI18N
         if (type.equals("java.sql.Types.LONGVARBINARY")) return java.sql.Types.LONGVARBINARY; // NOI18N
+        if (type.equals("java.sql.Types.LONGNVARCHAR")) return java.sql.Types.LONGNVARCHAR; // NOI18N
         if (type.equals("java.sql.Types.LONGVARCHAR")) return java.sql.Types.LONGVARCHAR; // NOI18N
         if (type.equals("java.sql.Types.NUMERIC")) return java.sql.Types.NUMERIC; // NOI18N
+        if (type.equals("java.sql.Types.NCHAR")) return java.sql.Types.NCHAR; // NOI18N
+        if (type.equals("java.sql.Types.NCLOB")) return java.sql.Types.NCLOB; // NOI18N
+        if (type.equals("java.sql.Types.NULL")) return java.sql.Types.NULL; // NOI18N
+        if (type.equals("java.sql.Types.NVARCHAR")) return java.sql.Types.NVARCHAR; // NOI18N
         if (type.equals("java.sql.Types.OTHER")) return java.sql.Types.OTHER; // NOI18N
         if (type.equals("java.sql.Types.REAL")) return java.sql.Types.REAL; // NOI18N
         if (type.equals("java.sql.Types.REF")) return java.sql.Types.REF; // NOI18N
+        if (type.equals("java.sql.Types.ROWID")) return java.sql.Types.ROWID; // NOI18N
         if (type.equals("java.sql.Types.SMALLINT")) return java.sql.Types.SMALLINT; // NOI18N
+        if (type.equals("java.sql.Types.SQLXML")) return java.sql.Types.SQLXML; // NOI18N
         if (type.equals("java.sql.Types.TIME")) return java.sql.Types.TIME; // NOI18N
         if (type.equals("java.sql.Types.TIMESTAMP")) return java.sql.Types.TIMESTAMP; // NOI18N
         if (type.equals("java.sql.Types.TINYINT")) return java.sql.Types.TINYINT; // NOI18N
         if (type.equals("java.sql.Types.VARBINARY")) return java.sql.Types.VARBINARY; // NOI18N
         if (type.equals("java.sql.Types.VARCHAR")) return java.sql.Types.VARCHAR; // NOI18N
-
+        Logger.getLogger(Specification.class.getName()).log(Level.INFO, "Unknown type name {0}, so return -1", type);
+        assert false : "Unknown type name " + type;
         return -1;
     }
 }

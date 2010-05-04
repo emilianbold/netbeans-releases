@@ -1,4 +1,4 @@
 Code completion result for source line:
 $baba = $param|;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-VARIABLE   ? $param                                   curly04.php
+VARIABLE   ? $param                        [PUBLIC]   curly04.php

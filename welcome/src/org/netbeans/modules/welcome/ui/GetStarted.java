@@ -43,14 +43,12 @@ package org.netbeans.modules.welcome.ui;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
@@ -63,7 +61,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -83,9 +80,7 @@ class GetStarted extends JPanel implements Constants {
     }
     
     private void buildContent() {
-        String rootName = ic.isJavaFXInstalled()
-                ? "WelcomePage/GettingStartedLinksJavaFX"  // NOI18N
-                : "WelcomePage/GettingStartedLinks"; // NOI18N
+        String rootName = "WelcomePage/GettingStartedLinks"; // NOI18N
         FileObject root = FileUtil.getConfigFile( rootName );
         if( null == root ) {
             Logger.getLogger(GetStarted.class.getName()).log(Level.INFO,
@@ -131,36 +126,16 @@ class GetStarted extends JPanel implements Constants {
                 GridBagConstraints.NORTHWEST, GridBagConstraints.VERTICAL, new Insets(0,0,0,0), 0, 0 ) );
     }
 
-    private boolean foregroundColorFlag = true;
     private int addLink( int row, DataObject dob ) {
-        FileObject file = dob.getPrimaryFile();
-        String fileName = file.getName();
-        if( !fileName.endsWith("_default") ) { //NOI18N
-            String prefPackname = ic.getPreferredPackName();
-            if( !fileName.endsWith(prefPackname) ) {
-                return row;
-            } 
-        }
         Action action = extractAction( dob );
         if( null != action ) {
             JPanel panel = new JPanel( new GridBagLayout() );
             panel.setOpaque(false);
-            ActionButton lb = new ActionButton( action, false, Utils.getUrlString( dob ),
-                    Utils.getColor(foregroundColorFlag ? COLOR_HEADER1 : COLOR_HEADER2) );
-            foregroundColorFlag = !foregroundColorFlag;
-            panel.add( lb, new GridBagConstraints(1,0,1,3,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
+            ActionButton lb = new ActionButton( action, Utils.getUrlString( dob ),
+                    Utils.getColor( COLOR_HEADER ), true );
+            panel.add( lb, new GridBagConstraints(1,0,1,3,1.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
             lb.setFont( GET_STARTED_FONT );
             
-            panel.add( new JLabel(), 
-                    new GridBagConstraints(2,0,1,3,1.0,0.0,GridBagConstraints.WEST,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
-            
-            int iconDistance = new JLabel().getIconTextGap();
-            Image img = ImageUtilities.loadImage(Constants.BULLET_IMAGE, true);
-            JLabel lbl = new JLabel( new ImageIcon(img) );
-            lbl.setVerticalAlignment(JLabel.CENTER);
-            panel.add( lbl,
-                    new GridBagConstraints(0,0,1,3,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.BOTH,new Insets(0,0,0,iconDistance),0,0) );
-                
             lb.getAccessibleContext().setAccessibleName( lb.getText() );
             lb.getAccessibleContext().setAccessibleDescription( 
                     BundleSupport.getAccessibilityDescription( "GettingStarted", lb.getText() ) ); //NOI18N
@@ -176,10 +151,10 @@ class GetStarted extends JPanel implements Constants {
         if( null != oc )
             return new LinkAction( dob );
 
-        InstanceCookie.Of ic = dob.getCookie(InstanceCookie.Of.class);
-        if( null != ic && ic.instanceOf( Action.class ) ) {
+        InstanceCookie.Of instCookie = dob.getCookie(InstanceCookie.Of.class);
+        if( null != instCookie && instCookie.instanceOf( Action.class ) ) {
             try {
-                Action res = (Action) ic.instanceCreate();
+                Action res = (Action) instCookie.instanceCreate();
                 if( null != res ) {
                     res.putValue(Action.NAME, dob.getNodeDelegate().getDisplayName() );
                 }
@@ -198,6 +173,7 @@ class GetStarted extends JPanel implements Constants {
             this.dob = dob;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             OpenCookie oc = dob.getCookie( OpenCookie.class );
             if( null != oc )

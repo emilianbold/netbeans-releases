@@ -45,6 +45,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +59,21 @@ import javax.swing.text.View;
 /**
  * Base class for views in editor view hierarchy.
  * <br/>
- * Box views should also implement {@link Parent}.
+ * In general there are three types of views:<ul>
+ * <li>Document view</li>
+ * <li>Paragraph views</li>
+ * <li>Children of paragraph views which include highlights view, newline view and others.</li>
+ * </ul>
+ * <br/>
+ * Paragraph views have their start offset based over a swing text position. Their end offset
+ * is based on last child's end offset.
+ * <br/>
+ * Children of paragraph views have their start offset based over a relative distance
+ * to their parent's paragraph view's start offset. Therefore their start offset does not mutate
+ * upon modification unless the whole paragraph's start offset mutates.
+ * Their {@link #getLength()} method should remain stable upon document mutations
+ * (this way the view builder can iterate over them when calculating last affected view
+ * once the new views become created).
  *
  * @author Miloslav Metelka
  */
@@ -65,7 +81,7 @@ import javax.swing.text.View;
 public abstract class EditorView extends View {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.EditorView.level=FINE
-    private static final Logger LOG = Logger.getLogger(ViewBuilder.class.getName());
+    private static final Logger LOG = Logger.getLogger(EditorView.class.getName());
 
     /**
      * Raw offset along the parent's major axis (axis along which the children are laid out).
@@ -79,6 +95,9 @@ public abstract class EditorView extends View {
     /**
      * Get raw start offset of the view which may transform to real start offset
      * when post-processed by parent view.
+     * <br/>
+     * <b>Note:</b> Typical clients should NOT call this method (they should call
+     * {@link #getStartOffset()} method instead).
      *
      * @return raw start offset of the view or -1 if the view does not support
      * storage of the raw offsets (e.g. a ParagraphView).
@@ -378,14 +397,14 @@ public abstract class EditorView extends View {
     }
 
     public void checkIntegrity() {
-        if (LOG.isLoggable(Level.FINER)) {
+        if (LOG.isLoggable(Level.FINE)) {
             String err = findTreeIntegrityError(); // Check integrity of the document view
             if (err != null) {
-                String msg = "View hierarchy INTEGRITY ERROR!";
-                LOG.finer(msg + "\n" + err + "Errorneous view hierarchy:\n");
+                String msg = "View hierarchy INTEGRITY ERROR! - " + err;
+                LOG.fine(msg + "\nErrorneous view hierarchy:\n");
                 StringBuilder sb = new StringBuilder(200);
                 appendViewInfo(sb, 0, -2); // -2 means detailed info
-                LOG.finer(sb.toString());
+                LOG.fine(sb.toString());
                 // For finest level stop throw real ISE otherwise just log the stack
                 if (LOG.isLoggable(Level.FINEST)) {
                     throw new IllegalStateException(msg);
@@ -417,8 +436,12 @@ public abstract class EditorView extends View {
                     int childViewCount = child.getViewCount();
                     for (int j = 0; j < childViewCount; j++) {
                         EditorView childChild = (EditorView) child.getView(j);
-                        if (childChild.getParent() != child) {
-                            err = "child[" + j + "].getParent() != child";
+                        EditorView childChildParent = (EditorView) childChild.getParent();
+                        if (childChildParent != child) {
+                            String ccpStr = (childChildParent != null) ? childChildParent.getDumpId() : "<NULL>";
+                            err = "childChild[" + j + "].getParent()=" + ccpStr + // NOI18N
+                                    " != child=" + child.getDumpId(); // NOI18N
+                            break;
                         }
                     }
                 }
@@ -428,15 +451,18 @@ public abstract class EditorView extends View {
                 if (err == null) {
                     if (childStartOffset != lastOffset) {
                         err = "childStartOffset=" + childStartOffset + ", lastOffset=" + lastOffset; // NOI18N
+                    } else if (childStartOffset < 0) {
+                        err = "childStartOffset=" + childStartOffset + " < 0"; // NOI18N
                     } else if (childStartOffset > childEndOffset) {
                         err = "childStartOffset=" + childStartOffset + " > childEndOffset=" + childEndOffset; // NOI18N
                     } else if (childEndOffset > endOffset) {
-                        err = "childEndOffset=" + childEndOffset + " > endOffset=" + endOffset; // NOI18N
+                        err = "childEndOffset=" + childEndOffset + " > parentEndOffset=" + endOffset; // NOI18N
                     } else {
                         err = child.findTreeIntegrityError();
                         noChildInfo = true;
                     }
                 }
+
                 if (err != null) {
                     return getDumpId() + "[" + i + "]=" + (noChildInfo ? "" : child.getDumpId() + ": ") + err + '\n';
                 }
@@ -453,12 +479,14 @@ public abstract class EditorView extends View {
         sb.append(getEndOffset()).append('>');
         View parent = getParent();
         if (parent instanceof EditorBoxView) {
-            EditorBoxView boxView = (EditorBoxView) parent;
+            @SuppressWarnings("unchecked")
+            EditorBoxView<EditorView> boxView = (EditorBoxView<EditorView>) parent;
             String axis = (boxView.getMajorAxis() == X_AXIS) ? "X" : "Y";
             sb.append(' ').append(axis).append('=').append(boxView.getViewVisualOffset(this));
             // Also append raw visual offset value
             sb.append("(R").append(getRawVisualOffset()).append(')');
         }
+        // Do not getPreferredSpan() since it may be expensive (for HighlightsView calls getTextLayout())
         return sb;
     }
 
@@ -473,6 +501,31 @@ public abstract class EditorView extends View {
         if (bias == null) { // Position.Bias is final class so only null value is invalid
             throw new IllegalArgumentException("Null bias prohibited.");
         }
+    }
+
+    public interface Parent {
+
+        /**
+         * Get start offset of a child view based on view's raw offset.
+         * @param rawOffset relative child's raw offset.
+         * @return real offset.
+         */
+        int getViewOffset(int rawOffset);
+
+        /**
+         * Get cached text layout for the given child view.
+         *
+         * @param textLayoutView non-null text layout view.
+         * @return cached (or created) text layout.
+         */
+        TextLayout getTextLayout(TextLayoutView textLayoutView);
+
+        /**
+         * Get font rendering context that for example may be used for text layout creation.
+         * @return font rendering context.
+         */
+        FontRenderContext getFontRenderContext();
+
     }
 
 }

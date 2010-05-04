@@ -86,6 +86,7 @@ public class CLIClientTest extends NbTestCase {
         suite.addTestSuite(StatusTest.class);
         suite.addTestSuite(SwitchToTest.class);
         suite.addTestSuite(UpdateTest.class);
+        suite.addTestSuite(TreeConflictsTest.class);
         
         return suite;
     }

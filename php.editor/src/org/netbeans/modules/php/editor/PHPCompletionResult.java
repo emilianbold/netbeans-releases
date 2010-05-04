@@ -38,7 +38,8 @@
  */
 package org.netbeans.modules.php.editor;
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
@@ -48,7 +49,13 @@ import org.netbeans.modules.csl.spi.DefaultCompletionResult;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPCompletionResult extends DefaultCompletionResult {
-    public PHPCompletionResult(CodeCompletionContext completionContext, List<CompletionProposal> list) {
-        super(list, false);
+    public PHPCompletionResult(CodeCompletionContext completionContext) {
+        super(new ArrayList<CompletionProposal>(), false);
+    }    
+    public void addAll(final Collection<CompletionProposal>  proposals) {
+        list.addAll(proposals);
+    }
+    public void add(CompletionProposal  proposal) {
+        list.add(proposal);
     }
 }

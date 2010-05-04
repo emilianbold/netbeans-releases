@@ -370,8 +370,8 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         } else if (e.getSource () == bRemove) {
             CodeTemplatesModel.TM tableModel = (CodeTemplatesModel.TM)tTemplates.getModel();
             int index = tTemplates.getSelectedRow ();
-            tableModel.removeCodeTemplate(index);
             unsavedTemplateIndex = -1;
+            tableModel.removeCodeTemplate(index);
 
             int rowCount = tableModel.getRowCount();
             if (index < rowCount) {

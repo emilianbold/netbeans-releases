@@ -42,7 +42,6 @@
 package org.netbeans.modules.subversion.client.parser;
 
 import java.io.File;
-import java.lang.UnsupportedOperationException;
 import java.net.MalformedURLException;
 import java.util.Date;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
@@ -75,6 +74,8 @@ public class ParserSvnStatus implements ISVNStatus {
     private Date lockCreationDate = null;
     private String lockComment = null;
     private String lockOwner = null;
+    private boolean treeConflict;
+    private final SVNConflictDescriptor conflictDescriptor;
 
     /** Creates a new instance of LocalSvnStatusImpl */
     public ParserSvnStatus(File file, String url, long revision, String kind,
@@ -82,7 +83,8 @@ public class ParserSvnStatus implements ISVNStatus {
             String lastCommitAuthor, long lastChangedRevision, Date lastChangedDate,
             boolean isCopied, String urlCopiedFrom,
             File conflictNew, File conflictOld, File conflictWorking,
-            Date lockCreationDate, String lockComment, String lockOwner) {
+            Date lockCreationDate, String lockComment, String lockOwner,
+            boolean treeConflict, SVNConflictDescriptor conflictDescriptor) {
 
         this.file = file;
 
@@ -119,6 +121,8 @@ public class ParserSvnStatus implements ISVNStatus {
         this.lockCreationDate = lockCreationDate;
         this.lockComment  = lockComment;
         this.lockOwner = lockOwner;
+        this.treeConflict = treeConflict;
+        this.conflictDescriptor = conflictDescriptor;
     }
 
     public boolean isCopied() {
@@ -215,12 +219,14 @@ public class ParserSvnStatus implements ISVNStatus {
         throw new UnsupportedOperationException("not implemented yet");             // NOI18N
     }
 
+    @Override
     public boolean hasTreeConflict() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return treeConflict;
     }
 
+    @Override
     public SVNConflictDescriptor getConflictDescriptor() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return conflictDescriptor;
     }
 
     public boolean isFileExternal() {

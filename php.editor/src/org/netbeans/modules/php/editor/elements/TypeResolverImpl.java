@@ -42,6 +42,8 @@ package org.netbeans.modules.php.editor.elements;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.elements.PhpElementImpl.SEPARATOR;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -51,15 +53,21 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
  * @author Radek Matous
  */
 public final class TypeResolverImpl implements TypeResolver {
+    private static final Logger LOG = Logger.getLogger(TypeResolverImpl.class.getName());
     public static final String SEMI_TYPE_MARKER = "@";//NOI18N
+
     private final String typeName;
 
-    static Set<TypeResolver> parseTypes(final String typeSignature) {
+    public static Set<TypeResolver> parseTypes(final String typeSignature) {
         Set<TypeResolver> retval = new HashSet<TypeResolver>();
         if (typeSignature != null && typeSignature.length() > 0) {
             final String regexp = String.format("\\%s", SEPARATOR.PIPE.toString());//NOI18N
             for (String typeName : typeSignature.split(regexp)) {
-                retval.add(new TypeResolverImpl(typeName));
+                if (typeName.equals(ParameterElementImpl.encode(typeName))) {
+                    retval.add(new TypeResolverImpl(typeName));
+                } else {
+                    log(String.format("wrong typename: \"%s\" parsed from \"%s\"", typeSignature, typeName), Level.FINE);//NOI18N
+                }
             }
         }
         return retval;
@@ -68,7 +76,14 @@ public final class TypeResolverImpl implements TypeResolver {
     public static Set<TypeResolver> forNames(final Collection<QualifiedName> names) {
         Set<TypeResolver> retval = new HashSet<TypeResolver>();
         for (QualifiedName qualifiedName : names) {
-            retval.add(new TypeResolverImpl(qualifiedName.toString()));
+            final String typeName = qualifiedName.toString();
+                if (typeName.equals(ParameterElementImpl.encode(typeName))) {
+                    retval.add(new TypeResolverImpl(typeName));
+                } else {
+                    log(String.format("wrong typename: \"%s\"", typeName), Level.FINE);//NOI18N
+                }
+
+
         }
         return retval;
     }
@@ -99,5 +114,11 @@ public final class TypeResolverImpl implements TypeResolver {
     @Override
     public final String getRawTypeName() {
         return typeName;
+    }
+
+    private static void log(final String message, final Level level) {
+        if (LOG.isLoggable(level)) {
+            LOG.log(level, message);
+        }
     }
 }

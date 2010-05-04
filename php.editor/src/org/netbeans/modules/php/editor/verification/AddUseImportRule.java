@@ -76,6 +76,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -106,6 +108,12 @@ public class AddUseImportRule extends AbstractRule {
         if (phpParseResult.getProgram() == null) {
             return;
         }
+        Properties props = PhpLanguageOptions.getDefault().getProperties(phpParseResult.getSnapshot().getSource().getFileObject());
+
+        if (props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_5) {
+            return;
+        }
+
         final BaseDocument doc = context.doc;
         final int caretOffset = context.caretOffset;
         int lineBegin = -1;
@@ -228,7 +236,7 @@ public class AddUseImportRule extends AbstractRule {
                 final String retvalStr = importName.toString();
                 NamespaceScope currentScope = ModelUtils.getNamespaceScope(currenNamespace, context.fileScope);
 
-                if (!currentScope.getQualifiedName().append(nodeName).equals(indexedName)) {
+                if (!NameKind.exact(currentScope.getQualifiedName().append(nodeName)).matchesName(idxElement)) {
                     Collection<? extends UseElement> declaredUses = currentScope.getDeclaredUses();
                     List<? extends UseElement> suitableUses = ModelUtils.filter(declaredUses, new ModelUtils.ElementFilter<UseElement>() {
 

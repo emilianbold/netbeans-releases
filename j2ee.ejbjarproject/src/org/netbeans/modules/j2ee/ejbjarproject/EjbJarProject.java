@@ -172,6 +172,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
+import org.openide.xml.XMLUtil;
 
 /**
  * Represents one ejb module project
@@ -422,7 +423,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 // remove in next release
                 new EjbJarImpl(apiEjbJar),
                 new EjbJarActionProvider( this, helper, refHelper, updateHelper, eval ),
-                new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper),
+                new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper, ejbModule),
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
                 LookupMergerSupport.createClassPathProviderMerger(cpProvider),
                 QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
@@ -627,7 +628,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         if (element != null) {
             Document doc = element.getOwnerDocument();
             Element newRoot = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
-            copyDocument (doc, element, newRoot);
+            XMLUtil.copyDocument (element, newRoot, EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE);
             Element srcRoots = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots");  //NOI18N
             Element root = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
             root.setAttribute ("id","src.dir");   //NOI18N
@@ -640,33 +641,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             newRoot.appendChild (tstRoots);
             helper.putPrimaryConfigurationData (newRoot, true);
             ProjectManager.getDefault().saveProject(this);
-        }
-    }
-
-    private static void copyDocument (Document doc, Element from, Element to) {
-        NodeList nl = from.getChildNodes();
-        int length = nl.getLength();
-        for (int i=0; i< length; i++) {
-            Node node = nl.item (i);
-            Node newNode = null;
-            switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    Element oldElement = (Element) node;
-                    newNode = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,oldElement.getTagName());
-                    copyDocument(doc,oldElement,(Element)newNode);
-                    break;
-                case Node.TEXT_NODE:
-                    Text oldText = (Text) node;
-                    newNode = doc.createTextNode(oldText.getData());
-                    break;
-                case Node.COMMENT_NODE:
-                    Comment oldComment = (Comment) node;
-                    newNode = doc.createComment(oldComment.getData());
-                    break;
-            }
-            if (newNode != null) {
-                to.appendChild (newNode);
-            }
         }
     }
 
@@ -698,7 +672,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
 
                             if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
                                     EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
-                                String classpath = Utils.toClasspathString(platform.getClasspathEntries());
+                                String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
+                                String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), root);
                                 ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                             }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
@@ -1000,8 +975,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             if(apiWebServicesSupport.isBroken(EjbJarProject.this)) {
                 apiWebServicesSupport.showBrokenAlert(EjbJarProject.this);
             }
-            else if(apiWebServicesClientSupport.isBroken(EjbJarProject.this)) {
-                apiWebServicesClientSupport.showBrokenAlert(EjbJarProject.this);
+            else if(WebServicesClientSupport.isBroken(EjbJarProject.this)) {
+                WebServicesClientSupport.showBrokenAlert(EjbJarProject.this);
             }
         }
         
@@ -1032,7 +1007,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             }
             
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); //NOI18N
-            if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); //NOI18N
+            if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "true"); //NOI18N
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); //NOI18N
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); //NOI18N
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); //NOI18N

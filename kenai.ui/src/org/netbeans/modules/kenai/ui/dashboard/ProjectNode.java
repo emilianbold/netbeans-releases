@@ -116,7 +116,7 @@ public class ProjectNode extends TreeListNode {
                         lbl.setFont( isMemberProject ? boldFont : regFont );                    
                     }
                     if (null != btnBookmark) {
-                        btnBookmark.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true));
+                        btnBookmark.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
                     }
                 }
             }
@@ -164,7 +164,7 @@ public class ProjectNode extends TreeListNode {
 
                 component.add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
                 btnBookmark = new LinkButton(ImageUtilities.loadImageIcon(
-                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true),
+                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true), // NOI18N
                         accessor.getBookmarkAction(project)); //NOI18N
                 btnBookmark.setRolloverEnabled(true);
                 component.add( btnBookmark, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
@@ -180,9 +180,9 @@ public class ProjectNode extends TreeListNode {
             lbl.setFont( isMemberProject ? boldFont : regFont );
             btnBookmark.setForeground(foreground, isSelected);
             btnBookmark.setIcon(ImageUtilities.loadImageIcon(
-                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true));
+                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
             btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
-                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true));
+                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true)); // NOI18N
             btnBookmark.setToolTipText(NbBundle.getMessage(ProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
             if (isMemberProject) {
                 myPrjLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true)); // NOI18N

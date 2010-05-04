@@ -42,16 +42,21 @@
 package org.netbeans.modules.j2ee.ejbcore;
 
 import java.util.ArrayList;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import java.io.File;
@@ -63,18 +68,15 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -138,7 +140,20 @@ public class Utils {
         }
         return false;
     }
-    
+
+    public static Project getNestingJ2eeApp(Project project){
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        for (Project openProject : OpenProjects.getDefault().getOpenProjects()) {
+            J2eeApplicationProvider j2eeAppProvider = openProject.getLookup().lookup(J2eeApplicationProvider.class);
+            if (j2eeAppProvider != null) {
+                if (Arrays.asList(j2eeAppProvider.getChildModuleProviders()).contains(j2eeModuleProvider)) {
+                    return openProject;
+                }
+            }
+        }
+        return null;
+    }
+
     // =========================================================================
     
     // utils for ejb code synchronization
@@ -246,8 +261,15 @@ public class Utils {
         for (int i = 0; i < allProjects.length; i++) {
             boolean isEJBModule = false;
             J2eeModuleProvider j2eeModuleProvider = allProjects[i].getLookup().lookup(J2eeModuleProvider.class);
-            if (j2eeModuleProvider != null && j2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.EJB)) {
-                isEJBModule = true;
+            if (j2eeModuleProvider != null){
+                    Type type = j2eeModuleProvider.getJ2eeModule().getType();
+                    EjbJar[] ejbJars = EjbJar.getEjbJars(allProjects[i]);
+                    Profile profile = ejbJars.length > 0 ? ejbJars[0].getJ2eeProfile() : null;
+
+                    if (J2eeModule.Type.EJB.equals(type) || (J2eeModule.Type.WAR.equals(type) &&
+                                (Profile.JAVA_EE_6_WEB.equals(profile) || Profile.JAVA_EE_6_FULL.equals(profile)))){
+                        isEJBModule = true;
+                    }
             }
 
             // If the caller project is NOT a freeform project, include all EJB modules
@@ -363,34 +385,39 @@ public class Utils {
         return result.toString();
     }
 
-    public static AntArtifact getAntArtifact(final EjbReference ejbReference) throws IOException {
-        
-        Project project = getProject(ejbReference);
-        if (project == null) {
-            return null;
+    public static Project getProject(final EjbReference ejbReference, final EjbReference.EjbRefIType refIType) throws IOException {
+        FileObject[] javaSources = ejbReference.getEjbModule().getJavaSources();
+        ClasspathInfo cpInfo = javaSources.length > 0 ? ClasspathInfo.create(
+            ClassPath.getClassPath(javaSources[0], ClassPath.BOOT),
+            ClassPath.getClassPath(javaSources[0], ClassPath.COMPILE),
+            ClassPath.getClassPath(javaSources[0], ClassPath.SOURCE)
+            ) : null;
+        if (cpInfo != null){
+            FileObject ejbReferenceEjbClassFO = findFileObject(ejbReference.getComponentName(refIType), cpInfo);
+            return ejbReferenceEjbClassFO != null ? FileOwnerQuery.getOwner(ejbReferenceEjbClassFO) : null;
         }
-        AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
-        boolean hasArtifact = (antArtifacts != null && antArtifacts.length > 0);
-        
-        return hasArtifact ? antArtifacts[0] : null;
-        
+
+        return null;
     }
 
-    public static Project getProject(final EjbReference ejbReference) throws IOException {
-
-        MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
-        FileObject ejbReferenceEjbClassFO = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
-            public FileObject run(EjbJarMetadata metadata) throws Exception {
-                return metadata.findResource(toResourceName(ejbReference.getEjbClass()));
+    public static FileObject findFileObject(final String className, ClasspathInfo cpInfo) throws IOException{
+        if (cpInfo == null){
+            return null;
+        }
+        final FileObject[] result = new FileObject[1];
+        JavaSource.create(cpInfo).runUserActionTask(new Task<CompilationController>() {
+            @Override
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = controller.getElements().getTypeElement(className);
+                if (typeElement != null) {
+                    result[0] = SourceUtils.getFile(ElementHandle.create(typeElement), controller.getClasspathInfo());
+                }
             }
-        });
-
-        if (ejbReferenceEjbClassFO == null) {
-            return null;
-        }
-        return FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
+        }, true);
+        return result[0];
     }
- 
+
     /**
      * Creates resource name from fully-qualified class name by
      * replacing '.' with '/' and appending ".java"

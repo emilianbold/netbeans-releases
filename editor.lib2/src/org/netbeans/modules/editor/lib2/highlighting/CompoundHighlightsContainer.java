@@ -61,7 +61,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Vita Stejskal, Miloslav Metelka
  */
-public final class CompoundHighlightsContainer extends AbstractHighlightsContainer {
+public final class CompoundHighlightsContainer extends AbstractHighlightsContainer implements MultiLayerContainer {
 
     private static final Logger LOG = Logger.getLogger(CompoundHighlightsContainer.class.getName());
     
@@ -235,6 +235,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
      * @param layers    The new delegate layers. Can be <code>null</code>.
      * @see org.netbeans.api.editor.view.ZOrder#sort(HighlightLayer [])
      */
+    @Override
     public void setLayers(Document doc, HighlightsContainer[] layers) {
         Document docForEvents = null;
         
@@ -276,9 +277,9 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         }
     }
 
-    public void resetCache() {
-        layerChanged(null, 0, Integer.MAX_VALUE);
-    }
+//    public void resetCache() {
+//        layerChanged(null, 0, Integer.MAX_VALUE);
+//    }
     
     // ----------------------------------------------------------------------
     //  Private implementation
@@ -289,7 +290,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
 
         synchronized (LOCK) {
             // XXX: Perhaps we could do something more efficient.
-            LOG.log(Level.FINE, "Cache obsoleted by changes in ", layer);
+            LOG.log(Level.FINE, "Cache obsoleted by changes in {0}", layer); //NOI18N
             cacheObsolete = true;
             increaseVersion();
             
@@ -317,82 +318,12 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             }
 
             try {
-                final HighlightsSequence seq = layers[i].getHighlights(startOffset, endOffset);
-                final int layerIndex = i; //saving this so we can debug corrupt layers (aka the ones that need clipping)
-                final HighlightsContainer currentLayerObject = layers[i];
-
-                bag.addAllHighlights(new HighlightsSequence() {
-                    int start = -1, end = -1;
-                    public @Override boolean moveNext() {
-                        boolean hasNext = seq.moveNext();
-                        //XXX: the problem here is if the sequence we are wrapping is sorted by startOffset.
-                        // In practice I think it is, but I cannot afford to make that assumption now.
-                        // So I have to check both boundaries, not only start and end offset separately.
-                        boolean retry = hasNext;
-                        while (retry) {
-                            start = seq.getStartOffset();
-                            end = seq.getEndOffset();
-
-                            if (start > end) {
-                                // this highlight is invalid
-                                if (LOG.isLoggable(Level.FINE)) {
-                                    LOG.log(Level.FINE, "Layer[" + layerIndex + "]=" + currentLayerObject //NOI18N
-                                        + " supplied invalid highlight " + dumpHighlight(seq, null) //NOI18N
-                                        + ", requested range <" + startOffset + ", " + endOffset + ">." //NOI18N
-                                        + " Highlight ignored."); //NOI18N
-                                }
-                                
-                                retry = hasNext = seq.moveNext();
-                            } else if (start > endOffset || end < startOffset) {
-                                // this highlight is totally outside our rage, there is nothing we can clip, we must retry
-                                if (LOG.isLoggable(Level.FINE)) {
-                                    LOG.log(Level.FINE, "Layer[" + layerIndex + "]=" + currentLayerObject //NOI18N
-                                        + " supplied highlight " + dumpHighlight(seq, null) //NOI18N
-                                        + ", which is outside of the requested range <" + startOffset + ", " + endOffset + ">." //NOI18N
-                                        + " Highlight skipped."); //NOI18N
-                                }
-
-                                retry = hasNext = seq.moveNext();
-                            } else {
-                                // highlight appears ok
-                                retry = false;
-                            }
-                        }
-
-                        if (hasNext) {
-                            // clip the highlight if neccessary
-                            boolean unclipped = false;
-                            if (start < startOffset) {
-                                start = startOffset;
-                                unclipped = true;
-                            }
-                            if (end > endOffset) {
-                                end = endOffset;
-                                unclipped = true;
-                            }
-                            if (unclipped && LOG.isLoggable(Level.FINE)) {
-                                LOG.log(Level.FINE, "Layer[" + layerIndex + "]=" + currentLayerObject //NOI18N
-                                    + " supplied unclipped highlight " + dumpHighlight(seq, null) //NOI18N
-                                    + ", requested range <" + startOffset + ", " + endOffset + ">." //NOI18N
-                                    + " Highlight clipped."); //NOI18N
-                            }
-                        }
-
-                        return hasNext;
-                    }
-
-                    public @Override int getStartOffset() {
-                        return start;
-                    }
-
-                    public @Override int getEndOffset() {
-                        return end;
-                    }
-
-                    public @Override AttributeSet getAttributes() {
-                        return seq.getAttributes();
-                    }
-                });
+                bag.addAllHighlights(new CheckedHighlightsSequence(
+                    layers[i].getHighlights(startOffset, endOffset),
+                    startOffset,
+                    endOffset,
+                    "CHC.Layer[" + i + "]=" + layers[i] //NOI18N
+                ));
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine(dumpLayerHighlights(layers[i], startOffset, endOffset));
                 }
@@ -456,7 +387,10 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         return sb.toString();
     }
 
-    private static StringBuilder dumpHighlight(HighlightsSequence seq, StringBuilder sb) {
+    /* package */ static StringBuilder dumpHighlight(HighlightsSequence seq, StringBuilder sb) {
+        if (sb == null) {
+            sb = new StringBuilder();
+        }
         sb.append("<"); //NOI18N
         sb.append(seq.getStartOffset());
         sb.append(", "); //NOI18N
@@ -548,6 +482,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         private final OffsetGapList<OffsetGapList.Offset> boundaries;
         private final Document doc;
 
+        @SuppressWarnings("LeakingThisInConstructor")
         public CacheBoundaries(Document doc) {
             this.boundaries = new OffsetGapList<OffsetGapList.Offset>(false);
             this.doc = doc;

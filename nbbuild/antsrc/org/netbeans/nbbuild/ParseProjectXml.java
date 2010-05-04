@@ -72,6 +72,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import javax.xml.XMLConstants;
@@ -191,13 +192,13 @@ public final class ParseProjectXml extends Task {
         codeNameBaseSlashesProperty = s;
     }
 
-    private String domainProperty;
+    private String commitMailProperty;
     /**
-     * Set the property to set the module's netbeans.org domain to.
-     * Only applicable to modules in netbeans.org (i.e. no <path>).
+     * Set the property to set the module's commit mail address(es) to.
+     * Only applicable to modules in netbeans.org (i.e. no {@code <path>}).
      */
-    public void setDomainProperty(String s) {
-        domainProperty = s;
+    public void setCommitMailProperty(String s) {
+        commitMailProperty = s;
     }
 
     private String moduleClassPathProperty;
@@ -483,26 +484,42 @@ public final class ParseProjectXml extends Task {
                 String cp = computeClasspath(cnb, pDoc, modules, translatedDeps, true);
                 define(moduleRunClassPathProperty, cp);
             }
-            if (domainProperty != null) {
+            if (commitMailProperty != null) {
                 if (getModuleType(pDoc) != ModuleType.NB_ORG) {
-                    throw new BuildException("Cannot set " + domainProperty + " for a non-netbeans.org module", getLocation());
+                    throw new BuildException("Cannot set " + commitMailProperty + " for a non-netbeans.org module", getLocation());
                 }
-                File nball = new File(getProject().getProperty("nb_all"));
-                File basedir = getProject().getBaseDir();
-                Pattern p = Pattern.compile("([^/]+)(/([^/]+))*//([^/]+)/" + Pattern.quote(basedir.getName()));
-                Reader r = new FileReader(new File(nball, "nbbuild/translations"));
-                try {
-                    BufferedReader br = new BufferedReader(r);
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        Matcher m = p.matcher(line);
-                        if (m.matches()) {
-                            define(domainProperty, m.group(1));
-                            break;
+                String name = getProject().getBaseDir().getName() + "/";
+                StringBuilder aliases = null;
+                File hgmail = new File(getProject().getProperty("nb_all"), ".hgmail");
+                if (hgmail.canRead()) {
+                    Reader r = new FileReader(hgmail);
+                    try {
+                        BufferedReader br = new BufferedReader(r);
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            int equals = line.indexOf('=');
+                            if (equals == -1) {
+                                continue;
+                            }
+                            for (String piece: line.substring(equals + 1).split(",")) {
+                                if (name.matches(piece.replace(".", "[.]").replace("*", ".*"))) {
+                                    if (aliases == null) {
+                                        aliases = new StringBuilder();
+                                    } else {
+                                        aliases.append(' ');
+                                    }
+                                    aliases.append(line.substring(0, equals));
+                                }
+                            }
                         }
+                    } finally {
+                        r.close();
                     }
-                } finally {
-                    r.close();
+                } else {
+                    log("Cannot find " + hgmail + " to read addresses from", Project.MSG_VERBOSE);
+                }
+                if (aliases != null) {
+                    define(commitMailProperty, aliases.toString());
                 }
             }
             if (classPathExtensionsProperty != null) {
@@ -965,11 +982,15 @@ public final class ParseProjectXml extends Task {
             
             if (depJar.isFile()) { // might be false for m.run.cp if DO_NOT_RECURSE and have a runtime-only dep
                 Attributes attr;
-                JarFile jarFile = new JarFile(depJar, false);
                 try {
-                    attr = jarFile.getManifest().getMainAttributes();
-                } finally {
-                    jarFile.close();
+                    JarFile jarFile = new JarFile(depJar, false);
+                    try {
+                        attr = jarFile.getManifest().getMainAttributes();
+                    } finally {
+                        jarFile.close();
+                    }
+                } catch (ZipException x) {
+                    throw new BuildException("Could not open " + depJar + ": " + x, x, getLocation());
                 }
 
                 if (!dep.matches(attr)) { // #68631

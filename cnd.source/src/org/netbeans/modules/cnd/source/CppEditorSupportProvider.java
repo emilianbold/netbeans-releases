@@ -72,12 +72,12 @@ public final class CppEditorSupportProvider extends CndCookieProvider {
 
         @Override
         public String id(SourceDataObject obj) {
-            return CppEditorSupport.class.getName();
+            return CppEditorSupport.class.getName()+obj.getPrimaryFile().getPath();
         }
 
         @Override
         public String displayName(SourceDataObject obj) {
-            return CppEditorSupport.class.getName();
+            return id(obj);
         }
     }
 }

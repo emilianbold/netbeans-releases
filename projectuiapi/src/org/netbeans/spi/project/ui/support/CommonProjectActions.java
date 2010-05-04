@@ -41,8 +41,10 @@
 
 package org.netbeans.spi.project.ui.support;
 
+import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.project.uiapi.Utilities;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 
 /**
  * Factory for commonly needed generic project actions.
@@ -214,6 +216,21 @@ public class CommonProjectActions {
      */
     public static Action setProjectConfigurationAction() {
         return Utilities.getActionsFactory().setProjectConfigurationAction();
+    }
+
+    /**
+     * Loads actions to be displayed in the context menu of {@link LogicalViewProvider#createLogicalView}.
+     * The current implementation simply loads actions from {@code Projects/<projectType>/Actions}
+     * but in the future it may merge in actions from another location as well.
+     * <p>The folder is recommended to contain a link to {@code Projects/Actions} at some position
+     * in order to pick up miscellaneous actions applicable to all project types.
+     * @param projectType a type token, such as {@code org-netbeans-modules-java-j2seproject}
+     * @return a list of actions
+     * @since org.netbeans.modules.projectuiapi/1 1.43
+     */
+    public static Action[] forType(String projectType) {
+        List<? extends Action> actions = org.openide.util.Utilities.actionsForPath("Projects/" + projectType + "/Actions");
+        return actions.toArray(new Action[actions.size()]);
     }
 
 }

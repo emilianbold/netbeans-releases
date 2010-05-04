@@ -152,8 +152,7 @@ final class ExplorerActionsImpl {
 
         // Sets action state updater and registers listening on manager and
         // exclipboard.
-        actionStateUpdater = new ActionStateUpdater();
-        manager.addPropertyChangeListener(WeakListeners.propertyChange(actionStateUpdater, manager));
+        actionStateUpdater = new ActionStateUpdater(manager);
 
         Clipboard c = getClipboard();
 
@@ -171,11 +170,12 @@ final class ExplorerActionsImpl {
 
     /** Detach from manager currently being listened on. */
     public synchronized void detach() {
-        if (manager == null) {
+        if (manager == null || actionStateUpdater == null) {
             return;
         }
 
         // Unregisters (weak) listening on manager and exclipboard (see attach).
+        actionStateUpdater.unlisten(manager);
         actionStateUpdater = null;
 
         stopActions();
@@ -669,27 +669,37 @@ final class ExplorerActionsImpl {
      * them if they are frequent and performs the update of actions state. */
     private class ActionStateUpdater implements PropertyChangeListener, ClipboardListener, ActionListener, Runnable {
         private final Timer timer;
+        private final PropertyChangeListener weakL;
 
-        ActionStateUpdater() {
+        ActionStateUpdater(ExplorerManager m) {
             timer = new Timer(200, this);
             timer.setCoalesce(true);
             timer.setRepeats(false);
+            weakL = WeakListeners.propertyChange(this, m);
+            m.addPropertyChangeListener(weakL);
+        }
+
+        void unlisten(ExplorerManager m) {
+            m.removePropertyChangeListener(weakL);
         }
 
         boolean updateScheduled() {
             return timer.isRunning();
         }
 
+        @Override
         public synchronized void propertyChange(PropertyChangeEvent e) {
             timer.restart();
         }
 
+        @Override
         public void clipboardChanged(ClipboardEvent ev) {
             if (!ev.isConsumed()) {
                 Mutex.EVENT.readAccess(this);
             }
         }
 
+        @Override
         public void run() {
             ExplorerManager em = manager;
 
@@ -698,6 +708,7 @@ final class ExplorerActionsImpl {
             }
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt) {
             updateActions(true);
         }

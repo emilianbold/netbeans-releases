@@ -46,7 +46,7 @@ Portions Copyrighted 2008 Sun Microsystems, Inc.
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.libs.commons_logging/modules/ext/commons-logging-1.1.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.cglib/modules/ext/cglib-2.2.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring/spring-2.5.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring/spring-2.5.6.SEC01.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
@@ -57,6 +57,6 @@ Portions Copyrighted 2008 Sun Microsystems, Inc.
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring/2.5/spring-2.5.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring/2.5.6.SEC01/spring-2.5.6.SEC01.pom</resource>
     </volume>
 </library>

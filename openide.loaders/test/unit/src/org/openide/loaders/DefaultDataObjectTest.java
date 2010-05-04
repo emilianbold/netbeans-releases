@@ -43,6 +43,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
@@ -204,8 +205,9 @@ public class DefaultDataObjectTest extends NbTestCase {
 
         Node[] newNodes = obj.getFolder().getNodeDelegate().getChildren().getNodes();
         assertEquals("One new node", 1, newNodes.length);
-        assertEquals("the new obj", newObj, newNodes[0].getLookup().lookup(DataObject.class));
-
+        assertEquals("the new obj.\nOld nodes: " + Arrays.toString(origNodes) + "\nNew nodes: " + Arrays.toString(newNodes),
+            newObj, newNodes[0].getLookup().lookup(DataObject.class)
+        );
     }
 
     private JEditorPane[] getEPanes(final EditorCookie ec) throws Exception {

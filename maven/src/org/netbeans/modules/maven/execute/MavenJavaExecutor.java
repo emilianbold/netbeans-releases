@@ -447,7 +447,12 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
             java.lang.reflect.Field fld = shutdown.getDeclaredField("hooks"); //NOI18N
             if (fld != null) {
                 fld.setAccessible(true);
-                Collection set = (Collection) fld.get(null);
+                Object o = fld.get(null);
+                if (!(o instanceof Collection)) {
+                    //TODO what object are we using now?
+                    return;
+                }
+                Collection set = (Collection) o;
                 if (set != null) {
                     // objects are Shutdown.WrappedHook instances
                     for (Object wr : new ArrayList(set)) {

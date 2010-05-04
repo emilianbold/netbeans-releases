@@ -74,7 +74,6 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                                         <xsd:enumeration value="boot"/>
                                         <xsd:enumeration value="compile"/>
                                         <xsd:enumeration value="execute"/>
-                                        <xsd:enumeration value="processor"/>
                                     </xsd:restriction>
                                 </xsd:simpleType>
                             </xsd:attribute>

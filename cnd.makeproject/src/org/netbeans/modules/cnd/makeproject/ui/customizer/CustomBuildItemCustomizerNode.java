@@ -56,6 +56,9 @@ class CustomBuildItemCustomizerNode extends CustomizerNode {
     @Override
     public Sheet getSheet(Configuration configuration) {
         ItemConfiguration itemConfiguration = getContext().getItem().getItemConfiguration(configuration);
-        return itemConfiguration.getCustomToolConfiguration().getSheet();
+        if (itemConfiguration != null) {
+            return itemConfiguration.getCustomToolConfiguration().getSheet();
+        }
+        return null;
     }
 }

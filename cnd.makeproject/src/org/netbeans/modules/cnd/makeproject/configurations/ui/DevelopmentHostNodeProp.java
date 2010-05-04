@@ -90,10 +90,12 @@ public class DevelopmentHostNodeProp extends Node.Property {
         }
     }
 
+    @Override
     public Object getValue() {
         return configuration.getValue();
     }
 
+    @Override
     public void setValue(Object value) {
         configuration.setValue((String) value, true);
     }
@@ -113,10 +115,12 @@ public class DevelopmentHostNodeProp extends Node.Property {
         return !configuration.getModified();
     }
 
+    @Override
     public boolean canWrite() {
         return canWrite;
     }
 
+    @Override
     public boolean canRead() {
         return true;
     }
@@ -170,6 +174,7 @@ public class DevelopmentHostNodeProp extends Node.Property {
             return new DevelopmentHostCustomizer(configuration, this, env);
         }
 
+        @Override
         public void attachEnv(PropertyEnv env) {
             this.env = env;
         }

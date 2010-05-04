@@ -78,7 +78,7 @@ import static org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.NO_R
 /**
  * @author Tomas Mysik
  */
-public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
+public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -5592669886554191271L;
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
@@ -131,6 +131,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
         // remote connection
         ComboBoxSelectedItemConvertor remoteConfigurationConvertor = new ComboBoxSelectedItemConvertor() {
+            @Override
             public String convert(JComboBox comboBox) {
                 RemoteConfiguration remoteConfiguration = (RemoteConfiguration) comboBox.getSelectedItem();
                 assert remoteConfiguration != null;
@@ -141,6 +142,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 remoteConnectionComboBox, remoteConfigurationConvertor));
         // remote upload
         ComboBoxSelectedItemConvertor remoteUploadConvertor = new ComboBoxSelectedItemConvertor() {
+            @Override
             public String convert(JComboBox comboBox) {
                 UploadFiles uploadFiles = (UploadFiles) comboBox.getSelectedItem();
                 assert uploadFiles != null;
@@ -151,6 +153,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadFilesComboBox.addActionListener(new ComboBoxUpdater(RunConfigurationPanel.REMOTE_UPLOAD, uploadFilesLabel, uploadFilesComboBox,
                 remoteUploadConvertor));
         runAsComboBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 changeSupport.fireChange();
             }
@@ -158,6 +161,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         // upload directory hint
         remoteConnectionComboBox.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     updateRemoteConnectionHint();
@@ -165,12 +169,15 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             }
         });
         uploadDirectoryTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 processUpdate();
             }
@@ -558,6 +565,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             return value;
         }
 
+        @Override
         protected final String getDefaultValue() {
             return RunAsRemoteWeb.this.getDefaultValue(getPropName());
         }
@@ -580,6 +588,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             this.comboBoxConvertor = comboBoxConvertor;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             String value = comboBoxConvertor.convert(field);
             RunAsRemoteWeb.this.putValue(propName, value);

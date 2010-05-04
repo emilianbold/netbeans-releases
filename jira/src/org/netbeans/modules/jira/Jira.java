@@ -40,7 +40,10 @@
 package org.netbeans.modules.jira;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,6 +58,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
+import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.issue.JiraIssueProvider;
 import org.netbeans.modules.jira.kenai.KenaiSupportImpl;
@@ -86,6 +90,8 @@ public class Jira {
     private JiraConnector connector;
     
     private Jira() {
+        BugtrackingRuntime.init();
+
         ModuleLifecycleManager.instantiated = true;
         jcp = new JiraCorePlugin();
         try {
@@ -108,9 +114,20 @@ public class Jira {
             instance = new Jira();
             REPOSITORIES_STORE = BugtrackingRuntime.getInstance().getCacheStore().getAbsolutePath() + "/jira/repositories";
             new File(REPOSITORIES_STORE).getParentFile().mkdirs();
-            JiraIssueProvider.getInstance();
+
+            // lazy ping tasklist issue provider to load issues ...
+            instance.getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    JiraIssueProvider.getInstance();
+                }
+            });
         }
         return instance;
+    }
+
+    static void init() {
+        getInstance();
     }
 
     public void storeTaskData(JiraRepository repository, TaskData data) throws CoreException {
@@ -137,28 +154,34 @@ public class Jira {
     }
 
     public void addRepository(JiraRepository repository) {
+        Collection<Repository> oldRepos;
+        Collection<Repository> newRepos;
         synchronized(REPOSITORIES_LOCK) {
+            Set<JiraRepository> repos = getStoredRepositories();
+            oldRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
             if(!(repository instanceof KenaiRepository)) {
                 // we don't store kenai repositories - XXX  shouldn't be even called
-                getStoredRepositories().add(repository);
+                repos.add(repository);
                 JiraConfig.getInstance().putRepository(repository.getID(), repository);
             }
-            BugtrackingRuntime
-                    .getInstance()
-                    .getTaskRepositoryManager()
-                    .addRepository(repository.getTaskRepository());
+            newRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
         }
-        getConnector().fireRepositoriesChanged();
+        getConnector().fireRepositoriesChanged(oldRepos, newRepos);
     }
 
     public void removeRepository(JiraRepository repository) {
+        Collection<Repository> oldRepos;
+        Collection<Repository> newRepos;
         synchronized(REPOSITORIES_LOCK) {
-            getStoredRepositories().remove(repository);
+            Set<JiraRepository> repos = getStoredRepositories();
+            oldRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
+            repos.remove(repository);
+            newRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
             JiraConfig.getInstance().removeRepository(repository.getID());
             BugtrackingRuntime br = BugtrackingRuntime.getInstance();
             br.getTaskRepositoryManager().removeRepository(repository.getTaskRepository(), REPOSITORIES_STORE);
         }
-        getConnector().fireRepositoriesChanged();
+        getConnector().fireRepositoriesChanged(oldRepos, newRepos);
         JiraIssueProvider.getInstance().removeAllFor(repository);
     }
 

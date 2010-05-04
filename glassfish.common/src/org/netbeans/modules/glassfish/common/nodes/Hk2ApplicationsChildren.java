@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -71,12 +71,15 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
         this.lookup = lookup;
     }
 
+    @Override
     public void updateKeys(){
         setKeys(new Object[] { WAIT_NODE });
         
-        RequestProcessor.getDefault().post(new Runnable() {
+        RequestProcessor t = new RequestProcessor("app-child-updater");
+        t.post(new Runnable() {
             Vector<Object> keys = new Vector<Object>();
             
+            @Override
             public void run() {
                 GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
                 if(commonSupport != null) {
@@ -111,6 +114,7 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
         setKeys((Set<? extends Object>) java.util.Collections.EMPTY_SET);
     }
     
+    @Override
     protected org.openide.nodes.Node[] createNodes(Object key) {
         if (key instanceof Hk2ItemNode){
             return new Node [] { (Hk2ItemNode) key };

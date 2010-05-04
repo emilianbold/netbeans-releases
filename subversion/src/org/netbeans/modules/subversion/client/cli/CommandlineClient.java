@@ -54,6 +54,7 @@ import org.netbeans.modules.subversion.client.cli.commands.AddCommand;
 import org.netbeans.modules.subversion.client.cli.commands.BlameCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CatCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CheckoutCommand;
+import org.netbeans.modules.subversion.client.cli.commands.CleanupCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CommitCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CopyCommand;
 import org.netbeans.modules.subversion.client.cli.commands.ExportCommand;
@@ -138,7 +139,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             checkErrors(cmd);            
             if(!cmd.checkForErrors()) {
                 if (cmd.isUnsupportedVersion()) {
-                    Subversion.LOG.log(Level.WARNING, "Unsupported svn version. You need >= 1.3");
+                    Subversion.LOG.log(Level.WARNING, "Unsupported svn version. You need >= 1.5");
                 }
                 throw new SVNClientException(ERR_CLI_NOT_AVALABLE + "\n" + cmd.getOutput());               
             }                       
@@ -933,8 +934,10 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void cleanup(File arg0) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @Override
+    public void cleanup(File file) throws SVNClientException {
+        CleanupCommand cmd = new CleanupCommand(file);
+        exec(cmd);
     }
 
     private void notifyChangedStatus(File file, boolean rec, ISVNStatus[] oldStatuses) throws SVNClientException {

@@ -42,8 +42,8 @@ package org.netbeans.modules.apisupport.project.api;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
-import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
-import org.netbeans.modules.apisupport.project.ui.customizer.BrandingEditor;
+import org.netbeans.modules.apisupport.project.ui.branding.BasicBrandingModel;
+import org.netbeans.modules.apisupport.project.ui.branding.BrandingEditor;
 import org.openide.util.NbBundle;
 
 /**

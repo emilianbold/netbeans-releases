@@ -6,7 +6,7 @@
   <body>
     <?php
     // put your code here
-    
+
     foo();
 //        foo();
     foo();

@@ -277,8 +277,8 @@ final class NewTCIterator extends BasicWizardIterator {
         
         // 2. update project dependencies
         replaceTokens.put("MODULENAME", moduleInfo.getCodeNameBase()); // NOI18N
-        //TODO how to figure the currect specification version for module?
-        replaceTokens.put("SPECVERSION", moduleInfo.getSpecVersion()); // NOI18N
+        String specVersion = moduleInfo.getSpecVersion();
+        replaceTokens.put("SPECVERSION", specVersion != null ? specVersion : "0"); // NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
         fileChanges.add(fileChanges.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, WindowManager.class.getName()));
         fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N

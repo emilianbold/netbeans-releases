@@ -257,15 +257,26 @@ public abstract class DocumentModelAccess extends ModelAccess {
 
     public abstract Node getNewEventParentNode(PropertyChangeEvent evt);
     
-    public String lookupNamespaceURI(Node node, List<Node> pathToRoot) {
+    public String lookupNamespaceURI(Node node, List<? extends Node> pathToRoot) {
         String prefix = node.getPrefix();
         if (prefix == null) prefix = ""; //NOI18N
         String namespace = node.lookupNamespaceURI(prefix);
         if (namespace == null) {
+            boolean skipDeeperNodes = true;
             for (Node n : pathToRoot) {
-                namespace = n.lookupNamespaceURI(prefix);
-                if (namespace != null) {
-                    break;
+                if (skipDeeperNodes) {
+                    // The target node has to be inside of pathToRoot. 
+                    // But it can be not a top element of the list. 
+                    // It's necessary to skip items until the target node 
+                    // isn't found in the list.
+                    if (areSameNodes(n, node)) {
+                        skipDeeperNodes = false;
+                    }
+                } else {
+                    namespace = n.lookupNamespaceURI(prefix);
+                    if (namespace != null) {
+                        break;
+                    }
                 }
             }
         }
@@ -273,6 +284,8 @@ public abstract class DocumentModelAccess extends ModelAccess {
     }
     
     private long dirtyTimeMillis = 0;
+
+    @Override
     public long dirtyIntervalMillis() {
         if (dirtyTimeMillis == 0) return 0;
         return System.currentTimeMillis() - dirtyTimeMillis;
@@ -282,6 +295,7 @@ public abstract class DocumentModelAccess extends ModelAccess {
         dirtyTimeMillis = System.currentTimeMillis();
     }
     
+    @Override
     public void unsetDirty() {
         dirtyTimeMillis = 0;
     }

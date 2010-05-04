@@ -70,9 +70,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
-
-
-
 /**
  *
  * @author Sonali Kochar
@@ -80,7 +77,6 @@ import org.openide.util.NbBundle;
 public class WSDLMoveRefactoringPlugin extends WSDLRefactoringPlugin  implements XMLRefactoringPlugin {
     
     private MoveRefactoring request;
-  //  List<RefactoringElementImplementation> elements;
    
     public void cancelRequest() {
         
@@ -96,8 +92,7 @@ public class WSDLMoveRefactoringPlugin extends WSDLRefactoringPlugin  implements
         }
         return null;
     }
-    
-    
+
     /**
      * Creates a new instance of XMLWhereUsedRefactoringPlugin
      */
@@ -116,14 +111,10 @@ public class WSDLMoveRefactoringPlugin extends WSDLRefactoringPlugin  implements
      * @return Problems found or null (if no problems were identified)
      */
     public Problem checkParameters() {
-              
-              
         return null;
-       
-        
     }
 
-/** Collects refactoring elements for a given refactoring.
+   /** Collects refactoring elements for a given refactoring.
      * @param refactoringElements Collection of refactoring elements - the implementation of this method
      * should add refactoring elements to this collections. It should make no assumptions about the collection
      * content.
@@ -159,16 +150,16 @@ public class WSDLMoveRefactoringPlugin extends WSDLRefactoringPlugin  implements
         }
         
         List<WSDLRefactoringElement> elements = new ArrayList<WSDLRefactoringElement>();
+
         for (Component root : searchRoots) {
             List<WSDLRefactoringElement> founds = find(obj, root);
             if (founds != null && founds.size() > 0) {
-                   elements.addAll(founds);
+                elements.addAll(founds);
             }
         }
-       
-       
-         //register with the gloabl XML transaction object
-         transaction.register((XMLRefactoringPlugin)this, elements);
+
+        //register with the gloabl XML transaction object
+        transaction.register((XMLRefactoringPlugin)this, elements);
         
         //register with the Refactoring API
         refactoringElements.registerTransaction(transaction);
@@ -193,25 +184,33 @@ public class WSDLMoveRefactoringPlugin extends WSDLRefactoringPlugin  implements
         return null;
     }
     
-    
-   /** Does the change for a given refactoring.
-     * @param refactoringElements Collection of refactoring elements 
-     */
       public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
-        //System.out.println("WSDL Move refactoring called");
-          Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = getModelMap(elements);
+//System.out.println();
+//System.out.println();
+//new Exception("!!!").printStackTrace();
+//System.out.println();
+//System.out.println("WSDL Move: " + elements.size());
+//System.out.println();
+        Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = getModelMap(elements);
         Set<Model> models = modelsInRefactoring.keySet();
         Referenceable obj = request.getRefactoringSource().lookup(Referenceable.class);
+//System.out.println("map: " + models.size());
+
         for (Model model : models) {
-            if(obj instanceof WSDLModel ) {
-                 new WSDLRefactoringEngine()._refactorUsages(model, modelsInRefactoring.get(model), request);
-            } else {
+//System.out.println("  see: " + model.getModelSource().getLookup().lookup(FileObject.class));
+
+            if (obj instanceof WSDLModel) {
+//System.out.println("1");
+                new WSDLRefactoringEngine()._refactorUsages(model, modelsInRefactoring.get(model), request);
+            }
+            else {
+//System.out.println("2");
                 new SchemaUsageRefactoringEngine()._refactorUsages(model, modelsInRefactoring.get(model), request);
             }
         }
-      }   
-    
-  public void setModelReference(Component component, String location) {
+    }   
+   
+    public void setModelReference(Component component, String location) {
         if(component instanceof Import){
             Model model = component.getModel();
             boolean startTransaction = ! model.isIntransaction();
@@ -225,4 +224,3 @@ public class WSDLMoveRefactoringPlugin extends WSDLRefactoringPlugin  implements
         }
     }  
 }
-

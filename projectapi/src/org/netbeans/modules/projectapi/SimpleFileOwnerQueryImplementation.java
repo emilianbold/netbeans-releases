@@ -143,10 +143,10 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
             }
             
             if (!externalOwners.isEmpty() && (folder || externalRootsIncludeNonFolders)) {
-                Reference<FileObject> externalOwnersReference = externalOwners.get(fileObject2URI(f));
+                URI externalOwnersURI = externalOwners.get(fileObject2URI(f));
 
-                if (externalOwnersReference != null) {
-                    FileObject externalOwner = externalOwnersReference.get();
+                if (externalOwnersURI != null) {
+                    FileObject externalOwner = uri2FileObject(externalOwnersURI);
 
                     if (externalOwner != null && externalOwner.isValid()) {
                         try {
@@ -192,15 +192,13 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     /**
      * Map from external source roots to the owning project directories.
      */
-    private static final Map<URI,Reference<FileObject>> externalOwners =
-        Collections.synchronizedMap(new WeakHashMap<URI,Reference<FileObject>>());
+    private static final Map<URI,URI> externalOwners =
+        Collections.synchronizedMap(new HashMap<URI,URI>());
     
     private static final Map<URI,FileObject> deserializedExternalOwners =
         Collections.synchronizedMap(new HashMap<URI,FileObject>());
     
     private static boolean externalRootsIncludeNonFolders = false;
-    private static final Map<FileObject,Collection<URI>> project2External =
-        Collections.synchronizedMap(new WeakHashMap<FileObject,Collection<URI>>());
     
     
     static void deserialize() {
@@ -225,12 +223,10 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         try {
             Preferences p = NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners");
             for (URI uri : externalOwners.keySet()) {
-               Reference<FileObject> fo = externalOwners.get(uri);
-               FileObject fileObject = fo.get();
-               if (fileObject != null) {
-                    p.put(uri.toString(), fileObject.getURL().toExternalForm()); 
-               }
+                URI ownerURI = externalOwners.get(uri);
+                p.put(uri.toString(), ownerURI.toString());
             }
+            p.sync(); // #184310
         } catch (Exception ex) {
             LOG.log(Level.WARNING, null, ex);
         }
@@ -260,35 +256,10 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         externalRootsIncludeNonFolders |= !root.getPath().endsWith("/");
         if (owner != null) {
             FileObject fo = owner.getProjectDirectory();
-            externalOwners.put(root, new WeakReference<FileObject>(fo));
+            externalOwners.put(root, fileObject2URI(fo));
             deserializedExternalOwners.remove(root);
-            synchronized (project2External) {
-                FileObject prjDir = owner.getProjectDirectory();
-                Collection<URI> roots = project2External.get (prjDir);
-                if (roots == null) {
-                    roots = new LinkedList<URI>();
-                    project2External.put(prjDir, roots);
-                }
-                roots.add (root);                
-            }
         } else {
-            Reference<FileObject> ownerReference = externalOwners.remove(root);
-            
-            if (ownerReference != null) {
-                FileObject ownerFO = ownerReference.get();
-                
-                if (ownerFO != null) {
-                    synchronized (project2External) {
-                        Collection<URI> roots = project2External.get(ownerFO);
-                        if (roots != null) {
-                            roots.remove(root);
-                            if (roots.size() == 0) {
-                                project2External.remove(ownerFO);
-                            }
-                        }
-                    }
-                }
-            }
+            externalOwners.remove(root);
         }
     }
     

@@ -53,13 +53,10 @@ import org.openide.awt.HtmlBrowser;
 
 
 public class ReportPanel extends javax.swing.JPanel {
-    private final ExceptionsSettings exSettings = new ExceptionsSettings();
-
-    /** Creates new form ReportPanel */
-    public ReportPanel() {
-        this(false);
-    }
-    public ReportPanel(boolean isOOM) {
+    private final ExceptionsSettings exSettings;
+    
+    public ReportPanel(boolean isOOM, ExceptionsSettings exSettings) {
+        this.exSettings = exSettings;
         initComponents();
         if (isOOM){
             oomInfo.setVisible(true);
@@ -311,16 +308,12 @@ public class ReportPanel extends javax.swing.JPanel {
             return loginField.getText().trim();
         }
 
-        public String getPasswd(){
-            return new String(getPasswdChars());
-        }
-
         public char[] getPasswdChars(){
-            char[] passwd = jPasswordField1.getPassword();
-            if (passwd.length > PasswdEncryption.MAX_ENCRYPTION_LENGHT){
-                passwd = copyOf(passwd, PasswdEncryption.MAX_ENCRYPTION_LENGHT);
+            char[] localPasswd = jPasswordField1.getPassword();
+            if (localPasswd.length > PasswdEncryption.MAX_ENCRYPTION_LENGHT){
+                localPasswd = copyOf(localPasswd, PasswdEncryption.MAX_ENCRYPTION_LENGHT);
             }
-            return passwd;
+            return localPasswd;
         }
 
         public static char[] copyOf(char[] original, int newLength) {

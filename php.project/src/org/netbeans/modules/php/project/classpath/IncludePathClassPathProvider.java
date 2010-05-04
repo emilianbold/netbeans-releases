@@ -57,12 +57,16 @@ import org.openide.util.WeakSet;
 @org.openide.util.lookup.ServiceProvider(service = ClassPathProvider.class, position = 200)
 public class IncludePathClassPathProvider implements ClassPathProvider {
     static Set<ClassPath> projectIncludes = new WeakSet<ClassPath>();
+
     /** Default constructor for lookup. */
     public IncludePathClassPathProvider() {
     }
+
     public static void addProjectIncludePath(ClassPath cp) {
         projectIncludes.add(cp);
     }
+
+    @Override
     public ClassPath findClassPath(FileObject file, String type) {
         if (FileUtils.isPhpFile(file)) {
             FileType fileType = PhpSourcePath.getFileType(file);

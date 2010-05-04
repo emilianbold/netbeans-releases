@@ -63,6 +63,8 @@ import org.openide.util.RequestProcessor;
 
 public final class AsyncCompletionTask implements CompletionTask, Runnable {
     
+    private static final RequestProcessor RP = new RequestProcessor("Code Completion", 1, false, false); //NOI18N
+
     private final AsyncCompletionQuery query;
     
     private final JTextComponent component;
@@ -77,7 +79,7 @@ public final class AsyncCompletionTask implements CompletionTask, Runnable {
 
     private RequestProcessor.Task rpTask;
     
-    /** Whether this task is cancelled. */
+    /** Whether this task is canceled. */
     private boolean cancelled;
 
     /** Whether query was already invoked on this task. */    
@@ -171,7 +173,7 @@ public final class AsyncCompletionTask implements CompletionTask, Runnable {
         query.prepareQuery(component);
         synchronized (this) {
             queryResultSet = resultSet;
-            rpTask = RequestProcessor.getDefault().post(this);
+            rpTask = RP.post(this);
         }
     }
     

@@ -28,10 +28,15 @@
 package org.netbeans.modules.spellchecker.bindings.htmlxml;
 
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
 
 /**
  * Tokenize RHTML for spell checking: Spell check Ruby comments AND HTML text content!
@@ -40,18 +45,29 @@ import org.netbeans.editor.BaseDocument;
  */
 public class XmlTokenList extends AbstractTokenList {
 
+
+    private boolean hidden = false;
+
     public XmlTokenList(BaseDocument doc) {
         super(doc);
     }
 
-    /** Given a sequence of HTML/XML tokens, return the next span of eligible comments */
     @Override
-    protected int[] findNextSpellSpan(TokenSequence<? extends TokenId> ts, int offset) throws BadLocationException {
-        if (ts == null) {
+    public void setStartOffset(int offset) {
+        super.setStartOffset (offset);
+        FileObject fileObject = FileUtil.getConfigFile ("Spellcheckers/XML");
+        Boolean b = (Boolean) fileObject.getAttribute ("Hidden");
+        hidden = Boolean.TRUE.equals (b);
+    }
+
+    protected int[] findNextSpellSpan() throws BadLocationException {
+        TokenHierarchy<Document> h = TokenHierarchy.get((Document) doc);
+        TokenSequence<?> ts = h.tokenSequence();
+        if (ts == null || hidden) {
             return new int[]{-1, -1};
         }
 
-        ts.move(offset);
+        ts.move(nextSearchOffset);
 
         while (ts.moveNext()) {
             TokenId id = ts.token().id();

@@ -65,6 +65,7 @@ public class PhpProjectEncodingQueryImpl extends FileEncodingQueryImplementation
         this.eval.addPropertyChangeListener(this);
     }
 
+    @Override
     public Charset getEncoding(FileObject file) {
         assert file != null;
         synchronized (this) {
@@ -88,6 +89,7 @@ public class PhpProjectEncodingQueryImpl extends FileEncodingQueryImplementation
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent event) {
         String propName = event.getPropertyName();
         if (propName == null || propName.equals(PhpProjectProperties.SOURCE_ENCODING)) {

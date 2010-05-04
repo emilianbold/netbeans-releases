@@ -84,6 +84,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class Analyzer implements Runnable {
     public static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(Analyzer.class.getName(), 1, false, false);
 
     private final Lookup context;
     private final AtomicBoolean cancel;
@@ -184,7 +185,7 @@ public class Analyzer implements Runnable {
         
         ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(Analyzer.class, "LBL_AnalyzingJavadoc"), new Cancel()); // NOI18N
 
-        RequestProcessor.getDefault().post(new Analyzer(context, abCancel, h, preferencesOverlay));
+        RP.post(new Analyzer(context, abCancel, h, preferencesOverlay));
     }
     
     public static Lookup normalizeLookup(Lookup l) {

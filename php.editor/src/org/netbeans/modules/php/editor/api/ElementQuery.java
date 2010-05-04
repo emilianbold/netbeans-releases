@@ -51,6 +51,7 @@ import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
+import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.openide.filesystems.FileObject;
 
@@ -82,6 +83,8 @@ public interface ElementQuery {
 
     Set<InterfaceElement> getInterfaces(NameKind query);
 
+    Set<TypeElement> getTypes(NameKind query);
+    
     Set<FunctionElement> getFunctions();
 
     Set<FunctionElement> getFunctions(NameKind query);
@@ -103,7 +106,7 @@ public interface ElementQuery {
     Set<MethodElement> getMethods(NameKind methodQuery);
 
     Set<FieldElement> getFields(NameKind fieldQuery);
-
+        
     Set<TypeConstantElement> getTypeConstants(NameKind constantQuery);
 
     Set<PhpElement> getTopLevelElements(NameKind query);
@@ -136,12 +139,16 @@ public interface ElementQuery {
 
         public LinkedHashSet<InterfaceElement> getDirectInheritedInterfaces(final TypeElement typeElement);
 
+        public LinkedHashSet<TypeElement> getDirectInheritedByTypes(final TypeElement typeElement);
+
+        public LinkedHashSet<TypeElement> getInheritedByTypes(final TypeElement typeElement);
         /**
          * @return all extended classes (see method getInheritedClasses) + implemented interfaces (see method getInheritedInterfaces)
          * recursively
          */
         LinkedHashSet<TypeElement> getInheritedTypes(TypeElement typeElement);
-
+        TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement);
+        TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement, final Set<TypeElement> preferredTypes);
         /**
          * @return all extended classes recursively
          */

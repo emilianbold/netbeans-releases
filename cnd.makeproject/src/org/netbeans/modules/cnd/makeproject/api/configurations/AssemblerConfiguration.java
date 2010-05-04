@@ -108,12 +108,15 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration {
             return "";
         }
         AbstractCompiler compiler = (AbstractCompiler) tool;
-        AssemblerConfiguration master = (AssemblerConfiguration) getMaster();
 
         String options = ""; // NOI18N
         options += getAsFlagsBasic(compiler) + " "; // NOI18N
-        if (master != null) {
+        AssemblerConfiguration master = this;
+        while (master != null) {
             options += master.getCommandLineConfiguration().getValue() + " "; // NOI18N
+            master = (AssemblerConfiguration)master.getMaster();
+        }
+        if (master != null) {
         }
         options += getAllOptions2(compiler) + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);

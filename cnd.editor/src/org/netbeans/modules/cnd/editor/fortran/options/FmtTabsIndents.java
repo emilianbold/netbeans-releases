@@ -55,6 +55,7 @@ public class FmtTabsIndents extends JPanel {
     public FmtTabsIndents() {
         initComponents();
         freeFormatCheckBox.putClientProperty(FmtOptions.CategorySupport.OPTION_ID, FmtOptions.freeFormat);
+        autoDetect.putClientProperty(FmtOptions.CategorySupport.OPTION_ID, FmtOptions.autoDetect);
     }
 
     public static PreferencesCustomizer.Factory getController() {
@@ -73,26 +74,37 @@ public class FmtTabsIndents extends JPanel {
     private void initComponents() {
 
         freeFormatCheckBox = new javax.swing.JCheckBox();
+        autoDetect = new javax.swing.JCheckBox();
 
         setName(null);
         setOpaque(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(freeFormatCheckBox, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_Free_Format")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(autoDetect, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_AUTO_DETECT")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(freeFormatCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(autoDetect, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(freeFormatCheckBox, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE))
+                .addContainerGap(17, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(freeFormatCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(freeFormatCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(autoDetect))
         );
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox autoDetect;
     private javax.swing.JCheckBox freeFormatCheckBox;
     // End of variables declaration//GEN-END:variables
     

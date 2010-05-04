@@ -127,7 +127,7 @@ public final class RefactoringContextAction extends AbstractAction implements Co
                     : null;
 
             if (actionProvider != null) {
-                return actionProvider.getMenuItems(popup);
+                return actionProvider.getMenuItems(popup, context);
             } else {
                 return EMPTY_CONTENT;
             }

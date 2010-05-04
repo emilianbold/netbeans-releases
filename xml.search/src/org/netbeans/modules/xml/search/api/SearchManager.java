@@ -43,6 +43,7 @@ package org.netbeans.modules.xml.search.api;
 import java.awt.Component;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import org.openide.util.Lookup;
 import org.netbeans.modules.xml.search.spi.SearchProvider;
 
@@ -52,27 +53,36 @@ import org.netbeans.modules.xml.search.spi.SearchProvider;
  */
 public abstract class SearchManager {
 
-  /**
-   * Shows search for given provider.
-   * @param provider is given provider
-   */
-  public abstract void showSearch(SearchProvider provider);
+    /**
+     * Shows search for the given provider.
+     * @param provider the given provider
+     */
+    public abstract void showSearch(SearchProvider provider);
 
-  /**
-   * Returns find for given root and parent.
-   * @param root where find will be perfromed
-   * @param parent is component where ui will be placed
-   * @return find
-   */
-  public abstract Component createFind(Object root, JComponent parent);
+    /**
+     * Returns find for the given root and parent.
+     * @param root where find will be perfromed
+     * @param parent component where ui will be placed
+     * @return find
+     */
+    public abstract Component createFind(Object root, JComponent parent);
 
-  /**
-   * Returns Search action.
-   * @return Search action
-   */
-  public abstract Action getSearchAction();
+    /**
+     * Returns find for the given root and parent.
+     * @param root where find will be perfromed
+     * @param parent component where ui will be placed
+     * @param panel being added to Find panel
+     * @return find
+     */
+    public abstract Component createFind(Object root, JComponent parent, JPanel panel);
 
-  public static SearchManager getDefault() {
-    return (SearchManager) Lookup.getDefault().lookup(SearchManager.class);
-  }
+    /**
+     * Returns Search action.
+     * @return Search action
+     */
+    public abstract Action getSearchAction();
+
+    public static SearchManager getDefault() {
+        return (SearchManager) Lookup.getDefault().lookup(SearchManager.class);
+    }
 }

@@ -175,7 +175,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     }
 
     public void testBegin() throws Exception {
-        RubyTypeInferencer instance = getInferencer("types2.rb", " @f^iles = ARGV.dup", true);
+        RubyTypeInferencer instance = getInferencer("types2.rb", " @f^iles = ARGV.dup", false);
         assertTypes(instance.inferType("go"), "GetoptLong");
     }
 
@@ -231,6 +231,11 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
 
     public void testUnlessType() throws Exception {
         assertTypes("unless_type.rb", "var.i^", "var", "Array", "Hash");
+    }
+
+    public void testForType() throws Exception {
+        assertTypes("for_type.rb", "tmp^ = i", "i", false, "Fixnum");
+        assertTypes("for_type.rb", "s^ = j", "j", false, "String");
     }
 
     public void testEqualsType() throws Exception {

@@ -43,10 +43,12 @@ package org.netbeans.modules.spellchecker.completion;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.spellchecker.ComponentPeer;
 import org.netbeans.modules.spellchecker.spi.dictionary.Dictionary;
+import org.netbeans.modules.spellchecker.spi.dictionary.ValidityType;
 import org.netbeans.modules.spellchecker.spi.language.TokenList;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -54,6 +56,7 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.ErrorManager;
+
 
 /**
  *
@@ -79,15 +82,15 @@ public class WordCompletion implements CompletionProvider {
     
     private static class Query extends AsyncCompletionQuery {
         
-        protected void query(CompletionResultSet resultSet, Document doc, final int caretOffset) {
-            Dictionary d = ComponentPeer.getDictionary(doc);
-            final TokenList  l = ComponentPeer.ACCESSOR.lookupTokenList(doc);
+        protected void query(CompletionResultSet resultSet, Document document, final int caretOffset) {
+            Dictionary dictionary = ComponentPeer.getDictionary(document);
+            final TokenList  l = ComponentPeer.ACCESSOR.lookupTokenList(document);
             
-            if (d != null && l != null && doc instanceof BaseDocument) {
-                final BaseDocument bdoc = (BaseDocument) doc;
-                final String[] prefix = new String[1];
+            if (dictionary != null && l != null && document instanceof BaseDocument) {
+                final BaseDocument bdoc = (BaseDocument) document;
+                final String[] text = new String[2];
                 
-                doc.render(new Runnable() {
+                document.render(new Runnable() {
                     public void run() {
                         try {
                             int lineStart = Utilities.getRowStart(bdoc, caretOffset);
@@ -99,7 +102,8 @@ public class WordCompletion implements CompletionProvider {
                                 int end   = l.getCurrentWordStartOffset() + l.getCurrentWordText().length();
                                 
                                 if (start < caretOffset && end >= caretOffset) {
-                                    prefix[0] = l.getCurrentWordText().subSequence(0, caretOffset - start).toString();
+                                    text[0] = l.getCurrentWordText().subSequence(0, caretOffset - start).toString();
+                                    text[1] = l.getCurrentWordText().toString();
                                     return ;
                                 }
                             }
@@ -109,9 +113,25 @@ public class WordCompletion implements CompletionProvider {
                     }
                 });
                 
-                if (prefix[0] != null) {
-                    for (String proposal : d.findValidWordsForPrefix(prefix[0])) {
-                        resultSet.addItem(new WordCompletionItem(caretOffset - prefix[0].length(), proposal));
+                if (text[0] != null) {
+                    int i = 0;
+                    for (String proposal : dictionary.findValidWordsForPrefix(text[0])) {
+                        resultSet.addItem (new WordCompletionItem (
+                            caretOffset - text[0].length (),
+                            proposal
+                        ));
+                        if (i == 8) break;
+                        i++;
+                    }
+                    if (dictionary.validateWord (text [1]) != ValidityType.VALID) {
+                        resultSet.addItem (new AddToDictionaryCompletionItem (
+                            text [1],
+                            true
+                        ));
+                        resultSet.addItem (new AddToDictionaryCompletionItem (
+                            text [1],
+                            false
+                        ));
                     }
                 }
             }

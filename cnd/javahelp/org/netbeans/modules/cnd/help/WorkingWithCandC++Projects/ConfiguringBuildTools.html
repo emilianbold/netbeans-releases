@@ -7,21 +7,24 @@ Use is subject to license terms.
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
     <link href="/org/netbeans/modules/usersguide/ide.css" rel="StyleSheet" type="text/css">
-    <meta content="Helen" name="generator">
-    <title>Configuring C and C++ Build Tools</title>
+     
+    <title>Configuring Build Tools for C/C++/Fortran Projects</title>
   </head>
   <body>
     <h2>
-       Configuring C and C++ Build Tools
+       Configuring Build Tools for C/C++/Fortran Projects
     </h2>
     <p>
        <small><a href="#seealso">See Also</a>&nbsp;</small>
     </p>
     <p>
-       You can use the Options window to configure default build tools for your C and C++ projects.
+       The IDE uses the build tools (compilers, debuggers, make utility) that are installed on your system,
+       or on a remote system that you set up as a remote development host.
+       You can use the Options window to configure build tools for your C/C++/Fortran projects. The options
+       that you specify are used by default for all new C/C++/Fortran projects.
     </p>
     <p>
-       <b>To configure C and C++ build tools:</b>
+       <b>To configure build tools:</b>
     </p>
     <ol>
       <li>
@@ -45,8 +48,8 @@ Use is subject to license terms.
         <b>Development Host.</b> The Development Host list includes your local host and any remote
         hosts you have defined. For information on using remote hosts, see <a href=
         "RemoteDevelopment.html">Remote Development</a>. You can add and remove remote development
-        hosts, change the default host, and share project sources on the local host with the remote
-        host. 
+        hosts, change the default host, and change IDE properties of remote development
+        hosts.
         <ul>
           <li>
             To add a remote host, click Edit. In the Development Host Manager dialog box, click
@@ -62,23 +65,17 @@ Use is subject to license terms.
             To set a host as the default development host, select the host from the Development
             Host list and click Set as Default.
           </li>
+         
           <li>
-            To map the project sources on the local host to a remote host, click Path Mapper. In
-            the Edit Path's Map dialog box, select the remote host in the Host list. For each
-            mapping, type the local path to project sources in the Local Path field or use the
-            browse button to navigate the local filesystem and select the project's location. In
-            the Remote Path field, type the path to get to the project sources from the remote
-            host.
-          </li>
-          <li>
-            To change IDE properties related to a remote development host, click Properties. In
+            To change IDE properties related to a remote development host, click Edit. In the Development
+            Host Manager dialog box, select the host you want to change and click Properties. In
             the Host Properties dialog box, you can change the name displayed in the IDE for the
-            host by typing in the Name field. To change the way project files are shared with the
+            host by typing in the Display Name field. To change the way project files are shared with the
             remote host, select the file synchronization method in the Synchronization list. If the
-            project files are in a shared folder accessible from the local host and remote host,
-            select File System Sharing. If sharing the files is not possible, select scp to use the secure copy
-            command to copy the files. The files are copied to your .netbeans directory by default.
-            This can be changed with the Path Mapper.
+            project files are in a shared folder that is accessible from the local host and remote host, you can
+            select File System Sharing. If sharing the files is not possible, select Smart Secure Copy
+            to copy the files. The files are copied using SSH protocols to your .netbeans directory on the remote host by default.
+            
           </li>
         </ul>
       </li>
@@ -86,10 +83,8 @@ Use is subject to license terms.
         <b>Tool Collection.</b> The tool collection list displays the collections found on the
         current development host and the local host. The default collection is listed in bold type.
         This collection is selected by default for any new project you create. You can change the
-        default tool collection for a specific project in the project properties. For the local
-        host, you can modify the list by adding or removing collections.
-      </li>
-      <li style=" list-style-type: none; list-style-image: none;">
+        default tool collection for a specific project in the project properties. You can
+        manually add and remove tool collections.
         <ul>
           <li>
             To add a collection to the list, click Add and specify the base directory in the Add
@@ -103,7 +98,9 @@ Use is subject to license terms.
           </li>
           <li>
             To duplicate a collection, select the collection from the list and modify the base
-            directory, tool set family, or tool set name in the dialog box.
+            directory, tool set family, or tool set name in the dialog box. This might be useful if
+            you have two releases of the same tool collection. You can edit the path to the base directory
+            in the duplicate tool collection to specify the path to the other release.
           </li>
           <li>
             To make a collection the default, select the collection and click Default.
@@ -111,37 +108,43 @@ Use is subject to license terms.
         </ul>
       </li>
       <li>
-        <b>Base Directory.</b> The base directory for compilers for the current development host.
-        These fields can be edited for the local host but not for remote hosts.
+        <b>Base Directory.</b> The base directory for compilers for the current development host. The
+        base directory is often the <tt>bin</tt> directory of the tool collection.
       </li>
       <li style=" list-style-type: none; list-style-image: none;">
         <ul>
           <li>
-            <b>C Compiler.</b> The C compiler to use for building projects. The default compiler is
+            <b>C Compiler.</b> The path to the C compiler to use for building projects. The default compiler is
             the first one found in the base directory.
           </li>
           <li>
-            <b>C++ Compiler.</b> The C++ compiler to use for building projects. The default
-            compiler is the first one found in the selected compiler collection.
-          </li>
-          <li>
-            <b>Fortran Compiler.</b> The Fortran compiler to use for building projects. The default
+            <b>C++ Compiler.</b> The path to the C++ compiler to use for building projects. The default
             compiler is the first one found in the base directory.
           </li>
+          <li>
+            <b>Fortran Compiler.</b> The path to the Fortran compiler to use for building projects. The default
+            compiler is the first one found in the base directory.
+          </li>
+          <li><b>Assembler.</b> The path to the assembler program to use for translating assembly instructions.</li>
+         </li>
         </ul>
       </li>
       <li>
-        <b>Make Command.</b> The make command to use for building projects. The default command is
+        <b>Make Command.</b> The path to the make command to use for building projects. The default command is
         the first one found in the base directory. To select a different command from the base
         directory or another directory, click the browse button and navigate to a different command
         in the Select Tool dialog box.
       </li>
       <li>
-        <b>Debugger Command.</b> The gdb command to use when debugging projects. The default
+        <b>Debugger Command.</b> The path to the gdb command to use when debugging projects. The default
         command is the first one found in the base directory. To select a different command from
         the base directory or another directory, click the browse button and navigate to a
         different command in the Select Tool dialog box.
       </li>
+      <li><b>QMake Command.</b> The path to the qmake command, which is used to generate makefiles
+          for Qt projects.</li>
+      <li><b>CMake Command.</b> The path to the cmake command to use for projects with existing
+      sources that use the CMake cross compiler.</li>
     </ul>
     <p>
        To display the versions of all of the selected tools, click Versions.
@@ -154,12 +157,11 @@ Use is subject to license terms.
       Properties.
     </p>
     <p>
-       <a href="ConfiguringProjectSettings.html">Configuring C and C++ Project Settings</a><br>
-       <a href="ConfiguringParsingSettings.html">Configuring C and C++ Parser Settings</a><br>
-       <a href="ConfiguringCodeStyle.html">Configuring C and C++ Formatting Style</a><br>
-       <a href="ConfiguringSemanticHighlighting.html">Configuring C and C++ Semantic
-      Highlighting</a><br>
-       <a href="ConfiguringFileExtensions.html">Configuring C and C++ File Extensions</a><br>
+       <a href="ConfiguringProjectSettings.html">Configuring Project Options for C/C++/Fortran Projects</a><br>
+       <a href="ConfiguringParsingSettings.html">Configuring Code Assistance Settings for C and C++ Projects</a><br>
+       <a href="ConfiguringCodeStyle.html">Configuring Formatting Style for C/C++/Fortran Projects</a><br>
+       <a href="ConfiguringSemanticHighlighting.html">Configuring Highlighting for C/C++/Fortran Projects</a><br>
+       <a href="ConfiguringFileExtensions.html">Configuring  File Extensions for C/C++/Fortran Projects</a><br>
        <a href="SettingCandC++ProjectProperties.html">Setting Project Properties</a><br>
        <a href="ProjectPropsBuild.html">C/C++ Properties Dialog Box: Build</a>
     </p>

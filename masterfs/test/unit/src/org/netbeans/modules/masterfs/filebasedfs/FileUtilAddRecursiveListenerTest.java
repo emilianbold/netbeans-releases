@@ -43,27 +43,44 @@ package org.netbeans.modules.masterfs.filebasedfs;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.test.TestFileUtils;
 import org.netbeans.modules.masterfs.filebasedfs.FileUtilTest.EventType;
 import org.netbeans.modules.masterfs.filebasedfs.FileUtilTest.TestFileChangeListener;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.TestUtils;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensionsTest;
 
 /**
  * @author Jiri Skrivanek
  */
 public class FileUtilAddRecursiveListenerTest extends NbTestCase {
+    static {
+        MockServices.setServices(ProvidedExtensionsTest.AnnotationProviderImpl.class);
+    }
+
+    private final Logger LOG;
 
     public FileUtilAddRecursiveListenerTest(String name) {
         super(name);
+        LOG = Logger.getLogger("TEST." + name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
     }
 
     @Override
     protected Level logLevel() {
-        return Level.FINE;
+        return Level.FINER;
     }
 
     /** Tests FileObject.addRecursiveListener on folder as declared in
@@ -108,6 +125,7 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
             dirFO = FileUtil.createFolder(dirF);
             dirFO.addRecursiveListener(fcl);
         }
+//        TestUtils.gcAll();
 
         // create dir
         FileObject subdirFO = dirFO.createFolder("subdir");
@@ -217,12 +235,21 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
         fcl.clearAll();
 
         // disk changes
+        LOG.log(Level.INFO, "Going to sleep {0}", System.currentTimeMillis());
         Thread.sleep(1000); // give OS same time
+        LOG.log(Level.INFO, "Waking up {0}", System.currentTimeMillis());
         assertTrue(subsubdirF.mkdirs());
         assertTrue(fileF.createNewFile());
         assertTrue(subfileF.createNewFile());
         assertTrue(subsubfileF.createNewFile());
+        TestFileUtils.touch(subsubfileF, null);
+        TestFileUtils.touch(subfileF, null);
+        TestFileUtils.touch(fileF, null);
+        LOG.log(Level.INFO, "After refresh {0} to {1}", new Object[]{subsubfileF, subsubfileF.lastModified()});
+        LOG.log(Level.INFO, "After refresh {0} to {1}", new Object[]{subfileF, subfileF.lastModified()});
+        LOG.log(Level.INFO, "After refresh {0} to {1}", new Object[]{fileF, fileF.lastModified()});
         FileUtil.refreshAll();
+        fcl.printAll(LOG);
         // TODO - should be 3
         assertEquals("Wrong number of events when file was created.", 1, fcl.check(EventType.DATA_CREATED));
         // TODO - should be 2
@@ -231,12 +258,22 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
         assertEquals("Wrong number of Attribute change events (see #129178).", 1, fcl.check(EventType.ATTRIBUTE_CHANGED));
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
 
+//        TestUtils.gcAll();
+
         TestFileUtils.touch(subsubfileF, null);
         TestFileUtils.touch(subfileF, null);
         TestFileUtils.touch(fileF, null);
+        LOG.log(Level.INFO, "Touched {0} to {1}", new Object[]{subsubfileF, subsubfileF.lastModified()});
+        LOG.log(Level.INFO, "Touched {0} to {1}", new Object[]{subfileF, subfileF.lastModified()});
+        LOG.log(Level.INFO, "Touched {0} to {1}", new Object[]{fileF, fileF.lastModified()});
         FileUtil.refreshAll();
-        assertEquals("Wrong number of events when file was modified.", 3, fcl.check(EventType.CHANGED));
-        assertEquals("Wrong number of Attribute change events (see #129178).", 7, fcl.check(EventType.ATTRIBUTE_CHANGED));
+        fcl.printAll(LOG);
+        final int expect = fcl.check(EventType.CHANGED);
+        if (expect != 3) {
+            TestUtils.logAll();
+        }
+        assertEquals("Wrong number of events when file was modified.", 3, expect);
+        fcl.clearAll();
 
         assertTrue(subsubfileF.delete());
         assertTrue(subsubdirF.delete());
@@ -249,5 +286,44 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
         // delete folder itself
         dirFO.delete();
         assertEquals("Wrong number of events when folder deleted.", 1, fcl.check(EventType.DELETED));
+
+        LOG.info("OK");
+    }
+
+    public void testProvideExtensionsRefreshRecursively() throws Exception {
+        File root = new File(getWorkDir(), "root");
+        final File sub = new File(root, "sub");
+        final File subsub = new File(sub, "subsub");
+        File subsubdir = new File(subsub, "dir");
+        subsubdir.mkdirs();
+        File subfile = new File(sub, "file");
+        subfile.createNewFile();
+        File deepfile = new File(subsubdir, "deep");
+        deepfile.createNewFile();
+
+        ProvidedExtensionsTest.ProvidedExtensionsImpl.nextRefreshCall(
+            sub,
+            Long.MAX_VALUE - 10,
+            subfile
+        );
+
+
+        TestFileChangeListener fcl = new TestFileChangeListener();
+        FileObject rf = FileUtil.toFileObject(root);
+        rf.addRecursiveListener(fcl);
+
+        BaseFileObj noFO = FileObjectFactory.getInstance(root).getCachedOnly(subsubdir);
+        assertNull("subsub directory has been skipped", noFO);
+
+        assertEquals("No events", 0, fcl.checkAll());
+        LOG.log(Level.INFO, "Touching subfile: {0}", deepfile);
+        TestFileUtils.touch(deepfile, null);
+        LOG.log(Level.INFO, "Will do refresh, lastModified: {0}", deepfile.lastModified());
+        FileUtil.refreshFor(root);
+        LOG.info("Refresh done");
+        fcl.check(EventType.ATTRIBUTE_CHANGED); // ignore if any
+
+        fcl.printAll(LOG);
+        assertEquals("No other events", 0, fcl.checkAll());
     }
 }

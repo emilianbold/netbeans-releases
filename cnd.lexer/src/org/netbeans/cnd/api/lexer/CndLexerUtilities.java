@@ -41,8 +41,10 @@
 package org.netbeans.cnd.api.lexer;
 
 import java.util.List;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -65,7 +67,7 @@ public final class CndLexerUtilities {
      * returns C/C++/Preprocessor tokens sequence for component
      * @param component component
      * @param offset offset
-     * @param lexPP if <code>true</code> and offset is in preprocessor directive then return tokens sequnce of this 
+     * @param lexPP if <code>true</code> and offset is in preprocessor directive then return tokens sequence of this
      * directive. If <code>false</code> and offset is in preprocessor directive do not dive into embedding
      * @param backwardBias @see TokenHierarchy.embeddedTokenSequences
      * If <code>true</code> the backward lying token will
@@ -103,9 +105,9 @@ public final class CndLexerUtilities {
 
     /**
      * returns C/C++/Preprocessor tokens sequence for document
-     * @param doc dicument
+     * @param doc document
      * @param offset offset
-     * @param lexPP if <code>true</code> and offset is in preprocessor directive then return tokens sequnce of this 
+     * @param lexPP if <code>true</code> and offset is in preprocessor directive then return tokens sequence of this
      * directive. If <code>false</code> and offset is in preprocessor directive do not dive into embedding
      * @param backwardBias @see TokenHierarchy.embeddedTokenSequences
      * If <code>true</code> the backward lying token will
@@ -138,14 +140,14 @@ public final class CndLexerUtilities {
                 || lang == CppTokenId.languageHeader()
                 || (allowPrepoc && lang == CppTokenId.languagePreproc());
     }
-    
+
     public static TokenSequence<FortranTokenId> getFortranTokenSequence(final Document doc, final int offset) {
-        TokenHierarchy th = doc != null ? TokenHierarchy.get(doc) : null;
+        TokenHierarchy<?> th = doc != null ? TokenHierarchy.get(doc) : null;
         TokenSequence<FortranTokenId> ts = th != null ? getFortranTokenSequence(th, offset) : null;
         return ts;
     }
 
-    public static TokenSequence<FortranTokenId> getFortranTokenSequence(final TokenHierarchy hierarchy, final int offset) {
+    private static TokenSequence<FortranTokenId> getFortranTokenSequence(final TokenHierarchy<?> hierarchy, final int offset) {
         if (hierarchy != null) {
             TokenSequence<?> ts = hierarchy.tokenSequence();
             while (ts != null && (offset == 0 || ts.moveNext())) {
@@ -162,6 +164,71 @@ public final class CndLexerUtilities {
             }
         }
         return null;
+    }
+    public static final boolean FORTRAN_FIXED_FORMAT_VALUE = false;
+    public static final boolean FORTRAN_FREE_FORMAT_VALUE = true;
+
+    public static boolean detectFortranFormat(Document doc) {
+        CharSequence sequence;
+        try {
+            sequence = doc.getText(0, doc.getLength());
+        } catch (BadLocationException ex) {
+            return FORTRAN_FIXED_FORMAT_VALUE;
+        }
+        int column = 0;
+        boolean ignoreRestLine = false;
+        for (int i = 0; i < sequence.length(); i++) {
+            char c = sequence.charAt(i);
+            if (c == '\n') {
+                column = 0;
+                ignoreRestLine = false;
+                continue;
+            }
+            if (ignoreRestLine) {
+                continue;
+            }
+            column++;
+            switch (column) {
+                case 1:
+                    if (c == 'C' || c == 'c' || c == '*') {
+                        //like to fixed format
+                        ignoreRestLine = true;
+                        break;
+                    } else if (c >= '0' && c <= '9') {
+                        //like to fixed format
+                        break;
+                    } else if (c == ' ') {
+                        // undefined format
+                        break;
+                    } else if (c == '\t') {
+                        // undefined format
+                        column = 6;
+                        break;
+                    } else {
+                        return FORTRAN_FREE_FORMAT_VALUE;
+                    }
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                    if (c >= '0' && c <= '9') {
+                        //like to fixed format
+                        break;
+                    } else if (c == ' ') {
+                        // undefined format
+                        break;
+                    } else if (c == '\t') {
+                        // undefined format
+                        column = 6;
+                        break;
+                    } else {
+                        return FORTRAN_FREE_FORMAT_VALUE;
+                    }
+                default:
+                    break;
+            }
+        }
+        return FORTRAN_FIXED_FORMAT_VALUE;
     }
 
     public static boolean isCppIdentifier(CharSequence id) {
@@ -187,7 +254,7 @@ public final class CndLexerUtilities {
 
     public static boolean isCppIdentifierStart(char ch) {
         //MS VC also supports $ as start or part of id
-        return ('A' <= ch && ch <= 'Z') || ('a'<= ch && ch <= 'z') || (ch == '_') || (ch == '$');
+        return ('A' <= ch && ch <= 'Z') || ('a' <= ch && ch <= 'z') || (ch == '_') || (ch == '$');
     }
 
     public static boolean isCppIdentifierPart(char ch) {
@@ -236,8 +303,8 @@ public final class CndLexerUtilities {
     public static boolean isKeyword(String str) {
         try {
             CppTokenId id = CppTokenId.valueOf(str.toUpperCase());
-            return id != null &&
-                    (CppTokenId.KEYWORD_CATEGORY.equals(id.primaryCategory())
+            return id != null
+                    && (CppTokenId.KEYWORD_CATEGORY.equals(id.primaryCategory())
                     || CppTokenId.KEYWORD_DIRECTIVE_CATEGORY.equals(id.primaryCategory())
                     || CppTokenId.PREPROCESSOR_KEYWORD_CATEGORY.equals(id.primaryCategory()))
                     || CppTokenId.PREPROCESSOR_KEYWORD_DIRECTIVE_CATEGORY.equals(id.primaryCategory());
@@ -318,7 +385,6 @@ public final class CndLexerUtilities {
         String category = tokenID.primaryCategory();
         return CppTokenId.OPERATOR_CATEGORY.equals(category) || CppTokenId.SEPARATOR_CATEGORY.equals(category);
     }
-
     // filters
     private static Filter<CppTokenId> FILTER_STD_C;
     private static Filter<CppTokenId> FILTER_GCC_C;
@@ -363,7 +429,7 @@ public final class CndLexerUtilities {
             addCommonCCKeywords(FILTER_GCC_C);
             addCOnlyKeywords(FILTER_GCC_C);
             addGccOnlyCommonCCKeywords(FILTER_GCC_C);
-        //addGccOnlyCOnlyKeywords(FILTER_GCC_C);
+            //addGccOnlyCOnlyKeywords(FILTER_GCC_C);
         }
         return FILTER_GCC_C;
     }
@@ -414,8 +480,7 @@ public final class CndLexerUtilities {
             CppTokenId.PREPROCESSOR_IDENT,
             CppTokenId.PREPROCESSOR_PRAGMA,
             CppTokenId.PREPROCESSOR_WARNING,
-            CppTokenId.PREPROCESSOR_ERROR,
-        };
+            CppTokenId.PREPROCESSOR_ERROR,};
         addToFilter(ids, filterToModify);
     }
 
@@ -454,8 +519,7 @@ public final class CndLexerUtilities {
             CppTokenId.PRAGMA_OMP_IF,
             CppTokenId.PRAGMA_OMP_FOR,
             CppTokenId.PRAGMA_OMP_AUTO,
-            CppTokenId.PRAGMA_OMP_NUM_THREADS,
-        };
+            CppTokenId.PRAGMA_OMP_NUM_THREADS,};
         addToFilter(ids, filterToModify);
     }
 
@@ -493,8 +557,7 @@ public final class CndLexerUtilities {
             CppTokenId.UNSIGNED,
             CppTokenId.VOID,
             CppTokenId.VOLATILE,
-            CppTokenId.WHILE,
-        };
+            CppTokenId.WHILE,};
         addToFilter(ids, filterToModify);
     }
 
@@ -573,8 +636,7 @@ public final class CndLexerUtilities {
             CppTokenId.__VOLATILE,
             CppTokenId.__VOLATILE__,
             CppTokenId.__THREAD,
-            CppTokenId.__UNUSED__,
-        };
+            CppTokenId.__UNUSED__,};
         addToFilter(ids, filterToModify);
     }
 
@@ -606,8 +668,7 @@ public final class CndLexerUtilities {
             CppTokenId.__NEAR,
             CppTokenId._STDCALL,
             CppTokenId.__STDCALL,
-            CppTokenId.__W64,
-        };
+            CppTokenId.__W64,};
         addToFilter(ids, filterToModify);
     }
 

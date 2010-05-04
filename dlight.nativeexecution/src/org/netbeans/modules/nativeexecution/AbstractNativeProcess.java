@@ -38,15 +38,19 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -63,6 +67,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -82,15 +87,23 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private final Object stateLock;
     private volatile State state;
     private volatile int pid = 0;
-    private volatile Integer exitValue = null;
     private volatile boolean isInterrupted;
     private boolean cancelled = false;
     private Future<ProcessInfoProvider> infoProviderSearchTask;
+    private Future<Integer> result = null;
+    private InputStream inputStream;
+    private InputStream errorStream;
+    private OutputStream outputStream;
 
     public AbstractNativeProcess(NativeProcessInfo info) {
         this.info = info;
         isInterrupted = false;
         state = State.INITIAL;
+
+        inputStream = new ByteArrayInputStream(new byte[0]);
+        errorStream = new ByteArrayInputStream(new byte[0]);
+        outputStream = new ByteArrayOutputStream();
+
         execEnv = info.getExecutionEnvironment();
         String cmd = info.getCommandLineForShell();
 
@@ -110,7 +123,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             // no logging for interrupting
         } catch (IOException ex) {
 //            log.log(Level.INFO, "Exception while getting host info:", ex); //NOI18N
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
         hostInfo = hinfo;
 
@@ -120,7 +133,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 new ArrayList<ChangeListener>(ll));
     }
 
-    public final NativeProcess createAndStart() throws IOException {
+    public final NativeProcess createAndStart() {
         try {
             if (hostInfo == null) {
                 throw new IllegalStateException("Unable to create process - no HostInfo available"); // NOI18N
@@ -130,9 +143,18 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             create();
             setState(State.RUNNING);
             findInfoProvider();
+            result = NativeTaskExecutorService.submit(new Callable<Integer>() {
+
+                @Override
+                public Integer call() throws Exception {
+                    return waitResult();
+                }
+            }, "Waiting for " + info.getExecutable()); // NOI18N
         } catch (Throwable ex) {
-            LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex.toString());
+            LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex.toString()); // NOI18N
             setState(State.ERROR);
+            String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage());
+            errorStream = new ByteArrayInputStream((msg + "\n").getBytes()); // NOI18N
         }
 
         return this;
@@ -223,14 +245,22 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             if (cancelled) {
                 return;
             }
-
             cancelled = true;
         }
 
-        synchronized (stateLock) {
-            cancel();
-            setState(State.CANCELLED);
+
+        cancel();
+
+        // result == null if createAndStart() failed
+        if (result != null) {
+            try {
+                result.get();
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+            }
         }
+
+        setState(State.CANCELLED);
     }
 
     /**
@@ -249,14 +279,29 @@ public abstract class AbstractNativeProcess extends NativeProcess {
      */
     @Override
     public final int waitFor() throws InterruptedException {
-        setExitValue(waitResult());
+        int exitStatus = -1;
 
-        if (exitValue == null) {
-            throw new InterruptedException(
-                    "Process has been cancelled."); // NOI18N
+        if (result == null) {
+            // createAndStart() failed
+            return exitStatus;
         }
 
-        return exitValue.intValue();
+        try {
+            exitStatus = result.get();
+            setState(State.FINISHED);
+        } catch (InterruptedException ex) {
+            setState(State.CANCELLED);
+            throw ex;
+        } catch (ExecutionException ex) {
+            if (ex.getCause() instanceof InterruptedException) {
+                setState(State.CANCELLED);
+                throw (InterruptedException) ex.getCause();
+            }
+            setState(State.ERROR);
+            Exceptions.printStackTrace(ex);
+        }
+
+        return exitStatus;
     }
 
     /**
@@ -272,36 +317,18 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     @Override
     public final int exitValue() {
         synchronized (stateLock) {
-            if (exitValue == null) {
-                if (state == State.CANCELLED) {
-                    // TODO: ??
-                    // Removed CancellationException because it is not proceeded
-                    // in ExecutionService...
-                    // throw new CancellationException("Process has been cancelled");
-                    return -1;
-                } else {
-                    // Process not started yet...
-                    throw new IllegalThreadStateException();
-                }
+            if (result == null || !result.isDone()) {
+                // Process not started yet...
+                throw new IllegalThreadStateException();
             }
-        }
-
-        return exitValue;
-    }
-
-    private void setExitValue(int exitValue) {
-        synchronized (stateLock) {
-            if (this.exitValue != null) {
-                return;
+            try {
+                return result.get();
+            } catch (InterruptedException ex) {
+                // cancelled
+                return -1;
+            } catch (ExecutionException ex) {
+                return -1;
             }
-
-            this.exitValue = Integer.valueOf(exitValue);
-
-            if (state == State.CANCELLED || state == State.ERROR) {
-                return;
-            }
-
-            setState(State.FINISHED);
         }
     }
 
@@ -335,7 +362,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
                 if (!isInterrupted()) {
                     if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.finest(String.format("%s: State changed: %s -> %s\n", // NOI18N
+                        LOG.finest(String.format("%s: State changed: %s -> %s", // NOI18N
                                 this.toString(), this.state, state));
                     }
                 }
@@ -396,6 +423,33 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(AbstractNativeProcess.class, key, params);
+    }
+
+    @Override
+    public final InputStream getErrorStream() {
+        return errorStream;
+    }
+
+    @Override
+    public final OutputStream getOutputStream() {
+        return outputStream;
+    }
+
+    @Override
+    public final InputStream getInputStream() {
+        return inputStream;
+    }
+
+    protected final void setErrorStream(InputStream error) {
+        errorStream = error;
+    }
+
+    protected final void setOutputStream(OutputStream output) {
+        outputStream = output;
+    }
+
+    protected final void setInputStream(InputStream input) {
+        inputStream = input;
     }
 
     private void findInfoProvider() {

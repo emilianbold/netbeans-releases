@@ -39,6 +39,8 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.awt.BorderLayout;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -48,6 +50,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.spi.remote.setup.support.TextComponentWriter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -67,36 +71,39 @@ import org.openide.util.RequestProcessor;
 
         textLoginName.setText(System.getProperty("user.name"));
 
-        if (Boolean.getBoolean("cnd.remote.keep.pwd")) {
-            // default password to the last entered one
-            ExecutionEnvironment lastEnv = CreateHostData.getLastExecutionEnvironment();
-            if (lastEnv != null) {
-                char[] passwd = PasswordManager.getInstance().get(lastEnv);
-                if (passwd != null) {
-                    textPassword.setText(new String(passwd));
-                }
-            }
-        } else {
-            textPassword.setText("");
-        }
+//        if (Boolean.getBoolean("cnd.remote.keep.pwd")) {
+//            // default password to the last entered one
+//            ExecutionEnvironment lastEnv = CreateHostData.getLastExecutionEnvironment();
+//            if (lastEnv != null) {
+//                char[] passwd = PasswordManager.getInstance().get(lastEnv);
+//                if (passwd != null) {
+//                    textPassword.setText(new String(passwd));
+//                }
+//            }
+//        } else {
+//            textPassword.setText("");
+//        }
 
         DocumentListener dl = new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 fireChange();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 fireChange();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 fireChange();
             }
         };
 
         textLoginName.getDocument().addDocumentListener(dl);
-        textPassword.getDocument().addDocumentListener(dl);
+//        textPassword.getDocument().addDocumentListener(dl);
     }
 
     private void fireChange() {
@@ -116,9 +123,9 @@ import org.openide.util.RequestProcessor;
         return textLoginName.getText();
     }
 
-    char[] getPassword() {
-        return textPassword.getPassword();
-    }
+//    char[] getPassword() {
+//        return textPassword.getPassword();
+//    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -130,9 +137,6 @@ import org.openide.util.RequestProcessor;
 
         jLabel1 = new javax.swing.JLabel();
         textLoginName = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
-        textPassword = new javax.swing.JPasswordField();
-        cbSavePassword = new javax.swing.JCheckBox();
         pbarStatusPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tpOutput = new javax.swing.JTextPane();
@@ -145,13 +149,6 @@ import org.openide.util.RequestProcessor;
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.jLabel1.text")); // NOI18N
 
         textLoginName.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.textLoginName.text")); // NOI18N
-
-        jLabel2.setLabelFor(textPassword);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.jLabel2.text")); // NOI18N
-
-        textPassword.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.textPassword.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(cbSavePassword, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.cbSavePassword.text")); // NOI18N
 
         pbarStatusPanel.setMaximumSize(new java.awt.Dimension(2147483647, 10));
         pbarStatusPanel.setMinimumSize(new java.awt.Dimension(100, 10));
@@ -170,19 +167,11 @@ import org.openide.util.RequestProcessor;
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(cbSavePassword)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel1))
-                .addGap(24, 24, 24)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(textPassword)
-                    .addComponent(textLoginName, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(207, 207, 207))
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(textLoginName, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
             .addComponent(pbarStatusPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -193,16 +182,10 @@ import org.openide.util.RequestProcessor;
                     .addComponent(textLoginName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(textPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cbSavePassword)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(pbarStatusPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(48, Short.MAX_VALUE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     private ProgressHandle phandle;
@@ -218,21 +201,37 @@ import org.openide.util.RequestProcessor;
     private Runnable runOnFinish = null;
 
     public void enableControls(boolean enable) {
-        textPassword.setEnabled(enable);
+//        textPassword.setEnabled(enable);
         textLoginName.setEnabled(enable);
-        cbSavePassword.setEnabled(enable);
+//        cbSavePassword.setEnabled(enable);
     }
 
     public boolean canValidateHost() {
+        List<ServerRecord> records = new ArrayList<ServerRecord>();
+        if (data.getCacheManager().getServerUpdateCache() != null && data.getCacheManager().getServerUpdateCache().getHosts() != null) {
+            records.addAll(data.getCacheManager().getServerUpdateCache().getHosts());
+        } else {
+            records = new ArrayList<ServerRecord>(ServerList.getRecords());
+        }
+        for (ServerRecord record : records) {
+            if (record.isRemote()) {
+                if (record.getServerName().equals(data.getHostName())
+                        && record.getExecutionEnvironment().getSSHPort() == data.getPort()
+                        && record.getUserName().equals(textLoginName.getText())) {
+                    return false;
+                }
+            }
+        }
         return true;
     }
 
     public Future<Boolean> validateHost() {
         FutureTask<Boolean> validationTask = new FutureTask<Boolean>(new Callable<Boolean>() {
 
+            @Override
             public Boolean call() throws Exception {
-                final char[] password = getPassword();
-                final boolean rememberPassword = cbSavePassword.isSelected();
+//                final char[] password = getPassword();
+//                final boolean rememberPassword = cbSavePassword.isSelected();
                 final ExecutionEnvironment env = ExecutionEnvironmentFactory.createNew(getLoginName(), data.getHostName(), data.getPort());
 
                 tpOutput.setText("");
@@ -245,7 +244,7 @@ import org.openide.util.RequestProcessor;
 
                 try {
                     HostValidatorImpl hostValidator = new HostValidatorImpl(data.getCacheManager());
-                    if (hostValidator.validate(env, password, rememberPassword, new TextComponentWriter(tpOutput))) {
+                    if (hostValidator.validate(env, /*password, rememberPassword, */new TextComponentWriter(tpOutput))) {
                         hostFound = env;
                         runOnFinish = hostValidator.getRunOnFinish();
                         try { // let user see the log ;-)
@@ -269,14 +268,11 @@ import org.openide.util.RequestProcessor;
         return validationTask;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox cbSavePassword;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel pbarStatusPanel;
     private javax.swing.JTextField textLoginName;
-    private javax.swing.JPasswordField textPassword;
     private javax.swing.JTextPane tpOutput;
     // End of variables declaration//GEN-END:variables
 }

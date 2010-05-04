@@ -73,6 +73,7 @@ public class ConnectionNode extends BaseNode {
     private static final String CONNECTEDICONBASE = "org/netbeans/modules/db/resources/connection.gif"; // NOI18N
     private static final String DISCONNECTEDICONBASE = "org/netbeans/modules/db/resources/connectionDisconnected.gif"; // NOI18N
     private static final String FOLDER = "Connection"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(ConnectionNode.class.getName());
     
     /** 
      * Create an instance of ConnectionNode.
@@ -100,10 +101,12 @@ public class ConnectionNode extends BaseNode {
         lookup.add(DatabaseConnectionAccessor.DEFAULT.createDatabaseConnection(connection));
     }
 
+    @Override
     protected void initialize() {
         // listen for change events
         connection.addPropertyChangeListener(
             new PropertyChangeListener() {
+            @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (evt.getPropertyName().equals("connectionComplete") || // NOI18N
                             evt.getPropertyName().equals("disconnected")) { // NOI18N
@@ -288,8 +291,9 @@ public class ConnectionNode extends BaseNode {
     }
     
     private synchronized void updateModel() {
-        RequestProcessor.getDefault().post(
+        RP.post(
             new Runnable() {
+                @Override
                 public void run() {
                     boolean connected = !connection.getConnector().isDisconnected();
 
@@ -325,8 +329,9 @@ public class ConnectionNode extends BaseNode {
     
     @Override
     public void destroy() {
-        RequestProcessor.getDefault().post(
+        RP.post(
             new Runnable() {
+                @Override
                 public void run() {
                     try {
                         ConnectionList.getDefault().remove(connection);
@@ -338,6 +343,7 @@ public class ConnectionNode extends BaseNode {
         );
     }
     
+    @Override
     public String getName() {
         return connection.getName();
     }
@@ -347,6 +353,7 @@ public class ConnectionNode extends BaseNode {
         return connection.getDisplayName();
     }
  
+    @Override
     public String getIconBase() {
         boolean disconnected = ! DatabaseConnection.isVitalConnection(connection.getConnection(), null);
 
@@ -367,6 +374,7 @@ public class ConnectionNode extends BaseNode {
     public Transferable clipboardCopy() throws IOException {
         ExTransferable result = ExTransferable.create(super.clipboardCopy());
         result.put(new ExTransferable.Single(DatabaseMetaDataTransfer.CONNECTION_FLAVOR) {
+            @Override
             protected Object getData() {
                 return DatabaseMetaDataTransferAccessor.DEFAULT.createConnectionData(connection.getDatabaseConnection(),
                         connection.findJDBCDriver());

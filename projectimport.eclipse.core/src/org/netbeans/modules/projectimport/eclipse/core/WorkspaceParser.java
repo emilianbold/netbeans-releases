@@ -145,7 +145,7 @@ final class WorkspaceParser {
         }
         Document xml;
         try {
-            xml = XMLUtil.parse(new InputSource(workspace.getUserJSFLibraries().toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+            xml = XMLUtil.parse(new InputSource(workspace.getUserJSFLibraries().toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
         } catch (SAXException e) {
             IOException ioe = (IOException) new IOException(workspace.getUserJSFLibraries() + ": " + e.toString()).initCause(e); // NOI18N
             throw ioe;
@@ -156,10 +156,10 @@ final class WorkspaceParser {
             !JSF_LIB_NS.equals(root.getNamespaceURI())) {
             return;
         }
-        for (Element el : Util.findSubElements(root)) {
+        for (Element el : XMLUtil.findSubElements(root)) {
             String libraryName = el.getAttribute("Name"); // NOI18N
             List<String> jars = new ArrayList<String>();
-            for (Element file : Util.findSubElements(el)) {
+            for (Element file : XMLUtil.findSubElements(el)) {
                 String path = file.getAttribute("SourceLocation"); // NOI18N
                 if (!"false".equals(file.getAttribute("RelativeToWorkspace"))) { // NOI18N
                     path = new File(workspace.getDirectory(), path).getPath();

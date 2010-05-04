@@ -590,6 +590,10 @@ selected fields in project.xml, *are* available for use in your build.xml
 defining other properties in project.properties (unless you defined them in
 private.properties).
 
+app.icon.icns [since 6.9] - "${harness.dir}/etc/applicationIcon.icns" by default,
+path to application's icon in Mac (.icns) format; used for creating ".app" 
+directory hierarchy in "build-mac" target.
+
 basedir - you cannot define this; it is always the project directory of the
 module (as in any Ant script). Available in all other properties files.
 
@@ -956,7 +960,7 @@ jnlp.platform.codebase - can point to a shared repository which can be generated
   this property. Sample values with prebuilt binaries (good for testing):
 http://bits.netbeans.org/6.5/jnlp/
 http://bits.netbeans.org/6.7/fcs/jnlp/
-http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/build/jnlp/
+http://deadlock.netbeans.org/hudson/job/ide-jnlp/lastStableBuild/artifact/nbbuild/build/jnlp/
 
 jnlp.indirect.jars [since 6.0] - optional pattern of JARs in the cluster to load
   in JNLP mode even though they are not listed as Class-Path extensions of the

@@ -151,7 +151,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             case LOCAL_VARIABLE:
             case PARAMETER:
             case EXCEPTION_PARAMETER:
-                return new VariableItem(type, elem.getSimpleName().toString(), substitutionOffset, smartType);
+                return new VariableItem(type, elem.getSimpleName().toString(), substitutionOffset, false, smartType);
             case ENUM_CONSTANT:
             case FIELD:
                 return new FieldItem(elem, type, substitutionOffset, isInherited, isDeprecated, smartType);
@@ -160,8 +160,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
     
-    public static final JavaCompletionItem createVariableItem(String varName, int substitutionOffset, boolean smartType) {
-        return new VariableItem(null, varName, substitutionOffset, smartType);
+    public static final JavaCompletionItem createVariableItem(String varName, int substitutionOffset, boolean newVarName, boolean smartType) {
+        return new VariableItem(null, varName, substitutionOffset, newVarName, smartType);
     }
 
     public static final JavaCompletionItem createExecutableItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean smartType) {
@@ -258,7 +258,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
     public void processKeyEvent(KeyEvent evt) {
         if (evt.getID() == KeyEvent.KEY_TYPED) {
-            if (Utilities.getJavaCompletionSelectors().indexOf(evt.getKeyChar()) >= 0) {
+            if ((!Utilities.autoPopupOnJavaIdentifierPart() || !(this instanceof VariableItem) || !((VariableItem)this).newVarName)
+                    && Utilities.getJavaCompletionSelectors().indexOf(evt.getKeyChar()) >= 0) {
                 if (evt.getKeyChar() == '(' && !(this instanceof AnnotationItem)
                         && !(this instanceof ConstructorItem)
                         && !(this instanceof DefaultConstructorItem)
@@ -994,14 +995,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static ImageIcon icon;
 
         private String varName;
+        private boolean newVarName;
         private boolean smartType;
         private String typeName;
         private String leftText;
         private String rightText;
         
-        private VariableItem(TypeMirror type, String varName, int substitutionOffset, boolean smartType) {
+        private VariableItem(TypeMirror type, String varName, int substitutionOffset, boolean newVarName, boolean smartType) {
             super(substitutionOffset);
             this.varName = varName;
+            this.newVarName = newVarName;
             this.smartType = smartType;
             this.typeName = type != null ? Utilities.getTypeName(type, false).toString() : null;
         }

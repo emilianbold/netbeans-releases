@@ -70,6 +70,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.ErrorManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.cookies.SaveCookie;
 
@@ -602,7 +603,7 @@ public class WizardHelpers
      */
     public static SourceGroup[] getPropSourceGroups(Project project) {
         return ProjectUtils.getSources(project).
-                getSourceGroups(WizardConstants.PROPERTIES_EXT);
+                getSourceGroups(Sources.TYPE_GENERIC);
     }
     
     /**

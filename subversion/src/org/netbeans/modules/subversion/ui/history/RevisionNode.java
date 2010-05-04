@@ -80,8 +80,14 @@ class RevisionNode extends AbstractNode {
         this.container = container;
         this.event = null;
         this.path = null;
+        int changedPaths = container.getLog().getChangedPaths().length;
+
         setName(container.getLog().getRevision().getNumber() +
-                NbBundle.getMessage(RevisionNode.class, "LBL_NumberOfChangedPaths", container.getLog().getChangedPaths().length));
+                (changedPaths > 0 ? NbBundle.getMessage(RevisionNode.class, "LBL_NumberOfChangedPaths", changedPaths) : ""));
+
+        if(changedPaths == 0) {
+            setChildren(Children.LEAF);
+        }        
         initProperties();
     }
 

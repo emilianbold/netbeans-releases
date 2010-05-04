@@ -46,11 +46,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -60,8 +62,10 @@ import org.netbeans.Events;
 import org.netbeans.JarClassLoader;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.netbeans.NetigsoFramework;
 import org.netbeans.SetupHid;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  * Basic infrastructure for testing OSGi functionality.
@@ -79,6 +83,13 @@ public class NetigsoHid extends SetupHid {
         Method m = Class.forName("org.netbeans.NetigsoFramework").getDeclaredMethod("shutdownFramework");
         m.setAccessible(true);
         m.invoke(null);
+
+        Netigso net = (Netigso)Lookup.getDefault().lookup(NetigsoFramework.class);
+        final Field field = Netigso.class.getDeclaredField("registered");
+        field.setAccessible(true);
+        Map<?,?> map = (Map<?,?>)field.get(net);
+        map.clear();
+
         
         data = new File(getDataDir(), "jars");
         jars = new File(getWorkDir(), "jars");
@@ -99,7 +110,7 @@ public class NetigsoHid extends SetupHid {
     protected final File changeManifest(File orig, String manifest) throws IOException {
         return changeManifest(getWorkDir(), orig, manifest);
     }
-    static final File changeManifest(File wd, File orig, String manifest) throws IOException {
+    static File changeManifest(File wd, File orig, String manifest) throws IOException {
         File f = new File(wd, orig.getName());
         int i = 0;
         while (f.exists()) {

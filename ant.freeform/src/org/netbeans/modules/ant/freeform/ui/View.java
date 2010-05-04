@@ -42,15 +42,18 @@
 package org.netbeans.modules.ant.freeform.ui;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.Action;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.ant.freeform.Actions;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.spi.ProjectNature;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.filesystems.FileObject;
@@ -65,7 +68,8 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
-import org.openide.util.Utilities;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -73,7 +77,7 @@ import org.openide.util.lookup.Lookups;
  * @author Jesse Glick
  */
 public final class View implements LogicalViewProvider {
-    
+
     private final FreeformProject project;
     
     public View(FreeformProject project) {
@@ -122,25 +126,25 @@ public final class View implements LogicalViewProvider {
         return null;
     }
     
-    private static final class RootNode extends AbstractNode {
+    private static final class RootNode extends AbstractNode implements PropertyChangeListener {
         
         private final FreeformProject p;
+        private final ProjectInformation info;
+        private static final RequestProcessor RP = new RequestProcessor(RootNode.class);
         
+        @SuppressWarnings("LeakingThisInConstructor")
         public RootNode(FreeformProject p) {
             super(NodeFactorySupport.createCompositeChildren(p, "Projects/org-netbeans-modules-ant-freeform/Nodes"), Lookups.singleton(p));
             this.p = p;
+            info = ProjectUtils.getInformation(p);
+            info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
         }
         
         @Override
         public String getName() {
-            return ProjectUtils.getInformation(p).getName();
+            return info.getDisplayName();
         }
         
-        @Override
-        public String getDisplayName() {
-            return ProjectUtils.getInformation(p).getDisplayName();
-        }
-
         @Override
         public String getShortDescription() {
             return NbBundle.getMessage(View.class, "View.RootNode.shortDescription", FileUtil.getFileDisplayName(p.getProjectDirectory()));
@@ -148,7 +152,7 @@ public final class View implements LogicalViewProvider {
         
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.icon2Image(ProjectUtils.getInformation(p).getIcon());
+            return ImageUtilities.icon2Image(info.getIcon());
         }
         
         @Override
@@ -158,7 +162,7 @@ public final class View implements LogicalViewProvider {
         
         @Override
         public Action[] getActions(boolean context) {
-            return Actions.createContextMenu(p);
+            return CommonProjectActions.forType("org-netbeans-modules-ant-freeform"); // NOI18N
         }
         
         @Override
@@ -184,6 +188,17 @@ public final class View implements LogicalViewProvider {
         @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx("freeform.node." + org.netbeans.modules.ant.freeform.Util.getMergedHelpIDFragments(p)); // NOI18N
+        }
+
+        public @Override void propertyChange(PropertyChangeEvent evt) {
+            RP.post(new Runnable() {
+                public @Override void run() {
+                    fireNameChange(null, null);
+                    fireDisplayNameChange(null, null);
+                    fireIconChange();
+                    fireOpenedIconChange();
+                }
+            });
         }
         
     }

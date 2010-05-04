@@ -73,9 +73,8 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
     
     // Constructors
-    public CompilerSet2Configuration(DevelopmentHostConfiguration dhconf) {
+    public CompilerSet2Configuration(DevelopmentHostConfiguration dhconf, CompilerSet cs) {
         this.dhconf = dhconf;
-        CompilerSet cs = getCompilerSetManager().getDefaultCompilerSet();
         String csName = (cs == null) ? null : cs.getName();
         if (csName == null || csName.length() == 0) {
             if (getCompilerSetManager().getCompilerSets().size() > 0) {
@@ -328,7 +327,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         } else {
             ocs = CompilerSetManager.get(env).getDefaultCompilerSet();
         }
-        if (ocs == null) {
+        if (ocs == null && !CompilerSetManager.get(env).getCompilerSets().isEmpty()) {
             ocs = CompilerSetManager.get(env).getCompilerSets().get(0);
         }
         if (ocs == null) {

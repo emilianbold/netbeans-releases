@@ -52,10 +52,8 @@ import java.io.PrintStream;
 import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.Enumeration;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -410,6 +408,34 @@ public class MIMESupportTest extends NbTestCase {
         assertEquals("Fallback for xml failed.", "text/xml", mimeType);
         mimeType = FileUtil.getMIMEType(fo1);
         assertEquals("Fallback MIME type for xml should not be cached.", "xml/xml", mimeType);
+    }
+
+    public void testExtensionChangeNoticedInAtomicAction() throws Exception {
+        MIMESupportTest.TestExtResolver resHTML = new MIMESupportTest.TestExtResolver("html", "text/html");
+        assertTrue(Lookup.getDefault().lookupAll(MIMEResolver.class).isEmpty());
+
+        lookup.setLookups(resHTML);
+        assertEquals(1, Lookup.getDefault().lookupAll(MIMEResolver.class).size());
+
+        class R implements Runnable {
+            @Override
+            public void run() {
+                try {
+                    FileObject fo1 = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(), "file.any");
+
+                    assertEquals("Unknown mime type", "content/unknown", fo1.getMIMEType());
+                    FileLock lock = fo1.lock();
+                    fo1.rename(lock, "file", "html");
+                    lock.releaseLock();
+
+                    assertEquals("Now the file is recognized", "text/html", fo1.getMIMEType());
+                } catch (IOException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+        }
+
+        FileUtil.runAtomicAction(new R());
     }
 
     private static final class TestExtResolver extends MIMEResolver {

@@ -46,29 +46,24 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
-import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.windows.WindowManager;
 
 /**
  *
  * @author  phrebejk
  */
 public class CustomizerPane extends JPanel
-        implements HelpCtx.Provider, PropertyChangeListener {
+        implements HelpCtx.Provider {
     
     public static final String HELP_CTX_PROPERTY = "helpCtxProperty";
     
@@ -110,7 +105,6 @@ public class CustomizerPane extends JPanel
         
         // init errorMessageValue
         errorMessageValue.setBorder(BorderFactory.createEmptyBorder());
-        errorMessageValue.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
         errorMessageValue.setBackground(customizerPanel.getBackground());
         
         // put it into under categoryView
@@ -242,7 +236,7 @@ public class CustomizerPane extends JPanel
     
     // Private methods ---------------------------------------------------------
     
-    private void setCategory( ProjectCustomizer.Category newCategory) {
+    private void setCategory(final ProjectCustomizer.Category newCategory) {
         if ( newCategory == null ) {
             return;
         }
@@ -258,7 +252,11 @@ public class CustomizerPane extends JPanel
         }
 
         if ( newCustomizer != null ) {
-            Utilities.getCategoryChangeSupport(newCategory).addPropertyChangeListener(this);
+            Utilities.getCategoryChangeSupport(newCategory).addPropertyChangeListener(new PropertyChangeListener() {
+                public @Override void propertyChange(PropertyChangeEvent evt) {
+                    setErrorMessage(newCategory.getErrorMessage(), newCategory.isValid());
+                }
+            });
             currentCustomizer = newCustomizer;            
             currentHelpCtx = HelpCtx.findHelp( currentCustomizer );
             /*if (previousDimension == null) {
@@ -305,30 +303,24 @@ public class CustomizerPane extends JPanel
                 }
             }*/
             
-            setErrorMessage(newCategory.getErrorMessage());
+            setErrorMessage(newCategory.getErrorMessage(), newCategory.isValid());
             firePropertyChange( HELP_CTX_PROPERTY, null, getHelpCtx() );
         } else {
             currentCustomizer = null;
         }
     }
 
-    private void setErrorMessage(String errMessage) {
-        errorMessageValue.setText(errMessage);
-        if (errMessage == null || errMessage.trim().equals("")) {
-            customizerPanel.remove(errorMessageValue);
-        } else {
+    private void setErrorMessage(String errMessage, boolean valid) {
+        customizerPanel.remove(errorMessageValue);
+        if (errMessage != null && !errMessage.trim().isEmpty()) {
+            errorMessageValue.setText(errMessage);
+            errorMessageValue.setForeground(UIManager.getColor(valid ? "nb.warningForeground" : "nb.errorForeground")); // NOI18N
             customizerPanel.add(errorMessageValue, errMessConstraints);
         }
         customizerPanel.revalidate();
+        customizerPanel.repaint();
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName() == CategoryChangeSupport.ERROR_MESSAGE_PROPERTY) {
-            String errMessage = (String) evt.getNewValue();
-            setErrorMessage(errMessage);
-        }
-    }
-    
     // Private innerclasses ----------------------------------------------------
                 
     /** Listens to selection change and shows the customizers as

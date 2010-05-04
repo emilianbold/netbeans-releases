@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -208,7 +208,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public CharSequence getQualifiedName() {
         CsmScope scope = getScope();
         if ((scope instanceof CsmNamespace) || (scope instanceof CsmClass)) {
-            return CharSequenceKey.create(((CsmQualifiedNamedElement) scope).getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
+            return CharSequences.create(((CsmQualifiedNamedElement) scope).getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
         }
         return getName();
     }

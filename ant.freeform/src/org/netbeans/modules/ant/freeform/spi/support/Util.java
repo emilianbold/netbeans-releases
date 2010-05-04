@@ -43,10 +43,6 @@ package org.netbeans.modules.ant.freeform.spi.support;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 import javax.xml.XMLConstants;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -71,10 +67,6 @@ import org.openide.xml.XMLUtil;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
@@ -87,84 +79,6 @@ public class Util {
     
     private Util() {}
     
-    // XXX XML methods copied from ant/project... make a general API of these instead?
-    
-    /**
-     * Search for an XML element in the direct children of a parent.
-     * DOM provides a similar method but it does a recursive search
-     * which we do not want. It also gives a node list and we want
-     * only one result.
-     * @param parent a parent element
-     * @param name the intended local name
-     * @param namespace the intended namespace
-     * @return the one child element with that name, or null if none or more than one
-     */
-    public static Element findElement(Element parent, String name, String namespace) {
-        Element result = null;
-        NodeList l = parent.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                Element el = (Element)l.item(i);
-                if (name.equals(el.getLocalName()) && namespace.equals(el.getNamespaceURI())) {
-                    if (result == null) {
-                        result = el;
-                    } else {
-                        return null;
-                    }
-                }
-            }
-        }
-        return result;
-    }
-    
-    /**
-     * Extract nested text from an element.
-     * Currently does not handle coalescing text nodes, CDATA sections, etc.
-     * @param parent a parent element
-     * @return the nested text, or null if none was found
-     */
-    public static String findText(Element parent) {
-        NodeList l = parent.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getNodeType() == Node.TEXT_NODE) {
-                Text text = (Text)l.item(i);
-                return text.getNodeValue();
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Find all direct child elements of an element.
-     * More useful than {@link Element#getElementsByTagNameNS} because it does
-     * not recurse into recursive child elements.
-     * Children which are all-whitespace text nodes are ignored; others cause
-     * an exception to be thrown.
-     * @param parent a parent element in a DOM tree
-     * @return a list of direct child elements (may be empty)
-     * @throws IllegalArgumentException if there are non-element children besides whitespace
-     */
-    public static List<Element> findSubElements(Element parent) throws IllegalArgumentException {
-        NodeList l = parent.getChildNodes();
-        List<Element> elements = new ArrayList<Element>(l.getLength());
-        for (int i = 0; i < l.getLength(); i++) {
-            Node n = l.item(i);
-            if (n.getNodeType() == Node.ELEMENT_NODE) {
-                elements.add((Element)n);
-            } else if (n.getNodeType() == Node.TEXT_NODE) {
-                String text = ((Text)n).getNodeValue();
-                if (text.trim().length() > 0) {
-                    throw new IllegalArgumentException("non-ws text encountered in " + parent + ": " + text); // NOI18N
-                }
-            } else if (n.getNodeType() == Node.COMMENT_NODE) {
-                // skip
-            } else {
-                throw new IllegalArgumentException("unexpected non-element child of " + parent + ": " + n); // NOI18N
-            }
-        }
-        return elements;
-    }
-
     /**
      * Finds AuxiliaryConfiguration for the given project helper. The method
      * finds project associated with the helper and searches 
@@ -241,31 +155,6 @@ public class Util {
         }
     }
 
-    /**
-     * Append child element to the correct position according to given
-     * order.
-     * @param parent parent to which the child will be added
-     * @param el element to be added
-     * @param order order of the elements which must be followed
-     */
-    public static void appendChildElement(Element parent, Element el, String[] order) {
-        Element insertBefore = null;
-        List l = Arrays.asList(order);
-        int index = l.indexOf(el.getLocalName());
-        assert index != -1 : el.getLocalName()+" was not found in "+l; // NOI18N
-        Iterator it = Util.findSubElements(parent).iterator();
-        while (it.hasNext()) {
-            Element e = (Element)it.next();
-            int index2 = l.indexOf(e.getLocalName());
-            assert index2 != -1 : e.getLocalName()+" was not found in "+l; // NOI18N
-            if (index2 > index) {
-                insertBefore = e;
-                break;
-            }
-        }
-        parent.insertBefore(el, insertBefore);
-    }
-    
     /**Get the "default" (user-specified) ant script for the given freeform project.
      * Please note that this method may return <code>null</code> if there is no such script.
      *
@@ -287,31 +176,6 @@ public class Util {
     }
     
     /**
-     * Convert an XML fragment from one namespace to another.
-     */
-    private static Element translateXML(Element from, String namespace) {
-        Element to = from.getOwnerDocument().createElementNS(namespace, from.getLocalName());
-        NodeList nl = from.getChildNodes();
-        int length = nl.getLength();
-        for (int i = 0; i < length; i++) {
-            Node node = nl.item(i);
-            Node newNode;
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                newNode = translateXML((Element) node, namespace);
-            } else {
-                newNode = node.cloneNode(true);
-            }
-            to.appendChild(newNode);
-        }
-        NamedNodeMap m = from.getAttributes();
-        for (int i = 0; i < m.getLength(); i++) {
-            Node attr = m.item(i);
-            to.setAttribute(attr.getNodeName(), attr.getNodeValue());
-        }
-        return to;
-    }
-
-    /**
      * Namespace of data used in {@link #getPrimaryConfigurationData} and {@link #putPrimaryConfigurationData}.
      * @since org.netbeans.modules.ant.freeform/1 1.15
      */
@@ -332,7 +196,7 @@ public class Util {
                 if (data != null) {
                     return data;
                 } else {
-                    return translateXML(helper.getPrimaryConfigurationData(true), NAMESPACE);
+                    return XMLUtil.translateXML(helper.getPrimaryConfigurationData(true), NAMESPACE);
                 }
             }
         });
@@ -353,7 +217,7 @@ public class Util {
         }
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
             public Void run() {
-                Element dataAs1 = translateXML(data, FreeformProjectType.NS_GENERAL_1);
+                Element dataAs1 = XMLUtil.translateXML(data, FreeformProjectType.NS_GENERAL_1);
                 if (SCHEMA_1 == null) {
                     try {
                         SchemaFactory f = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -390,7 +254,7 @@ public class Util {
         Element dummy1 = doc.createElementNS(FreeformProjectType.NS_GENERAL_1, FreeformProjectType.NAME_SHARED);
         // Make sure it is not invalid.
         dummy1.appendChild(doc.createElementNS(FreeformProjectType.NS_GENERAL_1, "name")). // NOI18N
-                appendChild(doc.createTextNode(findText(findElement(data, "name", NAMESPACE)))); // NOI18N
+                appendChild(doc.createTextNode(XMLUtil.findText(XMLUtil.findElement(data, "name", NAMESPACE)))); // NOI18N
         helper.putPrimaryConfigurationData(dummy1, true);
         helper.createAuxiliaryConfiguration().putConfigurationFragment(data, true);
     }

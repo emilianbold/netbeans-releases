@@ -79,6 +79,7 @@ public class ElementOrTypeChooserRendererPanel extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
 
+        setToolTipText("Click, or select and press CTRL-SPACE to  open chooser.");
         setMaximumSize(new java.awt.Dimension(20, 23));
         setMinimumSize(new java.awt.Dimension(20, 23));
         setName("Form"); // NOI18N
@@ -86,6 +87,7 @@ public class ElementOrTypeChooserRendererPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         jButton1.setText("...");
+        jButton1.setToolTipText("Click, or select and press CTRL-SPACE to  open chooser.");
         jButton1.setMargin(new java.awt.Insets(0, 14, 0, 14));
         jButton1.setMaximumSize(new java.awt.Dimension(16, 16));
         jButton1.setMinimumSize(new java.awt.Dimension(16, 16));
@@ -100,6 +102,7 @@ public class ElementOrTypeChooserRendererPanel extends javax.swing.JPanel {
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setText("test");
+        jLabel1.setToolTipText("Click, or select and press CTRL-SPACE to  open chooser.");
         jLabel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         jLabel1.setName("jLabel1"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();

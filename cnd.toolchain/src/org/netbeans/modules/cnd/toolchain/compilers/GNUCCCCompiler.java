@@ -141,17 +141,17 @@ import org.openide.util.NbBundle;
                        continue;
                    }
                    if (line.length()>2 && line.charAt(1)==':') {
-                       pair.systemIncludeDirectoriesList.addUnique(normalizePath(line));
+                       addUnique(pair.systemIncludeDirectoriesList, normalizePath(line));
                    } else {
                        line = cutIncludePrefix(line);
                        if (line.endsWith(" (framework directory)")) { // NOI18N
                            line = line.substring(0, line.lastIndexOf('(')).trim();
                        }
-                       pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(line));
+                       addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(line));
                        if (getDescriptor().getRemoveIncludePathPrefix()!=null && line.startsWith("/usr/lib")) { // NOI18N
                            // TODO: if we are fixing cygwin's include location (C:\Cygwin\lib) it seems
                            // we shouldn't add original dir (fix later to avoid regression before release)
-                           pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(line.substring(4)));
+                           addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(line.substring(4)));
                        }
                    }
                    continue;
@@ -161,7 +161,7 @@ import org.openide.util.NbBundle;
                    int i = line.indexOf(' ', 8);
                    if (i > 0) {
                        String token = line.substring(8, i) + "=" + line.substring(i+1); // NOI18N
-                       pair.systemPreprocessorSymbolsList.addUnique(token);
+                       addUnique(pair.systemPreprocessorSymbolsList, token);
                    }
                }
            }

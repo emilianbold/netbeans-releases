@@ -262,7 +262,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         boolean modFinished = false;
 
         // Super of undo()
-        doc.extWriteLock(); // call this extWriteLock() instead of writeLock()
+        doc.atomicLockImpl();
         try {
             if (!canUndo()) {
                 throw new CannotUndoException();
@@ -292,19 +292,19 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
             } else {
                 doc.fireChangedUpdate(this);
             }
+
+            if (previous != null) {
+                previous.undo();
+            }
         } finally {
-            doc.extWriteUnlock(); // call this extWriteUnlock() instead of writeUnlock()
+            doc.atomicUnlockImpl(false);
             if (notifyMod) {
                 doc.notifyModifyCheckEnd(modFinished);
             }
+            inUndo = false;
         }
         // End super of undo()
 
-        if (previous != null) {
-            previous.undo();
-        }
-
-        inUndo = false;
     }
 
     public @Override void redo() throws CannotRedoException {
@@ -318,16 +318,20 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
             throw new CannotRedoException();
         }
 
+        // Must atomicLock() since otherwise if "previous" is a compound edit
+        // then it would do atomic lock and then atomic unlock which would think
+        // that it's lastAtomic so it would clear the STATUS var but because of that
+        // doc.notifyModifyCheckEnd(modFinished); here would fail with NPE.
+
+        doc.atomicLockImpl();
         inRedo = true;
-        if (previous != null) {
-            previous.redo();
-        }
-
         boolean modFinished = false; // Whether modification succeeded
-
-        // Super of redo()
-        doc.extWriteLock(); // call this extWriteLock() instead of writeLock()
         try {
+            if (previous != null) {
+                previous.redo();
+            }
+
+            // Super of redo()
 
             if (!canRedo()) {
                 throw new CannotRedoException();
@@ -355,7 +359,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
                 doc.fireChangedUpdate(this);
             }
         } finally {
-            doc.extWriteUnlock(); // call this extWriteUnlock() instead of writeUnlock()
+            doc.atomicUnlockImpl(false);
             if (notifyMod) {
                 doc.notifyModifyCheckEnd(modFinished);
             }

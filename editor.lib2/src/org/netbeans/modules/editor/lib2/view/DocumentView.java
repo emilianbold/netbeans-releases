@@ -44,7 +44,9 @@ package org.netbeans.modules.editor.lib2.view;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -55,12 +57,14 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -75,10 +79,13 @@ import javax.swing.text.TabExpander;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.lib.editor.util.PriorityMutex;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -94,7 +101,7 @@ import org.openide.util.WeakListeners;
  */
 
 @SuppressWarnings("ClassWithMultipleLoggers") //NOI18N
-public final class DocumentView extends EditorBoxView
+public final class DocumentView extends EditorBoxView<ParagraphView>
         implements PropertyChangeListener, ChangeListener
 {
 
@@ -103,10 +110,32 @@ public final class DocumentView extends EditorBoxView
 
     private static final Logger REPAINT_LOG = Logger.getLogger(DebugRepaintManager.class.getName());
 
+    /**
+     * How many lines should be inited at once at minimum. For some embedded editor panes
+     * this may be a reasonable value although generally the batch is derived
+     * from visible number of lines in a viewport.
+     */
+    private static final int LAZY_CHILDREN_MIN_BATCH = 10; // How many lines init at once
+
+    /**
+     * Maximum number of lines that a ViewUpdates.checkRebuild() may span
+     * for a rebuild to be non-lazy. Otherwise the whole rebuild will become lazy.
+     */
+    static final int MAX_NON_LAZY_REBUILD = 3;
+
+    static final boolean REQUIRE_EDT = Boolean.getBoolean("org.netbeans.editor.linewrap.edt");
+
     static final char PRINTING_SPACE = '\u00B7';
     static final char PRINTING_TAB = '\u00BB'; // \u21FE
     static final char PRINTING_NEWLINE = '\u00B6';
     static final char LINE_CONTINUATION = '\u21A9';
+
+    /**
+     * Text component's client property for the mutex doing synchronization
+     * for view's operation. The mutex is physically the same like the one
+     * for the fold hierarchy otherwise deadlocks could occur.
+     */
+    private static final String MUTEX_CLIENT_PROPERTY = "foldHierarchyMutex"; //NOI18N
 
     static enum LineWrapType {
         NONE("none"), //NOI18N
@@ -144,7 +173,7 @@ public final class DocumentView extends EditorBoxView
         return null;
     }
 
-    private final Object monitor = new String("DocumentView-Monitor"); //NOI18N
+    private PriorityMutex pMutex;
 
     private JTextComponent textComponent;
 
@@ -162,9 +191,11 @@ public final class DocumentView extends EditorBoxView
     private float height;
 
     /**
-     * Visible width of the viewport.
+     * Visible width of the viewport or a text component if there is no viewport.
      */
-    private float visibleWidth;
+    private int visibleWidth;
+
+    private int visibleHeight;
 
     /**
      * Cached font render context (in order not to call getContainer().getGraphics() etc. each time).
@@ -182,9 +213,15 @@ public final class DocumentView extends EditorBoxView
      */
     private float defaultLineHeight;
 
-    private float defaultBaselineOffset;
+    private float defaultAscent;
 
     private float defaultUnderlineOffset;
+
+    private float defaultUnderlineThickness;
+
+    private float defaultStrikethroughOffset;
+
+    private float defaultStrikethroughThickness;
 
     private float defaultCharWidth;
 
@@ -196,6 +233,10 @@ public final class DocumentView extends EditorBoxView
 
     private boolean customBackground;
 
+    private Color defaultLimitLine;
+
+    private int defaultLimitLineWidth;
+    
     private LineWrapType lineWrapType;
 
     private TextLayout newlineTextLayout;
@@ -218,6 +259,10 @@ public final class DocumentView extends EditorBoxView
 
     private PreferenceChangeListener prefsListener;
 
+    private Map<?, ?> renderingHints;
+
+    private int lazyChildrenBatch = LAZY_CHILDREN_MIN_BATCH;
+
     public DocumentView(Element elem, boolean previewOnly) {
         super(elem);
         assert (elem != null) : "Expecting non-null element"; // NOI18N
@@ -227,11 +272,24 @@ public final class DocumentView extends EditorBoxView
 
     @Override
     public float getPreferredSpan(int axis) {
+        if (lineWrapType == null) {
+            return 0f; // Return zero until parent and etc. gets initialized
+        }
         return super.getPreferredSpan(axis);
     }
 
-    public Object getMonitor() {
-        return monitor;
+    @Override
+    protected void setMajorAxisSpan(double majorAxisSpan) {
+        super.setMajorAxisSpan(majorAxisSpan);
+    }
+
+    @Override
+    protected void setMinorAxisSpan(float minorAxisSpan) {
+        super.setMinorAxisSpan(minorAxisSpan);
+    }
+
+    public PriorityMutex getMutex() {
+        return pMutex;
     }
 
     @Override
@@ -281,16 +339,21 @@ public final class DocumentView extends EditorBoxView
 
     @Override
     public void setParent(View parent) {
+        // Checking of document lock not enforced at this point since it
         super.setParent(parent);
         if (parent != null) {
             Container container = getContainer();
             assert (container != null) : "Container is null"; // NOI18N
             assert (container instanceof JTextComponent) : "Container not JTextComponent"; // NOI18N
             textComponent = (JTextComponent) container;
+            pMutex = (PriorityMutex) textComponent.getClientProperty(MUTEX_CLIENT_PROPERTY);
+            if (pMutex == null) {
+                pMutex = new PriorityMutex();
+                textComponent.putClientProperty(MUTEX_CLIENT_PROPERTY, pMutex);
+            }
+
             viewUpdates = previewOnly ? null : new ViewUpdates(this);
             textLayoutCache = new TextLayoutCache();
-
-            checkViewsInited();
             textComponent.addPropertyChangeListener(this);
             if (REPAINT_LOG.isLoggable(Level.FINE)) {
                 DebugRepaintManager.register(textComponent);
@@ -298,34 +361,106 @@ public final class DocumentView extends EditorBoxView
 
         } else { // Setting null parent
             textComponent.removePropertyChangeListener(this);
+            // Set the textComponent to null under mutex
+            // so that children suddenly don't see a null textComponent
+            PriorityMutex mutex = getMutex();
+            if (mutex != null) {
+                mutex.lock();
+                try {
+                    textComponent = null; // View services stop working and propagating to children
+                } finally {
+                    mutex.unlock();
+                }
+            }
         }
     }
 
     void checkViewsInited() {
-        if (children == null) {
+        if (children == null && textComponent != null) {
             // Check whether Graphics can be constructed (only if component is part of hierarchy)
-            assert (textComponent != null);
             Graphics graphics = textComponent.getGraphics();
             if (graphics != null) {
                 assert (graphics instanceof Graphics2D) : "Not Graphics2D";
-                fontRenderContext = ((Graphics2D) graphics).getFontRenderContext();
-                updateVisibleWidth();
+                updateVisibleDimension();
                 checkSettingsInfo();
+                // Use rendering hints (antialiasing etc.)
+                if (renderingHints != null) {
+                    ((Graphics2D) graphics).setRenderingHints(renderingHints);
+                }
+                fontRenderContext = ((Graphics2D) graphics).getFontRenderContext();
                 updateCharMetrics(); // Explicitly update char metrics since fontRenderContext affects them
-                Document doc = getDocument();
                 reinitViews();
             }
         }
     }
 
     public void reinitViews() {
-        synchronized (getMonitor()) {
-            viewUpdates.reinitViews();
+        getDocument().render(new Runnable() {
+            @Override
+            public void run() {
+                PriorityMutex mutex = getMutex();
+                if (mutex != null) {
+                    mutex.lock();
+                    // checkDocumentLocked() - unnecessary - doc.render() called
+                    try {
+                        ((EditorTabExpander) tabExpander).updateTabSize();
+                        if (fontRenderContext != null) { // Only rebuild views with valid fontRenderContext
+                            viewUpdates.reinitViews();
+                        }
+                    } finally {
+                        mutex.unlock();
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    protected void initChildren(int startIndex, int endIndex) {
+        viewUpdates.initChildren(startIndex, endIndex, lazyChildrenBatch);
+    }
+
+    private void updateLazyChildrenBatch() {
+        if (defaultLineHeight > 0f) {
+            lazyChildrenBatch = Math.max((int) (visibleHeight / defaultLineHeight + 2),
+                    LAZY_CHILDREN_MIN_BATCH);
+            LOG.log(Level.FINE, "lazyChildrenBatch={0}\n", lazyChildrenBatch);
         }
     }
 
-    private void updateVisibleWidth() {
+    void recomputeSpans() {
+        checkDocumentLocked();
+        int viewCount = getViewCount();
+        boolean heightChange = false;
+        float origWidth = getMinorAxisSpan();
+        float newWidth = 0f;
+        for (int i = 0; i < viewCount; i++) {
+            ParagraphView paragraphView = getEditorView(i);
+            double origChildWidth = paragraphView.getMajorAxisSpan();
+            float origChildHeight = paragraphView.getMinorAxisSpan();
+            paragraphView.recomputeSpans();
+            double childWidth = paragraphView.getMajorAxisSpan();
+            boolean childWidthChange = (origChildWidth != childWidth);
+            if (childWidth > newWidth) {
+                newWidth = (float) childWidth;
+            }
+            boolean childHeightChange = (origChildHeight != paragraphView.getMinorAxisSpan());
+            heightChange |= childHeightChange;
+            // Call preference change so that child's major axis span gets updated
+            preferenceChanged(i, childWidthChange, childHeightChange, false);
+        }
+        boolean widthChange = (origWidth != newWidth);
+        if (widthChange) {
+            setMinorAxisSpan(newWidth);
+        }
+        if (widthChange || heightChange) {
+            preferenceChanged(null, widthChange, heightChange);
+        }
+    }
+
+    private void updateVisibleDimension() { // Called only with textComponent != null
         Component parent = textComponent.getParent();
+        Dimension newSize;
         if (parent instanceof JViewport) {
             JViewport viewport = (JViewport) parent;
             if (listeningOnViewport != viewport) {
@@ -335,40 +470,87 @@ public final class DocumentView extends EditorBoxView
                 viewport.addChangeListener(this);
                 listeningOnViewport = viewport;
             }
-            float newWidth = viewport.getExtentSize().width;
-            if (newWidth != visibleWidth) {
-                visibleWidth = newWidth;
-                if (getLineWrapType() != LineWrapType.NONE) {
-                    reinitViews();
-                }
-            }
+            newSize = viewport.getExtentSize();
+
         } else {
-            visibleWidth = textComponent.getWidth();
+            newSize = textComponent.getSize();
+        }
+
+        boolean widthDiffers = (newSize.width != visibleWidth);
+        boolean heightDiffers = (newSize.height != visibleHeight);
+        if (widthDiffers) {
+            visibleWidth = newSize.width;
+        }
+        if (heightDiffers) {
+            visibleHeight = newSize.height;
+        }
+        // After visible* vars are updated update other things
+        if (heightDiffers) {
+            updateLazyChildrenBatch();
+        }
+        if (widthDiffers) {
+            recomputeSpans();
         }
     }
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        synchronized (getMonitor()) {
-            updateVisibleWidth();
-        }
+        // First lock document and then monitor
+        Document doc = getDocument();
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                PriorityMutex mutex = getMutex();
+                if (mutex != null) {
+                    mutex.lock();
+                    // checkDocumentLocked() - unnecessary - doc.render() called
+                    try {
+                        if (textComponent != null) {
+                            updateVisibleDimension();
+                        }
+                    } finally {
+                        mutex.unlock();
+                    }
+                }
+            }
+        });
     }
 
     private void checkSettingsInfo() {
+        if (textComponent == null) {
+            return;
+        }
         if (lookupListener == null) {
             lookupListener = new LookupListener() {
                 @Override
                 public void resultChanged(LookupEvent ev) {
                     @SuppressWarnings("unchecked")
-                    Lookup.Result<FontColorSettings> result = (Lookup.Result<FontColorSettings>) ev.getSource();
-                    updateDefaultFontAndColors(result);
+                    final Lookup.Result<FontColorSettings> result = (Lookup.Result<FontColorSettings>) ev.getSource();
+                    getDocument().render(new Runnable() {
+                        @Override
+                        public void run() {
+                            PriorityMutex mutex = getMutex();
+                            if (mutex != null) {
+                                mutex.lock();
+                                // checkDocumentLocked() - unnecessary - doc.render() called
+                                try {
+                                    if (textComponent != null) {
+                                        updateDefaultFontAndColors(result);
+                                    }
+                                } finally {
+                                    mutex.unlock();
+                                }
+                            }
+                        }
+                    });
                 }
             };
             String mimeType = DocumentUtilities.getMimeType(textComponent);
             Lookup lookup = MimeLookup.getLookup(mimeType);
             Lookup.Result<FontColorSettings> result = lookup.lookupResult(FontColorSettings.class);
             updateDefaultFontAndColors(result);
-            result.addLookupListener(lookupListener);
+            result.addLookupListener(WeakListeners.create(LookupListener.class,
+                    lookupListener, result));
         }
 
         if (prefs == null) {
@@ -377,10 +559,9 @@ public final class DocumentView extends EditorBoxView
             prefsListener = new PreferenceChangeListener() {
                 @Override
                 public void preferenceChange(PreferenceChangeEvent evt) {
-                    if (evt.getKey().equals(SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE)) {
-                        synchronized (getMonitor()) {
-                            reinitViews();
-                        }
+                    String key = evt.getKey();
+                    if (key ==  null || key.equals(SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE)) {
+                        reinitViews();
                     }
                 }
             };
@@ -393,14 +574,21 @@ public final class DocumentView extends EditorBoxView
             if (lineWrapType == null) {
                 lineWrapType = LineWrapType.NONE;
             }
+
+            // #183797 - most likely seeing a non-nb document during the editor pane creation
+            Integer dllw = (Integer) getDocument().getProperty(SimpleValueNames.TEXT_LIMIT_WIDTH);
+            defaultLimitLineWidth = dllw != null ? dllw.intValue() : EditorPreferencesDefaults.defaultTextLimitWidth;
+
             DocumentUtilities.addPropertyChangeListener(doc, WeakListeners.propertyChange(this, doc));
         }
     }
 
     /*private*/ void updateDefaultFontAndColors(Lookup.Result<FontColorSettings> result) {
+        // Called only with textComponent != null
         Font font = textComponent.getFont();
         Color foreColor = textComponent.getForeground();
         Color backColor = textComponent.getBackground();
+        Color limitLineColor = Color.PINK;
         if (result != null) {
             FontColorSettings fcs = result.allInstances().iterator().next();
             AttributeSet attributes = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
@@ -414,12 +602,21 @@ public final class DocumentView extends EditorBoxView
                 if (c != null) {
                     backColor = c;
                 }
+                renderingHints = (Map<?, ?>) attributes.getAttribute(EditorStyleConstants.RenderingHints);
+            }
+            attributes = fcs.getFontColors(FontColorNames.TEXT_LIMIT_LINE_COLORING);
+            if (attributes != null) {
+                Color c = (Color) attributes.getAttribute(StyleConstants.Foreground);
+                if (c != null) {
+                    limitLineColor = c;
+                }
             }
         }
 
         defaultFont = font;
         defaultForeground = foreColor;
         defaultBackground = backColor;
+        defaultLimitLine = limitLineColor;
 
         if (!customFont) {
             textComponent.setFont(defaultFont);
@@ -451,20 +648,54 @@ public final class DocumentView extends EditorBoxView
             TextLayout textLayout = new TextLayout(defaultText, defaultFont, frc); // NOI18N
             defaultLineHeight = textLayout.getAscent() + textLayout.getDescent() +
                     textLayout.getLeading(); // Leading: end of descent till next line's start distance
-            defaultBaselineOffset = textLayout.getAscent(); // textLayout.getBaselineOffsets()[textLayout.getBaseline()];
+            // Round up line height to one decimal place which is reasonable for layout
+            // but it also has an important effect that it allows eliminate problems
+            // caused by using a [float,float] point that does not fit into views boundaries
+            // maintained as doubles.
+            defaultLineHeight = ViewUtils.cutFractions(defaultLineHeight);
+            defaultAscent = textLayout.getAscent();
             LineMetrics lineMetrics = defaultFont.getLineMetrics(defaultText, frc);
             defaultUnderlineOffset = lineMetrics.getUnderlineOffset();
-            defaultCharWidth = (float) textLayout.getBounds().getWidth();
+            defaultUnderlineThickness = lineMetrics.getUnderlineThickness();
+            defaultStrikethroughOffset = lineMetrics.getStrikethroughOffset();
+            defaultStrikethroughThickness = lineMetrics.getStrikethroughThickness();
+            defaultCharWidth = ViewUtils.cutFractions(textLayout.getAdvance());
             tabTextLayout = null;
             singleCharTabTextLayout = null;
             lineContinuationTextLayout = null;
+            updateLazyChildrenBatch();
+            if (LOG.isLoggable(Level.FINE)) {
+                FontMetrics fm = textComponent.getFontMetrics(defaultFont);
+                LOG.fine("Font: " + defaultFont + "\nLine-height=" + defaultLineHeight + // NOI18N
+                        ", ascent=" + textLayout.getAscent() + ", descent=" + textLayout.getDescent() + // NOI18N
+                        ", leading=" + textLayout.getLeading() + "\nChar-width=" + defaultCharWidth + // NOI18N
+                        ", underlineOffset=" + defaultUnderlineOffset + // NOI18N
+                        "\nFontMetrics (for comparison): fm-line-height=" + // NOI18N
+                        fm.getHeight() + ", fm-ascent=" + fm.getAscent() + // NOI18N
+                        ", fm-descent=" + fm.getDescent() + "\n"
+                );
+            }
         }
     }
 
     @Override
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
-        synchronized (getMonitor()) {
-            super.paint(g, alloc, clipBounds);
+        PriorityMutex mutex = getMutex();
+        if (mutex != null) {
+            mutex.lock();
+            try {
+                checkDocumentLocked();
+                checkViewsInited();
+                if (isActive()) {
+                    // Use rendering hints (antialiasing etc.)
+                    if (renderingHints != null) {
+                        g.setRenderingHints(renderingHints);
+                    }
+                    super.paint(g, alloc, clipBounds);
+                }
+            } finally {
+                mutex.unlock();
+            }
         }
     }
 
@@ -472,50 +703,95 @@ public final class DocumentView extends EditorBoxView
     public int getNextVisualPositionFromChecked(int offset, Position.Bias bias, Shape alloc,
             int direction, Position.Bias[] biasRet)
     {
-        synchronized (getMonitor()) {
-            return super.getNextVisualPositionFromChecked(offset, bias, alloc, direction, biasRet);
+        PriorityMutex mutex = getMutex();
+        if (mutex != null) {
+            mutex.lock();
+            try {
+                checkDocumentLocked();
+                checkViewsInited();
+                if (isActive()) {
+                    offset = super.getNextVisualPositionFromChecked(offset, bias, alloc, direction, biasRet);
+                }
+            } finally {
+                mutex.unlock();
+            }
         }
+        return offset;
     }
 
     @Override
     public Shape modelToViewChecked(int offset, Shape alloc, Position.Bias bias) {
-        synchronized (getMonitor()) {
-            return super.modelToViewChecked(offset, alloc, bias);
+        PriorityMutex mutex = getMutex();
+        if (mutex != null) {
+            mutex.lock();
+            try {
+                checkDocumentLocked();
+                checkViewsInited();
+                if (isActive()) {
+                    alloc = super.modelToViewChecked(offset, alloc, bias);
+                }
+            } finally {
+                mutex.unlock();
+            }
         }
+        return alloc;
+    }
+
+    public double modelToY(int offset, Shape alloc) {
+        PriorityMutex mutex = getMutex();
+        if (mutex != null) {
+            mutex.lock();
+            try {
+                checkDocumentLocked();
+                checkViewsInited();
+                if (isActive()) {
+                    int index = getViewIndexFirst(offset);
+                    if (index >= 0) {
+                        return getViewVisualOffset(index);
+                    }
+                }
+            } finally {
+                mutex.unlock();
+            }
+        }
+        return 0.0d;
     }
 
     @Override
     public int viewToModelChecked(double x, double y, Shape alloc, Position.Bias[] biasReturn) {
-        synchronized (getMonitor()) {
-            return super.viewToModelChecked(x, y, alloc, biasReturn);
+        PriorityMutex mutex = getMutex();
+        if (mutex != null) {
+            mutex.lock();
+            try {
+                checkDocumentLocked();
+                checkViewsInited();
+                if (isActive()) {
+                    return super.viewToModelChecked(x, y, alloc, biasReturn);
+                }
+            } finally {
+                mutex.unlock();
+            }
         }
+        return 0;
+    }
+
+    boolean isActive() {
+        return textComponent != null && children != null;
     }
 
     @Override
     public void insertUpdate(DocumentEvent evt, Shape alloc, ViewFactory viewFactory) {
-        synchronized (getMonitor()) {
-            if (children != null && viewUpdates != null) {
-                viewUpdates.insertUpdate(evt, alloc, viewFactory);
-            }
-        }
+        // Do nothing here - see ViewUpdates constructor
     }
 
     @Override
     public void removeUpdate(DocumentEvent evt, Shape alloc, ViewFactory viewFactory) {
-        synchronized (getMonitor()) {
-            if (children != null && viewUpdates != null) {
-                viewUpdates.removeUpdate(evt, alloc, viewFactory);
-            }
-        }
+        // Do nothing here - see ViewUpdates constructor
     }
 
     @Override
     public void changedUpdate(DocumentEvent evt, Shape alloc, ViewFactory viewFactory) {
-        synchronized (getMonitor()) {
-            if (children != null && viewUpdates != null) {
-                viewUpdates.changedUpdate(evt, alloc, viewFactory);
-            }
-        }
+        // Do nothing here - see ViewUpdates constructor
     }
 
     float getVisibleWidth() {
@@ -530,7 +806,13 @@ public final class DocumentView extends EditorBoxView
         return textLayoutCache;
     }
 
-    FontRenderContext getFontRenderContext() { // sync necessary??
+    @Override
+    public TextLayout getTextLayout(TextLayoutView textLayoutView) {
+        return null;
+    }
+
+    @Override
+    public FontRenderContext getFontRenderContext() {
         return fontRenderContext;
     }
 
@@ -539,14 +821,29 @@ public final class DocumentView extends EditorBoxView
         return defaultLineHeight;
     }
 
-    public float getDefaultBaselineOffset() {
+    public float getDefaultAscent() {
         checkSettingsInfo();
-        return defaultBaselineOffset;
+        return defaultAscent;
     }
 
     public float getDefaultUnderlineOffset() {
         checkSettingsInfo();
         return defaultUnderlineOffset;
+    }
+
+    public float getDefaultUnderlineThickness() {
+        checkSettingsInfo();
+        return defaultUnderlineThickness;
+    }
+
+    public float getDefaultStrikethroughOffset() {
+        checkSettingsInfo();
+        return defaultStrikethroughOffset;
+    }
+
+    public float getDefaultStrikethroughThickness() {
+        checkSettingsInfo();
+        return defaultStrikethroughThickness;
     }
 
     public float getDefaultCharWidth() {
@@ -562,6 +859,24 @@ public final class DocumentView extends EditorBoxView
     LineWrapType getLineWrapType() {
         checkSettingsInfo();
         return lineWrapType;
+    }
+
+    Color getTextLimitLineColor() {
+        checkSettingsInfo();
+        return defaultLimitLine;
+    }
+
+    boolean isTextLimitLineDrawn() {
+        checkSettingsInfo();
+        return prefs.getBoolean(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, true);
+    }
+
+    int getTextLimitWidth() {
+        checkSettingsInfo();
+        if (defaultLimitLineWidth > 0) {
+            return defaultLimitLineWidth;
+        }
+        return prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
     }
 
     TextLayout getNewlineCharTextLayout() {
@@ -611,9 +926,21 @@ public final class DocumentView extends EditorBoxView
         return null;
     }
 
+    void checkDocumentLocked() {
+        if (LOG.isLoggable(Level.FINE)) {
+            if (!DocumentUtilities.isReadLocked(getDocument())) {
+                LOG.log(Level.INFO, "Document not locked", new Exception("Document not locked")); // NOI18N
+            }
+        }
+        if (REQUIRE_EDT && !SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException("Not in Event Dispatch Thread"); // NOI18N
+        }
+    }
+
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() instanceof Document) {
+            boolean reinitViews = false;
             String propName = evt.getPropertyName();
             if (propName == null || SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
                 LineWrapType lwt = LineWrapType.fromSettingValue((String)getDocument().getProperty(SimpleValueNames.TEXT_LINE_WRAP));
@@ -623,10 +950,22 @@ public final class DocumentView extends EditorBoxView
                 if (lwt != lineWrapType) {
                     LOG.log(Level.FINE, "Changing lineWrapType from {0} to {1}", new Object [] { lineWrapType, lwt }); //NOI18N
                     lineWrapType = lwt;
-                    synchronized (getMonitor()) {
-                        reinitViews();
-                    }
+                    reinitViews = true;
                 }
+            }
+            if (propName == null || SimpleValueNames.TAB_SIZE.equals(propName)) {
+                reinitViews = true;
+            }
+            if (propName == null || SimpleValueNames.TEXT_LIMIT_WIDTH.equals(propName)) {
+                int llw = (Integer) getDocument().getProperty(SimpleValueNames.TEXT_LIMIT_WIDTH);
+                if (llw != defaultLimitLineWidth) {
+                    LOG.log(Level.FINE, "Changing defaultLimitLineWidth from {0} to {1}", new Object [] { defaultLimitLineWidth, llw }); //NOI18N
+                    defaultLimitLineWidth = llw;
+                    reinitViews = true;
+                }
+            }
+            if (reinitViews) {
+                reinitViews();
             }
         } else { // an event from JTextComponent
             String propName = evt.getPropertyName();
@@ -665,6 +1004,47 @@ public final class DocumentView extends EditorBoxView
             return "Invalid endOffset=" + endOffset + ", docLen=" + doc.getLength(); // NOI18N
         }
         return null;
+    }
+
+    @Override
+    public String findTreeIntegrityError() {
+        final String[] ret = new String[1];
+        getDocument().render(new Runnable() {
+            @Override
+            public void run() {
+                PriorityMutex mutex = getMutex();
+                if (mutex != null) {
+                    mutex.lock();
+                    // checkDocumentLocked() - unnecessary - doc.render() called
+                    try {
+                        ret[0] = DocumentView.super.findTreeIntegrityError();
+                    } finally {
+                        mutex.unlock();
+                    }
+                }
+            }
+        });
+        return ret[0];
+    }
+
+    @Override
+    protected StringBuilder appendViewInfo(final StringBuilder sb, final int indent, final int importantChildIndex) {
+        getDocument().render(new Runnable() {
+            @Override
+            public void run() {
+                PriorityMutex mutex = getMutex();
+                if (mutex != null) {
+                    mutex.lock();
+                    // checkDocumentLocked() - unnecessary - doc.render() called
+                    try {
+                        DocumentView.super.appendViewInfo(sb, indent, importantChildIndex);
+                    } finally {
+                        mutex.unlock();
+                    }
+                }
+            }
+        });
+        return sb;
     }
 
 }

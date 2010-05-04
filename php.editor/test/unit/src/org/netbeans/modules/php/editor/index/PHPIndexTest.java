@@ -261,14 +261,20 @@ public class PHPIndexTest extends TestBase {
         Collection<TypeElement> ccInterfaces = new ArrayList<TypeElement>(index.getInterfaces(NameKind.exact("CCC")));
         assertEquals(2, ccInterfaces.size());
         TypeElement[] interfacesArray = ccInterfaces.toArray(new TypeElement[ccInterfaces.size()]);
-        final TypeElement firstCC = interfacesArray[0];
-        final TypeElement secondCC = interfacesArray[1];
+        TypeElement firstCC = interfacesArray[0];
+        TypeElement secondCC = interfacesArray[1];
         assertNotNull(firstCC);
         assertNotNull(secondCC);
         assertNotSame(secondCC, firstCC);
         assertNotNull(firstCC.getFileObject());
         assertNotNull(secondCC.getFileObject());
         assertNotSame(secondCC.getFileObject(), firstCC.getFileObject());
+        
+        if (firstCC.getFileObject().getName().endsWith("_1")) {
+            final TypeElement tmpCC = firstCC;
+            firstCC = secondCC;
+            secondCC = tmpCC;
+        }
 
         final Collection<InterfaceElement> preferredInterfaces =
                 ElementFilter.forFiles(firstCC.getFileObject()).prefer(index.getInterfaces(NameKind.exact("CCC")));
@@ -280,7 +286,7 @@ public class PHPIndexTest extends TestBase {
         final Collection<InterfaceElement> aaInterfaces =
                 ElementFilter.forFiles(preffered.getFileObject()).prefer(index.getInterfaces(NameKind.exact("AAA")));
         assertEquals(1, aaInterfaces.size());
-        assertNotSame(getFirst(aaInterfaces).getFileObject(), preffered.getFileObject());
+        assertSame(getFirst(aaInterfaces).getFileObject(), preffered.getFileObject());
     }
 
     /**
@@ -424,7 +430,7 @@ public class PHPIndexTest extends TestBase {
         methods = index.getDeclaredMethods(clz);
         assertEquals(3, methods.size());
         methods = index.getInheritedMethods(clz);
-        assertEquals(2, methods.size());
+        assertEquals(3, methods.size());
         MethodElement firstMethod = getFirst(methods);
         TypeElement firstType = firstMethod.getType();
         final boolean isFirstTypeClass = firstType.getPhpElementKind().equals(PhpElementKind.CLASS);
@@ -435,7 +441,7 @@ public class PHPIndexTest extends TestBase {
         } else {
             assertEquals(firstType.getName(), clz.getSuperInterfaces().iterator().next().getName());
             assertEquals(getSecond(methods).getType().getName(), clz.getSuperClassName().getName());
-            assertEquals(firstMethod.getName(), "testMethodDeclarationIface2");
+            assertTrue(firstMethod.getName().startsWith("testMethodDeclarationIface"));
         }
         Collection<String> methodNames = Arrays.asList(
                 new String[]{"testMethodDeclaration",

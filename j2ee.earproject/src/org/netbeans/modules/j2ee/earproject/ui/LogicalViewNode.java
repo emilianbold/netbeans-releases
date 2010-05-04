@@ -73,12 +73,10 @@ public final class LogicalViewNode extends AbstractNode {
     private Image J2EE_MODULES_BADGE = ImageUtilities.loadImage( "org/netbeans/modules/j2ee/earproject/ui/resources/application_16.gif", true ); // NOI18N
     private static Icon folderIconCache;
     private static Icon openedFolderIconCache;	
-    private final AntProjectHelper model;
     
     public LogicalViewNode(AntProjectHelper model, EarProject project, 
             UpdateHelper updateHelper, ClassPathSupport cs) {
-        super(new LogicalViewChildren(model, project, updateHelper, cs), Lookups.fixed( new Object[] { model }));
-        this.model = model;
+        super(new LogicalViewChildren(model, project, updateHelper, cs), Lookups.fixed( new Object[] { project }));
         // Set FeatureDescriptor stuff:
         setName(J2EE_MODULES_NAME);
         setDisplayName(NbBundle.getMessage(LogicalViewNode.class, "LBL_LogicalViewNode"));

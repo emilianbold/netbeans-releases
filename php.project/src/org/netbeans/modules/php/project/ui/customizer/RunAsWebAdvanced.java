@@ -123,6 +123,7 @@ public class RunAsWebAdvanced extends JPanel {
         pathMappingTable.addMouseListener(new LocalPathCellMouseListener(pathMappingTable));
 
         ActionListener debugUrlListener = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 validateFields();
             }
@@ -131,23 +132,28 @@ public class RunAsWebAdvanced extends JPanel {
         askUrlRadioButton.addActionListener(debugUrlListener);
         doNotOpenBrowserRadioButton.addActionListener(debugUrlListener);
         pathMappingTableModel.addTableModelListener(new TableModelListener() {
+            @Override
             public void tableChanged(TableModelEvent e) {
                 handleButtonStates();
                 validateFields();
             }
         });
         pathMappingTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 handleButtonStates();
             }
         });
         DocumentListener defaultDocumentListener = new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 processUpdate();
             }
@@ -631,6 +637,7 @@ public class RunAsWebAdvanced extends JPanel {
 
     private final class LocalPathCellRenderer implements TableCellRenderer {
 
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             LocalPathCell localPathCell = (LocalPathCell) value;
             // #164688 - sorry, no idea how this can happen

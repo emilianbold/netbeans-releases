@@ -58,7 +58,7 @@ public final class TopologicalSortException extends Exception {
     private Collection vertexes;
 
     /** map with edges */
-    private Map edges;
+    private Map<?,? extends Collection<?>> edges;
 
     /** result if called twice */
     private Set[] result;
@@ -69,7 +69,7 @@ public final class TopologicalSortException extends Exception {
     /** vertexes sorted by increasing value of y */
     private Stack<Vertex> dualGraph = new Stack<Vertex>();
 
-    TopologicalSortException(Collection vertexes, Map edges) {
+    TopologicalSortException(Collection vertexes, Map<?,? extends Collection<?>> edges) {
         this.vertexes = vertexes;
         this.edges = edges;
     }
@@ -134,13 +134,23 @@ public final class TopologicalSortException extends Exception {
     }
 
     private void printDebug(java.io.PrintWriter w) {
-        w.print("TopologicalSortException - Collection: "); // NOI18N
-        w.print(vertexes);
-        w.print(" with edges "); // NOI18N
-        w.print(edges);
+        Set<Object> relevantVertices = new HashSet<Object>();
+        Set<?>[] bad = unsortableSets();
+        for (Set<?> s : bad) {
+            relevantVertices.addAll(s);
+        }
+        Map<Object,Collection<?>> relevantEdges = new HashMap<Object,Collection<?>>();
+        for (Map.Entry<?,? extends Collection<?>> entry : edges.entrySet()) {
+            Set<Object> relevant = new HashSet<Object>(entry.getValue());
+            relevant.add(entry.getKey());
+            relevant.retainAll(relevantVertices);
+            if (!relevant.isEmpty()) {
+                relevantEdges.put(entry.getKey(), entry.getValue());
+            }
+        }
+        w.print("TopologicalSortException - Collection with relevant edges "); // NOI18N
+        w.print(relevantEdges);
         w.println(" cannot be sorted"); // NOI18N
-
-        Set[] bad = unsortableSets();
 
         for (int i = 0; i < bad.length; i++) {
             w.print(" Conflict #"); // NOI18N

@@ -136,6 +136,7 @@ public class WizardConcreteConfigurationStep extends WSDLWizardDescriptorPanel i
             if (this.mPanel.getServicePortName() == null || this.mPanel.getServicePortName().trim().equals("")) {
                 this.mPanel.setServicePortName(fileName + "Port"); //NOI18N
             }
+            this.mPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WizardConcreteConfigurationStep.class, "LBL_WizardBindingConfigurationStep"));
             
         }
         return this.mPanel;

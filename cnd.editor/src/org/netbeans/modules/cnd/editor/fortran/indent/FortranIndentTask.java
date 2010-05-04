@@ -62,10 +62,12 @@ public class FortranIndentTask extends FortranIndentSupport implements IndentTas
         doc = context.document();
     }
 
+    @Override
     public void reindent() throws BadLocationException {
         if (codeStyle == null) {
             codeStyle = FortranCodeStyle.get(doc);
         }
+        codeStyle.setupLexerAttributes(doc);
         int caretOffset = context.caretOffset();
         int lineOffset = context.lineStartOffset(caretOffset);
         ts = CndLexerUtilities.getFortranTokenSequence(doc, lineOffset);
@@ -78,6 +80,7 @@ public class FortranIndentTask extends FortranIndentSupport implements IndentTas
         }
     }
 
+    @Override
     public ExtraLock indentLock() {
         return null;
     }

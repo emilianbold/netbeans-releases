@@ -40,6 +40,8 @@
 package org.netbeans.modules.jira.issue;
 
 import java.util.Date;
+import org.eclipse.mylyn.internal.jira.core.model.IssueType;
+import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -67,9 +69,9 @@ public class JiraIssueNode extends IssueNode {
     protected Property<?>[] getProperties() {
         return new Property<?>[] {
             new KeyProperty(),
-            new JiraFieldProperty(NbJiraIssue.LABEL_NAME_TYPE, IssueField.TYPE, "CTL_Issue_Type_Title", "CTL_Issue_Type_Desc"),
+            new TypeProperty(),
             new PriorityProperty(),
-            new JiraFieldProperty(NbJiraIssue.LABEL_NAME_STATUS, IssueField.STATUS, "CTL_Issue_Status_Title", "CTL_Issue_Status_Desc"),
+            new StatusProperty(),
             new ResolutionProperty(),
             new JiraFieldProperty(NbJiraIssue.LABEL_NAME_ASSIGNED_TO, IssueField.ASSIGNEE, "CTL_Issue_Assigned_Title", "CTL_Issue_Assigned_Desc"),
             new SummaryProperty(),
@@ -155,6 +157,52 @@ public class JiraIssueNode extends IssueNode {
             } else {
                 return super.getValue(attributeName);
             }
+        }
+    }
+
+    private class StatusProperty extends IssueProperty<String> {
+        public StatusProperty() {
+            super(NbJiraIssue.LABEL_NAME_STATUS,
+                  String.class,
+                  NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Status_Title"), // NOI18N
+                  NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Status_Desc")); // NOI18N
+        }
+        @Override
+        public String getValue() {
+            JiraStatus status = getNbJiraIssue().getStatus();
+            return status != null ? status.getName() : "";                      // NOI18N
+        }
+        @Override
+        public int compareTo(IssueProperty p) {
+            if(p == null) return 1;
+            String s1 = getNbJiraIssue().getFieldValue(IssueField.STATUS);
+            String s2 = ((NbJiraIssue)p.getIssue()).getFieldValue(IssueField.STATUS);
+            return s1.compareTo(s2);
+        }
+    }
+
+    private class TypeProperty extends IssueNode.IssueProperty<String> {
+        public TypeProperty() {
+            super(NbJiraIssue.LABEL_NAME_TYPE,
+                  String.class,
+                  NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Type_Title"), // NOI18N
+                  NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Type_Desc")); // NOI18N
+        }
+        @Override
+        public String getValue() {
+            IssueType type = getNbJiraIssue().getType();
+            return type != null ? type.getName() : "";                          // NOI18N
+        }
+        @Override
+        public Object getValue(String attributeName) {
+            return super.getValue(attributeName);
+        }
+        @Override
+        public int compareTo(IssueProperty p) {
+            if(p == null) return 1;
+            String s1 = getNbJiraIssue().getType().getName();
+            String s2 = ((NbJiraIssue)p.getIssue()).getType().getName();
+            return s1.compareTo(s2);
         }
     }
 

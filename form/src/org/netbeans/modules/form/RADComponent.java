@@ -675,7 +675,7 @@ public class RADComponent {
         return prop;
     }
     
-    public BindingProperty[][] getBindingProperties() {
+    public synchronized BindingProperty[][] getBindingProperties() {
         if (bindingProperties == null) {
             createBindingProperties();
         }
@@ -690,11 +690,11 @@ public class RADComponent {
         return null;
     }
 
-    BindingProperty[] getKnownBindingProperties() {
+    synchronized BindingProperty[] getKnownBindingProperties() {
         return bindingProperties != null ? getAllBindingProperties() : NO_BINDINGS;
     }
 
-    boolean hasBindings() {
+    synchronized boolean hasBindings() {
         if (bindingProperties != null) {
             for (BindingProperty p : getAllBindingProperties()) {
                 if (p.getValue() != null)
@@ -1364,7 +1364,7 @@ public class RADComponent {
         actionProperties = actionProps;
     }
 
-    private void createBindingProperties() {
+    private synchronized void createBindingProperties() {
         Collection<BindingDescriptor>[] props = FormEditor.getBindingSupport(formModel).getBindingDescriptors(this);
         bindingProperties = new BindingProperty[props.length][];
         for (int i=0; i<props.length; i++) {

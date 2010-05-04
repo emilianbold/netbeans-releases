@@ -43,19 +43,14 @@ package org.netbeans.modules.projectimport.eclipse.core;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.projectimport.eclipse.core.spi.UpgradableProjectLookupProvider;
-import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
-import org.openide.awt.Mnemonics;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.Presenter;
 
-public final class UpdateProjectAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
+public final class UpdateProjectAction extends AbstractAction implements ContextAwareAction {
     
     private Lookup context;
     
@@ -66,9 +61,10 @@ public final class UpdateProjectAction extends AbstractAction implements Context
     public UpdateProjectAction(Lookup actionContext) {
         super(NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.Name"));
         this.context = actionContext;
+        putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
     }
 
-    public void actionPerformed(ActionEvent ignore) {
+    public @Override void actionPerformed(ActionEvent ignore) {
         new UpdateAllProjects().update(false);
     }
 
@@ -83,33 +79,8 @@ public final class UpdateProjectAction extends AbstractAction implements Context
         return upgradable != null && upgradable.isUpgradable();
     }
     
-    public Action createContextAwareInstance(Lookup actionContext) {
+    public @Override Action createContextAwareInstance(Lookup actionContext) {
         return new UpdateProjectAction(actionContext);
-    }
-
-    public JMenuItem getPopupPresenter() {
-        return new Menu();
-    }
-
-    private class Menu extends JMenuItem implements DynamicMenuContent {
-
-        public Menu() {
-            Actions.connect(this, UpdateProjectAction.this);
-            Mnemonics.setLocalizedText(this, (String) getValue(NAME));
-        }
-
-        public JComponent[] getMenuPresenters() {
-            if (UpdateProjectAction.this.isEnabled()) {
-                return new JComponent[] {this};
-            } else {
-                return new JComponent[0];
-            }
-        }
-
-        public JComponent[] synchMenuPresenters(JComponent[] items) {
-            return getMenuPresenters();
-        }
-
     }
 
 }

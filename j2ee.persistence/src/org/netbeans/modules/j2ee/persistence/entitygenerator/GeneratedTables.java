@@ -42,6 +42,7 @@ package org.netbeans.modules.j2ee.persistence.entitygenerator;
 
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.UpdateType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -89,7 +90,7 @@ public interface GeneratedTables {
     /**
      * Returns the type of the update the class to be generated for the specified table.
      */
-    public String getUpdateType(String tableName);
+    public UpdateType getUpdateType(String tableName);
 
     /**
      * Returns the unique constraints defined on the table

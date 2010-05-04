@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 
 <transformations version="1.0">
     <transformationgroup>
-        <description>Old editor settings and completion APIs have been deprecated, see #90403 and update your module.</description>
+        <description>Old editor settings and completion APIs have been deprecated, see http://wiki.netbeans.org/EditorSettingsUpgrade and update your module.</description>
         <transformation>
             <trigger-dependency type="older">
                 <module-dependency codenamebase="org.netbeans.modules.editor.lib" major="1" spec="1.27"/>

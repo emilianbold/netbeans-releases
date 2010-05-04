@@ -39,7 +39,10 @@
 package org.netbeans.modules.nativeexecution.api.pty;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collection;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.PtyNativeProcess;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -48,7 +51,7 @@ import org.netbeans.modules.nativeexecution.spi.pty.IOConnector;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyAllocator;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
@@ -58,6 +61,8 @@ import org.openide.windows.InputOutput;
  * @author ak119685
  */
 public final class PtySupport {
+
+    private static final java.util.logging.Logger log = Logger.getInstance();
 
     static {
         PtyImplAccessor.setDefault(new Accessor());
@@ -131,7 +136,7 @@ public final class PtySupport {
      * @param env - environmant in which a pty should be allocated
      * @return newly allocated pty or <tt>null</tt> if allocation failed
      */
-    public static Pty allocate(ExecutionEnvironment env) {
+    public static Pty allocate(ExecutionEnvironment env) throws IOException {
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
             throw new IllegalStateException();
         }
@@ -146,7 +151,8 @@ public final class PtySupport {
                 try {
                     pty = creator.allocate(env);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    log.log(Level.WARNING, ex.getMessage());
+                    throw ex;
                 }
 
                 if (pty != null) {
@@ -191,6 +197,29 @@ public final class PtySupport {
          */
         public void close() throws IOException {
             impl.close();
+        }
+
+        /**
+         * Return an InputStream (i.e. to be connected to a terminal)
+         * @return An InputStream of Pty
+         */
+        public InputStream getInputStream() {
+            return impl.getInputStream();
+        }
+
+        /**
+         * Return an OutputStream (i.e. to be connected to a terminal)
+         * @return An OutputStream of Pty
+         */
+        public OutputStream getOutputStream() {
+            return impl.getOutputStream();
+        }
+    }
+
+    public static void closePty(NativeProcess process) {
+        if (process instanceof PtyNativeProcess) {
+            PtyNativeProcess p = (PtyNativeProcess) process;
+            p.closePty();
         }
     }
 

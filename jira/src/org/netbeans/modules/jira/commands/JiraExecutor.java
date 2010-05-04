@@ -51,6 +51,7 @@ import org.eclipse.mylyn.internal.jira.core.service.JiraServiceUnavailableExcept
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.autoupdate.JiraAutoupdate;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.DialogDescriptor;
@@ -102,6 +103,8 @@ public class JiraExecutor {
                 if(checkVersion) {
                     checkAutoupdate();
                 }
+
+                ensureCredentials();
 
                 cmd.execute();
 
@@ -161,6 +164,10 @@ public class JiraExecutor {
                 Jira.LOG.log(Level.SEVERE, null, re);
             }
         }
+    }
+
+    private void ensureCredentials() {
+        JiraConfig.getInstance().setupCredentials(repository);
     }
 
     public boolean handleIOException(IOException io) {
@@ -287,7 +294,16 @@ public class JiraExecutor {
             if (status != null && status instanceof RepositoryStatus) {
                 RepositoryStatus rs = (RepositoryStatus) status;
                 String html = rs.getHtmlMessage();
+
                 if(html != null && !html.trim().equals("")) {                   // NOI18N
+                    html = html.trim();
+                    if(html.startsWith("<!DOCTYPE")) {                          // NOI18N
+                        // <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+                        int idx = html.indexOf(">");                            // NOI18N
+                        if(idx > -1) {
+                            html = html.substring(idx, html.length());
+                        }
+                    }
                     final HtmlPanel p = new HtmlPanel();
                     String label = NbBundle.getMessage(JiraExecutor.class, "MSG_ServerResponse", new Object[] {repository.getDisplayName()}); // NOI18N
                     p.setHtml(repository.getUrl(), html, label);

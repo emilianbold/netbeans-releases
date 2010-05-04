@@ -72,6 +72,8 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.text.NbDocument;
+import org.openide.util.Mutex.Action;
+import org.openide.util.RequestProcessor;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -139,80 +141,87 @@ public class BookmarksPersistence {
         }
     }
     
-    private static URLToBookmarks loadBookmarks (Project project) {
-        AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration (project);
-        Element bookmarksElement = ac.getConfigurationFragment(
-            "editor-bookmarks",
-            EDITOR_BOOKMARKS_NAMESPACE_URI,
-            false
-        );
-        if (bookmarksElement == null) return null;
-        try {
-            URLToBookmarks urlToBookmarks = new URLToBookmarks ();
-            URL projectFolderURL = project.getProjectDirectory ().getURL ();
-            Node fileElem = skipNonElementNode (bookmarksElement.getFirstChild ());
-            while (fileElem != null) {
-                assert "file".equals (fileElem.getNodeName ());
-                Node urlElem = skipNonElementNode (fileElem.getFirstChild ());
-                assert "url".equals (urlElem.getNodeName ());
-                Node lineElem = skipNonElementNode (urlElem.getNextSibling ());
-                int[] lineIndexesArray = new int[1];
-                int lineCount = 0;
-                while (lineElem != null) {
-                    assert "line".equals (lineElem.getNodeName ());
-                    // Check whether there is enough space in the line number array
-                    if (lineCount == lineIndexesArray.length) {
-                        lineIndexesArray = reallocateIntArray (lineIndexesArray, lineCount, lineCount << 1);
-                    }
-                    // Fetch the line number from the node
-                    try {
-                        Node lineElemText = lineElem.getFirstChild();
-                        String lineNumberString = lineElemText.getNodeValue ();
-                        int lineNumber = Integer.parseInt (lineNumberString);
-                        lineIndexesArray[lineCount++] = lineNumber;
-                    } catch (DOMException e) {
-                        ErrorManager.getDefault().notify(e);
-                    } catch (NumberFormatException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
-                    lineElem = skipNonElementNode(lineElem.getNextSibling());
-                }
-
+    private static URLToBookmarks loadBookmarks (final Project project) {
+        return
+        ProjectManager.mutex().readAccess(new Action<URLToBookmarks>() {
+            @Override
+            public URLToBookmarks run() {
+                AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration (project);
+                Element bookmarksElement = ac.getConfigurationFragment(
+                    "editor-bookmarks",
+                    EDITOR_BOOKMARKS_NAMESPACE_URI,
+                    false
+                );
+                if (bookmarksElement == null) return null;
                 try {
-                    URL url;
-                    try {
-                        Node urlElemText = urlElem.getFirstChild();
-                        String relOrAbsURLString = urlElemText.getNodeValue();
-                        URI uri = new URI(relOrAbsURLString);
-                        if (!uri.isAbsolute() && projectFolderURL != null) { // relative URI
-                            url = new URL(projectFolderURL, relOrAbsURLString);
-                        } else { // absolute URL or don't have base URL
-                            url = new URL(relOrAbsURLString);
+                    URLToBookmarks urlToBookmarks = new URLToBookmarks ();
+                    URL projectFolderURL = project.getProjectDirectory ().getURL ();
+                    Node fileElem = skipNonElementNode (bookmarksElement.getFirstChild ());
+                    while (fileElem != null) {
+                        assert "file".equals (fileElem.getNodeName ());
+                        Node urlElem = skipNonElementNode (fileElem.getFirstChild ());
+                        assert "url".equals (urlElem.getNodeName ());
+                        Node lineElem = skipNonElementNode (urlElem.getNextSibling ());
+                        int[] lineIndexesArray = new int[1];
+                        int lineCount = 0;
+                        while (lineElem != null) {
+                            assert "line".equals (lineElem.getNodeName ());
+                            // Check whether there is enough space in the line number array
+                            if (lineCount == lineIndexesArray.length) {
+                                lineIndexesArray = reallocateIntArray (lineIndexesArray, lineCount, lineCount << 1);
+                            }
+                            // Fetch the line number from the node
+                            try {
+                                Node lineElemText = lineElem.getFirstChild();
+                                String lineNumberString = lineElemText.getNodeValue ();
+                                int lineNumber = Integer.parseInt (lineNumberString);
+                                lineIndexesArray[lineCount++] = lineNumber;
+                            } catch (DOMException e) {
+                                ErrorManager.getDefault().notify(e);
+                            } catch (NumberFormatException e) {
+                                ErrorManager.getDefault().notify(e);
+                            }
+                            lineElem = skipNonElementNode(lineElem.getNextSibling());
                         }
-                    } catch (URISyntaxException e) {
-                        ErrorManager.getDefault().notify(e);
-                        url = null;
-                    } catch (MalformedURLException e) {
-                        ErrorManager.getDefault().notify(e);
-                        url = null;
-                    }
 
-                    if (url != null) {
-                        if (lineCount != lineIndexesArray.length) {
-                            lineIndexesArray = reallocateIntArray(lineIndexesArray, lineCount, lineCount);
+                        try {
+                            URL url;
+                            try {
+                                Node urlElemText = urlElem.getFirstChild();
+                                String relOrAbsURLString = urlElemText.getNodeValue();
+                                URI uri = new URI(relOrAbsURLString);
+                                if (!uri.isAbsolute() && projectFolderURL != null) { // relative URI
+                                    url = new URL(projectFolderURL, relOrAbsURLString);
+                                } else { // absolute URL or don't have base URL
+                                    url = new URL(relOrAbsURLString);
+                                }
+                            } catch (URISyntaxException e) {
+                                ErrorManager.getDefault().notify(e);
+                                url = null;
+                            } catch (MalformedURLException e) {
+                                ErrorManager.getDefault().notify(e);
+                                url = null;
+                            }
+
+                            if (url != null) {
+                                if (lineCount != lineIndexesArray.length) {
+                                    lineIndexesArray = reallocateIntArray(lineIndexesArray, lineCount, lineCount);
+                                }
+                                urlToBookmarks.put (url, lineIndexesArray);
+                            }
+                        } catch (DOMException e) {
+                            ErrorManager.getDefault ().notify (e);
                         }
-                        urlToBookmarks.put (url, lineIndexesArray);
-                    }
-                } catch (DOMException e) {
-                    ErrorManager.getDefault ().notify (e);
+
+                        fileElem = skipNonElementNode (fileElem.getNextSibling ());
+                    } // while element
+                    return urlToBookmarks;
+                } catch (FileStateInvalidException e) {
+                    return null;
                 }
+            }
 
-                fileElem = skipNonElementNode (fileElem.getNextSibling ());
-            } // while element
-            return urlToBookmarks;
-        } catch (FileStateInvalidException e) {
-            return null;
-        }
+        });
     }
     
     private static Node skipNonElementNode (Node node) {
@@ -328,23 +337,36 @@ public class BookmarksPersistence {
     
     private static class URLToBookmarks extends HashMap<URL,int[]> {}
     
-    private static class ProjectsListener implements PropertyChangeListener {
+    private static class ProjectsListener implements PropertyChangeListener, Runnable {
         
         private static List<Project>    lastOpenProjects;
+        private static RequestProcessor RP = new RequestProcessor("Bookmarks saver"); // NOI18N
 
+        @SuppressWarnings("LeakingThisInConstructor")
         public ProjectsListener () {
             OpenProjects openProjects = OpenProjects.getDefault ();
             lastOpenProjects = new ArrayList (Arrays.asList (openProjects.getOpenProjects ()));
             openProjects.addPropertyChangeListener (this);
         }
-        
+
+        @Override
+        public void run() {
+            ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run() {
+                    List<Project> openProjects = Arrays.asList (OpenProjects.getDefault ().getOpenProjects ());
+                    // lastOpenProjects will contain the just closed projects
+                    lastOpenProjects.removeAll (openProjects);
+                    for (Iterator<Project> it = lastOpenProjects.iterator (); it.hasNext ();) {
+                        saveBookmarks (it.next ());
+                    }
+                    lastOpenProjects = new ArrayList (openProjects);
+                }
+            });
+        }
+
+        @Override
         public void propertyChange (PropertyChangeEvent evt) {
-            List<Project> openProjects = Arrays.asList (OpenProjects.getDefault ().getOpenProjects ());
-            // lastOpenProjects will contain the just closed projects
-            lastOpenProjects.removeAll (openProjects);
-            for (Iterator<Project> it = lastOpenProjects.iterator (); it.hasNext ();)
-                saveBookmarks (it.next ());
-            lastOpenProjects = new ArrayList (openProjects);
+            RP.post(this);
         }
         
         void destroy () {
