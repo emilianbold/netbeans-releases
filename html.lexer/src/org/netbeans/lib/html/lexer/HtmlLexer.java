@@ -42,6 +42,7 @@
 package org.netbeans.lib.html.lexer;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
@@ -141,9 +142,19 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         
     }
 
+    private final HashMap<CompoundState, CompoundState> STATES_CACHE = new HashMap<CompoundState, CompoundState>();
+
     @Override
     public Object state() {
-        return new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, attribute, tag);
+        //cache the states so lexing of large files do not eat too much memory
+        CompoundState currentState = new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, attribute, tag);
+        CompoundState cached = STATES_CACHE.get(currentState);
+        if(cached == null) {
+            STATES_CACHE.put(currentState, currentState);
+            return currentState;
+        } else {
+            return cached;
+        }
     }
 
     //script and style tag names

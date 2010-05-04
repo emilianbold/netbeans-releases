@@ -45,6 +45,8 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.Registry;
@@ -66,7 +68,7 @@ public class SyntaxTreeTest extends TestBase {
 
     public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new SyntaxTreeTest("testIssue169209"));
+        suite.addTest(new SyntaxTreeTest("testParseBigFile"));
         return suite;
     }
 
@@ -326,7 +328,7 @@ public class SyntaxTreeTest extends TestBase {
         //             012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
         //             0         1         2         3         4         5         6         7         8
         AstNode root = assertAST(code);
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
 
         assertLogicalRange(root, "html", 0, code.length());
         assertLogicalRange(root, "html/head", 6, 34);
@@ -347,7 +349,7 @@ public class SyntaxTreeTest extends TestBase {
                 desc(SyntaxTree.UNMATCHED_TAG, 65, 73, Description.ERROR), // </style> is unmatched
                 desc(SyntaxTree.UNRESOLVED_TAG_KEY, 73, 77, Description.ERROR)); //<tr> doesn't contain required content
         
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
 
         assertLogicalRange(root, "html", 0, code.length());
         assertLogicalRange(root, "html/head", 6, 34);
@@ -454,6 +456,29 @@ public class SyntaxTreeTest extends TestBase {
 
     }
 
+    public void testBigFile() throws Exception {
+        testSyntaxTree("big.html");
+
+
+//        FileObject source = getTestFile(DATA_DIR_BASE + "big.html");
+//        BaseDocument doc = getDocument(source);
+//        String code = doc.getText(0, doc.getLength());
+//
+//        System.out.println("lexing...");
+//        long a = System.currentTimeMillis();
+//        TokenHierarchy th = TokenHierarchy.get(doc);
+//        TokenSequence ts = th.tokenSequence();
+//        ts.moveStart();
+//
+//        while(ts.moveNext()) {
+//        }
+//
+//        long b = System.currentTimeMillis();
+//
+//        System.out.println("big file lexed in " + (b-a));
+//        System.out.println("text length = " + ts.offset());
+
+    }
 
     //------------------------ private methods ---------------------------
 
