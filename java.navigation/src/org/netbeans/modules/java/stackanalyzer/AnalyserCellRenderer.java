@@ -128,7 +128,7 @@ class AnalyserCellRenderer extends DefaultListCellRenderer {
                 setForeground (list.getForeground ());
         }
 
-        if (link != null && link.hasSource ()) {
+        if (link != null) {
             StringBuilder sb = new StringBuilder ();
             sb.append ("<html>");
             sb.append (line.substring (0, link.getStartOffset ()));

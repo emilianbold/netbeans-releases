@@ -312,7 +312,11 @@ final class GeneralAction {
             if (f instanceof ContextAwareAction) {
                 f = ((ContextAwareAction)f).createContextAwareInstance(actionContext);
             }
-            return new DelegateAction(map, key, actionContext, f, global.isSurvive(), async);
+            DelegateAction other = new DelegateAction(map, key, actionContext, f, global.isSurvive(), async);
+            if (attrs != null) {
+                other.attrs = new HashMap<String,Object>(attrs);
+            }
+            return other;
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
