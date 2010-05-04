@@ -390,7 +390,7 @@ public final class ClasspathInfo {
     synchronized JavaFileManager getFileManager() {
         if (this.fileManager == null) {
             boolean hasSources = this.cachedSrcClassPath != null;
-            final CacheMarker marker = new CacheMarker(this.cachedUserSrcClassPath, backgroundCompilation);
+            final CacheMarker marker = new CacheMarker(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, backgroundCompilation);
             final SiblingSource siblings = SiblingSupport.create();
             this.fileManager = new ProxyFileManager (
                 new CachingFileManager (this.archiveProvider, this.cachedBootClassPath, true, true),
@@ -495,6 +495,7 @@ public final class ClasspathInfo {
     private static class CacheMarker implements GeneratedFileMarker {
 
         private final ClassPath userRoots;
+        private final ClassPath aptRoots;
         private final boolean allowsWrite;
         private final Set<URL> srcOutput = new HashSet<URL>();
         private final Set<URL> clsOutput = new HashSet<URL>();
@@ -502,9 +503,12 @@ public final class ClasspathInfo {
         private StringBuilder cachedValue;
         private Set<String> cachedResources;
 
-        public CacheMarker(final @NonNull ClassPath userRoots, final boolean allowsWrite) {
+        public CacheMarker(final @NonNull ClassPath userRoots,
+                           final ClassPath aptRoots,
+                           final boolean allowsWrite) {
             assert userRoots != null;
             this.userRoots = userRoots;
+            this.aptRoots = aptRoots;
             this.allowsWrite = allowsWrite;
         }
 
@@ -531,13 +535,19 @@ public final class ClasspathInfo {
         public void finished(@NonNull final URL source) {
             try {
                 if (allowsWrite && (!srcOutput.isEmpty() || !clsOutput.isEmpty())) {
-                    final URL sourceRootURL = getOwnerRoot(source);
+                    boolean apt = false;
+                    URL sourceRootURL = getOwnerRoot(source, userRoots);
                     if (sourceRootURL == null) {
-                        //todo: caused by next round generating.
-                        return;
+                        sourceRootURL = aptRoots != null ? getOwnerRoot(source, aptRoots) : null;
+                        if (sourceRootURL == null) {
+                            return;
+                        }
+                        apt = true;
                     }
                     final File sourceRoot = new File (sourceRootURL.toURI());
-                    final File classCache = JavaIndex.getClassFolder(sourceRoot);
+                    final File classCache = apt ?
+                        new File (AptCacheForSourceQuery.getClassFolder(sourceRootURL).toURI()):
+                        JavaIndex.getClassFolder(sourceRoot);
                     if (!srcOutput.isEmpty()) {
                         final StringBuilder sb = new StringBuilder();
                         final URL aptRootURL = AptCacheForSourceQuery.getAptFolder(sourceRootURL);
@@ -632,9 +642,10 @@ public final class ClasspathInfo {
             }
         }
 
-        private URL getOwnerRoot (@NonNull final URL source) throws URISyntaxException {
+        private static URL getOwnerRoot (@NonNull final URL source, @NonNull ClassPath cp) throws URISyntaxException {
             assert source != null;
-            for (ClassPath.Entry entry : userRoots.entries()) {
+            assert cp != null;
+            for (ClassPath.Entry entry : cp.entries()) {
                 final URL rootURL = entry.getURL();
                 if (FileObjects.isParentOf(rootURL, source)) {
                     return rootURL;
