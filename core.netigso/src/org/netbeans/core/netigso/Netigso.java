@@ -295,8 +295,14 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                 } else {
                     BundleContext bc = framework.getBundleContext();
                     File jar = m.getJarFile();
-                    LOG.log(Level.FINE, "Installing bundle {0}", jar);
-                    b = bc.installBundle("reference:" + toURI(jar));
+                    String loc;
+                    if (m.isReloadable()) {
+                        loc = toURI(jar);
+                    } else {
+                        loc = "reference:" + toURI(jar); // NOI18N
+                    }
+                    LOG.log(Level.FINE, "Installing bundle {0}", loc);
+                    b = bc.installBundle(loc);
                 }
             } else {
                 InputStream is = fakeBundle(m);
