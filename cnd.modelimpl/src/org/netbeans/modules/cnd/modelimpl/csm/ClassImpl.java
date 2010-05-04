@@ -72,7 +72,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     private final CsmDeclaration.Kind kind;
     private final List<CsmUID<CsmMember>> members;
     private final List<CsmUID<CsmFriend>> friends;
-    private final ArrayList<CsmInheritance> inheritances = new ArrayList<CsmInheritance>(0);
+    private final ArrayList<CsmUID<CsmInheritance>> inheritances;
     private TemplateDescriptor templateDescriptor = null;
     private /*final*/ int leftBracketPos;
 
@@ -116,7 +116,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         break;
                     }
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
-                        addInheritance(new InheritanceImpl(token, getContainingFile(), ClassImpl.this));
+                        addInheritance(new InheritanceImpl(token, getContainingFile(), ClassImpl.this), !isRenderingLocalContext());
                         break;
                     // class / struct / union
                     case CPPTokenTypes.LITERAL_class:
@@ -712,6 +712,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         super((name != null ? name : AstUtil.findId(ast, CPPTokenTypes.RCURLY, true)), file, ast);
         members = new ArrayList<CsmUID<CsmMember>>();
         friends = new ArrayList<CsmUID<CsmFriend>>(0);
+        inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
         kind = findKind(ast);
     }
 
@@ -808,10 +809,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
 
     @Override
-    public List<CsmInheritance> getBaseClasses() {
+    public Collection<CsmInheritance> getBaseClasses() {
+        Collection<CsmInheritance> out;
         synchronized (inheritances) {
-            return new ArrayList<CsmInheritance>(inheritances);
+            out = UIDCsmConverter.UIDsToInheritances(inheritances);
         }
+        return out;
     }
 
     @Override
@@ -849,11 +852,15 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
     }
 
-    private void addInheritance(CsmInheritance inheritance) {
+    private void addInheritance(CsmInheritance inheritance, boolean global) {
+        if (global) {
+            RepositoryUtils.put(inheritance);
+        }
+        CsmUID<CsmInheritance> uid = UIDCsmConverter.inheritanceToUID(inheritance);
+        assert uid != null;
         synchronized (inheritances) {
-            if (!inheritances.contains(inheritance)) {
-                inheritances.add(inheritance);
-            }
+            UIDUtilities.insertIntoSortedUIDList(uid, inheritances);
+            inheritances.add(uid);
         }
     }
 
@@ -890,6 +897,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         super.dispose();
         _clearMembers();
         _clearFriends();
+        _clearInheritances();
     }
 
     private void _clearMembers() {
@@ -897,6 +905,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         Utils.disposeAll(members2dispose);
         synchronized (members) {
             RepositoryUtils.remove(this.members);
+        }
+    }
+
+    private void _clearInheritances() {
+        Collection<CsmInheritance> inheritances2dispose = getBaseClasses();
+        Utils.disposeAll(inheritances2dispose);
+        synchronized (inheritances) {
+            RepositoryUtils.remove(this.inheritances);
         }
     }
 
@@ -945,8 +961,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUIDCollection(this.members, output, true);
         factory.writeUIDCollection(this.friends, output, true);
-        Collection<CsmInheritance> baseClasses = getBaseClasses();
-        PersistentUtils.writeInheritances(baseClasses, output);
+        factory.writeUIDCollection(this.inheritances, output, true);
     }
 
     public ClassImpl(DataInput input) throws IOException {
@@ -969,13 +984,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             friends = new ArrayList<CsmUID<CsmFriend>>(collSize);
         }
         factory.readUIDCollection(this.friends, input, collSize);
-        Collection<CsmInheritance> baseClasses = new ArrayList<CsmInheritance>();
-        PersistentUtils.readInheritances(baseClasses, input);
-        synchronized (this.inheritances) {
-            this.inheritances.clear();
-            this.inheritances.addAll(baseClasses);
-            inheritances.trimToSize();
+
+        collSize = input.readInt();
+        if (collSize <= 0) {
+            inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
+        } else {
+            inheritances = new ArrayList<CsmUID<CsmInheritance>>(collSize);
         }
+        factory.readUIDCollection(this.inheritances, input, collSize);
     }
     private static final int CLASS_KIND = 1;
     private static final int UNION_KIND = 2;

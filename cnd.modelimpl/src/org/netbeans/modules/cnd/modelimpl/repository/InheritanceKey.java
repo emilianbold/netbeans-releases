@@ -38,31 +38,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.modelimpl.repository;
 
-package org.netbeans.modules.cnd.api.model;
+import java.io.DataInput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
- * Represents inheritance - couple (base class, visibility)
- * @author Vladimir Kvashin
+ * A key for CsmInclude objects (file and offset -based)
  */
-public interface CsmInheritance extends CsmOffsetable, CsmScopeElement {
 
-    /** 
-     * Gets base class information;
-     * NOTE: if inheritance was constructed for typedef => chain of typedef is resolved
-     * and the original class is returned
-     */
-    //CsmClass getCsmClass();
+/*package*/
+final class InheritanceKey extends OffsetableKey {
 
-    /** Gets base classifer (class or typedef) */
-    CsmClassifier getClassifier();
+    public InheritanceKey(CsmInheritance obj) {
+        super(obj, Utils.getCsmInheritanceKindKey(), obj.getAncestorType().getClassifierText()); // NOI18N
+    }
 
-    /** gets visibility */
-    CsmVisibility getVisibility();
+    /*package*/ InheritanceKey(DataInput aStream) throws IOException {
+        super(aStream);
+    }
 
-    /** returns true in the case of the virtual base class, otherwise false */
-    boolean isVirtual();
+    @Override
+    public PersistentFactory getPersistentFactory() {
+        return CsmObjectFactory.instance();
+    }
 
-    /** returns the the inheritance type */
-    CsmType getAncestorType();
+    @Override
+    public String toString() {
+        String retValue;
+
+        retValue = "InhKey: " + super.toString(); // NOI18N
+        return retValue;
+    }
+
+    @Override
+    public int getSecondaryDepth() {
+        return super.getSecondaryDepth() + 1;
+    }
+
+    @Override
+    public int getSecondaryAt(int level) {
+        if (level == 0) {
+            return KeyObjectFactory.KEY_INHERITANCE_KEY;
+        } else {
+            return super.getSecondaryAt(level - 1);
+        }
+    }
 }

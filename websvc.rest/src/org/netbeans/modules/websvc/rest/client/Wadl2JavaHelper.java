@@ -74,6 +74,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.client.ClientJavaSourceHelper.HttpMimeType;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
@@ -754,17 +755,28 @@ class Wadl2JavaHelper {
     }
 
     static String getProjectType(Project project) {
-        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
-        for (int i=1;i<10;i++) {
-            // be prepared for namespace upgrade
-            if (aux.getConfigurationFragment("data", //NOI18N
-                    "http://www.netbeans.org/ns/nb-module-project/"+String.valueOf(i), //NOI18N
-                    true) != null) { //NOI18N
-                return PROJEC_TYPE_NB_MODULE;
-            } else if (aux.getConfigurationFragment("data", //NOI18N
-                    "http://www.netbeans.org/ns/web-project/"+String.valueOf(i), //NOI18N
-                    true) != null) { //NOI18N
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+
+        if (restSupport != null) {
+            int projectType = restSupport.getProjectType();
+            if (projectType == RestSupport.PROJECT_TYPE_WEB) {
                 return PROJEC_TYPE_WEB;
+            } else if (projectType == RestSupport.PROJECT_TYPE_NB_MODULE) {
+                return PROJEC_TYPE_NB_MODULE;
+            }
+        } else {
+            AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
+            for (int i=1;i<10;i++) {
+                // be prepared for namespace upgrade
+                if (aux.getConfigurationFragment("data", //NOI18N
+                        "http://www.netbeans.org/ns/nb-module-project/"+String.valueOf(i), //NOI18N
+                        true) != null) {
+                    return PROJEC_TYPE_NB_MODULE;
+                } else if (aux.getConfigurationFragment("data", //NOI18N
+                        "http://www.netbeans.org/ns/web-project/"+String.valueOf(i), //NOI18N
+                        true) != null) {
+                    return PROJEC_TYPE_WEB;
+                }
             }
         }
         return PROJEC_TYPE_DESKTOP;
