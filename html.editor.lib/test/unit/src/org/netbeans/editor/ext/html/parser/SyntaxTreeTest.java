@@ -95,7 +95,7 @@ public class SyntaxTreeTest extends TestBase {
     }
 
     public void testUncheckedAST() throws BadLocationException {
-        String code = "<div><a><b></a></b></div>";
+        String code = "<div><a><b></a></b></div>text";
         //             01234567
         AstNode root = parseUnchecked(code);
 
@@ -578,6 +578,7 @@ public class SyntaxTreeTest extends TestBase {
         SyntaxParserContext context = SyntaxParserContext.createContext(code);
         SyntaxParserResult result = SyntaxParser.parse(context);
         assertNotNull(result);
+        assertNull(context.getDTD());
         return SyntaxTree.makeTree(context);
     }
 
