@@ -3394,13 +3394,19 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         work.setCancelled(true);
                     }
 
-                    // wait for until the current work is finished
-                    while (scheduled) {
+                    // wait until the current work is finished
+                    int cnt = 10;
+                    while (scheduled && cnt-- > 0) {
+                        LOGGER.log(Level.FINE, "Waiting for indexing jobs to finish; job in progress: {0}, jobs queue: {1}", new Object[] { work, todo }); //NOI18N
                         try {
                             todo.wait(1000);
                         } catch (InterruptedException ie) {
                             break;
                         }
+                    }
+
+                    if (scheduled && cnt == 0) {
+                        LOGGER.log(Level.INFO, "Waiting for indexing jobs to finish timed out; job in progress {0}, jobs queue: {1}", new Object [] { work, todo }); //NOI18N
                     }
                 }
             }
