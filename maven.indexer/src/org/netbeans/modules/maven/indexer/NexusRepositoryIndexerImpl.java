@@ -1,7 +1,7 @@
  /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -47,6 +47,7 @@ import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1119,11 +1120,28 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     private static class NbIndexCreator extends AbstractIndexCreator {
-        //TODO make weak referenced to save long term memory footprint??
-        private MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
 
-        public ArtifactRepository repository = online.getLocalRepository();
+        private WeakReference<MavenEmbedder> embedderRef = null;
 
+        private WeakReference<ArtifactRepository> repositoryRef = null;
+
+        private MavenEmbedder getEmbedder() {
+            MavenEmbedder res = (null!=embedderRef ? embedderRef.get() : null);
+            if (null == res) {
+                res = EmbedderFactory.getOnlineEmbedder();
+                embedderRef = new WeakReference<MavenEmbedder>(res);
+            }
+            return res;
+        }
+
+        private ArtifactRepository getRepository() {
+            ArtifactRepository res = (null!=repositoryRef ? repositoryRef.get() : null);
+            if (null == res) {
+                res = getEmbedder().getLocalRepository();
+                repositoryRef = new WeakReference<ArtifactRepository>(res);
+            }
+            return res;
+        }
 
         @Override
         public void updateDocument(ArtifactInfo context, Document doc) {
@@ -1133,7 +1151,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 return;
             }
             try {
-                MavenProject mp = load(ai, repository);
+                MavenProject mp = load(ai, getRepository());
                 if (mp != null) {
                     @SuppressWarnings("unchecked")
                     List<Dependency> dependencies = mp.getDependencies();
@@ -1150,14 +1168,14 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         private MavenProject load(ArtifactInfo ai, ArtifactRepository repository) {
             try {
-                ArtifactFactory artifactFactory = (ArtifactFactory) online.getPlexusContainer().lookup(ArtifactFactory.class);
+                ArtifactFactory artifactFactory = (ArtifactFactory) getEmbedder().getPlexusContainer().lookup(ArtifactFactory.class);
                 Artifact projectArtifact = artifactFactory.createProjectArtifact(
                         ai.groupId,
                         ai.artifactId,
                         ai.version,
                         null);
 
-                MavenProjectBuilder builder = (MavenProjectBuilder) online.getPlexusContainer().lookup(MavenProjectBuilder.class);
+                MavenProjectBuilder builder = (MavenProjectBuilder) getEmbedder().getPlexusContainer().lookup(MavenProjectBuilder.class);
                 return builder.buildFromRepository(projectArtifact, new ArrayList(), repository);
             } catch (InvalidProjectModelException ex) {
                 //ignore nexus is falling ???
