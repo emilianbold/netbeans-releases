@@ -54,8 +54,9 @@ import org.jrubyparser.ast.StrNode;
 final class TestNameResolver {
 
     private static final String SHOULDA_METHOD = "should"; //NOI18N
+    private static final String RSPEC_DESCRIBE = "describe"; //NOI18N
 
-    private static final String[] TEST_METHOD_NAMES = {"test", "describe", 
+    private static final String[] TEST_METHOD_NAMES = {"test", RSPEC_DESCRIBE,
             "specify", "context", SHOULDA_METHOD, "it", "before", "after"}; //NOI18N
 
     /**
@@ -69,6 +70,10 @@ final class TestNameResolver {
             }
         }
         return false;
+    }
+
+    static boolean isRspecDescribe(String name) {
+        return RSPEC_DESCRIBE.equals(name);
     }
 
     static boolean isShouldaMethod(String name) {

@@ -1120,7 +1120,7 @@ public class AstUtilities {
                 if (name.equals(shoulda)) {
                     return node;
                 }
-            }
+                }
 
             break;
         case ALIASNODE:
@@ -1640,6 +1640,30 @@ public class AstUtilities {
         return node instanceof FCallNode || node instanceof VCallNode;
     }
 
+    /**
+     * Returns the names or values of the nodes in the given {@code listNode}; 
+     * not including null and not empty values.
+     *
+     * @param listNode
+     * @return the names/values; the result does not contain {@code null}s or empty strings.
+     */
+    static List<String> getNamesOrValues(ListNode listNode) {
+        List<String> result = new ArrayList<String>(listNode.size());
+        for (int i = 0, max = listNode.size(); i < max; i++) {
+            Node n = listNode.get(i);
+
+            // For dynamically computed strings, we have n instanceof DStrNode
+            // but I can't handle these anyway
+            if (n instanceof StrNode || n instanceof SymbolNode || n instanceof ConstNode) {
+                String name = getNameOrValue(n);
+                if (name != null && !name.isEmpty()) {
+                    result.add(name);
+                }
+            } 
+        }
+        return result;
+
+    }
     /**
      * Gets the name or the value of given node, depending on its type.
      * 

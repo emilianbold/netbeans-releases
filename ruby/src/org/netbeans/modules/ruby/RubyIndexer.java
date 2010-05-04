@@ -552,6 +552,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                         }
                         topLevelMethods.add(element);
                     }
+                    
                     break;
                     
                 case GLOBAL: {
@@ -637,6 +638,9 @@ public class RubyIndexer extends EmbeddingIndexer {
 
                 if (element.getKind() == ElementKind.CLASS) {
                     ClassElement classElement = (ClassElement)element;
+                    if (classElement.isVirtual()) {
+                        flags |= IndexedElement.VIRTUAL;
+                    }
                     fqn = classElement.getFqn();
 
                     if (node instanceof SClassNode) {
@@ -652,7 +656,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                             // - I won't index those.
                             return document;
                         }
-                    } else {
+                    } else if (node instanceof ClassNode) {
                         ClassNode clz = (ClassNode)node;
                         Node superNode = clz.getSuperNode();
                         String superClass = null;

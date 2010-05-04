@@ -455,6 +455,14 @@ public class RubyCodeCompleterTest extends RubyCodeCompleterTestBase {
         checkCompletion("testfiles/extend_with.rb", "i.added_class_m^ethod");
     }
 
+    public void testSpecCc() throws Exception {
+        checkCompletion("testfiles/some_spec.rb", "@so^me.stuff");
+    }
+
+    public void testSpecCc2() throws Exception {
+        checkCompletion("testfiles/some_spec.rb", "@thi^ng.do_it");
+    }
+
     // TODO uncomment when reindexed
 //    public void testIndexedConstantMethods() throws Exception {
 //        checkCompletion("testfiles/constants.rb", "REXML::COPYRIGHT.ls^");
