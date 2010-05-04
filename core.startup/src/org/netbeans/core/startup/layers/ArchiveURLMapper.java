@@ -77,7 +77,7 @@ public class ArchiveURLMapper extends URLMapper {
 
     private static Map<File,SoftReference<JarFileSystem>> mountRoots = new ConcurrentHashMap<File,SoftReference<JarFileSystem>>();
 
-    public URL getURL(FileObject fo, int type) {
+    public @Override URL getURL(FileObject fo, int type) {
         assert fo != null;
         if (type == URLMapper.EXTERNAL || type == URLMapper.INTERNAL) {
             if (fo.isValid()) {
@@ -100,7 +100,7 @@ public class ArchiveURLMapper extends URLMapper {
         return null;
     }
 
-    public FileObject[] getFileObjects(URL url) {
+    public @Override FileObject[] getFileObjects(URL url) {
         assert url != null;
         String protocol  = url.getProtocol ();
         if (JAR_PROTOCOL.equals (protocol)) {
@@ -113,6 +113,7 @@ public class ArchiveURLMapper extends URLMapper {
                     try {
                         archiveFileURL = archiveFileURI.toURL();
                     } catch (IllegalArgumentException x) {
+                        ModuleLayeredFileSystem.err.log(Level.INFO, "checking " + archiveFileURI, x);
                         return null;
                     }
                     FileObject fo = URLMapper.findFileObject (archiveFileURL);
