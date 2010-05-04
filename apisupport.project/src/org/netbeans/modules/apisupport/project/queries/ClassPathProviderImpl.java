@@ -255,6 +255,19 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 }
             }
         }
+        if (type.equals(ClassPath.SOURCE)) {
+            for (Map.Entry<String,String> entry : project.evaluator().getProperties().entrySet()) {
+                if (entry.getKey().startsWith(NbModuleProject.SOURCE_START)) {
+                    FileObject jar = project.getHelper().resolveFileObject(entry.getValue());
+                    if (jar != null) {
+                        FileObject root = FileUtil.getArchiveRoot(jar);
+                        if (root != null && (root == file || FileUtil.isParentOf(root, file))) {
+                            return ClassPathSupport.createClassPath(new FileObject[] {root});
+                        }
+                    }
+                }
+            }
+        }
         // Something not supported.
         return null;
     }
