@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,51 +37,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.spi.support.pty;
+package org.netbeans.modules.cnd.modelimpl.repository;
 
-import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
-import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
-import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
+import java.io.DataInput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
- * This is a supporting class for SPI implementators to
- * get access to PtyImpl of Pty API objects
- *
- * @see Pty
- * @see PtyImpl
- * @author ak119685
+ * A key for CsmInclude objects (file and offset -based)
  */
-public abstract class PtyImplAccessor {
 
-    private static volatile PtyImplAccessor DEFAULT;
+/*package*/
+final class InheritanceKey extends OffsetableKey {
 
-    public static void setDefault(PtyImplAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException(
-                    "PtyImplAccessor is already defined"); // NOI18N
-        }
-
-        DEFAULT = accessor;
+    public InheritanceKey(CsmInheritance obj) {
+        super(obj, Utils.getCsmInheritanceKindKey(), obj.getAncestorType().getClassifierText()); // NOI18N
     }
 
-    public static synchronized PtyImplAccessor getDefault() {
-        if (DEFAULT != null) {
-            return DEFAULT;
-        }
-
-        try {
-            Class.forName(PtySupport.class.getName(), true,
-                    PtySupport.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-        }
-
-        return DEFAULT;
+    /*package*/ InheritanceKey(DataInput aStream) throws IOException {
+        super(aStream);
     }
 
-    public abstract PtyImpl getImpl(Pty pty);
+    @Override
+    public PersistentFactory getPersistentFactory() {
+        return CsmObjectFactory.instance();
+    }
+
+    @Override
+    public String toString() {
+        String retValue;
+
+        retValue = "InhKey: " + super.toString(); // NOI18N
+        return retValue;
+    }
+
+    @Override
+    public int getSecondaryDepth() {
+        return super.getSecondaryDepth() + 1;
+    }
+
+    @Override
+    public int getSecondaryAt(int level) {
+        if (level == 0) {
+            return KeyObjectFactory.KEY_INHERITANCE_KEY;
+        } else {
+            return super.getSecondaryAt(level - 1);
+        }
+    }
 }

@@ -50,6 +50,7 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/test-cunit.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.cncppunit.editor.filecreation.TestCUnitIterator"/>
                 <attr name="templateCategory" stringvalue="cncpp-test-types"/>
+                <attr name="templateGenerator" boolvalue="true"/>
             </file>
 
             <file name="cunittestfile.c" url="templates/c/test-cunit-file-c.template">
@@ -67,6 +68,7 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/test-cppunit.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.cncppunit.editor.filecreation.TestCppUnitIterator"/>
                 <attr name="templateCategory" stringvalue="cncpp-test-types"/>
+                <attr name="templateGenerator" boolvalue="true"/>
             </file>
 
             <file name="cppunittestclassfile.cpp" url="templates/cpp/test-cppunit-class-file-cpp.template">

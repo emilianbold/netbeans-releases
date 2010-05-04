@@ -36,24 +36,25 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.spi.pty;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+package org.netbeans.modules.cnd.simpleunit.spi.wizard;
+
+import org.netbeans.modules.cnd.simpleunit.wizard.GenerateTestChooseElementsWizard;
+import org.openide.WizardDescriptor;
+import org.openide.util.Lookup;
 
 /**
- * Interface to implement by Pty SPI providers
- * 
- * @author ak119685
+ *
+ * @author Vladimir Voskrsensky
  */
-public interface PtyImpl {
+public final class UnitTestTemplates {
 
-    public String getSlaveName();
+    private UnitTestTemplates() {
+    }
 
-    public InputStream getInputStream();
-
-    public OutputStream getOutputStream();
-
-    public void close() throws IOException;
+    /**
+     */
+    public static WizardDescriptor.Panel<WizardDescriptor> createFunctionsChooser(Lookup lookup) throws IllegalArgumentException {
+        return new GenerateTestChooseElementsWizard();
+    }
 }

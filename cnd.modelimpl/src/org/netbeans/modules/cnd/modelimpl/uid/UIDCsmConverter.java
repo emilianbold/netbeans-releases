@@ -47,6 +47,7 @@ import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -130,6 +131,19 @@ public final class UIDCsmConverter {
     public static <T extends CsmDeclaration> Collection<T> UIDsToDeclarations(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, false);
         return out;
+    }
+
+    public static CsmInheritance UIDsToInheritance(CsmUID<CsmInheritance> uid) {
+        return uid == null ? null : uid.getObject();
+    }
+
+    public static <T extends CsmInheritance> Collection<T> UIDsToInheritances(Collection<CsmUID<T>> uids) {
+        Collection<T> out = UIDsToList(uids, false);
+        return out;
+    }
+
+    public static CsmUID<CsmInheritance> inheritanceToUID(CsmInheritance decl) {
+        return decl == null ? null : UIDs.get(decl);
     }
 
     public static <T extends CsmDeclaration> Iterator<T> UIDsToDeclarationsFiltered(Collection<CsmUID<T>> uids, CsmFilter filter) {

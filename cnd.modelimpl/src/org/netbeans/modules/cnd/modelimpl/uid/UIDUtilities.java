@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -131,6 +132,10 @@ public class UIDUtilities {
 
     public static CsmUID<CsmInclude> createIncludeUID(CsmInclude incl) {
         return getCachedUID(new IncludeUID(incl), incl);
+    }
+
+    public static CsmUID<CsmInheritance> createInheritanceUID(CsmInheritance inh) {
+        return getCachedUID(new InheritanceUID(inh), inh);
     }
 
     public static <T extends CsmNamedElement> CsmUID<CsmParameterList<T>> createParamListUID(CsmParameterList<T> incl) {
@@ -567,6 +572,20 @@ public class UIDUtilities {
         }
 
         /* package */ IncludeUID(DataInput aStream) throws IOException {
+            super(aStream);
+        }
+    }
+
+    /**
+     * UID for CsmInclude
+     */
+    /* package */ static final class InheritanceUID extends CachedUID<CsmInheritance> { //KeyBasedUID<CsmInclude> {
+
+        public InheritanceUID(CsmInheritance inh) {
+            super(KeyUtilities.createInheritanceKey(inh), inh);
+        }
+
+        /* package */ InheritanceUID(DataInput aStream) throws IOException {
             super(aStream);
         }
     }

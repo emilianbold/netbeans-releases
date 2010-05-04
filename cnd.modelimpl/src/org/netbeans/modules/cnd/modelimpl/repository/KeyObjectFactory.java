@@ -63,11 +63,13 @@ public class KeyObjectFactory extends KeyFactory {
     }
     
     
+    @Override
     public void writeKey(Key aKey, DataOutput aStream) throws IOException {
         assert aKey instanceof SelfPersistent;
         super.writeSelfPersistent((SelfPersistent)aKey, aStream);
     }
     
+    @Override
     public Key readKey(DataInput aStream) throws IOException {
         assert aStream != null;
         SelfPersistent out = super.readSelfPersistent(aStream);
@@ -83,6 +85,7 @@ public class KeyObjectFactory extends KeyFactory {
         return (Key)out;
     }
     
+    @Override
     public void writeKeyCollection(Collection<Key> aCollection, DataOutput aStream ) throws IOException {
         assert aCollection != null;
         assert aStream != null;
@@ -99,6 +102,7 @@ public class KeyObjectFactory extends KeyFactory {
         }
     }
     
+    @Override
     public void readKeyCollection(Collection<Key> aCollection, DataInput aStream) throws IOException {
         assert aCollection != null;
         assert aStream != null;
@@ -112,6 +116,7 @@ public class KeyObjectFactory extends KeyFactory {
         }
     }
     
+    @Override
     protected int getHandler(Object object) {
         int aHandle ;
         
@@ -127,6 +132,8 @@ public class KeyObjectFactory extends KeyFactory {
             aHandle = KEY_MACRO_KEY;
         } else if (object instanceof IncludeKey) {
             aHandle = KEY_INCLUDE_KEY;
+        } else if (object instanceof InheritanceKey) {
+            aHandle = KEY_INHERITANCE_KEY;
         } else if (object instanceof ParamListKey) {
             aHandle = KEY_PARAM_LIST_KEY;
         } else if (object instanceof OffsetableDeclarationKey) {
@@ -148,6 +155,7 @@ public class KeyObjectFactory extends KeyFactory {
         return aHandle;
     }
     
+    @Override
     protected SelfPersistent createObject(int handler, DataInput aStream) throws IOException {
         SelfPersistent aKey;
         boolean share = true;
@@ -166,6 +174,9 @@ public class KeyObjectFactory extends KeyFactory {
                 break;
             case KEY_INCLUDE_KEY:
                 aKey = new IncludeKey(aStream);
+                break;
+            case KEY_INHERITANCE_KEY:
+                aKey = new InheritanceKey(aStream);
                 break;
             case KEY_PARAM_LIST_KEY:
                 aKey = new ParamListKey(aStream);
@@ -215,7 +226,8 @@ public class KeyObjectFactory extends KeyFactory {
     public static final int KEY_FILE_KEY       = KEY_NAMESPACE_KEY + 1;
     public static final int KEY_MACRO_KEY      = KEY_FILE_KEY + 1;
     public static final int KEY_INCLUDE_KEY    = KEY_MACRO_KEY + 1;
-    public static final int KEY_PARAM_LIST_KEY    = KEY_INCLUDE_KEY + 1;
+    public static final int KEY_INHERITANCE_KEY = KEY_INCLUDE_KEY + 1;
+    public static final int KEY_PARAM_LIST_KEY  = KEY_INHERITANCE_KEY + 1;
     public static final int KEY_DECLARATION_KEY = KEY_PARAM_LIST_KEY + 1;
     public static final int KEY_PRJ_VALIDATOR_KEY = KEY_DECLARATION_KEY + 1;
     
