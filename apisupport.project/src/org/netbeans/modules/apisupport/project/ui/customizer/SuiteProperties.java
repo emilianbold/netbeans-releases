@@ -402,6 +402,9 @@ public final class SuiteProperties extends ModuleProperties {
                 cpwdc.add(entry);
             } else {
                 String entry = PropertyUtils.relativizeFile(getProjectDirectoryFile(), ci.getClusterDir());
+                if (entry == null) {
+                    entry = ci.getClusterDir().getAbsolutePath();
+                }
                 if (ci.isEnabled()) {
                     cp.add(entry);
                 } else {

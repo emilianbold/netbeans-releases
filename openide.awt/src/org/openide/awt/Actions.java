@@ -49,12 +49,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,6 +80,7 @@ import org.netbeans.api.actions.Printable;
 import org.netbeans.api.actions.Viewable;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
+import org.openide.util.LookupListener;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.SystemAction;
 
@@ -87,7 +90,6 @@ import org.openide.util.actions.SystemAction;
 * @author   Jaroslav Tulach
 */
 public class Actions {
-
     /**
      * @deprecated should not be used
      */
@@ -179,7 +181,7 @@ public class Actions {
      * @since 3.29
      */
     public static void connect(JMenuItem item, Action action, boolean popup) {
-        for (ButtonActionConnector bac : Lookup.getDefault().lookupAll(ButtonActionConnector.class)) {
+        for (ButtonActionConnector bac : buttonActionConnectors()) {
             if (bac.connect(item, action, popup)) {
                 return;
             }
@@ -233,7 +235,7 @@ public class Actions {
      * @since 3.29
      */
     public static void connect(AbstractButton button, Action action) {
-        for (ButtonActionConnector bac : Lookup.getDefault().lookupAll(ButtonActionConnector.class)) {
+        for (ButtonActionConnector bac : buttonActionConnectors()) {
             if (bac.connect(button, action)) {
                 return;
             }
@@ -1605,5 +1607,30 @@ public class Actions {
          *    default connect implementation is called
          */
         boolean connect(JMenuItem item, Action action, boolean popup);
+    }
+
+    private static final ButtonActionConnectorGetter GET = new ButtonActionConnectorGetter();
+    private static Collection<? extends ButtonActionConnector> buttonActionConnectors() {
+        return GET.all();
+    }
+    private static final class ButtonActionConnectorGetter implements LookupListener {
+        private final Lookup.Result<ButtonActionConnector> result;
+        private Collection<? extends ButtonActionConnector> all;
+
+        ButtonActionConnectorGetter() {
+            result = Lookup.getDefault().lookupResult(ButtonActionConnector.class);
+            result.addLookupListener(this);
+            resultChanged(null);
+        }
+
+        final Collection<? extends ButtonActionConnector> all() {
+            return all;
+        }
+
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            all = result.allInstances();
+        }
+
     }
 }
