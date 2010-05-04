@@ -239,7 +239,7 @@ import org.openide.util.CharSequences;
         } else {
             id = inh.getAncestorType().getClassifierText();
         }
-        int i = CharSequenceUtils.lastIndexOf(id, "::");
+        int i = CharSequenceUtils.lastIndexOf(id, "::"); //NOI18N
         if (i >= 0) {
             id = id.subSequence(i+2, id.length()-1);
         }

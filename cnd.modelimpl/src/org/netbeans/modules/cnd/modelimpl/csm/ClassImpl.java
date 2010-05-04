@@ -860,7 +860,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         assert uid != null;
         synchronized (inheritances) {
             UIDUtilities.insertIntoSortedUIDList(uid, inheritances);
-            inheritances.add(uid);
         }
     }
 
