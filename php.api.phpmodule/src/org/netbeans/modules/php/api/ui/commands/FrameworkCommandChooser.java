@@ -590,7 +590,7 @@ public final class FrameworkCommandChooser extends JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(keepOpenedCheckBox)
-                    .addComponent(splitPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
+                    .addComponent(splitPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 666, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(taskLabel)
@@ -603,7 +603,7 @@ public final class FrameworkCommandChooser extends JPanel {
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(previewLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(previewTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)))
+                        .addComponent(previewTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -635,6 +635,7 @@ public final class FrameworkCommandChooser extends JPanel {
         taskFieldPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskFieldPanel.AccessibleContext.accessibleDescription")); // NOI18N
         taskParamLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParamLabel.AccessibleContext.accessibleName")); // NOI18N
         taskParamLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParamLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        taskParametersComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParametersComboBox.AccessibleContext.accessibleName")); // NOI18N
         taskParametersComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParametersComboBox.AccessibleContext.accessibleDescription")); // NOI18N
         matchingTaskLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskLabel.AccessibleContext.accessibleName")); // NOI18N
         matchingTaskLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskLabel.AccessibleContext.accessibleDescription")); // NOI18N

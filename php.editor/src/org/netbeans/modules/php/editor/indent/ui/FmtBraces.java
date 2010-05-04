@@ -104,15 +104,84 @@ public class FmtBraces extends javax.swing.JPanel {
         switchLabel = new javax.swing.JLabel();
         catchLabel = new javax.swing.JLabel();
 
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return forCombo;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return forCombo;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return otherCombo;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  forCombo){
+                    return whileCombo;
+                }
+                if(aComponent ==  catchCombo){
+                    return otherCombo;
+                }
+                if(aComponent ==  ifCombo){
+                    return forCombo;
+                }
+                if(aComponent ==  methodDeclCombo){
+                    return ifCombo;
+                }
+                if(aComponent ==  classDeclCombo){
+                    return methodDeclCombo;
+                }
+                if(aComponent ==  switchCombo){
+                    return catchCombo;
+                }
+                if(aComponent ==  whileCombo){
+                    return switchCombo;
+                }
+                return forCombo;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  whileCombo){
+                    return forCombo;
+                }
+                if(aComponent ==  otherCombo){
+                    return catchCombo;
+                }
+                if(aComponent ==  forCombo){
+                    return ifCombo;
+                }
+                if(aComponent ==  ifCombo){
+                    return methodDeclCombo;
+                }
+                if(aComponent ==  methodDeclCombo){
+                    return classDeclCombo;
+                }
+                if(aComponent ==  catchCombo){
+                    return switchCombo;
+                }
+                if(aComponent ==  switchCombo){
+                    return whileCombo;
+                }
+                return otherCombo;//end getComponentBefore
+
+            }}
+        );
         setName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_Braces")); // NOI18N
         setOpaque(false);
 
+        bracesPlacementLabel.setLabelFor(bracesPlacementLabel);
         org.openide.awt.Mnemonics.setLocalizedText(bracesPlacementLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_br_bracesPlacement")); // NOI18N
 
         classDeclLabel.setLabelFor(classDeclCombo);
         org.openide.awt.Mnemonics.setLocalizedText(classDeclLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_bp_ClassDecl")); // NOI18N
 
         classDeclCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        classDeclCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                classDeclComboActionPerformed(evt);
+            }
+        });
 
         methodDeclLabel.setLabelFor(methodDeclCombo);
         org.openide.awt.Mnemonics.setLocalizedText(methodDeclLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_bp_MethodDecl")); // NOI18N
@@ -128,6 +197,11 @@ public class FmtBraces extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(otherLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_bp_Other")); // NOI18N
 
         otherCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        otherCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                otherComboActionPerformed(evt);
+            }
+        });
 
         ifCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -237,11 +311,59 @@ public class FmtBraces extends javax.swing.JPanel {
                     .addComponent(otherLabel))
                 .addContainerGap())
         );
+
+        bracesPlacementLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.bracesPlacementLabel.AccessibleContext.accessibleName")); // NOI18N
+        bracesPlacementLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.bracesPlacementLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        classDeclLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.classDeclLabel.AccessibleContext.accessibleName")); // NOI18N
+        classDeclLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.classDeclLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        classDeclCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.classDeclCombo.AccessibleContext.accessibleName")); // NOI18N
+        classDeclCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.classDeclCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        methodDeclLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.methodDeclLabel.AccessibleContext.accessibleName")); // NOI18N
+        methodDeclLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.methodDeclLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        methodDeclCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.methodDeclCombo.AccessibleContext.accessibleName")); // NOI18N
+        methodDeclCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.methodDeclCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        otherLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.otherLabel.AccessibleContext.accessibleName")); // NOI18N
+        otherLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.otherLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        otherCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.otherCombo.AccessibleContext.accessibleName")); // NOI18N
+        otherCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.otherCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        jSeparator1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.jSeparator1.AccessibleContext.accessibleName")); // NOI18N
+        jSeparator1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.jSeparator1.AccessibleContext.accessibleDescription")); // NOI18N
+        ifCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.ifCombo.AccessibleContext.accessibleName")); // NOI18N
+        ifCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.ifCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        forCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.forCombo.AccessibleContext.accessibleName")); // NOI18N
+        forCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.forCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        whileCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.whileCombo.AccessibleContext.accessibleName")); // NOI18N
+        whileCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.whileCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        switchCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.switchCombo.AccessibleContext.accessibleName")); // NOI18N
+        switchCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.switchCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        catchCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.catchCombo.AccessibleContext.accessibleName")); // NOI18N
+        catchCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.catchCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        ifLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.ifLabel.AccessibleContext.accessibleName")); // NOI18N
+        ifLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.ifLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        forLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.forLabel.AccessibleContext.accessibleName")); // NOI18N
+        forLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.forLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        whileLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.whileLabel.AccessibleContext.accessibleName")); // NOI18N
+        whileLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.whileLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        switchLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.switchLabel.AccessibleContext.accessibleName")); // NOI18N
+        switchLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.switchLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        catchLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.catchLabel.AccessibleContext.accessibleName")); // NOI18N
+        catchLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.catchLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void methodDeclComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_methodDeclComboActionPerformed
     // TODO add your handling code here:
 }//GEN-LAST:event_methodDeclComboActionPerformed
+
+    private void otherComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_otherComboActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_otherComboActionPerformed
+
+    private void classDeclComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classDeclComboActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_classDeclComboActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

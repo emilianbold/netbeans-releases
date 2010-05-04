@@ -550,12 +550,13 @@ public class SyntaxParserTest extends TestBase {
         SyntaxElement se = elements.get(1);
         assertNotNull(se);
         assertEquals(SyntaxElement.TYPE_TEXT, se.type());
-        assertEquals("text", se.text());
+
+        assertEquals("<n/a>", se.text());
 
         se = elements.get(3);
         assertNotNull(se);
         assertEquals(SyntaxElement.TYPE_TEXT, se.type());
-        assertEquals("last", se.text());
+        assertEquals("<n/a>", se.text());
     }
 
     public void testParseNewLineText() throws BadLocationException {
