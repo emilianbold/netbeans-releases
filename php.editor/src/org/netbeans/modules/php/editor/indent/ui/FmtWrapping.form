@@ -7,6 +7,11 @@
     </Property>
     <Property name="opaque" type="boolean" value="false"/>
   </Properties>
+  <AccessibilityProperties>
+    <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+  </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -17,7 +22,7 @@
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
-    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,45,0,0,1,42"/>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,45,0,0,1,44"/>
   </AuxValues>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
@@ -51,86 +56,73 @@
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <EmptySpace min="8" pref="8" max="8" attributes="0"/>
-                      <Component id="extendsImplemetsKeywordLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="6" pref="6" max="6" attributes="0"/>
-                      <Component id="extendsImplementsKeywordCombo" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="8" pref="8" max="8" attributes="0"/>
-                      <Component id="extendsImplementsListLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="37" pref="37" max="37" attributes="0"/>
-                      <Component id="extendsImplementsListCombo" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="8" pref="8" max="8" attributes="0"/>
-                      <Component id="methodParamsLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="67" pref="67" max="67" attributes="0"/>
-                      <Component id="methodParamsCombo" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="8" pref="8" max="8" attributes="0"/>
-                      <Component id="methodCallArgsLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="44" pref="44" max="44" attributes="0"/>
-                      <Component id="methodCallArgsCombo" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="8" pref="8" max="8" attributes="0"/>
-                      <Component id="chainedMethodCallsLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="56" pref="56" max="56" attributes="0"/>
-                      <Component id="chainedMethodCallsCombo" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="8" pref="8" max="8" attributes="0"/>
-                      <Component id="arrayInitLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="100" pref="100" max="100" attributes="0"/>
-                      <Component id="arrayInitCombo" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="8" pref="8" max="8" attributes="0"/>
-                      <Component id="forLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="174" pref="174" max="174" attributes="0"/>
-                      <Component id="forCombo" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="8" pref="8" max="8" attributes="0"/>
-                      <Component id="forStatementLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="101" pref="101" max="101" attributes="0"/>
-                      <Component id="forStatementCombo" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="8" pref="8" max="8" attributes="0"/>
-                      <Component id="ifStatementLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="114" pref="114" max="114" attributes="0"/>
-                      <Component id="ifStatementCombo" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="8" pref="8" max="8" attributes="0"/>
-                      <Component id="whileStatementLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="88" pref="88" max="88" attributes="0"/>
-                      <Component id="whileStatementComboBox" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="8" pref="8" max="8" attributes="0"/>
-                      <Component id="doWhileStatementLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="54" pref="54" max="54" attributes="0"/>
-                      <Component id="doWhileStatementCombo" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="8" pref="8" max="8" attributes="0"/>
-                      <Component id="binaryOpsLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="86" pref="86" max="86" attributes="0"/>
-                      <Component id="binaryOpsCombo" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="8" pref="8" max="8" attributes="0"/>
-                      <Component id="ternaryOpsLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="78" pref="78" max="78" attributes="0"/>
-                      <Component id="ternaryOpsCombo" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="8" pref="8" max="8" attributes="0"/>
+                      <EmptySpace min="8" pref="8" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Component id="extendsImplemetsKeywordLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="6" pref="6" max="6" attributes="0"/>
+                              <Component id="extendsImplementsKeywordCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="extendsImplementsListLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="37" pref="37" max="37" attributes="0"/>
+                              <Component id="extendsImplementsListCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="methodParamsLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="67" pref="67" max="67" attributes="0"/>
+                              <Component id="methodParamsCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="methodCallArgsLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="44" pref="44" max="44" attributes="0"/>
+                              <Component id="methodCallArgsCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="chainedMethodCallsLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="56" pref="56" max="56" attributes="0"/>
+                              <Component id="chainedMethodCallsCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="arrayInitLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="100" pref="100" max="100" attributes="0"/>
+                              <Component id="arrayInitCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="forLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="174" pref="174" max="174" attributes="0"/>
+                              <Component id="forCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="forStatementLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="101" pref="101" max="101" attributes="0"/>
+                              <Component id="forStatementCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="ifStatementLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="114" pref="114" max="114" attributes="0"/>
+                              <Component id="ifStatementCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="whileStatementLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="88" pref="88" max="88" attributes="0"/>
+                              <Component id="whileStatementComboBox" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="doWhileStatementLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="54" pref="54" max="54" attributes="0"/>
+                              <Component id="doWhileStatementCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="binaryOpsLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="86" pref="86" max="86" attributes="0"/>
+                              <Component id="binaryOpsCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="ternaryOpsLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="78" pref="78" max="78" attributes="0"/>
+                              <Component id="ternaryOpsCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
                           <Component id="cbStatements" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="cbOpenCloseBlockBrace" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
@@ -139,7 +131,7 @@
                               <Component id="assignOpsCombo" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -277,6 +269,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_wrp_extendsImplementsKeyword" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.extendsImplemetsKeywordLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="extendsImplementsKeywordCombo">
               <Properties>
@@ -299,6 +296,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_wrp_extendsImplementsList" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.extendsImplementsListLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="extendsImplementsListCombo">
               <Properties>
@@ -321,6 +323,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_wrp_methodParameters" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.methodParamsLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="methodParamsCombo">
               <Properties>
@@ -343,6 +350,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_wrp_methodCallArgs" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.methodCallArgsLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="methodCallArgsCombo">
               <Properties>
@@ -365,6 +377,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_wrp_chainedMethodCalls" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.chainedMethodCallsLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="chainedMethodCallsCombo">
               <Properties>
@@ -387,6 +404,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_wrp_arrayInit" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.arrayInitLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="arrayInitCombo">
               <Properties>
@@ -409,6 +431,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_wrp_for" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.forLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="forCombo">
               <Properties>
@@ -431,6 +458,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_wrp_forStatement" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.forStatementLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="forStatementCombo">
               <Properties>
@@ -453,6 +485,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_wrp_ifStatement" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.ifStatementLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="ifStatementCombo">
               <Properties>
@@ -475,6 +512,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_wrp_whileStatement" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.whileStatementLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="whileStatementComboBox">
               <Properties>
@@ -497,6 +539,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_wrp_doWhileStatement" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.doWhileStatementLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="doWhileStatementCombo">
               <Properties>
@@ -519,6 +566,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_wrp_binaryOps" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.binaryOpsLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="binaryOpsCombo">
               <Properties>
@@ -541,6 +593,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_wrp_ternaryOps" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.ternaryOpsLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="ternaryOpsCombo">
               <Properties>
@@ -563,6 +620,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="LBL_wrp_assignOps" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.assignOpsLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="assignOpsCombo">
               <Properties>
@@ -582,6 +644,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="cb_wrp_open_close_block_brace" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.cbOpenCloseBlockBrace.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JCheckBox" name="cbStatements">
               <Properties>
@@ -589,6 +656,11 @@
                   <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="cb_wrp_Statements" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtWrapping.cbStatements.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cbStatementsActionPerformed"/>
               </Events>
