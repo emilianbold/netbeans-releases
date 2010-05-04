@@ -39,11 +39,15 @@
 
 package org.openide.awt;
 
+import java.awt.EventQueue;
+import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /**
  * Permits accelerators to be set on actions based on global registrations.
@@ -53,6 +57,10 @@ import org.openide.util.Lookup;
  * @since org.openide.loaders 7.13
  */
 public abstract class AcceleratorBinding {
+    private static final Iter ALL = new Iter();
+
+    static void init() {
+    }
 
     /**
      * Subclass constructor. Only certain implementations are permitted.
@@ -77,12 +85,33 @@ public abstract class AcceleratorBinding {
      * @param definingFile instance file defining the action
      */
     public static void setAccelerator(Action action, FileObject definingFile) {
-        for (AcceleratorBinding bnd : Lookup.getDefault().lookupAll(AcceleratorBinding.class)) {
+        for (AcceleratorBinding bnd : ALL.all()) {
             KeyStroke key = bnd.keyStrokeForAction(action, definingFile);
             if (key != null) {
                 action.putValue(Action.ACCELERATOR_KEY, key);
                 break;
             }
+        }
+    }
+
+    private static final class Iter implements LookupListener {
+        private final Lookup.Result<AcceleratorBinding> result;
+        private Collection<? extends AcceleratorBinding> all;
+
+        Iter() {
+            assert !EventQueue.isDispatchThread() : "Don't initialize in AWT thread!";
+            result = Lookup.getDefault().lookupResult(AcceleratorBinding.class);
+            resultChanged(null);
+            result.addLookupListener(this);
+        }
+
+        final Collection<? extends AcceleratorBinding> all() {
+            return all;
+        }
+
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            all = result.allInstances();
         }
     }
 

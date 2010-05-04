@@ -122,6 +122,9 @@ public class MenuBar extends JMenuBar implements Externalizable {
      */
 
     static final long serialVersionUID =-4721949937356581268L;
+    static {
+        AcceleratorBinding.init();
+    }
 
     /** Don't call this constructor or this class will not get
      * initialized properly. This constructor is only for externalization.
