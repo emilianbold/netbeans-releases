@@ -89,13 +89,15 @@ public class Utilities {
                             b = Boolean.TRUE;
                             xmppConnection.disconnect();
                         } catch (XMPPException ex) {
-                            Logger.getLogger(Utilities.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                            //error connecting to xmpp
+                            //chat is not supported
                         }
                         break;
                     }
                 }
             } catch (KenaiException ex) {
-                Logger.getLogger(Utilities.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                //error connecting to kenai
+                //chat is not supported
                 return false;
             }
             chatSupported.put(kenaiHost, b);
