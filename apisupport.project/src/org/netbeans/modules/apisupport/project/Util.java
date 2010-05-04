@@ -299,7 +299,7 @@ public final class Util {
      */
     public static LocalizedBundleInfo findLocalizedBundleInfoFromJAR(File binaryProject) {
         try {
-            JarFile main = new JarFile(binaryProject);
+            JarFile main = new JarFile(binaryProject, false);
             try {
                 Manifest mf = main.getManifest();
                 String locBundleResource =
@@ -320,7 +320,7 @@ public final class Util {
                         for (String infix : NbCollections.iterable(NbBundle.getLocalizingSuffixes())) {
                             File variant = new File(binaryProject.getParentFile(), "locale" + File.separatorChar + base + infix + suffix); // NOI18N
                             if (variant.isFile()) {
-                                JarFile jf = new JarFile(variant);
+                                JarFile jf = new JarFile(variant, false);
                                 extraJarFiles.add(jf);
                                 addBundlesFromJar(jf, bundleISs, locBundleResource);
                             }
