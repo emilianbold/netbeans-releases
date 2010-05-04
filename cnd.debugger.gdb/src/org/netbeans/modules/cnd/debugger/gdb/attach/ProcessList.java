@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.debugger.gdb.actions.AttachTableColumn;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
@@ -91,6 +92,9 @@ final class ProcessList {
     private void init() throws IllegalStateException {
         String exec = "";
         try {
+            if (!ConnectionManager.getInstance().isConnectedTo(exEnv)) {
+                ConnectionManager.getInstance().connectTo(exEnv);
+            }
             HostInfo hostInfo = HostInfoUtils.getHostInfo(exEnv);
             if (!hostInfo.getOSFamily().isUnix()) {
                 if (exEnv.isRemote()) {
