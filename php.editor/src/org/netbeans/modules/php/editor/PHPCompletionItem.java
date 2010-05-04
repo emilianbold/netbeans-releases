@@ -414,6 +414,14 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
+        public String getInsertPrefix() {
+            final String insertPrefix = super.getInsertPrefix();
+            int indexOf = (request.prefix != null && insertPrefix != null) ? insertPrefix.toLowerCase().indexOf(request.prefix.toLowerCase()) : -1;
+            return indexOf > 0 ? insertPrefix.substring(indexOf) : insertPrefix;
+        }
+
+
+        @Override
         public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
             String superTemplate = super.getInsertPrefix();
@@ -1025,18 +1033,14 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
-        public String getCustomInsertTemplate() {
-            if (endWithDoubleColon) {
-                scheduleShowingCompletion();
-            } else if (CompletionContext.NEW_CLASS.equals(request.context)) {
-                scheduleShowingCompletion();
-            }
-            return super.getCustomInsertTemplate();
+        public String getInsertPrefix() {
+            final String insertPrefix = super.getInsertPrefix();
+            int indexOf = (request.prefix != null && insertPrefix != null) ? insertPrefix.toLowerCase().indexOf(request.prefix.toLowerCase()) : -1;
+            return indexOf > 0 ? insertPrefix.substring(indexOf) : insertPrefix;
         }
 
-
-        @Override
-        public String getInsertPrefix() {
+       @Override
+        public String getCustomInsertTemplate() {
             final String superTemplate = super.getInsertPrefix();
             if (endWithDoubleColon) {
                 StringBuilder builder = new StringBuilder();
@@ -1045,12 +1049,17 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 } else {
                     builder.append(getName());
                 }
-                builder.append("::"); //NOI18N
+                builder.append("::${cursor}"); //NOI18N
+                scheduleShowingCompletion();
                 return builder.toString();
-            } 
+            } else if (CompletionContext.NEW_CLASS.equals(request.context)) {
+                scheduleShowingCompletion();
+            }
             return superTemplate;
         }
     }
+
+
 
     public static ImageIcon getInterfaceIcon() {
         return InterfaceItem.icon();
@@ -1089,6 +1098,13 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getInsertPrefix() {
+            final String insertPrefix = super.getInsertPrefix();
+            int indexOf = (request.prefix != null && insertPrefix != null) ? insertPrefix.toLowerCase().indexOf(request.prefix.toLowerCase()) : -1;
+            return indexOf > 0 ? insertPrefix.substring(indexOf) : insertPrefix;
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
             final String superTemplate = super.getInsertPrefix();
             if (endWithDoubleColon) {
                 StringBuilder builder = new StringBuilder();
@@ -1097,12 +1113,12 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 } else {
                     builder.append(getName());
                 }
-                builder.append("::"); //NOI18N
+                builder.append("::${cursor}"); //NOI18N
                 scheduleShowingCompletion();
                 return builder.toString();
             }
             return superTemplate;
-        }    
+        }
 
     }
 

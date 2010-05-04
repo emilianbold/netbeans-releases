@@ -82,11 +82,11 @@ public class J2SEProject extends JConsoleTestCase {
                 //else
                 //We can't find the tmp dir. The test must fail
             }
-
-            ORIGINAL_TMP_FILE = tmpFile == null ? null : tmpFile + File.separator;
-
-            System.out.println("TMP FILE : " + ORIGINAL_TMP_FILE);
         }
+
+        ORIGINAL_TMP_FILE = tmpFile == null ? null : tmpFile + File.separator;
+
+        System.out.println("TMP FILE : " + ORIGINAL_TMP_FILE);
     }
 
     /** Creates a new instance of BundleKeys */
