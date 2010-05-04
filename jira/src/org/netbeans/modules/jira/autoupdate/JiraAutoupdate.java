@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.jira.autoupdate;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion;
+import com.atlassian.connector.eclipse.internal.jira.core.model.ServerInfo;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Calendar;
@@ -49,10 +52,6 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.jira.core.model.JiraVersion;
-import org.eclipse.mylyn.internal.jira.core.model.ServerInfo;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -75,7 +74,7 @@ public class JiraAutoupdate {
     static final JiraVersion SUPPORTED_JIRA_VERSION;
     static {
         String version = System.getProperty("netbeans.t9y.jira.supported.version");
-        SUPPORTED_JIRA_VERSION = version != null ? new JiraVersion(version) : new JiraVersion("3.13.3"); // NOI18N
+        SUPPORTED_JIRA_VERSION = version != null ? new JiraVersion(version) : new JiraVersion("4.1"); // NOI18N
     }
     static final String JIRA_MODULE_CODE_NAME = "org.netbeans.modules.jira"; // NOI18N
     private static final Pattern VERSION_PATTERN = Pattern.compile("^.*version ((\\d+?\\.\\d+?\\.\\d+?)|(\\d+?\\.\\d+?)).*$");

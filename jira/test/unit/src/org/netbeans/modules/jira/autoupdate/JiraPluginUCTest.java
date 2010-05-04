@@ -39,13 +39,13 @@
 
 package org.netbeans.modules.jira.autoupdate;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.Calendar;
-import org.eclipse.mylyn.internal.jira.core.model.JiraVersion;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.openide.util.NbBundle;
 
@@ -103,7 +103,7 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
                           "OpenIDE-Module=\"{0}\" " +
                           "OpenIDE-Module-Implementation-Version=\"090527\" " +
                           "OpenIDE-Module-Java-Dependencies=\"Java > 1.5\" " +
-                          "OpenIDE-Module-Long-Description=\"JIRA Support (Early Access) up to version 3.13.4\" " +
+                          "OpenIDE-Module-Long-Description=\"JIRA Support (Early Access) up to version 4.1.1\" " +
                           "OpenIDE-Module-Module-Dependencies=\"org.jdesktop.layout/1 > 1.6, " +
                                                                "org.netbeans.api.progress/1 > 1.13, " +
                                                                "org.netbeans.libs.bugtracking > 1.0, " +

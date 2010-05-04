@@ -39,6 +39,28 @@
 
 package org.netbeans.modules.jira.query;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.Component;
+import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
+import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ComponentFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.DateRangeFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.EstimateVsActualFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.IssueTypeFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.PriorityFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ResolutionFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.StatusFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.UserFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.VersionFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -72,31 +94,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.plaf.basic.BasicListUI.ListSelectionHandler;
 import javax.swing.text.Document;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.jira.core.model.Component;
-import org.eclipse.mylyn.internal.jira.core.model.IssueType;
-import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
-import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
-import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
-import org.eclipse.mylyn.internal.jira.core.model.Priority;
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
-import org.eclipse.mylyn.internal.jira.core.model.Version;
-import org.eclipse.mylyn.internal.jira.core.model.filter.ComponentFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.DateRangeFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.EstimateVsActualFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
-import org.eclipse.mylyn.internal.jira.core.model.filter.IssueTypeFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.PriorityFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.ResolutionFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.StatusFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.UserFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.VersionFilter;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
@@ -122,7 +121,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -263,15 +261,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
         List<Component> components = getValues(panel.componentsList);
         if(components.size() > 0) {
-            fd.setComponentFilter(new ComponentFilter(components.toArray(new Component[components.size()])));
+            fd.setComponentFilter(new ComponentFilter(components.toArray(new Component[components.size()]),components.isEmpty()));
         }
         List<Version> versions = getValues(panel.fixForList);
         if(versions.size() > 0) {
-            fd.setFixForVersionFilter(new VersionFilter(versions.toArray(new Version[versions.size()])));
+            fd.setFixForVersionFilter(new VersionFilter(versions.toArray(new Version[versions.size()]), versions.isEmpty(), true, false));
         }
         versions = getValues(panel.affectsVersionList);
         if(versions.size() > 0) {
-            fd.setReportedInVersionFilter(new VersionFilter(versions.toArray(new Version[versions.size()])));
+            fd.setReportedInVersionFilter(new VersionFilter(versions.toArray(new Version[versions.size()]), versions.isEmpty(), true, false));
         }
         List<JiraStatus> statuses = getValues(panel.statusList);
         if(statuses.size() > 0) {
