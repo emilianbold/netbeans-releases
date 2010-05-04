@@ -36,21 +36,23 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.spi.pty;
+package org.netbeans.modules.nativeexecution.pty;
 
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
-import org.openide.windows.InputOutput;
+import org.netbeans.modules.nativeexecution.support.HelperUtility;
 
 /**
- * SPI for connecting <tt>InputOutput</tt> with a nativeprocess/pty
- * 
- * @see PtySupport
+ *
  * @author ak119685
  */
-public interface IOConnector {
+public final class PtyUtility extends HelperUtility {
 
-    public boolean connect(InputOutput io, NativeProcess process);
+    private final static PtyUtility instance = new PtyUtility();
 
-    public boolean connect(InputOutput io, Pty pty);
+    private PtyUtility() {
+        super("bin/nativeexecution/$osname-${platform}$_isa/pty"); // NOI18N
+    }
+
+    public static PtyUtility getInstance() {
+        return instance;
+    }
 }

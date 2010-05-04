@@ -36,46 +36,44 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.spi.support.pty;
+package org.netbeans.modules.nativeexecution;
 
-import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
-import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
-import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.pty.Pty;
 
 /**
- * This is a supporting class for SPI implementators to
- * get access to PtyImpl of Pty API objects
  *
- * @see Pty
- * @see PtyImpl
  * @author ak119685
  */
-public abstract class PtyImplAccessor {
+public abstract class NativeProcessBuilderAccessor {
 
-    private static volatile PtyImplAccessor DEFAULT;
+    private static volatile NativeProcessBuilderAccessor DEFAULT;
 
-    public static void setDefault(PtyImplAccessor accessor) {
+    public static void setDefault(NativeProcessBuilderAccessor accessor) {
         if (DEFAULT != null) {
             throw new IllegalStateException(
-                    "PtyImplAccessor is already defined"); // NOI18N
+                    "ConnectionManagerAccessor is already defined"); // NOI18N
         }
 
         DEFAULT = accessor;
     }
 
-    public static synchronized PtyImplAccessor getDefault() {
+    public static synchronized NativeProcessBuilderAccessor getDefault() {
         if (DEFAULT != null) {
             return DEFAULT;
         }
 
         try {
-            Class.forName(PtySupport.class.getName(), true,
-                    PtySupport.class.getClassLoader());
+            Class.forName(NativeProcessBuilder.class.getName(), true,
+                    NativeProcessBuilder.class.getClassLoader());
         } catch (ClassNotFoundException ex) {
         }
 
         return DEFAULT;
     }
 
-    public abstract PtyImpl getImpl(Pty pty);
+    public abstract void setPty(NativeProcessBuilder builder, Pty pty);
+
+    public abstract ExecutionEnvironment getExecutionEnvironment(NativeProcessBuilder builder);
 }
