@@ -84,6 +84,8 @@ public class TokenFormatter {
 	public int indentSize;
 	public int indentArrayItems;
 	public int margin;
+        public int tabSize;
+
 	public CodeStyle.BracePlacement classDeclBracePlacement;
 	public CodeStyle.BracePlacement methodDeclBracePlacement;
 	public CodeStyle.BracePlacement ifBracePlacement;
@@ -199,6 +201,7 @@ public class TokenFormatter {
 	    indentSize = codeStyle.getIndentSize();
 	    indentArrayItems = codeStyle.getItemsInArrayDeclarationIndentSize();
 	    margin = codeStyle.getRightMargin();
+            tabSize = codeStyle.getTabSize();
 
 	    classDeclBracePlacement = codeStyle.getClassDeclBracePlacement();
 	    methodDeclBracePlacement = codeStyle.getMethodDeclBracePlacement();
@@ -1473,7 +1476,15 @@ public class TokenFormatter {
                         int indexOldTextLine = oldText.lastIndexOf('\n');
                         int indexNewTextLine = newText.lastIndexOf('\n');
                         if (indexOldTextLine > -1 && indexNewTextLine > -1) {
-                            previousLineIndent = newText.length() - indexNewTextLine - oldText.length() + indexOldTextLine;
+                            int oldTextLenght = oldText.length();
+                            int addToLength = 0;
+                            int indexOldText = indexOldTextLine;
+                            while (indexOldText < oldText.length()
+                                    && (indexOldText =oldText.indexOf('\t', indexOldText)) != -1) {
+                                addToLength += docOptions.tabSize - 1;
+                                indexOldText++;
+                            }
+                            previousLineIndent = newText.length() - indexNewTextLine - oldText.length() - addToLength + indexOldTextLine;
                         }
                     }
                     if (startOffset > 0 && (startOffset - oldText.length()) == offset) {

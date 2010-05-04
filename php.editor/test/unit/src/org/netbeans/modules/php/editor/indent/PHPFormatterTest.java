@@ -1932,6 +1932,45 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue185353_06.php", options, true);
     }
 
+    // The test file containscharacters that are converted by default setting of netbeans. 
+    // Don't edit the test file in NetBeans!!!
+    public void testIssue185435_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue185435_01.php", options, true);
+    }
+
+    // The test file containscharacters that are converted by default setting of netbeans.
+    // Don't edit the test file in NetBeans!!!
+    public void testIssue185435_02() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue185435_02.php", options, true);
+    }
+
+    // The test file containscharacters that are converted by default setting of netbeans.
+    // Don't edit the test file in NetBeans!!!
+    public void testIssue185435_03() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.expandTabToSpaces, false);
+        reformatFileContents("testfiles/formatting/templates/issue185435_03.php", options, true);
+    }
+
+    // The test file containscharacters that are converted by default setting of netbeans.
+    // Don't edit the test file in NetBeans!!!
+    public void testIssue185435_04() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.expandTabToSpaces, false);
+        options.put(FmtOptions.tabSize, 3);
+        reformatFileContents("testfiles/formatting/templates/issue185435_04.php", options, true);
+    }
+
+    // The test file containscharacters that are converted by default setting of netbeans.
+    // Don't edit the test file in NetBeans!!!
+    public void testIssue185435_05() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.expandTabToSpaces, false);
+        options.put(FmtOptions.tabSize, 3);
+        reformatFileContents("testfiles/formatting/templates/issue185435_05.php", options, true);
+    }
 
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
