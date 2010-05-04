@@ -340,13 +340,13 @@ final class ReferenceHelper {
 
     private CatalogWriteModel createNextCatalog(final CatalogWriteModel catalog) throws URISyntaxException, IOException {
         String name = "catalog.xml"; // NOI18N
-        FileObject folder = createPrivateCacheRetriever(myProject.getProjectDirectory());
+        FileObject folder = createPrivateRetriever(myProject.getProjectDirectory());
         FileObject next = folder.getFileObject(name);
 
         if (next == null) {
             folder.createData(name);
         }
-        catalog.addNextCatalog(new URI("nbproject/private/cache/retriever/" + name), false); // NOI18N
+        catalog.addNextCatalog(new URI("nbproject/private/retriever/" + name), false); // NOI18N
 
         return getNextCatalog(catalog, false);
     }
@@ -381,10 +381,9 @@ final class ReferenceHelper {
         }
     }
 */
-    private FileObject createPrivateCacheRetriever(FileObject folder) throws IOException {
+    private FileObject createPrivateRetriever(FileObject folder) throws IOException {
         folder = ReferenceUtil.createFolder(folder, "nbproject"); // NOI18N
         folder = ReferenceUtil.createFolder(folder, "private"); // NOI18N
-        folder = ReferenceUtil.createFolder(folder, "cache"); // NOI18N
         folder = ReferenceUtil.createFolder(folder, "retriever"); // NOI18N
         return folder;
     }
