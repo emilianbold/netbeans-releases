@@ -415,7 +415,7 @@ public class LLDataCollector
                 String[] times = line.substring(5).split("\t"); // NOI18N
                 row = new DataRow(LLDataCollectorConfiguration.CPU_TABLE.getColumnNames(), Arrays.asList(Float.valueOf(times[0]), Float.valueOf(times[1])));
             } else if (line.startsWith("mem:")) { // NOI18N
-                row = new DataRow(LLDataCollectorConfiguration.MEM_TABLE.getColumnNames(), Arrays.asList(line.substring(5)));
+                row = new DataRow(LLDataCollectorConfiguration.MEM_TABLE.getColumnNames(), Arrays.asList(Integer.valueOf(line.substring(5))));
             } else if (line.startsWith("sync:")) { // NOI18N
                 String[] fields = line.substring(6).split("\t"); // NOI18N
                 float syncCurr = Float.parseFloat(fields[0]);

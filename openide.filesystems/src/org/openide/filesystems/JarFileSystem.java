@@ -58,6 +58,7 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -464,12 +465,18 @@ public class JarFileSystem extends AbstractFileSystem {
     //
     // Info
     //
-    protected java.util.Date lastModified(String name) {
-        try {
-            return new java.util.Date(getEntry(name).getTime());
-        } finally {
-            closeCurrentRoot(false);
+    protected Date lastModified(String name) {
+        long t;
+        if (name.length() == 0) {
+            t = getJarFile().lastModified();
+        } else {
+            try {
+                t = getEntry(name).getTime();
+            } finally {
+                closeCurrentRoot(false);
+            }
         }
+        return new Date(t);
     }
 
     protected boolean folder(String name) {
@@ -641,6 +648,9 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     protected Object readAttribute(String name, String attrName) {
+        if ("java.io.File".equals(attrName)) {
+            return null;
+        }
         Attributes attr1 = getManifest().getAttributes(name);
 
         try {
@@ -937,7 +947,7 @@ public class JarFileSystem extends AbstractFileSystem {
             try {
                 if (root.canRead()) {
                     jar = new JarFile(root);
-                    LOGGER.log(Level.FINE, "opened: {0} {1}", new Object[]{System.currentTimeMillis(), root.getAbsolutePath()}); //NOI18N
+                    LOGGER.log(Level.FINE, "opened: {0} {1}", new Object[]{root.getAbsolutePath(), System.currentTimeMillis()}); //NOI18N
                     return jar;
                 }
             } catch (IOException ex) {

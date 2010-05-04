@@ -46,6 +46,7 @@ import org.junit.Test;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.dtrace.collector.DtraceParser;
 import static org.junit.Assert.*;
 
@@ -58,13 +59,13 @@ public class DtraceParserPerformanceTest {
     @Test
     public void testSimpleParser() {
         List<Column> columns = Arrays.asList(
-                new Column("timestamp", Long.class),
+                new Column("timestamp", Time.class),
                 new Column("foo", Integer.class),
                 new Column("bar", Integer.class));
         DataTableMetadata table = new DataTableMetadata("table", columns, null);
         DtraceParser parser = new DtraceParser(table);
 
-        int iterations = 600000;
+        int iterations = 1200000;
         List<DataRow> data = new ArrayList<DataRow>(iterations);
 
         long startTime = System.currentTimeMillis();
@@ -74,7 +75,7 @@ public class DtraceParserPerformanceTest {
             assertNotNull(row);
             data.add(row);
         }
-        parser.processClose();
+        assertNull(parser.processClose());
         long endTime = System.currentTimeMillis();
 
         System.err.println(endTime - startTime);

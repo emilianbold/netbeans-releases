@@ -48,12 +48,14 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -98,7 +100,7 @@ class StackLineAnalyser {
         private int             lineNumber;
         private int             startOffset;
         private int             endOffset;
-
+        
         private  Link (
             String              className,
             int                 lineNumber,
@@ -125,7 +127,13 @@ class StackLineAnalyser {
                 GlobalPathRegistry.getDefault ().getSourceRoots ().toArray (new FileObject [0])
             );
             FileObject fileObject = classPath.findResource (resource);
-            if (fileObject == null) return;
+            if (fileObject == null) {
+                StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(StackLineAnalyser.class,
+                        "AnalyzeStackTopComponent.sourceNotFound",
+                        new Object[] { resource }));
+                return;
+            }
             try {
                 DataObject dataObject = DataObject.find (fileObject);
                 EditorCookie editorCookie = (EditorCookie) dataObject.getCookie (EditorCookie.class);
@@ -151,14 +159,6 @@ class StackLineAnalyser {
             } catch (IOException e) {
                 ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
             }
-        }
-
-        boolean hasSource () {
-            String resource = className.replace ('.', '/') + ".java";
-            ClassPath classPath = ClassPathSupport.createClassPath (
-                GlobalPathRegistry.getDefault ().getSourceRoots ().toArray (new FileObject [0])
-            );
-            return classPath.findResource (resource) != null;
         }
     }
 }

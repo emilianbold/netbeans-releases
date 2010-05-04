@@ -204,7 +204,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         }
 
         public Collection<FileObject> getInstallFolders() {
-            return null;
+            return Collections.emptySet();
         }
 
         public String getDisplayName() {

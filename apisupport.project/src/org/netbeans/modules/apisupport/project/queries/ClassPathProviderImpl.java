@@ -58,6 +58,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.modules.apisupport.project.Evaluator;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -77,6 +78,8 @@ import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 public final class ClassPathProviderImpl implements ClassPathProvider {
+
+    static final String BOOTCLASSPATH_PREPEND = "bootclasspath.prepend";
     
     private final NbModuleProject project;
     
@@ -97,12 +100,14 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private Map<FileObject,ClassPath> extraCompilationUnitsCompile = null;
     private Map<FileObject,ClassPath> extraCompilationUnitsExecute = null;
 
-    private static Logger LOG = Logger.getLogger(ClassPathProviderImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(ClassPathProviderImpl.class.getName());
 
-    public ClassPath findClassPath(FileObject file, String type) {
+    public @Override ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(ClassPath.BOOT)) {
             if (boot == null) {
-                boot = ClassPathFactory.createClassPath(createPathFromProperty("nbjdk.bootclasspath")); // NOI18N
+                boot = ClassPathFactory.createClassPath(ClassPathSupport.createProxyClassPathImplementation(
+                        createPathFromProperty(BOOTCLASSPATH_PREPEND),
+                        createPathFromProperty(Evaluator.NBJDK_BOOTCLASSPATH)));
             }
             return boot;
         }
@@ -133,7 +138,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             if (type.equals(ClassPath.COMPILE)) {
                 if (compile == null) {
                     compile = ClassPathFactory.createClassPath(createCompileClasspath());
-                    LOG.log(Level.FINE, "compile/execute-time classpath for file '" + file.getPath() + "' (prj: " + project + "): " + compile);
+                    LOG.log(Level.FINE, "compile/execute-time classpath for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, compile});
                 }
                 return compile;
             } else if (type.equals(ClassPath.EXECUTE) || type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
@@ -158,13 +163,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             if (type.equals(ClassPath.COMPILE)) {
                 if (testCompile == null) {
                     testCompile = ClassPathFactory.createClassPath(createTestCompileClasspath("unit"));
-                    LOG.log(Level.FINE, "compile-time classpath for tests for file '" + file.getPath() + "' (prj: " + project + "): " + testCompile);
+                    LOG.log(Level.FINE, "compile-time classpath for tests for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, testCompile});
                 }
                 return testCompile;
             } else if (type.equals(ClassPath.EXECUTE) || type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
                 if (testExecute == null) {
                     testExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("unit"));
-                    LOG.log(Level.FINE, "runtime classpath for tests for file '" + file.getPath() + "' (prj: " + project + "): " + testExecute);
+                    LOG.log(Level.FINE, "runtime classpath for tests for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, testExecute});
                 }
                 return testExecute;
             } else if (type.equals(ClassPath.SOURCE)) {
@@ -193,7 +198,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 // See #42331.
                 if (funcTestCompile == null) {
                     funcTestCompile = ClassPathFactory.createClassPath(createTestCompileClasspath("qa-functional"));
-                    LOG.log(Level.FINE, "compile-time classpath for func tests for file '" + file.getPath() + "' (prj: " + project + "): " + funcTestCompile);
+                    LOG.log(Level.FINE, "compile-time classpath for func tests for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, funcTestCompile});
                 }
                 return funcTestCompile;
             } else if (type.equals(ClassPath.EXECUTE) || type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
@@ -218,7 +223,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             if (ClassPath.EXECUTE.equals(type)) {
                 if (testExecute == null) {
                     testExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("unit"));
-                    LOG.log(Level.FINE, "runtime classpath for tests for file '" + file.getPath() + "' (prj: " + project + "): " + testExecute);
+                    LOG.log(Level.FINE, "runtime classpath for tests for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, testExecute});
                 }
                 return testExecute;
             }
@@ -261,7 +266,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     
     /** &lt;compile-dependency&gt; is what we care about. */
     private ClassPathImplementation createCompileClasspath() {
-        return createPathFromProperty("cp"); // NOI18N
+        return createPathFromProperty(Evaluator.CP);
     }
     
     private void addPathFromProjectEvaluated(List<PathResourceImplementation> entries, String path) {
@@ -284,7 +289,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     }
     
     private ClassPathImplementation createExecuteClasspath() {
-        return createPathFromProperty("run.cp"); // NOI18N
+        return createPathFromProperty(Evaluator.RUN_CP);
     }
     
     private void calculateExtraCompilationUnits() {
@@ -307,6 +312,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     final Set<String> relevantProperties = new HashSet<String>();
                     final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
                     String cpS = classpathS;
+                    @SuppressWarnings("LeakingThisInConstructor")
                     CPI() {
                         project.evaluator().addPropertyChangeListener(WeakListeners.propertyChange(this, project.evaluator()));
                         project.getHelper().addAntProjectListener(WeakListeners.create(AntProjectListener.class, this, project.getHelper()));
@@ -315,30 +321,30 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                             relevantProperties.add(m.group(1));
                         }
                     }
-                    public List<? extends PathResourceImplementation> getResources() {
+                    public @Override List<? extends PathResourceImplementation> getResources() {
                         List<PathResourceImplementation> resources = new ArrayList<PathResourceImplementation>();
                         addPathFromProjectEvaluated(resources, project.evaluator().evaluate(cpS));
                         return resources;
                     }
-                    public void addPropertyChangeListener(PropertyChangeListener listener) {
+                    public @Override void addPropertyChangeListener(PropertyChangeListener listener) {
                         pcs.addPropertyChangeListener(listener);
                     }
-                    public void removePropertyChangeListener(PropertyChangeListener listener) {
+                    public @Override void removePropertyChangeListener(PropertyChangeListener listener) {
                         pcs.removePropertyChangeListener(listener);
                     }
-                    public void propertyChange(PropertyChangeEvent evt) {
+                    public @Override void propertyChange(PropertyChangeEvent evt) {
                         if (relevantProperties.contains(evt.getPropertyName())) {
                             pcs.firePropertyChange(PROP_RESOURCES, null, null);
                         }
                     }
-                    public void configurationXmlChanged(AntProjectEvent ev) {
+                    public @Override void configurationXmlChanged(AntProjectEvent ev) {
                         Element pkgrootEl = project.getExtraCompilationUnits().get(pkgroot);
                         Element classpathEl = XMLUtil.findElement(pkgrootEl, "classpath", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                         assert classpathEl != null : "no <classpath> in " + pkgrootEl;
                         cpS = XMLUtil.findText(classpathEl);
                         pcs.firePropertyChange(PROP_RESOURCES, null, null);
                     }
-                    public void propertiesChanged(AntProjectEvent ev) {}
+                    public @Override void propertiesChanged(AntProjectEvent ev) {}
                 }
                 ClassPathImplementation ecuCompile = new CPI();
                 extraCompilationUnitsCompile.put(pkgroot, ClassPathFactory.createClassPath(ecuCompile));
