@@ -53,7 +53,7 @@ import org.openide.util.Utilities;
 final class LocaleVariants implements Stamps.Updater {
     private static final Logger err = Util.err;
     
-    private static Map<File,List<FileWithSuffix>> map;
+    private static final Map<File,List<FileWithSuffix>> map;
     private static Locale mapLocale;
     private static LocaleVariants UPDATER;
 
@@ -63,11 +63,11 @@ final class LocaleVariants implements Stamps.Updater {
 
     static {
         InputStream stream = Stamps.getModulesJARs().asStream("localeVariants");
+        Map<File,List<FileWithSuffix>> tmp = new HashMap<File, List<FileWithSuffix>>();
         if (stream != null) try {
             DataInputStream is = new DataInputStream(stream);
             String locale = is.readUTF();
             mapLocale = Locale.getDefault().toString().equals(locale) ? Locale.getDefault() : null;
-            Map<File,List<FileWithSuffix>> tmp = new HashMap<File, List<FileWithSuffix>>();
             for (;;) {
                 String file = is.readUTF();
                 if (file.length() == 0) {
@@ -84,16 +84,14 @@ final class LocaleVariants implements Stamps.Updater {
                 tmp.put(new File(file), arr);
             }
             is.close();
-            map = tmp;
         } catch (IOException ex) {
             err.log(Level.WARNING, "Cannot read localeVariants cache", ex);
+            tmp.clear();
         }
-
-        if (map == null) {
-            map = new HashMap<File, List<FileWithSuffix>>();
-        }
+        map = tmp;
     }
 
+    @Override
     public void flushCaches(DataOutputStream os) throws IOException {
         synchronized (map) {
             os.writeUTF(mapLocale.toString());
@@ -108,6 +106,7 @@ final class LocaleVariants implements Stamps.Updater {
         }
     }
 
+    @Override
     public void cacheReady() {
     }
     static void clearCaches() {
