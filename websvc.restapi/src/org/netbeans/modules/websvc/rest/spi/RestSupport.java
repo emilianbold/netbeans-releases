@@ -130,7 +130,11 @@ public abstract class RestSupport {
     public static final String TOMCAT_SERVER_TYPE = "tomcat";       //NOI18N
     public static final String GFV3_SERVER_TYPE = "gfv3";          //NOI18N
     public static final String GFV2_SERVER_TYPE = "J2EE";          //NOI18N
-    
+
+    public static final int PROJECT_TYPE_DESKTOP = 0; //NOI18N
+    public static final int PROJECT_TYPE_WEB = 1; //NOI18N
+    public static final int PROJECT_TYPE_NB_MODULE = 2; //NOI18N
+
     private AntProjectHelper helper;
     protected RestServicesModel restServicesModel;
     protected RestApplicationModel restApplicationModel;
@@ -712,5 +716,8 @@ public abstract class RestSupport {
             return pattern.matcher(pathname.getName()).matches();
         }
     }
+
+    public abstract int getProjectType();
+
 }
 

@@ -415,7 +415,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 TypeMirror currType = info.getTrees().getTypeMirror(currPath);
                 TypeMirror pType = ((VariableElement) remappable).asType();
 
-                if (isSameTypeForVariableRemap(currType, pType)) {
+                if (currType != null && pType != null && isSameTypeForVariableRemap(currType, pType)) {
                     bindState.variablesRemapToTrees.put(remappable, currPath);
                     return true;
                 }

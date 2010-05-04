@@ -67,6 +67,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
@@ -461,5 +462,25 @@ public class MavenProjectRestSupport extends WebRestSupport {
             }
         }
     }
+
+    @Override
+    public int getProjectType() {
+        NbMavenProject nbMavenProject = project.getLookup().lookup(NbMavenProject.class);
+        if (nbMavenProject != null) {
+            String packagingType = nbMavenProject.getPackagingType();
+            if (packagingType != null)
+            if (NbMavenProject.TYPE_JAR.equals(packagingType)) {
+                return PROJECT_TYPE_DESKTOP;
+            } else if (NbMavenProject.TYPE_WAR.equals(packagingType)) {
+                return PROJECT_TYPE_WEB;
+            } else if (NbMavenProject.TYPE_NBM.equals(packagingType) ||
+                       NbMavenProject.TYPE_NBM_APPLICATION.equals(packagingType)) {
+                return PROJECT_TYPE_NB_MODULE;
+            }
+        }
+        return PROJECT_TYPE_DESKTOP;
+    }
+    
+
    
 }
