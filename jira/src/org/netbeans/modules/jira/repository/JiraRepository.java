@@ -39,6 +39,13 @@
 
 package org.netbeans.modules.jira.repository;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.User;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.util.Map;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
@@ -61,13 +68,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
-import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
-import org.eclipse.mylyn.internal.jira.core.model.User;
-import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
-import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
