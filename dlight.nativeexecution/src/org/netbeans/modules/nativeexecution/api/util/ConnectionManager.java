@@ -226,7 +226,9 @@ public final class ConnectionManager {
             session = connectionTaskResult.get();
         } catch (InterruptedException ex) {
             // should not occur
-            Exceptions.printStackTrace(ex);
+            //but is is occurred when user cancel connection in the CND connection Wizard
+            //catch it here and throw CancellationException
+           throw new CancellationException("Connection cancelled for " + env); // NOI18N
         } catch (ExecutionException ex) {
             // should not occur
             // any exception thrown from the connectionTask will be wrapped
