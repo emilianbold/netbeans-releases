@@ -255,7 +255,7 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
                 } else {
                     ModuleUISettings.getDefault().setLastUsedClusterLocation(file.getParentFile().getAbsolutePath());
                     String relPath = PropertyUtils.relativizeFile(prjDir, file);
-                    clusterDirText.setText(relPath);
+                    clusterDirText.setText(relPath != null ? relPath : file.getAbsolutePath());
                 }
                 break;
             }

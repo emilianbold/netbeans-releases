@@ -280,7 +280,7 @@ public class BasicBrandingModel {
         return relativePath;
     }
     
-    public String getSplashLocation() {
+    public @CheckForNull String getSplashLocation() {
         File prj = getProjectDirectoryFile();
         String relativePath = PropertyUtils.relativizeFile(prj ,splash.getFileLocation());
         
