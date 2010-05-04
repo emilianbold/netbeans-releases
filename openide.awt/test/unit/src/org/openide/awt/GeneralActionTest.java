@@ -87,6 +87,13 @@ public class GeneralActionTest extends NbTestCase {
             // ok
         }
     }
+
+    public void testAttributesOnClone() throws Exception { // #182601
+        Action a = GeneralAction.callback("whatever", null, Lookup.EMPTY, false, false);
+        a.putValue("attr", "value");
+        Action a2 = ((ContextAwareAction) a).createContextAwareInstance(Lookup.EMPTY);
+        assertEquals("value", a2.getValue("attr"));
+    }
     
     private static int myListenerCounter;
     private static ActionListener myListener() {

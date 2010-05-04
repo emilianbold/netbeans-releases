@@ -140,10 +140,45 @@ public class StackLineAnalyserTest extends NbTestCase {
         new String[] {"at javaapplication8.Main$Inner.go(Main.java:40)"});
     }
     @Test
+    public void testFillListModelInner2() throws Exception {
+        testFillListModelSkeleton(
+                      "   at\njavaapplication8.Main$Inner.go(Main.java:40)",
+        new String[] {"at javaapplication8.Main$Inner.go(Main.java:40)"});
+    }
+    @Test
     public void testFillListModelAnonymous() throws Exception {
         testFillListModelSkeleton(
                       " at javaapp\nlication8.Main$1.run(Main.java:32)",
         new String[] {"at javaapplication8.Main$1.run(Main.java:32)"});
     }
-
+    @Test
+    public void testFillListModelComplex() throws Exception {
+        testFillListModelSkeleton(
+                      "   java.lang.Thread.State: WAITING (parking)\n" +
+                      "    at sun.misc.Unsafe.park(Native Method)\n" +
+                      "    - parking to wait for  <0x000000010c0773e8> (a\n" +
+                      "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)\n" +
+                      "    at java.util.concurrent.locks.LockSupport.park(LockSupport.java:158)\n" +
+                      "    at\n" +
+                      "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1925)\n" +
+                      "    at\n" +
+                      "java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:358)\n" +
+                      "    at\n" +
+                      "java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:947)\n" +
+                      "    at\n" +
+                      "java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:907)\n" +
+                      "    at java.lang.Thread.run(Thread.java:637)\n",
+        new String[] {
+                      "java.lang.Thread.State: WAITING (parking)",
+                      "at sun.misc.Unsafe.park(Native Method)",
+                      "- parking to wait for  <0x000000010c0773e8> (a",
+                      "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)",
+                      "at java.util.concurrent.locks.LockSupport.park(LockSupport.java:158)",
+                      "at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1925)",
+                      "at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:358)",
+                      "at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:947)",
+                      "at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:907)",
+                      "at java.lang.Thread.run(Thread.java:637)"
+        });
+    }
 }
