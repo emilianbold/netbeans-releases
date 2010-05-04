@@ -411,7 +411,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     
     final FileEventLog eventQueue = new FileEventLog();
 
-    private void fileFolderCreatedImpl(FileEvent fe, boolean source) {
+    private void fileFolderCreatedImpl(FileEvent fe, Boolean source) {
         FileObject fo = fe.getFile();
         if (isCacheFile(fo)) {
             return;
@@ -428,7 +428,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         Pair<URL, FileObject> root = null;
         
         if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
-            if (source) {
+            if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot(fo);
                 if (root != null) {
                     boolean sourcForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
@@ -439,7 +439,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         processed = true;
                     }
                 }
-            } else {
+            }
+
+            if (!processed && (source == null || !source.booleanValue())) {
                 root = getOwningBinaryRoot(fo);
                 if (root != null) {
                     final Work wrk = new BinaryWork(root.first);
@@ -455,7 +457,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
     }
 
-    private void fileChangedImpl (FileEvent fe, boolean source) {
+    private void fileChangedImpl (FileEvent fe, Boolean source) {
         FileObject fo = fe.getFile();
         if (isCacheFile(fo)) {
             return;
@@ -469,7 +471,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         Pair<URL, FileObject> root = null;
 
         if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
-            if (source) {
+            if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot (fo);
                 if (root != null) {
                     boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
@@ -480,7 +482,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         processed = true;
                     }
                 }
-            } else {
+            }
+
+            if (!processed && (source == null || !source.booleanValue())) {
                 root = getOwningBinaryRoot(fo);
                 if (root != null) {
                     final Work wrk = new BinaryWork(root.first);
@@ -496,7 +500,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
     }
 
-    private void fileDeletedImpl(FileEvent fe, boolean source) {
+    private void fileDeletedImpl(FileEvent fe, Boolean source) {
         FileObject fo = fe.getFile();
         if (isCacheFile(fo)) {
             return;
@@ -510,7 +514,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         Pair<URL, FileObject> root = null;
 
         if (fo != null && VisibilityQuery.getDefault().isVisible(fo)) {
-            if (source) {
+            if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot (fo);
                 if (root != null) {
                     if (fo.isData() /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
@@ -521,7 +525,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         processed = true;
                     }
                 }
-            } else {
+            }
+
+            if (!processed && (source == null || !source.booleanValue())) {
                 root = getOwningBinaryRoot(fo);
                 if (root != null) {
                     final Work wrk = new BinaryWork(root.first);
@@ -537,7 +543,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
     }
 
-    private void fileRenamedImpl(FileRenameEvent fe, boolean  source) {
+    private void fileRenamedImpl(FileRenameEvent fe, Boolean  source) {
         FileObject fo = fe.getFile();
         if (isCacheFile(fo)) {
             return;
@@ -553,7 +559,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         boolean processed = false;
 
         if (newFile != null && newFile.isValid()) {
-            if (source) {
+            if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot(newFile);
                 if (root != null) {
                     FileObject rootFo = root.second;
@@ -582,7 +588,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                     processed = true;
                 }
-            } else {
+            }
+
+            if (!processed && (source == null || !source.booleanValue())) {
                 root = getOwningBinaryRoot(newFile);
                 if (root != null) {
                     final File parentFile = FileUtil.toFile(newFile.getParent());
@@ -792,9 +800,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Logger TEST_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests"); //NOI18N
     private static final Logger SFEC_LOGGER = Logger.getLogger("org.netbeans.ui.ScanForExternalChanges"); //NOI18N
-    private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test"); //NOI18N
-    private static final boolean notInterruptible = Boolean.getBoolean("netbeans.indexing.notInterruptible"); //NOI18N
-    private static final boolean noRecursiveListener = Boolean.getBoolean("netbeans.indexing.notRecursiveListener");    //NOI18N
+    private static final boolean PERF_TEST = getSystemBoolean("perf.refactoring.test", false); //NOI18N
+    private static final boolean notInterruptible = getSystemBoolean("netbeans.indexing.notInterruptible", false); //NOI18N
+    private static final boolean useRecursiveListeners = getSystemBoolean("netbeans.indexing.recursiveListeners", true); //NOI18N
     private static final int FILE_LOCKS_DELAY = org.openide.util.Utilities.isWindows() ? 2000 : 1000;
     private static final String PROP_LAST_INDEXED_VERSION = RepositoryUpdater.class.getName() + "-last-indexed-document-version"; //NOI18N
     private static final String PROP_LAST_DIRTY_VERSION = RepositoryUpdater.class.getName() + "-last-dirty-document-version"; //NOI18N
@@ -802,7 +810,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private static final String PROP_OWNING_SOURCE_ROOT_URL = RepositoryUpdater.class.getName() + "-owning-source-root-url"; //NOI18N
     private static final String PROP_OWNING_SOURCE_ROOT = RepositoryUpdater.class.getName() + "-owning-source-root"; //NOI18N
     /* test */ static final List<URL> EMPTY_DEPS = Collections.unmodifiableList(new LinkedList<URL>());
-
 
     private final Map<URL, List<URL>>scannedRoots2Dependencies = Collections.synchronizedMap(new TreeMap<URL, List<URL>>(new LexicographicComparator(true)));
     private final Map<URL, List<URL>>scannedBinaries2InvDependencies = Collections.synchronizedMap(new HashMap<URL,List<URL>>());
@@ -823,12 +830,15 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private boolean ignoreIndexerCacheEvents = false;
 
     /* test */ final RootsListeners rootsListeners = new RootsListeners();
-    private final FileChangeListener sourceRootsListener = new FCL(true);
-    private final FileChangeListener binaryRootsListener = new FCL(false);
+    private final FileChangeListener sourceRootsListener = new FCL(useRecursiveListeners ? Boolean.TRUE : null);
+    private final FileChangeListener binaryRootsListener = new FCL(Boolean.FALSE);
     private final ThreadLocal<Boolean> inIndexer = new ThreadLocal<Boolean>();
 
     private RepositoryUpdater () {
-        // no-op
+        LOGGER.log(Level.FINE, "perf.refactoring.test={0}", PERF_TEST); //NOI18N
+        LOGGER.log(Level.FINE, "netbeans.indexing.notInterruptible={0}", notInterruptible); //NOI18N
+        LOGGER.log(Level.FINE, "netbeans.indexing.recursiveListeners={0}", useRecursiveListeners); //NOI18N
+        LOGGER.log(Level.FINE, "FILE_LOCKS_DELAY={0}", FILE_LOCKS_DELAY); //NOI18N
     }
 
     private void handleActiveDocumentChange(Document deactivated, Document activated) {
@@ -1315,6 +1325,15 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
         return f2d;
+    }
+
+    private static boolean getSystemBoolean(String propertyName, boolean defaultValue) {
+        if (defaultValue) {
+            String value = System.getProperty(propertyName);
+            return value == null || !value.equals("false"); //NOI18N
+        } else {
+            return Boolean.getBoolean(propertyName);
+        }
     }
 
     private static final Map<List<StackTraceElement>, Long> lastRecordedStackTraces = new HashMap<List<StackTraceElement>, Long>();
@@ -3901,6 +3920,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         public void setListener(FileChangeListener sourcesListener, FileChangeListener binariesListener) {
             assert (sourcesListener != null && binariesListener != null) || (sourcesListener == null && binariesListener == null) :
                 "Both sourcesListener and binariesListener must either be null or non-null"; //NOI18N
+
             //todo: remove removeRecursiveListener from synchronized block
             synchronized (this) {
                 if (sourcesListener != null) {
@@ -3908,10 +3928,18 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             + ", won't attach " + sourcesListener + " and " + binariesListener; //NOI18N
                     assert sourceRoots.isEmpty() : "Expecting no source roots: " + sourceRoots; //NOI18N
                     assert binaryRoots.isEmpty() : "Expecting no binary roots: " + binaryRoots; //NOI18N
+
                     this.sourcesListener = sourcesListener;
                     this.binariesListener = binariesListener;
+                    if (!useRecursiveListeners) {
+                        FileUtil.addFileChangeListener(sourcesListener);
+                    }
                 } else {
                     assert this.sourcesListener != null : "RootsListeners are already dormant"; //NOI18N
+
+                    if (!useRecursiveListeners) {
+                        FileUtil.removeFileChangeListener(sourcesListener);
+                    }
                     for(Map.Entry<URL, File> entry : sourceRoots.entrySet()) {
                         safeRemoveRecursiveListener(this.sourcesListener, entry.getValue());
                     }
@@ -3995,11 +4023,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         private void safeAddRecursiveListener(FileChangeListener listener, File path) {
-            if (noRecursiveListener) {
-                if (!noRecursiveListenerLogged.getAndSet(true)) {
-                    LOGGER.info("Recursive listeners are disabled"); //NOI18N
-                }
-            } else {
+            if (useRecursiveListeners) {
                 try {
                     FileUtil.addRecursiveListener(listener, path, new Callable<Boolean>() {
                         @Override
@@ -4017,7 +4041,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         private void safeRemoveRecursiveListener(FileChangeListener listener, File path) {
-            if (!noRecursiveListener) {
+            if (useRecursiveListeners) {
                 try {
                     FileUtil.removeRecursiveListener(listener, path);
                 } catch (Exception e) {
@@ -4029,9 +4053,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     } // End of RootsListeners class
 
     private final class FCL extends FileChangeAdapter {
-        private final boolean listeningOnSources;
+        private final Boolean listeningOnSources;
 
-        public FCL(boolean listeningOnSources) {
+        public FCL(Boolean listeningOnSources) {
             this.listeningOnSources = listeningOnSources;
         }
 
