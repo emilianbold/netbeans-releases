@@ -196,8 +196,7 @@ public class SyntaxTree {
         assert elements != null;
         assert dtd != null;
 
-        SyntaxElement last = elements.size() > 0 ? elements.get(elements.size() - 1) : null;
-        int lastEndOffset = last == null ? 0 : last.offset() + last.length();
+        int lastEndOffset = context.getSourceText().length();
 
         //create a root node, it can contain one or more child nodes
         //normally just <html> node should be its child
@@ -525,10 +524,7 @@ public class SyntaxTree {
                     stack.getLast().addChild(closeTagNode);
                 }
 
-            } else {
-                //rest of the syntax element types
-                //XXX do we need to have these in the AST???
-
+            } else if (element.type() == SyntaxElement.TYPE_ERROR) { //error
                 // add a new AST node to the last node on the stack
                 AstNode.NodeType nodeType = intToNodeType(element.type());
 
@@ -536,6 +532,11 @@ public class SyntaxTree {
                         element.offset() + element.length(), false);
 
                 stack.getLast().addChild(node);
+
+            } else {
+                //rest of the syntax element types of unimportant types,
+                //they are not present in the parse tree
+                
             }
 
         }
