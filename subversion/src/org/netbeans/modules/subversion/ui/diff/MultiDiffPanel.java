@@ -360,7 +360,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     void requestActive() {
-        if (diffView != null) {
+        if (fileTable != null) {
+            fileTable.getTable().requestFocusInWindow();
+        } else if (diffView != null) {
             diffView.requestFocusInWindow();
         }
     }
@@ -584,7 +586,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         } else {
             diffViewPanel.setComponent(diffView);
         }
-        diffView.requestFocusInWindow(); // #181451 HACK
     }
 
     @Override
