@@ -743,7 +743,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         chooser.enableVariableBasedSelection(true);
         chooser.setFileHidingEnabled(false);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled( true );
         chooser.setDialogTitle( NbBundle.getMessage( EditMediator.class, "LBL_AddJar_DialogTitle" ) ); // NOI18N
         //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
