@@ -68,9 +68,9 @@ import org.openide.util.Exceptions;
     private final PropertyChangeSupport changeSupport;
      final ExecutionEnvironment env;
     private static final String newFolderString =
-            UIManager.getString("FileChooser.other.newFolder");
+            UIManager.getString("FileChooser.other.newFolder");//  NOI18N
     private static final String newFolderNextString  =
-            UIManager.getString("FileChooser.other.newFolder.subsequent");
+            UIManager.getString("FileChooser.other.newFolder.subsequent");//  NOI18N
 
 
     public RemoteFileSystemView(final String root, final ExecutionEnvironment execEnv) {
@@ -169,7 +169,7 @@ import org.openide.util.Exceptions;
      */
     public File createNewFolder(File containingDir) throws IOException {
 	if(containingDir == null) {
-	    throw new IOException("Containing directory is null:"); // NOI18N
+	    throw new IOException("Containing directory is null:");//  NOI18N
 	}
 	File newFolder = null;
 	// Unix - using OpenWindows' default folder name. Can't find one for Motif/CDE.
@@ -182,7 +182,7 @@ import org.openide.util.Exceptions;
 	}
 
 	if(newFolder.exists()) {
-	    throw new IOException("Directory already exists:" + newFolder.getAbsolutePath()); // NOI18N
+	    throw new IOException("Directory already exists:" + newFolder.getAbsolutePath());//  NOI18N
 	} else {
 	    newFolder.mkdirs();
 	}
