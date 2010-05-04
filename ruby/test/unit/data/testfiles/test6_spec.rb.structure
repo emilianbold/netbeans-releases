@@ -1,2 +1,4 @@
-describe: GET #index:TEST:[]:ESCAPED{describe: GET #index}:
-  before:TEST:[]:ESCAPED{before}:
+Test6Spec:CLASS:[]:ESCAPED{Test6Spec}:
+  describe: ThingsController:TEST:[]:ESCAPED{describe: ThingsController}:
+    before:TEST:[]:ESCAPED{before}:
+  things:FIELD:[PRIVATE]:ESCAPED{things}:
