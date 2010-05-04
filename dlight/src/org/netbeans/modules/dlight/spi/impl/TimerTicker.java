@@ -38,8 +38,8 @@
  */
 package org.netbeans.modules.dlight.spi.impl;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -59,17 +59,14 @@ public final class TimerTicker
     extends IndicatorDataProvider<TimerIDPConfiguration>
     implements Runnable {
 
-    private static final DataTableMetadata tableMetadata;
+    private static final DataTableMetadata TABLE_METADATA = new DataTableMetadata(
+            TimerIDPConfiguration.TIME_ID, Collections.singletonList(TimerIDPConfiguration.TIME_INFO), null);
+
     private final Lock lock = new Lock();
     private final IndicatorDataProviderConfiguration configuration;
     private long startTime = 0;
-    private Future tickerService;
+    private Future<?> tickerService;
 
-
-    static {
-        tableMetadata = new DataTableMetadata(TimerIDPConfiguration.TIME_ID,
-            Arrays.asList(TimerIDPConfiguration.TIME_INFO), null);
-    }
 
     TimerTicker(TimerIDPConfiguration configuration) {
         this.configuration = configuration;
@@ -92,15 +89,16 @@ public final class TimerTicker
     }
 
     public void run() {
-        DataRow data = new DataRow(Arrays.asList(TimerIDPConfiguration.TIME_ID),
-            Arrays.<Object>asList(System.currentTimeMillis() - startTime));
+        DataRow data = new DataRow(
+                TABLE_METADATA.getColumnNames(),
+                Collections.singletonList(System.currentTimeMillis() - startTime));
 
-        notifyIndicators(Arrays.asList(data));
+        notifyIndicators(Collections.singletonList(data));
     }
 
     @Override
     public Collection<DataTableMetadata> getDataTablesMetadata() {
-        return Arrays.asList(tableMetadata);
+        return Collections.singletonList(TABLE_METADATA);
     }
 
     public void targetStateChanged(DLightTargetChangeEvent event) {
