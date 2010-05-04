@@ -54,15 +54,15 @@ final class TransferSelectorModel {
     public TransferSelectorModel(Set<TransferFile> transferFiles, long timestamp) {
         assert transferFiles != null;
 
-        this.transferFiles = transferFiles;
+        this.transferFiles = copyNoProjectRoot(transferFiles);
 
         boolean select = timestamp == -1;
-        for (TransferFile file : transferFiles) {
+        for (TransferFile file : this.transferFiles) {
             if (timestamp != -1) {
                 // we have some timestamp
                 select = file.getTimestamp() > timestamp;
             }
-            if (select && !file.isProjectRoot()) {
+            if (select) {
                 // intentionally not addChildren()!
                 selected.add(file);
             }
@@ -103,6 +103,20 @@ final class TransferSelectorModel {
             removeChildren(transferFile);
         }
         filesChangeSupport.fireSelectedFilesChange();
+    }
+
+    public void selectAll() {
+        selected.addAll(transferFiles);
+        filesChangeSupport.fireSelectedFilesChange();
+    }
+
+    public void unselectAll() {
+        selected.clear();
+        filesChangeSupport.fireSelectedFilesChange();
+    }
+
+    public boolean isAllSelected() {
+        return selected.size() == transferFiles.size();
     }
 
     public Set<TransferFile> getData() {
@@ -161,5 +175,15 @@ final class TransferSelectorModel {
             }
         }
         return true;
+    }
+
+    private Set<TransferFile> copyNoProjectRoot(Set<TransferFile> transferFiles) {
+        Set<TransferFile> files = new HashSet<TransferFile>();
+        for (TransferFile file : transferFiles) {
+            if (!file.isProjectRoot()) {
+                files.add(file);
+            }
+        }
+        return files;
     }
 }

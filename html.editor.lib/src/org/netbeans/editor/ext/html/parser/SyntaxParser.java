@@ -68,6 +68,8 @@ public final class SyntaxParser {
     
     private List<SyntaxElement> EMPTY_ELEMENTS_LIST = Collections.emptyList();
     private List<SyntaxElement> parsedElements;
+
+    private final SyntaxElement SHARED_TEXT_ELEMENT = new SyntaxElement.SharedTextElement();
     
     protected CharSequence parserSource;
     
@@ -99,32 +101,30 @@ public final class SyntaxParser {
     //---------------------------- private methods -----------------------------
  
     private void error() {
-        elements.add(new SyntaxElement(parserSource,
+        elements.add(new SyntaxElement.Error(parserSource,
                 start,
-                token.offset(hi) + token.length() - start,
-                SyntaxElement.TYPE_ERROR));
+                token.offset(hi) + token.length() - start));
     }
 
     private void text() {
-        elements.add(new SyntaxElement(parserSource,
-                start,
-                token.offset(hi) + token.length() - start,
-                SyntaxElement.TYPE_TEXT));
+        //Memory consumption optimalization: Since noone seems to use the text elements
+        //there's no need to create a separate instance for each piece of text in the source.
+        //Instead a shared instance is used, but of course none of the information
+        //provided are valid
+        elements.add(SHARED_TEXT_ELEMENT);
     }
 
     private void entityReference() {
-        elements.add(new SyntaxElement(parserSource, 
+        elements.add(new SyntaxElement.EntityReference(parserSource,
                 start, 
-                token.offset(hi) + token.length() - start, 
-                SyntaxElement.TYPE_ENTITY_REFERENCE));
+                token.offset(hi) + token.length() - start));
         
     }
     
     private void comment() {
-        elements.add(new SyntaxElement(parserSource, 
+        elements.add(new SyntaxElement.Comment(parserSource,
                 start, 
-                token.offset(hi) + token.length() - start, 
-                SyntaxElement.TYPE_COMMENT));
+                token.offset(hi) + token.length() - start));
     }
     
     private void declaration() {
