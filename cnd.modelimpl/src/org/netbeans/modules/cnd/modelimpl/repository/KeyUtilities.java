@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -103,6 +104,11 @@ public class KeyUtilities {
     public static Key createIncludeKey(CsmInclude incl) {
         assert incl != null;
         return KeyManager.instance().getSharedUID(new IncludeKey(incl));
+    }
+
+    public static Key createInheritanceKey(CsmInheritance inh) {
+        assert inh != null;
+        return KeyManager.instance().getSharedUID(new InheritanceKey(inh));
     }
 
     public static <T extends CsmNamedElement> Key createParamListKey(CsmParameterList<T> paramList) {

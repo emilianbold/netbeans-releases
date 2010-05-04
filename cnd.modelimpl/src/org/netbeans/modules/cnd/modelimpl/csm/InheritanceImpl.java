@@ -50,12 +50,15 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 
 /**
  * CsmInheritance implementation
  * @author Vladimir Kvashin
  */
-public class InheritanceImpl extends OffsetableBase implements CsmInheritance, Resolver.SafeClassifierProvider {
+public class InheritanceImpl extends OffsetableIdentifiableBase<CsmInheritance> implements CsmInheritance, Resolver.SafeClassifierProvider {
 
     private CsmVisibility visibility;
     private boolean virtual;
@@ -66,9 +69,11 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance, R
     
     private CsmType ancestorType;
     private CsmClassifier resolvedClassifier;
+    private CsmUID<CsmScope> scope;
     
     public InheritanceImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file);
+        this.scope = UIDCsmConverter.scopeToUID(scope);
         visibility = ((CsmDeclaration)scope).getKind() == CsmDeclaration.Kind.STRUCT?
                 CsmVisibility.PUBLIC: CsmVisibility.PRIVATE;
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
@@ -92,22 +97,27 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance, R
         }
     }
 
+    @Override
     public boolean isVirtual() {
         return virtual;
     }
 
+    @Override
     public CsmVisibility getVisibility() {
         return visibility;
     }
 
+    @Override
     public CsmType getAncestorType() {
         return ancestorType;
     }
 
+    @Override
     public CsmClassifier getClassifier() {
         return getClassifier(null);
     }
 
+    @Override
     public CsmClassifier getClassifier(Resolver parent) {
         if (!CsmBaseUtilities.isValid(resolvedClassifier)) {
             if (getAncestorType() instanceof Resolver.SafeClassifierProvider) {
@@ -117,6 +127,11 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance, R
             }
         }
         return resolvedClassifier;
+    }
+
+    @Override
+    protected CsmUID<CsmInheritance> createUID() {
+        return UIDUtilities.createInheritanceUID(this);
     }
 
     @Override
@@ -130,7 +145,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance, R
 
     @Override
     public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
+        if (obj == null || !(obj instanceof CsmInheritance)) {
             return false;
         }
         final InheritanceImpl other = (InheritanceImpl) obj;
@@ -158,6 +173,9 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance, R
         //output.writeUTF(ancestorName.toString());
         PersistentUtils.writeType(ancestorType, output);
 
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+        factory.writeUID(scope, output);
+
         // save cache
         /*UIDObjectFactory.getDefaultFactory().writeUID(classifierCacheUID, output);
         boolean theSame = ((CsmUID)resolvedAncestorClassCacheUID == (CsmUID)classifierCacheUID);
@@ -176,6 +194,9 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance, R
         assert this.ancestorName != null;*/
         this.ancestorType = PersistentUtils.readType(input);
 
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+        this.scope = factory.readUID(input);
+
         // restore cached value
         /*this.classifierCacheUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         boolean theSame = input.readBoolean();
@@ -191,4 +212,8 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance, R
         return "INHERITANCE " + visibility + " " + (isVirtual() ? "virtual " : "") + ancestorType.getText() + getOffsetString(); // NOI18N
     }
 
+    @Override
+    public CsmScope getScope() {
+        return UIDCsmConverter.UIDtoScope(scope);
+    }
 }

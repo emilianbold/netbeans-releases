@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
@@ -59,7 +58,6 @@ import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
-import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NoType;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFunPtrImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
@@ -407,43 +405,6 @@ public class PersistentUtils {
         for (CsmType elem : types) {
             assert elem != null;
             writeType(elem, output);
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // support inheritance
-    private static void writeInheritance(CsmInheritance inheritance, DataOutput output) throws IOException {
-        assert inheritance != null;
-        if (inheritance instanceof InheritanceImpl) {
-            ((InheritanceImpl) inheritance).write(output);
-        } else {
-            throw new IllegalArgumentException("instance of unknown CsmInheritance " + inheritance);  //NOI18N
-        }
-    }
-
-    private static CsmInheritance readInheritance(DataInput input) throws IOException {
-        CsmInheritance inheritance = new InheritanceImpl(input);
-        return inheritance;
-    }
-
-    public static <T extends Collection<CsmInheritance>> void readInheritances(T collection, DataInput input) throws IOException {
-        int collSize = input.readInt();
-        assert collSize >= 0;
-        for (int i = 0; i < collSize; ++i) {
-            CsmInheritance inheritance = readInheritance(input);
-            assert inheritance != null;
-            collection.add(inheritance);
-        }
-    }
-
-    public static void writeInheritances(Collection<? extends CsmInheritance> inhs, DataOutput output) throws IOException {
-        assert inhs != null;
-        int collSize = inhs.size();
-        output.writeInt(collSize);
-
-        for (CsmInheritance elem : inhs) {
-            assert elem != null;
-            writeInheritance(elem, output);
         }
     }
 
