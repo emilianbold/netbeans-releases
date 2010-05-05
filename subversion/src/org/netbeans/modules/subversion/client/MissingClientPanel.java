@@ -37,22 +37,13 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-/*
- * MissingClientPanel.java
- *
- * Created on Jul 9, 2008, 4:55:42 PM
- */
-
 package org.netbeans.modules.subversion.client;
 
 import java.awt.Color;
 import java.awt.Font;
-import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.StyleSheet;
 import org.openide.util.Utilities;
 
 /**
@@ -80,7 +71,7 @@ public class MissingClientPanel extends javax.swing.JPanel {
             htmlDoc.getStyleSheet().addRule(bodyRule);
         }
         textPane.setOpaque(false);
-        textPane.setBackground(new java.awt.Color(0,0,0,0)); // windows and nimbus workaround see issue 145826
+        textPane.setBackground(new Color(0,0,0,0)); // windows and nimbus workaround see issue 145826
     }
 
     /** This method is called from within the constructor to
