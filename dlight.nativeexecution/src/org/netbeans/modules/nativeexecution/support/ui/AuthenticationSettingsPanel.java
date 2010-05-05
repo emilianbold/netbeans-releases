@@ -184,8 +184,6 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
             }
         });
 
-        pwdStoredLbl.setFont(new java.awt.Font("Dialog", 2, 12)); // NOI18N
-        pwdStoredLbl.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         pwdStoredLbl.setText(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.pwdStoredLbl.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(pwdClearButton, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.pwdClearButton.text_1")); // NOI18N
@@ -220,9 +218,9 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
                     .addComponent(pwdRadioButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(keyRadioButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(keyFld, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
-                    .addComponent(pwdStoredLbl, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE))
+                .addGroup(authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pwdStoredLbl, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
+                    .addComponent(keyFld, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(pwdClearButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -267,6 +265,7 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
 
     private void pwdClearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pwdClearButtonActionPerformed
         PasswordManager.getInstance().forceClearPassword(env);
+        pwdStoredLbl.setVisible(false);
         pwdClearButton.setEnabled(false);
     }//GEN-LAST:event_pwdClearButtonActionPerformed
 
