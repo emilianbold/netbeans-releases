@@ -47,7 +47,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -57,8 +56,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfigur
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.simpleunit.spi.wizard.AbstractUnitTestIterator;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -69,10 +71,12 @@ import org.openide.loaders.TemplateWizard;
  *
  * @author sg155630
  */
-public class TestCppUnitIterator extends CCFSrcFileIterator {
+public class TestCppUnitIterator extends AbstractUnitTestIterator {
+    private WizardDescriptor.Panel<WizardDescriptor> targetChooserDescriptorPanel;
 
     @Override
     public void initialize(TemplateWizard wiz) {
+        super.initialize(wiz);
         Project project = Templates.getProject(wiz);
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
@@ -121,7 +125,7 @@ public class TestCppUnitIterator extends CCFSrcFileIterator {
         return dataObjects;
     }
 
-    private static boolean addItemToTestFolder(Project project, Folder folder, DataObject dataObject) {
+    private boolean addItemToTestFolder(Project project, Folder folder, DataObject dataObject) {
         FileObject file = dataObject.getPrimaryFile();
         Project owner = FileOwnerQuery.getOwner(file);
 
@@ -168,30 +172,7 @@ public class TestCppUnitIterator extends CCFSrcFileIterator {
         return ((NewTestCppUnitPanelGUI)targetChooserDescriptorPanel.getComponent()).getTestName();
     }
 
-    private static MakeConfigurationDescriptor getMakeConfigurationDescriptor(Project p) {
-        ConfigurationDescriptorProvider pdp = p.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        if (pdp == null) {
-            return null;
-        }
-        return pdp.getConfigurationDescriptor();
-    }
-
-    private static Folder getTestsRootFolder(Project project) {
-        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        MakeConfigurationDescriptor projectDescriptor = cdp.getConfigurationDescriptor();
-
-        Folder root = projectDescriptor.getLogicalFolders();
-        Folder testRootFolder = null;
-        for (Folder folder : root.getFolders()) {
-            if(folder.isTestRootFolder()) {
-                testRootFolder = folder;
-                break;
-            }
-        }
-        return testRootFolder;
-    }
-
-    private static void setCUnitLinkerOptions(Project project, Folder testFolder) {
+    private void setCUnitLinkerOptions(Project project, Folder testFolder) {
         ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor projectDescriptor = cdp.getConfigurationDescriptor();
         FolderConfiguration folderConfiguration = testFolder.getFolderConfiguration(projectDescriptor.getActiveConfiguration());
@@ -199,6 +180,13 @@ public class TestCppUnitIterator extends CCFSrcFileIterator {
         LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
         librariesConfiguration.add(new LibraryItem.StdLibItem("CppUnit", "CppUnit", new String[]{"cppunit"})); // NOI18N
         linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
+    }
+
+    @Override
+    protected Panel<WizardDescriptor>[] createPanels() {
+        @SuppressWarnings("unchecked")
+        Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[]{targetChooserDescriptorPanel};
+        return panels;
     }
 
 }

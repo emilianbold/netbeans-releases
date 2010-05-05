@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.cnd.simpleunit.spi.wizard;
 
-import org.netbeans.modules.cnd.simpleunit.wizard.GenerateTestChooseElementsWizard;
+import org.netbeans.modules.cnd.simpleunit.wizard.GenerateTestChooseElementsWizardPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.Lookup;
 
@@ -54,7 +54,7 @@ public final class UnitTestTemplates {
 
     /**
      */
-    public static WizardDescriptor.Panel<WizardDescriptor> createFunctionsChooser(Lookup lookup) throws IllegalArgumentException {
-        return new GenerateTestChooseElementsWizard();
+    public static WizardDescriptor.Panel<WizardDescriptor> createFunctionsPanel(Lookup lookup) throws IllegalArgumentException {
+        return new GenerateTestChooseElementsWizardPanel();
     }
 }

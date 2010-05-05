@@ -145,7 +145,10 @@ public class InheritanceImpl extends OffsetableIdentifiableBase<CsmInheritance> 
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof CsmInheritance)) {
+        if (obj == null || !(obj instanceof InheritanceImpl)) {
+            return false;
+        }
+        if (!super.equals(obj)) {
             return false;
         }
         final InheritanceImpl other = (InheritanceImpl) obj;
