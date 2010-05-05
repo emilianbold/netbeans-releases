@@ -60,13 +60,16 @@ import org.openide.util.NbBundle;
  */
 public class NewTestCppUnitPanel extends CndPanel {
     
-    NewTestCppUnitPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
+    private String baseTestName = null;
+
+    NewTestCppUnitPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, String baseTestName) {
         super(project, folders, bottomPanel);
+        this.baseTestName = baseTestName;
     }
 
     public Component getComponent() {
         if (gui == null) {
-            gui = new NewTestCppUnitPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent());
+            gui = new NewTestCppUnitPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), baseTestName);
             gui.addChangeListener(this);
         }
         return gui;

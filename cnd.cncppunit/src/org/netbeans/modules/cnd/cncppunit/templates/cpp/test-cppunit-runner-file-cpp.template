@@ -1,11 +1,9 @@
 /*
- * File:   %<%NAME%>%.%<%EXTENSION%>%
- * Author: %<%USER%>%
+ * File:   ${nameAndExt}
+ * Author: ${user}
  *
- * Created on %<%DATE%>%, %<%TIME%>%
+ * Created on ${date}, ${time}
  */
-
-// CppUnit site http://sourceforge.net/projects/cppunit/files
 
 #include <cppunit/BriefTestProgressListener.h>
 #include <cppunit/CompilerOutputter.h>

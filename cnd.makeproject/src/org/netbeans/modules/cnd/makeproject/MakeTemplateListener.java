@@ -106,16 +106,14 @@ public class MakeTemplateListener implements OperationListener {
         Folder folder = Utilities.actionsGlobalContext().lookup(Folder.class);
         Project project = Utilities.actionsGlobalContext().lookup(Project.class);
 
-        if(project != null) {
-            DataObject originalDataObject = copy.getOriginalDataObject();
-            if(originalDataObject != null) {
-                FileObject originalPrimaryFile = originalDataObject.getPrimaryFile();
-                if(originalPrimaryFile != null) {
-                    if(originalPrimaryFile.getAttribute(ADD_TO_LOGICAL_FOLDER_ATTRIBUTE) != null) {
-                        boolean addToLogicalFolder = (Boolean)originalPrimaryFile.getAttribute(ADD_TO_LOGICAL_FOLDER_ATTRIBUTE);
-                        if(!addToLogicalFolder) {
-                            return;
-                        }
+        DataObject originalDataObject = copy.getOriginalDataObject();
+        if(originalDataObject != null) {
+            FileObject originalPrimaryFile = originalDataObject.getPrimaryFile();
+            if(originalPrimaryFile != null) {
+                if(originalPrimaryFile.getAttribute(ADD_TO_LOGICAL_FOLDER_ATTRIBUTE) != null) {
+                    boolean addToLogicalFolder = (Boolean)originalPrimaryFile.getAttribute(ADD_TO_LOGICAL_FOLDER_ATTRIBUTE);
+                    if(!addToLogicalFolder) {
+                        return;
                     }
                 }
             }

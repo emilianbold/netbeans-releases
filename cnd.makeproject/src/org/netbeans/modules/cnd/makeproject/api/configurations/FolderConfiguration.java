@@ -69,6 +69,8 @@ public class FolderConfiguration implements ConfigurationAuxObject {
             linkerConfiguration = new LinkerConfiguration((MakeConfiguration) configuration);
             if (folder.isTest()) {
                 linkerConfiguration.getOutput().setValue("${TESTDIR}/" + folder.getPath()); // NOI18N
+                cCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
+                ccCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
             }
         }
         clearChanged();
