@@ -263,14 +263,14 @@ public abstract class NodeAction extends CallableSystemAction implements Context
         final Object s = (ev == null) ? null : ev.getSource();
 
         if (s instanceof Node) {
-            ActionInvoker.invokeAction(this, ev, asynchronous(), new Runnable() {
+            ActionInvoker.invokeAction(this, ev, amIasynchronous(), new Runnable() {
                 @Override
                 public void run() {
                     performAction(new Node[] { (Node) s });
                 }
             });
         } else if (s instanceof Node[]) {
-            ActionInvoker.invokeAction(this, ev, asynchronous(), new Runnable() {
+            ActionInvoker.invokeAction(this, ev, amIasynchronous(), new Runnable() {
                 @Override
                 public void run() {
                     performAction((Node[]) s);
@@ -378,6 +378,10 @@ public abstract class NodeAction extends CallableSystemAction implements Context
                 Logger.getLogger(NodeAction.class.getName()).log(Level.WARNING, null, e);
             }
         }
+    }
+
+    final boolean amIasynchronous() {
+        return asynchronous();
     }
     
     /** Node listener to check whether the action is enabled or not
@@ -573,7 +577,7 @@ OUTER:
          */
         @Override
         public void actionPerformed(ActionEvent e) {
-            ActionInvoker.invokeAction(delegate, e, delegate.asynchronous(), new Runnable() {
+            ActionInvoker.invokeAction(delegate, e, delegate.amIasynchronous(), new Runnable() {
                 @Override
                 public void run() {
                     delegate.performAction(nodes());
