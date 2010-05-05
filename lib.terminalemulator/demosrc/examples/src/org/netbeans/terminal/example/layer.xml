@@ -29,13 +29,18 @@
             <file name="org-netbeans-terminal-example-ShellTermAction.instance"/>
             <file name="org-netbeans-terminal-example-CmdTermAction.instance"/>
             <file name="org-netbeans-terminal-example-TermWindowAction.instance"/>
+            <file name="org-netbeans-terminal-example-control-ControlAction.instance">
+                <attr name="component" methodvalue="org.netbeans.terminal.example.control.ControlTopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="org.netbeans.terminal.example.control.Bundle#CTL_ControlAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+            </file>
             <file name="org-netbeans-terminal-example-topcomponent-MuxableTerminalAction.instance">
                 <attr name="component" methodvalue="org.netbeans.terminal.example.topcomponent.MuxableTerminalTopComponent.findInstance"/>
                 <attr name="displayName" bundlevalue="org.netbeans.terminal.example.topcomponent.Bundle#CTL_MuxableTerminalAction"/>
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
             </file>
             <file name="org-netbeans-terminal-example-topcomponent-TerminalAction.instance">
-                <attr name="component" methodvalue="org.netbeans.terminal.example.topcomponent.TerminalTopComponent_Tabbed.findInstance"/>
+                <attr name="component" methodvalue="org.netbeans.terminal.example.topcomponent.TerminalTopComponent.findInstance"/>
                 <attr name="displayName" bundlevalue="org.netbeans.terminal.example.topcomponent.Bundle#CTL_TerminalAction"/>
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
             </file>
@@ -79,6 +84,9 @@
             </file>
         </folder>
         <folder name="Window">
+            <file name="ControlAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-terminal-example-control-ControlAction.instance"/>
+            </file>
             <file name="MuxableTerminalAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-terminal-example-topcomponent-MuxableTerminalAction.instance"/>
             </file>
@@ -94,13 +102,17 @@
     </folder>
     <folder name="Windows2">
         <folder name="Components">
-            <file name="MuxableTerminalTopComponent.settings" url="MuxableTerminalTopComponentSettings.xml"/>
-            <file name="TerminalTopComponent.settings" url="topcomponent/TerminalTopComponentSettings.xml"/>
+            <file name="ControlTopComponent.settings" url="resources/ControlTopComponentSettings.xml"/>
+            <file name="MuxableTerminalTopComponent.settings" url="resources/MuxableTerminalTopComponentSettings.xml"/>
+            <file name="TerminalTopComponent.settings" url="resources/TerminalTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
+            <folder name="explorer">
+                <file name="ControlTopComponent.wstcref" url="resources/ControlTopComponentWstcref.xml"/>
+            </folder>
             <folder name="output">
-                <file name="MuxableTerminalTopComponent.wstcref" url="MuxableTerminalTopComponentWstcref.xml"/>
-                <file name="TerminalTopComponent.wstcref" url="topcomponent/TerminalTopComponentWstcref.xml"/>
+                <file name="MuxableTerminalTopComponent.wstcref" url="resources/MuxableTerminalTopComponentWstcref.xml"/>
+                <file name="TerminalTopComponent.wstcref" url="resources/TerminalTopComponentWstcref.xml"/>
             </folder>
         </folder>
     </folder>

@@ -41,6 +41,7 @@ import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.modules.terminal.api.IOVisibility;
 import org.netbeans.terminal.example.Config.AllowClose;
+import org.netbeans.terminal.example.control.ControlModel;
 import org.netbeans.terminal.example.topcomponent.MuxableTerminalTopComponent;
 import org.netbeans.terminal.example.topcomponent.TerminalTopComponent;
 import org.openide.DialogDescriptor;
@@ -331,6 +332,8 @@ public final class TerminalIOProviderSupport {
 		actions = new Action[0];
 	    }
 
+	    title = "" + serialNo++ + ":" + title;
+
 	    io = iop.getIO(title, actions, ioContainer);
 
 	    if (IONotifier.isSupported(io)) {
@@ -383,6 +386,9 @@ public final class TerminalIOProviderSupport {
 	    } catch (IOException ex) {
 		Exceptions.printStackTrace(ex);
 	    }
+
+	    ControlModel.add(io, config, title);
+
 	    return io;
 	}
 
@@ -618,6 +624,8 @@ public final class TerminalIOProviderSupport {
 	    nativeProcess.destroy();
 	}
     }
+
+    private static int serialNo = 0;
 
     private final Config config;
 
