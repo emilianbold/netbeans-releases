@@ -42,6 +42,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.LinkerDescriptor;
@@ -52,6 +54,9 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.openide.util.Utilities;
 
 /**
  * @author Alexey Vladykin
@@ -75,16 +80,24 @@ public class LibraryChecker {
      */
     public static boolean isLibraryAvailable(String lib, AbstractCompiler compiler) throws IOException {
         ExecutionEnvironment execEnv = compiler.getExecutionEnvironment();
-        LinkerDescriptor linker = compiler.getCompilerSet().getCompilerFlavor().getToolchainDescriptor().getLinker();
-        String dummyFile = createDummyFile(execEnv, compiler.getKind());
+        CompilerSet compilerSet = compiler.getCompilerSet();
+        LinkerDescriptor linker = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker();
+        String dummySourceFile = createDummySourceFile(execEnv, compiler.getKind());
         try {
+            String compilerPath = compiler.getPath();
+            String dummySourcePath = dummySourceFile;
+            if (execEnv.isLocal() && Utilities.isWindows()) {
+                compilerPath = LinkSupport.resolveWindowsLink(compilerPath);
+                dummySourcePath = convertToCompilerPath(dummySourcePath, compilerSet);
+            }
+
             NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(execEnv);
-            processBuilder.setExecutable(compiler.getPath());
+            processBuilder.setExecutable(compilerPath);
             processBuilder.setArguments(
                     linker.getOutputFileFlag(),
-                    dummyFile + ".out", // NOI18N
+                    dummySourcePath + ".out", // NOI18N
                     linker.getLibraryFlag() + lib,
-                    dummyFile);
+                    dummySourcePath);
 
             NativeProcess process = processBuilder.call();
             try {
@@ -95,12 +108,17 @@ public class LibraryChecker {
                 process.destroy();
             }
         } finally {
-            CommonTasksSupport.rmFile(execEnv, dummyFile, null);
-            CommonTasksSupport.rmFile(execEnv, dummyFile + ".out", null); // NOI18N
+            if (execEnv.isLocal()) {
+                new File(dummySourceFile).delete();
+                new File(dummySourceFile + ".out").delete(); // NOI18N
+            } else {
+                CommonTasksSupport.rmFile(execEnv, dummySourceFile, null);
+                CommonTasksSupport.rmFile(execEnv, dummySourceFile + ".out", null); // NOI18N
+            }
         }
     }
 
-    private static String createDummyFile(ExecutionEnvironment execEnv, ToolKind compilerKind) throws IOException {
+    private static String createDummySourceFile(ExecutionEnvironment execEnv, ToolKind compilerKind) throws IOException {
         String ext;
         if (compilerKind == PredefinedToolKind.CCompiler) {
             ext = ".c"; // NOI18N
@@ -121,7 +139,7 @@ public class LibraryChecker {
             }
 
             if (execEnv.isLocal()) {
-                return localHostInfo.getTempDir() + '/' + dummyFile.getName();
+                return dummyFile.getCanonicalPath();
             }
 
             HostInfo remoteHostInfo = HostInfoUtils.getHostInfo(execEnv);
@@ -141,6 +159,18 @@ public class LibraryChecker {
             } else {
                 throw new IOException(ex);
             }
+        }
+    }
+
+    private static String convertToCompilerPath(String path, CompilerSet compilerSet) {
+        CompilerFlavor flavor = compilerSet.getCompilerFlavor();
+        if (flavor.isCygwinCompiler()) {
+            return WindowsSupport.getInstance().convertToCygwinPath(path);
+            // looks like MinGW gcc does not need path conversion
+            // } else if (flavor.isMinGWCompiler()) {
+            // return WindowsSupport.getInstance().convertToMSysPath(path);
+        } else {
+            return path;
         }
     }
 }
