@@ -56,14 +56,14 @@ import java.util.List;
  *
  * @author Nam Nguyen
  */
-public class TestVisitor {
+public class TestVisitor3 {
     
-    public void visit(TestComponent c) {
+    public void visit(TestComponent3 c) {
         visitChildren(c);
     }
     
-    protected void visitChildren(TestComponent c) {
-        List<TestComponent> children = c.getChildren();
+    protected void visitChildren(TestComponent3 c) {
+        List<TestComponent3> children = c.getChildren();
         for (int i=0; i<children.size(); i++) {
             children.get(i).accept(this);
         }

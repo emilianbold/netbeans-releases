@@ -45,7 +45,7 @@ import javax.swing.text.Document;
 import junit.framework.*;
 import javax.swing.undo.UndoManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.xml.xam.TestComponent.A;
+import org.netbeans.modules.xml.xam.TestComponent3.A;
 import org.netbeans.modules.xml.xdm.Util;
 
 /**
@@ -55,7 +55,7 @@ import org.netbeans.modules.xml.xdm.Util;
 public class NsPrefixCreationUndoTest extends NbTestCase {
     AbstractModelTest.PropertyListener plistener;
     AbstractModelTest.TestComponentListener listener;
-    TestModel model;
+    TestModel3 model;
     Document doc;
 
     public NsPrefixCreationUndoTest(String testName) {
@@ -103,14 +103,14 @@ public class NsPrefixCreationUndoTest extends NbTestCase {
         // Add child component to A element
         model.startTransaction();
         try {
-            TestComponent.Aa newChildAa = new TestComponent.Aa(model, 1);
+            TestComponent3.Aa newChildAa = new TestComponent3.Aa(model, 1);
             a.appendChild("setup", newChildAa);
         } finally {
             model.endTransaction();
         }
         //
-        TestComponent.Aa newAa = a.getChild(TestComponent.Aa.class);
-        assertEquals(TestComponent.NS2_URI, newAa.getNamespaceURI());
+        TestComponent3.Aa newAa = a.getChild(TestComponent3.Aa.class);
+        assertEquals(TestComponent3.NS2_URI, newAa.getNamespaceURI());
         //
         String xdmModelTextAfterAdd = Util.getXdmBasedModelText(model);
         String xamModelTextAfterAdd = Util.getXamBasedModelText(model);
@@ -164,14 +164,14 @@ public class NsPrefixCreationUndoTest extends NbTestCase {
         // Add child component to A element
         model.startTransaction();
         try {
-            TestComponent.Err newChildErr = new TestComponent.Err(model, 1);
-            a.appendChild(TestComponent.Err.LNAME, newChildErr);
+            TestComponent3.Err newChildErr = new TestComponent3.Err(model, 1);
+            a.appendChild(TestComponent3.Err.LNAME, newChildErr);
         } finally {
             model.endTransaction();
         }
         //
-        TestComponent.Err newErr = a.getChild(TestComponent.Err.class);
-        assertEquals(TestComponent.NS_ERR_URI, newErr.getNamespaceURI());
+        TestComponent3.Err newErr = a.getChild(TestComponent3.Err.class);
+        assertEquals(TestComponent3.NS_ERR_URI, newErr.getNamespaceURI());
         //
         String xdmModelTextAfterAdd = Util.getXdmBasedModelText(model);
         String xamModelTextAfterAdd = Util.getXamBasedModelText(model);

@@ -41,30 +41,41 @@
 
 package org.netbeans.modules.xml.xam;
 
-import org.netbeans.modules.xml.xam.ComponentUpdater;
+import org.netbeans.modules.xml.xam.dom.Attribute;
 
 /**
  *
  * @author Nam Nguyen
  */
-public class TestComponentUpdater implements ComponentUpdater<TestComponent> {
-    @Override
-    public void update(TestComponent target, TestComponent child, ComponentUpdater.Operation operation) {
-        update(target, child, -1, operation);
+public enum TestAttribute3 implements Attribute {
+    INDEX("index", Integer.class), 
+    VALUE("value", String.class),
+    TNS("targetNamespace", String.class),
+    NAME("name", String.class),
+    REF("ref", String.class);
+
+    private String name;
+    private Class type;
+    private Class subtype;
+    
+    TestAttribute3(String name, Class type) {
+        this.name = name;
+        this.type = type;
+    }
+    TestAttribute3(String name, Class type, Class subtype) {
+        this(name, type);
+        this.subtype = subtype;
     }
 
     @Override
-    public void update(TestComponent target, TestComponent child, int index, ComponentUpdater.Operation operation) {
-        if (operation.equals(ComponentUpdater.Operation.ADD)) {
-            //
-            // See description of method NsPrefixCreationUndoTest.testInterruptedComponentUpdater()
-            if (child instanceof TestComponent.Err) {
-                throw new RuntimeException("Test synch crashed.");
-            }
-            //
-            target.insertAtIndex("ChildComponentAdded", child, index, TestComponent.class);
-        } else {
-            target.removeChild("ChildComponentRemoved", child);
-        }
-    }
+    public String getName() { return name; }
+
+    @Override
+    public Class getType() { return type; }
+
+    @Override
+    public Class getMemberType() { return subtype; }
+
+    @Override
+    public String toString() { return name; }
 }

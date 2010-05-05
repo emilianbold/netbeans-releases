@@ -61,11 +61,11 @@ import org.w3c.dom.Element;
  *
  * @author Nam Nguyen
  */
-public class TestModel extends AbstractDocumentModel<TestComponent> implements DocumentModel<TestComponent> {
-    TestComponent testRoot;
+public class TestModel3 extends AbstractDocumentModel<TestComponent3> implements DocumentModel<TestComponent3> {
+    TestComponent3 testRoot;
     
     /** Creates a new instance of TestModel */
-    public TestModel(Document doc) {
+    public TestModel3(Document doc) {
         super(createModelSource(doc));
         try {
             super.sync();
@@ -74,7 +74,8 @@ public class TestModel extends AbstractDocumentModel<TestComponent> implements D
         }
         this.addPropertyChangeListener(new FaultGenerator());
     }
-    
+
+    @Override
     protected void setIdentifyingAttributes() {
         ElementIdentity eid = getAccess().getElementIdentity();
         eid.addIdentifier("id");
@@ -83,21 +84,24 @@ public class TestModel extends AbstractDocumentModel<TestComponent> implements D
         eid.addIdentifier("ref");
     }
 
-    public TestComponent createRootComponent(org.w3c.dom.Element root) {
-        if (TestComponent.NS_URI.equals(root.getNamespaceURI()) &&
+    @Override
+    public TestComponent3 createRootComponent(org.w3c.dom.Element root) {
+        if (TestComponent3.NS_URI.equals(root.getNamespaceURI()) &&
             "test".equals(root.getLocalName())) {
-                testRoot = new TestComponent(this, root);
+                testRoot = new TestComponent3(this, root);
         } else {
             testRoot = null;
         }
         return testRoot;
     }
-    
-    public TestComponent createComponent(TestComponent parent, org.w3c.dom.Element element) {
-        return TestComponent.createComponent(this, parent, element);
+
+    @Override
+    public TestComponent3 createComponent(TestComponent3 parent, org.w3c.dom.Element element) {
+        return TestComponent3.createComponent(this, parent, element);
     }
-    
-    public TestComponent getRootComponent() {
+
+    @Override
+    public TestComponent3 getRootComponent() {
         return testRoot;
     }
     
@@ -105,18 +109,22 @@ public class TestModel extends AbstractDocumentModel<TestComponent> implements D
     public void injectFaultInSyncUpdater() {
         faultInSyncUpdater = true;
     }
-    protected ComponentUpdater<TestComponent> getComponentUpdater() {
+
+    @Override
+    protected ComponentUpdater<TestComponent3> getComponentUpdater() {
         if (faultInSyncUpdater) {
             faultInSyncUpdater = false;
             Object npe = null; npe.getClass();
         }
-        return new TestComponentUpdater();
+        return new TestComponentUpdater3();
     }
     
     private boolean faultInFindComponent = false;
     public void injectFaultInFindComponent() {
         faultInFindComponent = true;
     }
+
+    @Override
     public DocumentComponent findComponent(List<Element> pathFromRoot) {
         if (faultInFindComponent) {
             faultInFindComponent = false;
@@ -131,6 +139,7 @@ public class TestModel extends AbstractDocumentModel<TestComponent> implements D
         faultInEventFiring = true;
     }
     private class FaultGenerator implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (faultInEventFiring) {
                 faultInEventFiring = false;
@@ -145,58 +154,61 @@ public class TestModel extends AbstractDocumentModel<TestComponent> implements D
     }
     
     private static Set<QName> qnames = null;
+
+    @Override
     public Set<QName> getQNames() {
         if (qnames == null) {
             qnames = new HashSet<QName>();
-            qnames.add(TestComponent.A.QNAME);
-            qnames.add(TestComponent.Aa.QNAME);
-            qnames.add(TestComponent.B.QNAME);
-            qnames.add(TestComponent.C.QNAME);
-            qnames.add(TestComponent.D.QNAME);
-            qnames.add(TestComponent.E.QNAME);
-            qnames.add(new QName(TestComponent.NS_URI, "test"));
-            qnames.add(TestComponent.Err.QNAME);
+            qnames.add(TestComponent3.A.QNAME);
+            qnames.add(TestComponent3.Aa.QNAME);
+            qnames.add(TestComponent3.B.QNAME);
+            qnames.add(TestComponent3.C.QNAME);
+            qnames.add(TestComponent3.D.QNAME);
+            qnames.add(TestComponent3.E.QNAME);
+            qnames.add(new QName(TestComponent3.NS_URI, "test"));
+            qnames.add(TestComponent3.Err.QNAME);
         }
         return qnames;
     }
     
-    public ComponentFactory<TestComponent> getFactory() {
-        return new ComponentFactory<TestComponent>() {
-            public TestComponent create(Element child, TestComponent parent) {
-                return TestModel.this.createComponent(parent, child);
+    public ComponentFactory<TestComponent3> getFactory() {
+        return new ComponentFactory<TestComponent3>() {
+            @Override
+            public TestComponent3 create(Element child, TestComponent3 parent) {
+                return TestModel3.this.createComponent(parent, child);
             }
         };
     }
     
-    public TestComponent.A createA(TestComponent parent) {
-        QName q = TestComponent.A.QNAME;
+    public TestComponent3.A createA(TestComponent3 parent) {
+        QName q = TestComponent3.A.QNAME;
         Element e = this.getDocument().createElementNS(q.getNamespaceURI(), q.getLocalPart());
-        return (TestComponent.A) TestComponent.createComponent(this, parent, e);
+        return (TestComponent3.A) TestComponent3.createComponent(this, parent, e);
     }
-    public TestComponent.Aa createAa(TestComponent parent) {
-        QName q = TestComponent.Aa.QNAME;
+    public TestComponent3.Aa createAa(TestComponent3 parent) {
+        QName q = TestComponent3.Aa.QNAME;
         Element e = this.getDocument().createElementNS(q.getNamespaceURI(), q.getLocalPart());
-        return (TestComponent.Aa) TestComponent.createComponent(this, parent, e);
+        return (TestComponent3.Aa) TestComponent3.createComponent(this, parent, e);
     }
-    public TestComponent.B createB(TestComponent parent) {
-        QName q = TestComponent.B.QNAME;
+    public TestComponent3.B createB(TestComponent3 parent) {
+        QName q = TestComponent3.B.QNAME;
         Element e = this.getDocument().createElementNS(q.getNamespaceURI(), q.getLocalPart());
-        return (TestComponent.B) TestComponent.createComponent(this, parent, e);
+        return (TestComponent3.B) TestComponent3.createComponent(this, parent, e);
     }
-    public TestComponent.C createC(TestComponent parent) {
-        QName q = TestComponent.C.QNAME;
+    public TestComponent3.C createC(TestComponent3 parent) {
+        QName q = TestComponent3.C.QNAME;
         Element e = this.getDocument().createElementNS(q.getNamespaceURI(), q.getLocalPart());
-        return (TestComponent.C) TestComponent.createComponent(this, parent, e);
+        return (TestComponent3.C) TestComponent3.createComponent(this, parent, e);
     }
-    public TestComponent.D createD(TestComponent parent) {
-        QName q = TestComponent.D.QNAME;
+    public TestComponent3.D createD(TestComponent3 parent) {
+        QName q = TestComponent3.D.QNAME;
         Element e = this.getDocument().createElementNS(q.getNamespaceURI(), q.getLocalPart());
-        return (TestComponent.D) TestComponent.createComponent(this, parent, e);
+        return (TestComponent3.D) TestComponent3.createComponent(this, parent, e);
     }
 
-    public TestComponent.Err createErr(TestComponent parent) {
-        QName q = TestComponent.Err.QNAME;
+    public TestComponent3.Err createErr(TestComponent3 parent) {
+        QName q = TestComponent3.Err.QNAME;
         Element e = this.getDocument().createElementNS(q.getNamespaceURI(), q.getLocalPart());
-        return (TestComponent.Err) TestComponent.createComponent(this, parent, e);
+        return (TestComponent3.Err) TestComponent3.createComponent(this, parent, e);
     }
 }
