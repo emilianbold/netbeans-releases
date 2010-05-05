@@ -43,15 +43,18 @@ package org.netbeans.modules.websvc.core.jaxws.nodes;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.prefs.Preferences;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Milan Kuchtiak
  */
 public class RefreshClientDialog extends javax.swing.JPanel {
+    private static final String DOWNLOAD_WSDL_ON_REFRESH = "download_client_wsdl_on_refresh"; //NOI18N
     
     static final String CLOSE = "close";
     static final String NO_DOWNLOAD = "no_download";
@@ -62,14 +65,24 @@ public class RefreshClientDialog extends javax.swing.JPanel {
     private RefreshClientDialog(String url) {
         this.url=url;
         initComponents();
+        final Preferences prefs = NbPreferences.forModule(RefreshClientDialog.class);
+        if (prefs != null) {
+            downloadWsdlCheckBox.setSelected(prefs.getBoolean(DOWNLOAD_WSDL_ON_REFRESH, false));
+        }
         jTextField1.setText(url);
         downloadWsdlCheckBox.addItemListener(new ItemListener() {
 
+            @Override
             public void itemStateChanged(ItemEvent e) {
-                if (((javax.swing.JCheckBox)e.getSource()).isSelected())
+                boolean isSelected = ((javax.swing.JCheckBox)e.getSource()).isSelected();
+                if (isSelected) {
                     jTextField1.setEditable(true);
-                else 
+                } else {
                     jTextField1.setEditable(false);
+                }
+                if (prefs != null) {
+                    prefs.putBoolean(DOWNLOAD_WSDL_ON_REFRESH, isSelected);
+                }
             }
             
         });
