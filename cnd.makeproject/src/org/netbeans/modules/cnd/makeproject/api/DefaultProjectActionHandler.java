@@ -471,7 +471,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                                 listener.executionFinished(process.exitValue());
                             }
                             
-                            StatusDisplayer.getDefault().setStatusText(MessageFormat.format("MSG_TERMINATED", actionName)); // NOI18N
+                            StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString("MSG_TERMINATED"), actionName)); // NOI18N
                         }
                     };
                     break;
