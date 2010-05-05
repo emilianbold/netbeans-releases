@@ -58,6 +58,7 @@ import org.w3c.dom.NodeList;
 public class TestComponent extends AbstractDocumentComponent<TestComponent> implements NamedReferenceable<TestComponent> {
     public static String NS_URI = "http://www.test.com/TestModel";
     public static String NS2_URI = "http://www.test2.com/TestModel";
+    public static String NS_ERR_URI = "http://www.test2.com/TestModel/Err";
     
     public TestComponent(TestModel model, org.w3c.dom.Element e) {
         super(model, e);
@@ -119,6 +120,8 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
             return new TestComponent.D(model, e);
         } else if (e.getLocalName().equals("e") && NS_URI.equals(namespace)) {
             return new TestComponent.E(model, e);
+        } else if (e.getLocalName().equals(Err.LNAME) && NS_ERR_URI.equals(namespace)) {
+            return new TestComponent.Err(model, e);
         } else {
             return null;
             //throw new RuntimeException("unsupported element type "+ e.getNodeName());
@@ -238,6 +241,40 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
         public String getValue() {
             String retValue;
             
+            retValue = super.getValue();
+            return retValue;
+        }
+
+        @Override
+        public String getName() {
+            return super.getAttribute(TestAttribute.NAME);
+        }
+
+        public void setName(String v) {
+            setAttribute(TestAttribute.NAME.getName(), TestAttribute.NAME, v);
+        }
+    }
+
+    /**
+     * Special component for testing error processing in ComponentUpdater. 
+     */
+    public static class Err extends TestComponent {
+        public static final String LNAME = "err";
+        public static final QName QNAME = new QName(NS_ERR_URI, LNAME);
+        public Err(TestModel model, int i) {
+            super(model, LNAME, NS_ERR_URI, i);
+        }
+        public Err(TestModel model, Element e) {
+            super(model, e);
+        }
+
+        @Override
+        public QName getQName() { return QNAME; }
+
+        @Override
+        public String getValue() {
+            String retValue;
+
             retValue = super.getValue();
             return retValue;
         }
