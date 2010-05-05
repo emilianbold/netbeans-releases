@@ -1100,4 +1100,24 @@ public class ClassPathProviderImplTest extends TestBase {
         assertTrue(boot.toString(), Arrays.asList(boot.getRoots()).contains(FileUtil.getArchiveRoot(xtra)));
     }
 
+    public void testSourcePathForWrappedJarSource() throws Exception { // #176983
+        NbModuleProject p = generateStandaloneModule("prj");
+        String relpath = "release/sources/x.zip";
+        FileObject srcZip = TestFileUtils.writeZipFile(p.getProjectDirectory(), relpath, "pkg/C.java:package pkg; public class C {}");
+        EditableProperties ep = p.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.put(NbModuleProject.SOURCE_START + "x.jar", relpath);
+        // could also create a <class-path-extension> named release/modules/ext/x.jar, but don't have to
+        p.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ProjectManager.getDefault().saveProject(p);
+        FileObject srcZipRoot = FileUtil.getArchiveRoot(srcZip);
+        ClassPath cp = ClassPath.getClassPath(srcZipRoot, ClassPath.SOURCE);
+        assertNotNull(cp);
+        assertEquals(Collections.singletonList(srcZipRoot), Arrays.asList(cp.getRoots()));
+        /* Currently fails; maybe not worth implementing:
+        assertEquals(cp, ClassPath.getClassPath(srcZipRoot.getFileObject("pkg/C.java"), ClassPath.SOURCE));
+         */
+        assertEquals(Collections.singletonList(srcZipRoot),
+                Arrays.asList(ClassPath.getClassPath(srcZipRoot.getFileObject("pkg/C.java"), ClassPath.SOURCE).getRoots()));
+    }
+
 }

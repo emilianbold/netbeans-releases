@@ -798,7 +798,8 @@ made subject to such option by the copyright holder.
                 </java>
             </sequential>
         </macrodef>
-        <tjava test.type="unit"/>
+        <property name="test.type" value="unit"/> <!-- compatibility -->
+        <tjava test.type="${test.type}"/>
     </target>
 
     <target name="do-debug-test-main" depends="test-init">
