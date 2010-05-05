@@ -48,6 +48,9 @@ package org.netbeans.modules.subversion.client;
 import java.awt.Color;
 import java.awt.Font;
 import javax.swing.JLabel;
+import javax.swing.UIManager;
+import javax.swing.text.Document;
+import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import org.openide.util.Utilities;
@@ -68,16 +71,13 @@ public class MissingClientPanel extends javax.swing.JPanel {
         }
         String text = org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.textPane.text");
         textPane.setText(text);
-        HTMLEditorKit kit = (HTMLEditorKit) textPane.getEditorKit();
-        StyleSheet css = kit.getStyleSheet();
-        if (css.getStyleSheets() == null) {
-            StyleSheet css2 = new StyleSheet();
-            Font f = new JLabel().getFont();
-            int size = f.getSize();
-            css2.addRule(new StringBuffer("body { font-size: ").append(size) // NOI18N
-                    .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
-            css2.addStyleSheet(css);
-            kit.setStyleSheet(css2);
+        Document doc = textPane.getDocument();
+        if (doc instanceof HTMLDocument) { // Issue 185505
+            HTMLDocument htmlDoc = (HTMLDocument)doc;
+            Font font = UIManager.getFont("Label.font"); // NOI18N
+            String bodyRule = "body { font-family: " + font.getFamily() + "; " // NOI18N
+                + "font-size: " + font.getSize() + "pt; }"; // NOI18N
+            htmlDoc.getStyleSheet().addRule(bodyRule);
         }
         textPane.setOpaque(false);
         textPane.setBackground(new java.awt.Color(0,0,0,0)); // windows and nimbus workaround see issue 145826
