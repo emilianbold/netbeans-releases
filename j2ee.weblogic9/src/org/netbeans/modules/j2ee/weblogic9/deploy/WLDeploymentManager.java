@@ -58,6 +58,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
@@ -98,8 +100,8 @@ public class WLDeploymentManager implements DeploymentManager {
     private final String port;
     private volatile boolean disconnected;
 
-    /* GuardedBy("this") */
-    private WLClassLoader classLoader;
+    /* GuardedBy(WLDeploymentManager.class) */
+    private static Map<String, WLClassLoader> classLoaderCache = new WeakHashMap<String, WLClassLoader>();
 
     /* GuardedBy("this") */
     private InstanceProperties instanceProperties;
@@ -145,12 +147,15 @@ public class WLDeploymentManager implements DeploymentManager {
         return instanceProperties;
     }
 
-    private synchronized ClassLoader getWLClassLoader(String serverRoot) {
+    private static synchronized ClassLoader getWLClassLoader(String uri, String serverRoot) {
+        WLClassLoader classLoader = classLoaderCache.get(uri);
+
         if (classLoader == null) {
             try {
                 URL[] urls = new URL[] {new File(serverRoot + "/server/lib/weblogic.jar").toURI().toURL()}; // NOI18N
                 classLoader = new WLClassLoader(urls, WLDeploymentManager.class.getClassLoader());
-            } catch (Exception e) {
+                classLoaderCache.put(uri, classLoader);
+            } catch (MalformedURLException e) {
                 LOGGER.log(Level.WARNING, null, e);
             }
         }
@@ -167,7 +172,7 @@ public class WLDeploymentManager implements DeploymentManager {
             serverRoot = WLPluginProperties.getInstance().getInstallLocation();
         }
 
-        Thread.currentThread().setContextClassLoader(getWLClassLoader(serverRoot));
+        Thread.currentThread().setContextClassLoader(getWLClassLoader(getUri(), serverRoot));
         try {
             DeploymentManager manager = getDeploymentManager(
                     getInstanceProperties().getProperty(InstanceProperties.USERNAME_ATTR),
