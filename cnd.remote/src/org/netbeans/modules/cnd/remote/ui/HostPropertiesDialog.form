@@ -20,8 +20,11 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="connectionPanel" alignment="0" pref="459" max="32767" attributes="2"/>
-                  <Component id="errorLabel" alignment="0" pref="459" max="32767" attributes="0"/>
                   <Component id="serverRecordPanel" alignment="0" max="32767" attributes="2"/>
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+                      <Component id="errorLabel" pref="447" max="32767" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>

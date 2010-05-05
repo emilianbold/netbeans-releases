@@ -85,11 +85,11 @@ public class LibraryCheckerTest extends RemoteTestBase {
         assertFalse(compilerSetManager.isPending());
         for (CompilerSet compilerSet : compilerSetManager.getCompilerSets()) {
             AbstractCompiler cCompiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCompiler);
-            assertTrue(LibraryChecker.isLibraryAvailable("rt", cCompiler));
+            assertTrue(LibraryChecker.isLibraryAvailable("m", cCompiler));
             assertFalse(LibraryChecker.isLibraryAvailable("foo", cCompiler));
 
             AbstractCompiler cppCompiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
-            assertTrue(LibraryChecker.isLibraryAvailable("rt", cppCompiler));
+            assertTrue(LibraryChecker.isLibraryAvailable("m", cppCompiler));
             assertFalse(LibraryChecker.isLibraryAvailable("foo", cppCompiler));
         }
     }

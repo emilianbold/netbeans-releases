@@ -42,15 +42,7 @@ package org.netbeans.modules.nativeexecution.api.util;
  *
  * @author ak119685
  */
-public interface Validateable {
+public interface ValidatablePanelListener {
 
-    public void addValidationListener(ValidationListener listener);
-
-    public void removeValidationListener(ValidationListener listener);
-
-    public boolean hasProblem();
-
-    public String getProblem();
-
-    public void applyChanges();
+    public void stateChanged(ValidateablePanel src);
 }

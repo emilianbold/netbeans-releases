@@ -89,15 +89,11 @@ public final class Authentication {
     }
 
     private Authentication(ExecutionEnvironment env) {
-        pref_key = Authentication.class.getName() + ExecutionEnvironmentFactory.toUniqueID(env);
+        pref_key = env == null ? null : Authentication.class.getName() + '_' + ExecutionEnvironmentFactory.toUniqueID(env);
         this.env = env;
     }
 
     public static Authentication getFor(ExecutionEnvironment env) {
-        if (env == null) {
-            throw new NullPointerException();
-        }
-
         Authentication result = new Authentication(env);
         result.restore();
 
@@ -166,6 +162,10 @@ public final class Authentication {
     }
 
     public void store() {
+        if (env == null) {
+            return;
+        }
+
         if (type == Type.SSH_KEY) {
             prefs.put(pref_key, ssh_key);
             last_ssh_key = ssh_key;
@@ -175,6 +175,10 @@ public final class Authentication {
     }
 
     private void restore() {
+        if (env == null) {
+            return;
+        }
+
         String typeOrKey = prefs.get(pref_key, Type.UNDEFINED.name());
 
         if (Type.UNDEFINED.name().equals(typeOrKey)) {
@@ -197,10 +201,16 @@ public final class Authentication {
     }
 
     public void remove() {
-        prefs.remove(pref_key);
+        if (pref_key != null) {
+            prefs.remove(pref_key);
+        }
     }
 
     public void apply() {
+        if (env == null) {
+            return;
+        }
+
         store();
         ConnectionManagerAccessor access = ConnectionManagerAccessor.getDefault();
         access.changeAuth(env, this);

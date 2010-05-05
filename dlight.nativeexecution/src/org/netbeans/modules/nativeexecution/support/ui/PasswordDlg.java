@@ -56,11 +56,11 @@ public class PasswordDlg extends javax.swing.JPanel {
     /** Creates new form PasswordPanel */
     public PasswordDlg() {
         initComponents();
-        // FIXUP for Mac and Ubuntu
-        tfUser.setBackground(getBackground());
-        tfUser.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        tfHost.setBackground(getBackground());
-        tfHost.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+//        // FIXUP for Mac and Ubuntu
+//        tfUser.setBackground(getBackground());
+//        tfUser.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+//        tfHost.setBackground(getBackground());
+//        tfHost.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
     }
 
     public boolean askPassword(ExecutionEnvironment execEnv) {

@@ -50,11 +50,9 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
-import org.netbeans.modules.nativeexecution.api.util.Validateable;
-import org.netbeans.modules.nativeexecution.api.util.ValidationListener;
+import org.netbeans.modules.nativeexecution.api.util.ValidateablePanel;
 import org.netbeans.modules.nativeexecution.support.Authentication;
 import org.netbeans.modules.nativeexecution.support.SSHKeyFileChooser;
-import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -63,11 +61,10 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author ak119685
  */
-public class AuthenticationSettingsPanel extends javax.swing.JPanel implements Validateable {
+public class AuthenticationSettingsPanel extends ValidateablePanel {
 
     private final ExecutionEnvironment env;
     private final Task validationTask;
-    private final ChangeSupport validationSupport;
     private String problem;
     private final Authentication auth;
 
@@ -77,8 +74,14 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
         initComponents();
 
         pwdClearButton.setVisible(showClearPwdButton);
-        loginLabel.setText(env.getUser() + "@" + env.getHost() + // NOI18N
-                ((env.getSSHPort() == 22) ? "" : env.getSSHPort())); // NOI18N
+        pwdStoredLbl.setVisible(showClearPwdButton);
+
+        if (env != null) {
+            loginLabel.setText(env.getUser() + "@" + env.getHost() + // NOI18N
+                    ((env.getSSHPort() == 22) ? "" : env.getSSHPort())); // NOI18N
+        } else {
+            loginPanel.setVisible(false);
+        }
 
         if (auth.getType() == Authentication.Type.SSH_KEY) {
             keyRadioButton.setSelected(true);
@@ -90,9 +93,11 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
 
         keyFld.setText(auth.getKey());
 
-        validationSupport = new ChangeSupport(this);
-
-        pwdClearButton.setEnabled(PasswordManager.getInstance().isRememberPassword(env));
+        if (env != null) {
+            boolean stored = PasswordManager.getInstance().isRememberPassword(env);
+            pwdClearButton.setEnabled(stored);
+            pwdStoredLbl.setVisible(stored);
+        }
 
         validationTask = new RequestProcessor("", 1).create(new ValidationTask(), true);
 
@@ -117,6 +122,17 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
         enableControls();
     }
 
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        pwdRadioButton.setEnabled(enabled);
+        keyRadioButton.setEnabled(enabled);
+        if (keyRadioButton.isSelected()) {
+            keyFld.setEnabled(enabled);
+            keyBrowseButton.setEnabled(enabled);
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -130,11 +146,12 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
         loginPanel = new javax.swing.JPanel();
         loginLabel = new javax.swing.JLabel();
         authPanel = new javax.swing.JPanel();
-        keyRadioButton = new javax.swing.JRadioButton();
         pwdRadioButton = new javax.swing.JRadioButton();
+        pwdStoredLbl = new javax.swing.JLabel();
+        pwdClearButton = new javax.swing.JButton();
+        keyRadioButton = new javax.swing.JRadioButton();
         keyFld = new javax.swing.JTextField();
         keyBrowseButton = new javax.swing.JButton();
-        pwdClearButton = new javax.swing.JButton();
 
         loginPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.loginPanel.border.title"))); // NOI18N
 
@@ -158,14 +175,6 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
 
         authPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.authPanel.border.title"))); // NOI18N
 
-        buttonGroup1.add(keyRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(keyRadioButton, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.keyRadioButton.text")); // NOI18N
-        keyRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                keyRadioButtonActionPerformed(evt);
-            }
-        });
-
         buttonGroup1.add(pwdRadioButton);
         pwdRadioButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(pwdRadioButton, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.pwdRadioButton.text")); // NOI18N
@@ -175,17 +184,27 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(keyBrowseButton, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.keyBrowseButton.text_1")); // NOI18N
-        keyBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                keyBrowseButtonActionPerformed(evt);
-            }
-        });
+        pwdStoredLbl.setText(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.pwdStoredLbl.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(pwdClearButton, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.pwdClearButton.text_1")); // NOI18N
         pwdClearButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 pwdClearButtonActionPerformed(evt);
+            }
+        });
+
+        buttonGroup1.add(keyRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(keyRadioButton, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.keyRadioButton.text")); // NOI18N
+        keyRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                keyRadioButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(keyBrowseButton, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.keyBrowseButton.text_1")); // NOI18N
+        keyBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                keyBrowseButtonActionPerformed(evt);
             }
         });
 
@@ -199,7 +218,9 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
                     .addComponent(pwdRadioButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(keyRadioButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(keyFld, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
+                .addGroup(authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pwdStoredLbl, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
+                    .addComponent(keyFld, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(pwdClearButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -211,7 +232,8 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
             .addGroup(authPanelLayout.createSequentialGroup()
                 .addGroup(authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(pwdRadioButton)
-                    .addComponent(pwdClearButton))
+                    .addComponent(pwdClearButton)
+                    .addComponent(pwdStoredLbl))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(keyRadioButton)
@@ -243,6 +265,7 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
 
     private void pwdClearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pwdClearButtonActionPerformed
         PasswordManager.getInstance().forceClearPassword(env);
+        pwdStoredLbl.setVisible(false);
         pwdClearButton.setEnabled(false);
     }//GEN-LAST:event_pwdClearButtonActionPerformed
 
@@ -268,22 +291,13 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
     private javax.swing.JPanel loginPanel;
     private javax.swing.JButton pwdClearButton;
     private javax.swing.JRadioButton pwdRadioButton;
+    private javax.swing.JLabel pwdStoredLbl;
     // End of variables declaration//GEN-END:variables
 
     private void enableControls() {
         keyBrowseButton.setEnabled(keyRadioButton.isSelected());
         keyFld.setEnabled(keyRadioButton.isSelected());
         validationTask.schedule(0);
-    }
-
-    @Override
-    public void addValidationListener(ValidationListener listener) {
-        validationSupport.addChangeListener(listener);
-    }
-
-    @Override
-    public void removeValidationListener(ValidationListener listener) {
-        validationSupport.removeChangeListener(listener);
     }
 
     @Override
@@ -297,10 +311,23 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
     }
 
     @Override
-    public void applyChanges() {
-        auth.store();
+    public void applyChanges(Object customData) {
         ConnectionManagerAccessor access = ConnectionManagerAccessor.getDefault();
-        access.changeAuth(env, auth);
+
+        if (customData instanceof ExecutionEnvironment) {
+            ExecutionEnvironment e = (ExecutionEnvironment) customData;
+            Authentication a = Authentication.getFor(e);
+            if (auth.getType() == Authentication.Type.SSH_KEY) {
+                a.setSSHKey(auth.getKey());
+            } else {
+                a.setPassword();
+            }
+            a.store();
+            access.changeAuth(e, a);
+        } else if (env != null) {
+            auth.store();
+            access.changeAuth(env, auth);
+        }
     }
 
     private class ValidationTask implements Runnable {
@@ -308,7 +335,7 @@ public class AuthenticationSettingsPanel extends javax.swing.JPanel implements V
         @Override
         public void run() {
             validate();
-            validationSupport.fireChange();
+            fireChange();
         }
 
         private boolean validate() {
