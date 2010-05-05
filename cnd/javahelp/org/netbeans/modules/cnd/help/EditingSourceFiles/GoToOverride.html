@@ -6,19 +6,27 @@ Use is subject to license terms.
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Going to a Declaration</title>
+<title>Going to an Overridden or Overriding Method</title>
 <link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2>Going to a Declaration</h2>
-<p><small> <a href="#seealso">See Also</a></small></p> 
-<p><b>To jump to the declaration for the class, function, or variable 
-the cursor is on:</b></p>
+<h2>Going to an Overridden or Overriding Method</h2>
+<p><small> <a href="#seealso">See Also</a></small></p>
+If a method overrides a parent method, an Overrides annotation is displayed next to its declaration.
+If a method is overridden by one or more descendent classes, and Overridden annotation is displayed.
+<p><b>To jump to the declaration of the overridden or overriding parent method:</b></p>
 <ul>
-    <li>Right-click and choose Navigate &gt; Go To Declaration.</li>
+    <li>Click the annotation to go to the declaration of the specified method.</li>
+    <li>For methods that are overridden by multiple methods, the annotation shows all
+        the overriding methods. Click the one you want.</li>
 </ul>
-<p>If a C++ function is overridden by other methods, you can go to the declaration
-of the overriding methods. See <a href="GoToOverride.html">Going to an Overridden or Overriding Method</a>.</p>
+<br><br>
+<p><b>To go to the implementation of multiple overridden methods:</b></p>
+<ul>
+    <li>Press Ctrl+Alt and click the method.</li>
+    <li>Choose from the popup menu which overridden methods you want to navigate to.</li>
+</ul>
+
 <table summary="related topics">
 <tr valign="top">
 <th colspan=2 align=left><a name="seealso">See Also</a></th>
