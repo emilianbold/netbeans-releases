@@ -53,7 +53,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -100,6 +102,7 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
     /** Creates new form AddCompilerSetPanel */
     public AddCompilerSetPanel(CompilerSetManager csm) {
         initComponents();
+        lbError.setText(""); //NOI18N // in design mode the text present just to be visible :)
         defaultLbErrColor = lbError.getForeground();
         this.csm = (CompilerSetManagerImpl) csm;
         this.local = ((CompilerSetManagerImpl)csm).getExecutionEnvironment().isLocal();
@@ -121,6 +124,9 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
 
     public static CompilerSet invokeMe(CompilerSetManagerImpl csm) {
         AddCompilerSetPanel panel = new AddCompilerSetPanel(csm);
+//        JPanel wrapper = new JPanel();
+//        wrapper.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+//        wrapper.add(panel);
         ExecutionEnvironment execEnv = csm.getExecutionEnvironment();
         String title = execEnv.isRemote()
                 ? NbBundle.getMessage(AddCompilerSetPanel.class, "NEW_TOOL_SET_TITLE_REMOTE", ExecutionEnvironmentFactory.toUniqueID(execEnv)) // NOI18N
@@ -254,6 +260,38 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
         }
     }
 
+    private void updateBaseDirectory() {
+        String seed = null;
+        if (tfBaseDirectory.getText().length() > 0) {
+            seed = tfBaseDirectory.getText();
+        } else if (FileChooser.getCurrectChooserFile() != null) {
+            seed = FileChooser.getCurrectChooserFile().getPath();
+        } else {
+            ExecutionEnvironment env = csm.getExecutionEnvironment();
+            if (env.isLocal()){
+                seed = System.getProperty("user.home"); // NOI18N
+            }else if (!HostInfoUtils.isHostInfoAvailable(env) && !ConnectionManager.getInstance().isConnectedTo(env)){
+                seed = null;
+            }else{
+                    try {
+                        seed = HostInfoUtils.getHostInfo(env).getUserDir();
+                    } catch (IOException ex) {
+                    } catch (CancellationException ex) {
+                    }
+            }
+        }
+        JFileChooser fileChooser = new FileChooserBuilder(csm.getExecutionEnvironment()).createFileChooser(seed);
+        fileChooser.setDialogTitle(NbBundle.getMessage(getClass(), "SELECT_BASE_DIRECTORY_TITLE"));
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int ret = fileChooser.showOpenDialog(this);
+        if (ret == JFileChooser.CANCEL_OPTION) {
+            return;
+        }
+        String dirPath = fileChooser.getSelectedFile().getPath();
+        tfBaseDirectory.setText(dirPath);
+        //updateDataBaseDir();
+    }
+
     private void updateDataFamily() {
         CompilerFlavor flavor = (CompilerFlavor) cbFamily.getSelectedItem();
         int n = 0;
@@ -372,11 +410,11 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
         infoLabel = new javax.swing.JLabel();
         lbBaseDirectory = new javax.swing.JLabel();
         tfName = new javax.swing.JTextField();
-        btBaseDirectory = new javax.swing.JButton();
         lbFamily = new javax.swing.JLabel();
         cbFamily = new javax.swing.JComboBox();
         lbName = new javax.swing.JLabel();
         tfBaseDirectory = new javax.swing.JTextField();
+        btBaseDirectory = new javax.swing.JButton();
         lbError = new javax.swing.JLabel();
 
         infoLabel.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.taInfo.text")); // NOI18N
@@ -386,14 +424,6 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
         lbBaseDirectory.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.lbBaseDirectory.text")); // NOI18N
 
         tfName.setColumns(20);
-
-        btBaseDirectory.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("btBrowse").charAt(0));
-        btBaseDirectory.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.btBaseDirectory.text")); // NOI18N
-        btBaseDirectory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btBaseDirectoryActionPerformed(evt);
-            }
-        });
 
         lbFamily.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("lbFamily_MN").charAt(0));
         lbFamily.setLabelFor(cbFamily);
@@ -413,6 +443,14 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
 
         tfBaseDirectory.setColumns(40);
 
+        btBaseDirectory.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("btBrowse").charAt(0));
+        btBaseDirectory.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.btBaseDirectory.text")); // NOI18N
+        btBaseDirectory.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btBaseDirectoryActionPerformed(evt);
+            }
+        });
+
         lbError.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.lbError.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -420,43 +458,37 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(29, 29, 29)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lbError, javax.swing.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(16, 16, 16)
-                        .addComponent(lbBaseDirectory))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(lbFamily))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(lbName)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(tfBaseDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, 287, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btBaseDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(cbFamily, javax.swing.GroupLayout.PREFERRED_SIZE, 287, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tfName, javax.swing.GroupLayout.PREFERRED_SIZE, 287, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(16, 16, 16)
-                .addComponent(infoLabel)
-                .addGap(120, 120, 120))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(lbError, javax.swing.GroupLayout.DEFAULT_SIZE, 595, Short.MAX_VALUE)
-                .addContainerGap())
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(infoLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 140, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(lbFamily)
+                                    .addComponent(lbBaseDirectory)
+                                    .addComponent(lbName))
+                                .addGap(91, 91, 91)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(tfName)
+                                    .addComponent(cbFamily, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(tfBaseDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, 287, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(btBaseDirectory)))
+                        .addContainerGap(18, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(25, 25, 25)
                 .addComponent(infoLabel)
-                .addGap(23, 23, 23)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lbBaseDirectory)
-                    .addComponent(btBaseDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btBaseDirectory)
                     .addComponent(tfBaseDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -464,55 +496,26 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
                     .addComponent(cbFamily, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tfName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lbName))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
-                .addComponent(lbError)
-                .addContainerGap())
+                    .addComponent(lbName)
+                    .addComponent(tfName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(lbError, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         tfName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.tfName.AccessibleContext.accessibleDescription")); // NOI18N
-        btBaseDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.btBaseDirectory.AccessibleContext.accessibleDescription")); // NOI18N
         tfBaseDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.tfBaseDirectory.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
-    String seed = null;
-    if (tfBaseDirectory.getText().length() > 0) {
-        seed = tfBaseDirectory.getText();
-    } else if (FileChooser.getCurrectChooserFile() != null) {
-        seed = FileChooser.getCurrectChooserFile().getPath();
-    } else {
-        ExecutionEnvironment env = csm.getExecutionEnvironment();
-        if (env.isLocal()){
-            seed = System.getProperty("user.home"); // NOI18N
-        }else if (!HostInfoUtils.isHostInfoAvailable(env) && !ConnectionManager.getInstance().isConnectedTo(env)){
-            seed = null;
-        }else{
-                try {
-                    seed = HostInfoUtils.getHostInfo(env).getUserDir();
-                } catch (IOException ex) {
-                } catch (CancellationException ex) {
-                }
-        }
-    }
-    JFileChooser fileChooser = new FileChooserBuilder(csm.getExecutionEnvironment()).createFileChooser(seed);
-    fileChooser.setDialogTitle(NbBundle.getMessage(getClass(), "SELECT_BASE_DIRECTORY_TITLE"));
-    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-    int ret = fileChooser.showOpenDialog(this);
-    if (ret == JFileChooser.CANCEL_OPTION) {
-        return;
-    }
-    String dirPath = fileChooser.getSelectedFile().getPath();
-    tfBaseDirectory.setText(dirPath);
-    //updateDataBaseDir();
-}//GEN-LAST:event_btBaseDirectoryActionPerformed
-
 private void cbFamilyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFamilyActionPerformed
     updateDataFamily();
 }//GEN-LAST:event_cbFamilyActionPerformed
+
+private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
+    updateBaseDirectory();
+}//GEN-LAST:event_btBaseDirectoryActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btBaseDirectory;
