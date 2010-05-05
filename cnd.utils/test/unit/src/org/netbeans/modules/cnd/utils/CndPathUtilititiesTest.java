@@ -82,6 +82,19 @@ public class CndPathUtilititiesTest {
     }
 
     @Test
+    public void test185323() {
+        assertEquals("../b", // NOI18N
+                     normalize(CndPathUtilitities.toRelativePath("\\C:\\a", "C:\\b"))); // NOI18N
+        assertEquals("../home2", // NOI18N
+                     normalize(CndPathUtilitities.toRelativePath("/export/home1", "/export/home2"))); // NOI18N
+        assertEquals("..", // NOI18N
+                     normalize(CndPathUtilitities.toRelativePath("\\C:\\a", "C:"))); // NOI18N
+        assertEquals("..", // NOI18N
+                     normalize(CndPathUtilitities.toRelativePath("/export/home1", "/export"))); // NOI18N
+    }
+
+
+    @Test
     public void testToRelativePath() {
         assertEquals("D:\\tmp\\test.cpp", // NOI18N
                      CndPathUtilitities.toRelativePath("C:\\tmp", "D:\\tmp\\test.cpp")); // NOI18N
@@ -101,6 +114,10 @@ public class CndPathUtilititiesTest {
                      normalize(CndPathUtilitities.toRelativePath("/tmp/dir/1/2/3", "/tmp/dir/3/2/1/test.cpp"))); // NOI18N
         assertEquals(".", // NOI18N
                      CndPathUtilitities.toRelativePath("C:\\", "C:\\")); // NOI18N
+        assertEquals("D:\\", // NOI18N
+                     CndPathUtilitities.toRelativePath("C:\\", "D:\\")); // NOI18N
+        assertEquals("D:\\", // NOI18N
+                     CndPathUtilitities.toRelativePath("C:\\", "D:\\")); // NOI18N
         assertEquals(".", // NOI18N
                      CndPathUtilitities.toRelativePath("/tmp", "/tmp")); // NOI18N
     }
