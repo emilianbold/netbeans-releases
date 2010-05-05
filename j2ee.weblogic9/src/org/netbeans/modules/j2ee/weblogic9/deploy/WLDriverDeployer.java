@@ -50,7 +50,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -137,7 +136,7 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
                             }
                         }
                     }
-                    // FIXME restart
+                    manager.setRestartNeeded(true);
                 }
                 progress.fireProgressEvent(null, new WLDeploymentStatus(
                         ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,

@@ -100,6 +100,9 @@ public class WLDeploymentManager implements DeploymentManager {
     private final String port;
     private volatile boolean disconnected;
 
+    /* GuardedBy("this") */
+    private boolean restartNeeded;
+
     /* GuardedBy(WLDeploymentManager.class) */
     private static Map<String, WLClassLoader> classLoaderCache = new WeakHashMap<String, WLClassLoader>();
 
@@ -134,6 +137,14 @@ public class WLDeploymentManager implements DeploymentManager {
      */
     public String getPort() {
         return port;
+    }
+
+    public synchronized boolean isRestartNeeded() {
+        return restartNeeded;
+    }
+
+    public synchronized void setRestartNeeded(boolean restartNeeded) {
+        this.restartNeeded = restartNeeded;
     }
 
     /**
