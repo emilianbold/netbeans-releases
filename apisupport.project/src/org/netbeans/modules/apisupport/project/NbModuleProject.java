@@ -1084,6 +1084,8 @@ public final class NbModuleProject implements Project {
         }
     }
 
+    /** Matches ExtraProjectSourceForBinaryQueryImpl*/
+    public static final String SOURCE_START = "source.reference."; //NOI18N
     /**
      * <tt>&lt;class-path-extension&gt;</tt> to <tt>file/source/javadoc.reference....</tt> properties adapter
      * for {@link ExtraSourceJavadocSupport} query implementations.
@@ -1091,7 +1093,6 @@ public final class NbModuleProject implements Project {
     private final class ExtraSJQEvaluator implements PropertyEvaluator {
 
         private static final String REF_START = "file.reference."; //NOI18N
-        private static final String SOURCE_START = "source.reference."; //NOI18N
         private static final String JAVADOC_START = "javadoc.reference."; //NOI18N
 
         public ExtraSJQEvaluator() {

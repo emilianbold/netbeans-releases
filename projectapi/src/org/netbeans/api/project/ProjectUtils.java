@@ -255,6 +255,7 @@ public class ProjectUtils {
      * @since org.netbeans.modules.projectapi/1 1.17
      */
     public static AuxiliaryConfiguration getAuxiliaryConfiguration(Project project) {
+        Parameters.notNull("project", project);
         return new AuxiliaryConfigImpl(project);
     }
 
