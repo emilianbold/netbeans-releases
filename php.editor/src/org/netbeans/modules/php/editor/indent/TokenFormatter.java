@@ -1362,6 +1362,7 @@ public class TokenFormatter {
 		}
 		StringBuilder sb = new StringBuilder();
 		boolean indentLine = false;
+                boolean firstLine = true;  // is the first line of the comment?
 		String indentString = createWhitespace(doc, 0, indent + 1);
                 int indexFirstLine = 0;
                 while (indexFirstLine < comment.length() && comment.charAt(indexFirstLine) == ' ') {
@@ -1370,11 +1371,30 @@ public class TokenFormatter {
 		if (indexFirstLine < comment.length() && comment.charAt(indexFirstLine) == '\n') {
 		    sb.append('\n');
 		    indentLine = true;
+                    firstLine = false;
 		}
-		boolean lastAdded = false;
+		boolean lastAdded = false; // was the last part added to coment . does it have a non whitespace character?
+                
 		for (StringTokenizer st = new StringTokenizer(comment, "\n"); st.hasMoreTokens();) { //NOI18N
 		    String part = st.nextToken();
-		    if (!(part.length() > (indent + 1) && part.charAt(indent + 1) == '*')) {
+                    String trimPart = part.trim();
+                    if (trimPart.length() > 0 && trimPart.charAt(0) == '*') {
+                        sb.append(indentString);
+                        part = part.substring(part.indexOf('*'));
+                        if (part.length() > 1 && part.charAt(1) != ' ') {
+                            sb.append("* "); //NOI18N
+                            part = part.substring(1);
+                        }
+                    } else {
+//                        if (trimPart.length() == 0 && indentLine) {
+//                            part = indentString;
+//                        } else {
+                            if (firstLine && part.charAt(0) != ' ') {
+                                sb.append(' ');
+                            }
+//                        }
+                    }
+		    /*if (!(part.length() > (indent + 1) && part.charAt(indent + 1) == '*')) {
 			part = part.trim();
 			if (part.length() > 0) {
 			    if (indentLine) {
@@ -1388,8 +1408,8 @@ public class TokenFormatter {
 				sb.append(' ');
 			    }
 			}
-		    }
-		    if (part.length() > 0) {
+		    }*/
+		    if (trimPart.length() > 0 || firstLine) {
 			sb.append(part);
 			sb.append('\n');
 			lastAdded = true;
@@ -1397,6 +1417,7 @@ public class TokenFormatter {
 		    else {
 			lastAdded = false;
 		    }
+                    firstLine = false;
 		}
 
 
