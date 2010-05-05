@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.jira;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +47,6 @@ import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
-import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.ImageUtilities;

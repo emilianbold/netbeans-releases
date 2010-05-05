@@ -39,17 +39,17 @@
 
 package org.netbeans.modules.jira.query;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.CurrentUserFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.NobodyFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.SpecificUserFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.UserFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.UserInGroupFilter;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
-import org.eclipse.mylyn.internal.jira.core.model.filter.CurrentUserFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.NobodyFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.SpecificUserFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.UserFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.UserInGroupFilter;
 
 /**
  *
