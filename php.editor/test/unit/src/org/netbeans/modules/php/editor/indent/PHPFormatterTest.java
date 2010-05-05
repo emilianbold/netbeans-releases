@@ -149,7 +149,7 @@ public class PHPFormatterTest extends PHPTestBase {
 	reformatFileContents("testfiles/formatting/arrays5.php", options);
     }
     
-    public void ltestFragment1() throws Exception {
+    public void testFragment1() throws Exception {
         reformatFileContents("testfiles/formatting/format_fragment1.php");
     }
 
@@ -290,7 +290,7 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue172475.php");
     }
 
-    public void ltest167791() throws Exception {
+    public void test167791() throws Exception {
         reformatFileContents("testfiles/formatting/issue167791.php", 5);
     }
 
@@ -1711,6 +1711,21 @@ public class PHPFormatterTest extends PHPTestBase {
 	reformatFileContents("testfiles/formatting/comment07.php", options);
     }
 
+    public void testComment08() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	reformatFileContents("testfiles/formatting/comment08.php", options);
+    }
+
+    public void testComment09() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	reformatFileContents("testfiles/formatting/comment09.php", options);
+    }
+
+    public void testComment10() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	reformatFileContents("testfiles/formatting/comment10.php", options);
+    }
+
     // the html tests doesn't work properly, the results are deferent then in the ide. i don't know why. 
     public void testHtml01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
@@ -1769,39 +1784,39 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue168396_01.php", options);
     }
 
-    public void ltestIssue184687_01() throws Exception {
+    public void testIssue184687_01() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.initialIndent, 4);
         reformatFileContents("testfiles/formatting/issue184687_01.php", options);
     }
 
-    public void ltestIssue184687_02() throws Exception {
+    public void testIssue184687_02() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.initialIndent, 4);
         reformatFileContents("testfiles/formatting/issue184687_02.php", options);
     }
 
-    public void ltestIssue185353_01() throws Exception {
+    public void testIssue185353_01() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/issue185353_01.php", options);
     }
     
-    public void ltestIssue185353_02() throws Exception {
+    public void testIssue185353_02() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/issue185353_02.php", options);
     }
     
-    public void ltestIssue185353_03() throws Exception {
+    public void testIssue185353_03() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/issue185353_03.php", options);
     }
     
-    public void ltestIssue185353_04() throws Exception {
+    public void testIssue185353_04() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/issue185353_04.php", options);
     }
     
-    public void ltestIssue185353_05() throws Exception {
+    public void testIssue185353_05() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/issue185353_05.php", options);
     }
