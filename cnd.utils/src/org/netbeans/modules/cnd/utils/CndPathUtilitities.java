@@ -143,7 +143,7 @@ public class CndPathUtilitities {
                 }
             }
 
-            if (match > 1 && match == pnames.length && bnames.length > pnames.length) {
+            if (match > 0 && match == pnames.length && bnames.length > pnames.length) {
                 // path is a substring of
                 StringBuilder s = new StringBuilder();
                 for (int cnt = 0; cnt < (bnames.length - match - 1); cnt++) {
@@ -151,7 +151,7 @@ public class CndPathUtilitities {
                 }
                 s.append("..");					// NOI18N
                 return s.toString();
-            } else if (match > 1) {
+            } else if (match > 0) {
                 StringBuilder s = new StringBuilder();
 
                 for (int cnt = bnames.length - match; cnt > 0; cnt--) {
