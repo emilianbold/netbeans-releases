@@ -45,9 +45,13 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import org.netbeans.modules.websvc.saas.model.oauth.Metadata;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Include;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
@@ -59,6 +63,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -243,6 +248,29 @@ public class WadlSaas extends Saas {
             schemaFiles.add(schemaFile);
         }
         return schemaFiles;
+    }
+
+    public Metadata getOauthMetadata() throws IOException, JAXBException {
+        if (wadlModel == null) {
+            throw new IllegalStateException("Should transition state to at least RETRIEVED");
+        }
+        if (wadlModel.getGrammars() == null || wadlModel.getGrammars().getAny() == null) {
+            return null;
+        }
+        List<Object> otherGrammars = wadlModel.getGrammars().getAny();
+        for (Object g : otherGrammars) {
+            if (g instanceof Element) {
+                Element el = (Element)g;
+                if ("http://netbeans.org/ns/oauth/metadata/1".equals(el.getNamespaceURI()) && //NOI18N
+                        "metadata".equals(el.getLocalName())) { //NOI18N
+                    JAXBContext jc = JAXBContext.newInstance("org.netbeans.modules.websvc.saas.model.oauth"); //NOI18N
+                    Unmarshaller u = jc.createUnmarshaller();
+                    JAXBElement<Metadata> jaxbEl = u.unmarshal(el, Metadata.class);
+                    return jaxbEl.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     @Override

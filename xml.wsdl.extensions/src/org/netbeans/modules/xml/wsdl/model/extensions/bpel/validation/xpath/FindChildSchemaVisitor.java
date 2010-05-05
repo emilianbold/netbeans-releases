@@ -170,7 +170,7 @@ public class FindChildSchemaVisitor extends DefaultSchemaVisitor {
     // --------------- References ------------------
     
     public void visit(ElementReference er) {
-        // vlv # 105159
+        // # 105159
         if ( !isAttribute) {
             checkComponent(er);
         }

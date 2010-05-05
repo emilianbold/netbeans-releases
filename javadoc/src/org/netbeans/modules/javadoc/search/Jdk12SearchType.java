@@ -41,19 +41,15 @@
 
 package org.netbeans.modules.javadoc.search;
 
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
 import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /* Base class providing search for JDK1.2/1.3 documentation
  * @author Petr Hrebejk, Petr Suchomel
  */
 // no position since it must be the last service
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.javadoc.search.JavadocSearchType.class)
-public class Jdk12SearchType extends JavadocSearchType implements Serializable{
+@ServiceProvider(service=JavadocSearchType.class)
+public class Jdk12SearchType extends JavadocSearchType {
 
     private boolean caseSensitive = true;
 
@@ -76,7 +72,7 @@ public class Jdk12SearchType extends JavadocSearchType implements Serializable{
 //        this.firePropertyChange("caseSensitive", oldVal ? Boolean.TRUE : Boolean.FALSE, caseSensitive ? Boolean.TRUE : Boolean.FALSE);   //NOI18N
     }
 
-    public FileObject getDocFileObject( FileObject apidocRoot ) {
+    public @Override FileObject getDocFileObject(FileObject apidocRoot) {
     
         FileObject fo = apidocRoot.getFileObject( "index-files" ); // NOI18N
         if ( fo != null ) {
@@ -98,52 +94,14 @@ public class Jdk12SearchType extends JavadocSearchType implements Serializable{
      * @return IndexSearchThread
      * @see IndexSearchThread
      */    
-    public IndexSearchThread getSearchThread( String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer ){
+    public @Override IndexSearchThread getSearchThread(String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer) {
         return new SearchThreadJdk12 ( toFind, fo, diiConsumer, isCaseSensitive() );
     }
 
 
-    public boolean accepts(FileObject apidocRoot, String encoding) {
+    public @Override boolean accepts(FileObject apidocRoot, String encoding) {
         //XXX returns always true, must be the last JavadocType
         return true;
     }
     
-    /**
-     * Replaces old serialized service type with a dummy instance to prevent
-     * exceptions from the Lookup
-     */
-    @Deprecated
-    protected final Object readResolve() throws ObjectStreamException {
-        // replace old serializable component with dummy instance
-        // to prevent exceptions from the Lookup
-        return new JavadocSearchType() {
-
-            @Override
-            public FileObject getDocFileObject(FileObject apidocRoot) {
-                return null;
-            }
-
-            @Override
-            public IndexSearchThread getSearchThread(String toFind,
-                    FileObject fo,
-                    IndexSearchThread.DocIndexItemConsumer diiConsumer) {
-                
-                return null;
-            }
-
-            @Override
-            public boolean accepts(FileObject apidocRoot, String encoding) {
-                return false;
-            }
-        };
-    }
-
-    /**
-     * Warns not to serialize it.
-     */
-    @Deprecated
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        throw new NotSerializableException(this.getClass().getName());
-    }
-
 }

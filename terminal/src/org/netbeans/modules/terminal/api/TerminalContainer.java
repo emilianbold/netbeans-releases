@@ -46,9 +46,10 @@ import org.openide.windows.TopComponent;
 import org.netbeans.modules.terminal.ioprovider.TerminalContainerImpl;
 
 /**
- * Help a {@link TopComponent} be a an {@link IOContainer} of "Terminal"s.
+ * Help a {@link org.openide.windows.TopComponent} be a an
+ * {@link org.openide.windows.IOContainer} of "Terminal"s.
  * <p>
- * Use {@link TerminalProvider#create} to get one.
+ * Use {@link #create} to get one.
  * <p> 
  * Recipe for enhancing a <code>TopComponent</code> ...
  * <ul>
@@ -77,13 +78,11 @@ import org.netbeans.modules.terminal.ioprovider.TerminalContainerImpl;
  * Delegate <code>componentActivated()</code> and <code>componentDeactivated()</code>
  * from the <code>TopComponent</code> to the <code>TerminalContainer</code> as follows:
  * <pre>
-    @Override
     protected void componentActivated() {
         super.componentActivated();
         tc.componentActivated();
     }
 
-    @Override
     protected void componentDeactivated() {
         super.componentDeactivated();
         tc.componentDeactivated();

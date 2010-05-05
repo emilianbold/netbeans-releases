@@ -61,6 +61,21 @@ public class CookieSetTest extends NbTestCase {
         super(name);
     }
 
+    public void testInfiniteLoop() {
+        class MyClass implements Node.Cookie {
+        }
+
+
+        CookieSet cs = CookieSet.createGeneric(null);
+        cs.add(MyClass.class, new CookieSet.Factory() {
+            @Override
+            public <T extends Cookie> T createCookie(Class<T> clazz) {
+                return clazz.cast(new MyClass());
+            }
+        });
+        cs.assign(MyClass.class, new MyClass());   // never returns!
+    }
+
     public void testInconsistencyOfLookupAndGetCookie175750() {
         CookieSet cs = CookieSet.createGeneric(null);
 

@@ -287,47 +287,6 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     
     @Override
     public String createJDBCDataSourceForCmp(String beanName, String databaseInfo, File dir) {
-        /*String name = "jdbc/" + beanName; // NOI18N
-        String jndiName = name;
-        try {
-            if(databaseInfo != null) {
-                String vendorName = convertToValidName(databaseInfo);
-                if(vendorName != null) {
-                    name = vendorName;
-                }
-                
-                if(vendorName.equals("derby_embedded")){  //NOI18N
-                    NotifyDescriptor d = new NotifyDescriptor.Message(bundle.getString("Err_UnSupportedDerby"), NotifyDescriptor.WARNING_MESSAGE); // NOI18N
-                    DialogDisplayer.getDefault().notify(d);
-                    return null;
-                }
-                // Return if resource already defined
-                String poolName = generatePoolName(name, dir, databaseInfo);
-                if(poolName == null) {
-                    return null;
-                } else {
-                    name = poolName;
-                }
-
-                jndiName = "jdbc/" + name;
-
-                createCPPoolResource(name, jndiName, databaseInfo, dir);
-                createJDBCResource(name, jndiName, databaseInfo, dir);
-
-                if(this.showMsg) {
-                    String mess = MessageFormat.format(bundle.getString("LBL_UnSupportedDriver"), new Object [] { jndiName }); // NOI18N
-                    showInformation(mess);
-                    this.showMsg = false;
-                }
-            }
-        } catch(IOException ex) {
-            // XXX Report I/O Exception to the user.  We should do a nicely formatted
-            // message identifying the problem.
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-        }
-        
-        return jndiName;
-         */
         return null;
     }
     
@@ -766,6 +725,10 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      */
     @Override
     public HashSet getResources(File resourceDir) {
+        return getResourcesFromFile(resourceDir);
+    }
+
+    public static HashSet getResourcesFromFile(File resourceDir) {
         HashSet serverresources = new HashSet();
         File resourceFile = getServerResourceFiles(resourceDir);
         if (resourceFile == null) {
@@ -859,7 +822,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                         }    
                     }
                     
-                    if (url == null || url.equals("")) { //NOI18N
+                    if (!(url == null || url.equals(""))) { //NOI18N
                         if (driverClass == null || driverClass.equals("")) { //NOI18N
                             DatabaseConnection databaseConnection = ResourceUtils.getDatabaseConnection(url);
                             if (databaseConnection != null) {
@@ -1033,7 +996,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         ResourceUtils.createFile(location, resources);
     }
     
-    private File getServerResourceFiles(File resourceDir) {
+    private static File getServerResourceFiles(File resourceDir) {
         File resourceFile = null;
         if(resourceDir != null){
             resourceFile =  ResourceUtils.getServerResourcesFile(FileUtil.toFileObject(resourceDir));
@@ -1041,7 +1004,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return resourceFile;
     }
     
-    private HashMap getConnectionPools(File resourceFile) {
+    private static HashMap getConnectionPools(File resourceFile) {
         HashMap<String, JdbcConnectionPool> connPools = new HashMap<String, JdbcConnectionPool>();
         Resources resources = getResourcesGraph(resourceFile);
         JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
@@ -1052,7 +1015,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return connPools;
     }
     
-    private HashMap getJdbcResources(File resourceFile) {
+    private static HashMap getJdbcResources(File resourceFile) {
         HashMap<String, JdbcResource> jdbcResources = new HashMap<String, JdbcResource>();
         Resources resources = getResourcesGraph(resourceFile);
         JdbcResource[] dsources = resources.getJdbcResource();
@@ -1074,7 +1037,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return aoResources;
     }
     
-    private Resources getResourcesGraph(File resourceFile){
+    private static Resources getResourcesGraph(File resourceFile){
         Resources resourceGraph = DDProvider.getDefault().getResourcesGraph();
         try {
             if(! resourceFile.isDirectory()){

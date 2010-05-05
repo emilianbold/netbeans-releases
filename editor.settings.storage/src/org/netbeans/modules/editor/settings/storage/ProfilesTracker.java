@@ -221,7 +221,7 @@ public final class ProfilesTracker {
     private Map<String, ProfileDescription> profiles = Collections.<String, ProfileDescription>emptyMap();
     private Map<String, ProfileDescription> profilesByDisplayName = Collections.<String, ProfileDescription>emptyMap();
     
-    private final RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
+    private final RequestProcessor.Task task = MimeTypesTracker.RP.create(new Runnable() {
         public void run() {
             rebuild();
         }

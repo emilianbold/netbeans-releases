@@ -1,3 +1,5 @@
+namespace iz174581 {
+
 struct A {
     int i;
 };
@@ -22,4 +24,6 @@ int main() {
     (*c.getB()).i;
 
     return 0;
+}
+
 }

@@ -39,7 +39,10 @@
 package org.netbeans.modules.masterfs.filebasedfs.utils;
 
 import java.io.File;
+import java.security.Permission;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.openide.util.Lookup;
@@ -55,10 +58,13 @@ public class FileChangedManager extends SecurityManager {
     private static final int CREATE_HINT = 2;
     private static final int DELETE_HINT = 1;
     private static final int AMBIGOUS_HINT = 3;
-    
-    
     private final ConcurrentHashMap<Integer,Integer> hints = new ConcurrentHashMap<Integer,Integer>();
     private long shrinkTime = System.currentTimeMillis();
+    private static volatile long ioTime = -1;
+    private static volatile int ioLoad;
+    private static final ThreadLocal<Integer> IDLE_IO = new ThreadLocal<Integer>();
+    private static final ThreadLocal<Runnable> IDLE_CALL = new ThreadLocal<Runnable>();
+    private static final ThreadLocal<AtomicBoolean> IDLE_ON = new ThreadLocal<AtomicBoolean>();
     
     public FileChangedManager() {
         INSTANCE = this;
@@ -71,6 +77,10 @@ public class FileChangedManager extends SecurityManager {
         }
         return INSTANCE;
     }
+
+    @Override
+    public void checkPermission(Permission perm) {
+    }
     
     @Override
     public void checkDelete(String file) {
@@ -80,6 +90,16 @@ public class FileChangedManager extends SecurityManager {
     @Override
     public void checkWrite(String file) {
         put(file, true);
+    }
+
+    @Override
+    public void checkRead(String file) {
+        pingIO(1);
+    }
+
+    @Override
+    public void checkRead(String file, Object context) {
+        pingIO(1);
     }
         
     public boolean impeachExistence(File f, boolean expectedExixts) {
@@ -102,7 +122,16 @@ public class FileChangedManager extends SecurityManager {
         if (time > 0) {
             time = System.currentTimeMillis() - time;
             if (time > 500) {
-                LOG.warning("Too much time (" + time + " ms) spend touching " + file);
+                Level l;
+                String msg;
+                if (isIdleIO()) {
+                    l = Level.FINE;
+                    msg = "{0} new File(\"{1}\").exists() in I/O mode";
+                } else {
+                    l = Level.WARNING;
+                    msg = "{0} ms in new File(\"{1}\").exists()";
+                }
+                LOG.log(l, msg, new Object[]{time, file});
             }
         }
         Integer id = getKey(file);
@@ -110,8 +139,88 @@ public class FileChangedManager extends SecurityManager {
         put(id, retval);
         return retval;
     }
+
+    private static boolean isIdleIO() {
+        return IDLE_IO.get() != null;
+    }
+
+    public static void idleIO(int maximumLoad, Runnable r, Runnable goingToSleep, AtomicBoolean goOn) {
+        Integer prev = IDLE_IO.get();
+        Runnable pGoing = IDLE_CALL.get();
+        AtomicBoolean pGoOn = IDLE_ON.get();
+        int prevMax = prev == null ? 0 : prev;
+        try {
+            IDLE_IO.set(Math.max(maximumLoad, prevMax));
+            IDLE_CALL.set(goingToSleep);
+            IDLE_ON.set(goOn);
+            r.run();
+        } finally {
+            IDLE_IO.set(prev);
+            IDLE_CALL.set(pGoing);
+            IDLE_ON.set(pGoOn);
+        }
+    }
+
+    public static void waitIOLoadLowerThan(int load) throws InterruptedException {
+        for (;;) {
+            AtomicBoolean goOn = IDLE_ON.get();
+            if (goOn != null && !goOn.get()) {
+                final String msg = "Interrupting manually"; // NOI18N
+                LOG.fine(msg);
+                throw new InterruptedException(msg);
+            }
+            int l = pingIO(0);
+            if (l < load) {
+                return;
+            }
+            synchronized (IDLE_IO) {
+                Runnable goingToSleep = IDLE_CALL.get();
+                if (goingToSleep != null) {
+                    goingToSleep.run();
+                }
+                IDLE_IO.wait(100);
+            }
+        }
+    }
+
+    private static int pingIO(int inc) {
+        long ms = System.currentTimeMillis();
+        boolean change = false;
+        while (ioTime < ms) {
+            ioTime += 100;
+            ioLoad /= 2;
+            change = true;
+            if (ioLoad == 0) {
+                ioTime = ms + 100;
+                break;
+            }
+        }
+        if (change) {
+            synchronized (IDLE_IO) {
+                IDLE_IO.notifyAll();
+            }
+        }
+        if (inc == 0) {
+            return ioLoad;
+        }
+
+        Integer maxLoad = IDLE_IO.get();
+        if (maxLoad != null) {
+            try {
+                waitIOLoadLowerThan(maxLoad);
+            } catch (InterruptedException ex) {
+                LOG.log(Level.FINE, "Interrupted {0}", ex.getMessage());
+            }
+        } else {
+            ioLoad += inc;
+            LOG.log(Level.FINER, "I/O load: {0} (+{1})", new Object[] { ioLoad, inc });
+        }
+        return ioLoad;
+    }
+
     
     private Integer put(int id, boolean state) {
+        pingIO(2);
         shrinkTime = System.currentTimeMillis();
         int val = toValue(state);
         Integer retval = hints.putIfAbsent(id,val);

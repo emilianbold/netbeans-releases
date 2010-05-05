@@ -52,7 +52,7 @@ import java.util.Vector;
  * Runtime.exec().
  */
 
-public class Env implements Cloneable {
+public final class Env implements Cloneable {
     private Vector<String[]> environ;
 
     public Env() {

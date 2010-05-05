@@ -216,7 +216,7 @@ final class ChooseOriginPanelVisual extends JPanel implements DocumentListener {
     }
 
     File getSourceFile() {
-        return !sourcesField.isVisible() ? null : valid() ? new File (sourcesField.getText().trim()) : null;
+        return !sourcesField.isVisible() ? null : valid() ? sourcesField.getText().trim().length() == 0 ? null : new File (sourcesField.getText().trim()) : null;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

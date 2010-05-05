@@ -169,6 +169,7 @@ public class ChoiceView extends JComboBox implements Externalizable {
 
     /* Initializes view.
     */
+    @Override
     public void addNotify() {
         manager = ExplorerManager.find(this);
         manager.addVetoableChangeListener(iListener);
@@ -183,13 +184,15 @@ public class ChoiceView extends JComboBox implements Externalizable {
 
     /* Deinitializes view.
     */
+    @Override
     public void removeNotify() {
         super.removeNotify();
 
         removeActionListener(iListener);
-
-        manager.removeVetoableChangeListener(iListener);
-        manager.removePropertyChangeListener(iListener);
+        if (manager != null) {
+            manager.removeVetoableChangeListener(iListener);
+            manager.removePropertyChangeListener(iListener);
+        }
     }
 
     private void updateSelection() {

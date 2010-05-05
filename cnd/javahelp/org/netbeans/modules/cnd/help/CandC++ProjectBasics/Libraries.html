@@ -13,12 +13,22 @@ type="text/css">
 <body>
 <h2>Libraries Dialog Box</h2>
 <p>The Libraries dialog box lets you add libraries to your C or C++ Application 
-or Dynamic Library project and specify binding options. To open the dialog box, 
-click the browse button in the Libraries panel of the Project Properties 
+or Dynamic Library project and specify binding options. To open the dialog box,
+right-click the project name in the Project window, and select Properties. Select the
+Linker node, and click the browse button next to Libraries in the Project Properties
 dialog box.</p>
 <p>Use the buttons on the right side of the Libraries dialog box to add and 
-remove libraries, and select binding options. When you add a project using the Add Project button, 
-you are creating a <a href="CreatingDependencies.html">project dependency</a>
+remove libraries, and select binding options. You can fo the following:
+<ol>
+    <li>
+        Add standard libraries such as POSIX Threads with the Add Standard Libraries button
+    </li>
+    <li>Add other libraries with the Add Libraries button</li>
+    <li>Add a project using the Add Project button, which 
+        creates a <a href="CreatingDependencies.html">project dependency</a></li>
+    <li>Add any options to the compiler command line using the Add Option button</li>
+</ol>
+
 <hr>
 <small>
 <a href="../credits.html">Legal Notices</a></small>

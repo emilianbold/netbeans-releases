@@ -225,9 +225,9 @@ public class JsIndexer extends EmbeddingIndexer {
 
             if (url.endsWith(".js")) { //NOI18N
                 boolean done = indexRelatedScriptDocs();
-                if (done) {
-                    return;
-                }
+//                if (done) {
+//                    return;
+//                }
             }
 
             IndexDocument document = indexingSupport.createDocument(indexable);

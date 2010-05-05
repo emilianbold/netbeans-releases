@@ -64,14 +64,16 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
 
     public final static int GDB_PRIORITY = 200;
 
-    private CustomizerNode customizerNode = null;
+    //private CustomizerNode customizerNode = null;
     
     @Override
     public CustomizerNode factoryCreate(Lookup lookup) {
-        if (customizerNode == null) {
-            customizerNode = new GdbCustomizerNode("Debug", NbBundle.getMessage(GdbCustomizerNodeProvider.class, "DebugDisplayName"), null, lookup); // NOI18N
-        }
-	return customizerNode;
+        // No need for gdb options, none is used (see IZ 176952)
+        return null;
+//        if (customizerNode == null) {
+//            customizerNode = new GdbCustomizerNode("Debug", NbBundle.getMessage(GdbCustomizerNodeProvider.class, "DebugDisplayName"), null, lookup); // NOI18N
+//        }
+//	return customizerNode;
     }
 
     private static class GdbCustomizerNode extends CustomizerNode implements PrioritizedCustomizerNode, ProjectActionHandlerFactory, DebuggerCustomizerNode {

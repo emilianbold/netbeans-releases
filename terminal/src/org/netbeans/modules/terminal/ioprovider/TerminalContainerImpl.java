@@ -52,64 +52,69 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
 import org.netbeans.lib.terminalemulator.support.FindBar;
 import org.netbeans.lib.terminalemulator.support.FindState;
+import org.netbeans.modules.terminal.api.IOVisibilityControl;
+
 import org.netbeans.modules.terminal.api.TerminalContainer;
+
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOContainer.CallBacks;
 import org.openide.windows.TopComponent;
 
 /**
- * Help a TopComponent be a {@link TerminalWindow} and an owner of {@link Terminal}'s.
- * <p>
- * Use {@link TerminalProvider#createTerminalContainer} to get one.
- * <p> 
- * Recipe for enahncing a TopComponent ...
- * <ul>
- * <li>
- * Create a stock TopComponent with the IDE.
- * <li>
- * Change it's Layout to be BorderLayout.
- * <li>
- * Have it <code>implements TerminalWindow</code>.
- * <li>
- * Add the following code to it:
- * <pre>
-    private TerminalContainer tc;
-
-    public TerminalContainer terminalContainer() {
-        return tc;
-    }
-
-    private void initComponents2() {
-        tc = TerminalProvider.createTerminalContainer(this, getName());
-        add(tc);
-    }
- * </pre>
- * <li>
- * Call <code>initComponents2()</code> at the end of the constructor of
- * your top component.
- * </ul>
+ * Corresponds to core.io.ui...IOWindow.
  * @author ivan
  */
 final public class TerminalContainerImpl extends TerminalContainer implements IOContainer.Provider {
 
+    private final static String PROP_ATTRIBUTES =
+	    "TerminalContainerImpl.ATTRBUTES";	// NOI18N
     private final TopComponent owner;
     private final String originalName;
 
-    private int nTerm;
-    private Terminal component0;
+    private IOContainer ioContainer;
     private JTabbedPane tabbedPane;
+    private JComponent soleComponent;
+    private JComponent lastSelection;
+
     private JToolBar actionBar;
     private FindBar findBar;
 
     private boolean activated = false;
 
-    private IOContainer ioContainer;
+    private static class Attributes {
+	public CallBacks cb;
+	public String title;
+	public Action[] toolbarActions;
+	public String toolTipText;
+	public Icon icon;
+
+	// LATER
+	// public boolean isClosable;
+	// public FindState findState;
+    }
+
+    /**
+     * Return Attributes associated with 'comp'.
+     * Create and attach of none exist.
+     * @param comp
+     * @return
+     */
+    private Attributes attributesFor(JComponent comp) {
+	Object o = comp.getClientProperty(PROP_ATTRIBUTES);
+	if (o == null) {
+	    Attributes a = new Attributes();
+	    comp.putClientProperty(PROP_ATTRIBUTES, a);
+	    return a;
+	} else {
+	    return (Attributes) o;
+	}
+    }
 
     /**
      * Utility for creating custom {@link Terminal}-based TopComponents.
@@ -131,17 +136,6 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
         initComponents();
     }
 
-    int nTerm() {
-        return nTerm;
-    }
-
-    void select(Terminal t) {
-        if (nTerm > 1)
-            tabbedPane.setSelectedComponent(t);
-        owner.open();
-        owner.requestActive();
-    }
-
     TopComponent topComponent() {
         return owner;
     }
@@ -155,11 +149,8 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 	    @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(TabbedPaneFactory.PROP_CLOSE)) {
-                    Object o = evt.getNewValue();
-                    if (o instanceof Terminal) {
-                        Terminal tt = (Terminal) o;
-                        tt.close();
-                    }
+                    JComponent comp = (JComponent) evt.getNewValue();
+		    removeTab(comp);
                 }
             }
         });
@@ -167,16 +158,7 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 
 	    @Override
             public void stateChanged(ChangeEvent e) {
-                Component component = tabbedPane.getSelectedComponent();
-                if (component instanceof Terminal) {
-                    Terminal terminal = (Terminal) component;
-                    setButtons(terminal.getActions());
-                    setFindBar(terminal.getFindState());
-                    terminal.callBacks().selected();
-                } else {
-                    setButtons(new Action[0]);
-                    setFindBar(null);
-                }
+		checkSelectionChange();
             }
         });
         actionBar = new JToolBar();
@@ -194,6 +176,17 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
                 validate();
             }
         });
+    }
+
+    private void updateBars(Component component) {
+	if (component instanceof Terminal) {
+	    Terminal terminal = (Terminal) component;
+	    setButtons(terminal.getActions());
+	    setFindBar(terminal.getFindState());
+	} else {
+	    setButtons(new Action[0]);
+	    setFindBar(null);
+	}
     }
 
     private void fixSize(JToolBar actionBar) {
@@ -256,96 +249,194 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
         }
 
         actionBar.removeAll();
-        for (JButton b : buttons) {
-            actionBar.add(b);
-        }
+	if (buttons.length != 0) {
+	    actionBar.setVisible(true);
+	    for (JButton b : buttons) {
+		actionBar.add(b);
+	    }
+	} else {
+	    actionBar.setVisible(false);
+	}
         actionBar.revalidate();
         actionBar.repaint();
     }
 
-    @Override
-    protected void addImpl(Component comp, Object constraints, int index) {
-//        System.out.printf("TermTopComponent.addImpl(%s, %s, %s)\n", comp, constraints, index);
-        if (comp instanceof JTabbedPane) {
-            assert comp == tabbedPane;
-            super.addImpl(comp, BorderLayout.CENTER, index);
-        } else if (comp instanceof Terminal) {
-            Terminal terminal = (Terminal) comp;
-            nTerm++;
-            if (nTerm == 1) {
-                assert component0 == null;
-                component0 = terminal;
-                super.addImpl(terminal, BorderLayout.CENTER, index);
-            } else {
-                if (nTerm == 2) {
-                    assert component0 != null;
-                    super.remove(component0);
-                    add(tabbedPane);
-                    tabbedPane.addTab(component0.name(), component0);
-                    setTitle(component0, component0.getTitle());
-                    component0 = null;
-                }
-                tabbedPane.addTab(terminal.name(), terminal);
-                tabbedPane.setSelectedComponent(terminal);
-            }
-            setTitle(terminal, terminal.getTitle());
-            setButtons(terminal.getActions());
-        } else {
-            super.addImpl(comp, constraints, index);
-        }
+    /**
+     * Restore attributes that are maintained by the tabbedPane.
+     *
+     * Called when a component is added to a tabbed pane.
+     * No need to do anything (i.e. save) when we remove a component.
+     *
+     * Also called on individual attribute settings like
+     * setIcon(JComponent, Icon). Note that this method is overkill
+     * for this purpose. I.e. it will set title etc as well.
+     * If this ever becomes an issue we can pass a mask to control
+     * what exactly gets restored.
+     * @param comp
+     */
+    private void restoreAttrsFor(JComponent comp) {
+	int index = tabbedPane.indexOfComponent(comp);
+	if (index == -1)
+	    return;
+
+	Attributes attrs = attributesFor(comp);
+
+	tabbedPane.setTitleAt(index, attrs.title);
+
+	tabbedPane.setIconAt(index, attrs.icon);
+	tabbedPane.setDisabledIconAt(index, attrs.icon);
+
+	// output2 "stores" toolTipText as the components
+	// attribute
+	tabbedPane.setToolTipTextAt(index, attrs.toolTipText);
+    }
+
+    private void addTab(JComponent comp, CallBacks cb) {
+	Attributes attr = attributesFor(comp);
+	attr.cb = cb;
+
+	if (soleComponent != null) {
+	    // only single tab, remove it from TopComp. and add it to tabbed pane
+	    assert tabbedPane.getParent() == null;
+	    assert tabbedPane.getTabCount() == 0;
+	    super.remove(soleComponent);
+	    super.add(tabbedPane);
+	    tabbedPane.add(soleComponent);
+	    restoreAttrsFor(soleComponent);
+	    soleComponent = null;
+	    updateWindowName(null);
+
+	    // Add the window we're adding
+	    tabbedPane.add(comp);
+	    restoreAttrsFor(comp);
+
+
+	} else if (tabbedPane.getTabCount() > 0) {
+	    // already several tabs
+	    assert tabbedPane.getParent() != null;
+	    assert soleComponent == null;
+	    tabbedPane.add(comp);
+	    restoreAttrsFor(comp);
+
+	} else {
+	    // nothing yet
+	    assert tabbedPane.getParent() == null;
+	    assert soleComponent == null;
+	    setFocusable(false);
+	    soleComponent = comp;
+	    super.add(comp);
+	    updateWindowName(soleComponent.getName());
+	    // for first component we act as if select was called
+	    checkSelectionChange();
+	}
+
+	revalidate();
+    }
+
+    private void removeTab(final JComponent comp) {
+	CallBacks cb = attributesFor(comp).cb;
+
+	if (cb != null && IOVisibilityControl.isSupported(cb)) {
+	    if (IOVisibilityControl.isClosable(cb)) {
+		if (! IOVisibilityControl.okToClose(cb))
+		    return;		// close got vetoed.
+	    } else {
+		// Should usually not get here because all relevant
+		// actions or their peformers should've been disabled.
+		// SHOULD emit a warning
+		return;
+	    }
+
+	}
+
+	// SHOULD check if callers of this function assume that it
+	// always succeeds.
+
+	if (soleComponent != null) {
+	    // removing the last one
+	    assert soleComponent == comp;
+	    super.remove(soleComponent);
+	    soleComponent = null;
+	    updateWindowName(null);
+	    checkSelectionChange();
+	    setFocusable(true);
+	    revalidate();
+	    repaint();	// otherwise term will still stay in view
+
+	} else if (tabbedPane.getParent() == this) {
+	    assert tabbedPane.getTabCount() > 1;
+	    tabbedPane.remove(comp);
+	    if (tabbedPane.getTabCount() == 1) {
+		//  switch to no tabbed pane
+		soleComponent  = (JComponent) tabbedPane.getComponentAt(0);
+		tabbedPane.remove(soleComponent);
+		super.remove(tabbedPane);
+		super.add(soleComponent);
+		updateWindowName(soleComponent.getName());
+	    }
+	    checkSelectionChange();
+	    revalidate();
+	}
+	if (cb != null)
+	    cb.closed();
+    }
+
+    private boolean contains (JComponent comp) {
+	return soleComponent == comp ||
+	       tabbedPane.indexOfComponent(comp) != -1;
+    }
+
+
+    /**
+     * A new component has been selected.
+     * Update anything that needs to be updated.
+     */
+
+    private void checkSelectionChange() {
+	// outptu2 calls this checkTabSelChange().
+	JComponent selection = getSelected();
+	if (selection != lastSelection) {
+	    lastSelection = selection;
+	    updateBars(selection);
+	    if (selection != null) {
+		// This is the case when we remove the last component
+		CallBacks cb = attributesFor(selection).cb;
+		if (cb != null)
+		    cb.selected();
+	    }
+	    // LATER update findstate
+	    // LATER not sure what the following does:
+	    // LATER getActionMap().setParent(sel != null ? sel.getActionMap() : null);
+	}
     }
 
     /**
-     * Remove who from this.
-     * Mostly manages whether we have tabs and the TopComponents title and such
+     * Update out containing TC's window name.
+     * @param title
      */
-    void removeTerminal(final JComponent who) {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
+    private void updateWindowName(String title) {
+	if (owner == null)
+	    return;
 
-		@Override
-                public void run() {
-                    removeTerminal(who);
-                }
-            });
-            return;
-        }
-        if (nTerm <= 0) {
-            throw new IllegalStateException("<= 0 Terminals");	// NOI18N
-        }
-        nTerm--;
-        if (nTerm >= 1) {
-            tabbedPane.remove(who);
-        } else {
-            assert component0 == who;
-            super.remove(who);
-            component0 = null;
-        }
-        if (nTerm == 1) {
-            Terminal last = (Terminal) tabbedPane.getComponentAt(0);
-            tabbedPane.remove(0);
-            super.remove(tabbedPane);
-            nTerm = 0;
-            add(last);
-            setFindBar(last.getFindState());
-            validate();
-        } else if (nTerm == 0) {
-            setButtons(new Action[0]);
-            owner.close();
-        }
-    }
+	if (title == null) {
+	    // sole or no component
+	    owner.setDisplayName(originalName);
+	    owner.setToolTipText(originalName);
+	    owner.setHtmlDisplayName(null);
 
-    @Override
-    public void setTitle(JComponent who, String title) {
-        if (title == null) {
-            title = originalName;
-        }
-        if (nTerm == 1) {
-            owner.setName(originalName + " - " + title);	// NOI18N
-        } else {
-            owner.setName(originalName);
-            tabbedPane.setTitleAt(tabbedPane.indexOfComponent(who), title);
-        }
+	} else {
+	    String composite  = originalName + " - ";	// NOI18N
+	    if (title.contains("<html>")) {		// NOI18N
+		// pull the "<html>" to the beginning of the string
+		title = title.replace("<html>", "");		// NOI18N
+		composite = "<html> " + composite + title;// NOI18N
+		owner.setHtmlDisplayName(composite);
+	    } else {
+		owner.setDisplayName(composite);
+		owner.setHtmlDisplayName(null);
+	    }
+	    owner.setToolTipText(composite);
+	}
     }
 
     void find(Terminal who) {
@@ -360,21 +451,53 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
         validate();
     }
 
+    @Override
+    public void requestFocus() {
+	// redirect focus into terminal
+	JComponent selected = getSelected();
+	if (selected != null) {
+	    selected.requestFocus();
+	} else {
+	    super.requestFocus();
+	}
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+	// redirect focus into terminal
+	JComponent selected = getSelected();
+	if (selected != null) {
+	    return selected.requestFocusInWindow();
+	} else {
+	    return super.requestFocusInWindow();
+	}
+    }
+
+    //
+    // Overrides of TerminalContainer
+    //
+
+    @Override
+    public IOContainer ioContainer() {
+	if (ioContainer == null)
+	    ioContainer = IOContainer.create(this);
+	return ioContainer;
+    }
+
     /**
      * Handle delegation from containing TopComponent.
      */
     @Override
     public void componentActivated() {
+	// Up to the client of TerminalContainer:
+	// owner.componentActivated();
 	activated = true;
-        Component component;
-        if (component0 != null)
-            component = component0;
-        else
-            component = tabbedPane.getSelectedComponent();
-        if (component instanceof Terminal) {
-            Terminal terminal = (Terminal) component;
-            terminal.callBacks().activated();
-        }
+        JComponent comp = getSelected();
+	if (comp != null) {
+	    CallBacks cb = attributesFor(comp).cb;
+	    if (cb != null)
+		cb.activated();
+	}
     }
 
     /**
@@ -383,31 +506,37 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 
     @Override
     public void componentDeactivated() {
+	// Up to the client of TerminalContainer:
+	// owner.componentDeactivated();
 	activated = false;
-        Component component;
-        if (component0 != null)
-            component = component0;
-        else
-            component = tabbedPane.getSelectedComponent();
-        if (component instanceof Terminal) {
-            Terminal terminal = (Terminal) component;
-            terminal.callBacks().deactivated();
-        }
+        JComponent comp = getSelected();
+	if (comp != null) {
+	    CallBacks cb = attributesFor(comp).cb;
+	    if (cb != null)
+		cb.deactivated();
+	}
     }
 
+
+    //
+    // Overrides of IOContainer.Provider
+    //
     @Override
     public void open() {
-	owner.open();
+	if (owner != null)
+	    owner.open();
     }
 
     @Override
     public void requestActive() {
-	owner.requestActive();
+	if (owner != null)
+	    owner.requestActive();
     }
 
     @Override
     public void requestVisible() {
-	owner.requestVisible();
+	if (owner != null)
+	    owner.requestVisible();
     }
 
     @Override
@@ -417,69 +546,123 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 
     @Override
     public void add(JComponent comp, CallBacks cb) {
-	super.add(comp);
+	addTab(comp, cb);
     }
 
     @Override
     public void remove(JComponent comp) {
-	removeTerminal(comp);
+	removeTab(comp);
     }
 
     @Override
     public void select(JComponent comp) {
-	if (comp instanceof Terminal) {
-	    select((Terminal) comp);
+        if (soleComponent == null) {
+	    // will call checkSelectinChange() via stateChanged()
+            tabbedPane.setSelectedComponent(comp);
 	} else {
-	    throw new UnsupportedOperationException("Can't select non-Terminals");	// NOI18N
+	    checkSelectionChange();
 	}
 
+	if (owner != null) {
+	    owner.open();
+	    owner.requestActive();
+	}
     }
 
     @Override
     public JComponent getSelected() {
-        if (nTerm > 1)
+        if (soleComponent != null)
+            return soleComponent;
+        else
             return (JComponent) tabbedPane.getSelectedComponent();
-	else
-	    return component0;
     }
 
-    /* TMP
-    public void setTitle(JComponent comp, String name) {
-	throw new UnsupportedOperationException("Not supported yet.");
+    @Override
+    public void setTitle(JComponent comp, String title) {
+        if (title == null) {
+            title = originalName;
+        }
+
+	// Remember title in attributes
+	// It gets recalled when we switch from tabbed to soleComponent mode
+	Attributes attrs = attributesFor(comp);
+	attrs.title = title;
+
+	// output2 uses the name property of the JComponent to
+	// remember the title.
+	// So do we for good measure.
+	comp.setName(title);
+
+	if (!contains(comp)) {
+	    return;
+	}
+
+	// pass-through for currently visible component
+	// SHOULD see if the following logic can be applied generically
+	// after addTab() or removeTab()
+        if (soleComponent != null) {
+	    assert soleComponent == comp;
+	    updateWindowName(title);
+        } else {
+	    assert tabbedPane.getParent() == this;
+	    updateWindowName(null);
+	    // write thru
+	    restoreAttrsFor(comp);
+        }
     }
-     */
 
     @Override
     public void setToolTipText(JComponent comp, String text) {
-	throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
+	// Remember tip text in attributes
+	// It gets recalled when this comp is re-added to the tabbedPane
+	//
+	// output2 remembers the tip text in te toolTipText property of
+	// the JComponent itself.
+	Attributes attrs = attributesFor(comp);
+	attrs.toolTipText = text;
+
+	// pass-through for currently visible component
+	restoreAttrsFor(comp);
     }
 
     @Override
     public void setIcon(JComponent comp, Icon icon) {
-	throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
+	// Remember icon in attributes
+	// It gets recalled when this comp is re-added to the tabbedPane
+	//
+	// output2 remembers the icon in a client property.
+	Attributes attrs = attributesFor(comp);
+	attrs.icon = icon;
+
+	// pass-through for currently visible component
+	restoreAttrsFor(comp);
     }
 
     @Override
     public void setToolbarActions(JComponent comp, Action[] toolbarActions) {
 	// was: setActions()
-        if (nTerm == 1) {
+
+	// Remember in attributes
+	// They get recalled when this comp is selected
+	//
+	// output2 remembers the actions in a client property.
+	// SHOULD consider migration of components from one type
+	// of container to another?
+	Attributes attrs = attributesFor(comp);
+	attrs.toolbarActions = toolbarActions;
+
+	// pass-through for currently visible component
+	if (getSelected() == comp)
             setButtons(toolbarActions);
-        } else {
-            if (tabbedPane.getSelectedComponent() == comp) {
-                setButtons(toolbarActions);
-            }
-        }
     }
 
     @Override
     public boolean isCloseable(JComponent comp) {
-	throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
-    }
-
-    @Override
-    public IOContainer ioContainer() {
-	if (ioContainer == null)
-	    ioContainer = IOContainer.create(this);
-	return ioContainer;
+	CallBacks cb = attributesFor(comp).cb;
+	if (cb != null && IOVisibilityControl.isSupported(cb)) {
+	    return IOVisibilityControl.isClosable(cb);
+	} else {
+	    return true;
+	}
     }
 }

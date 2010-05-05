@@ -46,7 +46,8 @@ final class ExpFileFilter extends FileFilter {
 
     @Override
     public boolean accept(File f) {
-        return f != null && f.getPath().toLowerCase().endsWith(".exp") || f.isDirectory();
+        String pth = f == null ? "" : f.getPath().toLowerCase();
+        return f != null && f.isDirectory() || pth.endsWith(".zip") || pth.endsWith(".jar");
     }
 
     @Override

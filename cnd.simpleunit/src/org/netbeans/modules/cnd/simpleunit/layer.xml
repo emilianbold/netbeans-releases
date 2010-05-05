@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-h">
+                <folder name="Popup">
+                    <file name="TestSubmenuAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-cnd-makeproject-actions-TestSubmenuAction.instance"/>
+                        <attr name="position" intvalue="1558"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-c++">
+                <folder name="Popup">
+                    <file name="TestSubmenuAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-cnd-makeproject-actions-TestSubmenuAction.instance"/>
+                        <attr name="position" intvalue="1558"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-c">
+                <folder name="Popup">
+                    <file name="TestSubmenuAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-cnd-makeproject-actions-TestSubmenuAction.instance"/>
+                        <attr name="position" intvalue="1558"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Templates">
+
+        <folder name="testFiles">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.simpleunit.resources.Bundle"/>
+            <attr name="position" intvalue="555"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/testFiles.html"/>
+
+            <file name="simpletest.c">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.simpleunit.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/testSimpleC.png"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/test-simple-c.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.simpleunit.editor.filecreation.TestSimpleIterator"/>
+                <attr name="templateCategory" stringvalue="cncpp-test-types"/>
+                <attr name="templateGenerator" boolvalue="true"/>
+            </file>
+
+            <file name="simpletestfile.c" url="templates/c/test-simple-file-c.template">
+                <attr name="position" intvalue="110"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+                <attr name="addToLogicalFolder" boolvalue="false"/>
+            </file>
+
+            <file name="simpletest.cpp">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.simpleunit.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/testSimpleCpp.png"/>
+                <attr name="position" intvalue="200"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/test-simple-cpp.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.simpleunit.editor.filecreation.TestSimpleIterator"/>
+                <attr name="templateCategory" stringvalue="cncpp-test-types"/>
+                <attr name="templateGenerator" boolvalue="true"/>
+            </file>
+
+            <file name="simpletestfile.cpp" url="templates/cpp/test-simple-file-cpp.template">
+                <attr name="position" intvalue="210"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+                <attr name="addToLogicalFolder" boolvalue="false"/>
+            </file>
+
+        </folder> <!-- End testFiles folder -->
+
+    </folder> <!-- Templates -->
+
+</filesystem>

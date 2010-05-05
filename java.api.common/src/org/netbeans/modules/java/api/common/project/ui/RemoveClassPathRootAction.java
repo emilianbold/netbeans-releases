@@ -52,6 +52,8 @@ import org.netbeans.api.project.Project;
 
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.util.Exceptions;
 
@@ -93,29 +95,40 @@ final class RemoveClassPathRootAction extends NodeAction {
     }
 
     protected void performAction(final Node[] activatedNodes) {
-        final Set<Project> changedProjectsSet = new HashSet<Project>();
-        
-        ProjectManager.mutex().writeAccess(new Runnable() {
+        assert !(ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isReadAccess());   //Prevent to deadlock
+        final AtomicBoolean cancel = new AtomicBoolean();
+
+        final Runnable action = new Runnable() {
             public void run() {
-                for (int i = 0; i < activatedNodes.length; i++) {
-                    Removable removable = activatedNodes[i].getLookup().lookup(Removable.class);
-                    if (removable == null)
-                        continue;
-                    
-                    Project p = removable.remove();
-                    if (p != null)
-                        changedProjectsSet.add(p);
-                }
-                
-                for (Project p : changedProjectsSet) {
-                    try {
-                        ProjectManager.getDefault().saveProject(p);
-                    } catch (IOException e) {
-                        Exceptions.printStackTrace(e);
+                ProjectManager.mutex().writeAccess(new Runnable() {
+                    public void run() {
+                        if (cancel.get()) {
+                            return;
+                        }
+                        final Set<Project> changedProjectsSet = new HashSet<Project>();
+                        for (int i = 0; i < activatedNodes.length; i++) {
+                            Removable removable = activatedNodes[i].getLookup().lookup(Removable.class);
+                            if (removable == null)
+                                continue;
+
+                            Project p = removable.remove();
+                            if (p != null)
+                                changedProjectsSet.add(p);
+                        }
+
+                        for (Project p : changedProjectsSet) {
+                            try {
+                                ProjectManager.getDefault().saveProject(p);
+                            } catch (IOException e) {
+                                Exceptions.printStackTrace(e);
+                            }
+                        }
                     }
-                }
+                });
             }
-        });
+        };
+
+        ProgressUtils.runOffEventDispatchThread(action, NbBundle.getMessage(RemoveClassPathRootAction.class, "TXT_RemovingClassPathRoots"), cancel, true);
     }
 
     protected boolean enable(Node[] activatedNodes) {

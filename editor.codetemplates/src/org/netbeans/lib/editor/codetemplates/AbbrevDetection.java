@@ -95,6 +95,7 @@ import org.openide.util.WeakListeners;
 public final class AbbrevDetection implements DocumentListener, PropertyChangeListener, KeyListener, CaretListener, PreferenceChangeListener {
 
     private static final Logger LOG = Logger.getLogger(AbbrevDetection.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(AbbrevDetection.class.getName());
     
     /**
      * Document property which determines whether an ongoing document modification
@@ -419,7 +420,7 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
     private void showSurroundWithHint() {
         try {
             final Position pos = doc.createPosition(component.getCaretPosition());
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     final List<Fix> fixes = SurroundWithFix.getFixes(component);
                     SwingUtilities.invokeLater(new Runnable() {

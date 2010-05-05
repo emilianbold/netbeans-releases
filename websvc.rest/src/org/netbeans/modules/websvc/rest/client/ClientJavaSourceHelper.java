@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.xml.bind.JAXBException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.JavaSource;
@@ -100,6 +101,7 @@ import org.netbeans.modules.websvc.saas.model.jaxb.ServletDescriptor;
 import org.netbeans.modules.websvc.saas.model.jaxb.Sign;
 import org.netbeans.modules.websvc.saas.model.jaxb.TemplateType;
 import org.netbeans.modules.websvc.saas.model.jaxb.UseTemplates;
+import org.netbeans.modules.websvc.saas.model.oauth.Metadata;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -133,7 +135,10 @@ public class ClientJavaSourceHelper {
                     restLibs.add(lib);
                 }
             }
-            if (cp.findResource("com/sun/jersey/api/clientWebResource.class") == null) { //NOI18N
+            if (cp.findResource("com/sun/jersey/api/client/WebResource.class") == null ||
+                (Security.Authentication.OAUTH == security.getAuthentication() && 
+                 cp.findResource("com/sun/jersey/oauth/client/OAuthClientFilter.class") == null)
+                    ) {
                 Library lib = LibraryManager.getDefault().getLibrary("restlib"); //NOI18N
                 if (lib != null) {
                     restLibs.add(lib);
@@ -166,7 +171,7 @@ public class ClientJavaSourceHelper {
                 targetProjectType = Wadl2JavaHelper.PROJEC_TYPE_DESKTOP;
             }
             security.setProjectType(targetProjectType);
-
+            
             RestServiceDescription restServiceDesc = resourceNode.getLookup().lookup(RestServiceDescription.class);
             if (restServiceDesc != null) {
                 String uriTemplate = restServiceDesc.getUriTemplate();
@@ -205,7 +210,8 @@ public class ClientJavaSourceHelper {
 
                     addSecurityMetadata(security, saasResource);
 
-                    if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType()) && Security.Authentication.SESSION_KEY == security.getAuthentication()) {
+                    if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType()) && 
+                            (Security.Authentication.SESSION_KEY == security.getAuthentication() || Security.Authentication.OAUTH == security.getAuthentication())) {
                         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
 
                         if (restSupport != null && restSupport instanceof WebRestSupport) {
@@ -214,25 +220,36 @@ public class ClientJavaSourceHelper {
                     }
 
                     String baseUrl = saasResource.getSaas().getBaseURL();
-                    if (baseUrl.endsWith("/")) {
-                        baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
-                    }
+
                     ResourcePath resourcePath = getResourcePath(saasResource);
                     PathFormat pf = resourcePath.getPathFormat();
-                    String resourceUri = baseUrl;
                     addJerseyClient(
                             JavaSource.forFileObject(targetFo),
                             className,
-                            resourceUri,
+                            baseUrl,
                             null,
                             saasResource,
                             pf,
                             security);
 
+                    // add JAXB request/response types from wadl file
                     try {
                         Wadl2JavaHelper.generateJaxb(targetFo, saasResource.getSaas());
                     } catch (IOException ex) {
                         ex.printStackTrace();
+                    }
+                    // checking if Openide modules are on the classpath
+                    if (Wadl2JavaHelper.PROJEC_TYPE_NB_MODULE.equals(targetProjectType) &&
+                            (Security.Authentication.OAUTH == security.getAuthentication() ||
+                            Security.Authentication.SESSION_KEY == security.getAuthentication())
+                            ) {
+                        if (cp.findResource("org/openide/DialogDisplayer.class.class") == null ||
+                            cp.findResource("org/openide/util/NbPreferences.class.class") == null ||
+                            cp.findResource("org/openide/awt/HtmlBrowser.class") == null) {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                    NbBundle.getMessage(ClientJavaSourceHelper.class, "MSG_MissingOpenideModules"),
+                                    NotifyDescriptor.WARNING_MESSAGE));
+                        }
                     }
                 }
             }
@@ -384,7 +401,9 @@ public class ClientJavaSourceHelper {
                 SSLExpr+
                 "   client = "+(clientEl == null ? "com.sun.jersey.api.client.":"")+"Client.create(config);"+ //NOI18N
                 subresourceExpr +
-                "   webResource = client.resource(BASE_URI).path("+resURI+");"+ //NOI18N
+                ("\"\"".equals(resURI) ?
+                "   webResource = client.resource(BASE_URI);" : //NOI18N
+                "   webResource = client.resource(BASE_URI).path("+resURI+");") + //NOI18N
                 "}"; //NOI18N
         MethodTree constructorTree = maker.Constructor (
                 methodModifier,
@@ -493,6 +512,40 @@ public class ClientJavaSourceHelper {
                     modifiedClass = Wadl2JavaHelper.addSessionAuthServlets(copy, modifiedClass, securityParams, (ddFo == null));
                 }
             }
+        } else if (saasResource != null) {
+            try {
+                Metadata oauthMetadata = saasResource.getSaas().getOauthMetadata();
+                if (oauthMetadata != null) {
+                    modifiedClass = OAuthHelper.addOAuthMethods(security.getProjectType(), copy, modifiedClass, oauthMetadata, classTree.getSimpleName().toString());
+                    if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType())) {
+                        final FileObject ddFo = security.getDeploymentDescriptor();
+                        if (ddFo != null) {
+                            final String packageName = ((IdentifierTree)copy.getCompilationUnit().getPackageName()).getName().toString();
+                            final String className = (outerClassName==null ? "" : outerClassName+"$")+ //NOI18N
+                                    classTree.getSimpleName().toString();
+                            RequestProcessor.getDefault().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        addWebXmlOAuthArtifacts(ddFo, className, packageName);
+                                    } catch (IOException ex) {
+                                        Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Cannot add servlet/servlet mapping to web.xml", ex);
+                                    }
+                                }
+
+                            },1000);
+
+                        }
+                        modifiedClass = OAuthHelper.addOAuthServlets(copy, modifiedClass, oauthMetadata, classTree.getSimpleName().toString(), (ddFo == null));
+                    }
+                }
+
+            } catch (IOException ex) {
+                Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Cannot get metadata for oauth", ex);
+            } catch (JAXBException ex) {
+                Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Cannot get metadata for oauth", ex);
+            }
+            // ouauth authentication
         }
 
         if (security.isSSL()) {
@@ -1068,6 +1121,35 @@ public class ClientJavaSourceHelper {
                         ((ServletMapping25)servletMapping).addUrlPattern(urlPattern);
                     } else {
                         servletMapping.setUrlPattern(urlPattern);
+                    }
+                    webApp.addServlet(servlet);
+                    webApp.addServletMapping(servletMapping);
+
+                } catch (ClassNotFoundException ex) {
+                }
+            }
+            webApp.write(ddFo);
+        }
+    }
+
+    private static void addWebXmlOAuthArtifacts(FileObject ddFo, String parentClassName, String packageName) throws IOException {
+        String[] servletNames = new String[] {"OAuthLoginServlet", "OAuthCallbackServlet"}; //NOI18N
+        String[] urlPatterns = new String[] {"/OAuthLogin", "/OAuthCallback"}; //NOI18N
+        WebApp webApp = DDProvider.getDefault().getDDRoot(ddFo);
+        if (webApp != null) {
+            for (int i = 0; i<servletNames.length; i++) {
+                String servletName = parentClassName+"$"+servletNames[i];
+                String className = packageName+"."+servletName;
+                try {
+                    Servlet servlet = (Servlet) webApp.createBean("Servlet"); //NOI18N
+                    servlet.setServletName(servletName);
+                    servlet.setServletClass(className);
+                    ServletMapping servletMapping = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
+                    servletMapping.setServletName(servletName);
+                    if (servletMapping instanceof ServletMapping25) {
+                        ((ServletMapping25)servletMapping).addUrlPattern(urlPatterns[i]);
+                    } else {
+                        servletMapping.setUrlPattern(urlPatterns[i]);
                     }
                     webApp.addServlet(servlet);
                     webApp.addServletMapping(servletMapping);

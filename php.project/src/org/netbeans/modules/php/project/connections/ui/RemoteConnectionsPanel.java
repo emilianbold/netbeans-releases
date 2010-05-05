@@ -85,7 +85,7 @@ import org.openide.util.TaskListener;
 /**
  * @author Tomas Mysik
  */
-public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
+public final class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     private static final long serialVersionUID = -286975118754121236L;
 
     private static final RequestProcessor TEST_CONNECTION_RP = new RequestProcessor("Test Remote Connection", 1); // NOI18N
@@ -121,6 +121,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
 
     public boolean open(final RemoteConfiguration remoteConfiguration) {
         testConnectionTask = TEST_CONNECTION_RP.create(new Runnable() {
+            @Override
             public void run() {
                 testConnection();
             }
@@ -134,6 +135,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
                 null);
         notificationLineSupport = descriptor.createNotificationLineSupport();
         testConnectionTask.addTaskListener(new TaskListener() {
+            @Override
             public void taskFinished(Task task) {
                 enableTestConnection();
             }
@@ -141,6 +143,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         try {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if (getConfigurations().isEmpty()) {
                         // no config available => show add config dialog
@@ -167,17 +170,20 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
 
     private void registerListeners() {
         configList.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 setEnabledRemoveButton();
                 selectCurrentConfig();
             }
         });
         addButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 addConfig();
             }
         });
         removeButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 removeConfig();
             }
@@ -596,6 +602,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     private javax.swing.JButton testConnectionButton;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         Configuration cfg = getSelectedConfiguration();
         if (cfg != null) {
@@ -615,6 +622,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
             setOpaque(true);
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             setName("ComboBox.listRenderer"); // NOI18N
             Color errorColor = UIManager.getColor("nb.errorForeground"); // NOI18N
@@ -648,10 +656,12 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
 
         private final List<Configuration> data = new ArrayList<Configuration>();
 
+        @Override
         public int getSize() {
             return data.size();
         }
 
+        @Override
         public Configuration getElementAt(int index) {
             return data.get(index);
         }
@@ -713,31 +723,39 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     private static final class EmptyConfigurationPanel implements RemoteConfigurationPanel {
         private static final JPanel PANEL = new JPanel();
 
+        @Override
         public void addChangeListener(ChangeListener listener) {
         }
 
+        @Override
         public void removeChangeListener(ChangeListener listener) {
         }
 
+        @Override
         public JComponent getComponent() {
             return PANEL;
         }
 
+        @Override
         public boolean isValidConfiguration() {
             return true;
         }
 
+        @Override
         public String getError() {
             return null;
         }
 
+        @Override
         public String getWarning() {
             return null;
         }
 
+        @Override
         public void read(Configuration configuration) {
         }
 
+        @Override
         public void store(Configuration configuration) {
         }
     }

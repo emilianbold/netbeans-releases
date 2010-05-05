@@ -7,7 +7,7 @@ Use is subject to license terms.
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
     <link href="/org/netbeans/modules/usersguide/ide.css" rel="StyleSheet" type="text/css">
-    <meta content="Helen" name="generator">
+     
     <title>C/C++ Project Properties Dialog Box: Build</title>
   </head>
   <body>
@@ -18,32 +18,26 @@ Use is subject to license terms.
        The Build panel of the Project Properties dialog box lets you set the build tools properties
       for your project:
     </p>
-    <ul>
-      <li>
-        Development host
-      </li>
-      <li>
-        Tool collection
-      </li>
-      <li>
-        Whether the project requires a C compiler
-      </li>
-      <li>
-        Whether the project requires a C++ compiler
-      </li>
-      <li>
-        Whether the project requires a Fortran compiler
-      </li>
-      <li>
-        Whether the project requires an assembler
-      </li>
-      <li>
-        Configuration type
-      </li>
-      <li>
-        Whether make dependency checking is enabled
-      </li>
-    </ul>
+    <p><b>Development host.</b> The development host can be set to the local host where the IDE is running, or a remote host
+        that you have configured. Click the button next to this field to open
+        a dialog for working with development hosts.</p>
+    <p><b>Tool collection.</b> Select the tool set that you want to use to compile the project. The tool
+        collections are defined in the Tools &gt; Options &gt; C/C++ panel of the IDE.</p>
+    <p> <b>Configuration Type.</b> The project has a configuration type that is determined
+         when you create the project in the IDE. For unmanaged projects, which are
+         projects from existing sources, the Configuration Type is Makefile. Projects created
+         and managed in the IDE can be Applications, Dynamic Libraries, Static Libraries, or Qt
+         implementations of these types.</p>
+    <p><b>Enable Make Dependency Checking</b>. Select this option to enable automatic checking
+        of file dependencies to make incremental rebuilds work correctly. If you change a header
+        file that is included in some of your source files and then click Build, the IDE will
+        rebuild only those parts of the project that really depend on the changed header.
+        This feature saves time and leads to more consistent build results. Dependency checking
+        is performed by the make utility through instructions in the Makefile.</p>
+
+          
+     
+     
     <table>
       <tr>
         <th align="left" colspan="2">
@@ -55,11 +49,13 @@ Use is subject to license terms.
           &nbsp;
         </td>
         <td>
-          <a href="ConfiguringBuildTools.html">Configuring C and C+++ Build Tools</a><br>
+          <a href="ConfiguringBuildTools.html">Configuring Build Tools for C/C++/Fortran Projects</a><br>
            C/C++ Project Properties Dialog Box:<br>
            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsGeneral.html">General</a><br>
            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=
           "ProjectPropsLinkerGeneral.html">Linker</a><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsCompilerGeneral.html">Compiler</a><br>
+
            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsRunning.html">Run</a><br>
            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsProfile.html">Profile</a><br>
            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsDebugging.html">Debug</a><br>

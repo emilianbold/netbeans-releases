@@ -47,6 +47,21 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="ListView.setShowParentNode">
+        <api name="explorer"/>
+        <summary>ListView can now display ".." item</summary>
+        <version major="6" minor="28"/>
+        <date day="24" month="4" year="2010"/>
+        <author login="jtulach"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            To simplify navigation "up" in the <code>ListView</code> one
+            can turn on <a href="@TOP@/org/openide/explorer/view/ListView.html#setShowParentNode(boolean)">showParentNode</a>
+            property.
+        </description>
+        <class package="org.openide.explorer.view" name="ListView"/>
+        <issue number="35954"/>
+    </change>
     <change id="OutlineView.setPropertyColumns">
         <api name="explorer"/>
         <summary><code>OutlineView.setPropertyColumns</code>,

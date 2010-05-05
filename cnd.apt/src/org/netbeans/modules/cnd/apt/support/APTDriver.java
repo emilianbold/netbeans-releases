@@ -62,11 +62,11 @@ public final class APTDriver {
     }
 
     public APTFile findAPTLight(APTFileBuffer buffer) throws IOException {
-        return APTDriverImpl.findAPT(buffer, false);
+        return APTDriverImpl.findAPT(buffer, false, APTLanguageSupport.UNKNOWN);
     }
     
-    public APTFile findAPT(APTFileBuffer buffer) throws IOException {
-        return APTDriverImpl.findAPT(buffer, true);
+    public APTFile findAPT(APTFileBuffer buffer, String lang) throws IOException {
+        return APTDriverImpl.findAPT(buffer, true, lang);
     }
     
     public void invalidateAPT(APTFileBuffer buffer) {

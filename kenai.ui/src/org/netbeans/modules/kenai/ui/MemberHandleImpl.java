@@ -130,7 +130,7 @@ public class MemberHandleImpl extends MemberHandle {
 
     @Override
     public String getFQN() {
-        return getName() + "@" + this.delegate.getKenaiUser().getKenai().getUrl().getHost().toString();
+        return getName() + "@" + this.delegate.getKenaiUser().getKenai().getUrl().getHost().toString(); // NOI18N
     }
 
 }

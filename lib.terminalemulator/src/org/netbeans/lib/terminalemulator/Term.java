@@ -55,6 +55,7 @@ import java.util.HashSet;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Map;
 
 /**
  * Term is a pure Java multi-purpose terminal emulator.
@@ -266,6 +267,7 @@ public class Term extends JComponent implements Accessible {
     private int n_paint;
     private boolean fixedFont = false;
     MyFontMetrics metrics = null;
+    private Map<?, ?> renderingHints;
     Buffer buf = new Buffer(80);
     private RegionManager region_manager = new RegionManager();
     // 'left_down_point' remembers where the left button came down as a
@@ -2677,6 +2679,11 @@ public class Term extends JComponent implements Accessible {
         // OLD final char buf[] = l.XcharArray();
         l.getChars(xferBuf);
 
+        // Use rendering hints (antialiasing etc.)
+        Map<?,?> hints = renderingHints;
+        if ((hints != null) && (g instanceof Graphics2D)) {
+            ((Graphics2D) g).setRenderingHints(hints);
+        }
         if (metrics.isMultiCell()) {
             // slow way
             // This looks expensive but it is in fact a whole lot faster
@@ -4788,6 +4795,10 @@ public class Term extends JComponent implements Accessible {
         hscroll_wrapper.setVisible(horizontally_scrollable);
     }
 
+    public final void setRenderingHints(Map<?, ?> hints) {
+        renderingHints = hints;
+    }
+    
     /*
      * Returns whether horizontal scrolling is enabled.
      * @see Term.setHorizontallyScrollable
@@ -5003,7 +5014,6 @@ public class Term extends JComponent implements Accessible {
 
         // cache the metrics
         metrics = new MyFontMetrics(this, font);
-
         updateScreenSize();
     }
 

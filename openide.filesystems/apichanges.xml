@@ -46,6 +46,23 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="addRecursiveListenerStop">
+            <api name="filesystems"/>
+            <summary>Interruptable addRecursiveListener</summary>
+            <version major="7" minor="37"/>
+            <date day="17" month="2" year="2010"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    New variant of <code>addRecursiveListener</code> method
+                    that allows the caller to control the process enumerating
+                    files in subtree and stop it.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+            <issue number="180523"/>
+        </change>
         <change id="MultiFileSystem.weight">
             <api name="filesystems"/>
             <summary>Ability to specify "weight" for <code>MultiFileSystem</code> overrides</summary>

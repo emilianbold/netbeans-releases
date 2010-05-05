@@ -36,9 +36,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -55,13 +53,11 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.UIResource;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
@@ -82,6 +78,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.Presenter;
@@ -94,23 +91,27 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
     private static final Logger LOGGER = Logger.getLogger(ActiveConfigAction.class.getName());
 
+    private static final RequestProcessor RP = new RequestProcessor(ActiveConfigAction.class);
+
     private static final DefaultComboBoxModel EMPTY_MODEL = new DefaultComboBoxModel();
     private static final Object CUSTOMIZE_ENTRY = new Object();
 
     private final PropertyChangeListener lst;
     private final LookupListener looklst;
-    private final JComboBox configListCombo;
+    private JComboBox configListCombo;
     private boolean listeningToCombo = true;
 
     private Project currentProject;
     private ProjectConfigurationProvider pcp;
     private Lookup.Result<ProjectConfigurationProvider> currentResult;
 
-    private Lookup lookup;
+    private final Lookup lookup;
 
-    public ActiveConfigAction() {
-        super();
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    private void initConfigListCombo() {
+        assert EventQueue.isDispatchThread();
+        if (configListCombo != null) {
+            return;
+        }
         configListCombo = new JComboBox();
         configListCombo.addPopupMenuListener(new PopupMenuListener() {
             private Component prevFocusOwner = null;
@@ -147,6 +148,16 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                 } else if (o != null) {
                     activeConfigurationSelected((ProjectConfiguration) o, null);
                 }
+            }
+        });
+    }
+
+    public ActiveConfigAction() {
+        super();
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        EventQueue.invokeLater(new Runnable() {
+            public @Override void run() {
+                initConfigListCombo();
             }
         });
         lst = new PropertyChangeListener() {
@@ -206,7 +217,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
     private synchronized void activeConfigurationChanged(final ProjectConfiguration config) {
         LOGGER.log(Level.FINER, "activeConfigurationChanged: {0}", config);
-        SwingUtilities.invokeLater(new Runnable() {
+        EventQueue.invokeLater(new Runnable() {
             public void run() {
                 listeningToCombo = false;
                 try {
@@ -262,6 +273,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         toolbarPanel.setMaximumSize(new Dimension(150, 80));
         toolbarPanel.setMinimumSize(new Dimension(150, 0));
         toolbarPanel.setPreferredSize(new Dimension(150, 23));
+        initConfigListCombo();
         // XXX top inset of 2 looks better w/ small toolbar, but 1 seems to look better for large toolbar (the default):
         toolbarPanel.add(configListCombo, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(1, 6, 1, 5), 0, 0));
         return toolbarPanel;
@@ -523,54 +535,42 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     }
 
     private void refreshView(Lookup context) {
-
-        if (OpenProjectList.getDefault().getOpenProjects().length == 0) {
-            activeProjectChanged(null);
-        }
-
-        Project contextPrj = getProjectFromLookup(context);
-        if (contextPrj == null) {
-            contextPrj = OpenProjectList.getDefault().getMainProject();
-        }
-
-        if (contextPrj != null) {
-            activeProjectChanged(contextPrj);
-        } //else {
-          //  currentProject = null;
-          //  activeProjectChanged(null);
-        //}
-
-    }
-
-    private Project getProjectFromLookup(Lookup context) {
-        Project toReturn = null;
-        List<Project> result = new ArrayList<Project>();
-        if (context != null) {
-            for (Project p : context.lookupAll(Project.class)) {
-                result.add(p);
-            }
-        }
-        if (result.size() > 0) {
-            toReturn = result.get(0);
+        // #185033: see MainProjectAction for basic logic.
+        Project p = OpenProjectList.getDefault().getMainProject();
+        if (p != null) {
+            activeProjectChanged(p);
         } else {
-            // find a project via DataObject
-            for (DataObject dobj : context.lookupAll(DataObject.class)) {
-                FileObject primaryFile = dobj.getPrimaryFile();
-                toReturn = FileOwnerQuery.getOwner(primaryFile);
+            Project[] selected = ActionsUtil.getProjectsFromLookup(context, null);
+            if (selected.length == 1) {
+                activeProjectChanged(selected[0]);
+            } else {
+                Project[] open = OpenProjectList.getDefault().getOpenProjects();
+                if (open.length == 1) {
+                    activeProjectChanged(open[0]);
+                } else {
+                    activeProjectChanged(null);
+                }
             }
         }
-        return toReturn;
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    public @Override void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(OpenProjectList.PROPERTY_MAIN_PROJECT) ||
             evt.getPropertyName().equals(OpenProjectList.PROPERTY_OPEN_PROJECTS) ) {
-            refreshView(lookup);
+            refreshViewLater();
         }
     }
 
-    public void resultChanged(LookupEvent ev) {
-        refreshView(lookup);
+    public @Override void resultChanged(LookupEvent ev) {
+        refreshViewLater();
+    }
+
+    private void refreshViewLater() {
+        RP.post(new Runnable() {
+            public @Override void run() {
+                refreshView(lookup);
+            }
+        });
     }
 
 }

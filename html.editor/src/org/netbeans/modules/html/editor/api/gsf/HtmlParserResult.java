@@ -265,8 +265,8 @@ public class HtmlParserResult extends ParserResult {
                                         desc.getText(),
                                         desc.getText(),
                                         getSnapshot().getSource().getFileObject(),
-                                        getSnapshot().getOriginalOffset(desc.getFrom()),
-                                        getSnapshot().getOriginalOffset(desc.getTo()),
+                                        desc.getFrom(),
+                                        desc.getTo(),
                                         false /* not line error */,
                                         desc.getType() == Description.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
 

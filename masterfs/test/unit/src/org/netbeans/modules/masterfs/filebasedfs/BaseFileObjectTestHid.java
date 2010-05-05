@@ -42,6 +42,7 @@
 package org.netbeans.modules.masterfs.filebasedfs;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -54,11 +55,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarOutputStream;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import javax.swing.filechooser.FileSystemView;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLockUtils;
-import org.netbeans.modules.masterfs.providers.ProvidedExtensionsTest;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -92,6 +97,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         root = testedFS.findResource(getResourcePrefix());
     }
 
+    @Override
     protected String[] getResources(String testName) {
         return new String[] {"testdir/ignoredir/nextdir/", 
                              "testdir/mountdir/nextdir/",
@@ -105,7 +111,40 @@ public class BaseFileObjectTestHid extends TestBaseHid{
                              "testdir/mountdir7/file2.ext",
                              "testdir/mountdir8/",
                              "testdir/mountdir9/",                
+                             "testdir/mountdir10/",
         };
+    }
+
+    
+    public void testFileTypeNotRemembered() throws Exception {
+        String newFileName = "test";
+
+        FileObject parent = root.getFileObject("testdir/mountdir10");
+        assertNotNull(parent);
+        assertTrue(parent.isFolder());
+        parent.getChildren();
+
+        // create a folder
+        assertTrue(parent.createFolder(newFileName).isFolder());
+
+        File parentFile = FileUtil.toFile(parent);
+        assertNotNull(parentFile);
+        assertTrue(parentFile.getAbsolutePath(),parentFile.exists());
+        File newFile = new File(parentFile, newFileName);
+        assertTrue(newFile.getAbsolutePath(), newFile.exists());
+
+        // externally delete the folder
+        assertTrue(newFile.getAbsolutePath(), newFile.delete());
+        assertFalse(newFile.exists());
+
+        // create a file with the same name as the deleted folder
+        assertTrue(newFile.getAbsolutePath(), new File(parentFile, newFileName).createNewFile());
+        assertTrue(newFile.exists());
+
+        parent.refresh();
+
+        FileObject fo = FileUtil.toFileObject(newFile);
+        assertTrue(newFile.getAbsolutePath(), fo.isData());
     }
 
     public void testRootToFileObject() throws Exception {
@@ -339,16 +378,32 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     }*/
 
     public void testCreateFolderOrDataFile_ReadOnly() throws Exception {
+        clearWorkDir();
         final File wDir = getWorkDir();
         final File fold = new File(wDir,"a/b/c");
         final File data = new File(fold,"a/b/c.data");
-        assertTrue(getWorkDir().setReadOnly());
+        assertTrue(wDir.setReadOnly());
+        assertFalse("Cannot write", wDir.canWrite());
         try {
             implCreateFolderOrDataFile(fold, data);        
             fail();
         } catch (IOException ex) {            
         } finally {
-            assertTrue(getWorkDir().setWritable(true));        
+            assertTrue(wDir.setWritable(true));
+        }
+    }
+
+    public void testCannotLockReadOnlyFile() throws Exception {
+        clearWorkDir();
+        final File wDir = getWorkDir();
+        final File data = new File(wDir,"c.data");
+        data.createNewFile();
+        data.setReadOnly();
+        FileObject fd = FileUtil.toFileObject(data);
+        try {
+            FileLock lock = fd.lock();
+            fail("Shall not be possible to create a lock: " + lock);
+        } catch (IOException ex) {
         }
     }
     
@@ -417,21 +472,27 @@ public class BaseFileObjectTestHid extends TestBaseHid{
             final List<Boolean> valid = new ArrayList<Boolean>();
             FileObject fo = FileUtil.toFileObject(fileF);
             fo.addFileChangeListener(new FileChangeListener() {
+                @Override
                 public void fileAttributeChanged(FileAttributeEvent fe) {
                     update();
                 }
+                @Override
                 public void fileChanged(FileEvent fe) {
                     update();
                 }
+                @Override
                 public void fileDataCreated(FileEvent fe) {
                     update();
                 }
+                @Override
                 public void fileDeleted(FileEvent fe) {
                     update();
                 }
+                @Override
                 public void fileFolderCreated(FileEvent fe) {
                     update();
                 }
+                @Override
                 public void fileRenamed(FileRenameEvent fe) {
                     update();
                 }
@@ -560,6 +621,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         fs.addFileChangeListener(tl);
         try {
             fs.runAtomicAction(new FileSystem.AtomicAction(){
+                @Override
                 public void run() throws IOException {
                     FileObject subpackage = root.getFileObject("subpackage");
                     allSubPackages.add(subpackage);
@@ -582,11 +644,12 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertNotNull(root.getFileObject("subpackage1"));
         assertNotNull(root.getFileObject("subpackage1/newclass.java"));
         FileObjectTestHid.implOfTestGetFileObjectForSubversion(root, "subpackage");                                
-        final String subpackageName = Utilities.isWindows() ? 
+        final String subpackageName = Utilities.isWindows() || Utilities.isMac() ?
             "subpackage2" : "Subpackage";
         fs.addFileChangeListener(tl);
         try {
              fs.runAtomicAction(new FileSystem.AtomicAction(){
+                @Override
                 public void run() throws IOException {
                     FileObject subpackage1 = root.getFileObject("subpackage1");
                     FileObject newclass = root.getFileObject("subpackage1/newclass.java");
@@ -979,17 +1042,53 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         String msg = (lockFo != null) ? lockFo.toString() : "";
         assertNull(msg,lockFo);
     }
+
+    public void testDeletedFileDoesNotReturnInputStream() throws Exception {
+        final FileObject testFo = FileUtil.createData(root,"testfile.data");
+        final File testFile = FileUtil.toFile(testFo);
+        final Logger LOGGER = Logger.getLogger(FileObj.class.getName());
+        final Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                if ("FileObj.getInputStream_after_is_valid".equals(record.getMessage())) {
+                    testFile.delete();
+                }
+            }
+            @Override
+            public void flush() {
+            }
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        final Level originalLevel = LOGGER.getLevel();
+        LOGGER.setLevel(Level.FINEST);
+        try {
+            LOGGER.addHandler(handler);
+            try {
+                testFo.getInputStream();
+                assertTrue("Exception not thrown by deleted file getInputStream()", false);
+            } catch (FileNotFoundException e) {
+                //pass - expected exception
+            } finally {
+                LOGGER.removeHandler(handler);
+            }
+        } finally {
+            LOGGER.setLevel(originalLevel);
+        }
+    }
     
     private class IgnoreDirFileSystem extends LocalFileSystem {
         org.openide.filesystems.FileSystem.Status status = new org.openide.filesystems.FileSystem.HtmlStatus() {
+            @Override
             public String annotateName (String name, java.util.Set files) {
-                java.lang.StringBuffer sb = new StringBuffer (name);                
+                StringBuilder sb = new StringBuilder (name);
                 Iterator it = files.iterator ();
                 while (it.hasNext()) {                    
                     FileObject fo = (FileObject)it.next();
                     try {
                         if (fo.getFileSystem() instanceof IgnoreDirFileSystem) {
-                            sb.append ("," +fo.getNameExt());//NOI18N
+                            sb.append(",").append (fo.getNameExt());//NOI18N
                         }
                     } catch (Exception ex) {
                         fail ();
@@ -999,10 +1098,12 @@ public class BaseFileObjectTestHid extends TestBaseHid{
                 return sb.toString () ;
             }
 
+            @Override
             public java.awt.Image annotateIcon (java.awt.Image icon, int iconType, java.util.Set files) {
                 return icon;
             }
 
+            @Override
             public String annotateNameHtml(String name, Set files) {
                 return annotateName (name, files);
             }            

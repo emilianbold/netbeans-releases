@@ -222,9 +222,18 @@ public class VerifierSupport extends TopComponent{
         
         String onlyJarFile   = f.getName();
         File ff = new File(dir, onlyJarFile+".xml");        // NOI18N
+        org.netbeans.modules.j2ee.sun.dd.impl.verifier.Error err = null;
+        if (!ff.exists()) {
+            err = StaticVerification.createGraph().newError();
+            err.setErrorName(NbBundle.getMessage(VerifierSupport.class,"ERR_PARSING_OUTPUT"));  // NOI18N
+            err.setErrorDescription(NbBundle.getMessage(VerifierSupport.class,"ERR_NO_OUTPUT_TO_PARSE", ff));
+            verifierSupport.saveErrorResultsForDisplay( err);
+            verifierSupport.verifierIsStillRunning = false;// we are done
+            verifierSupport.updateDisplay();
+            return;
+        }
         FileInputStream in = null;
         StaticVerification sv = null;
-        org.netbeans.modules.j2ee.sun.dd.impl.verifier.Error err = null;
         try {
             in = new FileInputStream(ff);
             

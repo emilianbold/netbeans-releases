@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.event.ItemEvent;
@@ -151,7 +152,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         pxml = new ProjectXMLManager((NbModuleProject) getProperties().getProject());
     }
 
-    void refresh() {
+    protected void refresh() {
         refreshJavaPlatforms();
         refreshPlatforms();
         platformValue.setEnabled(getProperties().isStandalone());
@@ -709,10 +710,10 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         ModuleDependency[] newDeps = AddModulePanel.selectDependencies(getProperties());
         for (int i = 0; i < newDeps.length; i++) {
             ModuleDependency dep = newDeps[i];
-            if ("0".equals(dep.getReleaseVersion()) && !dep.hasImplementationDepedendency()) { // #72216 NOI18N
+            if ("0".equals(dep.getReleaseVersion()) && !dep.hasImplementationDependency()) { // #72216 NOI18N
                 dep = new ModuleDependency(
                             dep.getModuleEntry(), "0-1", dep.getSpecificationVersion(), // NOI18N
-                            dep.hasCompileDependency(), dep.hasImplementationDepedendency());
+                            dep.hasCompileDependency(), dep.hasImplementationDependency());
             }
             String warn = pxml.getDependencyCycleWarning(Collections.singleton(dep));
             if (warn != null) {
@@ -742,7 +743,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         chooser.enableVariableBasedSelection(true);
         chooser.setFileHidingEnabled(false);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled( true );
         chooser.setDialogTitle( NbBundle.getMessage( EditMediator.class, "LBL_AddJar_DialogTitle" ) ); // NOI18N
         //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.

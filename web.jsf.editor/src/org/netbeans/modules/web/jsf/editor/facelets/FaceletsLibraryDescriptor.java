@@ -99,8 +99,7 @@ public class FaceletsLibraryDescriptor extends LibraryDescriptor {
         try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-            InputSource is = new InputSource(content); //default encoding?!?!
-            is.setEncoding("UTF-8");
+            InputSource is = new InputSource(content); //the ecoding should be autodetected
             docBuilder.setEntityResolver(UserCatalog.getDefault().getEntityResolver()); //we count on TaglibCatalog from web.core module
             Document doc = docBuilder.parse(is);
 

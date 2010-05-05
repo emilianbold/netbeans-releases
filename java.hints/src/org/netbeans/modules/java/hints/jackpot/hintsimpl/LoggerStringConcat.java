@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(id="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", category="logging")
+@Hint(id="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", category="logging", suppressWarnings="LoggerStringConcat")
 public class LoggerStringConcat {
 
     @TriggerPattern(value = "$logger.log($level, $message)",
@@ -161,6 +161,11 @@ public class LoggerStringConcat {
         if (sorted.size() <= 1) {
             return null;
         }
+
+        //check for erroneous trees:
+        for (List<TreePath> tps : sorted)
+            for (TreePath tp : tps)
+                if (tp.getLeaf().getKind() == Kind.ERRONEOUS) return null;
 
         FixImpl fix = new FixImpl(NbBundle.getMessage(LoggerStringConcat.class, "MSG_LoggerStringConcat_fix"), methodName, TreePathHandle.create(ctx.getPath(), ctx.getInfo()), TreePathHandle.create(message, ctx.getInfo()));
 

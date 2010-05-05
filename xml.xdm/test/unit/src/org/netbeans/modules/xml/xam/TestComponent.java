@@ -49,9 +49,7 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractNamedComponentReference;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  *
@@ -60,27 +58,35 @@ import org.w3c.dom.Text;
 public class TestComponent extends AbstractDocumentComponent<TestComponent> implements NamedReferenceable<TestComponent> {
     public static String NS_URI = "http://www.test.com/TestModel";
     public static String NS2_URI = "http://www.test2.com/TestModel";
-    public static QName ROOT_QNAME = new QName(NS_URI, "test");
+    public static String NS_ERR_URI = "http://www.test2.com/TestModel/Err";
     
     public TestComponent(TestModel model, org.w3c.dom.Element e) {
         super(model, e);
     }
-    public TestComponent(TestModel model, String name) {
-        this(model, model.getDocument().createElementNS(NS_URI, name));
+    public TestComponent(TestModel model, String name, String ns) {
+        this(model, model.getDocument().createElementNS(ns, name));
     }
-    public TestComponent(TestModel model, String name, int index) {
-        this(model, name);
+    public TestComponent(TestModel model, String name, String ns, int index) {
+        this(model, name, ns);
         setIndex(index);
     }
-    public TestComponent(TestModel model, String name, int index, String value) {
-        this(model, name, index);
+    public TestComponent(TestModel model, String name, String ns, int index, String value) {
+        this(model, name, ns, index);
         setValue(value);
     }
+
+    @Override
     public String toString() { return getName(); }
+
+    @Override
     public String getName() { return getPeer().getLocalName()+getIndex(); }
+
+    @Override
     public String getNamespaceURI() {
         return super.getNamespaceURI();
     }
+
+    @Override
     protected void populateChildren(List<TestComponent> children) {
         NodeList nl = getPeer().getChildNodes();
         if (nl != null){
@@ -114,6 +120,8 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
             return new TestComponent.D(model, e);
         } else if (e.getLocalName().equals("e") && NS_URI.equals(namespace)) {
             return new TestComponent.E(model, e);
+        } else if (e.getLocalName().equals(Err.LNAME) && NS_ERR_URI.equals(namespace)) {
+            return new TestComponent.Err(model, e);
         } else {
             return null;
             //throw new RuntimeException("unsupported element type "+ e.getNodeName());
@@ -135,14 +143,16 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
         return s == null ? -1 : Integer.parseInt(s); 
     }
 
+    @Override
     public void updateReference(Element n) {
         assert (n != null);
         assert n.getLocalName().equals(getQName().getLocalPart());
         super.updateReference(n);
     }
     
-    public QName getQName() { return ROOT_QNAME; }
-    
+//    public QName getQName() { return ROOT_QNAME; }
+
+    @Override
     protected Object getAttributeValueOf(Attribute attr, String stringValue) {
         if (stringValue == null) return null;
         if (String.class.isAssignableFrom(attr.getType())) {
@@ -157,72 +167,123 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
     public static class A extends TestComponent {
         public static final QName QNAME = new QName(NS_URI, "a");
         public A(TestModel model, int i) {
-            super(model, "a", i);
+            super(model, "a", NS_URI, i);
         }
+
         public A(TestModel model, Element e) {
             super(model, e);
         }
+
+        @Override
         public QName getQName() { return QNAME; }
     }
     public static class Aa extends TestComponent {
         public static final QName QNAME = new QName(NS2_URI, "a");
         public Aa(TestModel model, int i) {
-            super(model, "a", i);
+            super(model, "a", NS2_URI, i);
         }
         public Aa(TestModel model, Element e) {
             super(model, e);
         }
+
+        @Override
         public QName getQName() { return QNAME; }
     }
     public static class B extends TestComponent {
         public static final QName QNAME = new QName(NS_URI, "b");
         public B(TestModel model, int i) {
-            super(model, "b", i);
+            super(model, "b", NS_URI, i);
         }
         public B(TestModel model, Element e) {
             super(model, e);
         }
+
+        @Override
         public QName getQName() { return QNAME; }
     }
     public static class C extends TestComponent {
         public static final QName QNAME = new QName(NS_URI, "c");
         public C(TestModel model, int i) {
-            super(model, "c", i);
+            super(model, "c", NS_URI, i);
         }
         public C(TestModel model, Element e) {
             super(model, e);
         }
+
+        @Override
         public QName getQName() { return QNAME; }
     }
     public static class D extends TestComponent {
         public static final QName QNAME = new QName(NS_URI, "d");
         public D(TestModel model, int i) {
-            super(model, "d", i);
+            super(model, "d", NS_URI, i);
         }
         public D(TestModel model, Element e) {
             super(model, e);
         }
+
+        @Override
         public QName getQName() { return QNAME; }
     }
     public static class E extends TestComponent {
         public static final QName QNAME = new QName(NS_URI, "e");
         public E(TestModel model, int i) {
-            super(model, "e", i);
+            super(model, "e", NS_URI, i);
         }
         public E(TestModel model, Element e) {
             super(model, e);
         }
+
+        @Override
         public QName getQName() { return QNAME; }
 
+        @Override
         public String getValue() {
             String retValue;
             
             retValue = super.getValue();
             return retValue;
         }
+
+        @Override
         public String getName() {
             return super.getAttribute(TestAttribute.NAME);
         }
+
+        public void setName(String v) {
+            setAttribute(TestAttribute.NAME.getName(), TestAttribute.NAME, v);
+        }
+    }
+
+    /**
+     * Special component for testing error processing in ComponentUpdater. 
+     */
+    public static class Err extends TestComponent {
+        public static final String LNAME = "err";
+        public static final QName QNAME = new QName(NS_ERR_URI, LNAME);
+        public Err(TestModel model, int i) {
+            super(model, LNAME, NS_ERR_URI, i);
+        }
+        public Err(TestModel model, Element e) {
+            super(model, e);
+        }
+
+        @Override
+        public QName getQName() { return QNAME; }
+
+        @Override
+        public String getValue() {
+            String retValue;
+
+            retValue = super.getValue();
+            return retValue;
+        }
+
+        @Override
+        public String getName() {
+            return super.getAttribute(TestAttribute.NAME);
+        }
+
         public void setName(String v) {
             setAttribute(TestAttribute.NAME.getName(), TestAttribute.NAME, v);
         }
@@ -236,9 +297,13 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
         public TestComponentReference(T ref, Class<T> type, TestComponent parent) {
             super(ref, type, parent);
         }
+
+        @Override
         public TestComponent getParent() {
             return (TestComponent) super.getParent();
         }
+
+        @Override
         public String getEffectiveNamespace() {
             if (getReferenced() != null) {
                 return getReferenced().getModel().getRootComponent().getTargetNamespace();
@@ -246,6 +311,7 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
             return getParent().getModel().getRootComponent().getTargetNamespace();
         }
 
+        @Override
         public T get() {
             if (getReferenced() == null) {
                 String tns = getQName().getNamespaceURI();
@@ -259,10 +325,12 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
         }
     }
 
+    @Override
     public String getLeadingText(TestComponent child) {
         return super.getLeadingText(child);
     }
-    
+
+    @Override
     public String getTrailingText(TestComponent child) {
         return super.getTrailingText(child);
     }
@@ -274,7 +342,8 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
             setTrailingText(propName, value, child);
         }
     }
-    
+
+    @Override
     public TestModel getModel() {
         return (TestModel) super.getModel();
     }
@@ -312,6 +381,8 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
             root.accept(this);
             return found;
         }
+
+        @Override
         public void visit(TestComponent component) {
             if (name.equals(component.getName())) {
                 found = component;
@@ -319,6 +390,8 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
                 visitChildren(component);
             }
         }
+
+        @Override
         public void visitChildren(TestComponent component) {
             for (TestComponent child : component.getChildren()) {
                 child.accept(this);

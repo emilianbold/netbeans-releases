@@ -82,7 +82,8 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
             final List<ParameterElement> parameters,
             final Set<TypeResolver> returnTypes) {
         super(methodName, enclosingType.getName(), fileUrl, offset, elementQuery);
-        this.modifiers = PhpModifiers.fromBitMask(flags);
+        final boolean isFromInterface = enclosingType != null && enclosingType.isInterface();
+        this.modifiers = PhpModifiers.fromBitMask((isFromInterface) ? (flags | Modifier.ABSTRACT | Modifier.PUBLIC) : flags);
         this.isMagic = isMagic;
         this.enclosingType = enclosingType;
         this.functionSupport = new BaseFunctionElementSupport(parameters, returnTypes);
@@ -115,7 +116,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
     private static List<ParameterElement> fromParameterNames(String... names) {
         List<ParameterElement> retval = new ArrayList<ParameterElement>();
         for (String parameterName : names) {
-            retval.add(new ParameterElementImpl(parameterName, null, 0, Collections.<TypeResolver>emptySet(), true));
+            retval.add(new ParameterElementImpl(parameterName, null, 0, Collections.<TypeResolver>emptySet(), true, true, false));
         }
         return retval;
     }

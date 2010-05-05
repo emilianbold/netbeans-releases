@@ -54,13 +54,12 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
-import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
@@ -119,7 +118,9 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
 
     public void performClickAction(final Document doc, final int offset, final HyperlinkType type) {
         final String issueId = getIssueId(doc, offset, type);
-        if(issueId == null) return;
+        if(issueId == null) {
+            return;
+        }
 
         class IssueDisplayer implements Runnable {
             public void run() {
@@ -131,13 +132,11 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
                         file = FileUtil.toFile(fileObject);
                     }
                 }
-                if(file == null) return;
-
-                final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
-                if(repo == null) return;
-
-                BugtrackingOwnerSupport.getInstance().setFirmAssociation(file, repo);
-                Issue.open(repo, issueId);
+                if(file == null) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "EditorHyperlinkProviderImpl - no file found for given document");
+                    return;
+                }
+                BugtrackingUtil.openIssue(file, issueId);
             }
         }
         RequestProcessor.getDefault().post(new IssueDisplayer());
@@ -169,6 +168,13 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
             }
         } catch (BadLocationException ex) {
             LOG.log(Level.SEVERE, null, ex);
+        }
+        if(issueId == null) {
+            try {
+                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "No issue found for {0}", doc.getText(spanInfo.startOffset, spanInfo.endOffset - spanInfo.startOffset));
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return issueId;
     }

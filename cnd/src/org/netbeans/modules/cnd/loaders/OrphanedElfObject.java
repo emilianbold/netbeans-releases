@@ -59,6 +59,7 @@ public class OrphanedElfObject extends ExeObject {
 	super(pf, loader);
     }
 
+    @Override
     protected Node createNodeDelegate() {
 	return new OrphanedElfNode(this);
     }

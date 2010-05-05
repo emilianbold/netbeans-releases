@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class NewRemoteConnectionPanel extends JPanel {
+public final class NewRemoteConnectionPanel extends JPanel {
     private static final long serialVersionUID = 2806958431387531044L;
 
     private final ConfigManager configManager;
@@ -125,12 +125,15 @@ public class NewRemoteConnectionPanel extends JPanel {
 
     private void registerListeners() {
         connectionNameTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 processUpdate();
             }
@@ -139,6 +142,7 @@ public class NewRemoteConnectionPanel extends JPanel {
             }
         });
         connectionTypeComboBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 validateFields();
             }

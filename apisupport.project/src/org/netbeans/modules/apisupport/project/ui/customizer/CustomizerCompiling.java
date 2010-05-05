@@ -61,7 +61,7 @@ final class CustomizerCompiling extends NbPropertyPanel.Single {
         refresh();
     }
     
-    void refresh() {
+    protected void refresh() {
         debug.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEBUG));
         deprecation.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEPRECATION));
         options.setText(getProperty(SingleModuleProperties.JAVAC_COMPILERARGS));

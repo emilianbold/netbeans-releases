@@ -234,7 +234,9 @@ public class WhereUsedQueryUI implements org.netbeans.modules.refactoring.spi.ui
     }
 
     public Icon getCustomIcon() {
-       return ImageUtilities.loadImageIcon("org/netbeans/modules/xml/refactoring/resources/" + "graphical_view_refactoring.png", false);
+       return ImageUtilities.loadImageIcon(
+            "org/netbeans/modules/xml/refactoring/resources/" + 
+            "graphical_view_refactoring.png", false);
     }
 
     public String getCustomToolTip() {

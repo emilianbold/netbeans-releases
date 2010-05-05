@@ -301,7 +301,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
         setResults(null, true);
         SearchExecutor currentSearch = new SearchExecutor(this);
-        currentSearchTask = RequestProcessor.getDefault().create(currentSearch);
+        currentSearchTask = CvsVersioningSystem.getInstance().getParallelRequestProcessor().create(currentSearch);
         currentSearchTask.schedule(0);
     }
     

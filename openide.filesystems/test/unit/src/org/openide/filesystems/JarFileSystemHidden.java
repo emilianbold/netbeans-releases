@@ -40,8 +40,12 @@
 package org.openide.filesystems;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.net.URL;
-import java.util.jar.JarException;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.logging.Level;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -82,6 +86,35 @@ public class JarFileSystemHidden extends NbTestCase {
         }
 
         assertEquals("No children", 0, fs.getRoot().getChildren().length);
+    }
+
+    public void testLazyOpen() throws Exception {
+        File f = new File(getWorkDir(), "ok.jar");
+        JarOutputStream jos = new JarOutputStream(new FileOutputStream(f));
+        jos.putNextEntry(new JarEntry("one"));
+        jos.putNextEntry(new JarEntry("two.txt"));
+        jos.putNextEntry(new JarEntry("3.txt"));
+        jos.close();
+
+        CharSequence log = Log.enable(JarFileSystem.class.getName(), Level.FINE);
+        JarFileSystem fs = new JarFileSystem(f);
+        final String match = "opened: " + f.getAbsolutePath();
+        if (log.toString().contains(match)) {
+            fail("The file " + f + " shall not be opened when fs created:\n" + log);
+        }
+
+        URL u = fs.getRoot().getURL();
+        assertNotNull("URL is OK", u);
+        if (!u.toExternalForm().startsWith("jar:file") || !u.toExternalForm().endsWith("ok.jar!/")) {
+            fail("Unexpected URL: " + u);
+        }
+        if (log.toString().contains(match)) {
+            fail("The file " + f + " shall not be opened yet:\n" + log);
+        }
+        assertEquals("Three files", 3, fs.getRoot().getChildren().length);
+        if (!log.toString().contains(match)) {
+            fail("The file " + f + " shall be opened now:\n" + log);
+        }
     }
 
 }

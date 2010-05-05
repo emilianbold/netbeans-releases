@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -82,6 +83,7 @@ import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -189,6 +191,10 @@ public class AbstractJCProjectTest extends NbTestCase {
 
 
     protected JCProject createProject(FileObject projTemplate, String name, ProjectKind kind, String pkg, final String nameSpaces, String mainClassName) throws Exception {
+        return createProject (projTemplate, name, kind, pkg, nameSpaces, mainClassName, null, null);
+    }
+
+    protected JCProject createProject(FileObject projTemplate, String name, ProjectKind kind, String pkg, final String nameSpaces, String mainClassName, String pformName, String cardName) throws Exception {
         JCProject result;
         FileObject fo = projTemplate;
         assertNotNull(fo);
@@ -246,6 +252,26 @@ public class AbstractJCProjectTest extends NbTestCase {
         FileObject projDir = gen.createProject(h, projDirName, fo, templateProperties).projectDir;
         synchronized (gen) {
             gen.wait(3000);
+        }
+        if (pformName != null || cardName != null) {
+            FileObject pp = projDir.getFileObject ("nbproject/project.properties");
+            assertNotNull (pp);
+            InputStream in = pp.getInputStream();
+            EditableProperties props = new EditableProperties();
+            props.load(in);
+            in.close();
+            if (pformName != null) {
+                props.setProperty (ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM, pformName);
+            }
+            if (cardName != null) {
+                props.setProperty (ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE, cardName);
+            }
+            OutputStream out = pp.getOutputStream();
+            try {
+                props.store(out);
+            } finally {
+                out.close();
+            }
         }
         Project res = mgr.findProject(projDir);
         assertNotNull("Project manager could not find a project in " + projDir.getPath(), res);

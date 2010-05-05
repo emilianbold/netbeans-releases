@@ -134,10 +134,8 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
             try { 
 
                 Project newProject = gui.getProject ();
-                if (!project.equals (newProject)) {
-                    project = newProject;
-                    wd.putProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT, newProject );
-                }
+                project = newProject;
+                wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, newProject);
                 
                 if (gui.getTemplate () == null) {
                     return ;

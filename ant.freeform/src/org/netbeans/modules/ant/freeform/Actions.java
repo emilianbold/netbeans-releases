@@ -63,26 +63,28 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.ant.freeform.ui.TargetMappingPanel;
 import org.netbeans.modules.ant.freeform.ui.UnboundTargetAlert;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.actions.FindAction;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.actions.Presenter;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -135,13 +137,13 @@ public final class Actions implements ActionProvider {
     
     public String[] getSupportedActions() {
         Element genldata = project.getPrimaryConfigurationData();
-        Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
+        Element actionsEl = XMLUtil.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
         if (actionsEl == null) {
             return new String[0];
         }
         // Use a set, not a list, since when using context you can define one action several times:
         Set<String> names = new LinkedHashSet<String>();
-        for (Element actionEl : Util.findSubElements(actionsEl)) {
+        for (Element actionEl : XMLUtil.findSubElements(actionsEl)) {
             names.add(actionEl.getAttribute("name")); // NOI18N
         }
         // #46886: also always enable all common global actions, in case they should be selected:
@@ -168,16 +170,16 @@ public final class Actions implements ActionProvider {
         }
         
         Element genldata = project.getPrimaryConfigurationData();
-        Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
+        Element actionsEl = XMLUtil.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
         if (actionsEl == null) {
             throw new IllegalArgumentException("No commands supported"); // NOI18N
         }
         boolean foundAction = false;
-        for (Element actionEl : Util.findSubElements(actionsEl)) {
+        for (Element actionEl : XMLUtil.findSubElements(actionsEl)) {
             if (actionEl.getAttribute("name").equals(command)) { // NOI18N
                 foundAction = true;
                 // XXX perhaps check also existence of script
-                Element contextEl = Util.findElement(actionEl, "context", FreeformProjectType.NS_GENERAL); // NOI18N
+                Element contextEl = XMLUtil.findElement(actionEl, "context", FreeformProjectType.NS_GENERAL); // NOI18N
                 if (contextEl != null) {
                     // Check whether the context contains files all in this folder,
                     // matching the pattern if any, and matching the arity (single/multiple).
@@ -188,9 +190,9 @@ public final class Actions implements ActionProvider {
                         return true;
                     } else if (!selection.isEmpty()) {
                         // Multiple selection; check arity.
-                        Element arityEl = Util.findElement(contextEl, "arity", FreeformProjectType.NS_GENERAL); // NOI18N
+                        Element arityEl = XMLUtil.findElement(contextEl, "arity", FreeformProjectType.NS_GENERAL); // NOI18N
                         assert arityEl != null : "No <arity> in <context> for " + command;
-                        if (Util.findElement(arityEl, "separated-files", FreeformProjectType.NS_GENERAL) != null) { // NOI18N
+                        if (XMLUtil.findElement(arityEl, "separated-files", FreeformProjectType.NS_GENERAL) != null) { // NOI18N
                             // Supports multiple selection, take it.
                             return true;
                         }
@@ -232,12 +234,12 @@ public final class Actions implements ActionProvider {
         }
         
         Element genldata = project.getPrimaryConfigurationData();
-        Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
+        Element actionsEl = XMLUtil.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
         if (actionsEl == null) {
             throw new IllegalArgumentException("No commands supported"); // NOI18N
         }
         boolean foundAction = false;
-        for (Element actionEl : Util.findSubElements(actionsEl)) {
+        for (Element actionEl : XMLUtil.findSubElements(actionsEl)) {
             if (actionEl.getAttribute("name").equals(command)) { // NOI18N
                 foundAction = true;
                 runConfiguredAction(project, actionEl, context);
@@ -272,9 +274,9 @@ public final class Actions implements ActionProvider {
             _files.add(d.getPrimaryFile());
         }
         Collection<? extends FileObject> files = _files;
-        Element folderEl = Util.findElement(contextEl, "folder", FreeformProjectType.NS_GENERAL); // NOI18N
+        Element folderEl = XMLUtil.findElement(contextEl, "folder", FreeformProjectType.NS_GENERAL); // NOI18N
         assert folderEl != null : "Must have <folder> in <context>";
-        String rawtext = Util.findText(folderEl);
+        String rawtext = XMLUtil.findText(folderEl);
         assert rawtext != null : "Must have text contents in <folder>";
         String evaltext = project.evaluator().evaluate(rawtext);
         if (evaltext == null) {
@@ -285,9 +287,9 @@ public final class Actions implements ActionProvider {
             return Collections.emptyMap();
         }
         Pattern pattern = null;
-        Element patternEl = Util.findElement(contextEl, "pattern", FreeformProjectType.NS_GENERAL); // NOI18N
+        Element patternEl = XMLUtil.findElement(contextEl, "pattern", FreeformProjectType.NS_GENERAL); // NOI18N
         if (patternEl != null) {
-            String text = Util.findText(patternEl);
+            String text = XMLUtil.findText(patternEl);
             assert text != null : "Must have text contents in <pattern>";
             try {
                 pattern = Pattern.compile(text);
@@ -316,9 +318,9 @@ public final class Actions implements ActionProvider {
      */
     private static void runConfiguredAction(FreeformProject project, Element actionEl, Lookup context) {
         String script;
-        Element scriptEl = Util.findElement(actionEl, "script", FreeformProjectType.NS_GENERAL); // NOI18N
+        Element scriptEl = XMLUtil.findElement(actionEl, "script", FreeformProjectType.NS_GENERAL); // NOI18N
         if (scriptEl != null) {
-            script = Util.findText(scriptEl);
+            script = XMLUtil.findText(scriptEl);
         } else {
             script = "build.xml"; // NOI18N
         }
@@ -334,13 +336,13 @@ public final class Actions implements ActionProvider {
             DialogDisplayer.getDefault().notify(nd);
             return;
         }
-        List<Element> targets = Util.findSubElements(actionEl);
+        List<Element> targets = XMLUtil.findSubElements(actionEl);
         List<String> targetNames = new ArrayList<String>(targets.size());
         for (Element targetEl : targets) {
             if (!targetEl.getLocalName().equals("target")) { // NOI18N
                 continue;
             }
-            targetNames.add(Util.findText(targetEl));
+            targetNames.add(XMLUtil.findText(targetEl));
         }
         String[] targetNameArray;
         if (!targetNames.isEmpty()) {
@@ -350,7 +352,7 @@ public final class Actions implements ActionProvider {
             targetNameArray = null;
         }
         Properties props = new Properties();
-        Element contextEl = Util.findElement(actionEl, "context", FreeformProjectType.NS_GENERAL); // NOI18N
+        Element contextEl = XMLUtil.findElement(actionEl, "context", FreeformProjectType.NS_GENERAL); // NOI18N
         if (contextEl != null) {
             Map<String,FileObject> selection = findSelection(contextEl, context, project);
             if (selection.isEmpty()) {
@@ -359,18 +361,18 @@ public final class Actions implements ActionProvider {
             String separator = null;
             if (selection.size() > 1) {
                 // Find the right separator.
-                Element arityEl = Util.findElement(contextEl, "arity", FreeformProjectType.NS_GENERAL); // NOI18N
+                Element arityEl = XMLUtil.findElement(contextEl, "arity", FreeformProjectType.NS_GENERAL); // NOI18N
                 assert arityEl != null : "No <arity> in <context> for " + actionEl.getAttribute("name");
-                Element sepFilesEl = Util.findElement(arityEl, "separated-files", FreeformProjectType.NS_GENERAL); // NOI18N
+                Element sepFilesEl = XMLUtil.findElement(arityEl, "separated-files", FreeformProjectType.NS_GENERAL); // NOI18N
                 if (sepFilesEl == null) {
                     // Only handles single files -> skip it.
                     return;
                 }
-                separator = Util.findText(sepFilesEl);
+                separator = XMLUtil.findText(sepFilesEl);
             }
-            Element formatEl = Util.findElement(contextEl, "format", FreeformProjectType.NS_GENERAL); // NOI18N
+            Element formatEl = XMLUtil.findElement(contextEl, "format", FreeformProjectType.NS_GENERAL); // NOI18N
             assert formatEl != null : "No <format> in <context> for " + actionEl.getAttribute("name");
-            String format = Util.findText(formatEl);
+            String format = XMLUtil.findText(formatEl);
             StringBuffer buf = new StringBuffer();
             Iterator<Map.Entry<String,FileObject>> it = selection.entrySet().iterator();
             while (it.hasNext()) {
@@ -421,9 +423,9 @@ public final class Actions implements ActionProvider {
                     buf.append(separator);
                 }
             }
-            Element propEl = Util.findElement(contextEl, "property", FreeformProjectType.NS_GENERAL); // NOI18N
+            Element propEl = XMLUtil.findElement(contextEl, "property", FreeformProjectType.NS_GENERAL); // NOI18N
             assert propEl != null : "No <property> in <context> for " + actionEl.getAttribute("name");
-            String prop = Util.findText(propEl);
+            String prop = XMLUtil.findText(propEl);
             assert prop != null : "Must have text contents in <property>";
             props.setProperty(prop, buf.toString());
         }
@@ -431,7 +433,7 @@ public final class Actions implements ActionProvider {
             if (!propEl.getLocalName().equals("property")) { // NOI18N
                 continue;
             }
-            String rawtext = Util.findText(propEl);
+            String rawtext = XMLUtil.findText(propEl);
             if (rawtext == null) {
                 // Legal to have e.g. <property name="intentionally-left-blank"/>
                 rawtext = ""; // NOI18N
@@ -443,23 +445,66 @@ public final class Actions implements ActionProvider {
         }
         TARGET_RUNNER.runTarget(scriptFile, targetNameArray, props);
     }
+
+    public static final class Custom extends AbstractAction implements ContextAwareAction {
+        public Custom() {
+            setEnabled(false);
+            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+        }
+        public @Override void actionPerformed(ActionEvent e) {
+            assert false;
+        }
+        public @Override Action createContextAwareInstance(Lookup actionContext) {
+            Collection<? extends FreeformProject> projects = actionContext.lookupAll(FreeformProject.class);
+            if (projects.size() != 1) {
+                return this;
+            }
+            final FreeformProject p = projects.iterator().next();
+            class A extends AbstractAction implements Presenter.Popup {
+                public @Override void actionPerformed(ActionEvent e) {
+                    assert false;
+                }
+                public @Override JMenuItem getPopupPresenter() {
+                    class M extends JMenuItem implements DynamicMenuContent {
+                        public @Override JComponent[] getMenuPresenters() {
+                            Action[] actions = contextMenuCustomActions(p);
+                            JComponent[] comps = new JComponent[actions.length];
+                            for (int i = 0; i < actions.length; i++) {
+                                if (actions[i] != null) {
+                                    JMenuItem item = new JMenuItem();
+                                    org.openide.awt.Actions.connect(item, actions[i], true);
+                                    comps[i] = item;
+                                } else {
+                                    comps[i] = new JSeparator();
+                                }
+                            }
+                            return comps;
+                        }
+                        public @Override JComponent[] synchMenuPresenters(JComponent[] items) {
+                            return getMenuPresenters();
+                        }
+                    }
+                    return new M();
+                }
+            }
+            return new A();
+        }
+    }
     
     /**
      * Build the context menu for a project.
      * @param p a freeform project
      * @return a list of actions (or null for separators)
      */
-    public static Action[] createContextMenu(FreeformProject p) {
+    static Action[] contextMenuCustomActions(FreeformProject p) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(CommonProjectActions.newFileAction());
-        // Requested actions.
         Element genldata = p.getPrimaryConfigurationData();
-        Element viewEl = Util.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
+        Element viewEl = XMLUtil.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
         if (viewEl != null) {
-            Element contextMenuEl = Util.findElement(viewEl, "context-menu", FreeformProjectType.NS_GENERAL); // NOI18N
+            Element contextMenuEl = XMLUtil.findElement(viewEl, "context-menu", FreeformProjectType.NS_GENERAL); // NOI18N
             if (contextMenuEl != null) {
                 actions.add(null);
-                for (Element actionEl : Util.findSubElements(contextMenuEl)) {
+                for (Element actionEl : XMLUtil.findSubElements(contextMenuEl)) {
                     if (actionEl.getLocalName().equals("ide-action")) { // NOI18N
                         String cmd = actionEl.getAttribute("name");
                         String displayName;
@@ -479,25 +524,6 @@ public final class Actions implements ActionProvider {
                 }
             }
         }
-        actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
-        // Back to generic actions.
-        actions.add(null);
-        actions.add(CommonProjectActions.setAsMainProjectAction());
-        actions.add(CommonProjectActions.openSubprojectsAction());
-        actions.add(CommonProjectActions.closeProjectAction());
-        actions.add(null);
-        actions.add(CommonProjectActions.renameProjectAction());
-        actions.add(CommonProjectActions.moveProjectAction());
-        actions.add(CommonProjectActions.copyProjectAction());
-        actions.add(CommonProjectActions.deleteProjectAction());
-        actions.add(null);
-        actions.add(SystemAction.get(FindAction.class));
-        
-        // honor #57874 contract, see #58624:
-        actions.addAll(Utilities.actionsForPath("Projects/Actions"));
-        
-        actions.add(null);
-        actions.add(CommonProjectActions.customizeProjectAction());
         return actions.toArray(new Action[actions.size()]);
     }
     
@@ -517,9 +543,9 @@ public final class Actions implements ActionProvider {
         
         public boolean isEnabled() {
             String script;
-            Element scriptEl = Util.findElement(actionEl, "script", FreeformProjectType.NS_GENERAL); // NOI18N
+            Element scriptEl = XMLUtil.findElement(actionEl, "script", FreeformProjectType.NS_GENERAL); // NOI18N
             if (scriptEl != null) {
-                script = Util.findText(scriptEl);
+                script = XMLUtil.findText(scriptEl);
             } else {
                 script = "build.xml"; // NOI18N
             }
@@ -529,8 +555,8 @@ public final class Actions implements ActionProvider {
         
         public Object getValue(String key) {
             if (key.equals(Action.NAME)) {
-                Element labelEl = Util.findElement(actionEl, "label", FreeformProjectType.NS_GENERAL); // NOI18N
-                return Util.findText(labelEl);
+                Element labelEl = XMLUtil.findElement(actionEl, "label", FreeformProjectType.NS_GENERAL); // NOI18N
+                return XMLUtil.findText(labelEl);
             } else {
                 return super.getValue(key);
             }

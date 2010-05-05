@@ -51,8 +51,8 @@ public abstract class ProjectOpenedTrampoline {
 
     /** The trampoline singleton, defined by {@link ProjectOpenedHook}. */
     public static ProjectOpenedTrampoline DEFAULT;
-    {
-        Class c = ProjectOpenedHook.class;
+    static {
+        Class<?> c = ProjectOpenedHook.class;
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
         } catch (Exception ex) {

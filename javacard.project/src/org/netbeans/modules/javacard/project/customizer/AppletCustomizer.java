@@ -733,8 +733,10 @@ public class AppletCustomizer extends AllClassesOfTypeExplorerPanel implements N
             //do nothing
         }
 
-        public void unrecognizedElementEncountered(String arg0) throws IOException {
+        public void unrecognizedElementEncountered(String el) throws IOException {
             //do nothing, already handled by model
+            Logger.getLogger(AppletXmlParseErrorHandler.class.getName()).log(
+                    Level.FINE, "Unrecognized element {0}", el);
         }
 
         public String getBadAidsString() {

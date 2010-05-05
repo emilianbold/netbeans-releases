@@ -97,6 +97,7 @@ public final class IndexSearch
     
     /** cache of previously searched strings */
     private static Object[] MRU = new Object[0];
+    private static final RequestProcessor RP = new RequestProcessor(IndexSearch.class.getName(), 1, false, false);
 
     /** Search engine */
     private final SearchTask searchTask = new SearchTask(this);
@@ -488,7 +489,7 @@ public final class IndexSearch
         if( null != task ) {
             task.cancel();
         }
-        task = RequestProcessor.getDefault().create( new Runnable() {
+        task = RP.create( new Runnable() {
             public void run() {
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {

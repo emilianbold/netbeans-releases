@@ -41,9 +41,6 @@
 package org.netbeans.modules.project.libraries;
 
 import java.util.Collection;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.util.ChangeSupport;
@@ -55,12 +52,11 @@ import org.openide.util.lookup.Lookups;
 public final class LibraryTypeRegistry {
 
     private static final String REGISTRY = "org-netbeans-api-project-libraries/LibraryTypeProviders";              //NOI18N
-    
+
     private static LibraryTypeRegistry instance;
 
     private final Lookup.Result<LibraryTypeProvider> result;
     private final ChangeSupport changeSupport;
-    private volatile Set<? extends LibraryTypeProvider> usedLibraryTypes;
 
     private LibraryTypeRegistry () {
         this.changeSupport = new ChangeSupport(this);
@@ -76,7 +72,7 @@ public final class LibraryTypeRegistry {
 
     public LibraryTypeProvider[] getLibraryTypeProviders () {
         assert result != null;
-        final Collection<? extends LibraryTypeProvider> instances = result.allInstances();        
+        final Collection<? extends LibraryTypeProvider> instances = result.allInstances();
         return instances.toArray(new LibraryTypeProvider[instances.size()]);
     }
 
@@ -91,16 +87,6 @@ public final class LibraryTypeRegistry {
         return null;
     }
 
-    public boolean hasChanged() {
-        final Set<? extends  LibraryTypeProvider> oldTP = usedLibraryTypes;
-        final LibraryTypeProvider[] providers = getLibraryTypeProviders();
-        final Map<LibraryTypeProvider,LibraryTypeProvider> newTP = new IdentityHashMap<LibraryTypeProvider,LibraryTypeProvider>();
-        for (LibraryTypeProvider provider : providers) {
-            newTP.put(provider, provider);
-        }
-        usedLibraryTypes = newTP.keySet();
-        return oldTP == null || !oldTP.equals(newTP.keySet());
-    }
 
     public void addChangeListener (final ChangeListener listener) {
         assert listener != null;
@@ -111,7 +97,6 @@ public final class LibraryTypeRegistry {
         assert listener != null;
         this.changeSupport.removeChangeListener(listener);
     }
-    
 
     public static synchronized LibraryTypeRegistry getDefault () {
         if (instance == null) {

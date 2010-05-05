@@ -623,6 +623,9 @@ public class JavaKit extends NbEditorKit {
             try {
                 TokenHierarchy<BaseDocument> tokens = TokenHierarchy.get(doc);
                 TokenSequence ts = tokens.tokenSequence();
+                if (ts == null) {
+                    return null;
+                }
                 ts.move(dotPosition);
                 if (! ((ts.moveNext() || ts.movePrevious()) && ts.token().id() == JavaTokenId.JAVADOC_COMMENT)) {
                     return null;

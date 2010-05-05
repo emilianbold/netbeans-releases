@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.io.IOException;
@@ -51,6 +50,7 @@ import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,9 +75,9 @@ public class HostValidatorImpl implements HostValidator {
     public ToolsCacheManager getCacheManager() {
         return cacheManager;
     }
-    
+
     @Override
-    public boolean validate(ExecutionEnvironment env, char[] password, boolean rememberPassword, final PrintWriter writer) {
+    public boolean validate(ExecutionEnvironment env, /*char[] password, boolean rememberPassword,*/ final PrintWriter writer) {
         boolean result = false;
         final RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
         final boolean alreadyOnline = record.isOnline();
@@ -95,11 +95,10 @@ public class HostValidatorImpl implements HostValidator {
                     env.getHost()));
         }
         try {
-            if (password == null || password.length == 0) {
-                ConnectionManager.getInstance().connectTo(env);
-            } else {
-                ConnectionManager.getInstance().connectTo(env, password, rememberPassword);
-            }
+//            if (password != null && password.length > 0) {
+//                PasswordManager.getInstance().storePassword(env, password, rememberPassword);
+//            }
+            ConnectionManager.getInstance().connectTo(env);
         } catch (IOException ex) {
             writer.print("\n" + RemoteCommandSupport.getMessage(ex)); //NOI18N
             return false;
@@ -131,6 +130,7 @@ public class HostValidatorImpl implements HostValidator {
             final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env, false);
             csm.initialize(false, false, reporter);
             runOnFinish = new Runnable() {
+
                 @Override
                 public void run() {
                     csm.finishInitialization();

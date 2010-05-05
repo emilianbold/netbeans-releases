@@ -98,7 +98,7 @@ public class NameKind {
         return getQueryName().isEmpty();
     }
     public boolean matchesName(final PhpElementKind elementKind, final QualifiedName name) {
-        if (nameKindMatch(elementKind, name.getName(), queryKind, getQueryName())) {
+        if (name != null && nameKindMatch(elementKind, name.getName(), queryKind, getQueryName())) {
             final QualifiedNameKind kindOfQuery = getQuery().getKind();
             if (kindOfQuery.isUnqualified()) {
                 return true;
@@ -129,7 +129,7 @@ public class NameKind {
     }
 
     public boolean matchesName(PhpElementKind elementKind, String name) {
-        return nameKindMatch(elementKind, name, queryKind, getQueryName());
+        return name != null ? nameKindMatch(elementKind, name, queryKind, getQueryName()) : false;
     }
 
     public boolean matchesName(PhpElement element) {
@@ -238,7 +238,7 @@ public class NameKind {
             } else if (i == 0 && chars[i] == '$') {
                 sb.append('\\').append(chars[i]);//NOI18N
             } else {
-                sb.append(chars[i]);
+                sb.append(Pattern.quote(String.valueOf(chars[i])));
             }
         }
         sb.append(".*");//NOI18N

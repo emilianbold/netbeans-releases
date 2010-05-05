@@ -652,6 +652,63 @@ public class ClassPathTest extends NbTestCase {
         long et = System.currentTimeMillis();
         System.out.println("Loaded: " + noLoaded + " in: " + (et-st)+"ms");
     }
+
+    public void testMemoryLeak183370() throws Exception {
+        final File  wd = getWorkDir();
+        class TestResource implements PathResourceImplementation {
+            private final File f;
+            private final PropertyChangeSupport sup = new PropertyChangeSupport(this);
+            public TestResource(final File f){
+                this.f=f;
+            }
+            @Override
+            public URL[] getRoots() {
+                return new URL[]{FileUtil.urlForArchiveOrDir(f)};
+            }
+            @Override
+            public ClassPathImplementation getContent() {
+                return null;
+            }
+            @Override
+            public void addPropertyChangeListener(PropertyChangeListener listener) {
+                sup.addPropertyChangeListener(listener);
+            }
+            @Override
+            public void removePropertyChangeListener(PropertyChangeListener listener) {
+                sup.removePropertyChangeListener(listener);
+            }
+        };
+        class TestCPImpl implements ClassPathImplementation {
+            private final List<? extends PathResourceImplementation> result = Arrays.asList(new TestResource(new File(wd,"1")), new TestResource(new File(wd,"2")));
+            private final PropertyChangeSupport sup = new PropertyChangeSupport(this);
+
+            @Override
+            public List<? extends PathResourceImplementation> getResources() {
+                return result;
+            }
+            @Override
+            public void addPropertyChangeListener(PropertyChangeListener listener) {
+                sup.addPropertyChangeListener(listener);
+            }
+            @Override
+            public void removePropertyChangeListener(PropertyChangeListener listener) {
+                sup.removePropertyChangeListener(listener);
+            }
+        };
+        final TestCPImpl impl = new TestCPImpl();
+        final ClassPath cp = ClassPathFactory.createClassPath(impl);
+        assertEquals(2 ,cp.entries().size());
+        assertEquals(impl.getResources().get(0).getRoots()[0] ,cp.entries().get(0).getURL());
+        assertEquals(impl.getResources().get(1).getRoots()[0] ,cp.entries().get(1).getURL());
+        assertEquals(1,((TestResource)impl.getResources().get(0)).sup.getPropertyChangeListeners().length);
+        assertEquals(1,((TestResource)impl.getResources().get(1)).sup.getPropertyChangeListeners().length);
+        impl.sup.firePropertyChange(ClassPathImplementation.PROP_RESOURCES,null,null);
+        assertEquals(2 ,cp.entries().size());
+        assertEquals(impl.getResources().get(0).getRoots()[0] ,cp.entries().get(0).getURL());
+        assertEquals(impl.getResources().get(1).getRoots()[0] ,cp.entries().get(1).getURL());
+        assertEquals(1,((TestResource)impl.getResources().get(0)).sup.getPropertyChangeListeners().length);
+        assertEquals(1,((TestResource)impl.getResources().get(1)).sup.getPropertyChangeListeners().length);
+    }
     
     private Set<String> getClassNames (final ClassPath cp) {
         Set<String> classNames = new HashSet<String> ();

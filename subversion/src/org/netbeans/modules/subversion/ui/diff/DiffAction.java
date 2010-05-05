@@ -45,6 +45,8 @@ import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
 import java.io.File;
+import org.netbeans.modules.subversion.ui.actions.ActionUtils;
+import org.netbeans.modules.subversion.util.ClientCheckSupport;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
@@ -96,15 +98,16 @@ public class DiffAction extends ContextAction {
         tc.requestActive();
     }
     
-    protected void performContextAction(Node[] nodes) {
-        
-        if(!Subversion.getInstance().checkClientAvailable()) {            
-            return;
-        }
-        
-        Context ctx = getContext(nodes);
-        String contextName = getContextDisplayName(nodes);
-        diff(ctx, SvnModuleConfig.getDefault().getLastUsedModificationContext(), contextName);
+    @Override
+    protected void performContextAction(final Node[] nodes) {
+        ClientCheckSupport.getInstance().runInAWTIfAvailable(ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
+            @Override
+            public void run() {
+                Context ctx = getContext(nodes);
+                String contextName = getContextDisplayName(nodes);
+                diff(ctx, SvnModuleConfig.getDefault().getLastUsedModificationContext(), contextName);
+            }
+        });
     }
    
 }

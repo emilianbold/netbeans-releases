@@ -56,6 +56,8 @@ import org.openide.util.RequestProcessor;
  * @author Martin Krauskopf
  */
 final class NbPlatformCustomizerModules extends JPanel {
+
+    private static final RequestProcessor RP = new RequestProcessor(NbPlatformCustomizerModules.class.getName());
     
     /** Creates new form NbPlatformCustomizerModules */
     NbPlatformCustomizerModules() {
@@ -65,7 +67,7 @@ final class NbPlatformCustomizerModules extends JPanel {
     
     void setPlatform(final NbPlatform plaf) {
         moduleList.setModel(createWaitModel());
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 final ModuleEntry[] modules = plaf.getSortedModules();
                 EventQueue.invokeLater(new Runnable() {

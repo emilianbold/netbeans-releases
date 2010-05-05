@@ -83,12 +83,14 @@ public final class TasksCachedProcessor<P, R>
      * once task is completed, it is removed from cache!
      *
      */
+    @Override
     public R compute(final P arg) throws InterruptedException {
         Future<R> f = cache.get(arg);
 
         if (f == null) {
             Callable<R> evaluation = new Callable<R>() {
 
+                @Override
                 public R call() throws InterruptedException {
                     return computable.compute(arg);
                 }

@@ -84,6 +84,7 @@ public class IndexOffsetNode implements Comparable<IndexOffsetNode>{
         endOffset = content.endOffset;
     }
     
+    @Override
     public int compareTo(IndexOffsetNode o) {
         if (getStartOffset() < o.getStartOffset()){
             return -1;

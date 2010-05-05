@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -86,7 +86,7 @@ public final class PersistentKey {
     }
     
     public static PersistentKey createGlobalNamespaceKey(CsmProject project){
-        return new PersistentKey(CharSequenceKey.empty(), project, NAMESPACE, false); // NOI18N
+        return new PersistentKey(CharSequences.empty(), project, NAMESPACE, false); // NOI18N
     }
     
     public static PersistentKey createKey(Object object){
@@ -162,7 +162,7 @@ public final class PersistentKey {
                 case NAMESPACE:
                 case DECLARATION:
                     if (project.equals(what.project)) {
-                        return CharSequenceKey.Comparator.compare((CharSequence)key,(CharSequence)what.key)==0;
+                        return CharSequences.comparator().compare((CharSequence)key,(CharSequence)what.key)==0;
                     }
                     return false;
                 case PROJECT:

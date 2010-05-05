@@ -199,43 +199,6 @@ public final class Utils {
         }
     }
 
-    // normal <-> ascii only ////////////////////////////////////////////////////////
-    public static String parseAscii(final String string) {
-        final Properties properties = new Properties();
-
-        // we don't really care about enconding here, as the input string is
-        // expected to be ASCII-only, which means it's the same for any encoding
-        try {
-            properties.load(new ByteArrayInputStream(("key=" + string).getBytes()));
-        } catch (IOException e) {
-            return string;
-        }
-
-        return (String) properties.get("key");
-    }
-
-    public static String convertToAscii(final String string) {
-        final Properties properties = new Properties();
-
-        properties.put("uberkey", string);
-
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            properties.store(baos, "");
-        } catch (IOException e) {
-            return string;
-        }
-
-        final Matcher matcher = Pattern.
-                compile("uberkey=(.*)$", Pattern.MULTILINE).
-                matcher(baos.toString());
-
-        if (matcher.find()) {
-            return matcher.group(1);
-        } else {
-            return string;
-        }
-    }
     
     /**
      * Packs the given jar archive using the pack200 utility.

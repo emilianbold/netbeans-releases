@@ -195,7 +195,7 @@ public final class UserLibrarySupport {
                 return null;
             }
 
-            List/*<Element>*/ reqElems = Util.findSubElements(docEl);
+            List<Element> reqElems = XMLUtil.findSubElements(docEl);
             for (int i = 0; i < reqElems.size(); i++) {
                 Element elem = (Element)reqElems.get(i);
                 String classElem = getClassElement(elem);
@@ -235,7 +235,7 @@ public final class UserLibrarySupport {
     }
 
     private void resolvePath(final File[] folders, final AbstractProject.UserLibrary retval, final Element classElem) throws IllegalArgumentException {
-        List/*<Element>*/ pathElems = (classElem != null) ? Util.findSubElements(classElem) : Collections.EMPTY_LIST;
+        List<Element> pathElems = (classElem != null) ? XMLUtil.findSubElements(classElem) : Collections.EMPTY_LIST;
         for (int i = 0; i < pathElems.size(); i++) {
             String path = getPath((Element)pathElems.get(i));
             if (path != null) {
@@ -277,8 +277,9 @@ public final class UserLibrarySupport {
         String fullName = null;
         
         if (docEl != null) {
-            Element fullNameElement = Util.findElement(docEl, FULLNAME_ELEMENT,null);
-            fullName = (fullNameElement != null) ? Util.findText(fullNameElement) : null;
+            try {XMLUtil.write(docEl.getOwnerDocument(), System.out, "UTC-8"); } catch (Exception e) {}
+            Element fullNameElement = XMLUtil.findElement(docEl, FULLNAME_ELEMENT,null);
+            fullName = (fullNameElement != null) ? XMLUtil.findText(fullNameElement) : null;
         }
         
         return fullName;
@@ -302,7 +303,7 @@ public final class UserLibrarySupport {
         String path = null;
         
         if (pathElem != null && pathElem.getNodeName().equals(name)) {
-            path = Util.findText(pathElem);
+            path = XMLUtil.findText(pathElem);
             
         }
         

@@ -124,7 +124,8 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
     private final Logger LOGGER = Logger.getLogger( RSSFeed.class.getName() );
     
     private int maxDescriptionChars = -1;
-    private boolean foregroundColorFlag;
+
+    private static final RequestProcessor RP = new RequestProcessor("StartPage"); //NOI18N
 
 
     /** Returns file for caching of content. 
@@ -180,7 +181,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
     }
     
     protected int getMaxItemCount() {
-        return 3;
+        return 5;
     }
 
     protected List<FeedItem> buildItemList() throws SAXException, ParserConfigurationException, IOException {
@@ -305,7 +306,6 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                                 new Insets(0,0,0,0),0,0 ) );
                 }
 
-                foregroundColorFlag = true;
                 for( int i=0; i<Math.min(itemList.size(), getMaxItemCount()); i++ ) {
                     FeedItem item = itemList.get(i);
 
@@ -330,7 +330,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                 });
 
                 //schedule feed reload
-                reloadTimer = RequestProcessor.getDefault().post( this, RSS_FEED_TIMER_RELOAD_MILLIS );
+                reloadTimer = RP.post( this, RSS_FEED_TIMER_RELOAD_MILLIS );
 
             } catch( UnknownHostException uhE ) {
                 SwingUtilities.invokeLater( new Runnable() {
@@ -393,9 +393,8 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                     new Insets(0,TEXT_INSETS_LEFT+5,2,TEXT_INSETS_RIGHT),0,0 ) );
         }
 
-        WebLink linkButton = new WebLink( stripHtml(item.title), item.link, true,
-                Utils.getColor( foregroundColorFlag ? COLOR_HEADER1 : COLOR_HEADER2 ) );
-        foregroundColorFlag = !foregroundColorFlag;
+        WebLink linkButton = new WebLink( stripHtml(item.title), item.link,
+                Utils.getColor( COLOR_HEADER ), false );
         linkButton.getAccessibleContext().setAccessibleName( 
                 BundleSupport.getAccessibilityName( "WebLink", item.title ) ); //NOI18N
         linkButton.getAccessibleContext().setAccessibleDescription( 
@@ -403,7 +402,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         linkButton.setFont( BUTTON_FONT );
         panel.add( linkButton, new GridBagConstraints(0,row++,1,1,1.0,0.0,
                 GridBagConstraints.WEST,GridBagConstraints.NONE,
-                new Insets(0,5,2,TEXT_INSETS_RIGHT),0,0 ) );
+                new Insets(0,0,2,TEXT_INSETS_RIGHT),0,0 ) );
 
 
         if (item.description != null) {
@@ -412,7 +411,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             label.setForeground(Utils.getColor(COLOR_RSS_DETAILS));
             panel.add( label, new GridBagConstraints(0,row++,4,1,0.0,0.0,
                     GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,
-                    new Insets(0,TEXT_INSETS_LEFT+20,0,TEXT_INSETS_RIGHT),0,0 ) );
+                    new Insets(0,0,0,TEXT_INSETS_RIGHT),0,0 ) );
         }
         return panel;
     }
@@ -477,7 +476,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             if( System.currentTimeMillis() - lastReload >= RSS_FEED_TIMER_RELOAD_MILLIS ) {
                 reload();
             } else {
-                reloadTimer = RequestProcessor.getDefault().post( new Reload(),
+                reloadTimer = RP.post( new Reload(),
                         Math.max(1, (int)(RSS_FEED_TIMER_RELOAD_MILLIS - (System.currentTimeMillis() - lastReload))) );
             }
         }

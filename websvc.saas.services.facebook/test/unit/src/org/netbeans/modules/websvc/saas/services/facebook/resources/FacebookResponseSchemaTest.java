@@ -42,13 +42,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import junit.framework.TestSuite;
-import org.netbeans.modules.websvc.saas.kit.SchemaTest;
+import org.netbeans.modules.websvc.saas.util.SchemaTestBase;
 
 /**
  *
  * @author lukas
  */
-public class FacebookResponseSchemaTest extends SchemaTest {
+public class FacebookResponseSchemaTest extends SchemaTestBase {
 
     private FacebookResponseSchemaTest() {
         super();

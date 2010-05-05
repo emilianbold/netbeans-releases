@@ -10,7 +10,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -31,15 +31,15 @@
                       </Group>
                       <EmptySpace pref="14" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="txtPort" alignment="1" pref="294" max="32767" attributes="1"/>
-                          <Component id="txtPassword" alignment="1" pref="294" max="32767" attributes="1"/>
-                          <Component id="txtUser" alignment="1" pref="294" max="32767" attributes="1"/>
-                          <Component id="txtHost" alignment="1" pref="294" max="32767" attributes="1"/>
+                          <Component id="txtPort" alignment="1" pref="302" max="32767" attributes="1"/>
+                          <Component id="txtPassword" alignment="1" pref="302" max="32767" attributes="1"/>
+                          <Component id="txtUser" alignment="1" pref="302" max="32767" attributes="1"/>
+                          <Component id="txtHost" alignment="1" pref="302" max="32767" attributes="1"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="messageLabel" pref="482" max="32767" attributes="0"/>
+                      <Component id="messageLabel" pref="490" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="50" max="-2" attributes="0"/>

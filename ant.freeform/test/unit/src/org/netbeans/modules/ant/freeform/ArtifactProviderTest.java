@@ -49,6 +49,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -137,7 +138,7 @@ public class ArtifactProviderTest extends TestBase {
         //assert ProjectManager.mutex().isWriteAccess();
         Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
-        for (Element exportEl : Util.findSubElements(data)) {
+        for (Element exportEl : XMLUtil.findSubElements(data)) {
             if (!exportEl.getLocalName().equals("export")) { // NOI18N
                 continue;
             }
@@ -165,9 +166,9 @@ public class ArtifactProviderTest extends TestBase {
                 el.appendChild(doc.createTextNode(export.cleanTarget)); // NOI18N
                 exportEl.appendChild(el);
             }
-            Element later = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL);
+            Element later = XMLUtil.findElement(data, "view", FreeformProjectType.NS_GENERAL);
             if (later == null) {
-                later = Util.findElement(data, "subprojects", FreeformProjectType.NS_GENERAL);
+                later = XMLUtil.findElement(data, "subprojects", FreeformProjectType.NS_GENERAL);
             }
             data.insertBefore(exportEl, later);
         }

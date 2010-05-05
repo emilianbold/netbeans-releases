@@ -41,6 +41,7 @@
 package org.netbeans.modules.websvc.rest.codegen;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.io.File;
 import java.io.IOException;
@@ -56,6 +57,7 @@ import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
@@ -1297,15 +1299,24 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         String[] annotations = null;
         Object[] annotationAttributes = null;
         if (useEjbInjections) {
+            // creating @Stateless:name attribute
+            String outerClassName = copy.getCompilationUnit().getSourceFile().getName();
+            if (outerClassName.endsWith(".java")) { //NOI18N
+                outerClassName=outerClassName.substring(0, outerClassName.length()-5);
+            }
+            String jndiName = outerClassName+"."+className; //NOI18N
+            TreeMaker make = copy.getTreeMaker();
+            ExpressionTree nameAttr = make.Assignment(make.Identifier("name"), make.Literal(jndiName)); //NOI18N
+
+            annotationAttributes = new Object[] {nameAttr};
             annotations = new String[] {RestConstants.STATELESS_ANNOTATION};
         }
-        
+
         ClassTree classTree = JavaSourceHelper.createInnerClass(copy, modifiers,
                 className, resourceName, annotations, annotationAttributes);
 
         classTree = JavaSourceHelper.addField(copy, classTree, new Modifier[]{Modifier.PRIVATE},
                 null, null, "parent", parentEntityClass);
-
         classTree = addAccessorMethods(copy, classTree, "parent", parentEntityClass);
 
         String bodyText = null;

@@ -87,6 +87,8 @@ import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
  */
 public class WLDeploymentManager implements DeploymentManager {
 
+    public static final int MANAGER_TIMEOUT = 60000;
+    
     private static final Logger LOGGER = Logger.getLogger(WLDeploymentManager.class.getName());
 
     private final WLDeploymentFactory factory;

@@ -38,9 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.exceptions;
 
+import java.awt.EventQueue;
 import java.util.prefs.Preferences;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.lib.uihandler.NBBugzillaAccessor;
@@ -53,84 +53,94 @@ import org.openide.util.NbPreferences;
  * @author Jindrich Sedek
  */
 public class ExceptionsSettings {
-    
+
     private static final String userProp = "UserName";       // NOI18N
     private static final String passwdProp = "Passwd";
     private static final String passwdKey = "exceptionreporter"; // NOI18N
     private static final String guestProp = "Guest";
     private static final String rememberProp = "RememberPasswd";
     private final NBBugzillaAccessor nba;
-
+    private String userName;
+    private char[] passwd;
+    private boolean changed = false;
 
     /** Creates a new instance of ExceptionsSettings */
     public ExceptionsSettings() {
+        assert !EventQueue.isDispatchThread();
         nba = Lookup.getDefault().lookup(NBBugzillaAccessor.class);
+        if (nba != null) {
+            userName = nba.getNBUsername();
+            passwd = nba.getNBPassword();
+        } else {
+            userName = prefs().get(userProp, "");
+            String old = prefs().get(passwdProp, null);
+            char[] keyringPasswd = Keyring.read(passwdKey);
+            if (old != null) {
+                passwd = old.toCharArray();
+                changed = true;
+                prefs().remove(passwdProp);
+            }else if (keyringPasswd != null) {
+                passwd = keyringPasswd;
+            }
+        }
+        if (passwd == null){
+            passwd = new char[0];
+        }
+        if (userName == null){
+            userName = new String();
+        }
+    }
+
+    public void save(){
+        assert !EventQueue.isDispatchThread();
+        if (!changed){
+            return;
+        }
+        if (nba != null){
+            nba.saveNBUsername(userName);
+            nba.saveNBPassword(passwd);
+        }else{
+            prefs().put(userProp, userName);
+            Keyring.save(passwdKey, passwd,
+                    NbBundle.getMessage(ExceptionsSettings.class, "ExceptionsSettings.password.description"));
+        }
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+        changed = true;
+    }
+
+    public char[] getPasswd() {
+        return passwd;
+    }
+
+    public void setPasswd(char[] passwd) {
+        changed = true;
+        this.passwd = passwd;
+    }
+
+    public boolean isGuest() {
+        return prefs().getBoolean(guestProp, false);
+    }
+
+    public void setGuest(Boolean guest) {
+        prefs().putBoolean(guestProp, guest);
+    }
+
+    public boolean rememberPasswd() {
+        return prefs().getBoolean(rememberProp, true);
+    }
+
+    public void setRememberPasswd(boolean remember) {
+        prefs().putBoolean(rememberProp, remember);
     }
 
     private Preferences prefs() {
         return NbPreferences.forModule(ExceptionsSettings.class);
     }
-
-    public String getUserName() {
-        if (nba != null){
-            String username = nba.getNBUsername();
-            if (username != null){
-                return username;
-            }
-        }
-        return prefs().get(userProp, "");
-    }
-
-    public void setUserName(String userName) {
-        if (nba != null){
-            nba.saveNBUsername(userName);
-        }else{
-            prefs().put(userProp, userName);
-        }
-    }
-        
-    public char[] getPasswd() {
-        if (nba != null){
-            char[] passwd = nba.getNBPassword();
-            if (passwd != null){
-                return passwd;
-            }
-        }
-        String old = prefs().get(passwdProp, null);
-        if (old != null) {
-            setPasswd(old.toCharArray());
-            prefs().remove(passwdProp);
-        }
-        char[] passwd =  Keyring.read(passwdKey);
-        if (passwd != null){
-            return passwd;
-        }
-        return new char[0];
-    }
-
-    public void setPasswd(char[] passwd) {
-        if (nba != null) {
-            nba.saveNBPassword(passwd);
-        } else {
-            Keyring.save(passwdKey, passwd,
-                    NbBundle.getMessage(ExceptionsSettings.class, "ExceptionsSettings.password.description"));
-        }
-    }
-    
-    public boolean isGuest() {
-        return prefs().getBoolean(guestProp, false);
-    }
-
-    public void setGuest(Boolean guest){
-        prefs().putBoolean(guestProp, guest);
-    }
-
-    public boolean rememberPasswd(){
-        return prefs().getBoolean(rememberProp, true);
-    }
-
-    public void setRememberPasswd(boolean remember){
-        prefs().putBoolean(rememberProp, remember);
-    }
-    
 }

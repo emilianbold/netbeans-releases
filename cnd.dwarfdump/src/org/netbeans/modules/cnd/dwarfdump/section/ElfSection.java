@@ -60,10 +60,10 @@ import java.io.PrintStream;
  * @author ak119685
  */
 public class ElfSection {
-    ElfReader reader;
-    SectionHeader header;
-    int sectionIdx;
-    String sectionName;
+    final ElfReader reader;
+    final SectionHeader header;
+    private final int sectionIdx;
+    private final String sectionName;
     
     public ElfSection(ElfReader reader, int sectionIdx) {
         this.reader = reader;

@@ -127,6 +127,7 @@ public final class FrameworkCommandChooser extends JPanel {
         debugCheckbox.setSelected(debug);
         keepOpenedCheckBox.setSelected(keepOpened);
         keepOpenedCheckBox.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 keepOpened = e.getStateChange() == ItemEvent.SELECTED;
             }
@@ -134,9 +135,18 @@ public final class FrameworkCommandChooser extends JPanel {
         refreshNeeded = reloadAllTasks();
         refreshTaskList();
         taskField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) { refreshTaskList(); }
-            public void insertUpdate(DocumentEvent e) { refreshTaskList(); }
-            public void removeUpdate(DocumentEvent e) { refreshTaskList(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                refreshTaskList();
+            }
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                refreshTaskList();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                refreshTaskList();
+            }
         });
         preselectLastlySelected();
         initTaskParameters();
@@ -157,6 +167,7 @@ public final class FrameworkCommandChooser extends JPanel {
                 getMessage("FrameworkCommandChooser.runButton.accessibleDescription", frameworkName)); // NOI18N
         setRunButtonState(runButton, chooserPanel);
         chooserPanel.matchingTaskList.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 setRunButtonState(runButton, chooserPanel);
                 chooserPanel.initTaskParameters();
@@ -170,10 +181,12 @@ public final class FrameworkCommandChooser extends JPanel {
         refreshButton.getAccessibleContext().setAccessibleDescription(
                 getMessage("FrameworkCommandChooser.refreshButton.accessibleDescription", frameworkName));  // NOI18N
         refreshButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 refreshButton.setEnabled(false);
                 runButton.setEnabled(false);
                 chooserPanel.reloadTasks(new Runnable() {
+                    @Override
                     public void run() {
                         assert EventQueue.isDispatchThread() : "is EDT";
                         refreshButton.setEnabled(true);
@@ -200,6 +213,7 @@ public final class FrameworkCommandChooser extends JPanel {
             refreshButton.setEnabled(false);
             runButton.setEnabled(false);
             chooserPanel.reloadTasks(new Runnable() {
+                @Override
                 public void run() {
                     assert EventQueue.isDispatchThread() : "is EDT";
                     refreshButton.setEnabled(true);
@@ -209,6 +223,7 @@ public final class FrameworkCommandChooser extends JPanel {
         }
 
         runButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (!chooserPanel.keepOpenedCheckBox.isSelected()) {
                     dialog.setVisible(false);
@@ -237,12 +252,15 @@ public final class FrameworkCommandChooser extends JPanel {
         taskParametersComboBox.setModel(new DefaultComboBoxModel(params.toArray()));
         preselectLastSelectedParam(task);
         taskParametersComboBoxEditor.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 processUpdate();
             }
@@ -261,9 +279,11 @@ public final class FrameworkCommandChooser extends JPanel {
         } else {
             updateHelp(getMessage("LBL_PleaseWait")); // NOI18N
             EXECUTOR.submit(new Runnable() {
+                @Override
                 public void run() {
                     final String help = task.getHelp();
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             updateHelp(help);
                         }
@@ -425,8 +445,10 @@ public final class FrameworkCommandChooser extends JPanel {
         matchingTaskList.setListData(new Object[]{getMessage("FrameworkCommandChooser.reloading.tasks", frameworkCommandSupport.getFrameworkName())}); // NOI18N
 
         frameworkCommandSupport.refreshFrameworkCommandsLater(new Runnable() {
+            @Override
             public void run() {
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         reloadAllTasks();
                         refreshTaskList();
@@ -568,7 +590,7 @@ public final class FrameworkCommandChooser extends JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(keepOpenedCheckBox)
-                    .addComponent(splitPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
+                    .addComponent(splitPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 666, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(taskLabel)
@@ -581,7 +603,7 @@ public final class FrameworkCommandChooser extends JPanel {
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(previewLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(previewTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)))
+                        .addComponent(previewTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -613,6 +635,7 @@ public final class FrameworkCommandChooser extends JPanel {
         taskFieldPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskFieldPanel.AccessibleContext.accessibleDescription")); // NOI18N
         taskParamLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParamLabel.AccessibleContext.accessibleName")); // NOI18N
         taskParamLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParamLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        taskParametersComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParametersComboBox.AccessibleContext.accessibleName")); // NOI18N
         taskParametersComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskParametersComboBox.AccessibleContext.accessibleDescription")); // NOI18N
         matchingTaskLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskLabel.AccessibleContext.accessibleName")); // NOI18N
         matchingTaskLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.matchingTaskLabel.AccessibleContext.accessibleDescription")); // NOI18N
@@ -685,6 +708,7 @@ public final class FrameworkCommandChooser extends JPanel {
             setOpaque(true);
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             // #93658: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N

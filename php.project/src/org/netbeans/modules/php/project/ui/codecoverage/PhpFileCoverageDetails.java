@@ -64,26 +64,32 @@ public class PhpFileCoverageDetails implements FileCoverageDetails {
         this.generated = FileUtil.toFile(fo).lastModified();
     }
 
+    @Override
     public FileObject getFile() {
         return fo;
     }
 
+    @Override
     public int getLineCount() {
         return file.getMetrics().loc;
     }
 
+    @Override
     public boolean hasHitCounts() {
         return true;
     }
 
+    @Override
     public long lastUpdated() {
         return generated;
     }
 
+    @Override
     public FileCoverageSummary getSummary() {
         return PhpCoverageProvider.getFileCoverageSummary(file);
     }
 
+    @Override
     public CoverageType getType(int lineNo) {
         lineNo++;
         // XXX when to return CoverageType.INFERRED?
@@ -100,6 +106,7 @@ public class PhpFileCoverageDetails implements FileCoverageDetails {
         return CoverageType.UNKNOWN;
     }
 
+    @Override
     public int getHitCount(int lineNo) {
         lineNo++;
         for (LineVO line : file.getLines()) {

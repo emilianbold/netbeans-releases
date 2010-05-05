@@ -1,7 +1,7 @@
 <?php
 
 class Test {
-    
+
     public function getTag($tag) {
         switch ($tag) {
             case "description":
@@ -16,9 +16,9 @@ class Test {
                 return "<channel>\n";
         }
     }
-    
+
     public function anotherone() {
-        
         //blablabla
     }
+
 }

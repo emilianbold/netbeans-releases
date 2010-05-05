@@ -59,9 +59,10 @@ class MasterPasswordPanel extends JPanel {
 
     /**
      * Shows this dialog.
-     * @return master password, and if selected, new master password; or null if cancelled
+     * @param fresh true if the master password has not yet been set
+     * @return master password, and if selected, new master password; or null if canceled
      */
-    public char[][] display() {
+    public char[][] display(boolean fresh) {
         final JButton ok = new JButton(NbBundle.getMessage(MasterPasswordPanel.class, "MasterPasswordPanel.ok"));
         ok.setDefaultCapable(true);
         NotifyDescriptor d = new NotifyDescriptor(this,
@@ -69,6 +70,7 @@ class MasterPasswordPanel extends JPanel {
                 NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.PLAIN_MESSAGE,
                 new Object[] {ok, NotifyDescriptor.CANCEL_OPTION}, ok);
         final NotificationLineSupport notification = d.createNotificationLineSupport();
+        setNewBox.setEnabled(!fresh);
         final Runnable update = new Runnable() {
             public void run() {
                 if (masterPasswordField.getPassword().length == 0) {
@@ -87,6 +89,7 @@ class MasterPasswordPanel extends JPanel {
                         ok.setEnabled(false);
                         return;
                     }
+                    // XXX issue warning in case non-ASCII characters encountered
                     if (!Arrays.equals(newField1.getPassword(), newField2.getPassword())) {
                         notification.setInformationMessage(NbBundle.getMessage(MasterPasswordPanel.class, "MasterPasswordPanel.password_mismatch"));
                         ok.setEnabled(false);

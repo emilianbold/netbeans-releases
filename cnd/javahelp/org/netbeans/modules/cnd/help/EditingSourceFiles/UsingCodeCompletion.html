@@ -15,11 +15,13 @@ Use is subject to license terms.
 <p>The IDE has a dynamic C and C++ code completion feature 
 that enables you to type a few characters and then see a 
 list of possible classes, methods, variables, and so on that can be used 
-to complete the expression.</p>
+to complete the expression. You can disable this automatic feature so that code
+completion suggestions only appear when you press Ctrl-Space.</p>
+
 <p><b>To complete a C or C++ expression:</b></p>
 <ol>
 <li>In the Editor window, type a few characters of an 
-expression and press Ctrl-Spacebar or Ctrl-\ to open the code completion box.
+expression and press Ctrl-Space or Ctrl-\ to open the code completion box.
 </p>
 <p>The code completion box displays a scrolling list of possible classes, 
 methods, variables, functions, and so on that can complete your expression. 
@@ -34,10 +36,11 @@ from the code completion box:
 <ul>
 <li>Continue typing to narrow down the selection of items in the list.
 </li>
-<li>Use the mouse or navigation keys to scroll through the list and select an item. 
+<li>Use the mouse or navigation keys to scroll through the list and select an item. If
+    the IDE can locate documentation for the items in the list, the documentation is
+    displayed in another popup window.
 </li>
-<li>Press Enter or Return to enter the selection in the code completion box into your file, and 
-close the dialog box.
+<li>Press Enter or Return to enter the selection in the code completion box into your file.
 </li>
 <li>Press Escape to close the code completion box without entering the selection.
 </li>
@@ -49,14 +52,22 @@ close the dialog box.
 <li>If you press Enter for a method with parameters, 
 the parentheses are added and your insertion point is placed inside. 
 A tooltip shows you the types that you have to fill in for the 
-parameters.When you select a method from the code completion list, 
+parameters. When you select a method from the code completion list,
 and the method 
-is inserted in the file, a tooltip displays the methods parameters.
+is inserted in the file, a tooltip displays the method's parameters.
 </li>
 <li>You can display suggestions for parameters by putting the 
 cursor after the "(" or "," in a method invocation and pressing Alt-P.
 </li>
 </ul>
+<p><b>To disable the automatic display of the completion box:</b></p>
+<ol>
+<li>
+Choose Tools &gt; Options and click Editor.
+</li>
+<li>In the General tab, deselect the Auto Popup Completion Window checkbox.
+</li>
+</ol>
 <table summary="related topics">
 <tr valign="top">
 <th colspan=2 align=left><a name="seealso">See Also</a></th>
@@ -64,8 +75,6 @@ cursor after the "(" or "," in a method invocation and pressing Alt-P.
 <tr valign="top">
 <td width="23"></td>
 <td>
-  <a href="SettingCompletionBoxDelay.html">Setting the C or C++ Code Completion Dialog Box Delay</a><br>
-  <a href="DisablingAutoCodeCompletion.html">Disabling Automatic Code Completion</a><br>
   <a href="UsingAbbreviations.html">Using Code Templates</a>
 </td>
 </tr>

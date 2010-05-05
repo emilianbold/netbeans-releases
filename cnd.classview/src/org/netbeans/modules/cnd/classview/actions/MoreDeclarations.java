@@ -53,7 +53,7 @@ import javax.swing.JMenuItem;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.classview.resources.I18n;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -129,7 +129,7 @@ public class MoreDeclarations extends AbstractAction implements Presenter.Popup 
             name = decl.getContainingFile().getName();
         }
         public int compareTo(MoreDeclarations.ItemWrapper o) {
-            return CharSequenceKey.Comparator.compare(name,o.name);
+            return CharSequences.comparator().compare(name,o.name);
         }
     }
 }

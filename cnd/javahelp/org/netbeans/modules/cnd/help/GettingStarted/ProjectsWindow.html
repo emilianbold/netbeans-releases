@@ -4,102 +4,171 @@ Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
 Use is subject to license terms.
  -->
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" 
-type="text/css">
-<title>Projects Window</title>
-</head>
-<body>
-<h2>Projects Window</h2>
-<p><small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>The Projects window is the main entry point to your projects. It shows 
-logical view of important project contents. You can open the Projects window by
-choosing Window &gt; Projects (Ctrl-1).</p>
-<p>You can view all of your project contents in a directory-based view in the 
-<a href="FilesWindow.html">Files window</a>. To open the Files window, choose Window 
-&gt; Files (Ctrl-2).
-</p>
-<h3>Logical Folders</h3>
-<p>A C or C++ Application or Library project is created with four logical folders, which are displayed in the Projects window:
-<ul>
-<li>Source Files</li>
-<li>Header Files</li>
-<li>Resource Files</li>
-<li>Important Files</li>
-</ul>
-</p>
-<p>A C or C++ Project with an Existing Makefile is created with one logical folder, 
-Important Files.</p>
-<p>
-A logical folder is not a directory. It is a way for you to organize your files, 
-and does not reflect where the files are physically stored. Files added to the Source 
-Files folder, Header Files folder, and other logical 
-folders are automatically part of a project and are compiled when you build the 
-project. 
-</p>
-<p>Files added to the Important Files folder are not part of the project and are not 
-compiled when you build the project. These files are just for reference and are convenient 
-for projects with existing makefiles.
-</p>
-<h3>Project Icons</h3>
-<p>
-The following icon is used for C and C++ projects in the 
-Projects window.
-</p>
-<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists  
-the icon. The right column lists the description.">
-<tr valign="top">
-<th scope="col" align="left">Icon</th>
-<th scope="col" align="left">Description</th>
-</tr>
-<tr valign="top">
-<td><img src="../images/makeProject.gif" alt="C/C++ project icon">
-</td>
-<td>C/C++ Application Project<br>
-C/C++ Dynamic Library Project<br>
-C/C++ Static Library Project<br>
-C/C++ Project with Existing Makefile
-</td>
-</tr>
-</table>
-<h3>Main Project</h3>
-<p>Whenever you have multiple projects open, one project should always be set as
-the main project. The IDE provides shortcut commands to quickly build and run the 
-main project.
-</p>
-<p>
-In the Projects window, the main project is shown in bold. You can set any project 
-as the main project by right-clicking its project icon and choosing 
-Set Main Project.
-</p>
-<h3>Pop-up Menu</h3>
-<p>Each node in the Projects window has a pop-up menu of commands that you can 
-run on that node. You open a node's pop-up menu by right-clicking the node. The 
-pop-up menu for project nodes contains all of the major project commands, like 
-Build and Run. The pop-up menu also contains a Properties command, which you can use 
-to configure your project.
-</p>
-
-<table summary="related topics">
-<tr valign="top">
-<th colspan=2 align=left><a name="seealso">See Also</a></th>
-</tr>
-<tr valign="top">
-<td width="23"></td>
-<td>
-  <a href="CandC++Overview.html">C and C++ Development Overview</a><br>
-  <a href="FilesWindow.html">Files Window</a>
-</td>
-</tr>
-</table>
-<hr>
-<small>
-<a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table>
-</body>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <link rel="StyleSheet" type="text/css" href="/org/netbeans/modules/usersguide/ide.css">
+     
+    <title>Projects Window</title>
+  </head>
+  <body>
+    <h2>
+       Projects Window
+    </h2>
+    <p>
+       <small><a href="#seealso">See Also</a>&nbsp;</small>
+    </p>
+    <p>
+       The Projects window is the main entry point to your projects. It shows a logical view of
+      important project contents. You can open the Projects window by choosing Window &gt; Projects
+      (Ctrl-1).
+    </p>
+    <p>
+       You can view all of your project contents in a directory-based view in the <a href=
+      "FilesWindow.html">Files window</a>. To open the Files window, choose Window &gt; Files
+      (Ctrl-2).
+    </p>
+    <h3>
+       Logical Folders
+    </h3>
+    <p>
+       A C or C++ Application or Library project is created with four logical folders, which are
+      displayed in the Projects window:
+    </p>
+    <ul>
+      <li>
+        Source Files
+      </li>
+      <li>
+        Header Files
+      </li>
+      <li>
+        Resource Files
+      </li>
+      <li>
+        Important Files
+      </li>
+    </ul>
+    <p>
+       A C or C++ Project from Existing Sources is created with one logical folder, Important
+      Files.
+    </p>
+    <p>
+       A logical folder is not a directory. It is a way for you to organize your files, and does
+      not reflect where the files are physically stored. Files added to the Source Files folder,
+      Header Files folder, and other logical folders are automatically part of a project and are
+      compiled when you build the project.
+    </p>
+    <p>
+       Files added to the Important Files folder are not part of the project and are not compiled
+      when you build the project. These files are just for reference and are convenient for
+      projects with existing makefiles.
+    </p>
+    <h3>
+       Project Icons
+    </h3>
+    <p>
+       The following icon is used for C and C++ projects in the Projects window.
+    </p>
+    <table summary="The left column lists the icon. The right column lists the description."
+    cellspacing="0" cellpadding="5" border="1">
+      <tr valign="top">
+        <th scope="col" align="left">
+          Icon
+        </th>
+        <th scope="col" align="left">
+          Description
+        </th>
+      </tr>
+      <tr valign="top">
+        <td>
+          <img src="../images/makeProject.gif" alt="C/C++ project icon"> 
+        </td>
+        <td>
+          C/C++ Project with Existing Sources<br>
+           C/C++ Application Project<br>
+           C/C++ Dynamic Library Project<br>
+           C/C++ Static Library Project<br>
+           C/C++ Qt Application Project<br>
+           C/C++ Qt Dynamic Library Project<br>
+           C/C++ St Static Library Project<br>
+           
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>
+          <img src="../images/logicalFolder.png" alt="C/C++ logical folder icon"> 
+        </td>
+        <td>
+          Header Files<br>
+           Resource Files<br>
+           Source Files
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>
+          <img src="../images/importantFiles.png" alt="C/C++ Important Files folder icon"> 
+        </td>
+        <td>
+          Important Files
+        </td>
+      </tr>
+    </table>
+    <h3>
+       Main Project
+    </h3>
+    <p>
+       Whenever you have multiple projects open, one project should always be set as the main
+      project. The IDE provides shortcut commands to quickly build and run the main project.
+    </p>
+    <p>
+       In the Projects window, the main project is shown in bold. You can set any project as the
+      main project by right-clicking its project icon and choosing Set Main Project.
+    </p>
+    <h3>
+       Pop-up Context Menu
+    </h3>
+    <p>
+       Each node in the Projects window has a pop-up context menu of commands that you can run on
+      that node. You open a node's pop-up menu by right-clicking the node. The pop-up menu for
+      project nodes contains all of the major project commands, like Build and Run. The pop-up menu
+      also contains a Properties command, which you can use to configure your project.
+    </p>
+    <table summary="related topics">
+      <tr valign="top">
+        <th align="left" colspan="2">
+          <a name="seealso">See Also</a> 
+        </th>
+      </tr>
+      <tr valign="top">
+        <td width="23">
+          &nbsp;
+        </td>
+        <td>
+          <a href="CandC++ProjectsMakefiles.html">C/C++/Fortran Projects and Makefiles</a><br>
+           <a href="FilesWindow.html">Files Window</a> 
+        </td>
+      </tr>
+    </table>
+    <hr>
+    <p>
+       <small><a href="../credits.html">Legal Notices</a></small>
+    </p>
+    <table cellpadding="20" border="0">
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>

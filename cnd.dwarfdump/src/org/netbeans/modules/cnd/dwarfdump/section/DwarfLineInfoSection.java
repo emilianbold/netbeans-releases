@@ -433,10 +433,10 @@ public class DwarfLineInfoSection extends ElfSection {
     }
 
     public static final class LineNumber implements Comparable<LineNumber> {
-        public String file;
-        public int line;
-        public long startOffset;
-        public long endOffset;
+        public final String file;
+        public final int line;
+        public final long startOffset;
+        public final long endOffset;
         private LineNumber(String file, int line, long startOffset, long endOffset){
             assert file != null;
             this.file = file;
@@ -467,6 +467,7 @@ public class DwarfLineInfoSection extends ElfSection {
             return file+":"+line+"\t(0x"+Long.toHexString(startOffset)+"-0x"+Long.toHexString(endOffset)+")"; // NOI18N
         }
 
+        @Override
         public int compareTo(LineNumber o) {
             int res = file.compareTo(o.file);
             if (res == 0) {

@@ -88,7 +88,10 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
     private IndexScopeImpl(ParserResult info, String name, PhpElementKind kind) {
         super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getSnapshot().getSource().getFileObject() : null), new OffsetRange(0, 0), kind);//NOI18N
     }
-
+    
+    @Override
+    void addElement(ModelElementImpl element) {
+    }
     /**
      * @return the index
      */

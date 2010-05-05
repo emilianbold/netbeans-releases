@@ -107,4 +107,15 @@ public class CallFinalizeTest extends TestBase {
                             "3:14-3:22:verifier:finalize() called explicitly");
     }
 
+    public void testFinalizeOnThis() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    protected void test() {\n" +
+                            "        finalize();\n" +
+                            "    }\n" +
+                            "}",
+                            "3:8-3:16:verifier:finalize() called explicitly");
+    }
+
 }

@@ -220,14 +220,15 @@ public final class TopLogging {
                 assert false;
             }
         }
-
-        if (!(System.err instanceof LgStream)) {
-            System.setErr(new LgStream(Logger.getLogger("stderr"))); // NOI18N
-            if (DEBUG != null) DEBUG.println("initializing stderr"); // NOI18N
-        }
-        if (!(System.out instanceof LgStream)) {
-            System.setOut(new LgStream(Logger.getLogger("stderr"))); // NOI18N
-            if (DEBUG != null) DEBUG.println("initializing stdout"); // NOI18N
+        if (!Boolean.getBoolean("netbeans.logger.noSystem")) {
+            if (!(System.err instanceof LgStream)) {
+                System.setErr(new LgStream(Logger.getLogger("stderr"))); // NOI18N
+                if (DEBUG != null) DEBUG.println("initializing stderr"); // NOI18N
+            }
+            if (!(System.out instanceof LgStream)) {
+                System.setOut(new LgStream(Logger.getLogger("stderr"))); // NOI18N
+                if (DEBUG != null) DEBUG.println("initializing stdout"); // NOI18N
+            }
         }
     }
 

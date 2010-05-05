@@ -41,6 +41,7 @@
 
 package org.openide.loaders;
 
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -248,6 +249,29 @@ public class FolderLookupTest extends NbTestCase implements LookupListener {
 
     }
 
+    public void testHandleDataShadow() throws Exception {
+        String fsstruct [] = new String [] {
+            "AA/",
+            "BB/",
+            "BB/java-io-IOException.instance"
+        };
+        TestUtilHid.destroyLocalFileSystem (getName());
+        FileSystem lfs = TestUtilHid.createLocalFileSystem (getWorkDir(), fsstruct);
+
+        FileObject aa = lfs.findResource("/AA");
+        FileObject bb = lfs.findResource("/BB");
+
+        DataFolder a = DataFolder.findFolder (aa);
+        DataFolder b = DataFolder.findFolder (bb);
+
+        b.createShadow(a);
+
+        FolderLookup fl = new FolderLookup(b);
+        IOException io = fl.getLookup().lookup(IOException.class);
+
+        assertNotNull("IO Exception found", io);
+    }
+    
     public void testFindInstanceNotCreatedByYouIssue24986 () throws Exception {
         String fsstruct [] = new String [] {
             "AA/",

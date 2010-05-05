@@ -132,13 +132,15 @@ final class MultiViewActionMap extends ActionMap {
         java.util.Set keys = new java.util.HashSet();
 
         if (delegate != null) {
-            java.util.List l;
+            Object[] delegateKeys;
             if (all) {
-                l = Arrays.asList(delegate.allKeys());
+                delegateKeys = delegate.allKeys();
             } else {
-                l = Arrays.asList(delegate.keys());
+                delegateKeys = delegate.keys();
             }
-            keys.addAll(l);
+            if( null != delegateKeys ) {
+                keys.addAll(Arrays.asList(delegateKeys));
+            }
         }
         
         if (topComponentMap != null) {

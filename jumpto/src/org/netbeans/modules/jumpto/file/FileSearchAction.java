@@ -45,6 +45,10 @@
 
 package org.netbeans.modules.jumpto.file;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -56,20 +60,33 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JViewport;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -80,6 +97,10 @@ import org.netbeans.modules.jumpto.type.GoToTypeAction;
 import org.netbeans.modules.jumpto.type.Models;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.spi.jumpto.file.FileDescriptor;
+import org.netbeans.spi.jumpto.file.FileProvider;
+import org.netbeans.spi.jumpto.file.FileProviderFactory;
+import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -87,6 +108,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -109,6 +131,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     private JButton openBtn;
     private FileSearchPanel panel;
     private Dimension initialDimension;
+    private Iterable<? extends FileProvider> providers;
     
     public FileSearchAction() {
         super( NbBundle.getMessage(FileSearchAction.class, "CTL_FileSearchAction") );
@@ -123,9 +146,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     }
     
     public void actionPerformed(ActionEvent arg0) {
-        FileDescription[] typeDescriptors = getSelectedFiles();
+        FileDescriptor[] typeDescriptors = getSelectedFiles();
         if (typeDescriptors != null) {
-            for(FileDescription td: typeDescriptors){
+            for(FileDescriptor td: typeDescriptors){
                 td.open();
             }
         }
@@ -135,7 +158,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
 
     public ListCellRenderer getListCellRenderer( JList list ) {
-        return new FileDescription.Renderer( list );
+        return new Renderer( list );
     }
 
 
@@ -203,33 +226,12 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
     // Private methods ---------------------------------------------------------
 
-    private FileDescription[] getSelectedFiles() {
-        FileDescription[] result = null;
-//        try {
-            panel = new FileSearchPanel(this, findCurrentProject());
-            dialog = createDialog(panel);
-
-//            Node[] arr = TopComponent.getRegistry ().getActivatedNodes();
-//            String initSearchText = null;
-//            if (arr.length > 0) {
-//                EditorCookie ec = arr[0].getCookie (EditorCookie.class);
-//                if (ec != null) {
-//                    JEditorPane[] openedPanes = ec.getOpenedPanes ();
-//                    if (openedPanes != null) {
-//                        initSearchText = org.netbeans.editor.Utilities.getSelectionOrIdentifier(openedPanes [0]);
-//                        if (initSearchText != null && org.openide.util.Utilities.isJavaIdentifier(initSearchText)) {
-//                            panel.setInitialText(initSearchText);
-//                        }
-//                    }
-//                }
-//            }
-
-            dialog.setVisible(true);
-            result = panel.getSelectedFiles();
-
-//        } catch (IOException ex) {
-//            ErrorManager.getDefault().notify(ex);
-//        }
+    private FileDescriptor[] getSelectedFiles() {
+        FileDescriptor[] result = null;
+        panel = new FileSearchPanel(this, findCurrentProject());
+        dialog = createDialog(panel);
+        dialog.setVisible(true);
+        result = panel.getSelectedFiles();
         return result;
     }
 
@@ -306,11 +308,12 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 //    }
 
     private void cleanup() {
-        //System.out.println("CLEANUP");
-        //Thread.dumpStack();
 
         if ( dialog != null ) { // Closing event for some reson sent twice
-
+            //Free SPI
+            synchronized (this) {
+                providers = null;
+            }
             // Save dialog size only when changed
             final int currentWidth = dialog.getWidth();
             final int currentHeight = dialog.getHeight();
@@ -323,8 +326,25 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             dialog.dispose();
             this.dialog = null;
             //GoToTypeAction.this.cache = null;
-            
             FileSearchOptions.flush();
+        }
+    }
+
+    private Iterable<? extends FileProvider> getProviders() {
+        synchronized (this) {
+            if (providers != null) {
+                return providers;
+            }
+        }
+        final List<FileProvider> result = new LinkedList<FileProvider>();
+        for (FileProviderFactory fpf : Lookup.getDefault().lookupAll(FileProviderFactory.class)) {
+            result.add(fpf.createFileProvider());
+        }
+        synchronized (this) {
+            if (providers == null) {
+                providers = Collections.unmodifiableList(result);
+            }
+            return providers;
         }
     }
 
@@ -339,6 +359,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     private class Worker implements Runnable {
 
         private volatile boolean isCanceled = false;
+        private volatile FileProvider currentProvider;
 
         private final String text;
         private final QuerySupport.Kind searchType;
@@ -357,7 +378,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
             LOGGER.fine( "Worker for " + text + " - started " + ( System.currentTimeMillis() - createTime ) + " ms."  );
 
-            final List<? extends FileDescription> files = getFileNames( text );
+            final List<? extends FileDescriptor> files = getFileNames( text );
             if ( isCanceled ) {
                 LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
                 return;
@@ -391,27 +412,31 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             if ( panel.time != -1 ) {
                 LOGGER.fine( "Worker for text " + text + " canceled after " + ( System.currentTimeMillis() - createTime ) + " ms."  );
             }
+            FileProvider provider;
             synchronized (this) {
                 isCanceled = true;
+                provider = currentProvider;
+            }
+            if (provider != null) {
+                    provider.cancel();
             }
         }
 
-        private List<? extends FileDescription> getFileNames(String text) {
+        private List<? extends FileDescriptor> getFileNames(String text) {
             String searchField;
             switch (searchType) {
                 case CASE_INSENSITIVE_PREFIX:
                 case CASE_INSENSITIVE_REGEXP:
                     searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME; break;
-                    
                 default:
                     searchField = FileIndexer.FIELD_NAME; break;
             }
 
-            Collection<? extends FileObject> roots = QuerySupport.findRoots((Project) null, null, Collections.<String>emptyList(), Collections.<String>emptyList());
+            final Collection<FileObject> roots = new ArrayList<FileObject>(QuerySupport.findRoots((Project) null, null, Collections.<String>emptyList(), Collections.<String>emptyList()));
             try {
                 QuerySupport q = QuerySupport.forRoots(FileIndexer.ID, FileIndexer.VERSION, roots.toArray(new FileObject [roots.size()]));
                 Collection<? extends IndexResult> results = q.query(searchField, text, searchType);
-                ArrayList<FileDescription> files = new ArrayList<FileDescription>();
+                ArrayList<FileDescriptor> files = new ArrayList<FileDescriptor>();
                 for(IndexResult r : results) {
                     FileObject file = r.getFile();
                     if (file == null || !file.isValid()) {
@@ -421,27 +446,55 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
                     Project project = FileOwnerQuery.getOwner(file);
                     boolean preferred = project != null && currentProject != null ? project.getProjectDirectory() == currentProject.getProjectDirectory() : false;
-                    FileDescription fd = new FileDescription(
+                    FileDescriptor fd = new FileDescription(
                         file,
                         r.getRelativePath().substring(0, Math.max(r.getRelativePath().length() - file.getNameExt().length() - 1, 0)),
-                        project,
-                        preferred
-                    );
+                        project);
+                    FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
                     files.add(fd);
                     LOGGER.finer("Found: " + file.getPath() + ", project=" + project + ", currentProject=" + currentProject + ", preferred=" + preferred);
                 }
-                //PENDING Now we have to search folders which not included in Search API
-                Project[] projects = OpenProjects.getDefault().getOpenProjects();
-                Enumeration <? extends FileObject> projectFolders;
-                Collection <? extends FileObject> allFolders = new ArrayList<FileObject>();
-                final FileObjectFilter[] filters = new FileObjectFilter[]{SearchInfoFactory.VISIBILITY_FILTER, SearchInfoFactory.SHARABILITY_FILTER};
+                if (isCanceled) {
+                    return files;
+                }
+
+                final Set<FileObject> excludes = new HashSet<FileObject>(roots);
+                final Project[] projects = OpenProjects.getDefault().getOpenProjects();
+                final List<FileObject> sgRoots = new LinkedList<FileObject>();
                 for (Project p : projects) {
-                    Sources s  = ProjectUtils.getSources(p);
-                    SourceGroup[] groups = s.getSourceGroups(Sources.TYPE_GENERIC);
-                    for (SourceGroup group: groups) {
-                        FileObject root = group.getRootFolder();
-                          allFolders = searchSources(root, allFolders, roots, filters);
+                    for (SourceGroup group: ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
+                        sgRoots.add(group.getRootFolder());
                     }
+                }
+                //Ask GTF providers
+                final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext(text, toJumpToSearchType(searchType), currentProject);
+                final FileProvider.Result fpR = FileProviderAccessor.getInstance().createResult(files,new String[1], ctx);
+                for (FileProvider provider : getProviders()) {
+                    currentProvider = provider;
+                    try {
+                        for (FileObject root : sgRoots) {
+                            if (excludes.contains(root)) {
+                                continue;
+                            }
+                            FileProviderAccessor.getInstance().setRoot(ctx, root);
+                            boolean recognized = provider.computeFiles(ctx, fpR);
+                            if (recognized) {
+                                excludes.add(root);
+                            }
+                        }
+                    } finally {
+                        currentProvider = null;
+                        if (isCanceled) {
+                            return files;
+                        }
+                    }
+                }
+
+                //PENDING Now we have to search folders which not included in Search API
+                Collection <FileObject> allFolders = new ArrayList<FileObject>();
+                final FileObjectFilter[] filters = new FileObjectFilter[]{SearchInfoFactory.VISIBILITY_FILTER, SearchInfoFactory.SHARABILITY_FILTER};
+                for (FileObject root : sgRoots) {
+                    allFolders = searchSources(root, allFolders, excludes, filters);
                 }
                 //Looking for matching files in all found folders
                 for (FileObject folder: allFolders) {
@@ -457,72 +510,53 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                             String relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), file);
                             if (relativePath == null)
                                 relativePath ="";
-                            FileDescription fd = new FileDescription(
+                            FileDescriptor fd = new FileDescription(
                                 file,
                                 relativePath,
-                                project,
-                                preferred
+                                project
                             );
+                            FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
                             files.add(fd);
                         }
                     }
                 }
-                Collections.sort(files, new FileDescription.FDComarator(panel.isPreferedProject(), panel.isCaseSensitive()));
+                Collections.sort(files, new FDComarator(panel.isPreferedProject(), panel.isCaseSensitive()));
                 return files;
             } catch (PatternSyntaxException pse) {
-                return Collections.<FileDescription>emptyList();
+                return Collections.<FileDescriptor>emptyList();
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, ioe);
-                return Collections.<FileDescription>emptyList();
+                return Collections.<FileDescriptor>emptyList();
             }
+        }
 
-
-//            // TODO: Search twice, first for current project, then for all projects
-//            List<TypeDescriptor> items;
-//            // Multiple providers: merge results
-//            items = new ArrayList<TypeDescriptor>(128);
-//            String[] message = new String[1];
-//            TypeProvider.Context context = TypeProviderAccessor.DEFAULT.createContext(null, text, nameKind);
-//            TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message);
-//            if (typeProviders == null) {
-//                typeProviders = Lookup.getDefault().lookupAll(TypeProvider.class);
-//            }
-//            for (TypeProvider provider : typeProviders) {
-//                if (isCanceled) {
-//                    return null;
-//                }
-//                current = provider;
-//                long start = System.currentTimeMillis();
-//                try {
-//                    LOGGER.fine("Calling TypeProvider: " + provider);
-//                    provider.computeTypeNames(context, result);
-//                } finally {
-//                    current = null;
-//                }
-//                long delta = System.currentTimeMillis() - start;
-//                LOGGER.fine("Provider '" + provider.getDisplayName() + "' took " + delta + " ms.");
-//
-//            }
-//            if ( !isCanceled ) {
-//                //time = System.currentTimeMillis();
-//                Collections.sort(items, new TypeComparator());
-//                panel.setWarning(message[0]);
-//                //sort += System.currentTimeMillis() - time;
-//                //LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort );
-//                return items;
-//            }
-//            else {
-//                return null;
-//            }
+        private SearchType toJumpToSearchType(final QuerySupport.Kind searchType) {
+            switch (searchType) {
+                case CAMEL_CASE:
+                case CASE_INSENSITIVE_CAMEL_CASE:
+                    return org.netbeans.spi.jumpto.type.SearchType.CAMEL_CASE;
+                case CASE_INSENSITIVE_PREFIX:
+                    return org.netbeans.spi.jumpto.type.SearchType.CASE_INSENSITIVE_PREFIX;
+                case CASE_INSENSITIVE_REGEXP:
+                    return org.netbeans.spi.jumpto.type.SearchType.CASE_INSENSITIVE_REGEXP;
+                case EXACT:
+                    return org.netbeans.spi.jumpto.type.SearchType.EXACT_NAME;
+                case PREFIX:
+                    return org.netbeans.spi.jumpto.type.SearchType.PREFIX;
+                case REGEXP:
+                    return org.netbeans.spi.jumpto.type.SearchType.REGEXP;
+                default:
+                    throw new IllegalArgumentException();
+            }
         }
     } // End of Worker class
 
-    private Collection<? extends FileObject> searchSources(FileObject root, Collection<? extends FileObject> result, Collection<? extends FileObject> exclude, FileObjectFilter[] filters) {
+    private Collection<FileObject> searchSources(FileObject root, Collection<FileObject> result, Collection<? extends FileObject> exclude, FileObjectFilter[] filters) {
         if (root.getChildren().length == 0 || exclude.contains(root) || !checkAgainstFilters(root, filters)) {
             return result;
         } else {
 //            if (!exclude.contains(root)) {
-                ((Collection<FileObject>)result).add(root);
+                result.add(root);
                 Enumeration<? extends FileObject> subFolders = root.getFolders(false);
                 while (subFolders.hasMoreElements()) {
                     searchSources(subFolders.nextElement(), result, exclude, filters);
@@ -681,7 +715,242 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 panel.setSelectedFile();
             }
         }
-        
     }
-    
+
+    //Inner classes
+    public static class FDComarator implements Comparator<FileDescriptor> {
+
+        private boolean usePrefered;
+        private boolean caseSensitive;
+
+        public FDComarator(boolean usePrefered, boolean caseSensitive ) {
+            this.usePrefered = usePrefered;
+            this.caseSensitive = caseSensitive;
+        }
+
+        public int compare(FileDescriptor o1, FileDescriptor o2) {
+
+            // If prefered prefer prefered
+            if ( usePrefered ) {
+                if (FileProviderAccessor.getInstance().isFromCurrentProject(o1) && !FileProviderAccessor.getInstance().isFromCurrentProject(o2)) {
+                    return -1;
+                }
+                if (!FileProviderAccessor.getInstance().isFromCurrentProject(o1) && FileProviderAccessor.getInstance().isFromCurrentProject(o2)) {
+                    return 1;
+                }
+            }
+
+            // File name
+            int cmpr = compareStrings( o1.getFileName(), o2.getFileName(), caseSensitive );
+            if ( cmpr != 0 ) {
+                return cmpr;
+            }
+
+            // Project name
+            cmpr = compareStrings( o1.getProjectName(), o2.getProjectName(), caseSensitive );
+            if ( cmpr != 0 ) {
+                return cmpr;
+            }
+
+            // Relative location
+            cmpr = compareStrings( o1.getOwnerPath(), o2.getOwnerPath(), caseSensitive );
+
+            return cmpr;
+
+        }
+
+        private int compareStrings(String s1, String s2, boolean caseSensitive) {
+            if( s1 == null ) {
+                s1 = "";    //NOI18N
+            }
+            if ( s2 == null ) {
+                s2 = "";    //NOI18N
+            }
+
+
+            return caseSensitive ? s1.compareTo( s2 ) : s1.compareToIgnoreCase( s2 );
+        }
+    }
+
+    private static class RendererComponent extends JPanel {
+	private FileDescriptor fd;
+
+	void setDescription(FileDescriptor fd) {
+	    this.fd = fd;
+	    putClientProperty(TOOL_TIP_TEXT_KEY, null);
+	}
+
+	@Override
+	public String getToolTipText() {
+	    String text = (String) getClientProperty(TOOL_TIP_TEXT_KEY);
+	    if( text == null ) {
+                if( fd != null) {
+                    text = FileUtil.getFileDisplayName(fd.getFileObject());
+                }
+                putClientProperty(TOOL_TIP_TEXT_KEY, text);
+	    }
+	    return text;
+	}
+    }
+
+    public static class Renderer extends DefaultListCellRenderer implements ChangeListener {
+
+        public  static Icon WAIT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/resources/wait.gif", false); // NOI18N
+
+        private RendererComponent rendererComponent;
+        private JLabel jlName = new JLabel();
+        private JLabel jlPath = new JLabel();
+        private JLabel jlPrj = new JLabel();
+        private int DARKER_COLOR_COMPONENT = 5;
+        private int LIGHTER_COLOR_COMPONENT = 80;
+        private Color fgColor;
+        private Color fgColorLighter;
+        private Color bgColor;
+        private Color bgColorDarker;
+        private Color bgSelectionColor;
+        private Color fgSelectionColor;
+        private Color bgColorGreener;
+        private Color bgColorDarkerGreener;
+
+        private JList jList;
+
+        private boolean colorPrefered;
+
+        public Renderer( JList list ) {
+
+            jList = list;
+
+            Container container = list.getParent();
+            if ( container instanceof JViewport ) {
+                ((JViewport)container).addChangeListener(this);
+                stateChanged(new ChangeEvent(container));
+            }
+
+            rendererComponent = new RendererComponent();
+            rendererComponent.setLayout(new BorderLayout());
+            rendererComponent.add( jlName, BorderLayout.WEST );
+            rendererComponent.add( jlPath, BorderLayout.CENTER);
+            rendererComponent.add( jlPrj, BorderLayout.EAST );
+
+
+            jlName.setOpaque(false);
+            jlPath.setOpaque(false);
+            jlPrj.setOpaque(false);
+
+            jlName.setFont(list.getFont());
+            jlPath.setFont(list.getFont());
+            jlPrj.setFont(list.getFont());
+
+
+            jlPrj.setHorizontalAlignment(RIGHT);
+            jlPrj.setHorizontalTextPosition(LEFT);
+
+            // setFont( list.getFont() );
+            fgColor = list.getForeground();
+            fgColorLighter = new Color(
+                                   Math.min( 255, fgColor.getRed() + LIGHTER_COLOR_COMPONENT),
+                                   Math.min( 255, fgColor.getGreen() + LIGHTER_COLOR_COMPONENT),
+                                   Math.min( 255, fgColor.getBlue() + LIGHTER_COLOR_COMPONENT)
+                                  );
+
+            bgColor = list.getBackground();
+            bgColorDarker = new Color(
+                                    Math.abs(bgColor.getRed() - DARKER_COLOR_COMPONENT),
+                                    Math.abs(bgColor.getGreen() - DARKER_COLOR_COMPONENT),
+                                    Math.abs(bgColor.getBlue() - DARKER_COLOR_COMPONENT)
+                            );
+            bgSelectionColor = list.getSelectionBackground();
+            fgSelectionColor = list.getSelectionForeground();
+
+
+            bgColorGreener = new Color(
+                                    Math.abs(bgColor.getRed() - 20),
+                                    Math.min(255, bgColor.getGreen() + 10 ),
+                                    Math.abs(bgColor.getBlue() - 20) );
+
+
+            bgColorDarkerGreener = new Color(
+                                    Math.abs(bgColorDarker.getRed() - 35),
+                                    Math.min(255, bgColorDarker.getGreen() + 5 ),
+                                    Math.abs(bgColorDarker.getBlue() - 35) );
+        }
+
+        public @Override Component getListCellRendererComponent( JList list,
+                                                       Object value,
+                                                       int index,
+                                                       boolean isSelected,
+                                                       boolean hasFocus) {
+
+            // System.out.println("Renderer for index " + index );
+
+            int height = list.getFixedCellHeight();
+            int width = list.getFixedCellWidth() - 1;
+
+            width = width < 200 ? 200 : width;
+
+            // System.out.println("w, h " + width + ", " + height );
+
+            Dimension size = new Dimension( width, height );
+            rendererComponent.setMaximumSize(size);
+            rendererComponent.setPreferredSize(size);
+
+            if ( isSelected ) {
+                jlName.setForeground(fgSelectionColor);
+                jlPath.setForeground(fgSelectionColor);
+                jlPrj.setForeground(fgSelectionColor);
+                rendererComponent.setBackground(bgSelectionColor);
+            }
+            else {
+                jlName.setForeground(fgColor);
+                jlPath.setForeground(fgColorLighter);
+                jlPrj.setForeground(fgColor);
+                rendererComponent.setBackground( index % 2 == 0 ? bgColor : bgColorDarker );
+            }
+
+            if ( value instanceof FileDescriptor ) {
+                FileDescriptor fd = (FileDescriptor)value;
+                jlName.setIcon(fd.getIcon());
+                jlName.setText(fd.getFileName());
+                jlPath.setIcon(null);
+                jlPath.setHorizontalAlignment(SwingConstants.LEFT);
+                jlPath.setText(fd.getOwnerPath().length() > 0 ? " (" + fd.getOwnerPath() + ")" : " ()"); //NOI18N
+                jlPrj.setText(fd.getProjectName());
+                jlPrj.setIcon(fd.getProjectIcon());
+                if ( !isSelected ) {
+                    rendererComponent.setBackground( index % 2 == 0 ?
+                        ( FileProviderAccessor.getInstance().isFromCurrentProject(fd) && colorPrefered ? bgColorGreener : bgColor ) :
+                        ( FileProviderAccessor.getInstance().isFromCurrentProject(fd) && colorPrefered ? bgColorDarkerGreener : bgColorDarker ) );
+                }
+                rendererComponent.setDescription(fd);
+            }
+            else {
+                jlName.setText( "" ); // NOI18M
+                jlName.setIcon(null);
+                jlPath.setIcon(Renderer.WAIT_ICON);
+                jlPath.setHorizontalAlignment(SwingConstants.CENTER);
+                jlPath.setText( value.toString() );
+                jlPrj.setIcon(null);
+                jlPrj.setText( "" ); // NOI18N
+            }
+
+            return rendererComponent;
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent event) {
+
+            JViewport jv = (JViewport)event.getSource();
+
+            jlName.setText( "Sample" ); // NOI18N
+            jlName.setIcon( new ImageIcon() );
+
+            jList.setFixedCellHeight(jlName.getPreferredSize().height);
+            jList.setFixedCellWidth(jv.getExtentSize().width);
+        }
+
+        public void setColorPrefered( boolean colorPrefered ) {
+            this.colorPrefered = colorPrefered;
+        }
+
+     }
 }

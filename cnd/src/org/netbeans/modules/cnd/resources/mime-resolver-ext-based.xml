@@ -80,4 +80,8 @@ made subject to such option by the copyright holder.
         <ext name="pro"/>
         <resolver mime="text/x-qtproject"/>
     </file>
+    <file>
+        <ext name="cmake"/>
+        <resolver mime="text/x-cmake-include"/>
+    </file>
 </MIME-resolver>

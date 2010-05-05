@@ -77,9 +77,9 @@ import org.w3c.dom.NamedNodeMap;
  * @author nn136682
  */
 public class XDMAccess extends DocumentModelAccess {
-    private XDMModel xdmModel;
-    private AbstractDocumentModel model;
-    private XDMListener xdmListener;
+    private final XDMModel xdmModel;
+    private final AbstractDocumentModel model;
+    private final XDMListener xdmListener;
     
     public XDMAccess(AbstractDocumentModel model) {
         xdmModel = new XDMModel(model.getModelSource());
@@ -114,7 +114,7 @@ public class XDMAccess extends DocumentModelAccess {
         xdmListener.startSync();
     }
     public void finishUndoRedo() {
-        xdmListener.endSync();
+        xdmListener.endSync(true);
     }
     
     public void prepareSync() {
@@ -138,17 +138,21 @@ public class XDMAccess extends DocumentModelAccess {
             boolean error = true;
             try {
                 xdmListener.startSync();
-                xdmModel.sync();
+                synchronized (xdmModel) {
+                    Document oldDoc = xdmModel.getCurrentDocument();
+                    xdmModel.sync();
+                    if (!xdmListener.xamModelHasRoot()) {
+                        xdmModel.setDocument(oldDoc);
+                        return DocumentModel.State.NOT_WELL_FORMED;
+                    }
+                }
                 error = false;
-                xdmListener.endSync();
             } catch(IllegalArgumentException ex) {
                 IOException ioe = new IOException();
                 ioe.initCause(ex);
                 throw ioe;
             } finally {
-                if (error) {
-                    xdmListener.endSync(false);
-                }
+                xdmListener.endSync(!error);
             }
         }
         

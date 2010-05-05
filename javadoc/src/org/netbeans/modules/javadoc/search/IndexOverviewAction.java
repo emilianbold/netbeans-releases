@@ -44,7 +44,7 @@ package org.netbeans.modules.javadoc.search;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
-import java.util.*;
+import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -57,6 +57,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
 
@@ -74,23 +75,23 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
-    public void actionPerformed(ActionEvent ev) {
+    public @Override void actionPerformed(ActionEvent ev) {
         // do nothing -- should never be called
     }
     
-    public String getName() {
+    public @Override String getName() {
         return NbBundle.getMessage(IndexOverviewAction.class, "CTL_INDICES_MenuItem");
     }
     
-    protected String iconResource() {
+    protected @Override String iconResource() {
         return null;//"org/netbeans/modules/javadoc/resources/JavaDoc.gif"; // NOI18N
     }
     
-    public HelpCtx getHelpCtx() {
+    public @Override HelpCtx getHelpCtx() {
         return new HelpCtx("javadoc.search"); // NOI18N
     }
     
-    public JMenuItem getMenuPresenter() {
+    public @Override JMenuItem getMenuPresenter() {
         return new IndexMenu();
     }
     
@@ -105,12 +106,13 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
         
         private int itemHash = 0;
         
+        @SuppressWarnings("LeakingThisInConstructor")
         public IndexMenu() {
             Mnemonics.setLocalizedText(this, IndexOverviewAction.this.getName());
             //setIcon(IndexOverviewAction.this.getIcon());
             // model listening is the only lazy menu procedure that works on macosx
             getModel().addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
+                public @Override void stateChanged(ChangeEvent e) {
                     if (getModel().isSelected()) {
                         getPopupMenu2();
                     }
@@ -118,15 +120,15 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
             });
         }
         
-        public HelpCtx getHelpCtx() {
+        public @Override HelpCtx getHelpCtx() {
             return IndexOverviewAction.this.getHelpCtx();
         }
         
-        public JComponent[] getMenuPresenters() {
+        public @Override JComponent[] getMenuPresenters() {
             return new JComponent[] {this};
         }
         
-        public JComponent[] synchMenuPresenters(JComponent[] items) {
+        public @Override JComponent[] synchMenuPresenters(JComponent[] items) {
             return items;
         }
         
@@ -139,7 +141,7 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
 //        }
         
         public void getPopupMenu2() {
-            List[] data = IndexBuilder.getDefault().getIndices(false);
+            List<IndexBuilder.Index> data = IndexBuilder.getDefault().getIndices(false);
             if (data == null) {
                 // do not block EDT in case inices are not computed yet
                 itemHash = 0;
@@ -148,7 +150,7 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
                 return;
             }
             
-            int newHash = computeDataHash(data);
+            int newHash = data.hashCode();
             if (newHash != itemHash) {
                 if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
                     err.log("recreating popup menu (" + itemHash + " -> " + newHash + ")");
@@ -156,13 +158,14 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
                 itemHash = newHash;
                 // Probably need to recreate the menu.
                 removeAll();
-                List names = data[0]; // List<String>
-                List indices = data[1]; // List<FileObject>
-                int size = names.size();
-                if (size != indices.size()) throw new IllegalStateException();
+                int size = data.size();
+                if (size != data.size()) {
+                    throw new IllegalStateException();
+                }
                 if (size > 0) {
                     for (int i = 0; i < size && i < MAX_ITEMS; i++) {
-                        add(new IndexMenuItem((String) names.get(i), (FileObject) indices.get(i)));
+                        IndexBuilder.Index index = data.get(i);
+                        add(new IndexMenuItem(index.display, index.fo));
                     }
                     add(new MoreReferencesMenuItem());
                 } else {
@@ -171,19 +174,6 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
                     add(dummy);
                 }
             }
-        }
-        
-        private int computeDataHash(List[] data) {
-            int x = data[0].hashCode();
-            Iterator it = data[1].iterator();
-            while (it.hasNext()) {
-                FileObject fo = (FileObject)it.next();
-                // Do not use fo.getURL() that is really slow.
-                // As FileObject instance is referened by IndexMenuItem, there
-                // should not be the identity issue any more
-                x += fo.hashCode();
-            }
-            return x;
         }
         
     }
@@ -198,25 +188,26 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
         /** a reference to org.openide.filesystems.FileSystem */
         private final FileObject fsRef;
         
+        @SuppressWarnings("LeakingThisInConstructor")
         public IndexMenuItem(String display, FileObject index) {
             super(display);
             fsRef = index;
             addActionListener(this);
         }
         
-        public void actionPerformed(ActionEvent ev) {
+        public @Override void actionPerformed(ActionEvent ev) {
             URL loc = getURL();
             HtmlBrowser.URLDisplayer.getDefault().showURL(loc);
         }
         
         private URL getURL() {
             if (u == null) {
-                u = JavadocURLMapper.findURL(fsRef);
+                u = URLMapper.findURL(fsRef, URLMapper.EXTERNAL);
             }
             return u;
         }
         
-        public HelpCtx getHelpCtx() {
+        public @Override HelpCtx getHelpCtx() {
             return IndexOverviewAction.this.getHelpCtx();
         }
         
@@ -224,16 +215,17 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
 
     private static final class MoreReferencesMenuItem extends JMenuItem implements ActionListener {
 
+        @SuppressWarnings("LeakingThisInConstructor")
         public MoreReferencesMenuItem() {
             Mnemonics.setLocalizedText(this, NbBundle.getMessage(IndexOverviewAction.class, "CTL_MORE_INDICES_MenuItem"));
             addActionListener(this);
         }
 
-        public void actionPerformed(ActionEvent e) {
+        public @Override void actionPerformed(ActionEvent e) {
             FileObject fsRef = ReferencesPanel.showInWindow();
             URL u = null;
             if (fsRef != null) {
-                u = JavadocURLMapper.findURL(fsRef);
+                u = URLMapper.findURL(fsRef, URLMapper.EXTERNAL);
             }
             if (u != null) {
                 HtmlBrowser.URLDisplayer.getDefault().showURL(u);

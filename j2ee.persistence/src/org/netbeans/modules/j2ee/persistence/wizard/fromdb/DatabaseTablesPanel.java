@@ -130,9 +130,9 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         boolean enabled = ProviderUtil.isValidServerInstanceOrNone(project);
 
-        if (enabled) {
+        {
             boolean withDatasources = Util.isContainerManaged(project) || Util.isEjb21Module(project);
-            if (withDatasources) {
+            if (withDatasources && enabled) {
                 initializeWithDatasources();
             } else {
                 initializeWithDbConnections();
@@ -146,12 +146,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             }
 
             selectDefaultTableSource(tableSource, withDatasources, project, targetFolder);
-        } else {
-            datasourceRadioButton.setEnabled(false);
-            datasourceComboBox.setEnabled(false);
-            dbschemaRadioButton.setEnabled(false);
-            dbschemaComboBox.setEnabled(false);
-        }
+        } 
 
         // hack to ensure the progress dialog displayed by updateSourceSchema()
         // is displayed on top of the wizard dialog. Needed because when initialize()
@@ -943,10 +938,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         @Override
         public boolean isValid() {
-            if (!ProviderUtil.isValidServerInstanceOrNone(project)) {
-                setErrorMessage(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_MissingServer"));
-                return false;
-            }
+
 
             // TODO: RETOUCHE
             //            if (JavaMetamodel.getManager().isScanInProgress()) {
@@ -992,6 +984,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             }
 
             setErrorMessage(" "); // NOI18N
+
+            if (!ProviderUtil.isValidServerInstanceOrNone(project)) {
+                setWarningMessage(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_MissingServer"));
+                //return false;
+            }
+
             return true;
         }
 

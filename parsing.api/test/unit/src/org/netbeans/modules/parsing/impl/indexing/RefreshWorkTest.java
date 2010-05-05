@@ -57,6 +57,7 @@ import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -108,6 +109,12 @@ public class RefreshWorkTest  extends NbTestCase {
         );
         rootCUrl = rootCFile.toURL();
         scannedRoots2Dependencies.put(rootCUrl, Collections.<URL>emptyList());
+
+        RepositoryUpdater.getDefault().rootsListeners.setListener(new FileChangeAdapter(), new FileChangeAdapter());
+    }
+
+    protected @Override void tearDown() throws Exception {
+        RepositoryUpdater.getDefault().rootsListeners.setListener(null, null);
     }
 
     public void testOuterFolders() {

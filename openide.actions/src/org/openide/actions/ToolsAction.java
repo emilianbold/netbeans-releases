@@ -88,17 +88,7 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
 
     // Global ActionManager listener monitoring all available actions
     // and their state
-    private static G gl;
-
-    /** Lazy initialization of global listener.
-     */
-    private static synchronized G gl() {
-        if (gl == null) {
-            gl = new G();
-        }
-
-        return gl;
-    }
+    static final G gl = new G();
 
     /* @return name
     */
@@ -152,7 +142,7 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
         arr.addAll(Arrays.<Action>asList(am.getContextActions()));
 
         String pref = arr.isEmpty() ? null : "";
-        for (Lookup.Item<Action> item : gl().result.allItems()) {
+        for (Lookup.Item<Action> item : gl.result.allItems()) {
             final Action action = item.getInstance();
             if (action == null) {
                 continue;
@@ -276,12 +266,12 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
         
         @Override
         public JComponent[] synchMenuPresenters(JComponent[] items) {
-            if (timestamp == gl().getTimestamp()) {
+            if (timestamp == gl.getTimestamp()) {
                 return items;
             }
             // generate directly list of menu items
             List<JMenuItem> l = generate(toolsAction, true);
-            timestamp = gl().getTimestamp();
+            timestamp = gl.getTimestamp();
             return l.toArray(new JMenuItem[l.size()]);
         }
         
@@ -314,7 +304,7 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
         
         @Override
         public JComponent[] synchMenuPresenters(JComponent[] items) {
-            return gl().isPopupEnabled(toolsAction) ? new JMenuItem[] { menu } : new JMenuItem[0];
+            return gl.isPopupEnabled(toolsAction) ? new JMenuItem[] { menu } : new JMenuItem[0];
         }
         
         
@@ -483,17 +473,23 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
             }
 
             for (int i = 0; i < copy.length; i++) {
+                if (copy[i] == null) {
+                    continue;
+                }
                 // Get context aware action instance if needed.
                 Action act;
 
                 // Retrieve context aware action instance if possible.
                 if ((lookup != null) && copy[i] instanceof ContextAwareAction) {
                     act = ((ContextAwareAction) copy[i]).createContextAwareInstance(lookup);
+                    if (act == null) {
+                        throw new IllegalStateException("createContextAwareInstance for " + copy[i] + " returned null!");
+                    }
                 } else {
                     act = copy[i];
                 }
 
-                if (act instanceof Presenter.Popup && act.isEnabled()) {
+                if (act.isEnabled()) {
                     en = true;
 
                     break;

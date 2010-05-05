@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -209,7 +210,7 @@ public final class GemManager {
         return FileUtil.toFileObject(getGemHomeF());
     }
 
-    public String getGemHomeUrl() {
+    public synchronized String getGemHomeUrl() {
         if (gemHomeUrl == null) {
             String gemHome = getGemHome();
             if (gemHome != null) {
@@ -420,11 +421,12 @@ public final class GemManager {
         }
     }
 
-    private void initGemList() {
+    private synchronized void initGemList() {
         if (localGems == null) {
             // Initialize lazily
             assert platform.hasRubyGemsInstalled() : "asking for gems only when RubyGems are installed";
             localGems = new HashMap<String, List<GemInfo>>();
+            Set<File> allSpecFiles = new HashSet<File>(100);
             for (File gemDir : getRepositories()) {
                 File specDir = new File(gemDir, SPECIFICATIONS);
                 if (specDir.exists()) {
@@ -432,32 +434,27 @@ public final class GemManager {
                     // Add each of */lib/
                     File[] specFiles = specDir.listFiles();
                     if (specFiles != null) {
-                        Map<String, List<GemInfo>> namesToInfos = GemFilesParser.getGemInfos(specFiles);
-                        for (Map.Entry<String, List<GemInfo>> nameToInfos : namesToInfos.entrySet()) {
-                            String name = nameToInfos.getKey();
-                            List<GemInfo> newInfos = nameToInfos.getValue();
-                            List<GemInfo> currentInfos = localGems.get(name);
-                            if (currentInfos != null) {
-                                currentInfos.addAll(newInfos);
-                            }  else {
-                                localGems.put(name, newInfos);
-                            }
-                        }
+                        allSpecFiles.addAll(Arrays.asList(specFiles));
                     }
                 } else {
                     LOGGER.finer("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
                 }
-                logGems(Level.FINEST);
             }
+            Map<String, List<GemInfo>> namesToInfos = GemFilesParser.getGemInfos(allSpecFiles);
+            for (Map.Entry<String, List<GemInfo>> nameToInfos : namesToInfos.entrySet()) {
+                String name = nameToInfos.getKey();
+                localGems.put(name, nameToInfos.getValue());
+            }
+            logGems(Level.FINEST);
         }
     }
 
-    public Set<String> getInstalledGemsFiles() {
+    public synchronized Set<String> getInstalledGemsFiles() {
         initGemList();
         return localGems.keySet();
     }
 
-    public void reset() {
+    public synchronized void reset() {
         resetRemote();
         resetLocal();
         gemHomeUrl = null;
@@ -532,7 +529,7 @@ public final class GemManager {
      * @return list of the available installed gems. Returns an empty list if
      *         they could not be read, never <tt>null</tt>.
      */
-    public List<Gem> getLocalGems() {
+    public synchronized List<Gem> getLocalGems() {
         return local != null ? local : Collections.<Gem>emptyList();
     }
 
@@ -543,19 +540,19 @@ public final class GemManager {
      * @return list of the available remote gems. Returns an empty list if they
      *         could not be read, never <tt>null</tt>.
      */
-    public List<Gem> getRemoteGems() {
+    public synchronized List<Gem> getRemoteGems() {
         return remote != null ? remote : Collections.<Gem>emptyList();
     }
 
-    boolean needsLocalReload() {
+    synchronized boolean needsLocalReload() {
         return local == null;
     }
 
-    boolean needsRemoteReload() {
+    synchronized boolean needsRemoteReload() {
         return remote == null;
     }
 
-    boolean needsReload() {
+    synchronized boolean needsReload() {
         return needsLocalReload() || needsRemoteReload();
     }
 
@@ -821,7 +818,7 @@ public final class GemManager {
      *
      * @return a set of URLs
      */
-    public Set<URL> getNonGemLoadPath() {
+    public synchronized Set<URL> getNonGemLoadPath() {
         if (nonGemUrls == null) {
             initializeUrlMaps();
         }
@@ -833,7 +830,7 @@ public final class GemManager {
      * Return a map from gem name to the version string, which is of the form
      * {@code <major>.<minor>.<tiny>[-<platform>]}, such as 1.2.3 and 1.13.5-ruby
      */
-    public Map<String, String> getGemVersions() {
+    public synchronized Map<String, String> getGemVersions() {
         if (gemVersions == null) {
             initializeUrlMaps();
         }
@@ -844,7 +841,7 @@ public final class GemManager {
     /**
      * Return a map from gem name to the URL for the lib root of the current gems
      */
-    public Map<String, URL> getGemUrls() {
+    public synchronized Map<String, URL> getGemUrls() {
         if (gemUrls == null) {
             initializeUrlMaps();
         }

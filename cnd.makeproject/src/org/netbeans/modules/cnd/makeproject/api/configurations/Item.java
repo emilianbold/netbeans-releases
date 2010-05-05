@@ -393,7 +393,14 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
             tool = PredefinedToolKind.FortranCompiler;
         } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
-            tool = PredefinedToolKind.Assembler;
+            DataObject dataObject = getDataObject();
+            FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
+            // Do not use assembler for .il files
+            if (fo != null && "il".equals(fo.getExt())) { //NOI18N
+                tool = PredefinedToolKind.CustomTool;
+            } else {
+                tool = PredefinedToolKind.Assembler;
+            }
         } else {
             tool = PredefinedToolKind.CustomTool;
         }
@@ -485,9 +492,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             while (iter.hasNext()) {
                 vec.add(CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), iter.next()));
             }
-            if (cccCompilerConfiguration instanceof AllOptionsProvider) {
-                vec = SPI_ACCESSOR.getItemUserIncludePaths(vec, (AllOptionsProvider) cccCompilerConfiguration, compiler, makeConfiguration);
-            }
+            vec = SPI_ACCESSOR.getItemUserIncludePaths(vec, cccCompilerConfiguration, compiler, makeConfiguration);
         }
         return vec;
     }
@@ -543,9 +548,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 }
             }
             vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
-            if (cccCompilerConfiguration instanceof AllOptionsProvider) {
-                vec = SPI_ACCESSOR.getItemUserMacros(vec, (AllOptionsProvider) cccCompilerConfiguration, compiler, makeConfiguration);
-            }
+            vec = SPI_ACCESSOR.getItemUserMacros(vec, cccCompilerConfiguration, compiler, makeConfiguration);
         }
         return vec;
     }

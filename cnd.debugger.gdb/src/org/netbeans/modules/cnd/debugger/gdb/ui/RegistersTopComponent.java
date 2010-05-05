@@ -30,9 +30,9 @@ import javax.swing.table.TableColumn;
 import org.netbeans.modules.cnd.debugger.common.disassembly.RegisterValue;
 import org.netbeans.modules.cnd.debugger.gdb.GdbContext;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -242,7 +242,7 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
 
         @SuppressWarnings("unchecked")
         private void refresh() {
-            RequestProcessor.getDefault().post(new Runnable() {
+            GdbUtils.getGdbRequestProcessor().post(new Runnable() {
                 public void run() {
                     List<RegisterValue> res =
                             (List<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);

@@ -50,16 +50,8 @@ import org.netbeans.modules.cnd.execution.BinaryExecSupport;
 public class ExeNode extends CndDataNode {
 
     public ExeNode(ExeObject obj) {
-        this(obj, Children.LEAF);
-    }
-
-    public ExeNode(ExeObject obj, Children ch) {
-        super(obj, ch);
+        super(obj, Children.LEAF, obj.getLookup());
         setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/ExeIcon.gif"); // NOI18N
-    }
-
-    private ExeElfObject getExeElfObject() {
-        return (ExeElfObject) getDataObject();
     }
 
     // Example of adding Executor / Debugger / Arguments to node:

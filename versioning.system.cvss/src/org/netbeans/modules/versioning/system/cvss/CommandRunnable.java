@@ -88,7 +88,7 @@ class CommandRunnable implements Runnable, Cancellable {
             support.commandStarted(this);
         }
         CounterRunnable counterUpdater = new CounterRunnable();
-        RequestProcessor.Task counterTask = RequestProcessor.getDefault().create(counterUpdater);
+        RequestProcessor.Task counterTask = CvsVersioningSystem.getInstance().getParallelRequestProcessor().create(counterUpdater);
         counterUpdater.initTask(counterTask);
         try {
             counterTask.schedule(500);
@@ -130,8 +130,7 @@ class CommandRunnable implements Runnable, Cancellable {
                 (cmdName.startsWith("update") && (options == null || !options.isDoNoChanges()))
              || cmdName.startsWith("export")
              || cmdName.startsWith("remove")
-             || cmdName.startsWith("checkout")
-             || cmdName.startsWith("commit");
+             || cmdName.startsWith("checkout");
 
         File[] files = null;
         if(blockIndexing) {

@@ -126,7 +126,7 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     public void startup() {
-
+        modifiedListener.clean();
         DataObject.getRegistry().addChangeListener(modifiedListener);
 
         if (!CndUtils.isStandalone()) {
@@ -173,6 +173,7 @@ public class ModelSupport implements PropertyChangeListener {
 
     public void shutdown() {
         DataObject.getRegistry().removeChangeListener(modifiedListener);
+        modifiedListener.clean();
         ModelImpl model = theModel;
         if (model != null) {
             model.shutdown();
@@ -447,7 +448,7 @@ public class ModelSupport implements PropertyChangeListener {
 
     private class ModifiedObjectsChangeListener implements ChangeListener {
 
-        private Map<DataObject, Collection<BufAndProj>> buffers = new HashMap<DataObject, Collection<BufAndProj>>();
+        private final Map<DataObject, Collection<BufAndProj>> buffers = new HashMap<DataObject, Collection<BufAndProj>>();
 
         private Collection<BufAndProj> getBufNP(DataObject dao) {
             Collection<BufAndProj> bufNPcoll = buffers.get(dao);
@@ -531,47 +532,10 @@ public class ModelSupport implements PropertyChangeListener {
 //                bufNP.project.onFileEditEnd(bufNP.buffer);
 //            }
 //        }
-        private void traceStateChanged(ChangeEvent e) {
-            if (TraceFlags.DEBUG) {
-                Diagnostic.trace("state of registry changed:"); // NOI18N
-                Diagnostic.indent();
-                if (e != null) {
-                    DataObject[] objs = DataObject.getRegistry().getModified();
-                    if (objs.length == 0) {
-                        Diagnostic.trace("all objects are saved"); // NOI18N
-                    } else {
-                        Diagnostic.trace("set of edited objects:"); // NOI18N
-                        for (int i = 0; i < objs.length; i++) {
-                            DataObject curObj = objs[i];
-                            Diagnostic.trace("object " + i + ":" + curObj.getName()); // NOI18N
-                            Diagnostic.indent();
-                            Diagnostic.trace("with file: " + curObj.getPrimaryFile()); // NOI18N
-                            NativeFileItemSet set = curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
-                            if (set == null) {
-                                Diagnostic.trace("NativeFileItemSet == null"); // NOI18N
-                            } else {
-                                Diagnostic.trace("NativeFileItemSet:"); // NOI18N
-                                for (NativeFileItem item : set.getItems()) {
-                                    Diagnostic.trace("\t" + item.getNativeProject().getProjectDisplayName()); // NOI18N
-                                }
-                            }
-                            EditorCookie editor = curObj.getCookie(EditorCookie.class);
-                            Diagnostic.trace("has editor support: " + editor); // NOI18N
-                            Document doc = editor != null ? editor.getDocument() : null;
-                            Diagnostic.trace("with document: " + doc); // NOI18N
-                            Diagnostic.unindent();
-                        }
-                    }
-                } else {
-                    Diagnostic.trace("no additional info from event object"); // NOI18N
-                }
-                Diagnostic.unindent();
-            }
-        }
 
         public void stateChanged(ChangeEvent e) {
             if (TraceFlags.DEBUG) {
-                traceStateChanged(e);
+                traceDataObjectRegistryStateChanged(e);
             }
             if (e != null) {
 
@@ -617,6 +581,46 @@ public class ModelSupport implements PropertyChangeListener {
             }
             return false;
         }
+
+        private void clean() {
+            buffers.clear();
+        }
+    }
+
+    public static void traceDataObjectRegistryStateChanged(ChangeEvent e) {
+        Diagnostic.trace("state of registry changed:"); // NOI18N
+        Diagnostic.indent();
+        if (e != null) {
+            DataObject[] objs = DataObject.getRegistry().getModified();
+            if (objs.length == 0) {
+                Diagnostic.trace("all objects are saved"); // NOI18N
+            } else {
+                Diagnostic.trace("set of edited objects:"); // NOI18N
+                for (int i = 0; i < objs.length; i++) {
+                    DataObject curObj = objs[i];
+                    Diagnostic.trace("object " + i + ":" + curObj.getName()); // NOI18N
+                    Diagnostic.indent();
+                    Diagnostic.trace("with file: " + curObj.getPrimaryFile()); // NOI18N
+                    NativeFileItemSet set = curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
+                    if (set == null) {
+                        Diagnostic.trace("NativeFileItemSet == null"); // NOI18N
+                    } else {
+                        Diagnostic.trace("NativeFileItemSet:"); // NOI18N
+                        for (NativeFileItem item : set.getItems()) {
+                            Diagnostic.trace("\t" + item.getNativeProject().getProjectDisplayName()); // NOI18N
+                        }
+                    }
+                    EditorCookie editor = curObj.getCookie(EditorCookie.class);
+                    Diagnostic.trace("has editor support: " + editor); // NOI18N
+                    Document doc = editor != null ? editor.getDocument() : null;
+                    Diagnostic.trace("with document: " + doc); // NOI18N
+                    Diagnostic.unindent();
+                }
+            }
+        } else {
+            Diagnostic.trace("no additional info from event object"); // NOI18N
+        }
+        Diagnostic.unindent();
     }
 
     private class ExternalUpdateListener extends FileChangeAdapter implements Runnable {

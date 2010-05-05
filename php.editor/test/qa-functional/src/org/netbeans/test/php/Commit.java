@@ -113,10 +113,9 @@ public class Commit extends GeneralPHP
           "ManipulateEmptyPHP",
           "CreateTemplatePHP",
           "ManipulateTemplatePHP",
-
           "OpenStandalonePHP",
-//          "ManipulateStandalonePHP",
-          "CreateCustomPHPApplication",
+          "ManipulateStandalonePHP",
+//          "CreateCustomPHPApplication",
 
           "CreatePHPWithExistingSources",
           "ManipulatePHPWithExistingSources"

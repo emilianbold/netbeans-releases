@@ -48,6 +48,17 @@ made subject to such option by the copyright holder.
     </apidefs>
     <changes>
 
+        <change id="source-16">
+            <summary>Added freeform-project-java/3 schema to support annotation processors and source levels 1.6 and 1.7</summary>
+            <version major="1" minor="16"/>
+            <date day="24" month="3" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible"/>
+            <description>
+                Added freeform-project-java/3 schema to support annotation processors and source levels 1.6 and 1.7
+            </description>
+            <issue number="181439"/>
+        </change>
         <change id="friend-packages">
             <summary>Declare SPI packages for friends only</summary>
             <version major="1" minor="2"/>

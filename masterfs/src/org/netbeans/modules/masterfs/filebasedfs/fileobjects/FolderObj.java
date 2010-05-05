@@ -48,11 +48,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.SyncFailedException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -76,6 +78,7 @@ import org.openide.util.Mutex;
  */
 public final class FolderObj extends BaseFileObj {    
     static final long serialVersionUID = -1022430210876356809L;
+    private static final Logger LOG = Logger.getLogger(FolderObj.class.getName());
 
     private FolderChildrenCache folderChildren;
     boolean valid = true;
@@ -157,7 +160,11 @@ public final class FolderObj extends BaseFileObj {
         mutexPrivileged.enterWriteAccess();
 
         try {
-            folder2Create = BaseFileObj.getFile(getFileName().getFile(), name, null);
+            final File myFile = getFileName().getFile();
+            folder2Create = BaseFileObj.getFile( myFile, name, null);
+            if (!myFile.canWrite()) {
+                FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N
+            }
             createFolder(folder2Create, name);
 
             final FileNaming childName = this.getChildrenCache().getChild(folder2Create.getName(), true);
@@ -259,7 +266,7 @@ public final class FolderObj extends BaseFileObj {
 
         if (retVal != null) {            
             if (retVal instanceof FileObj) {
-                retVal.setLastModified(file2Create.lastModified());
+                retVal.setLastModified(file2Create.lastModified(), file2Create);
             }
             retVal.fireFileDataCreatedEvent(false);
         } else {
@@ -344,6 +351,8 @@ public final class FolderObj extends BaseFileObj {
         } finally {
             mutexPrivileged.exitWriteAccess();
         }
+
+        LOG.log(Level.FINER, "refreshImpl for {0} expected: {1} fire: {2} previous: {3}", new Object[]{this, expected, fire, previous});
 
         oldChildren.removeAll(refreshResult.keySet());
         for (final FileNaming child : oldChildren) {
@@ -511,22 +520,28 @@ public final class FolderObj extends BaseFileObj {
         return folderChildren;
     }
 
-    synchronized FileObjectKeeper getKeeper() {
+    synchronized FileObjectKeeper getKeeper(Collection<? super File> arr) {
         if (keeper == null) {
             keeper = new FileObjectKeeper(this);
-            keeper.init(-1, null, false);
+            List<File> ch = keeper.init(-1, null, false);
+            if (arr != null) {
+                arr.addAll(ch);
+            }
+        } else if (arr != null) {
+            List<File> ch = keeper.init(keeper.childrenLastModified(), null, false);
+            arr.addAll(ch);
         }
         return keeper;
     }
 
     @Override
     public final void addRecursiveListener(FileChangeListener fcl) {
-        getKeeper().addRecursiveListener(fcl);
+        getKeeper(null).addRecursiveListener(fcl);
     }
 
     @Override
     public final void removeRecursiveListener(FileChangeListener fcl) {
-        getKeeper().removeRecursiveListener(fcl);
+        getKeeper(null).removeRecursiveListener(fcl);
     }
 
 

@@ -95,6 +95,7 @@ public final class SearchPanel extends JPanel {
 
     public boolean open() {
         descriptor = new DialogDescriptor(this, support.getWindowTitle(), true, new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 cancelDetection();
             }
@@ -105,6 +106,7 @@ public final class SearchPanel extends JPanel {
             foundItemsList.setEnabled(true);
             progressBar.setIndeterminate(true);
             detectTask = rp.create(new Runnable() {
+                @Override
                 public void run() {
                     // just to be sure that the progress bar is displayed at least for a while
                     try {
@@ -115,6 +117,7 @@ public final class SearchPanel extends JPanel {
                     final List<String> allItems = support.detect();
                     assert allItems != null;
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             updateFoundItems(allItems);
                         }
@@ -154,7 +157,7 @@ public final class SearchPanel extends JPanel {
         foundItemsList.setListData(foundItems.toArray(new String[foundItems.size()]));
         // In an attempt to hide the progress bar and label, but force the occupy the same space.
         String message = null;
-        if (foundItems.size() == 0) {
+        if (foundItems.isEmpty()) {
             message = support.getNoItemsFound();
         } else {
             message = " "; // NOI18N

@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.support;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -60,7 +61,31 @@ public class RemoteUtil {
     private static final Map<ExecutionEnvironment, String> homeDirs = new LinkedHashMap<ExecutionEnvironment, String>();
     public static final Logger LOGGER = Logger.getLogger("cnd.remote.logger"); //NOI18N
 
+    public static class PrefixedLogger {
+
+        private final String prefix;
+
+        public PrefixedLogger(String prefix) {
+            this.prefix = prefix;
+        }
+
+        public void log(Level level, String format, Object... args) {
+            if (LOGGER.isLoggable(level)) {
+                String text = String.format(format, args);
+                text = prefix + ": " + text; // NOI18N
+                LOGGER.log(level, text);
+            }
+        }
+    }
+
     private RemoteUtil() {}
+
+//    public static void log(String prefix, Level level, String format, Object... args) {
+//        if (LOGGER.isLoggable(level)) {
+//            String text = String.format(format, args);
+//            LOGGER.log(level, String.format("%s: ", text));
+//        }
+//    }
 
     public static String getEnv(ExecutionEnvironment env, String varName) throws RemoteException {
         String cmd = String.format("echo ${%s}", varName); // NOI18N

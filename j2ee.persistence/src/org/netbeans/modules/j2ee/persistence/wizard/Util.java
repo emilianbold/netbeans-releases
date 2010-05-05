@@ -59,6 +59,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -87,12 +89,10 @@ import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPa
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanelDS;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanelJdbc;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -228,7 +228,32 @@ public class Util {
 
     public static Provider getDefaultProvider(Project project) {
         PersistenceProviderSupplier providerSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
-        return (providerSupplier != null && providerSupplier.supportsDefaultProvider()) ? providerSupplier.getSupportedProviders().get(0) : null;
+        if((providerSupplier != null && providerSupplier.supportsDefaultProvider())) {
+            List<Provider> providers = providerSupplier.getSupportedProviders();
+            if( providers.size()>0 ){
+                return providers.get(0);
+            }
+            Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.WARNING, "Default provider support is reported without any supported providers. See: " + providerSupplier);
+        }
+        return null;
+    }
+
+    public static ArrayList<Provider> getProviders(Project project) {
+        PersistenceProviderSupplier aProviderSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
+
+        if (aProviderSupplier == null) {
+            // a java se project
+            aProviderSupplier = new DefaultPersistenceProviderSupplier();
+        }
+
+        ArrayList<Provider> providers = new ArrayList<Provider>(aProviderSupplier.getSupportedProviders());
+        if (providers.size() == 0 && aProviderSupplier.supportsDefaultProvider()) {
+            providers.add(ProviderUtil.DEFAULT_PROVIDER);
+        }
+
+        addProvidersFromLibraries(providers);
+        //
+        return providers;
     }
 
     public static boolean isDefaultProvider(Project project, Provider provider) {
@@ -298,6 +323,7 @@ public class Util {
                 null);
         panel.addPropertyChangeListener(new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(PersistenceUnitWizardPanel.IS_VALID)) {
                     Object newvalue = evt.getNewValue();
@@ -327,6 +353,8 @@ public class Util {
                 if (lib != null) {
                     addLibraryToProject(project, lib);
                 }
+                JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(puJdbc.getPersistenceConnection().getDriverClass());
+                PersistenceLibrarySupport.addDriver(project, driver[0]);
             }
         }
         String version = lib != null ? PersistenceUtils.getJPAVersion(lib) : PersistenceUtils.getJPAVersion(project);//use library if possible it will provide better result, TODO: may be usage of project should be removed and use 1.0 is no library was found
@@ -381,21 +409,10 @@ public class Util {
             String preselectedDB, TableGeneration tableGeneration, Provider provider) {
 
         boolean isContainerManaged = Util.isContainerManaged(project);
-        PersistenceProviderSupplier aProviderSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
-
-        if (aProviderSupplier == null) {
-            // a java se project
-            aProviderSupplier = new DefaultPersistenceProviderSupplier();
-        }
 
         if (provider == null) {
             //choose default/first provider
-            ArrayList<Provider> providers = new ArrayList<Provider>(aProviderSupplier.getSupportedProviders());
-            if (providers.size() == 0 && aProviderSupplier.supportsDefaultProvider()) {
-                providers.add(ProviderUtil.DEFAULT_PROVIDER);
-            }
-
-            addProvidersFromLibraries(providers);
+            ArrayList<Provider> providers = getProviders(project);
             //
             provider = providers.get(0);
         }
@@ -487,6 +504,7 @@ public class Util {
 
     /**
      * add pu to the project, add persistence libraries if appropriate and known
+     * add db libraries for connection if it's not conteiner managed project
      * @param project
      * @param pu
      */
@@ -501,6 +519,10 @@ public class Util {
                 } else if (selectedProvider.getAnnotationProcessor() != null){
                     Util.addLibraryToProject(project, lib, JavaClassPathConstants.PROCESSOR_PATH);
                 }
+            }
+            if(!isContainerManaged(project)){
+                JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(ProviderUtil.getConnection(persistenceUnit).getDriverClass());
+                PersistenceLibrarySupport.addDriver(project, driver[0]);
             }
        }
 
@@ -625,10 +647,12 @@ public class Util {
      */
     private static class DefaultPersistenceProviderSupplier implements PersistenceProviderSupplier {
 
+        @Override
         public List<Provider> getSupportedProviders() {
             return Collections.<Provider>emptyList();
         }
 
+        @Override
         public boolean supportsDefaultProvider() {
             return false;
         }

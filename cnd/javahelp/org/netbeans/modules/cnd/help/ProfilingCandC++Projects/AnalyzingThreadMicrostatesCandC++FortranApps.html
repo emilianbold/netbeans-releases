@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
+Use is subject to license terms.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <link rel="StyleSheet" type="text/css" href="/org/netbeans/modules/usersguide/ide.css">
+        <title>Analyzing Thread Microstates of C/C++/Fortran Applications</title>
+    </head>
+    <body>
+        <h2>
+            Analyzing Thread Microstates of C/C++/Fortran Applications
+        </h2>
+        <p>
+            <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
+        </p>
+        <p>
+            The IDE provides the Thread Microstates tool for observing the execution
+            states of threads running in C/C++/Fortran projects. The tool shows an
+            overall view of the changing runtime
+            states of your application's threads, and a more detailed view of the state
+            of individual threads. You can detect runtime problems in your applications
+            that might not be detectable when debugging your code.
+        </p>
+        <p>The microstate data is collected with DTrace, a tool for tracing the activities
+            of running programs in the Oracle Solaris 10 and OpenSolaris operating systems.
+            For this reason, it can only run the Thread Microstates tool on these platforms.</p>
+        <p><b>Tip:</b> If you have access to a remote system running Oracle Solaris 10 or OpenSolaris, you can configure
+            the system as a <a href="../WorkingWithCandC++Projects/RemoteDevelopment.html">remote development host</a> in the IDE and then
+            use that system to build and run your project.</p>
+        <p>In order to use the Thread Microstates tool, the Solaris user account that you use when you run the IDE
+            must have sufficient DTrace privileges to observe system behavior. If you are using
+            a remote development host, the DTrace privileges must be assigned to the user account
+            on the remote system. See
+            <a href="EnablingDTraceForProfilingCandC++FortranApps.html">Enabling DTrace For Profiling C/C++/Fortran Applications</a>.
+
+
+        <p><b>To enable the Thread Microstates tool:</b></p>
+        <ol>
+            <li>
+                Right click the project name and select Properties to open the Project Properties dialog box.
+            </li>
+            <li>Click the Build node.</li>
+            <li>Optionally, in the Development Host list, select a remote host running Oracle Solaris
+                or OpenSolaris.</li>
+
+            <li>Click the Profile node.</li>
+            <li>Select the checkbox for Show profiling indicators during run.</li>
+            <li>In the Profile Configuration list, select C/C++ DTrace Extended.</li>
+            <li>Click OK.
+            </li>
+        </ol>
+        <p><b>To examine your application's thread microstates:</b></p>
+        <ol>
+            <li>
+                Run the project by right-clicking the project node and selecting Run.<br>
+                The <a href="RunMonitorWindowforCandC++Fort.html">Run Monitor window</a> opens,
+                showing all the profiling tools.
+            </li>
+            <li>In the Run Monitor window, place the mouse cursor over the Thread Microstates tool
+                to see a tooltip with a description.<br>
+                The graph contains aggregated information about the execution states of the threads.
+                The states are grouped into four broad categories: Sleeping, Waiting, Blocked, and Running.</li>
+
+            <li>Click the Thread Details button to open the Thread Details window, which provides detailed
+                information about the microstates of each thread running in the program.</li>
+            <li>In the Thread Details window, place the mouse cursor over any point in a thread to see
+            a popup that shows the percentage of CPU time spent in each state.</li>
+            <li>Use the Show list to filter the threads to display. You can view all threads, only live threads that are still
+                running, or only threads that have finished. </li>
+            <li>Use the Detail Level list to specify the level of thread states you want to see. The Advanced
+                level shows ten possible execution states, and Basic and Moderate levels show the state information
+            in a smaller number of groups.</li>
+            <li>Use the zoom controls and scroll bar to examine various points more closely.</li>
+        </ol>
+
+            <table>
+                <tr>
+                    <th colspan="2" align="left">
+                        <a name="seealso">See also</a>
+                    </th>
+                </tr>
+                <tr>
+                    <td width="23">
+                        &nbsp;
+                    </td>
+                    <td>
+                        <a href="ManagingProfileConfigurations.html">Managing C/C++/Fortran Profile Configurations</a><br>
+                        <a href="ProfilingCandC++Projects.html">Profiling C/C++/Fortran Projects</a><br>
+                        <a href="../WorkingWithCandC++Projects/ProjectPropsProfile.html">C/C++/Fortran Project Properties Dialog Box: Profile</a>
+                    </td>
+                </tr>
+            </table>
+            <hr>
+            <p>
+                <a href="../credits.html"><small>Legal Notices</small></a>
+            </p>
+            <table border="0" cellpadding="20">
+                <tr>
+                    <td>
+                        &nbsp;
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        &nbsp;
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        &nbsp;
+                    </td>
+                </tr>
+            </table>
+    </body>
+</html>

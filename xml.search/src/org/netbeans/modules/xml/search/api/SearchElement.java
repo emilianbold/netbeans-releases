@@ -48,102 +48,106 @@ import javax.swing.Icon;
  */
 public interface SearchElement {
 
-  /**
-   * Returns name of element.
-   * @return name of element
-   */
-  String getName();
+    /**
+     * Returns name of element.
+     * @return name of element
+     */
+    String getName();
 
-  /**
-   * Returns tool tip of element.
-   * @return tool tip of element
-   */
-  String getToolTip();
+    /**
+     * Returns tool tip of element.
+     * @return tool tip of element
+     */
+    String getToolTip();
 
-  /**
-   * Returns icon of element.
-   * @return icon of element
-   */
-  Icon getIcon();
+    /**
+     * Returns icon of element.
+     * @return icon of element
+     */
+    Icon getIcon();
 
-  /**
-   * Returns parent of element.
-   * @return parent of element
-   */
-  SearchElement getParent();
-  
-  /**
-   * Goes to the source of element.
-   */
-  void gotoSource();
+    /**
+     * Returns parent of element.
+     * @return parent of element
+     */
+    SearchElement getParent();
 
-  /**
-   * Goes to the visual of element.
-   */
-  void gotoVisual();
+    /**
+     * Goes to the source of element.
+     */
+    void gotoSource();
 
-  /**
-   * Returns true if element is deleted.
-   * @return true if element is deleted
-   */
-  boolean isDeleted();
+    /**
+     * Goes to the visual of element.
+     */
+    void gotoVisual();
 
-  /**
-   * Highlights element.
-   */
-  void highlight();
+    /**
+     * Returns true if element is deleted.
+     * @return true if element is deleted
+     */
+    boolean isDeleted();
 
-  /**
-   * Unhighlights element.
-   */
-  void unhighlight();
+    /**
+     * Highlights element.
+     */
+    void highlight();
 
-  // --------------------------------------------
-  public class Adapter implements SearchElement {
+    /**
+     * Unhighlights element.
+     */
+    void unhighlight();
 
-    public Adapter(String name, String toolTip, Icon icon, SearchElement parent) {
-      myName = name;
-      myToolTip = toolTip;
-      myIcon = icon;
-      myParent = parent;
+    // --------------------------------------------
+    public class Adapter implements SearchElement {
+
+        public Adapter(String name, String toolTip, Icon icon, SearchElement parent) {
+            myName = name;
+            myToolTip = toolTip;
+            myIcon = icon;
+            myParent = parent;
+        }
+
+        public String getName() {
+            return myName;
+        }
+
+        public String getToolTip() {
+            return myToolTip;
+        }
+
+        public Icon getIcon() {
+            return myIcon;
+        }
+
+        public SearchElement getParent() {
+            return myParent;
+        }
+
+        public boolean isDeleted() {
+            return false;
+        }
+
+        public void gotoSource() {
+        }
+
+        public void gotoVisual() {
+        }
+
+        public void highlight() {
+        }
+
+        public void unhighlight() {
+        }
+
+        @Override
+        public String toString() {
+            return getName();
+        }
+
+        private Icon myIcon;
+        private String myName;
+        private String myToolTip;
+        private SearchElement myParent;
     }
-
-    public String getName() {
-      return myName;
-    }
-
-    public String getToolTip() {
-      return myToolTip;
-    }
-
-    public Icon getIcon() {
-      return myIcon;
-    }
-
-    public SearchElement getParent() {
-      return myParent;
-    }
-
-    public boolean isDeleted() {
-      return false;
-    }
-
-    public void gotoSource() {}
-
-    public void gotoVisual() {}
-
-    public void highlight() {}
-
-    public void unhighlight() {}
-
-    @Override
-    public String toString() {
-      return getName();
-    }
-
-    private Icon myIcon;
-    private String myName;
-    private String myToolTip;
-    private SearchElement myParent;
-  }
 }

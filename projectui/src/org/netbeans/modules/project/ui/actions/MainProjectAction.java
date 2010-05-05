@@ -210,8 +210,6 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
             }
         }
 
-        boolean noOpenProject = OpenProjectList.getDefault ().getOpenProjects ().length == 0;
-
         if ( command == null ) {
             enable( performer.enable( p ) );
         }
@@ -220,7 +218,7 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
                 enable(false);
             }
             else if ( ActionsUtil.commandSupported ( p, command, Lookup.EMPTY ) ) {
-                enable( !noOpenProject );
+                enable(true);
             }
             else {
                 enable( false );

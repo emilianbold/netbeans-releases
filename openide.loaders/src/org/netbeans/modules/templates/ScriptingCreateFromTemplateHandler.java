@@ -71,9 +71,10 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
     protected FileObject createFromTemplate(FileObject template, FileObject f,
                                             String name,
                                             Map<String, Object> values) throws IOException {
+        boolean noExt = Boolean.TRUE.equals(values.get(FREE_FILE_EXTENSION)) && name.indexOf('.') != -1;
         
-        String nameUniq = FileUtil.findFreeFileName(f, name, template.getExt());
-        FileObject output = FileUtil.createData(f, nameUniq + '.' + template.getExt());
+        String nameUniq = FileUtil.findFreeFileName(f, name, noExt ? null : template.getExt());
+        FileObject output = FileUtil.createData(f, noExt ? nameUniq : nameUniq + '.' + template.getExt());
         Charset targetEnc = FileEncodingQuery.getEncoding(output);
         Charset sourceEnc = FileEncodingQuery.getEncoding(template);
         

@@ -117,6 +117,7 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
             expandAll();
         } else {
             SwingUtilities.invokeLater(new Runnable(){
+                @Override
                 public void run() {
                     expandAll();
                 }
@@ -142,11 +143,12 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
     
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
 
-    /** Overriden to pass focus directly to main content, which in 
+    /** Overridden to pass focus directly to main content, which in
      * turn assures that some element is always selected
      */ 
     @Override
@@ -160,6 +162,7 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
         return lookup;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             for (Node n : (Node[]) evt.getOldValue()) {

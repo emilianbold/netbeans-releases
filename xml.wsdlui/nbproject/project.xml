@@ -202,11 +202,11 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.xml.validation</code-name-base>
+                    <code-name-base>org.netbeans.modules.xml.misc</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>6.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -363,7 +363,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.0</specification-version>
+                        <specification-version>8.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -395,6 +395,15 @@ made subject to such option by the copyright holder.
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.xml.text</code-name-base>
                         <recursive/>
                         <compile-dependency/>
@@ -414,8 +423,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.sca.platform.tuscany</friend>
                 <friend>org.netbeans.modules.script.project</friend>
                 <friend>org.netbeans.modules.soa.pojo</friend>
-                <friend>org.netbeans.modules.xml.bindingwizard</friend>
-                <friend>org.netbeans.modules.xml.wsdl.bindingsupport.ui.util</friend>
+                <friend>org.netbeans.modules.soa.bindingwizard</friend>
+                <friend>org.netbeans.modules.soa.wsdl.bindingsupport.ui.util</friend>
                 <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
                 <friend>org.netbeans.modules.xml.wsdlextui</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>

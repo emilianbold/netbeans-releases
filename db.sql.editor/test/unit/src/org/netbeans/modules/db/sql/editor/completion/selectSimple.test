@@ -12,6 +12,8 @@ select c|
       customer_id
     address
       address_id
+    cus_summary[view]
+      cus_summary_id
   customizations
     customization
       invoice_id

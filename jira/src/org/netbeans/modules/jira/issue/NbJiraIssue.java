@@ -94,8 +94,8 @@ import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -354,9 +354,13 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     public long getLastModify() {
         String value = getFieldValue(IssueField.MODIFICATION);
         try {
-            return Long.parseLong(value);
+            if(!"".equals(value)) {
+                return Long.parseLong(value);
+            } else {
+                Jira.LOG.log(Level.WARNING, "no modification value available for [{0}, {1}]", new Object[]{getRepository().getUrl(), getID()});
+            }
         } catch (NumberFormatException nfex) {
-            Jira.LOG.log(Level.WARNING, null, nfex);
+            Jira.LOG.log(Level.WARNING, "[" + getRepository().getUrl() + ", " + getID()+ "]", nfex);
         }
         return -1;
     }
@@ -789,13 +793,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             addComment(comment);
         }
 
-        JiraCommand submitCmd = new JiraCommand() {
-            @Override
-            public void execute() throws CoreException, IOException {
-                submitAndRefresh();
-            }
-        };
-        repository.getExecutor().execute(submitCmd);
+        submitAndRefresh();
     }
 
     /**
@@ -991,7 +989,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                 new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
                                               loc.getString("CTL_Issue_ID_Title"), // NOI18N
                                               loc.getString("CTL_Issue_ID_Desc"), // NOI18N
-                                              BugtrackingUtil.getColumnWidthInPixels(20, t)),
+                                              UIUtils.getColumnWidthInPixels(20, t)),
                 new ColumnDescriptor<String>(IssueNode.LABEL_NAME_SUMMARY, String.class,
                                               loc.getString("CTL_Issue_Summary_Title"), // NOI18N
                                               loc.getString("CTL_Issue_Summary_Desc")), // NOI18N
@@ -1409,7 +1407,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                 scrollPane.getHorizontalScrollBar().setUnitIncrement(size);
                 scrollPane.getVerticalScrollBar().setUnitIncrement(size);
             }
-            BugtrackingUtil.keepFocusedComponentVisible(scrollPane);
+            UIUtils.keepFocusedComponentVisible(scrollPane);
             issuePanel = panel;
             component = scrollPane;
         }

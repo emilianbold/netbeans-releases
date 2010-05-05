@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="performance", customizerProvider=CustomizerProviderImpl.class)
+@Hint(category="performance", customizerProvider=CustomizerProviderImpl.class, suppressWarnings="SizeReplaceableByIsEmpty")
 public class SizeEqualsZero {
 
     static final String CHECK_NOT_EQUALS = "check.not.equals";

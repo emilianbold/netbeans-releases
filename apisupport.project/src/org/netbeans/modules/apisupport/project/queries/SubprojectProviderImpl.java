@@ -63,6 +63,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -89,19 +90,19 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
             return Collections.emptySet();
         }
         Element data = project.getPrimaryConfigurationData();
-        Element moduleDependencies = Util.findElement(data,
+        Element moduleDependencies = XMLUtil.findElement(data,
             "module-dependencies", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         assert moduleDependencies != null : "Malformed metadata in " + project;
-        for (Element dep : Util.findSubElements(moduleDependencies)) {
+        for (Element dep : XMLUtil.findSubElements(moduleDependencies)) {
             /* Probably better to open runtime deps too. TBD.
-            if (Util.findElement(dep, "build-prerequisite", // NOI18N
+            if (XMLUtil.findElement(dep, "build-prerequisite", // NOI18N
                     NbModuleProject.NAMESPACE_SHARED) == null) {
                 continue;
             }
              */
-            Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
+            Element cnbEl = XMLUtil.findElement(dep, "code-name-base", // NOI18N
                 NbModuleProject.NAMESPACE_SHARED);
-            String cnb = Util.findText(cnbEl);
+            String cnb = XMLUtil.findText(cnbEl);
             ModuleEntry module = ml.getEntry(cnb);
             if (module == null) {
                 Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + project);
@@ -129,15 +130,15 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
             }
         }
         // #63824: consider also artifacts found in ${cp.extra} and/or <class-path-extension>s
-        for (Element cpext : Util.findSubElements(data)) {
+        for (Element cpext : XMLUtil.findSubElements(data)) {
             if (!cpext.getTagName().equals("class-path-extension")) { // NOI18N
                 continue;
             }
-            Element binorig = Util.findElement(cpext, "binary-origin", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+            Element binorig = XMLUtil.findElement(cpext, "binary-origin", NbModuleProject.NAMESPACE_SHARED); // NOI18N
             if (binorig == null) {
                 continue;
             }
-            String text = Util.findText(binorig);
+            String text = XMLUtil.findText(binorig);
             String eval = project.evaluator().evaluate(text);
             if (eval == null) {
                 continue;

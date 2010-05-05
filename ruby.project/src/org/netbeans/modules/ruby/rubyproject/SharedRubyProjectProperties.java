@@ -77,6 +77,11 @@ public abstract class SharedRubyProjectProperties {
     public static final String JVM_ARGS = "jvm.args"; // NOI18N
     public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
+    /**
+     * The project property for the RAILS_ENV env variable; defined here instead
+     * of RailsProjectProperties as this is needed in RakeRunner.
+     */
+    public static final String RAILS_ENV = "rails.env"; // NOI18N
 
     /**
      * Support for odd property name ('run.jvmargs'). Will be dropped in the

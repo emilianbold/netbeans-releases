@@ -177,4 +177,10 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#172419 : Model doesn't recognize class declared through the preprocessor
         performTest("iz172419.cpp", 16, 7, "iz172419.cpp", 2, 5);
     }
+
+    public void testBug144079() throws Exception {
+        // Bug 144079 - Hyperlink from type goes to the main template instead of specialization
+        performTest("iz144079.cpp", 10, 12, "iz144079.cpp", 5, 1);
+        performTest("iz144079.cpp", 11, 12, "iz144079.cpp", 1, 1);
+    }
 }

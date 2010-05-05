@@ -278,12 +278,22 @@ public class CustomizationWSEditor implements WSEditor {
         FileObject wsdlFO = null;
         if (client != null) { //its a client
             JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
-            wsdlFO =
-                    support.getLocalWsdlFolderForClient(client.getName(), false).getFileObject(client.getLocalWsdlFile());
+            FileObject localWsdlFolder = support.getLocalWsdlFolderForClient(client.getName(), false);
+            if (localWsdlFolder != null) {
+                String relativeWsdlPath = client.getLocalWsdlFile();
+                if (relativeWsdlPath != null) {
+                    wsdlFO = localWsdlFolder.getFileObject(relativeWsdlPath);
+                }
+            }
         } else if (service != null && service.getWsdlUrl() != null) {  //its a service from wsdl
             JAXWSSupport support = JAXWSSupport.getJAXWSSupport(srcRoot);
-            wsdlFO =
-                    support.getLocalWsdlFolderForService(service.getName(), false).getFileObject(service.getLocalWsdlFile());
+            FileObject localWsdlFolder = support.getLocalWsdlFolderForService(service.getName(), false);
+            if (localWsdlFolder != null) {
+                String relativeWsdlPath = service.getLocalWsdlFile();
+                if (relativeWsdlPath != null) {
+                    wsdlFO = localWsdlFolder.getFileObject(relativeWsdlPath);
+                }
+            }
         } else { //neither a client nor a service, get out of here
             throw new Exception("Unable to identify node type");
         }

@@ -41,6 +41,17 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.repository.spi.Key;
+import java.io.File;
+import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import java.util.ListIterator;
+import java.util.LinkedList;
+import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -135,6 +146,11 @@ public class Utils {
     public static String getCsmIncludeKindKey() {
         // Returned string should be differed from getCsmDeclarationKindkey()
         return "I"; // NOI18N
+    }
+
+    public static String getCsmInheritanceKindKey() {
+        // Returned string should be differed from getCsmDeclarationKindkey()
+        return "H"; // NOI18N
     }
 
     public static String getCsmParamListKindKey() {
@@ -265,6 +281,96 @@ public class Utils {
             default:
                 throw new IllegalArgumentException("Unexpected char for CsmDeclaration.Kind: " + kind); //NOI18N
         }
+    }
+
+    public static boolean canRegisterDeclaration(CsmDeclaration decl) {
+        // WAS: don't put unnamed declarations
+        assert decl != null;
+        assert decl.getName() != null;
+        if (decl.getName().length() == 0) {
+            return false;
+        }
+        CsmScope scope = decl.getScope();
+        if (scope instanceof CsmCompoundClassifier) {
+            return canRegisterDeclaration((CsmCompoundClassifier) scope);
+        }
+        return true;
+    }
+
+    public static <T> LinkedList<T> reverse(LinkedList<T> original) {
+        LinkedList<T> reverse = new LinkedList<T>();
+        ListIterator<T> it = original.listIterator(original.size());
+        while(it.hasPrevious()){
+           reverse.addLast(it.previous());
+        }
+        return reverse;
+    }
+
+    public static NativeFileItem getCompiledFileItem(FileImpl fileImpl) {
+        NativeFileItem out = null;
+        ProjectBase filePrj = fileImpl.getProjectImpl(true);
+        if (filePrj != null) {
+            Collection<APTPreprocHandler.State> preprocStates = filePrj.getPreprocStates(fileImpl);
+            if (preprocStates.isEmpty()) {
+                return null;
+            }
+            // use start file from one of states (i.e. first)
+            APTPreprocHandler.State state = preprocStates.iterator().next();
+            FileImpl startFile = getStartFile(state);
+            out = startFile != null ? startFile.getNativeFileItem() : null;
+        }
+        return out;
+    }
+
+    public static FileImpl getStartFile(final APTPreprocHandler.State state) {
+        StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
+        ProjectBase startProject = getStartProject(startEntry);
+        FileImpl csmFile = startProject == null ? null : startProject.getFile(new File(startEntry.getStartFile().toString()), false);
+        return csmFile;
+    }
+
+    public static ProjectBase getStartProject(final APTPreprocHandler.State state) {
+        return getStartProject(APTHandlersSupport.extractStartEntry(state));
+    }
+
+    public static ProjectBase getStartProject(StartEntry startEntry) {
+        if (startEntry == null) {
+            return null;
+        }
+        Key key = startEntry.getStartFileProject();
+        ProjectBase prj = (ProjectBase) RepositoryUtils.get(key);
+        return prj;
+    }
+
+    public static boolean isCppFile(CsmFile file) {
+        return (file instanceof FileImpl) && ((FileImpl) file).isCppFile();
+    }
+
+    public static FileImpl.FileType getFileType(NativeFileItem nativeFile) {
+        switch (nativeFile.getLanguage()) {
+            case C:
+                return FileImpl.FileType.SOURCE_C_FILE;
+            case CPP:
+                return FileImpl.FileType.SOURCE_CPP_FILE;
+            case FORTRAN:
+                return FileImpl.FileType.SOURCE_FORTRAN_FILE;
+            case C_HEADER:
+                return FileImpl.FileType.HEADER_FILE;
+            default:
+                return FileImpl.FileType.UNDEFINED_FILE;
+        }
+    }
+
+    public static boolean acceptNativeItem(NativeFileItem item) {
+        if (item.getFile() == null) {
+            return false;
+        }
+        NativeFileItem.Language language = item.getLanguage();
+        return (language == NativeFileItem.Language.C ||
+                language == NativeFileItem.Language.CPP ||
+                language == NativeFileItem.Language.FORTRAN ||
+                language == NativeFileItem.Language.C_HEADER) &&
+                !item.isExcluded();
     }
 
 }

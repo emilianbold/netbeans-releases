@@ -45,7 +45,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -709,6 +708,9 @@ public class NbModuleSuite {
 
             System.setProperty("java.util.logging.config", "-");
             System.setProperty("netbeans.logger.console", "true");
+            if (System.getProperty("netbeans.logger.noSystem") == null) {
+                System.setProperty("netbeans.logger.noSystem", "true");
+            }
             System.setProperty("netbeans.home", platform.getPath());
             System.setProperty("netbeans.full.hack", "true");
 

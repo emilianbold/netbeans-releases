@@ -48,21 +48,21 @@ import org.netbeans.modules.xml.search.api.SearchEvent;
  */
 public interface SearchListener {
 
-  /**
-   * Invoked when search is started.
-   * @param event of search
-   */
-  void searchStarted(SearchEvent event);
+    /**
+     * Invoked when search is started.
+     * @param event of search
+     */
+    void searchStarted(SearchEvent event);
 
-  /**
-   * Invoked when element is found.
-   * @param event of search
-   */
-  void searchFound(SearchEvent event);
+    /**
+     * Invoked when element is found.
+     * @param event of search
+     */
+    void searchFound(SearchEvent event);
 
-  /**
-   * Invoked when search is finished.
-   * @param event of search
-   */
-  void searchFinished(SearchEvent event);
+    /**
+     * Invoked when search is finished.
+     * @param event of search
+     */
+    void searchFinished(SearchEvent event);
 }

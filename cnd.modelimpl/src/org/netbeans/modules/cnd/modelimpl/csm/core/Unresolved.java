@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 
 /**
@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 public final class Unresolved implements Disposable {
     
-    private static final CharSequence UNRESOLVED = CharSequenceKey.create("$unresolved file$"); // NOI18N)
+    private static final CharSequence UNRESOLVED = CharSequences.create("$unresolved file$"); // NOI18N)
     private static class IllegalCallException extends RuntimeException {
 	IllegalCallException() {
 	    super("This method should never be called for Unresolved"); // NOI18N
@@ -237,6 +237,10 @@ public final class Unresolved implements Disposable {
             return true;
         }
 
+        public FileType getFileType() {
+            return FileType.UNDEFINED_FILE;
+        }
+        
         public Collection<CsmErrorDirective> getErrors() {
             return Collections.<CsmErrorDirective>emptyList();
         }

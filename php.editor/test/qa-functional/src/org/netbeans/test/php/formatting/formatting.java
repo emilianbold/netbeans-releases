@@ -41,10 +41,12 @@
 
 package org.netbeans.test.php.formatting;
 
+import java.awt.event.KeyEvent;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.test.php.GeneralPHP;
-import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import java.util.List;
 
 /**
  *
@@ -57,5 +59,4 @@ public class formatting extends GeneralPHP
   {
     super( arg0 );
   }
-
 }

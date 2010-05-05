@@ -103,6 +103,10 @@ final class PtyOpenUtility extends HelperUtility {
             Exceptions.printStackTrace(ex);
         }
 
+        if (tty == null || pid < 0) {
+            return null;
+        }
+        
         return new PtyInfo(pid, tty);
     }
 

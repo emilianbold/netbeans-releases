@@ -60,6 +60,7 @@ import javax.swing.*;
 import java.io.File;
 import java.util.*;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.openide.text.NbDocument;
 import org.openide.windows.TopComponent;
 
 /**
@@ -68,6 +69,7 @@ import org.openide.windows.TopComponent;
  */
 public class BlameAction extends ContextAction {
     
+    @Override
     protected String getBaseName(Node [] activatedNodes) {
         if (visible(activatedNodes)) {
             return "CTL_MenuItem_HideAnnotations";  // NOI18N
@@ -76,22 +78,27 @@ public class BlameAction extends ContextAction {
         }
     }
 
+    @Override
     public boolean enable(Node[] nodes) {
         return super.enable(nodes) && activatedEditorCookie(nodes) != null;
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return FileInformation.STATUS_IN_REPOSITORY;
     }
 
+    @Override
     protected int getDirectoryEnabledStatus() {
         return 0;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     protected void performContextAction(Node[] nodes) {        
         if(!Subversion.getInstance().checkClientAvailable()) {            
             return;
@@ -147,6 +154,7 @@ public class BlameAction extends ContextAction {
     private static void computeAnnotations(SVNUrl repository, final File file, final AnnotationBar ab, final SVNRevision revision) {
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
+            @Override
             public void perform() {                    
                 computeAnnotations(file, this, ab, revision);
             }
@@ -251,10 +259,7 @@ public class BlameAction extends ContextAction {
     private JEditorPane activatedEditorPane(Node[] nodes) {
         EditorCookie ec = activatedEditorCookie(nodes);        
         if (ec != null && SwingUtilities.isEventDispatchThread()) {              
-            JEditorPane[] panes = ec.getOpenedPanes();
-            if (panes != null && panes.length > 0) {
-                return panes[0];
-            }
+            return NbDocument.findRecentEditorPane(ec);
         }
         return null;
     }
@@ -299,22 +304,27 @@ public class BlameAction extends ContextAction {
             this.file = file;
         }                
         
+        @Override
         public void setCommand(int arg0) {            
             // do nothing
         }
 
+        @Override
         public void logCommandLine(String arg0) {
             // do nothing
         }
 
+        @Override
         public void logMessage(String arg0) {
             // do nothing
         }
 
+        @Override
         public void logError(String arg0) {
             // do nothing
         }
 
+        @Override
         public void logRevision(long newRevision, String path) {
             if(notifiedFile == null) {
                 return;
@@ -326,10 +336,12 @@ public class BlameAction extends ContextAction {
             }
         }
 
+        @Override
         public void logCompleted(String arg0) {
             // do nothing
         }
 
+        @Override
         public void onNotify(File file, SVNNodeKind nodeKind) {
             notifiedFile = file;
         }        

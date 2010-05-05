@@ -123,6 +123,9 @@ public abstract class GlassfishConfiguration implements
             throw new ConfigurationException("Unsupported module type: " + module.getType());
         }
 
+        if (null == primarySunDD.getParentFile()) {
+            throw new ConfigurationException("module is not initialized completely");
+        }
         addConfiguration(primarySunDD, this);
 
         // Default to 8.1 in new beans.  This is set by the bean parser
@@ -145,13 +148,7 @@ public abstract class GlassfishConfiguration implements
                 // If module is J2EE 1.4 (or 1.3), or this is a web app (where we have
                 // a default property even for JavaEE5), then copy the default template.
                 if (J2eeModule.Type.WAR.equals(mt) || isPreJavaEE5) {
-                    try {
-                        createDefaultSunDD(primarySunDD);
-                    } catch (IOException ex) {
-                        Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
-                        String defaultMessage = " trying to create " + primarySunDD.getPath(); // Requires I18N
-                        displayError(ex, defaultMessage);
-                    }
+                    createDefaultSunDD(primarySunDD);
                 }
             }
 
@@ -172,8 +169,14 @@ public abstract class GlassfishConfiguration implements
                 addDescriptorListener(getStandardRootDD());
                 addDescriptorListener(getWebServicesRootDD());
             }
+        } catch (IOException ioe) {
+            removeConfiguration(primarySunDD);
+            ConfigurationException ce = new ConfigurationException(primarySunDD.getAbsolutePath(), ioe);
+            throw ce;
         } catch (RuntimeException ex) {
-            Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+            removeConfiguration(primarySunDD);
+            ConfigurationException ce = new ConfigurationException(primarySunDD.getAbsolutePath(), ex);
+            throw ce;
         }
 
     }
@@ -574,6 +577,7 @@ public abstract class GlassfishConfiguration implements
     // ------------------------------------------------------------------------
     // Implementation of ContextRootConfiguration
     // ------------------------------------------------------------------------
+    @Override
     public String getContextRoot() throws ConfigurationException {
         String contextRoot = null;
         if (J2eeModule.Type.WAR.equals(module.getType())) {
@@ -597,9 +601,11 @@ public abstract class GlassfishConfiguration implements
         return contextRoot;
     }
 
+    @Override
     public void setContextRoot(final String contextRoot) throws ConfigurationException {
         if (J2eeModule.Type.WAR.equals(module.getType())) {
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         FileObject primarySunDDFO = getSunDD(primarySunDD, true);
@@ -636,14 +642,18 @@ public abstract class GlassfishConfiguration implements
     // ------------------------------------------------------------------------
     // Implementation of DatasourceConfiguration
     // ------------------------------------------------------------------------
+    @Override
     public abstract Set<Datasource> getDatasources() throws ConfigurationException;
 
+    @Override
     public abstract boolean supportsCreateDatasource();
 
-    public abstract Datasource createDatasource(String jndiName, String url, 
+    @Override
+    public abstract Datasource createDatasource(String jndiName, String url,
             String username, String password, String driver)
             throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException;
 
+    @Override
     public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
         // validation
         if (Utils.strEmpty(referenceName) || Utils.strEmpty(jndiName)) {
@@ -690,6 +700,7 @@ public abstract class GlassfishConfiguration implements
         }
     }
 
+    @Override
     public void bindDatasourceReferenceForEjb(String ejbName, String ejbType,
             String referenceName, String jndiName) throws ConfigurationException {
         // validation
@@ -750,6 +761,7 @@ public abstract class GlassfishConfiguration implements
         }
     }
 
+    @Override
     public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
         // validation
         if (Utils.strEmpty(referenceName)) {
@@ -782,6 +794,7 @@ public abstract class GlassfishConfiguration implements
 
         return jndiName;    }
 
+    @Override
     public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException {
         // validation
         if (Utils.strEmpty(ejbName) || Utils.strEmpty(referenceName)) {
@@ -828,6 +841,7 @@ public abstract class GlassfishConfiguration implements
     // ------------------------------------------------------------------------
     // Implementation of EjbResourceConfiguration
     // ------------------------------------------------------------------------
+    @Override
     public String findJndiNameForEjb(String ejbName) throws ConfigurationException {
         // validation
         if (Utils.strEmpty(ejbName)) {
@@ -867,6 +881,7 @@ public abstract class GlassfishConfiguration implements
         return jndiName;
     }
 
+    @Override
     public void bindEjbReference(String referenceName, String jndiName) throws ConfigurationException {
         // validation
         if (Utils.strEmpty(referenceName) || Utils.strEmpty(jndiName)) {
@@ -928,6 +943,7 @@ public abstract class GlassfishConfiguration implements
         }
     }
 
+    @Override
     public void bindEjbReferenceForEjb(String ejbName, String ejbType, String referenceName,
             String jndiName) throws ConfigurationException {
         // validation
@@ -1002,13 +1018,17 @@ public abstract class GlassfishConfiguration implements
     // ------------------------------------------------------------------------
     // Implementation of MessageDestinationConfiguration
     // ------------------------------------------------------------------------
+    @Override
     public abstract Set<MessageDestination> getMessageDestinations() throws ConfigurationException;
 
+    @Override
     public abstract boolean supportsCreateMessageDestination();
 
+    @Override
     public abstract MessageDestination createMessageDestination(String name, Type type)
             throws UnsupportedOperationException, ConfigurationException;
 
+    @Override
     public void bindMdbToMessageDestination(String mdbName, String name, Type type) throws ConfigurationException {
         // validation
         if (Utils.strEmpty(mdbName) || Utils.strEmpty(name)) {
@@ -1040,7 +1060,7 @@ public abstract class GlassfishConfiguration implements
 //                    /* I think the following is not needed. These entries are being created through
 //                     * some other path - Peter
 //                     */
-//                    org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination destination = 
+//                    org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination destination =
 //                            findNamedBean(eb, mdbName, EnterpriseBeans.MESSAGE_DESTINATION,
 //                            org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination.JNDI_NAME);
 //                    if (destination == null) {
@@ -1068,6 +1088,7 @@ public abstract class GlassfishConfiguration implements
         }
     }
 
+    @Override
     public String findMessageDestinationName(String mdbName) throws ConfigurationException {
         // validation
         if (Utils.strEmpty(mdbName)) {
@@ -1105,6 +1126,7 @@ public abstract class GlassfishConfiguration implements
         return destinationName;
     }
 
+    @Override
     public void bindMessageDestinationReference(String referenceName, String connectionFactoryName,
             String destName, Type type) throws ConfigurationException {
         // validation
@@ -1171,6 +1193,7 @@ public abstract class GlassfishConfiguration implements
         }
     }
 
+    @Override
     public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType, String referenceName,
             String connectionFactoryName, String destName, Type type) throws ConfigurationException {
         try {

@@ -431,7 +431,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         Mnemonics.setLocalizedText(item, item.getText());
 
         Action ignoreAction = new SystemActionBridge(SystemAction.get(IgnoreAction.class),
-           ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(files) == IgnoreAction.UNIGNORING ?
+           ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(files, false) == IgnoreAction.UNIGNORING ?
            actionString("CTL_PopupMenuItem_Unignore") : // NOI18N
            actionString("CTL_PopupMenuItem_Ignore")); // NOI18N
         item = menu.add(ignoreAction);

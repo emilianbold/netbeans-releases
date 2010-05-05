@@ -139,9 +139,15 @@ public class MethodChooser {
     private AttributeSet attribsRight = null;
     private AttributeSet attribsMiddle = null;
     private AttributeSet attribsAll = null;
+
+    private AttributeSet attribsLeftUnc = null;
+    private AttributeSet attribsRightUnc = null;
+    private AttributeSet attribsMiddleUnc = null;
+    private AttributeSet attribsAllUnc = null;
     
     private AttributeSet attribsArea = null;
     private AttributeSet attribsMethod = null;
+    private AttributeSet attribsMethodUnc = null;
     private AttributeSet attribsHyperlink = null;
 
     private Cursor handCursor;
@@ -403,15 +409,23 @@ public class MethodChooser {
     private void requestRepaint() {
         if (attribsLeft == null) {
             Color foreground = editorPane.getForeground();
+            Color foreground2 = Color.GRAY;
 
             attribsLeft = createAttribs(EditorStyleConstants.LeftBorderLineColor, foreground, EditorStyleConstants.TopBorderLineColor, foreground, EditorStyleConstants.BottomBorderLineColor, foreground);
             attribsRight = createAttribs(EditorStyleConstants.RightBorderLineColor, foreground, EditorStyleConstants.TopBorderLineColor, foreground, EditorStyleConstants.BottomBorderLineColor, foreground);
             attribsMiddle = createAttribs(EditorStyleConstants.TopBorderLineColor, foreground, EditorStyleConstants.BottomBorderLineColor, foreground);
             attribsAll = createAttribs(EditorStyleConstants.LeftBorderLineColor, foreground, EditorStyleConstants.RightBorderLineColor, foreground, EditorStyleConstants.TopBorderLineColor, foreground, EditorStyleConstants.BottomBorderLineColor, foreground);
 
+            attribsLeftUnc = createAttribs(EditorStyleConstants.LeftBorderLineColor, foreground2, EditorStyleConstants.TopBorderLineColor, foreground2, EditorStyleConstants.BottomBorderLineColor, foreground2);
+            attribsRightUnc = createAttribs(EditorStyleConstants.RightBorderLineColor, foreground2, EditorStyleConstants.TopBorderLineColor, foreground2, EditorStyleConstants.BottomBorderLineColor, foreground2);
+            attribsMiddleUnc = createAttribs(EditorStyleConstants.TopBorderLineColor, foreground2, EditorStyleConstants.BottomBorderLineColor, foreground2);
+            attribsAllUnc = createAttribs(EditorStyleConstants.LeftBorderLineColor, foreground2, EditorStyleConstants.RightBorderLineColor, foreground2, EditorStyleConstants.TopBorderLineColor, foreground2, EditorStyleConstants.BottomBorderLineColor, foreground2);
+
             attribsHyperlink = getHyperlinkHighlight();
             
             attribsMethod = createAttribs(StyleConstants.Foreground, foreground,
+                    StyleConstants.Bold, Boolean.TRUE);
+            attribsMethodUnc = createAttribs(StyleConstants.Foreground, foreground2,
                     StyleConstants.Bold, Boolean.TRUE);
             
             attribsArea = createAttribs(
@@ -428,16 +442,17 @@ public class MethodChooser {
         for (int i = 0; i < segments.length; i++) {
             int startOffset = segments[i].getStartOffset();
             int endOffset = segments[i].getEndOffset();
-            newBag.addHighlight(startOffset, endOffset, attribsMethod);
+            boolean isCertain = !segments[i].getClass().getSimpleName().toLowerCase().contains("uncertain"); // [TODO] temporal hack, Segment API extension is required
+            newBag.addHighlight(startOffset, endOffset, isCertain ? attribsMethod : attribsMethodUnc);
             if (selectedIndex == i) {
                 int size = endOffset - startOffset;
                 if (size == 1) {
-                    newBag.addHighlight(startOffset, endOffset, attribsAll);
+                    newBag.addHighlight(startOffset, endOffset, isCertain ? attribsAll : attribsAllUnc);
                 } else if (size > 1) {
-                    newBag.addHighlight(startOffset, startOffset + 1, attribsLeft);
-                    newBag.addHighlight(endOffset - 1, endOffset, attribsRight);
+                    newBag.addHighlight(startOffset, startOffset + 1, isCertain ? attribsLeft : attribsLeftUnc);
+                    newBag.addHighlight(endOffset - 1, endOffset, isCertain ? attribsRight : attribsRightUnc);
                     if (size > 2) {
-                        newBag.addHighlight(startOffset + 1, endOffset - 1, attribsMiddle);
+                        newBag.addHighlight(startOffset + 1, endOffset - 1, isCertain ? attribsMiddle : attribsMiddleUnc);
                     }
                 }
             }

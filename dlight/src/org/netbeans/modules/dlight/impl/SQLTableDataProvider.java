@@ -159,12 +159,9 @@ public class SQLTableDataProvider implements TableDataProvider {
             if (rs == null) {
                 return Collections.emptyList();
             }
-            List<String> colnames = new ArrayList<String>();
-            for (Column c : columns) {
-                colnames.add(c.getColumnName());
-            }
+            List<String> colnames = tableMetadata.getColumnNames();
             while (rs.next()) {
-                ArrayList<Object> data = new ArrayList<Object>();
+                ArrayList<Object> data = new ArrayList<Object>(columns.size());
                 for (Column c : columns) {
                     data.add(rs.getObject(c.getColumnName()));
                 }

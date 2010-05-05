@@ -41,6 +41,7 @@ package org.netbeans.modules.bugzilla.exceptionreporter;
 
 import org.netbeans.lib.uihandler.NBBugzillaAccessor;
 import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -49,9 +50,16 @@ import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.lib.uihandler.NBBugzillaAccessor.class)
 public class NBBugzillaAccessorImpl extends NBBugzillaAccessor {
 
+    private RequestProcessor rp;
+
     @Override
-    public void openIssue(String issueID) {
-        NBBugzillaUtils.openIssue(issueID);
+    public void openIssue(final String issueID) {
+        getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                NBBugzillaUtils.openIssue(issueID);
+            }
+        });
     }
 
     @Override
@@ -72,6 +80,13 @@ public class NBBugzillaAccessorImpl extends NBBugzillaAccessor {
     @Override
     public void saveNBPassword(char[] password) {
         NBBugzillaUtils.saveNBPassword(password);
+    }
+
+    private RequestProcessor getRequestProcessor() {
+        if(rp == null) {
+            rp = new RequestProcessor("NBBugzilaReports"); // NOI18N
+        }
+        return rp;
     }
 
 }

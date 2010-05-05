@@ -232,20 +232,25 @@ public class Manager extends Object {
      * @return normalized file
      */
     public static File normalizeFile(File file) {
-        // taken from org.openide.util.FileUtil
-        if (System.getProperty ("os.name").startsWith("Windows")) { // NOI18N
-            // On Windows, best to canonicalize.
-            try {
-                file = file.getCanonicalFile();
-            } catch (IOException e) {
-                Logger.getLogger(Manager.class.getName()).warning("getCanonicalFile() on file " + file + " failed: " + e);
-                // OK, so at least try to absolutize the path
-                file = file.getAbsoluteFile();
+        Runnable off = Log.internalLog();
+        try {
+            // taken from org.openide.util.FileUtil
+            if (System.getProperty ("os.name").startsWith("Windows")) { // NOI18N
+                // On Windows, best to canonicalize.
+                try {
+                    file = file.getCanonicalFile();
+                } catch (IOException e) {
+                    Logger.getLogger(Manager.class.getName()).warning("getCanonicalFile() on file " + file + " failed: " + e);
+                    // OK, so at least try to absolutize the path
+                    file = file.getAbsoluteFile();
+                }
+            } else {
+                // On Unix, do not want to traverse symlinks.
+                file = new File(file.toURI().normalize()).getAbsoluteFile();
             }
-        } else {
-            // On Unix, do not want to traverse symlinks.
-            file = new File(file.toURI().normalize()).getAbsoluteFile();
+            return file;
+        } finally {
+            off.run();
         }
-        return file;
     }
 }

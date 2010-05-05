@@ -139,11 +139,17 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
                 backSet.addAll(backupList);
                 result.addAll(Arrays.asList(fs.getActions (backSet)));
             }
-            
+
+            if (isManualRefresh()) {
+                result.add(FileSystemRefreshAction.get(FileSystemRefreshAction.class));
+            }
             
             return createMenu (Collections.enumeration (result), popUp, createProxyLookup(lookup, backSet)/*lookup*/);
         }
         return NONE;
+    }
+    private static boolean isManualRefresh() {
+        return NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction").getBoolean("manual", false); // NOI18N
     }
 
     private static ProxyLookup createProxyLookup(final Lookup lookup, final Set<FileObject> backSet) {

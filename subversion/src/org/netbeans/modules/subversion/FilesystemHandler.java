@@ -355,11 +355,17 @@ class FilesystemHandler extends VCSInterceptor {
             return getRemoteRepository(file);
         } else if("ProvidedExtensions.Refresh".equals(attrName)) {
             return new Runnable() {
+                @Override
                 public void run() {
+                    if (!SvnUtils.isManaged(file)) {
+                        return;
+                    }
                     try {
                         SvnClient client = Subversion.getInstance().getClient(file);
-                        Subversion.getInstance().getStatusCache().refreshCached(new Context(file));
-                        StatusAction.executeStatus(file, client, null);
+                        if (client != null) {
+                            Subversion.getInstance().getStatusCache().refreshCached(new Context(file));
+                            StatusAction.executeStatus(file, client, null);
+                        }
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
@@ -376,6 +382,20 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public void beforeEdit(File file) {
         NotificationsManager.getInstance().scheduleFor(file);
+    }
+
+    @Override
+    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        long retval = -1;
+        if (SvnUtils.isAdministrative(dir.getName())) {
+            retval = 0;
+        }
+        return retval;
+    }
+
+    @Override
+    public boolean isMutable(File file) {
+        return SvnUtils.isPartOfSubversionMetadata(file) || super.isMutable(file);
     }
 
     private String getRemoteRepository(File file) {
@@ -493,7 +513,7 @@ class FilesystemHandler extends VCSInterceptor {
                 }
 
                 if (parent != null) {
-                    assert SvnUtils.isManaged(parent);  // see implsMove above
+                    assert SvnUtils.isManaged(parent) : "Cannot move " + from.getAbsolutePath() + " to " + to.getAbsolutePath() + ", " + parent.getAbsolutePath() + " is not managed";  // NOI18N see implsMove above
                     // a direct cache call could, because of the synchrone svnMoveImplementation handling,
                     // trigger an reentrant call on FS => we have to check manually
                     if (!hasMetadata(parent)) {

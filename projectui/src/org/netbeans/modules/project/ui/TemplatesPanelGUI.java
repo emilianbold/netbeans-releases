@@ -62,7 +62,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.text.ChangedCharSetException;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
@@ -331,6 +333,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 ((ExplorerProviderPanel)categoriesPanel).setRootNode (root);
             }
         });
+        description.addHyperlinkListener(new ClickHyperlinks());
     }
 
     /** This method is called from within the constructor to
@@ -401,11 +404,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         description.setEditable(false);
         description.setText(org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("TXT_NoDescription")); // NOI18N
         description.setPreferredSize(new java.awt.Dimension(100, 66));
-        description.addHyperlinkListener(new javax.swing.event.HyperlinkListener() {
-            public void hyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {
-                descriptionHyperlinkUpdate(evt);
-            }
-        });
         jScrollPane1.setViewportView(description);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -419,12 +417,15 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(jScrollPane1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void descriptionHyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_descriptionHyperlinkUpdate
-        if (EventType.ACTIVATED == evt.getEventType() && evt.getURL() != null)
-            HtmlBrowser.URLDisplayer.getDefault().showURL(evt.getURL());
-    }//GEN-LAST:event_descriptionHyperlinkUpdate
     
+    private static final class ClickHyperlinks implements HyperlinkListener {
+        public @Override void hyperlinkUpdate(HyperlinkEvent evt) {
+            if (EventType.ACTIVATED == evt.getEventType() && evt.getURL() != null) {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(evt.getURL());
+            }
+        }
+    }
+
     private URL getDescription (DataObject dobj) {
         //XXX: Some templates are using templateWizardURL others instantiatingWizardURL. What is correct?
         FileObject fo = dobj.getPrimaryFile();

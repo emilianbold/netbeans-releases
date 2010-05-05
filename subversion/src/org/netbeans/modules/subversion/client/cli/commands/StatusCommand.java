@@ -182,6 +182,7 @@ public class StatusCommand extends SvnCommand {
           wc-locked %BOOL;
           copied %BOOL;
           switched %BOOL;
+          tree-conflicted %BOOL;
         >
 
         <!ELEMENT repos-status (lock?)>
@@ -235,6 +236,7 @@ public class StatusCommand extends SvnCommand {
         private static final String COPIED_ATTRIBUTE        = "copied";         // NOI18N        
         private static final String SWITCHED_ATTRIBUTE      = "switched";       // NOI18N                
         private static final String REVISION_ATTRIBUTE      = "revision";       // NOI18N        
+        private static final String TREE_CONFLICT_ATTRIBUTE = "tree-conflicted";// NOI18N
         
         private static final String PATH_ATTR               = "path";           // NOI18N        
         private static final String WC_PROPS_ATTR           = "wcprops";        // NOI18N        
@@ -245,6 +247,7 @@ public class StatusCommand extends SvnCommand {
         private static final String WC_COPIED_ATTR          = "copied";         // NOI18N        
         private static final String WC_SWITCHED_ATTR        = "switched";       // NOI18N                
         private static final String WC_REVISION_ATTR        = "wcrevision";     // NOI18N        
+        private static final String WC_TREE_CONFLICT_ATTR   = "tree-conflicted";// NOI18N
         private static final String CI_REVISION_ATTR        = "reporevision";   // NOI18N        
 
         private Map<String, String> values;
@@ -263,6 +266,7 @@ public class StatusCommand extends SvnCommand {
                 values.put(WC_LOCKED_ATTR,      elementAttributes.getValue(WC_LOCKED_ATTRIBUTE));
                 values.put(WC_COPIED_ATTR,      elementAttributes.getValue(COPIED_ATTRIBUTE));
                 values.put(WC_SWITCHED_ATTR,    elementAttributes.getValue(SWITCHED_ATTRIBUTE));
+                values.put(WC_TREE_CONFLICT_ATTR,      elementAttributes.getValue(TREE_CONFLICT_ATTRIBUTE));
             } else if (REPO_ST_ELEMENT_NAME.equals(qName)) {                                
                 values.put(REPO_ITEM_ATTR,      elementAttributes.getValue(ITEM_ATTRIBUTE));
                 values.put(REPO_PROPS_ATTR,     elementAttributes.getValue(PROPS_ATTRIBUTE));                
@@ -304,6 +308,7 @@ public class StatusCommand extends SvnCommand {
                     boolean locked =  getBoolean(values.get(WC_LOCKED_ATTR));       
                     boolean copied =  getBoolean(values.get(WC_COPIED_ATTR));       
                     boolean switched =  getBoolean(values.get(WC_SWITCHED_ATTR));       
+                    boolean treeConflict = getBoolean(values.get(WC_TREE_CONFLICT_ATTR));
                     
                     Number ciRev = getRevision(values.get(CI_REVISION_ATTR));                    
                     String author = values.get(AUTHOR_ELEMENT_NAME);                    
@@ -333,7 +338,7 @@ public class StatusCommand extends SvnCommand {
                     
                     statusValues.add(new Status(
                         path, wcStatus, wcPropsStatus, wcRev, locked, copied, switched, 
-                        ciRev, author, date, owner, lockComment, lockCreated, repoStatus, repoPropsStatus));
+                        ciRev, author, date, owner, lockComment, lockCreated, repoStatus, repoPropsStatus, treeConflict));
                 }
                 values = null;           
             } 
@@ -395,6 +400,7 @@ public class StatusCommand extends SvnCommand {
         private final boolean wcLocked;       
         private final boolean wcCopied;       
         private final boolean wcSwitched;                           
+        private final boolean treeConflict;
         private final Number commitRev;                    
         private final String author;                    
         private final Date changeDate;                    
@@ -407,7 +413,7 @@ public class StatusCommand extends SvnCommand {
                 Number wcRev, boolean wcLocked, boolean wcCopied, boolean wcSwitched, 
                 Number commitRev, String author, Date changeDate, String lockOwner, 
                 String lockComment, Date lockCreated, SVNStatusKind repoStatus, 
-                SVNStatusKind repoPropsStatus) 
+                SVNStatusKind repoPropsStatus, boolean treeConflict)
         {      
             this.path = path;
             this.wcStatus = wcStatus;
@@ -424,6 +430,7 @@ public class StatusCommand extends SvnCommand {
             this.lockCreated = lockCreated;
             this.repoStatus = repoStatus;
             this.repoPropsStatus = repoPropsStatus;
+            this.treeConflict = treeConflict;
         }
         public String getAuthor() {
             return author;
@@ -469,6 +476,14 @@ public class StatusCommand extends SvnCommand {
         }
         public boolean isWcSwitched() {
             return wcSwitched;
+        }
+
+        public boolean hasTreeConflicts() {
+            return treeConflict;
+        }
+
+        public SVNConflictDescriptor getConflictDescriptor() {
+            return null;
         }
     }
 }

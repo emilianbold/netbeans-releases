@@ -581,9 +581,9 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
             // XXX currently unused
             return classpath;
         }
-        if (attrName.equals("WritableXMLFileSystem.location")) { // NOI18N
-            // XXX used from PickIconAction; use a constant instead
-            return location;
+        if (attrName.equals("layers")) { // NOI18N
+            // Matches behavior of XMLFileSystem.
+            return new URL[] {location};
         }
         if (attrName.equals("DataFolder.Index.reorderable")) { // NOI18N
             return Boolean.TRUE;

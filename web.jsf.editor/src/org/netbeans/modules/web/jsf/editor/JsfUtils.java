@@ -38,7 +38,9 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -76,17 +78,15 @@ public class JsfUtils {
     public static final String XHTML_NS = "http://www.w3.org/1999/xhtml"; //NOI18N
 
     public static String getCompositeLibraryURL(String libraryFolderPath) {
-	return JsfUtils.COMPOSITE_LIBRARY_NS + "/" + libraryFolderPath;
+        return JsfUtils.COMPOSITE_LIBRARY_NS + "/" + libraryFolderPath;
     }
 
     public static boolean isCompositeComponentLibrary(FaceletsLibrary library) {
         return library instanceof CompositeComponentLibrary;
     }
 
-
-
     public static boolean importLibrary(Document document, FaceletsLibrary library, String prefix) {
-	return !importLibrary(document, Collections.singletonMap(library, prefix)).isEmpty();
+        return !importLibrary(document, Collections.singletonMap(library, prefix)).isEmpty();
     }
 
     /**
@@ -101,24 +101,24 @@ public class JsfUtils {
     public static Map<FaceletsLibrary, String> importLibrary(Document document, Map<FaceletsLibrary, String> libraries2prefixes) {
         assert document instanceof BaseDocument;
 
-	final Map<FaceletsLibrary, String> imports = new LinkedHashMap<FaceletsLibrary, String>(libraries2prefixes);
-	
-	//verify and update the imports map
-	Iterator<FaceletsLibrary> libsIterator = imports.keySet().iterator();
-	while(libsIterator.hasNext()) {
-	    FaceletsLibrary l = libsIterator.next();
-	    String prefix = imports.get(l);
-	    if(prefix == null) {
-		//not explicitly specified prefix, we may take the library's default one
-		String defaultPrefix = l.getDefaultPrefix();
-		if(defaultPrefix != null) {
-		    imports.put(l, defaultPrefix); //update the map - add the default prefix, I recon no ConcurrentModificationException is thrown since the keyset remains the same
-		} else {
-		    //remove the library from the imports, we have no enough information
-		    libsIterator.remove();
-		}
-	    }
-	}
+        final Map<FaceletsLibrary, String> imports = new LinkedHashMap<FaceletsLibrary, String>(libraries2prefixes);
+
+        //verify and update the imports map
+        Iterator<FaceletsLibrary> libsIterator = imports.keySet().iterator();
+        while (libsIterator.hasNext()) {
+            FaceletsLibrary l = libsIterator.next();
+            String prefix = imports.get(l);
+            if (prefix == null) {
+                //not explicitly specified prefix, we may take the library's default one
+                String defaultPrefix = l.getDefaultPrefix();
+                if (defaultPrefix != null) {
+                    imports.put(l, defaultPrefix); //update the map - add the default prefix, I recon no ConcurrentModificationException is thrown since the keyset remains the same
+                } else {
+                    //remove the library from the imports, we have no enough information
+                    libsIterator.remove();
+                }
+            }
+        }
 
         final BaseDocument bdoc = (BaseDocument) document;
         try {
@@ -152,10 +152,9 @@ public class JsfUtils {
 
                     @Override
                     public boolean accepts(AstNode node) {
-                        return (node.type() == AstNode.NodeType.OPEN_TAG ||
-                                node.type() == AstNode.NodeType.UNKNOWN_TAG) && !node.isEmpty();
+                        return (node.type() == AstNode.NodeType.OPEN_TAG
+                                || node.type() == AstNode.NodeType.UNKNOWN_TAG) && !node.isEmpty();
                     }
-                    
                 });
 
                 if (!chs.isEmpty()) {
@@ -186,24 +185,24 @@ public class JsfUtils {
             //result into an invalid page
 
             //eliminate already declared libraries
-	    Iterator<FaceletsLibrary> librariesIterator = imports.keySet().iterator();
-	    while(librariesIterator.hasNext()) {
-		FaceletsLibrary library = librariesIterator.next();
-		Map<String, String> declaredNamespaces = result.getNamespaces();
-		String alreadyDeclaredPrefix = declaredNamespaces.get(library.getNamespace());
-		if(alreadyDeclaredPrefix == null) {
-		    //try composite component library default prefix
-		    if(library instanceof CompositeComponentLibrary) {
-			String defaultNS = ((CompositeComponentLibrary)library).getDefaultNamespace();
-			alreadyDeclaredPrefix = declaredNamespaces.get(defaultNS);
-		    }
-		}
-		if(alreadyDeclaredPrefix != null) {
-		    //already declared, remove the library from the imports
-		    librariesIterator.remove();
-		    
-		}
-	    }
+            Iterator<FaceletsLibrary> librariesIterator = imports.keySet().iterator();
+            while (librariesIterator.hasNext()) {
+                FaceletsLibrary library = librariesIterator.next();
+                Map<String, String> declaredNamespaces = result.getNamespaces();
+                String alreadyDeclaredPrefix = declaredNamespaces.get(library.getNamespace());
+                if (alreadyDeclaredPrefix == null) {
+                    //try composite component library default prefix
+                    if (library instanceof CompositeComponentLibrary) {
+                        String defaultNS = ((CompositeComponentLibrary) library).getDefaultNamespace();
+                        alreadyDeclaredPrefix = declaredNamespaces.get(defaultNS);
+                    }
+                }
+                if (alreadyDeclaredPrefix != null) {
+                    //already declared, remove the library from the imports
+                    librariesIterator.remove();
+
+                }
+            }
 
             //else add the declaration
             final Indent indent = Indent.get(bdoc);
@@ -218,31 +217,31 @@ public class JsfUtils {
                             //if there are no attributes, just add the new one at the end of the tag,
                             //if there are some, add the new one on a new line and reformat the tag
 
-			    int offset_shift = 0;
-			    Iterator<FaceletsLibrary> libsItr = imports.keySet().iterator();
-			    int originalInsertPosition = result.getSnapshot().getOriginalOffset(rootNode.endOffset() - 1); //just before the closing symbol
-			    if(originalInsertPosition == -1) {
-				//error, cannot recover
-				imports.clear();
-				return ;
-			    }
+                            int offset_shift = 0;
+                            Iterator<FaceletsLibrary> libsItr = imports.keySet().iterator();
+                            int originalInsertPosition = result.getSnapshot().getOriginalOffset(rootNode.endOffset() - 1); //just before the closing symbol
+                            if (originalInsertPosition == -1) {
+                                //error, cannot recover
+                                imports.clear();
+                                return;
+                            }
 
-			    while(libsItr.hasNext()) {
-				FaceletsLibrary library = libsItr.next();
-				String prefixToDeclare = imports.get(library);
-				int insertPosition = originalInsertPosition + offset_shift;
+                            while (libsItr.hasNext()) {
+                                FaceletsLibrary library = libsItr.next();
+                                String prefixToDeclare = imports.get(library);
+                                int insertPosition = originalInsertPosition + offset_shift;
 
-				String text = (!noAttributes ? "\n" : "") + " xmlns:" + prefixToDeclare + //NOI18N
-					"=\"" + library.getNamespace() + "\""; //NOI18N
+                                String text = (!noAttributes ? "\n" : "") + " xmlns:" + prefixToDeclare + //NOI18N
+                                        "=\"" + library.getNamespace() + "\""; //NOI18N
 
-				bdoc.insertString(insertPosition, text, null);
+                                bdoc.insertString(insertPosition, text, null);
 
-				offset_shift += text.length();
-			    }
+                                offset_shift += text.length();
+                            }
 
 
-			    //reformat the tag so the new attribute gets aligned with the previous one/s
-			    indent.reindent(originalInsertPosition, originalInsertPosition + offset_shift);
+                            //reformat the tag so the new attribute gets aligned with the previous one/s
+                            indent.reindent(originalInsertPosition, originalInsertPosition + offset_shift);
 
                         } catch (BadLocationException ex) {
                             Logger.global.log(Level.INFO, null, ex);
@@ -252,14 +251,14 @@ public class JsfUtils {
             } finally {
                 indent.unlock();
             }
-	    
-	    return imports; //return the remained libraries which should be those really imported
+
+            return imports; //return the remained libraries which should be those really imported
 
         } catch (ParseException ex) {
             Logger.global.log(Level.INFO, null, ex);
         }
 
-	return Collections.emptyMap();
+        return Collections.emptyMap();
     }
 
     /**
@@ -268,7 +267,7 @@ public class JsfUtils {
     public static OffsetRange createOffsetRange(Snapshot snapshot, String documentText, int embeddedOffsetFrom, int embeddedOffsetTo) {
 
         int originalFrom = 0;
-	int originalTo = documentText.length();
+        int originalTo = documentText.length();
 
         //try to find nearest original offset if the embedded offsets cannot be directly recomputed
         //from - try backward
@@ -279,14 +278,14 @@ public class JsfUtils {
                 break;
             }
         }
-	
-	try {
-	    //some heuristic - use end of line where the originalFrom lies 
-	    //in case if we cannot match the end offset at all
-	    originalTo = GsfUtilities.getRowEnd(documentText, originalFrom);
-	} catch (BadLocationException ex) {
-	    //ignore, end of the document will be used as end offset
-	}
+
+        try {
+            //some heuristic - use end of line where the originalFrom lies
+            //in case if we cannot match the end offset at all
+            originalTo = GsfUtilities.getRowEnd(documentText, originalFrom);
+        } catch (BadLocationException ex) {
+            //ignore, end of the document will be used as end offset
+        }
 
         //to - try forward
         for (int i = embeddedOffsetTo; i <= snapshot.getText().length(); i++) {
@@ -300,12 +299,32 @@ public class JsfUtils {
         return new OffsetRange(originalFrom, originalTo);
     }
 
-     public static Result getEmbeddedParserResult(ResultIterator resultIterator, String mimeType) throws ParseException {
-        for(Embedding e : resultIterator.getEmbeddings()) {
-            if(e.getMimeType().equals(mimeType)) {
+    public static Result getEmbeddedParserResult(ResultIterator resultIterator, String mimeType) throws ParseException {
+        for (Embedding e : resultIterator.getEmbeddings()) {
+            if (e.getMimeType().equals(mimeType)) {
                 return resultIterator.getResultIterator(e).getParserResult();
             }
         }
         return null;
     }
+
+    /** returns map of library namespace to library instance for all facelet libraries declared in the document/file. */
+    public static Map<String, FaceletsLibrary> getDeclaredLibraries(HtmlParserResult result) {
+        //find all usages of composite components tags for this page
+        Collection<String> declaredNamespaces = result.getNamespaces().keySet();
+        Map<String, FaceletsLibrary> declaredLibraries = new HashMap<String, FaceletsLibrary>();
+        JsfSupport jsfSupport = JsfSupport.findFor(result.getSnapshot().getSource().getFileObject());
+        if (jsfSupport != null) {
+            Map<String, FaceletsLibrary> libs = jsfSupport.getFaceletsLibraries();
+
+            for (String namespace : declaredNamespaces) {
+                FaceletsLibrary lib = libs.get(namespace);
+                if (lib != null) {
+                    declaredLibraries.put(namespace, lib);
+                }
+            }
+        }
+        return declaredLibraries;
+    }
+    
 }

@@ -172,31 +172,23 @@ public class AssignmentIssues {
     }
 
     @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "AssignmentReplaceableWithOperatorAssignment") //NOI18N
-    @TriggerTreeKind(Kind.ASSIGNMENT)
+    @TriggerPatterns({
+        @TriggerPattern("$t = $t + $val"),
+        @TriggerPattern("$t = $t - $val"),
+        @TriggerPattern("$t = $t * $val"),
+        @TriggerPattern("$t = $t / $val"),
+        @TriggerPattern("$t = $t % $val"),
+        @TriggerPattern("$t = $t & $val"),
+        @TriggerPattern("$t = $t | $val"),
+        @TriggerPattern("$t = $t ^ $val"),
+        @TriggerPattern("$t = $t << $val"),
+        @TriggerPattern("$t = $t >> $val"),
+        @TriggerPattern("$t = $t >>> $val")
+    })
     public static ErrorDescription replaceAssignWithOpAssign(HintContext context) {
         final TreePath path = context.getPath();
-        final AssignmentTree at = (AssignmentTree) path.getLeaf();
-        switch (at.getExpression().getKind()) {
-            case AND:
-            case DIVIDE:
-            case LEFT_SHIFT:
-            case MINUS:
-            case MULTIPLY:
-            case OR:
-            case PLUS:
-            case REMAINDER:
-            case RIGHT_SHIFT:
-            case UNSIGNED_RIGHT_SHIFT:
-            case XOR:
-                final BinaryTree bt = (BinaryTree) at.getExpression();
-                final Trees trees = context.getInfo().getTrees();
-                final Element element = trees.getElement(TreePath.getPath(path, at.getVariable()));
-                if (element != null && element == trees.getElement(TreePath.getPath(path, bt.getLeftOperand()))) {
-                    return ErrorDescriptionFactory.forTree(context, path, NbBundle.getMessage(AssignmentIssues.class, "MSG_ReplaceAssignmentWithOperatorAssignment", path.getLeaf()), //NOI18N
-                            new ReplaceAssignmentFix(NbBundle.getMessage(AssignmentIssues.class, "FIX_ReplaceAssignmentWithOperatorAssignment", path.getLeaf()), TreePathHandle.create(path, context.getInfo()))); //NOI18N
-                }
-        }
-        return null;
+        return ErrorDescriptionFactory.forTree(context, path, NbBundle.getMessage(AssignmentIssues.class, "MSG_ReplaceAssignmentWithOperatorAssignment", path.getLeaf()), //NOI18N
+                new ReplaceAssignmentFix(NbBundle.getMessage(AssignmentIssues.class, "FIX_ReplaceAssignmentWithOperatorAssignment", path.getLeaf()), TreePathHandle.create(path, context.getInfo()))); //NOI18N
     }
 
     private static final class AssignmentFinder extends TreePathScanner<Void, List<TreePath>> {

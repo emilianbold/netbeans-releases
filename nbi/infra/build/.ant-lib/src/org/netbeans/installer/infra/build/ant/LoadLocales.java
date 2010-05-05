@@ -121,7 +121,7 @@ public class LoadLocales extends Task {
                     for (Object key: properties.keySet()) {
                         getProject().setProperty(
                                 "" + key + "." + locale, // NOI18N
-                                Utils.toAscii(properties.get(key).toString()));
+                                properties.get(key).toString());
                     }
                 }
             }

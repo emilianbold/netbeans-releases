@@ -148,6 +148,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         synchronized (rp) {
             if (taskRemove == null) {
                 taskRemove = rp.create(new Runnable() {
+                    @Override
                     public void run() {
                         clearAnnotations();
                     }
@@ -174,8 +175,9 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             //this.sourcePathToAnnotate = sourcePath;
             if (taskAnnotate == null) {
                 taskAnnotate = rp.post(new Runnable() {
+                    @Override
                     public void run() {
-                        List<GdbCallStackFrame> stack;
+                        final List<GdbCallStackFrame> stack;
                         synchronized (rp) {
                             if (stackToAnnotate == null) {
                                 return ; // Nothing to do
@@ -186,43 +188,58 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                         
                         // Remove old annotations
                         clearAnnotations();
-                        
-                        // Add new annotations
-                        String annotationType = EditorContext.CURRENT_LINE_ANNOTATION_TYPE;
-                        for (GdbCallStackFrame csf : stack) {
-                            // 1) Is current stackFrame annotated
-                            if (!annotatedAddresses.add(csf.getAddr())) {
-                                continue;
-                            }
-                            
-                            // 2) annotate line
-                            final Annotation da = EditorContextBridge.annotate(csf, annotationType);
 
-                            // 3) add new frame to set and bring to front
-                            if (da != null) {
-                                stackAnnotations.add(da);
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    public void run() {
-                                        da.moveToFront();
-                                    }
-                                });
+                        if (stack.isEmpty()) {
+                            return;
+                        }
+
+                        // annotate current PC separately in EDT (see IZ 184456)
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                annotateFrame(stack.get(0), EditorContext.CURRENT_LINE_ANNOTATION_TYPE);
                             }
-                            
-                            // 4) annotate dis
-                            final Annotation disa = EditorContextBridge.annotateDis(csf, annotationType);
-                            
-                            // 5) add new dis line to hashMap
-                            if (disa != null) {
-                                stackAnnotations.add(disa);
-                            }
-                            
-                            annotationType = EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE;
+                        });
+                        
+                        // Add stack annotations
+                        int end = stack.size();
+                        for (int i = 1; i < end; i++) {
+                            annotateFrame(stack.get(i), EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE);
                         }
                     }
                 });
             }
         }
         taskAnnotate.schedule(50);
+    }
+
+    private void annotateFrame(GdbCallStackFrame csf, String annotationType) {
+        // 1) Is current stackFrame annotated
+        if (!annotatedAddresses.add(csf.getAddr())) {
+            return;
+        }
+
+        // 2) annotate line
+        final Annotation da = EditorContextBridge.annotate(csf, annotationType);
+
+        // 3) add new frame to set and bring to front
+        if (da != null) {
+            stackAnnotations.add(da);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    da.moveToFront();
+                }
+            });
+        }
+
+        // 4) annotate dis
+        final Annotation disa = EditorContextBridge.annotateDis(csf, annotationType);
+
+        // 5) add new dis line to hashMap
+        if (disa != null) {
+            stackAnnotations.add(disa);
+        }
     }
 }
 

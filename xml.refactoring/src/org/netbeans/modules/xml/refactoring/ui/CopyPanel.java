@@ -122,8 +122,8 @@ public class CopyPanel extends JPanel implements ActionListener, DocumentListene
     }
     
     public void initValues(String preselectedFolder ) {
-        
-        Project openProjects[] = OpenProjects.getDefault().getOpenProjects();
+        Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+/* # 155199
         List<Project> op = Arrays.asList(openProjects);
         java.util.List projectRoots = new java.util.ArrayList();
         SubprojectProvider provider = (SubprojectProvider)project.getLookup().lookup(SubprojectProvider.class);
@@ -138,14 +138,16 @@ public class CopyPanel extends JPanel implements ActionListener, DocumentListene
                  projectRoots.add(refPrj);
         }
         Project[] roots = (Project[])projectRoots.toArray(new Project[projectRoots.size()]);
-        DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( roots );
-        projectsComboBox.setModel( projectsModel );                
+*/
+        Arrays.sort( openProjects, new MoveFilePanel.ProjectByDisplayNameComparator());
+        DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
+        projectsComboBox.setModel( projectsModel );
         projectsComboBox.setSelectedItem( project );
         
         updateRoots();
         updatePackages(); 
         if (preselectedFolder != null) {
-            packageComboBox.setSelectedItem(preselectedFolder);
+//          packageComboBox.setSelectedItem(preselectedFolder);
         }
         // Determine the extension
     }

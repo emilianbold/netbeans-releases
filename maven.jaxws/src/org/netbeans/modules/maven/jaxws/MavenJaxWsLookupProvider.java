@@ -47,7 +47,6 @@ import org.netbeans.modules.websvc.project.spi.LookupMergerSupport;
 import org.netbeans.modules.websvc.project.spi.WebServiceDataProvider;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -61,6 +60,9 @@ import org.openide.util.lookup.Lookups;
 @LookupProvider.Registration(projectType="org-netbeans-modules-maven")
 public class MavenJaxWsLookupProvider implements LookupProvider {
 
+    private static final RequestProcessor rp = new RequestProcessor("MavenJaxWsLookupProvider-request-processor");
+
+    @Override
     public Lookup createAdditionalLookup(Lookup baseContext) {
         final Project prj = baseContext.lookup(Project.class);
         JAXWSLightSupportImpl spiJAXWSSupport = new MavenJAXWSSupportImpl(prj);
@@ -72,17 +74,14 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
         LookupMerger<WebServiceDataProvider> wsDataProviderMerger =
                 LookupMergerSupport.createWebServiceDataProviderMerger();
 
-        //final FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
-        //if (wsdlFolder != null) {
-            RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
 
-                public void run() {                    
-                    WSUtils.detectWsdlClients(prj, jaxWsSupport);
-                }
+            @Override
+            public void run() {
+                WSUtils.detectWsdlClients(prj, jaxWsSupport);
+            }
 
-            });
-            
-        //}
+        });
 
         return Lookups.fixed(jaxWsSupportProvider, jaxWsServiceDataProvider, wsDataProviderMerger);
     }

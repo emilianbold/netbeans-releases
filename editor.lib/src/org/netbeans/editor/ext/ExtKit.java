@@ -830,22 +830,31 @@ public class ExtKit extends BaseKit {
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            ToggleCommentAction action = null;
+            BaseAction action = null;
             
             if (delegateAction != null) {
                 action = delegateAction;
             } else {
                 BaseKit kit = Utilities.getKit(target);
                 Action a = kit == null ? null : kit.getActionByName(toggleCommentAction);
-                if (a instanceof ToggleCommentAction) {
-                    action = (ToggleCommentAction) a;
+                if (a instanceof BaseAction) {
+                    action = (BaseAction) a;
                 }
             }
 
-            if (action != null) {
+            if (action instanceof ToggleCommentAction) {
                 ((ToggleCommentAction) action).commentUncomment(evt, target, Boolean.TRUE);
             } else {
-                target.getToolkit().beep();
+                if (action != null) {
+                    action.putValue("force-comment", Boolean.TRUE); // NOI18N
+                    try {
+                        action.actionPerformed(evt, target);
+                    } finally {
+                        action.putValue("force-comment", null); // NOI18N
+                    }
+                } else {
+                    target.getToolkit().beep();
+                }
             }
         }
     } // End of CommentAction class
@@ -868,22 +877,31 @@ public class ExtKit extends BaseKit {
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            ToggleCommentAction action = null;
+            BaseAction action = null;
             
             if (delegateAction != null) {
                 action = delegateAction;
             } else {
                 BaseKit kit = Utilities.getKit(target);
                 Action a = kit == null ? null : kit.getActionByName(toggleCommentAction);
-                if (a instanceof ToggleCommentAction) {
-                    action = (ToggleCommentAction) a;
+                if (a instanceof BaseAction) {
+                    action = (BaseAction) a;
                 }
             }
 
-            if (action != null) {
+            if (action instanceof ToggleCommentAction) {
                 ((ToggleCommentAction) action).commentUncomment(evt, target, Boolean.FALSE);
             } else {
-                target.getToolkit().beep();
+                if (action != null) {
+                    action.putValue("force-uncomment", Boolean.TRUE); // NOI18N
+                    try {
+                        action.actionPerformed(evt, target);
+                    } finally {
+                        action.putValue("force-uncomment", null); // NOI18N
+                    }
+                } else {
+                    target.getToolkit().beep();
+                }
             }
         }
     } // End of UncommentAction class

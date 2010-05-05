@@ -49,4 +49,5 @@ import java.util.Collection;
  */
 public interface CsmCompoundClassifier extends CsmClassifier, CsmOffsetableDeclaration, CsmScope, CsmValidable  {
     Collection<CsmTypedef> getEnclosingTypedefs();
+    Collection<CsmVariable> getEnclosingVariables();
 }

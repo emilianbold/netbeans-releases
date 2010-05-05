@@ -39,8 +39,10 @@
 package org.netbeans.modules.nativeexecution;
 
 import com.jcraft.jsch.Session;
+import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.support.Authentication;
 
 public abstract class ConnectionManagerAccessor {
 
@@ -69,6 +71,9 @@ public abstract class ConnectionManagerAccessor {
         return DEFAULT;
     }
 
-    public abstract Session getConnectionSession(
-            final ConnectionManager mgr, final ExecutionEnvironment env, boolean restoreLostConnection);
+    public abstract Session getConnectionSession(final ExecutionEnvironment env, boolean restoreLostConnection);
+
+    public abstract void reconnect(final ExecutionEnvironment env) throws IOException;
+
+    public abstract void changeAuth(ExecutionEnvironment env, Authentication auth);
 }

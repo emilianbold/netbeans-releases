@@ -278,10 +278,6 @@ public class BugzillaQuery extends Query {
         super.setSaved(saved);
     }
 
-    public void setFilter(Filter filter) {
-        getController().selectFilter(filter);
-    }
-
     @Override
     public void fireQuerySaved() {
         super.fireQuerySaved();

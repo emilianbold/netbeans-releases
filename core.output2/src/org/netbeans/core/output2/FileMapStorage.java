@@ -66,6 +66,10 @@ class FileMapStorage implements Storage {
      */
     private static final long MAX_MAP_RANGE = 1024 * 1024;
     /**
+     * Own request processor
+     */
+    private static final RequestProcessor RP = new RequestProcessor("FileMapStorage"); //NOI18N
+    /**
      * The byte getWriteBuffer that write operations write into.  Actual buffers are
      * provided for writing by calling master.slice(); this getWriteBuffer simply
      * pre-allocates a fairly large chunk of memory to reduce repeated
@@ -249,7 +253,7 @@ class FileMapStorage implements Storage {
         buffer = null;
         contents = null;
         if (oldChannel != null || oldFile != null) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 public void run() {
                     try {

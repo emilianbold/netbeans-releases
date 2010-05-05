@@ -131,7 +131,7 @@ public class CreateAction extends ContextAction {
     @Override
     protected void performContextAction(Node[] nodes) {
         final VCSContext context = HgUtils.getCurrentContext(nodes);
-        RequestProcessor.getDefault().post(new Runnable() {
+        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 performCreate(context);
             }
@@ -162,6 +162,8 @@ public class CreateAction extends ContextAction {
                     HgCommand.doCreate(rootToManage, logger);
                     hg.versionedFilesChanged();
                     hg.refreshAllAnnotations();
+                } catch (HgException.HgCommandCanceledException ex) {
+                    // canceled by user, do nothing
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);

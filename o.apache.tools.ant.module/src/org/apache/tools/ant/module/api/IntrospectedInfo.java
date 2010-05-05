@@ -199,11 +199,12 @@ public final class IntrospectedInfo {
             cs.fireChange();
         }
     }
+    private static final RequestProcessor RP = new RequestProcessor(IntrospectedInfo.class);
     private void fireStateChanged() {
         if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
             AntModule.err.log("IntrospectedInfo.fireStateChanged");
         }
-        RequestProcessor.getDefault().post(new ChangeTask());
+        RP.post(new ChangeTask());
     }
     
     /** Get definitions.

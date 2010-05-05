@@ -43,6 +43,7 @@ import org.netbeans.modules.kenai.api.KenaiManager;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Pattern;
+import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -61,9 +62,11 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
     private Object bean;
     private NotificationLineSupport ns;
     private DialogDescriptor dd;
+    private JButton addButton;
 
     /** Creates new customizer KenaiInstanceCustomizer */
-    public KenaiInstanceCustomizer() {
+    public KenaiInstanceCustomizer(JButton addButton) {
+        this.addButton = addButton;
         initComponents();
         progress.setVisible(false);
         txtDisplayName.getDocument().addDocumentListener(this);
@@ -142,7 +145,7 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap(13, Short.MAX_VALUE)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblName)
                     .add(txtDisplayName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -153,8 +156,15 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(proxy)
-                    .add(progress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(progress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(2, 2, 2))
         );
+
+        txtDisplayName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.txtDisplayName.AccessibleContext.accessibleName")); // NOI18N
+        txtDisplayName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.txtDisplayName.AccessibleContext.accessibleDescription")); // NOI18N
+        txtUrl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.txtUrl.AccessibleContext.accessibleName")); // NOI18N
+        txtUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.txtUrl.AccessibleContext.accessibleDescription")); // NOI18N
+        proxy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.proxy.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void proxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyActionPerformed
@@ -197,11 +207,13 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
         stopProgress();
         ns.setInformationMessage(text);
         dd.setValid(false);
+        addButton.setEnabled(false);
     }
 
     void clearError() {
         ns.clearMessages();
         dd.setValid(true);
+        addButton.setEnabled(true);
     }
 
     void startProgress() {

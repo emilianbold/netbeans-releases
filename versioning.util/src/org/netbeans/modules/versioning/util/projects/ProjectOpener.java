@@ -58,13 +58,13 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -203,7 +203,8 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
             final Set<Project> selectedProjects = view.getSelectedProjects();
             if (projectsPanel.cbOpenRequired.isSelected()) {
                 // scan all subprojects recursively and open all
-                RequestProcessor.getDefault().post(new Runnable() {
+                Utils.postParallel(new Runnable() {
+                    @Override
                     public void run() {
                         final Set<Project> toOpen = new HashSet<Project>();
                         final HashMap<Project, Set<? extends Project>> cache = new HashMap<Project, Set<? extends Project>>();
@@ -219,7 +220,7 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
                             }
                         });
                     }
-                });
+                }, 0);
             } else {
                 for (Project p : selectedProjects) {
                     openProject(p);

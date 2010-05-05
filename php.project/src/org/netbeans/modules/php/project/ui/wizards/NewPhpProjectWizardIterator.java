@@ -125,6 +125,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return new NewPhpProjectWizardIterator(WizardType.REMOTE);
     }
 
+    @Override
     public void initialize(WizardDescriptor wizard) {
         descriptor = wizard;
         index = 0;
@@ -133,6 +134,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         initDescriptor(wizard);
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
         Panel<WizardDescriptor> current = current();
         // #158483
@@ -143,11 +145,13 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         descriptor = null;
     }
 
+    @Override
     public Set<FileObject> instantiate() throws IOException {
         assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator.";
         return null;
     }
 
+    @Override
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         final Set<FileObject> resultSet = new HashSet<FileObject>();
 
@@ -205,6 +209,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws MutexException {
                     try {
                         // update project properties
@@ -239,22 +244,27 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return resultSet;
     }
 
+    @Override
     public String name() {
         return NbBundle.getMessage(NewPhpProjectWizardIterator.class, "LBL_IteratorName", index + 1, panels.length);
     }
 
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
         index++;
     }
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -262,6 +272,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         index--;
     }
 
+    @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
         setTitle();
         return panels[index];
@@ -290,9 +301,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
 
@@ -608,6 +621,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             units = 5 + 2 * frameworkExtenders.size();
         }
 
+        @Override
         public void starting() {
             handle.start(units);
 
@@ -616,12 +630,14 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             handle.progress(msg, 2);
         }
 
+        @Override
         public void creatingIndexFile() {
             String msg = NbBundle.getMessage(
                     NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingIndexFile");
             handle.progress(msg, 4);
         }
 
+        @Override
         public void finishing() {
         }
 
@@ -654,6 +670,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             this.handle = handle;
         }
 
+        @Override
         public void starting() {
             handle.start(10);
 
@@ -662,10 +679,12 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             handle.progress(msg, 2);
         }
 
+        @Override
         public void creatingIndexFile() {
             assert false : "Should not get here";
         }
 
+        @Override
         public void finishing() {
         }
 

@@ -48,6 +48,8 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -55,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Element;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.InputAttributes;
@@ -281,6 +284,7 @@ public final class Source {
      */
     public Snapshot createSnapshot () {
         final CharSequence [] text = new CharSequence [] {""}; //NOI18N
+        final int [][] lineStartOffsets = new int [][] { new int [] { 0 } };
         Document doc = getDocument (false);
         try {
             if (doc == null) {
@@ -305,6 +309,7 @@ public final class Source {
                             );
                             try {
                                 StringBuilder output = new StringBuilder(Math.max(16, (int) fileObject.getSize()));
+                                List<Integer> lso = new LinkedList<Integer>();
                                 boolean lastCharCR = false;
                                 char [] buffer = new char [1024];
                                 int size = -1;
@@ -314,11 +319,13 @@ public final class Source {
                                 final char LS = 0x2028; // Unicode line separator (0x2028)
                                 final char PS = 0x2029; // Unicode paragraph separator (0x2029)
 
+                                lso.add(0);
                                 while(-1 != (size = reader.read(buffer, 0, buffer.length))) {
                                     for(int i = 0; i < size; i++) {
                                         char ch = buffer[i];
                                         if (lastCharCR && ch == LF) { // found CRLF sequence
                                             output.append(LF);
+                                            lso.add(output.length());
                                             lastCharCR = false;
 
                                         } else { // not CRLF sequence
@@ -326,6 +333,7 @@ public final class Source {
                                                 lastCharCR = true;
                                             } else if (ch == LS || ch == PS) { // Unicode LS, PS
                                                 output.append(LF);
+                                                lso.add(output.length());
                                                 lastCharCR = false;
                                             } else { // current char not CR
                                                 lastCharCR = false;
@@ -335,7 +343,14 @@ public final class Source {
                                     }
                                 }
 
+                                int [] lsoArr = new int [lso.size()];
+                                int idx = 0;
+                                for(Integer offset : lso) {
+                                    lsoArr[idx++] = offset;
+                                }
+
                                 text[0] = output;
+                                lineStartOffsets[0] = lsoArr;
                             } finally {
                                 reader.close ();
                             }
@@ -351,13 +366,21 @@ public final class Source {
             } else {
                 final Document d = doc;
                 d.render (new Runnable () {
-                    public void run () {
+                    public @Override void run () {
                         try {
                             int length = d.getLength ();
-                            if (length < 0)
+                            if (length < 0) {
                                 text[0] = ""; //NOI18N
-                            else
+                                lineStartOffsets[0] = new int [] { 0 };
+                            } else {
+                                Element root = DocumentUtilities.getParagraphRootElement(d);
+                                int [] lso = new int [root.getElementCount()];
+                                for(int i = 0; i < lso.length; i++) {
+                                    lso[i] = root.getElement(i).getStartOffset();
+                                }
                                 text[0] = d.getText (0, length);
+                                lineStartOffsets[0] = lso;
+                            }
                         } catch (BadLocationException ble) {
                             LOG.log (Level.WARNING, null, ble);
                         }
@@ -367,6 +390,7 @@ public final class Source {
         } catch (OutOfMemoryError oome) {
             // Use empty snapshot
             text[0] = ""; //NOI18N
+            lineStartOffsets[0] = new int [] { 0 };
 
             // Diagnostics and workaround for issues such as #170290
             LOG.log(Level.INFO, null, oome);
@@ -379,7 +403,7 @@ public final class Source {
         }
 
         return new Snapshot (
-            text [0], this,
+            text[0], lineStartOffsets[0], this,
             MimePath.get (mimeType),
             new int[][] {new int[] {0, 0}},
             new int[][] {new int[] {0, 0}}
@@ -648,6 +672,20 @@ public final class Source {
                 ref = instances.get(file);
             }
             return ref == null ? null : ref.get();
+        }
+
+        @Override
+        public int getLineStartOffset(Snapshot snapshot, int lineIdx) {
+            assert snapshot != null;
+            assert snapshot.lineStartOffsets != null : "Line offsets can only be obtained for a top-level snapshot"; //NOI18N
+            assert lineIdx >= 0 && lineIdx <= snapshot.lineStartOffsets.length :
+                "Invalid lineIdx=" + lineIdx + ", lineStartOffsets.length=" + snapshot.lineStartOffsets.length; //NOI18N
+
+            if (lineIdx < snapshot.lineStartOffsets.length) {
+                return snapshot.lineStartOffsets[lineIdx];
+            } else {
+                return snapshot.getText().length();
+            }
         }
 
     } // End of MySourceAccessor class

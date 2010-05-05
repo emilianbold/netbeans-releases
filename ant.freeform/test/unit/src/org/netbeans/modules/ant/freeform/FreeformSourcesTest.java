@@ -58,6 +58,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -110,12 +111,12 @@ public class FreeformSourcesTest extends TestBase {
         TestCL l = new TestCL();
         s.addChangeListener(l);
         Element data = extsrcroot.getPrimaryConfigurationData();
-        Element folders = Util.findElement(data, "folders", FreeformProjectType.NS_GENERAL);
+        Element folders = XMLUtil.findElement(data, "folders", FreeformProjectType.NS_GENERAL);
         assertNotNull("have <folders>", folders);
-        List/*<Element>*/ sourceFolders = Util.findSubElements(folders);
+        List<Element> sourceFolders = XMLUtil.findSubElements(folders);
         assertEquals("have 2 <source-folder>s", 2, sourceFolders.size());
         Element sourceFolder = (Element) sourceFolders.get(1);
-        Element location = Util.findElement(sourceFolder, "location", FreeformProjectType.NS_GENERAL);
+        Element location = XMLUtil.findElement(sourceFolder, "location", FreeformProjectType.NS_GENERAL);
         assertNotNull("have <location>", location);
         NodeList nl = location.getChildNodes();
         assertEquals("one child (text)", 1, nl.getLength());
@@ -146,7 +147,7 @@ public class FreeformSourcesTest extends TestBase {
         FileUtil.createData(new File(d, "s/ignored/file"));
         Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
-        Element sf = (Element) data.insertBefore(doc.createElementNS(Util.NAMESPACE, "folders"), Util.findElement(data, "view", Util.NAMESPACE)).
+        Element sf = (Element) data.insertBefore(doc.createElementNS(Util.NAMESPACE, "folders"), XMLUtil.findElement(data, "view", Util.NAMESPACE)).
                 appendChild(doc.createElementNS(Util.NAMESPACE, "source-folder"));
         sf.appendChild(doc.createElementNS(Util.NAMESPACE, "label")).appendChild(doc.createTextNode("Sources"));
         sf.appendChild(doc.createElementNS(Util.NAMESPACE, "type")).appendChild(doc.createTextNode("stuff"));

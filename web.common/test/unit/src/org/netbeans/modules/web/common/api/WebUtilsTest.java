@@ -103,4 +103,13 @@ public class WebUtilsTest extends CslTestBase {
 
     }
 
+    public void test182423() {
+        FileObject one = getTestFile("one.txt");
+        assertNotNull(one);
+
+        FileReference resolved = WebUtils.resolveToReference(one, "/css/common.css");
+        assertNull(resolved);
+
+    }
+
 }

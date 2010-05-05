@@ -253,19 +253,23 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
     private JTextField projectFolderTextField;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         setState(projectFolderCheckBox.isSelected());
         changeSupport.fireChange();
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         processUpdate();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         processUpdate();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         processUpdate();
     }
@@ -274,6 +278,7 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         changeSupport.fireChange();
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         setState(projectFolderCheckBox.isSelected());
     }

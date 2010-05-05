@@ -710,40 +710,41 @@ public class SemiAttribute extends DefaultVisitor {
     }
 
     public Collection<AttributedElement> getNamedGlobalElements(Kind k, String... filterNames) {
-        Map<String, AttributedElement> name2El = global.name2Writes.get(k);
-
-        List<AttributedElement> retval = new ArrayList<AttributedElement>();
-        for (String fName : filterNames) {
-            if (fName.equals("self")) {//NOI18N
-                String ctxName = getContextClassName();
-                if (ctxName != null) {
-                    fName = ctxName;
+        final List<AttributedElement> retval = new ArrayList<AttributedElement>();
+        final Map<String, AttributedElement> name2El = global.name2Writes.get(k);
+        if (global != null) {
+            for (String fName : filterNames) {
+                if (fName.equals("self")) {//NOI18N
+                    String ctxName = getContextClassName();
+                    if (ctxName != null) {
+                        fName = ctxName;
+                    }
                 }
-            }
-            if (Kind.CLASS.equals(k) && fName.equals("parent")) {//NOI18N
-                Collection<AttributedElement> values = name2El.values();
-                if (name2El != null) {
-                    for (AttributedElement ael : values) {
-                        if (ael instanceof ClassElementAttribute) {
-                            ClassElementAttribute ce = (ClassElementAttribute) ael;
-                            ClassElementAttribute superClass = ce.getSuperClass();
-                            if (superClass != null) {
-                                retval.add(superClass);
+                if (Kind.CLASS.equals(k) && fName.equals("parent")) {//NOI18N
+                    Collection<AttributedElement> values = name2El.values();
+                    if (name2El != null) {
+                        for (AttributedElement ael : values) {
+                            if (ael instanceof ClassElementAttribute) {
+                                ClassElementAttribute ce = (ClassElementAttribute) ael;
+                                ClassElementAttribute superClass = ce.getSuperClass();
+                                if (superClass != null) {
+                                    retval.add(superClass);
+                                }
                             }
                         }
                     }
-                }
-            } else {
-                AttributedElement el = (name2El != null) ? name2El.get(fName) : null;
-                if (el != null) {
-                    retval.add(el);
                 } else {
-                    Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
-                    for (ClassElement m : index.getClasses(NameKind.prefix(fName))) {
-                        String idxName = m.getName();
-                        el = global.enterWrite(idxName, Kind.CLASS, m);
-                        if (el != null) {
-                            retval.add(el);
+                    AttributedElement el = (name2El != null) ? name2El.get(fName) : null;
+                    if (el != null) {
+                        retval.add(el);
+                    } else {
+                        Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+                        for (ClassElement m : index.getClasses(NameKind.prefix(fName))) {
+                            String idxName = m.getName();
+                            el = global.enterWrite(idxName, Kind.CLASS, m);
+                            if (el != null) {
+                                retval.add(el);
+                            }
                         }
                     }
                 }

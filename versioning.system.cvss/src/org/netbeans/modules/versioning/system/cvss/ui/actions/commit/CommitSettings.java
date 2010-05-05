@@ -65,6 +65,7 @@ import java.io.File;
 import java.io.StringWriter;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 
@@ -138,13 +139,8 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         CvsModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                taMessage.selectAll();
-                taMessage.requestFocus();  // #67106
-            }
-        });
+        taMessage.selectAll();
+        taMessage.requestFocus();  // #67106
     }
 
     @Override
@@ -180,7 +176,13 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(commitTable.getComponent(), gridBagConstraints);
-        String message = CvsModuleConfig.getDefault().getLastCommitMessage();
+        String message = CvsModuleConfig.getDefault().getLastCanceledCommitMessage();
+        if (message.isEmpty() && new StringSelector.RecentMessageSelector(CvsModuleConfig.getDefault().getPreferences()).isAutoFill()) {
+            List<String> messages = Utils.getStringList(CvsModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
+            if (messages.size() > 0) {
+                message = messages.get(0);
+            }
+        }
         if (!message.isEmpty()) {
             taMessage.setText(message);
         } else {
@@ -246,7 +248,8 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
     }
 
     private void onBrowseRecentMessages() {
-        String message = StringSelector.select(NbBundle.getMessage(CommitSettings.class, "CTL_RecentMessages_Prompt"),   // NOI18N
+        StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(CvsModuleConfig.getDefault().getPreferences());
+        String message = selector.getRecentMessage(NbBundle.getMessage(CommitSettings.class, "CTL_RecentMessages_Prompt"),   // NOI18N
                                                NbBundle.getMessage(CommitSettings.class, "CTL_RecentMessages_Title"),   // NOI18N
             Utils.getStringList(CvsModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
         if (message != null) {

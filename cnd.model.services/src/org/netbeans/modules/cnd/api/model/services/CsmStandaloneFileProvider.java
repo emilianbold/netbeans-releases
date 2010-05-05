@@ -55,25 +55,26 @@ import org.openide.util.Lookup;
  * @author Leonid Mesnik
  */
 public abstract class CsmStandaloneFileProvider {
-    /** A dummy provider that never returns any results.
-     */
-    private static final CsmStandaloneFileProvider EMPTY = new Empty();
+
     private static final boolean DISABLED = Boolean.getBoolean("cnd.disable.standalone.files");
     /** default instance */
     private static CsmStandaloneFileProvider defaultProvider;
-    
-    
+
     /** Static method to obtain the provider.
      * @return the provider
      */
     public static synchronized CsmStandaloneFileProvider getDefault() {
-        if (defaultProvider != null) {
-            return defaultProvider;
+        if (defaultProvider == null) {
+            if (!DISABLED) {
+                defaultProvider = Lookup.getDefault().lookup(CsmStandaloneFileProvider.class);
+            }
+            if (defaultProvider == null) {
+                defaultProvider = new Empty();
+            }
         }
-        defaultProvider = Lookup.getDefault().lookup(CsmStandaloneFileProvider.class);
-        return (DISABLED || (defaultProvider == null)) ? EMPTY : defaultProvider;
+        return defaultProvider;
     }
-    
+
     /**
      *  This method returns CsmFile for this FileObject. The new project will
      *  be created for this file if it is not in the model.
@@ -91,9 +92,9 @@ public abstract class CsmStandaloneFileProvider {
      */
     public abstract void notifyClosed(CsmFile file);
     
-    //
-    // Implementation of the default provider
-    //
+    /**
+     * A dummy provider that never returns any results.
+     */
     private static final class Empty extends CsmStandaloneFileProvider {
         Empty() {
         }

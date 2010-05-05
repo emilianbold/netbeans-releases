@@ -36,7 +36,6 @@ if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Build failed"
     exit $ERROR_CODE;
 fi
-cp -r $BASE_DIR/main/nbbuild/netbeans $BASE_DIR/
 
 ###################################################################
 #
@@ -52,8 +51,6 @@ if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Packaging failed"
     exit $ERROR_CODE;
 fi
-rm -r $BASE_DIR/main/nbbuild/netbeans
-mv $BASE_DIR/netbeans $BASE_DIR/main/nbbuild/
 
 ###################################################################
 #

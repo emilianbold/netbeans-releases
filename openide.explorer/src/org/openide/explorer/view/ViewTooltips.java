@@ -95,6 +95,8 @@ import org.openide.util.Utilities;
 final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
     /** The default instance, reference counted */
     private static ViewTooltips INSTANCE = null;
+    private static Exception previousUnregister;
+    
     /** A reference count for number of comps listened to */
     private int refcount = 0;
     /** The last known component we were invoked against, nulled on hide() */
@@ -127,9 +129,18 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
      * from the component's removeNotify() method.
      */
     static void unregister (JComponent comp) {
-        assert INSTANCE != null : "Unregister asymmetrically called";
-        if (INSTANCE != null && INSTANCE.detachFrom(comp) == 0) {
-            INSTANCE.hide();
+        ViewTooltips inst = INSTANCE;
+        boolean doChecks = false;
+        assert doChecks = true;
+        if (doChecks) {
+            if (inst == null) {
+                throw new IllegalStateException("Unregister asymmetrically called for " + comp, previousUnregister);
+            }
+            previousUnregister = new Exception("Unregister for " + comp);
+        }
+
+        if (inst != null && inst.detachFrom(comp) == 0) {
+            inst.hide();
             INSTANCE = null;
         }
     }

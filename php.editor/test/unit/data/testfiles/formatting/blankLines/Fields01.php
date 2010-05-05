@@ -6,5 +6,5 @@ class Simple {
 
 
     
-                    public $field1 = 22;
+                    public $field1=22;
 }

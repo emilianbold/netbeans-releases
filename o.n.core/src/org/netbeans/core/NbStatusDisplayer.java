@@ -63,6 +63,8 @@ public final class NbStatusDisplayer extends StatusDisplayer {
     private List<WeakReference<MessageImpl>> messages = new ArrayList<WeakReference<MessageImpl>>(30);
     private static int SURVIVING_TIME = Integer.getInteger("org.openide.awt.StatusDisplayer.DISPLAY_TIME", 5000);
 
+    private static final RequestProcessor RP = new RequestProcessor("NbStatusDisplayer"); //NOI18N
+
     public void setStatusText(String text) {
         //unimportant message are cleared automatically after some time
         add(text, 0).clear(SURVIVING_TIME);
@@ -180,7 +182,7 @@ public final class NbStatusDisplayer extends StatusDisplayer {
         }
 
         public void clear(int timeInMillis) {
-            RequestProcessor.getDefault().post(this, timeInMillis);
+            RP.post(this, timeInMillis);
         }
 
         @Override

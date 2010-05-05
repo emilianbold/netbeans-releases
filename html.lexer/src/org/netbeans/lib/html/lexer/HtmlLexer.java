@@ -223,6 +223,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
     private static final int ISI_SGML_DECL_WS = 41; //after whitespace in SGML declaration
 
+    private static final int ISI_VAL_QUOT_ESC = 42;
+    private static final int ISI_VAL_DQUOT_ESC = 43;
+
     static final Set<String> EVENT_HANDLER_NAMES = new HashSet<String>();
     static {
         // See http://www.w3.org/TR/html401/interact/scripts.html
@@ -248,6 +251,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         // IMPORTANT - if you add any that DON'T start with "o" here,
         // make sure you update the optimized firstchar look in isJavaScriptArgument
     }
+
+    private static final String SUPPORTED_SCRIPT_TYPE = "text/javascript"; //NOI18N
 
     public HtmlLexer(LexerRestartInfo<HTMLTokenId> info) {
         this.input = info.input();
@@ -343,6 +348,13 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             }
         }
         return false;
+    }
+
+    private boolean isJavascriptType(CharSequence attributeValue, boolean quoted) {
+        //TODO create a list of included/excluded script types
+        //now "all minus vbscript" implies javascript
+        CharSequence clean = quoted ? attributeValue.subSequence(1, attributeValue.length() - 1) : attributeValue;
+        return equals(SUPPORTED_SCRIPT_TYPE, clean, true, true);
     }
 
     private boolean followsCloseTag(CharSequence closeTagName) {
@@ -745,7 +757,20 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
                 case ISI_VAL_QUOT:
                     switch (actChar) {
+                        case '\\':
+                            //may be escaped quote
+                            lexerState = ISI_VAL_QUOT_ESC;
+                            break;
+
                         case '\'':
+                            //reset the 'script embedding will follow state' if the value represents a
+                            //type attribute value of a script tag
+                            if(equals(SCRIPT, tag, true, true) && equals("type", attribute, true, true)) { //NOI18N
+                                if(!isJavascriptType(input.readText(), true)) {
+                                    lexerEmbeddingState = INIT;
+                                }
+                            }
+
                             lexerState = ISP_TAG_X;
                             return resolveValueToken();
                     }
@@ -753,13 +778,38 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
                 case ISI_VAL_DQUOT:
                     switch (actChar) {
+                        case '\\':
+                            //may be escaped quote
+                            lexerState = ISI_VAL_DQUOT_ESC;
+                            break;
+
                         case '"':
+                            //reset the 'script embedding will follow state' if the value represents a
+                            //type attribute value of a script tag
+                            if(equals(SCRIPT, tag, true, true) && equals("type", attribute, true, true)) { //NOI18N
+                                if(!isJavascriptType(input.readText(), true)) {
+                                    lexerEmbeddingState = INIT;
+                                }
+                            }
+
                             lexerState = ISP_TAG_X;
                             return resolveValueToken();
                     }
                     break;  // else simply consume next char of VALUE
 
+                case ISI_VAL_QUOT_ESC:
+                    //Just consume the escaped char.
+                    //The state prevents the quoted value
+                    //to be finished by an escaped quote.
+                    lexerState = ISI_VAL_QUOT;
+                    break;
 
+                case ISI_VAL_DQUOT_ESC:
+                    //Just consume the escaped char.
+                    //The state prevents the quoted value
+                    //to be finished by an escaped quote.
+                    lexerState = ISI_VAL_DQUOT;
+                    break;
 
                 case ISA_SGML_ESCAPE:       // DONE
                     if( isAZ(actChar) ) {
@@ -1038,6 +1088,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             case ISI_VAL:
             case ISI_VAL_QUOT:
             case ISI_VAL_DQUOT:
+            case ISI_VAL_QUOT_ESC:
+            case ISI_VAL_DQUOT_ESC:
                 return resolveValueToken();
 
             case ISI_SGML_DECL:

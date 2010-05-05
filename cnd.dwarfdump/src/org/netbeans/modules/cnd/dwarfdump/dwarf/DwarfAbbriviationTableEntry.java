@@ -56,10 +56,10 @@ import java.util.ArrayList;
  * @author ak119685
  */
 public class DwarfAbbriviationTableEntry {
-    private long index;
-    private long tag;
-    private boolean hasChildren;
-    private ArrayList<DwarfAttribute> attributes = new ArrayList<DwarfAttribute>();
+    private final long index;
+    private final long tag;
+    private final boolean hasChildren;
+    private final ArrayList<DwarfAttribute> attributes = new ArrayList<DwarfAttribute>();
     
     public DwarfAbbriviationTableEntry(long index, long tag, boolean hasChildren) {
         this.index = index;

@@ -235,6 +235,12 @@ public class InitialServerFileDistributor extends ServerProgress {
     // projects, but expect the IDE to be as fast or faster that zip or jar
     //
     private void copyFile(FileObject sourceObject, File directory, String relativePath) throws IOException {  
+        String ext = sourceObject.getExt();
+        if (sourceObject.getSize() == 0 &&
+                ("zip".equals(ext) || "jar".equals(ext))) { // NOI18N
+            // a zero length jar or zip file is NEVER ok...
+            return;
+        }
         File destFile = new File(directory, relativePath);
         FileOutputStream os = new FileOutputStream(destFile);
         FileInputStream fis = null;
@@ -266,7 +272,7 @@ public class InitialServerFileDistributor extends ServerProgress {
             if (null != is) { try { is.close(); } catch (IOException ioe) {} }
             if (null != fis) { try { fis.close(); } catch (IOException ioe) {} }
             if (null != os) { try { os.close(); } catch (IOException ioe) {} }
-        }
+         }
     }
 
     private void zeroOutArchive(FileObject garbage) throws IOException, FileAlreadyLockedException {

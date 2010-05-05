@@ -57,7 +57,7 @@ public abstract class RemoteConfiguration {
     private final String passwordKey;
 
     /**
-     * Create new remote configuration based on the given {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration}
+     * Create new remote configuration based on the given {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration}.
      * @param cfg {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration} with configuration data.
      */
     public RemoteConfiguration(final ConfigManager.Configuration cfg) {

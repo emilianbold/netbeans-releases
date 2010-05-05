@@ -44,6 +44,7 @@
 #include "utilsfuncs.h"
 #include "argnames.h"
 #include <tlhelp32.h>
+#include <windows.h>
 
 using namespace std;
 
@@ -72,9 +73,21 @@ bool disableFolderVirtualization(HANDLE hProcess) {
 }
 
 bool getStringFromRegistry(HKEY rootKey, const char *keyName, const char *valueName, string &value) {
+    return getStringFromRegistryEx(rootKey, keyName, valueName, value, false);
+}
+
+bool getStringFromRegistry64bit(HKEY rootKey, const char *keyName, const char *valueName, string &value) {
+    return getStringFromRegistryEx(rootKey, keyName, valueName, value, true);
+}
+
+#ifndef KEY_WOW64_64KEY
+#define KEY_WOW64_64KEY 0x0100
+#endif
+
+bool getStringFromRegistryEx(HKEY rootKey, const char *keyName, const char *valueName, string &value, bool read64bit) {
     logMsg("getStringFromRegistry()\n\tkeyName: %s\n\tvalueName: %s", keyName, valueName);
     HKEY hKey = 0;
-    if (RegOpenKeyEx(rootKey, keyName, 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+    if (RegOpenKeyEx(rootKey, keyName, 0, KEY_READ | (read64bit ? KEY_WOW64_64KEY : 0), &hKey) == ERROR_SUCCESS) {
         DWORD valSize = 4096;
         DWORD type = 0;
         char val[4096] = "";
@@ -423,4 +436,22 @@ bool getParentProcessID(DWORD &id) {
 
     CloseHandle(hSnapshot);
     return false;
+}
+
+bool isWow64()
+{
+    bool IsWow64 = FALSE;
+    typedef bool (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, bool*);
+    LPFN_ISWOW64PROCESS fnIsWow64Process;
+
+    fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")),"IsWow64Process");
+  
+    if (NULL != fnIsWow64Process)
+    {
+        if (!fnIsWow64Process(GetCurrentProcess(),&IsWow64))
+        {
+            // handle error
+        }
+    }
+    return IsWow64;
 }

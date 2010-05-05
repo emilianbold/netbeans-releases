@@ -186,6 +186,7 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
+new
 End cursor position = 1431
 [<% org.test.TestBean t = new org.test.TestBean(); t.| %>, void setName, <% org.test.TestBean t = new org.test.TestBean(); t.setName(name); %>, 1645]
 boolean equals (Object obj )

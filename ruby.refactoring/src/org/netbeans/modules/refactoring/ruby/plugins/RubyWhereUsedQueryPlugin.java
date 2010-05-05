@@ -64,6 +64,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Modifier;
@@ -88,6 +89,7 @@ import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -114,7 +116,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
         this.searchHandle = refactoring.getRefactoringSource().lookup(RubyElementCtx.class);
         targetName = searchHandle.getSimpleName();
     }
-    
+
 //    protected Source getRubySource(Phase p) {
 //        switch (p) {
 //        default:
@@ -136,28 +138,16 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 
         FileObject file = tph.getFileObject();
         if (file != null) {
-            set.add(file);
-//            source = RetoucheUtils.createSource(cpInfo, tph.getFileObject());
             if (isFindSubclasses() || isFindDirectSubclassesOnly()) {
                 // No need to do any parsing, we'll be using the index to find these files!
                 set.add(file);
                 String name = tph.getName();
 
                 // Find overrides of the class
-                RubyIndex index = RubyIndex.get(Collections.singleton(file));
+                RubyIndex index = RubyIndex.get(RetoucheUtils.getProjectRoots(file));
                 String fqn = AstUtilities.getFqnName(tph.getPath());
                 subclasses = index.getSubClasses(null, fqn, name, isFindDirectSubclassesOnly());
-
-                if (subclasses.size() > 0) {
-//                        for (IndexedClass clz : classes) {
-//                            FileObject fo = clz.getFileObject();
-//                            if (fo != null) {
-//                                set.add(fo);
-//                            }
-//                        }
-                    // For now just parse this particular file!
-                    set.add(file);
-                }
+                return set;
             }
 
             if (tph.getKind() == ElementKind.VARIABLE || tph.getKind() == ElementKind.PARAMETER) {

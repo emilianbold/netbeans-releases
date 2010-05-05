@@ -59,8 +59,8 @@ import java.io.PrintStream;
  * @author ak119685
  */
 public class DwarfAttribute {
-    public ATTR attrName;
-    public FORM valueForm;
+    public final ATTR attrName;
+    public final FORM valueForm;
 
     public DwarfAttribute(int nameOrdinal, int formOrdinal) {
         this.attrName = ATTR.get(nameOrdinal);

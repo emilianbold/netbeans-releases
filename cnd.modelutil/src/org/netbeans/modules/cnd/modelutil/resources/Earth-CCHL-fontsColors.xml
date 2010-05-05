@@ -55,13 +55,17 @@ made subject to such option by the copyright holder.
     <fontcolor name="cc-highlighting-macros-user" foreColor="008080" default="default">
         <font style="plain"/>
     </fontcolor>
-    <fontcolor name="cc-highlighting-class-fields" foreColor="009900" default="default">
-        <font style="plain"/>
+    <fontcolor name="cc-highlighting-class-fields" default="field">
     </fontcolor>
     <fontcolor name="cc-highlighting-mark-occurrences" bgColor="ECEBA3" default="default">
     </fontcolor>
     <fontcolor name="cc-highlighting-typedefs" foreColor="9933CC" default="default">
     </fontcolor>
     <fontcolor name="cc-highlighting-unused-variables" waveUnderlined="999999" default="default">
+    </fontcolor>
+    <fontcolor name="cc-highlighting-function" default="method">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="cc-highlighting-function-usage" default="method">
     </fontcolor>
 </fontscolors>

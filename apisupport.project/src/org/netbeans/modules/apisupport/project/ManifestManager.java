@@ -46,6 +46,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -54,12 +55,13 @@ import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.Dependency;
-import org.openide.util.Exceptions;
 
 // XXX a lot of code in this method is more or less duplicated from
 // org.netbeans.core.modules.Module class. Do not forgot to refactor this as
@@ -71,6 +73,8 @@ import org.openide.util.Exceptions;
  * @author Martin Krauskopf
  */
 public final class ManifestManager {
+
+    private static final Logger LOG = Logger.getLogger(ManifestManager.class.getName());
     
     private String codeNameBase;
     private String releaseVersion;
@@ -110,7 +114,7 @@ public final class ManifestManager {
     public static final String CLASS_PATH = "Class-Path"; // NOI18N
     public static final String AUTO_UPDATE_SHOW_IN_CLIENT = "AutoUpdate-Show-In-Client"; // NOI18N
 
-    private static final String GENERATED_LAYER_PATH = "META-INF/generated-layer.xml";    // NOI18N
+    public static final String GENERATED_LAYER_PATH = "META-INF/generated-layer.xml";    // NOI18N
 
     static final PackageExport[] EMPTY_EXPORTED_PACKAGES = new PackageExport[0];
     
@@ -171,8 +175,7 @@ public final class ManifestManager {
                     mis.close();
                 }
             } catch (IOException x) {
-                Exceptions.attachMessage(x, "While opening: " + manifest);
-                Exceptions.printStackTrace(x);
+                LOG.log(Level.INFO, "While opening: " + manifest, x);
             }
         }
         return NULL_INSTANCE;
@@ -194,7 +197,29 @@ public final class ManifestManager {
                     throw new IOException("No manifest in " + jar); // NOI18N
                 }
                 withGeneratedLayer = withGeneratedLayer && (jf.getJarEntry(GENERATED_LAYER_PATH) != null);
-                return ManifestManager.getInstance(m, true, withGeneratedLayer);
+                ManifestManager mm = ManifestManager.getInstance(m, true, withGeneratedLayer);
+                if (Arrays.asList(mm.getProvidedTokens()).contains("org.osgi.framework.launch.FrameworkFactory")) { // NOI18N
+                    // This looks to be a wrapper for an OSGi container.
+                    // Add in anything provided by the container itself.
+                    // Otherwise some bundles might be expressing container dependencies
+                    // which can actually be resolved at runtime but which look like missing deps.
+                    String cp = m.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
+                    if (cp != null) {
+                        for (String piece : cp.split("[, ]+")) {
+                            if (piece.isEmpty()) {
+                                continue;
+                            }
+                            File ext = new File(jar.getParentFile().toURI().resolve(piece.trim()));
+                            if (ext.isFile()) {
+                                ManifestManager mm2 = getInstanceFromJAR(ext);
+                                List<String> toks = new ArrayList<String>(Arrays.asList(mm.provTokens));
+                                toks.addAll(Arrays.asList(mm2.provTokens));
+                                mm.provTokens = toks.toArray(new String[toks.size()]);
+                            }
+                        }
+                    }
+                }
+                return mm;
             } finally {
                 jf.close();
             }
@@ -272,13 +297,12 @@ public final class ManifestManager {
             codenamebase = codenamebase.substring(0, semicolon);
         }
         codenamebase = codenamebase.replace('-', '_');
-        PackageExport[] publicPackages = null;
         String requires = null;
         String provides = null;
-        publicPackages = EMPTY_EXPORTED_PACKAGES;
-        {
+        PackageExport[] publicPackages = EMPTY_EXPORTED_PACKAGES;
+        if (loadPublicPackages) {
             String pp = attr.getValue(BUNDLE_EXPORT_PACKAGE);
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(codenamebase);
             if (pp != null) {
                 List<PackageExport> arr = new ArrayList<PackageExport>();
@@ -297,7 +321,12 @@ public final class ManifestManager {
             String pp = attr.getValue(BUNDLE_IMPORT_PACKAGE);
             if (pp != null) {
                 for (String p : pp.replaceAll("\"[^\"]*\"", "").split(",")) {
-                    sb.append(sep).append(p.replaceAll(";.*$", "").trim());
+                    String pkg = p.replaceAll(";.*$", "").trim();
+                    if (pkg.startsWith("javax.")) {
+                        // Crude; would be better to use MakeOSGi.JAVA_PLATFORM_PACKAGES.
+                        continue;
+                    }
+                    sb.append(sep).append(pkg);
                     sep = ",";
                 }
             }
@@ -309,12 +338,9 @@ public final class ManifestManager {
                 }
             }
 
-            requires = sb.length() == 0 ? null : sb.toString();
+            requires = sb.length() == 0 ? null : sb.toString().replace('-', '_');
         }
 
-        if (!loadPublicPackages) {
-            publicPackages = EMPTY_EXPORTED_PACKAGES;
-        }
         return new ManifestManager(
                 codenamebase, null,
                 just3dots(attr.getValue(BUNDLE_VERSION)),

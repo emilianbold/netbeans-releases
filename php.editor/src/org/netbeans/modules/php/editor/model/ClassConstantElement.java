@@ -39,9 +39,13 @@
 
 package org.netbeans.modules.php.editor.model;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+
 /**
  *
  * @author Radek Matous
  */
-public interface ClassConstantElement extends ClassMemberElement {
+public interface ClassConstantElement extends ClassMemberElement, ConstantElement {
+    @CheckForNull
+    String getValue();
 }

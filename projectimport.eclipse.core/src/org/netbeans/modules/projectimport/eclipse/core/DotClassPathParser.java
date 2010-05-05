@@ -68,7 +68,7 @@ final class DotClassPathParser {
     public static DotClassPath parse(File dotClasspath, List<Link> links) throws IOException {
         Document dotClasspathXml;
         try {
-            dotClasspathXml = XMLUtil.parse(new InputSource(dotClasspath.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+            dotClasspathXml = XMLUtil.parse(new InputSource(dotClasspath.toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
         } catch (SAXException e) {
             IOException ioe = (IOException) new IOException(dotClasspath + ": " + e.toString()).initCause(e); //NOI18N
             throw ioe;
@@ -77,7 +77,7 @@ final class DotClassPathParser {
         if (!"classpath".equals(classpathEl.getLocalName())) { // NOI18N
             return empty();
         }
-        List<Element> classpathEntryEls = Util.findSubElements(classpathEl);
+        List<Element> classpathEntryEls = XMLUtil.findSubElements(classpathEl);
         if (classpathEntryEls == null) {
             return empty();
         }
@@ -113,7 +113,7 @@ final class DotClassPathParser {
                 }
                 props.put(key, value);
             }
-            Element entryAttrs = Util.findElement(classpathEntry, "attributes", null); //NOI18N
+            Element entryAttrs = XMLUtil.findElement(classpathEntry, "attributes", null); //NOI18N
             if (entryAttrs != null) {
                 /*
                 <classpathentry kind="lib" path="/home/dev/hibernate-annotations-3.3.1.GA/lib/hibernate-commons-annotations.jar" sourcepath="/home/dev/hibernate-annotations-3.3.1.GA/src">
@@ -122,7 +122,7 @@ final class DotClassPathParser {
                     </attributes>
                 </classpathentry>
                  */
-                List<Element> attrsList = Util.findSubElements(entryAttrs);
+                List<Element> attrsList = XMLUtil.findSubElements(entryAttrs);
                 if (attrsList != null) {
                     for (Element e : attrsList) {
                         props.put(e.getAttribute("name"), e.getAttribute("value")); //NOI18N

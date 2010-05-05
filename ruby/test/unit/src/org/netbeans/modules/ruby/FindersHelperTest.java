@@ -54,12 +54,13 @@ public class FindersHelperTest extends TestCase {
         List<FinderMethod> result =
                 FindersHelper.getFinderSignatures("", Arrays.asList("name", "title", "price", "url"));
 
-        assertEquals(256, result.size());
+        assertEquals(64, result.size());
         // some basic checking
         assertTrue(containsMethod("find_by_name(name, *options)", result));
         assertTrue(containsMethod("find_by_name_and_price(name, price, *options)", result));
-        assertTrue(containsMethod("find_by_name_and_price_and_title(name, price, title, *options)", result));
-        assertTrue(containsMethod("find_by_name_and_title_and_price(name, title, price, *options)", result));
+        assertTrue(containsMethod("find_by_name_and_title(name, title, *options)", result));
+        assertTrue(containsMethod("find_by_price_and_title(price, title, *options)", result));
+        assertTrue(containsMethod("find_by_title_and_price(title, price, *options)", result));
     }
 
     public void testGetScopedBy() {
@@ -94,6 +95,19 @@ public class FindersHelperTest extends TestCase {
         assertEquals(2, columns.size());
         assertTrue(columns.contains("name"));
         assertTrue(columns.contains("title"));
+
+        assertTrue(FindersHelper.extractColumns("find_by_").isEmpty());
+    }
+
+    public void testExistingColumnsNotComputed() {
+        List<FinderMethod> result =
+                FindersHelper.getFinderSignatures("find_by_name_and_title", Arrays.asList("name", "title", "price", "availability"));
+
+        assertEquals(4, result.size());
+
+        assertTrue(containsMethod("find_by_name_and_title_and_availability(name, title, availability, *options)", result));
+        assertTrue(containsMethod("find_by_name_and_title_and_price(name, title, price, *options)", result));
+
     }
 
     public void testDepth() {
@@ -102,7 +116,7 @@ public class FindersHelperTest extends TestCase {
             columns.add("column" + i);
         }
         List<FinderMethod> result = FindersHelper.getFinderSignatures("", columns);
-        assertEquals(1300, result.size());
+        assertEquals(100, result.size());
 
         columns.clear();
 

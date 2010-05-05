@@ -431,16 +431,16 @@ final class ModuleList implements Stamps.Updater {
     /** Just checks that all the right stuff is there.
      */
     private void sanityCheckStatus(Map<String,Object> m) throws IOException {
-        if (m.get("jar") == null) // NOI18N
+        String jar = (String) m.get("jar"); // NOI18N
+        if (jar == null) {
             throw new IOException("Must define jar param"); // NOI18N
-        if (m.get("autoload") != null // NOI18N
-            && ((Boolean)m.get("autoload")).booleanValue() // NOI18N
-            && m.get("enabled") != null) // NOI18N
-            throw new IOException("Autoloads cannot specify enablement"); // NOI18N
-        if (m.get("eager") != null // NOI18N
-            && ((Boolean)m.get("eager")).booleanValue() // NOI18N
-            && m.get("enabled") != null) // NOI18N
-            throw new IOException("Eager modules cannot specify enablement"); // NOI18N
+        }
+        if (Boolean.TRUE.equals(m.get("autoload")) && m.get("enabled") != null) { // NOI18N
+            throw new IOException("Autoload " + jar + " cannot specify enablement");
+        }
+        if (Boolean.TRUE.equals(m.get("eager")) && m.get("enabled") != null) { // NOI18N
+            throw new IOException("Eager " + jar + " cannot specify enablement");
+        }
     }
 
     // Encoding irrelevant for these getBytes() calls: all are ASCII...

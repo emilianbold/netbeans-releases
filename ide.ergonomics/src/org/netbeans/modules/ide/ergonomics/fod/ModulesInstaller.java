@@ -44,6 +44,8 @@ package org.netbeans.modules.ide.ergonomics.fod;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -259,7 +261,12 @@ public class ModulesInstaller {
     public static String presentUpdateElements (Collection<UpdateElement> elems) {
         StringBuilder sb = new StringBuilder();
         String sep = "";
+        Set<String> used = new HashSet<String>();
+        
         for (UpdateElement el : elems) {
+            if (!used.add(el.getCategory())) {
+                continue;
+            }
             sb.append(sep);
             sb.append(el.getCategory());
             if (sb.length() > 30) {

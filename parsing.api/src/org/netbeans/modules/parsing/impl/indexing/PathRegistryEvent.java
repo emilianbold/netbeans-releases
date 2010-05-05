@@ -47,7 +47,7 @@ import org.netbeans.api.java.classpath.ClassPath;
  *
  * @author Tomas Zezula
  */
-public class PathRegistryEvent extends EventObject {
+public final class PathRegistryEvent extends EventObject {
 
     public static final class Change {
 
@@ -80,7 +80,7 @@ public class PathRegistryEvent extends EventObject {
             return pathKind;
         }
 
-        public String getPathType () {
+        public String getPathId () {
             return this.pathId;
         }
 

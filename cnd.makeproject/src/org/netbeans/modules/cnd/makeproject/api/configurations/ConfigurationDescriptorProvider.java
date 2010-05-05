@@ -50,11 +50,11 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -67,6 +67,7 @@ public class ConfigurationDescriptorProvider {
     public static final String USG_PROJECT_OPEN_CND = "USG_PROJECT_OPEN_CND"; // NOI18N
     public static final String USG_PROJECT_CREATE_CND = "USG_PROJECT_CREATE_CND"; // NOI18N
     public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.cnd"; // NOI18N
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
     private FileObject projectDirectory;
     private volatile MakeConfigurationDescriptor projectDescriptor = null;
@@ -99,12 +100,7 @@ public class ConfigurationDescriptorProvider {
             synchronized (readLock) {
                 // check again that someone already havn't read
                 if (shouldBeLoaded()) {
-                    if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
-                        System.err.println("Start of reading project descriptor for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)); // NOI18N
-                        if (projectDescriptor != null) {
-                            new Exception("Previous project MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)).printStackTrace(); // NOI18N
-                        }
-                    }
+                    LOGGER.log(Level.FINE, "Start of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory.getName(), System.identityHashCode(this)}); // NOI18N
                     // It's important to set needReload=false before calling
                     // projectDescriptor.assign(), otherwise there will be
                     // infinite recursion.
@@ -147,20 +143,14 @@ public class ConfigurationDescriptorProvider {
     //                        }
                     try {
                         MakeConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
-                        if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
-                            System.err.println("End of reading project descriptor for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)); // NOI18N
-                        }
+                        LOGGER.log(Level.FINE, "End of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory.getName(), System.identityHashCode(this)}); // NOI18N
                         if (projectDescriptor == null || newDescriptor == null) {
                             projectDescriptor = newDescriptor;
-                            if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
-                                System.err.println("Created project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)+" for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)); // NOI18N
-                            }
+                            LOGGER.log(Level.FINE, "Created project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getName(), System.identityHashCode(this)}); // NOI18N
                         } else {
                             (newDescriptor).waitInitTask();
                             projectDescriptor.assign(newDescriptor);
-                            if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
-                                System.err.println("Reassigned project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)+" for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)); // NOI18N
-                            }
+                            LOGGER.log(Level.FINE, "Reassigned project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getName(), System.identityHashCode(this)}); // NOI18N
                         }
                     } catch (java.io.IOException x) {
                         x.printStackTrace();
@@ -209,7 +199,7 @@ public class ConfigurationDescriptorProvider {
             // we don't want to count own tests
             return;
         }
-        if (!(descr instanceof MakeConfigurationDescriptor) && makeConfiguration == null) {
+        if (descr == null && makeConfiguration == null) {
             return;
         }
         Logger logger = Logger.getLogger(USG_LOGGER_NAME);
@@ -272,30 +262,38 @@ public class ConfigurationDescriptorProvider {
                     flavor = compilerSet.getCompilerFlavor().toString();
                 } else {
                     families = new String[0];
+                    if (makeConfiguration.getCompilerSet() != null) {
+                        families = new String[] { makeConfiguration.getCompilerSet().getName() };
+                    }
                     flavor = makeConfiguration.getCompilerSet().getFlavor();
                 }
                 String family;
                 if (families.length == 0) {
-                    family = "UKNOWN"; // NOI18N
+                    family = flavor; // NOI18N
                 } else {
                     StringBuilder buffer = new StringBuilder();
                     for (int i = 0; i < families.length; i++) {
-                        buffer.append(families[i]);
-                        if (i < families.length - 1) {
-                            buffer.append(","); // NOI18N
+                        if (families[i] != null) {
+                            buffer.append(families[i]);
+                            if (i < families.length - 1) {
+                                buffer.append(","); // NOI18N
+                            }
                         }
                     }
                     family = buffer.toString();
                 }                
                 String platform;
-                if (Platforms.getPlatform(makeConfiguration.getCompilerSet().getPlatform()) != null) {
-                    platform = Platforms.getPlatform(makeConfiguration.getCompilerSet().getPlatform()).getName();
+                int platformID = makeConfiguration.getDevelopmentHost().getBuildPlatform();
+                if (Platforms.getPlatform(platformID) != null) {
+                    platform = Platforms.getPlatform(platformID).getName();
                 } else {
                     platform = "UNKNOWN_PLATFORM"; // NOI18N
                 }
+
+                String ideType = SunStudioUserCounter.getIDEType().getTag();
                 if (USG_PROJECT_CREATE_CND.equals(msg)) {
                     // stop here
-                    rec.setParameters(new Object[] { type, flavor, family, host, platform, "USER_PROJECT"}); // NOI18N
+                    rec.setParameters(new Object[] { type, flavor, family, host, platform, "USER_PROJECT",  ideType}); // NOI18N
                     rec.setLoggerName(logger.getName());
                     logger.log(rec);
                 } else if (projectItems != null) {
@@ -330,7 +328,7 @@ public class ConfigurationDescriptorProvider {
                     String cUsage = cLang ? "USE_C" : "NO_C"; // NOI18N
                     String fUsage = fLang ? "USE_FORTRAN" : "NO_FORTRAN"; // NOI18N
                     String aUsage = aLang ? "USE_ASM" : "NO_ASM"; // NOI18N
-                    rec.setParameters(new Object[] { type, flavor, family, host, platform, toSizeString(allItems), toSizeString(size), ccUsage, cUsage, fUsage, aUsage});
+                    rec.setParameters(new Object[] { type, flavor, family, host, platform, toSizeString(allItems), toSizeString(size), ccUsage, cUsage, fUsage, aUsage, ideType});
                     rec.setLoggerName(logger.getName());
                     logger.log(rec);
                 }
@@ -378,9 +376,7 @@ public class ConfigurationDescriptorProvider {
                     if (projectDescriptor == null || !projectDescriptor.getModified()) {
                         // Don't reload if descriptor is modified in memory.
                         // This also prevents reloading when descriptor is being saved.
-                        if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
-                            new Exception("Mark to reload project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)+" for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)).printStackTrace(); // NOI18N
-                        }
+                        LOGGER.log(Level.FINE, "Mark to reload project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getName(), System.identityHashCode(this)}); // NOI18N
                         needReload = true;
                         hasTried = false;
                     }

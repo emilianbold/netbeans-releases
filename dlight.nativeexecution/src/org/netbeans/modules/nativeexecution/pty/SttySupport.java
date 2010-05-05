@@ -46,7 +46,6 @@ import java.util.HashMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.pty.PtyCreatorImpl.PtyImplementation;
 
 /**
  *
@@ -76,10 +75,6 @@ public final class SttySupport {
         in = sh.getOutputStream();
         out = sh.getInputStream();
         outProcessor = new OutputProcessor(out);
-
-
-//        err = sh.getErrorStream();
-//        errProcessor = new OutputProcessor(err);
     }
 
     public static synchronized SttySupport getFor(final ExecutionEnvironment env) throws IOException {
@@ -104,12 +99,12 @@ public final class SttySupport {
         ProcessUtils.destroy(sh);
     }
 
-    public synchronized String[] apply(final PtyImplementation pty, final String args) throws IOException {
+    public synchronized String[] apply(final String tty, final String args) throws IOException {
         if (stopped) {
             throw new IllegalArgumentException("This SttySupport is already stopped... "); // NOI18N
         }
 
-        post("/bin/stty " + args + " < " + pty.getSlaveName() + " && echo ==="); // NOI18N
+        post("/bin/stty " + args + " < " + tty + " 2>/dev/null; echo ==="); // NOI18N
         return outProcessor.getOutput();
     }
 

@@ -56,8 +56,8 @@ public class UpdatePanel extends ChangesetPickerPanel {
     private JCheckBox forcedUpdateChxBox;
 
     /** Creates new form ReverModificationsPanel */
-    public UpdatePanel(File repo, File [] roots) {
-        super(repo, roots);
+    public UpdatePanel(File repo) {
+        super(repo, new File[] {repo});
         initComponents();
         loadRevisions();
     }

@@ -71,6 +71,7 @@ import org.netbeans.modules.csl.api.SelectPreviousCamelCasePosition;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.netbeans.modules.ruby.rhtml.RhtmlDocument;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rhtml.spi.DtdResolver;
 import org.openide.util.Lookup;
@@ -110,7 +111,7 @@ public class RhtmlKit extends HtmlKit {
 
     @Override
     public Document createDefaultDocument() {
-        return super.createDefaultDocument();
+        return new RhtmlDocument(getContentType());
     }
 
     @Override

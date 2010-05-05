@@ -160,6 +160,8 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                             TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
                             path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
+                            if (path == null)
+                                return;
                             int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
                             ArrayList<ExecutableElement> methodElements = new ArrayList<ExecutableElement>();
                             for (ElementHandle<? extends Element> elementHandle : panel.getSelectedMethods())

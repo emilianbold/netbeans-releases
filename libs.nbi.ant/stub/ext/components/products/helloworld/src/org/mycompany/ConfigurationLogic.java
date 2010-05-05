@@ -55,6 +55,23 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final File installLocation = product.getInstallationLocation();
         //final FilesList filesList = product.getInstalledFiles();
 
+        if (SystemUtils.isMacOS()) {
+            File f = new File(installLocation, ICON_MACOSX);
+            if(!f.exists()) {
+                try {
+                FileUtils.writeFile(f,
+                        ResourceUtils.getResource(ICON_MACOSX_RESOURCE,
+                        getClass().getClassLoader()));
+                getProduct().getInstalledFiles().add(f);
+                } catch (IOException e) {
+                    LogManager.log(
+                                "... cannot handle icns icon " + f, e); // NOI18N
+                }
+            }
+        }
+
+
+
         if (Boolean.parseBoolean(getProperty(HelloWorldPanel.CREATE_DESKTOP_SHORTCUT_PROPERTY))) {
             LogManager.logIndent(
                     "creating the desktop shortcut for the application"); // NOI18N
@@ -331,7 +348,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         if (SystemUtils.isWindows()) {
             icon = new File(location, ICON_WINDOWS);
         } else if (SystemUtils.isMacOS()) {
-            icon = null;//new File(location, ICON_MACOSX);
+            icon = new File(location, ICON_MACOSX);
         } else {
             icon = new File(location, ICON_UNIX);
             LogManager.log("... icon file: " + icon);
@@ -401,7 +418,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             ResourceUtils.getString(ConfigurationLogic.class,
             "CL.unix.icon.resource"); // NOI18N
     public static final String ICON_MACOSX =
-            null; // NOI18N
+            ResourceUtils.getString(ConfigurationLogic.class, "CL.app.name") + ".icns"; // NOI18N
+    public static final String ICON_MACOSX_RESOURCE =
+            "org/mycompany/" + ResourceUtils.getString(ConfigurationLogic.class, "CL.app.name") + ".icns"; // NOI18N
     public static final String WIZARD_COMPONENTS_URI =
             "resource:" + // NOI18N
             "org/mycompany/wizard.xml"; // NOI18N

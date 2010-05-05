@@ -38,12 +38,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api;
 
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 
 public final class MakeProjectOptions {
+
     public static final int REL_OR_ABS = 0;
     public static final int REL = 1;
     public static final int ABS = 2;
@@ -53,6 +53,10 @@ public final class MakeProjectOptions {
 
     public static boolean getDepencyChecking() {
         return MakeOptions.getInstance().getDepencyChecking();
+    }
+
+    public static boolean getRebuildPropChanged() {
+        return MakeOptions.getInstance().getRebuildPropChanged();
     }
 
     public static boolean getShowIndicatorsOnRun() {
