@@ -125,7 +125,7 @@ public class TestSimpleIterator extends AbstractUnitTestIterator {
         }
         params.putAll(CodeGenerator.generateTemplateParamsForFunctions(
                 getTestFileName().replaceFirst("[.].*", ""), // NOI18N
-                targetFolder.getPrimaryFile().getPath(),
+                getRootFolder().getPath(),
                 fs,
                 ("cpp".equals(wiz.getTemplate().getPrimaryFile().getExt())?CodeGenerator.Language.CPP:CodeGenerator.Language.C))); // NOI18N
 
@@ -224,5 +224,10 @@ public class TestSimpleIterator extends AbstractUnitTestIterator {
     private String getTestName() {
         return ((NewTestSimplePanelGUI)targetChooserDescriptorPanel.getComponent()).getTestName();
     }
+
+    private FileObject getRootFolder() {
+        return ((NewTestSimplePanelGUI)targetChooserDescriptorPanel.getComponent()).getTargetGroup().getRootFolder();
+    }
+    
 }
 

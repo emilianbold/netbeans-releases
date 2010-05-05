@@ -232,22 +232,11 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
                         includeDirective.append("\""); // NOI18N
                         String projectPath = currentFile.getAbsolutePath().toString().substring(0,
                                 currentFile.getAbsolutePath().toString().length() - currentFile.getName().toString().length() - 1);
-                        int currentFileDirLevel = 0;
                         if (!incFilePath.startsWith(projectPath)) {
-                            String projectPath2 = incFile.getAbsolutePath().toString().substring(0,
-                                    incFile.getAbsolutePath().toString().length() - incFile.getName().toString().length() - 1);
-                            if(currentFile.getAbsolutePath().toString().startsWith(projectPath2)) {
-                                projectPath = projectPath2;
-                                currentFileDirLevel = currentFile.getAbsolutePath().toString().substring(projectPath.length() + 1).split("/|\\\\").length - 1; // NOI18N
-                            } else {
-                                projectPath = ""; // NOI18N
-                            }
+                            projectPath = ""; // NOI18N
                         }
                         String bestUserPath = getRelativePath(nativeFile.getUserIncludePaths(), incFilePath);
                         if (bestUserPath.length() < projectPath.length()) {
-                            for (int i = 0; i < currentFileDirLevel; i++) {
-                                includeDirective.append("../"); // NOI18N
-                            }
                             includeDirective.append(CndPathUtilitities.toRelativePath(projectPath, incFilePath));
                         } else {
                             includeDirective.append(CndPathUtilitities.toRelativePath(bestUserPath, incFilePath));
@@ -284,19 +273,8 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
         StringBuilder includeDirective = new StringBuilder("#include "); // NOI18N
         includeDirective.append("\""); // NOI18N
         String projectPath = path;
-        int currentFileDirLevel = 0;
         if (!incFilePath.startsWith(projectPath)) {
-            String projectPath2 = incFile.getAbsolutePath().toString().substring(0,
-                    incFile.getAbsolutePath().toString().length() - incFile.getName().toString().length() - 1);
-            if(path.startsWith(projectPath2)) {
-                projectPath = projectPath2;
-                currentFileDirLevel = path.substring(projectPath.length() + 1).split("/|\\\\").length; // NOI18N
-            } else {
-                projectPath = ""; // NOI18N
-            }
-        }
-        for (int i = 0; i < currentFileDirLevel; i++) {
-            includeDirective.append("../"); // NOI18N
+            projectPath = ""; // NOI18N
         }
         includeDirective.append(CndPathUtilitities.toRelativePath(projectPath, incFilePath));
         if (!projectPath.equals("")) // NOI18N
