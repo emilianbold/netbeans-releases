@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.utils.ui;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -56,6 +57,10 @@ public final class UIGesturesSupport {
     private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.cnd"); // NOI18N
 
     public static void submit(String type, Object... params) {
+        // Do not track from unit tests
+        if (CndUtils.isUnitTestMode()) {
+            return;
+        }
         LogRecord record = new LogRecord(Level.INFO, type);
 //        record.setResourceBundle(NbBundle.getBundle(UIGesturesSupport.class));
 //        record.setResourceBundleName(UIGesturesSupport.class.getPackage().getName() + ".Bundle"); // NOI18N
