@@ -63,6 +63,7 @@ import org.netbeans.modules.css.refactoring.api.CssRefactoring;
 import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring;
 import org.netbeans.modules.html.editor.refactoring.api.SelectorType;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -156,19 +157,46 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
     private boolean importStyleSheet(ModificationResult modificationResult, RefactoringContext context) {
         try {
             //create a new html link to the stylesheet
-            AstNode root = context.getModel().getParserResult().root();
-            final AtomicInteger insertPositionRef = new AtomicInteger();
+            HtmlParserResult result = context.getModel().getParserResult();
+
+            final AtomicInteger insertPositionRef = new AtomicInteger(-1);
             final AtomicBoolean increaseIndent = new AtomicBoolean();
             final AtomicBoolean isLinkTagEmpty = new AtomicBoolean();
+
+            //jsf hack - we need to put the generated <link/> or <style/> sections to the proper place,
+            //which is <h:head> tag in case of JSF. Ideally there should be an SPI which the frameworks
+            //would implement and which would provide a default places for such elements.
+            AstNode jsfHtmlLibRoot = result.root("http://java.sun.com/jsf/html"); //NOI18N
+            if (jsfHtmlLibRoot != null) {
+                AstNodeUtils.visitChildren(jsfHtmlLibRoot, new AstNodeVisitor() {
+
+                    @Override
+                    public void visit(AstNode node) {
+                        //assume <h:head>
+                        if (node.name().endsWith("head")) { //NOI18N
+                            //append the section as first head's child if there are
+                            //no existing link attribute
+                            insertPositionRef.set(node.endOffset()); //end of the open tag offset
+                            increaseIndent.set(true);
+                        }
+                    }
+                }, AstNode.NodeType.OPEN_TAG);
+
+            }
+
+
+            AstNode root = result.root();
             AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
                 @Override
                 public void visit(AstNode node) {
                     if("html".equalsIgnoreCase(node.name())) { //NOI18N
-                        //append the section as first html's child if there are
-                        //no existing link attribute and head tag
-                        insertPositionRef.set(node.endOffset()); //end of the open tag offset
-                        increaseIndent.set(true);
+                        if(insertPositionRef.get() == -1) { //h:head already found?
+                            //append the section as first html's child if there are
+                            //no existing link attribute and head tag
+                            insertPositionRef.set(node.endOffset()); //end of the open tag offset
+                            increaseIndent.set(true);
+                        }
                     } else if ("head".equalsIgnoreCase(node.name())) { //NOI18N
                         //append the section as first head's child if there are
                         //no existing link attribute
@@ -245,18 +273,45 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
     private boolean refactorToNewEmbeddedSection(ModificationResult modifications, RefactoringContext context) {
         try {
             //create a new embedded css section
-            AstNode root = context.getModel().getParserResult().root();
-            final AtomicInteger insertPositionRef = new AtomicInteger();
+            HtmlParserResult result = context.getModel().getParserResult();
+
+            final AtomicInteger insertPositionRef = new AtomicInteger(-1);
             final AtomicBoolean increaseIndent = new AtomicBoolean();
+
+            //jsf hack - we need to put the generated <link/> or <style/> sections to the proper place,
+            //which is <h:head> tag in case of JSF. Ideally there should be an SPI which the frameworks
+            //would implement and which would provide a default places for such elements.
+            AstNode jsfHtmlLibRoot = result.root("http://java.sun.com/jsf/html"); //NOI18N
+            if (jsfHtmlLibRoot != null) {
+                AstNodeUtils.visitChildren(jsfHtmlLibRoot, new AstNodeVisitor() {
+
+                    @Override
+                    public void visit(AstNode node) {
+                        //assume <h:head>
+                        if (node.name().endsWith("head")) { //NOI18N
+                            //append the section as first head's child if there are
+                            //no existing link attribute
+                            insertPositionRef.set(node.endOffset()); //end of the open tag offset
+                            increaseIndent.set(true);
+                        }
+                    }
+                }, AstNode.NodeType.OPEN_TAG);
+
+            }
+
+
+            AstNode root = result.root();
             AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
                 @Override
                 public void visit(AstNode node) {
                     if("html".equalsIgnoreCase(node.name())) { //NOI18N
-                        //append the section as first html's child if there are
-                        //no existing link attribute and head tag
-                        insertPositionRef.set(node.endOffset()); //end of the open tag offset
-                        increaseIndent.set(true);
+                            if(insertPositionRef.get() == -1) { //h:head already found?
+                            //append the section as first html's child if there are
+                            //no existing link attribute and head tag
+                            insertPositionRef.set(node.endOffset()); //end of the open tag offset
+                            increaseIndent.set(true);
+                        }
                     } else if ("head".equalsIgnoreCase(node.name())) { //NOI18N
                         //NOI18N
                         //append the section as first head's child if there are
