@@ -328,6 +328,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     public static void setVisible(final Project project, final Item[] items) {
         SwingUtilities.invokeLater(new Runnable() {
+
             @Override
             public void run() {
                 Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
@@ -512,6 +513,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         private Folder folder;
         private final Lookup.Result<BrokenIncludes> brokenIncludesResult;
         private final MakeLogicalViewProvider provider;
+
         public MakeLogicalViewRootNode(Folder folder, MakeLogicalViewProvider provider) {
             super(new LogicalViewChildren(folder, provider), Lookups.fixed(new Object[]{
                         folder,
@@ -548,7 +550,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
             return provider.getMakeConfigurationDescriptor();
         }
-        
+
         private void updateAnnotationFiles() {
             HashSet<FileObject> set = new HashSet<FileObject>();
             // Add project directory
@@ -738,40 +740,40 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
             ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
 
-            Action[] result = new Action[] {
-                        CommonProjectActions.newFileAction(),
-                        null,
-                        SystemAction.get(AddExistingItemAction.class),
-                        SystemAction.get(AddExistingFolderItemsAction.class),
-                        SystemAction.get(NewFolderAction.class),
-                        //new AddExternalItemAction(project),
-                        null,
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N
-                        new MoreBuildActionsAction(new Action[] {
-                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
-                            ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
-                            ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
-                        }),
-                        new SetConfigurationAction(getProject()),
-                        new RemoteDevelopmentAction(getProject()),
-                        null,
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null), // NOI18N
-                        //new DebugMenuAction(project, helper),
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null),
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG_STEP_INTO, bundle.getString("LBL_DebugAction_Step_Name"), null),
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null),
-                        //SystemAction.get(RunTestAction.class),
-                        null,
-                        CommonProjectActions.setAsMainProjectAction(),
-                        CommonProjectActions.openSubprojectsAction(),
-                        CommonProjectActions.closeProjectAction(),
-                        null,
-                        CommonProjectActions.renameProjectAction(),
-                        CommonProjectActions.moveProjectAction(),
-                        CommonProjectActions.copyProjectAction(),
-                        CommonProjectActions.deleteProjectAction(),
-                        null,};
+            Action[] result = new Action[]{
+                CommonProjectActions.newFileAction(),
+                null,
+                SystemAction.get(AddExistingItemAction.class),
+                SystemAction.get(AddExistingFolderItemsAction.class),
+                SystemAction.get(NewFolderAction.class),
+                //new AddExternalItemAction(project),
+                null,
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N
+                new MoreBuildActionsAction(new Action[]{
+                    ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
+                    ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
+                    ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
+                }),
+                new SetConfigurationAction(getProject()),
+                new RemoteDevelopmentAction(getProject()),
+                null,
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null), // NOI18N
+                //new DebugMenuAction(project, helper),
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null),
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG_STEP_INTO, bundle.getString("LBL_DebugAction_Step_Name"), null),
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null),
+                //SystemAction.get(RunTestAction.class),
+                null,
+                CommonProjectActions.setAsMainProjectAction(),
+                CommonProjectActions.openSubprojectsAction(),
+                CommonProjectActions.closeProjectAction(),
+                null,
+                CommonProjectActions.renameProjectAction(),
+                CommonProjectActions.moveProjectAction(),
+                CommonProjectActions.copyProjectAction(),
+                CommonProjectActions.deleteProjectAction(),
+                null,};
             if (SYNC_PROJECT_ACTION) {
                 result = insertSyncActions(result, RemoteDevelopmentAction.class);
             }
@@ -782,35 +784,35 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
             ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
 
-            Action[] result = new Action[] {
-                        CommonProjectActions.newFileAction(),
-                        //null,
-                        //new AddExternalItemAction(project),
-                        null,
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N
-                        new MoreBuildActionsAction(new Action[] {
-                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
-                            ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
-                            //ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
-                        }),
-                        new SetConfigurationAction(getProject()),
-                        new RemoteDevelopmentAction(getProject()),
-                        null,
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null), // NOI18N
-                        //new DebugMenuAction(project, helper),
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null),
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG_STEP_INTO, bundle.getString("LBL_DebugAction_Step_Name"), null),
-                        null,
-                        CommonProjectActions.setAsMainProjectAction(),
-                        CommonProjectActions.openSubprojectsAction(),
-                        CommonProjectActions.closeProjectAction(),
-                        null,
-                        CommonProjectActions.renameProjectAction(),
-                        CommonProjectActions.moveProjectAction(),
-                        CommonProjectActions.copyProjectAction(),
-                        CommonProjectActions.deleteProjectAction(),
-                        null,};
+            Action[] result = new Action[]{
+                CommonProjectActions.newFileAction(),
+                //null,
+                //new AddExternalItemAction(project),
+                null,
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N
+                new MoreBuildActionsAction(new Action[]{
+                    ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
+                    ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
+                //ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
+                }),
+                new SetConfigurationAction(getProject()),
+                new RemoteDevelopmentAction(getProject()),
+                null,
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null), // NOI18N
+                //new DebugMenuAction(project, helper),
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null),
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG_STEP_INTO, bundle.getString("LBL_DebugAction_Step_Name"), null),
+                null,
+                CommonProjectActions.setAsMainProjectAction(),
+                CommonProjectActions.openSubprojectsAction(),
+                CommonProjectActions.closeProjectAction(),
+                null,
+                CommonProjectActions.renameProjectAction(),
+                CommonProjectActions.moveProjectAction(),
+                CommonProjectActions.copyProjectAction(),
+                CommonProjectActions.deleteProjectAction(),
+                null,};
             if (SYNC_PROJECT_ACTION) {
                 result = insertSyncActions(result, RemoteDevelopmentAction.class);
             }
@@ -837,7 +839,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     private final static class MakeLogicalViewRootNodeBroken extends AbstractNode {
+
         private final MakeProject project;
+
         public MakeLogicalViewRootNodeBroken(MakeProject project) {
             super(Children.LEAF, Lookups.fixed(new Object[]{project}));
             this.project = project;
@@ -922,8 +926,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         //node = new BrokenViewFolderNode(this, getFolder(), folder);
                     }
                 } else {
-                        node = new ExternalFilesNode(folder, provider);
-                    }
+                    node = new ExternalFilesNode(folder, provider);
+                }
             } else if (key instanceof Item) {
                 Item item = (Item) key;
                 DataObject fileDO = item.getDataObject();
@@ -1020,8 +1024,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     private static final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
+
         private final Folder folder;
         private final MakeLogicalViewProvider provider;
+
         public LogicalFolderNode(Node folderNode, Folder folder, MakeLogicalViewProvider provider) {
             super(new LogicalViewChildren(folder, provider), createLFNLookup(folderNode, folder, provider), ANNOTATION_RP);
             this.folder = folder;
@@ -1056,7 +1062,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         private void updateAnnotationFiles() {
             ANNOTATION_RP.post(new FileAnnotationUpdater(this));
         }
-        
+
         private final class FileAnnotationUpdater implements Runnable {
 
             private LogicalFolderNode logicalFolderNode;
@@ -1274,8 +1280,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             null,
                             SystemAction.get(PropertiesFolderAction.class),};
                 result = insertAfter(NewTestActionFactory.getTestCreationActions(folder.getProject()), result);
-            }
-            else if (folder.isTestLogicalFolder() && !folder.isDiskFolder()) {
+            } else if (folder.isTestLogicalFolder() && !folder.isDiskFolder()) {
                 result = new Action[]{ //
                             null,
                             NewTestActionFactory.emptyTestFolderAction(),
@@ -1296,13 +1301,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             SystemAction.get(RunTestAction.class),
                             SystemAction.get(DebugTestAction.class),
                             SystemAction.get(StepIntoTestAction.class),
-                            null, 
+                            null,
                             SystemAction.get(RemoveFolderAction.class),
                             createRenameAction(),
                             null,
                             SystemAction.get(PropertiesFolderAction.class),};
-            }
-            else if (folder.isDiskFolder()) {
+            } else if (folder.isDiskFolder()) {
                 result = new Action[]{
                             CommonProjectActions.newFileAction(),
                             SystemAction.get(org.openide.actions.FindAction.class),
@@ -1314,7 +1318,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             //                        new RefreshItemAction((LogicalViewChildren) getChildren(), folder, null),
                             //                        null,
                             SystemAction.get(DeleteAction.class),
-                            createRenameAction(),                            
+                            createRenameAction(),
                             null,
                             SystemAction.get(PropertiesFolderAction.class),};
             } else {
@@ -1557,9 +1561,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         @Override
         public Action[] getActions(boolean context) {
             Action[] result = new Action[]{
-                        new AddExternalItemAction(provider.getProject()),
-                        null,
-                        SystemAction.get(org.openide.actions.FindAction.class),};
+                new AddExternalItemAction(provider.getProject()),
+                null,
+                SystemAction.get(org.openide.actions.FindAction.class),};
             // makeproject sensitive actions
             final MakeProjectType projectKind = provider.getProject().getLookup().lookup(MakeProjectType.class);
             final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.extFolderActionsPath());
@@ -1580,6 +1584,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         private final Folder folder;
         protected final MakeLogicalViewProvider provider;
+
         public BaseMakeViewChildren(Folder folder, MakeLogicalViewProvider provider) {
             this.folder = folder;
             this.provider = provider;
@@ -1588,7 +1593,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         protected final MakeProject getProject() {
             return provider.project;
         }
-        
+
         @Override
         protected void addNotify() {
             if (this.provider.isFindPathMode()) {
@@ -1651,6 +1656,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         // refreshItem() acquires Children.MUTEX; make sure
                         // it's not under ProjectManager.mutex() (IZ#175996)
                         todo = new Runnable() {
+
                             @Override
                             public void run() {
                                 refreshItem(item);
@@ -1665,6 +1671,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 // setKeys() acquires Children.MUTEX; make sure
                 // it's not under ProjectManager.mutex() (IZ#175996)
                 todo = new Runnable() {
+
                     @Override
                     public void run() {
                         setKeys(keys);
@@ -1835,7 +1842,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 for (int i = 0; i < oldActions.length; i++) {
                     String key = null; // Some actions are now openide.awt.GenericAction. Use key instead
                     if (oldActions[i] != null) {
-                        key = (String)oldActions[i].getValue("key"); // NOI18N
+                        key = (String) oldActions[i].getValue("key"); // NOI18N
                     }
                     if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
                         newActions.add(oldActions[i]);
@@ -1858,7 +1865,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 for (int i = 0; i < oldActions.length; i++) {
                     String key = null; // Some actions are now openide.awt.GenericAction. Use key instead
                     if (oldActions[i] != null) {
-                        key = (String)oldActions[i].getValue("key"); // NOI18N
+                        key = (String) oldActions[i].getValue("key"); // NOI18N
                     }
                     if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
                         newActions.add(oldActions[i]);
@@ -2170,7 +2177,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         public DeleteNodeAction() {
             super(SystemAction.get(DeleteAction.class));
         }
-        }
+    }
 
     private static StandardNodeAction createRenameAction() {
         if (renameAction == null) {
@@ -2196,12 +2203,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     private static Action[] insertSyncActions(Action[] actions, Class insertAfter) {
         Action[] result = actions;
         if (DOWNLOAD_ACTION) {
-            result = insertAfter(result, new Action[] {RemoteSyncActions.createDownloadAction()}, insertAfter);
+            result = insertAfter(result, new Action[]{RemoteSyncActions.createDownloadAction()}, insertAfter);
         }
-        result = insertAfter(result,  new Action[] {RemoteSyncActions.createUploadAction()}, insertAfter);
+        result = insertAfter(result, new Action[]{RemoteSyncActions.createUploadAction()}, insertAfter);
         return result;
     }
-    
+
     private static Action[] insertAfter(Action[] actions, Action[] actionsToInsert, Class insertAfter) {
         if (actionsToInsert == null || actionsToInsert.length == 0) {
             return actions;
@@ -2218,7 +2225,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         if (insertPos < 0) {
             return actions;
         } else {
-            Action[] newActions = new Action[actions.length+actionsToInsert.length];
+            Action[] newActions = new Action[actions.length + actionsToInsert.length];
             System.arraycopy(actions, 0, newActions, 0, insertPos);
             int rest = actions.length - insertPos;
             int newIndex = insertPos;
@@ -2236,7 +2243,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         if (actionsToInsert == null || actionsToInsert.length == 0) {
             return actions;
         }
-        Action[] newActions = new Action[actions.length+actionsToInsert.length];
+        Action[] newActions = new Action[actions.length + actionsToInsert.length];
         System.arraycopy(actions, 0, newActions, 0, actions.length);
         System.arraycopy(actionsToInsert, 0, newActions, actions.length, actionsToInsert.length);
         return newActions;
