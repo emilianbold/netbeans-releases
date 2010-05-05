@@ -39,13 +39,13 @@
 
 package org.netbeans.modules.jira.util;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
 import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
-import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 
 /**
  *

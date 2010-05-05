@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,40 +34,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.util;
+package org.netbeans.modules.cnd.utils.ui;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
-import java.awt.Component;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Egor Ushakov
  */
-public class ResolutionRenderer extends DefaultListCellRenderer {
-    @Override
-    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        if(value instanceof Resolution) {
-            value = ((Resolution) value).getName();
+public final class UIGesturesSupport {
+    
+    // Utility class
+    private UIGesturesSupport() {
+    }
+
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.cnd"); // NOI18N
+
+    public static void submit(String type, Object... params) {
+        // Do not track from unit tests
+        if (CndUtils.isUnitTestMode()) {
+            return;
         }
-        return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        LogRecord record = new LogRecord(Level.INFO, type);
+//        record.setResourceBundle(NbBundle.getBundle(UIGesturesSupport.class));
+//        record.setResourceBundleName(UIGesturesSupport.class.getPackage().getName() + ".Bundle"); // NOI18N
+        record.setLoggerName(USG_LOGGER.getName());
+
+        record.setParameters(params);
+
+        USG_LOGGER.log(record);
     }
 }
-//
-//
-//
-//    private static class UserSearchRenderer extends DefaultListCellRenderer {
-//        @Override
-//        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-//            if(value instanceof UserSearchItem) {
-//                value = ((UserSearchItem) value).getDisplayName();
-//            }
-//            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-//        }
-//    }
-
-

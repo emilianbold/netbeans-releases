@@ -1,8 +1,8 @@
 Name: Jira  Connector
-Version: 3.1.1
+Version: 2.1.0
 License: EPL-v10
 OSR: 11720
-Origin: http://www.eclipse.org/mylyn/
+Origin: http://confluence.atlassian.com/display/IDEPLUGIN/
 Description: Java connector to Jira issue tracking system
 
 Eclipse Public License - v 1.0

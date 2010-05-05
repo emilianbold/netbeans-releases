@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -111,6 +112,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
 
     @Override
     protected void performAction(final Document originalDoc, final JTextComponent target, final int offset, final HyperlinkType type) {
+        UIGesturesSupport.submit("USG_CND_INCLUDE_HYPERLINK", type); //NOI18N
         goToInclude(originalDoc, target, offset, type);
     }
 
