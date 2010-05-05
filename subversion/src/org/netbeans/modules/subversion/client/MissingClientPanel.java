@@ -56,11 +56,11 @@ public class MissingClientPanel extends javax.swing.JPanel {
     public MissingClientPanel() {
         initComponents();
         if(Utilities.isWindows()) {
-            tipLabel.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel1.windows.text"));
+            tipLabel.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel1.windows.text")); // NOI18N
         } else {
-            tipLabel.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel1.unix.text"));
+            tipLabel.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel1.unix.text")); // NOI18N
         }
-        String text = org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.textPane.text");
+        String text = org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.textPane.text"); // NOI18N
         textPane.setText(text);
         Document doc = textPane.getDocument();
         if (doc instanceof HTMLDocument) { // Issue 185505
