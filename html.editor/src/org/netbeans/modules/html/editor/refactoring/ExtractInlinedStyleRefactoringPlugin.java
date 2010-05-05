@@ -159,6 +159,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
             AstNode root = context.getModel().getParserResult().root();
             final AtomicInteger insertPositionRef = new AtomicInteger();
             final AtomicBoolean increaseIndent = new AtomicBoolean();
+            final AtomicBoolean isLinkTagEmpty = new AtomicBoolean();
             AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
                 @Override
@@ -178,6 +179,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                         //existing link => append the new section after the last one
                         insertPositionRef.set(node.getLogicalRange()[1]); //end of the end tag offset
                         increaseIndent.set(false);
+                        isLinkTagEmpty.set(node.getDTDElement().isEmpty());
                     }
                 }
             }, AstNode.NodeType.OPEN_TAG);
@@ -207,7 +209,9 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                     append(baseIndentString).
                     append("<link href=\"").
                     append(linkRelativePath).
-                    append("\" type=\"text/css\">\n").toString(); //NOI18N
+                    append("\" type=\"text/css\"").
+                    append(isLinkTagEmpty.get() ? "" : "/").
+                    append(">\n").toString(); //NOI18N
 
             CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(context.getFile());
             Difference diff = new Difference(Difference.Kind.INSERT,
