@@ -41,10 +41,8 @@
 package org.netbeans.swing.outline;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Enumeration;
 import java.util.List;
-import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -77,8 +75,7 @@ import javax.swing.tree.TreePath;
  * @author  Tim Boudreau
  */
 public final class TreePathSupport {
-    private Set<TreePath> expandedPaths = new HashSet<TreePath>(); // Paths whose expanded state changed.
-                                                                   // Just for getExpandedDescendants()
+
     private List<TreeExpansionListener> eListeners = new ArrayList<TreeExpansionListener>();
     private List<TreeWillExpandListener> weListeners = new ArrayList<TreeWillExpandListener>();
     private AbstractLayoutCache layout;
@@ -92,7 +89,6 @@ public final class TreePathSupport {
      * a structural change, and any or all of the nodes it contains may no
      * longer be present. */
     public void clear() {
-        expandedPaths.clear();
     }
 
     /** Expand a path.  Notifies the layout cache of the change,
@@ -108,7 +104,6 @@ public final class TreePathSupport {
         TreeExpansionEvent e = new TreeExpansionEvent (this, path);
         try {
             fireTreeWillExpand(e, true);
-            expandedPaths.add(path);
             layout.setExpandedState(path, true);
             fireTreeExpansion(e, true);
         } catch (ExpandVetoException eve) {
@@ -129,7 +124,6 @@ public final class TreePathSupport {
         TreeExpansionEvent e = new TreeExpansionEvent (this, path);
         try {
             fireTreeWillExpand(e, false);
-            expandedPaths.add(path);
             layout.setExpandedState(path, false);
             fireTreeExpansion(e, false);
         } catch (ExpandVetoException eve) {
@@ -140,7 +134,6 @@ public final class TreePathSupport {
     /** Remove a path's data from the list of known paths.  Called when
      * a tree model deletion event occurs */
     public void removePath (TreePath path) {
-        expandedPaths.remove(path);
     }
     
     private void fireTreeExpansion (TreeExpansionEvent e, boolean expanded) {
@@ -244,22 +237,19 @@ public final class TreePathSupport {
         TreePath[] result = new TreePath[0];
 	if(isExpanded(parent)) {
             TreePath path;
-            Boolean value;
             List<TreePath> results = null;
 
-            if (!expandedPaths.isEmpty()) {
-
-                Iterator<TreePath> i = expandedPaths.iterator();
-                
-                while(i.hasNext()) {
-                    path = i.next();
-
+            Enumeration<TreePath> tpe = layout.getVisiblePathsFrom(parent);
+            if (tpe != null) {
+                while (tpe.hasMoreElements()) {
+                    path = tpe.nextElement();
                     // Add the path if it is expanded, a descendant of parent,
                     // and it is visible (all parents expanded). This is rather
                     // expensive!
-                    if(path != parent &&
-                       layout.isExpanded(path) &&
-                        parent.isDescendant(path) && isVisible(path)) {
+                    if (path != parent &&
+                        layout.isExpanded(path) &&
+                        parent.isDescendant(path)) {
+                        
                         if (results == null) {
                             results = new ArrayList<TreePath>();
                         }
