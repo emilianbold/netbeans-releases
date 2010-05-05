@@ -38,52 +38,36 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.refactoring.codegen.ui;
+package org.netbeans.modules.cnd.simpleunit.wizard;
 
 import org.netbeans.modules.cnd.modelutil.ui.CheckTreeView;
 import java.awt.BorderLayout;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode.Description;
-import org.netbeans.modules.cnd.refactoring.support.DeclarationGenerator;
-import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  *
  * @author  Petr Hrebejk, Dusan Balek
  * @author Vladimir Voskresensky
  */
-public class ElementSelectorPanel extends JPanel implements ExplorerManager.Provider {
+public class FunctionSelectorPanel extends JPanel implements ExplorerManager.Provider {
 
     private final ExplorerManager manager = new ExplorerManager();
     private final CheckTreeView elementView;
-    private final JCheckBox inline = new JCheckBox();
-    private boolean inlineMethod;
-    /** Creates new form ElementSelectorPanel */
-    public ElementSelectorPanel(ElementNode.Description elementDescription, boolean singleSelection, boolean supportInline) {
+    /** Creates new form FunctionSelectorPanel */
+    public FunctionSelectorPanel(ElementNode.Description elementDescription, boolean singleSelection) {
         setLayout(new BorderLayout());
         elementView = new CheckTreeView();
         elementView.setRootVisible(false);
         elementView.setUseSubstringInQuickSearch(true);
         add(elementView, BorderLayout.CENTER);
-        if (supportInline) {
-            Mnemonics.setLocalizedText(inline, NbBundle.getMessage(ElementSelectorPanel.class, "LBL_inline_implementation")); // NOI18N
-            inlineMethod = NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INSERT_CODE_INLINE_PROPERTY, true);
-            inline.setSelected(inlineMethod);
-            inline.setEnabled(false);
-            add(inline, BorderLayout.SOUTH);
-        } else {
-            inlineMethod = false;
-        }
         setRootElement(elementDescription, singleSelection);
         //make sure that the first element is pre-selected
         Node root = manager.getRootContext();
@@ -95,12 +79,6 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
                 //ignore
             }
         }
-    }
-
-    public boolean isMethodInline() {
-        inlineMethod = inline.isSelected();
-        NbPreferences.forModule(DeclarationGenerator.class).putBoolean(DeclarationGenerator.INSERT_CODE_INLINE_PROPERTY, inlineMethod);
-        return inlineMethod;
     }
 
     public List<CsmDeclaration> getTreeSelectedElements() {
