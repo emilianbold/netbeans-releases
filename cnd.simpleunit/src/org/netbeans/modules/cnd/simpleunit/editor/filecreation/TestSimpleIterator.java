@@ -41,19 +41,25 @@ package org.netbeans.modules.cnd.simpleunit.editor.filecreation;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.simpleunit.codegeneration.CodeGenerator;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -62,6 +68,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -70,11 +77,31 @@ import org.openide.loaders.TemplateWizard;
  * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
 public class TestSimpleIterator extends CCFSrcFileIterator {
+    public static final String CNDUNITTESTFUNCTIONS = "cndunittest.functions"; // NOI18N
 
     private static final String C_HEADER_MIME_TYPE = "text/x-c/text/x-h"; // NOI18N
 
     @Override
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
+        Project project = Templates.getProject(wiz);
+        
+//        CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
+//
+//        List<CsmFunction> funs = new ArrayList<CsmFunction>();
+//        for (CsmOffsetableDeclaration decl : csmProject.getGlobalNamespace().getDeclarations()) {
+//            if(CsmKindUtilities.isClass(decl)) {
+//                for (CsmMember member : ((CsmClass)decl).getMembers()) {
+//                    if(CsmKindUtilities.isMethod(member)) {
+//                        funs.add((CsmMethod)member);
+//                    }
+//                }
+//            }
+//            if(CsmKindUtilities.isFunction(decl)) {
+////                funs.add((CsmFunction)decl);
+//            }
+//        }
+//        wiz.putProperty(CNDUNITTESTFUNCTIONS, funs);
+
         Set<DataObject> dataObjects = new HashSet<DataObject>();
 
         if(getTestFileName() == null || getTestName() == null) {
@@ -82,13 +109,30 @@ public class TestSimpleIterator extends CCFSrcFileIterator {
         }
 
         DataFolder targetFolder = wiz.getTargetFolder();
-        
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
+
+        List<CsmFunction> fs = new ArrayList<CsmFunction>();
+        Object listObj = wiz.getProperty(CNDUNITTESTFUNCTIONS);
+        if(listObj instanceof List) {
+            List list = (List) listObj;
+            for (Object obj : list) {
+                if(obj instanceof CsmFunction) {
+                    fs.add((CsmFunction)obj);
+                }
+            }
+        }
+        params.putAll(CodeGenerator.generateTemplateParamsForFunctions(
+                getTestFileName().replaceFirst("[.].*", ""), // NOI18N
+                targetFolder.getPrimaryFile().getPath(),
+                fs,
+                ("cpp".equals(wiz.getTemplate().getPrimaryFile().getExt())?CodeGenerator.Language.CPP:CodeGenerator.Language.C))); // NOI18N
+
         DataObject formDataObject = NewTestSimplePanel.getTemplateDataObject(
                 "simpletestfile." + wiz.getTemplate().getPrimaryFile().getExt()); // NOI18N
         
-        DataObject dataObject = formDataObject.createFromTemplate(targetFolder, getTestFileName());
-
-        Project project = Templates.getProject(wiz);
+        DataObject dataObject = formDataObject.createFromTemplate(targetFolder, getTestFileName(), params);
 
         Folder folder = null;
         Folder testsRoot = getTestsRootFolder(project);
@@ -128,7 +172,7 @@ public class TestSimpleIterator extends CCFSrcFileIterator {
 
             folder.addItemAction(item);
         }
-        
+
         dataObjects.add(dataObject);
         return dataObjects;
     }
