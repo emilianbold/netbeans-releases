@@ -45,6 +45,7 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -68,7 +69,7 @@ public class SyntaxTreeTest extends TestBase {
 
     public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new SyntaxTreeTest("testParseBigFile"));
+        suite.addTest(new SyntaxTreeTest("testBigFile"));
         return suite;
     }
 
@@ -458,25 +459,29 @@ public class SyntaxTreeTest extends TestBase {
 
     public void testBigFile() throws Exception {
         testSyntaxTree("big.html");
-
-
+//
+//
 //        FileObject source = getTestFile(DATA_DIR_BASE + "big.html");
 //        BaseDocument doc = getDocument(source);
 //        String code = doc.getText(0, doc.getLength());
 //
 //        System.out.println("lexing...");
+//
 //        long a = System.currentTimeMillis();
-//        TokenHierarchy th = TokenHierarchy.get(doc);
-//        TokenSequence ts = th.tokenSequence();
-//        ts.moveStart();
+//        int loop = 5;
+//        for(int i = 0; i < loop; i++) {
 //
-//        while(ts.moveNext()) {
+//            TokenHierarchy th = TokenHierarchy.create(code, HTMLTokenId.language());
+//            TokenSequence ts = th.tokenSequence();
+//            ts.moveStart();
+//
+//            while(ts.moveNext()) {
+//            }
+//
 //        }
-//
 //        long b = System.currentTimeMillis();
 //
-//        System.out.println("big file lexed in " + (b-a));
-//        System.out.println("text length = " + ts.offset());
+//        System.out.println("big file lexed in ~ " + ((b-a)/loop));
 
     }
 

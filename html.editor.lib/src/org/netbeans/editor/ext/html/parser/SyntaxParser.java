@@ -103,7 +103,7 @@ public final class SyntaxParser {
     private void error() {
         elements.add(new SyntaxElement.Error(parserSource,
                 start,
-                token.offset(hi) + token.length() - start));
+                ts.offset() + ts.token().length() - start));
     }
 
     private void text() {
@@ -117,20 +117,20 @@ public final class SyntaxParser {
     private void entityReference() {
         elements.add(new SyntaxElement.EntityReference(parserSource,
                 start, 
-                token.offset(hi) + token.length() - start));
+                ts.offset() + ts.token().length() - start));
         
     }
     
     private void comment() {
         elements.add(new SyntaxElement.Comment(parserSource,
                 start, 
-                token.offset(hi) + token.length() - start));
+                ts.offset() + ts.token().length() - start));
     }
     
     private void declaration() {
         elements.add(new SyntaxElement.Declaration(parserSource, 
                 start, 
-                token.offset(hi) + token.length() - start,
+                ts.offset() + ts.token().length() - start,
                 root_element,
                 doctype_public_id,
                 doctype_file));
@@ -140,40 +140,40 @@ public final class SyntaxParser {
     private void tag(boolean emptyTag) {
         List<SyntaxElement.TagAttribute> attributes = new ArrayList<SyntaxElement.TagAttribute>();
             for(int i = 0; i < attr_keys.size(); i++) {
-                Token key = attr_keys.get(i);
-                List<Token> values = attr_values.get(i);
+                TokenInfo key = attr_keys.get(i);
+                List<TokenInfo> values = attr_values.get(i);
                 StringBuffer joinedValue = new StringBuffer();
                 
                 if(values == null) {
                     //attribute has no value
                     SyntaxElement.TagAttribute ta = new SyntaxElement.TagAttribute(
-                            key.text().toString().intern(), 
+                            key.token.text().toString().intern(),
                             joinedValue.toString().intern(), 
-                            key.offset(hi), 
-                            key.offset(hi) + key.length(),
+                            key.offset,
+                            key.offset + key.token.length(),
                             0);
                     attributes.add(ta);
                 } else {
-                    for(Token t: values) {
-                        joinedValue.append(t.text());
+                    for(TokenInfo t: values) {
+                        joinedValue.append(t.token.text());
                     }
 
-                    Token firstValuePart = values.get(0);
-                    Token lastValuePart = values.get(values.size() - 1);
+                    TokenInfo firstValuePart = values.get(0);
+                    TokenInfo lastValuePart = values.get(values.size() - 1);
 
                     SyntaxElement.TagAttribute ta = new SyntaxElement.TagAttribute(
-                            key.text().toString().intern(), 
+                            key.token.text().toString().intern(),
                             joinedValue.toString().intern(), 
-                            key.offset(hi), 
-                            firstValuePart.offset(hi),
-                            lastValuePart.offset(hi) + lastValuePart.length() - firstValuePart.offset(hi));
+                            key.offset, 
+                            firstValuePart.offset,
+                            lastValuePart.offset + lastValuePart.token.length() - firstValuePart.offset);
                     attributes.add(ta);
                 }
             }
         
         elements.add(new SyntaxElement.Tag(parserSource, 
                 start, 
-                token.offset(hi) + token.length() - start, 
+                ts.offset() + ts.token().length() - start,
                 tagName.intern(), 
                 attributes.isEmpty() ? null : attributes,
                 openTag,
@@ -181,8 +181,8 @@ public final class SyntaxParser {
         
         tagName = null;
         attrib = null;
-        attr_keys = new ArrayList<Token>();
-        attr_values = new ArrayList<List<Token>>();
+        attr_keys = new ArrayList<TokenInfo>();
+        attr_values = new ArrayList<List<TokenInfo>>();
     }
 
     //an error inside a tag, at least the tag name is known
@@ -234,9 +234,9 @@ public final class SyntaxParser {
     
     private boolean openTag = true;
     private String tagName = null;
-    private Token attrib = null;
-    private ArrayList<Token> attr_keys = null;
-    private ArrayList<List<Token>> attr_values = null;
+    private TokenInfo attrib = null;
+    private ArrayList<TokenInfo> attr_keys = null;
+    private ArrayList<List<TokenInfo>> attr_values = null;
     
     private String root_element, doctype_public_id, doctype_file;
     
@@ -246,8 +246,8 @@ public final class SyntaxParser {
         List<TokenSequence<HTMLTokenId>> sequences = hi.tokenSequenceList(languagePath, 0, Integer.MAX_VALUE);
         state = S_INIT;
         start = -1;
-        attr_keys = new ArrayList<Token>();
-        attr_values = new ArrayList<List<Token>>();
+        attr_keys = new ArrayList<TokenInfo>();
+        attr_values = new ArrayList<List<TokenInfo>>();
         
         for (TokenSequence _ts : sequences) {
             ts = _ts;
@@ -336,7 +336,7 @@ public final class SyntaxParser {
                                 break;
                             case ARGUMENT:
                                 state = S_TAG_ATTR;
-                                attrib = token;
+                                attrib = tokenInfo();
                                 break;
                             case TAG_CLOSE_SYMBOL:
                                 boolean emptyTag = "/>".equals(token.text().toString());
@@ -383,12 +383,12 @@ public final class SyntaxParser {
                             case VALUE_CSS:
                                 int index = attr_keys.indexOf(attrib);
                                 if(index == -1) {
-                                    List<Token> values = new ArrayList<Token>();
-                                    values.add(token);
+                                    List<TokenInfo> values = new ArrayList<TokenInfo>();
+                                    values.add(tokenInfo());
                                     attr_keys.add(attrib);
                                     attr_values.add(values);
                                 } else {
-                                    attr_values.get(index).add(token);
+                                    attr_values.get(index).add(tokenInfo());
                                 }
                                 
                                 break;
@@ -574,6 +574,46 @@ public final class SyntaxParser {
         }
 
         return elements;
+
+    }
+
+    private TokenInfo tokenInfo() {
+        return new TokenInfo(ts.offset(), token);
+    }
+
+    private static final class TokenInfo {
+        public int offset;
+        public Token token;
+        public TokenInfo(int offset, Token token) {
+            this.offset = offset;
+            this.token = token;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final TokenInfo other = (TokenInfo) obj;
+            if (this.offset != other.offset) {
+                return false;
+            }
+            if (this.token != other.token && (this.token == null || !this.token.equals(other.token))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 37 * hash + this.offset;
+            hash = 37 * hash + (this.token != null ? this.token.hashCode() : 0);
+            return hash;
+        }
 
     }
 
