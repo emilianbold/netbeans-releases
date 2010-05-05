@@ -56,6 +56,12 @@ public class TestComponentUpdater implements ComponentUpdater<TestComponent> {
     @Override
     public void update(TestComponent target, TestComponent child, int index, ComponentUpdater.Operation operation) {
         if (operation.equals(ComponentUpdater.Operation.ADD)) {
+            //
+            // See description of method NsPrefixCreationUndoTest.testInterruptedComponentUpdater()
+            if (child instanceof TestComponent.Err) {
+                throw new RuntimeException("Test synch crashed.");
+            }
+            //
             target.insertAtIndex("ChildComponentAdded", child, index, TestComponent.class);
         } else {
             target.removeChild("ChildComponentRemoved", child);

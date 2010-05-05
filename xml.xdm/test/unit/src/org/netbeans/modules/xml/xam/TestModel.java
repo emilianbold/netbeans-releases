@@ -155,6 +155,7 @@ public class TestModel extends AbstractDocumentModel<TestComponent> implements D
             qnames.add(TestComponent.D.QNAME);
             qnames.add(TestComponent.E.QNAME);
             qnames.add(new QName(TestComponent.NS_URI, "test"));
+            qnames.add(TestComponent.Err.QNAME);
         }
         return qnames;
     }
@@ -191,5 +192,11 @@ public class TestModel extends AbstractDocumentModel<TestComponent> implements D
         QName q = TestComponent.D.QNAME;
         Element e = this.getDocument().createElementNS(q.getNamespaceURI(), q.getLocalPart());
         return (TestComponent.D) TestComponent.createComponent(this, parent, e);
+    }
+
+    public TestComponent.Err createErr(TestComponent parent) {
+        QName q = TestComponent.Err.QNAME;
+        Element e = this.getDocument().createElementNS(q.getNamespaceURI(), q.getLocalPart());
+        return (TestComponent.Err) TestComponent.createComponent(this, parent, e);
     }
 }
