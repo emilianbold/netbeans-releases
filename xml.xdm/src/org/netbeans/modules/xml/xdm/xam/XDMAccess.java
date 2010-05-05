@@ -89,38 +89,48 @@ public class XDMAccess extends DocumentModelAccess {
         xdmModel.setQNameValuedAttributes(model.getQNameValuedAttributes());
     }
     
+    @Override
     public org.w3c.dom.Document getDocumentRoot() {
         return getReferenceModel().getCurrentDocument();
     }
     
+    @Override
     public void removeUndoableEditListener(UndoableEditListener listener) {
         xdmModel.removeUndoableEditListener(listener);
     }
     
+    @Override
     public void addUndoableEditListener(UndoableEditListener listener) {
         xdmModel.addUndoableEditListener(listener);
     }
     
+    @Override
     public AbstractDocumentModel getModel() { return model; }
     public XDMModel getReferenceModel() {
         return xdmModel;
     }
     
+    @Override
     public void flush() {
         xdmModel.flush();
     }
     
+    @Override
     public void prepareForUndoRedo() {
         xdmListener.startSync();
     }
+    
+    @Override
     public void finishUndoRedo() {
         xdmListener.endSync(true);
     }
     
+    @Override
     public void prepareSync() {
         xdmModel.prepareSync();
     }
     
+    @Override
     public DocumentModel.State sync() throws IOException {
         if (model.getRootComponent() == null) {
             xdmModel.sync();
@@ -159,6 +169,7 @@ public class XDMAccess extends DocumentModelAccess {
         return xdmModel.getStatus() == XDMModel.Status.STABLE ? DocumentModel.State.VALID : DocumentModel.State.NOT_WELL_FORMED;
     }
     
+    @Override
     public boolean areSameNodes(org.w3c.dom.Node node1, org.w3c.dom.Node node2) {
         if (! (node1 instanceof NodeImpl && node2 instanceof NodeImpl)) {
             return false;
@@ -217,6 +228,7 @@ public class XDMAccess extends DocumentModelAccess {
         return true;
     }
     
+    @Override
     public int getElementIndexOf(org.w3c.dom.Node parent, org.w3c.dom.Element child) {
         if (child == null) return -1;
         int elementIndex = -1;
@@ -235,6 +247,7 @@ public class XDMAccess extends DocumentModelAccess {
         return model.inSync() && ! model.startedFiringEvents() || model.inUndoRedo();
     }
     
+    @Override
     public void setAttribute(org.w3c.dom.Element element, String name, String value, NodeUpdater updater) {
         if (noMutations()) return;
         if(element instanceof Node) {
@@ -249,6 +262,7 @@ public class XDMAccess extends DocumentModelAccess {
         }
     }
     
+    @Override
     public void removeAttribute(org.w3c.dom.Element element, String name, NodeUpdater updater) {
         if (noMutations()) return;
         if(element instanceof Node) {
@@ -263,6 +277,7 @@ public class XDMAccess extends DocumentModelAccess {
         }
     }
     
+    @Override
     public void appendChild(org.w3c.dom.Node node, org.w3c.dom.Node newChild, NodeUpdater updater) {
         if (noMutations()) return;
         if(node instanceof Node && newChild instanceof Node) {
@@ -277,6 +292,7 @@ public class XDMAccess extends DocumentModelAccess {
         }
     }
     
+    @Override
     public void insertBefore(org.w3c.dom.Node node, org.w3c.dom.Node newChild, org.w3c.dom.Node refChild, NodeUpdater updater) {
         if (noMutations()) return;
         if (node instanceof Node && newChild instanceof Node && refChild instanceof Node) {
@@ -291,6 +307,7 @@ public class XDMAccess extends DocumentModelAccess {
         }
     }
     
+    @Override
     public void removeChild(org.w3c.dom.Node node, org.w3c.dom.Node child, NodeUpdater updater) {
         if (noMutations()) return;
         if(node instanceof Node && child instanceof Node) {
@@ -305,6 +322,7 @@ public class XDMAccess extends DocumentModelAccess {
         }
     }
     
+    @Override
     public void removeChildren(org.w3c.dom.Node node, Collection<org.w3c.dom.Node> children, NodeUpdater updater) {
         if (noMutations()) return;
         if(node instanceof Node) {
@@ -329,6 +347,7 @@ public class XDMAccess extends DocumentModelAccess {
         }
     }
     
+    @Override
     public void replaceChild(org.w3c.dom.Node node, org.w3c.dom.Node child, org.w3c.dom.Node newChild, NodeUpdater updater) {
         if (noMutations()) return;
         Node xdmNode = (Node)node;
@@ -342,6 +361,7 @@ public class XDMAccess extends DocumentModelAccess {
     /**
      * Replace children content with single text node having string value.
      */
+    @Override
     public void setText(org.w3c.dom.Element element, String val, NodeUpdater updater) {
         if (noMutations()) return;
         Element xdmElem = (Element)element;
@@ -355,6 +375,7 @@ public class XDMAccess extends DocumentModelAccess {
         }
     }
     
+    @Override
     public String getXmlFragment(org.w3c.dom.Element element) {
         if (element instanceof Element) {
             Element xdmElem = (Element)element;
@@ -367,6 +388,7 @@ public class XDMAccess extends DocumentModelAccess {
     /**
      * Replace element children with result from parsing of given xml fragment text.
      */
+    @Override
     public void setXmlFragment(org.w3c.dom.Element element, String val, NodeUpdater updater) throws IOException {
         if (noMutations()) return;
         Element xdmElem = (Element)element;
@@ -377,6 +399,7 @@ public class XDMAccess extends DocumentModelAccess {
         }
     }
     
+    @Override
     public void setPrefix(org.w3c.dom.Element element, String prefix) {
         if (noMutations()) return;
         Element xdmElement = (Element)element;
@@ -385,10 +408,12 @@ public class XDMAccess extends DocumentModelAccess {
         }
     }
     
+    @Override
     public int findPosition(org.w3c.dom.Node node){
         return (new PositionFinderVisitor()).findPosition(xdmModel.getDocument(), (Node)node);
     }
     
+    @Override
     public Element getContainingElement(int position){
         try {
             return (new NodeByPositionVisitor(xdmModel.getDocument())).getContainingElement(position);
@@ -397,10 +422,12 @@ public class XDMAccess extends DocumentModelAccess {
         }
     }
     
+    @Override
     public org.w3c.dom.Element duplicate(org.w3c.dom.Element element){
         return (org.w3c.dom.Element) ((Element)element).copy();
-    }	
-	
+    }
+    
+    @Override
     public Map<QName,String> getAttributeMap(org.w3c.dom.Element element) {
         Map<QName,String> qValues = new AttributeMap<QName,String>();
         NamedNodeMap attributes = element.getAttributes();
@@ -416,6 +443,7 @@ public class XDMAccess extends DocumentModelAccess {
         return qValues;
     }
     
+    @Override
     public List<org.w3c.dom.Element> getPathFromRoot(org.w3c.dom.Document root, org.w3c.dom.Element node) {
         List<Node> pathToRoot = new PathFromRootVisitor().findPath(root, node);
         if(pathToRoot == null)
@@ -430,14 +458,17 @@ public class XDMAccess extends DocumentModelAccess {
         return pathFromRoot;
     }
     
+    @Override
     public String getXPath(org.w3c.dom.Document root, org.w3c.dom.Element node) {
         return XPathFinder.getXpath((Document)root, (Node)node);
     }
     
+    @Override
     public org.w3c.dom.Node findNode(org.w3c.dom.Document root, String xpath) {
         return new XPathFinder().findNode((Document)root, xpath);
     }
     
+    @Override
     public List<org.w3c.dom.Node> findNodes(org.w3c.dom.Document root, String xpath) {
         return XDMListener.toDomNodes(new XPathFinder().findNodes((Document)root, xpath));
     }
@@ -446,33 +477,40 @@ public class XDMAccess extends DocumentModelAccess {
         return xdmModel;
     }
     
+    @Override
     public ElementIdentity getElementIdentity() {
         return getXDMModel().getElementIdentity();
     }
 
+    @Override
     public void addMergeEventHandler(PropertyChangeListener l) {
         xdmModel.addPropertyChangeListener(l);
     }
 
+    @Override
     public void removeMergeEventHandler(PropertyChangeListener l) {
         xdmModel.removePropertyChangeListener(l);
     }
 
+    @Override
     public org.w3c.dom.Node getOldEventParentNode(PropertyChangeEvent event) {
         NodeInfo oldInfo = (NodeInfo) event.getOldValue();
         return oldInfo!=null?(Node) oldInfo.getParent():null;
     }
 
+    @Override
     public org.w3c.dom.Node getOldEventNode(PropertyChangeEvent event) {
         NodeInfo oldInfo = (NodeInfo) event.getOldValue();
         return oldInfo!=null?(Node) oldInfo.getNode():null;
     }
 
+    @Override
     public org.w3c.dom.Node getNewEventParentNode(PropertyChangeEvent event) {
         NodeInfo newInfo = (NodeInfo) event.getNewValue();
         return newInfo!=null?(Node) newInfo.getParent():null;
     }
 
+    @Override
     public org.w3c.dom.Node getNewEventNode(PropertyChangeEvent event) {
         NodeInfo newInfo = (NodeInfo) event.getNewValue();
         return newInfo!=null?(Node) newInfo.getNode():null;
@@ -491,6 +529,8 @@ public class XDMAccess extends DocumentModelAccess {
 	// To fix the attribute order issue when using getAttributeMap().keySet().iterator()
     public class AttributeMap<K,V> extends HashMap<K,V> {
 		List<K> keys = new ArrayList<K>();
+
+        @Override
 		public AttributeKeySet<K> keySet() {
 			return new AttributeKeySet(keys);
 		}		
@@ -507,20 +547,24 @@ public class XDMAccess extends DocumentModelAccess {
 			this.keys = keys;
 		}
 
+        @Override
 		public boolean isEmpty() {
-			return keys.isEmpty();
+            return keys.isEmpty();
 		}	
-		
+        
+        @Override
 		public boolean contains(Object key) {
-			return keys.contains(key);
+            return keys.contains(key);
 		}
-	
+        
+        @Override
 		public Iterator iterator() {
-			return keys.iterator();
+             return keys.iterator();
 		}	
-		
+        
+        @Override
 		public int size() {
-			return keys.size();
+            return keys.size();
 		}
 	}
 
