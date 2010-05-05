@@ -51,6 +51,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
@@ -90,7 +91,7 @@ public final class NewTestActionFactory {
         if (testFiles.isFolder()) {
             for (FileObject test : testFiles.getChildren()) {
                 if (!"hidden".equals(test.getAttribute("templateCategory"))) { //NOI18N
-                    actions.add(new NewTestAction(test, project));
+                    actions.add(new NewTestAction(test, project, null, false));
                 }
             }
         }
@@ -111,21 +112,14 @@ public final class NewTestActionFactory {
         private final Project project;
         private final Lookup context;
         private final boolean generateCode;
-        public NewTestAction(FileObject test, Project project) {
-            this(test, project, null);
-        }
 
-        public NewTestAction(FileObject test, Lookup context) {
-            this(test, null, context);
-        }
-
-        public NewTestAction(FileObject test, Project project, Lookup context) {
+        public NewTestAction(FileObject test, Project project, Lookup context, boolean generateCode) {
             super.putValue(NAME, NbBundle.getMessage(CreateTestSubmenuAction.class, "NewTestNameWrapper", getName(test)));
             super.putValue(SMALL_ICON, getIcon(test));
             this.test = test;
             this.project = project;
             this.context = context;
-            this.generateCode = (context != null);
+            this.generateCode = generateCode;
         }
 
         public
@@ -133,9 +127,20 @@ public final class NewTestActionFactory {
         void actionPerformed(ActionEvent e) {
             try {
                 final TemplateWizard templateWizard = new TemplateWizard();
-                templateWizard.putProperty("project", project); // NOI18N
+                Project aProject = project;
                 templateWizard.putProperty("UnitTestContextLookup", context); // NOI18N
                 templateWizard.putProperty("UnitTestCodeGeneration", generateCode); // NOI18N
+                if (aProject == null) {
+                    assert context != null;
+                    Node node = context.lookup(Node.class);
+                    if (node != null) {
+                        FileObject fo = node.getLookup().lookup(FileObject.class);
+                        if (fo != null) {
+                            aProject = FileOwnerQuery.getOwner(fo);
+                        }
+                    }
+                }
+                templateWizard.putProperty("project", aProject); // NOI18N
                 Set<DataObject> files = templateWizard.instantiate(DataObject.find(FileUtil.getConfigFile(test.getPath())));
                 if (files != null && !files.isEmpty()) {
                     MakeLogicalViewProvider.setVisible(project,
@@ -253,7 +258,16 @@ public final class NewTestActionFactory {
                 popupMenu = new LazyPopupMenu(NbBundle.getMessage(CreateTestSubmenuAction.class, "CTL_TestAction"), items);
             }
             items.clear();
-            items.addAll(createActions());
+            Node[] nodes = getActivatedNodes();
+            if (nodes != null && nodes.length == 1) {
+                FileObject fo = nodes[0].getLookup().lookup(FileObject.class);
+                if (fo != null) {
+                    Project project = FileOwnerQuery.getOwner(fo);
+                    if (project != null) {
+                        items.addAll(createActions(project));
+                    }
+                }
+            }
             popupMenu.setEnabled(!items.isEmpty());
         }
 
@@ -291,13 +305,13 @@ public final class NewTestActionFactory {
             return HelpCtx.DEFAULT_HELP;
         }
 
-        private Collection<Action> createActions() {
+        private Collection<Action> createActions(Project project) {
             ArrayList<Action> actions = new ArrayList<Action>();
             FileObject testFiles = FileUtil.getConfigFile("Templates/testFiles"); //NOI18N
             if (testFiles.isFolder()) {
                 for (FileObject test : testFiles.getChildren()) {
                     if (Boolean.TRUE.equals(test.getAttribute("templateGenerator"))) { //NOI18N
-                        actions.add(new NewTestAction(test, org.openide.util.Utilities.actionsGlobalContext()));
+                        actions.add(new NewTestAction(test, project, org.openide.util.Utilities.actionsGlobalContext(), true));
                     }
                 }
             }
