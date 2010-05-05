@@ -48,7 +48,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -116,5 +118,75 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     protected AbstractFileBuffer(DataInput input) throws IOException {
         this.absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
         assert this.absPath != null;
-    }    
+    }
+
+    @Override
+    public int getLineByOffset(int offset) throws IOException {
+        int[] list = getLineOffsets();
+	int low = 0;
+	int high = list.length - 1;
+	while (low <= high) {
+	    int mid = (low + high) >>> 1;
+	    int midVal = list[mid];
+	    if (midVal < offset) {
+                if (low == high) {
+                    return low + 1;
+                }
+                low = mid + 1;
+            } else if (midVal > offset) {
+                if (low == high) {
+                    return low;
+                }
+                high = mid - 1;
+            } else {
+                return mid + 1;
+            }
+	}
+	return low;
+    }
+
+    @Override
+    public int getStartLineOffset(int line) throws IOException {
+        line--;
+        int[] list = getLineOffsets();
+        if (line < list.length) {
+            return list[line];
+        }
+        return list[list.length-1];
+    }
+    
+    private WeakReference<Object> lines = new WeakReference<Object>(null);
+    private int[] getLineOffsets() throws IOException {
+        WeakReference<Object> aLines = lines;
+        int[] res = null;
+        if (aLines != null) {
+            res = (int[]) aLines.get();
+        }
+        if (res == null) {
+            String text = getText();
+            int length = text.length();
+            ArrayList<Integer> list = new ArrayList<Integer>(length/10);
+            // find line and column
+            list.add(Integer.valueOf(0));
+            for (int curOffset = 0; curOffset < length; curOffset++) {
+                char curChar = text.charAt(curOffset);
+                if (curChar == '\n') {
+                    list.add(Integer.valueOf(curOffset+1));
+                }
+            }
+            res = new int[list.size()];
+            for (int i = 0; i < list.size(); i++){
+                res[i] = list.get(i);
+            }
+            lines = new WeakReference<Object>(res);
+        }
+        return res;
+    }
+
+    protected void clearLineCache() {
+        WeakReference<Object> aLines = lines;
+        if (aLines != null) {
+            aLines.clear();
+        }
+    }
 }
