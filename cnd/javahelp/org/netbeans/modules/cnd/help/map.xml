@@ -50,7 +50,8 @@
 	<mapID target="NewAppWizard" url="WorkingWithCandC++Projects/NewAppWizard.html"/>
 	<mapID target="NewDynamicLibWizard" url="WorkingWithCandC++Projects/NewDynamicLibWizard.html"/>
 	<mapID target="NewStaticLibWizard" url="WorkingWithCandC++Projects/NewStaticLibWizard.html"/>
-	<mapID target="NewMakeWizardP1" url="WorkingWithCandC++Projects/NewMakeWizardP5.html"/>
+	<mapID target="NewMakeWizardP0" url="WorkingWithCandC++Projects/NewMakeWizardP0.html"/>
+	<mapID target="NewMakeWizardP1" url="WorkingWithCandC++Projects/NewMakeWizardP1.html"/>
 	<mapID target="NewMakeWizardP2" url="WorkingWithCandC++Projects/NewMakeWizardP2.html"/>
 	<mapID target="NewMakeWizardP3" url="WorkingWithCandC++Projects/NewMakeWizardP3.html"/>
 	<mapID target="ProjectsWindow" url="GettingStarted/ProjectsWindow.html"/>
@@ -148,6 +149,7 @@
 	<mapID target="CodeAssistanceWizardP6" url="WorkingWithCandC++Projects/CodeAssistanceWizardP6.html"/>
 	<mapID target="UsingNavigator" url="EditingSourceFiles/UsingNavigator.html"/>
 	<mapID target="GoToDeclaration" url="EditingSourceFiles/GoToFunction.html"/>
+	<mapID target="GoToOverride" url="EditingSourceFiles/GoToOverride.html"/>
 	<mapID target="AddingFilesAndFolders" url="WorkingWithCandC++Projects/AddingFilesAndFolders.html"/>
 	<mapID target="ProjectPropsRequiredProjects" url="WorkingWithCandC++Projects/ProjectPropsRequired.html"/>
 	<mapID target="Projects" url="CandC++ProjectBasics/Projects.html"/>
@@ -307,4 +309,21 @@
 	<mapID target="visibleColumns" url="images/visibleColumns.png"/>
 	<mapID target="EditingFortranSourceFiles" url="EditingSourceFiles/EditingFortranSourceFiles.html"/>
 	<mapID target="ConfiguringProjectDefaults" url="WorkingWithCandC++Projects/ConfiguringProjectDefaults.html"/>
+	<mapID target="Documenting" url="EditingSourceFiles/Documenting.html"/>
+	<mapID target="AddingUnitTests" url="WorkingWithCandC++Projects/AddingUnitTests.html"/>
+	<mapID target="NewMakeWizardP5" url="WorkingWithCandC++Projects/NewMakeWizardP5.html"/>
+	<mapID target="c_unit_about" url="TestingCandC++Projects/c_unit_about.html"/>
+	<mapID target="c_unit_creatingtests" url="TestingCandC++Projects/c_unit_creatingtests.html"/>
+	<mapID target="c_unit_debuggingtests" url="TestingCandC++Projects/c_unit_debuggingtests.html"/>
+	<mapID target="c_unit_overview" url="TestingCandC++Projects/c_unit_overview.html"/>
+	<mapID target="c_unit_quickref" url="TestingCandC++Projects/c_unit_quickref.html"/>
+	<mapID target="c_unit_resultswindow" url="TestingCandC++Projects/c_unit_resultswindow.html"/>
+	<mapID target="c_unit_runningtests" url="TestingCandC++Projects/c_unit_runningtests.html"/>
+	<mapID target="RemoteDevelopmentConfigureHost" url="WorkingWithCandC++Projects/RemoteDevelopmentConfigureHost.html"/>
+	<mapID target="RemoteDevelopmentProjects" url="WorkingWithCandC++Projects/RemoteDevelopmentProjects.html"/>
+	<mapID target="RemoteDevelopmentManageHosts" url="WorkingWithCandC++Projects/RemoteDevelopmentManageHosts.html"/>
+	<mapID target="GoToOverride1" url="EditingSourceFiles/GoToOverride.html"/>
+	<mapID target="Documenting1" url="EditingSourceFiles/Documenting.html"/>
+	<mapID target="NewMakeWizardP01" url="WorkingWithCandC++Projects/NewMakeWizardP0.html"/>
+	<mapID target="stop" url="images/stop.png"/>
 </map>

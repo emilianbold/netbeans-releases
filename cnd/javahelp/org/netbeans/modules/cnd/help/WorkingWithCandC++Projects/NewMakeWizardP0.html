@@ -13,16 +13,30 @@ Use is subject to license terms.
 <h2>New C/C++ Project With Existing Sources Wizard: Select Mode</h2>
 <p><small><a href="#seealso">See Also</a>&nbsp; </small>
 <p>The New C/C++ Project With Existing Sources wizard enables you to create a 
-project using an existing makefile.</p>
+project using an existing makefile. The wizard can also create a project from
+sources that use a configure script, CMake command, or QMake command to create the makefile.</p>
+
 <p>In the Select Mode page, you specify how the IDE should configure the project.
 </p>
 <ul>
+    <li><b>Specify the folder that contains existing sources.</b>  Type the path
+    or browse to the directory. You can specify either the top directory, or a src subdirectory.
+    </li>
+    <li><b>Development Host.</b>  The default development host is pre-selected but you
+    can change to another host if you have configured remote development hosts.</li>
+    <li><b>Tool Collection.</b>  The default tool collection is pre-selected
+    but you can change it is you have configured more than one tool collection.</li>
     <li><b>Automatic.</b>  Lets the IDE automatically configure
-    the project based on an existing makefile or configure script in the source folder. Note that
-    when the IDE configures the project automatically, it does a clean and build after creating
-    the project. You should not choose Automatic if you have built binaries in your source folder.
-    that you want to keep.</li>
-    <li><b>Custom.</b> Lets you determine how the project is configured.</li>
+    the project based on an existing makefile. If the project uses a GNU build
+    system <tt>configure</tt> script, or is 
+    is configured to use CMake or QMake, the IDE runs the appropriate commands
+    to generate the makefile. Note that when the IDE configures the project
+    automatically, it automatically runs the clean and build targets that are
+    specified in the makefile.  You should not choose Automatic if you have built
+    binaries in your source folder that you want to keep.</li>
+    <li><b>Custom.</b> Lets you determine how the project is configured, prompted
+        by more dialogs. You can disable the automatic clean and build and
+        specify other options.</li>
 
 </ul>
 <table>
