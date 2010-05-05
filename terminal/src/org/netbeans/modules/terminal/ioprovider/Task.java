@@ -45,6 +45,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -56,11 +57,12 @@ import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.openide.util.Exceptions;
 
 import org.openide.windows.IOContainer;
+import org.openide.windows.IOSelect;
+import org.openide.windows.OutputListener;
 import org.openide.xml.XMLUtil;
 
 import org.netbeans.lib.terminalemulator.Coord;
 import org.netbeans.lib.terminalemulator.LineDiscipline;
-import org.openide.windows.OutputListener;
 
 /**
  * Perform a Task on the EDT.
@@ -195,18 +197,24 @@ import org.openide.windows.OutputListener;
 	    container().open();
 	    container().requestActive();
 	     */
+	    /* OLD
 	    // output2 tacks on this " ".
 	    // If anything it protects against null names.
 	    terminal().setTitle(terminal().name() + " ");	// NOI18N
+	     */
+	    terminal().setTitle(terminal().name());
 
 	    // TMP container().add(terminal(), terminal().callBacks());
 	}
     }
 
     static class Select extends Task {
+	private final Set<IOSelect.AdditionalOperation> extraOps;
 
-	public Select(IOContainer container, Terminal terminal) {
+	public Select(IOContainer container, Terminal terminal,
+		      Set<IOSelect.AdditionalOperation> extraOps) {
 	    super(container, terminal);
+	    this.extraOps = extraOps;
 	}
 
 	@Override
@@ -216,6 +224,14 @@ import org.openide.windows.OutputListener;
 	    if (!terminal().isVisibleInContainer()) {
 		container().add(terminal(), terminal().callBacks());
 		terminal().setVisibleInContainer(true);
+	    }
+	    if (extraOps != null) {
+		if (extraOps.contains(IOSelect.AdditionalOperation.OPEN))
+		    container().open();
+		if (extraOps.contains(IOSelect.AdditionalOperation.REQUEST_VISIBLE))
+		    container().requestVisible();
+		if (extraOps.contains(IOSelect.AdditionalOperation.REQUEST_ACTIVE))
+		    container().requestActive();
 	    }
 	    container().select(terminal());
 	}

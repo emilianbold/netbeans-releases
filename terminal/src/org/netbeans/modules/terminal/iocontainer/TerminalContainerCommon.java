@@ -199,17 +199,9 @@ abstract class TerminalContainerCommon extends TerminalContainer implements IOCo
 	removeTab(comp);
     }
 
-    /**
-     * Common implementation.
-     * Subclass should do the actual work and then call us.
-     * @param comp
-     */
     @Override
-    public void select(JComponent comp) {
-	if (owner != null) {
-	    owner.open();
-	    owner.requestActive();
-	}
+    final public void select(JComponent comp) {
+	selectLite(comp);
     }
 
     @Override
@@ -229,12 +221,11 @@ abstract class TerminalContainerCommon extends TerminalContainer implements IOCo
     }
 
     @Override
-    abstract public JComponent getSelected();
-
-    @Override
     public void setTitle(JComponent comp, String title) {
+	/* OLD
 	if (title == null)
 	    title = originalName;
+	*/
 
 	// Remember title in attributes
 	// It gets recalled when we switch from tabbed to soleComponent mode
@@ -329,6 +320,11 @@ abstract class TerminalContainerCommon extends TerminalContainer implements IOCo
 
     abstract protected void restoreAttrsFor(JComponent comp);
 
+    abstract protected void selectLite(JComponent comp);
+
+    @Override
+    abstract public JComponent getSelected();
+
     //
     // Implementation support
     //
@@ -349,6 +345,7 @@ abstract class TerminalContainerCommon extends TerminalContainer implements IOCo
 	CallBacks cb = attributesFor(comp).cb;
 
 	if (cb != null && IOVisibilityControl.isSupported(cb)) {
+	    // SHOULD only check closability if request comes from UI!
 	    if (IOVisibilityControl.isClosable(cb)) {
 		if (! IOVisibilityControl.okToClose(cb))
 		    return;		// close got vetoed.
@@ -401,7 +398,7 @@ abstract class TerminalContainerCommon extends TerminalContainer implements IOCo
 	if (owner == null)
 	    return;
 
-	if (title == null) {
+	if (title == null || title.trim().isEmpty()) {
 	    // sole or no component
 	    owner.setDisplayName(originalName);
 	    owner.setToolTipText(originalName);

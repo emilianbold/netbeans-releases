@@ -197,14 +197,13 @@ final public class TerminalContainerTabbed extends TerminalContainerCommon {
     //
 
     @Override
-    public void select(JComponent comp) {
+    protected void selectLite(JComponent comp) {
         if (soleComponent == null) {
-	    // will call checkSelectinChange() via stateChanged()
+	    // will call checkSelectionChange() via stateChanged()
             tabbedPane.setSelectedComponent(comp);
 	} else {
 	    checkSelectionChange();
 	}
-	super.select(comp);
     }
 
     @Override

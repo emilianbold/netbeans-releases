@@ -106,10 +106,9 @@ final public class TerminalContainerMuxable extends TerminalContainerCommon {
     //
 
     @Override
-    public void select(JComponent comp) {
+    protected void selectLite(JComponent comp) {
 	cardLayout.show(cardContainer, cardName(comp));
 	notify(comp);
-	super.select(comp);
     }
 
     @Override

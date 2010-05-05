@@ -16,6 +16,8 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.EnumMap;
+import java.util.Set;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
@@ -44,6 +46,7 @@ import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.modules.terminal.api.IOVisibility;
 
 import org.netbeans.modules.terminal.api.IOConnect;
+import org.openide.windows.IOSelect;
 import org.netbeans.modules.terminal.ioprovider.Task.ValueTask;
 import org.netbeans.modules.terminal.test.IOTest;
 
@@ -103,7 +106,8 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 						new MyIOVisibility(),
 						new MyIOConnect(),
 						new MyIONotifier(),
-						new MyIOTest()
+						new MyIOTest(),
+						new MyIOSelect()
                                                 );
 
 
@@ -343,7 +347,10 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	protected String getEmulation() {
 	    // Use ValueTask LATER because emulation is at the
 	    // moment an immutable value
-	    return term().getEmulation();
+	    if (term() == null)
+		return "";		// strongly closed
+	    else
+		return term().getEmulation();
 	}
 
 	@Override
@@ -369,11 +376,11 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	protected void setVisible(boolean visible) {
 	    final Task task;
 	    if (visible) {
-		task = new Task.Select(ioContainer, terminal);
+		select();
 	    } else {
 		task = new Task.DeSelect(ioContainer, terminal);
+		task.post();
 	    }
-	    task.post();
 	}
 
 	@Override
@@ -457,6 +464,15 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	@Override
 	protected boolean isQuiescent() {
 	    return Task.isQuiescent();
+	}
+    }
+
+    private class MyIOSelect extends IOSelect {
+
+	@Override
+	protected void select(Set<IOSelect.AdditionalOperation> extraOps) {
+	    Task task = new Task.Select(ioContainer, terminal, extraOps);
+	    task.post();
 	}
     }
 
@@ -670,7 +686,10 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     @Override
     public void select() {
-	Task task = new Task.Select(ioContainer, terminal);
+	Set<IOSelect.AdditionalOperation> extraOps =
+	    EnumSet.of(IOSelect.AdditionalOperation.OPEN,
+		       IOSelect.AdditionalOperation.REQUEST_VISIBLE);
+	Task task = new Task.Select(ioContainer, terminal, extraOps);
 	task.post();
     }
 
