@@ -38,11 +38,47 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
-import javax.swing.event.ChangeListener;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import javax.swing.JPanel;
 
 /**
  *
  * @author ak119685
  */
-public interface ValidationListener extends ChangeListener {
+public abstract class ValidateablePanel extends JPanel {
+
+    private final List<ValidatablePanelListener> listeners = new CopyOnWriteArrayList<ValidatablePanelListener>();
+
+    public final void addValidationListener(ValidatablePanelListener listener) {
+        if (listener == null) {
+            return;
+        }
+
+        listeners.add(listener);
+    }
+
+    public final void removeValidationListener(ValidatablePanelListener listener) {
+        if (listener == null) {
+            return;
+        }
+
+        listeners.remove(listener);
+    }
+
+    public final void fireChange() {
+        if (listeners.isEmpty()) {
+            return;
+        }
+
+        for (ValidatablePanelListener listener : listeners) {
+            listener.stateChanged(this);
+        }
+    }
+
+    public abstract boolean hasProblem();
+
+    public abstract String getProblem();
+
+    public abstract void applyChanges(Object customData);
 }
