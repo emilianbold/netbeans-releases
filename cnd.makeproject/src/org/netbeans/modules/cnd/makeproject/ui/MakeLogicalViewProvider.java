@@ -1197,7 +1197,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public boolean canDestroy() {
-            return true;
+            return getFolder().isDiskFolder();
         }
 
         @Override
@@ -2170,7 +2170,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         public DeleteNodeAction() {
             super(SystemAction.get(DeleteAction.class));
         }
-    }
+        }
 
     private static StandardNodeAction createRenameAction() {
         if (renameAction == null) {
