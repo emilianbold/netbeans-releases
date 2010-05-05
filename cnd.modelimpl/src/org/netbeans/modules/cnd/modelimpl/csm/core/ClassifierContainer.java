@@ -44,24 +44,32 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.ClassifierContainerKey;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -72,6 +80,7 @@ import org.openide.util.CharSequences;
 
     private final Map<CharSequence, CsmUID<CsmClassifier>> classifiers;
     private final Map<CharSequence, CsmUID<CsmClassifier>> typedefs;
+    private final Map<CharSequence, Set<CsmUID<CsmInheritance>>> inheritances;
     private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
 
     // empty stub
@@ -95,6 +104,7 @@ import org.openide.util.CharSequences;
         super(new ClassifierContainerKey(project.getUniqueName().toString()), false);
         classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
+        inheritances = new HashMap<CharSequence, Set<CsmUID<CsmInheritance>>>();
         put();
     }
 
@@ -106,6 +116,9 @@ import org.openide.util.CharSequences;
         collSize = input.readInt();
         typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>(collSize);
         UIDObjectFactory.getDefaultFactory().readStringToUIDMap(this.typedefs, input, QualifiedNameCache.getManager(), collSize);
+        collSize = input.readInt();
+        inheritances = new HashMap<CharSequence, Set<CsmUID<CsmInheritance>>>();
+        UIDObjectFactory.getDefaultFactory().readStringToUIDMapSet(this.inheritances, input, NameCache.getManager(), collSize);
     }
 
     // only for EMPTY static field
@@ -113,6 +126,7 @@ import org.openide.util.CharSequences;
         super((org.netbeans.modules.cnd.repository.spi.Key) null, false);
         classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
+        inheritances = new HashMap<CharSequence, Set<CsmUID<CsmInheritance>>>();
     }
     
     public CsmClassifier getClassifier(CharSequence qualifiedName) {
@@ -131,6 +145,22 @@ import org.openide.util.CharSequences;
         result = UIDCsmConverter.UIDtoDeclaration(uid);
         return result;
     }
+
+    public Collection<CsmInheritance> getInheritances(CharSequence name){
+        Collection<CsmUID<CsmInheritance>> inh;
+        name = CharSequences.create(name);
+        try {
+            declarationsLock.readLock().lock();
+            inh = inheritances.get(name);
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
+        if (inh != null) {
+            return UIDCsmConverter.<CsmInheritance>UIDsToInheritances(inh);
+        }
+        return Collections.<CsmInheritance>emptyList();
+    }
+
 
     // for unit teast
     Map<CharSequence, CsmClassifier> getClassifiers(){
@@ -168,6 +198,26 @@ import org.openide.util.CharSequences;
             map = typedefs;
         } else {
             map = classifiers;
+            if (CsmKindUtilities.isClass(decl)) {
+                CsmClass cls = (CsmClass) decl;
+                Collection<CsmInheritance> base = cls.getBaseClasses();
+                if (!base.isEmpty()) {
+                    try {
+                        declarationsLock.writeLock().lock();
+                        for(CsmInheritance inh : base) {
+                            CharSequence id = inheritanceName(inh);
+                            Set<CsmUID<CsmInheritance>> set = inheritances.get(id);
+                            if (set == null) {
+                                set = new HashSet<CsmUID<CsmInheritance>>();
+                                inheritances.put(id, set);
+                            }
+                            set.add(UIDCsmConverter.inheritanceToUID(inh));
+                        }
+                    } finally {
+                        declarationsLock.writeLock().unlock();
+                    }
+                }
+            }
         }
         CharSequence qn = decl.getQualifiedName();
         put = putClassifier(map, qn, uid);
@@ -182,7 +232,21 @@ import org.openide.util.CharSequences;
         return put;
     }
 
-    public boolean putClassifier(Map<CharSequence, CsmUID<CsmClassifier>> map, CharSequence qn, CsmUID<CsmClassifier> uid) {
+    private CharSequence inheritanceName(CsmInheritance inh) {
+        CharSequence id;
+        if (inh instanceof TypeImpl) {
+            id = ((TypeImpl) inh.getAncestorType()).getOwnText();
+        } else {
+            id = inh.getAncestorType().getClassifierText();
+        }
+        int i = CharSequenceUtils.lastIndexOf(id, "::"); //NOI18N
+        if (i >= 0) {
+            id = id.subSequence(i+2, id.length()-1);
+        }
+        return NameCache.getManager().getString(id);
+    }
+
+    private boolean putClassifier(Map<CharSequence, CsmUID<CsmClassifier>> map, CharSequence qn, CsmUID<CsmClassifier> uid) {
         boolean put = false;
         try {
             declarationsLock.writeLock().lock();
@@ -207,6 +271,24 @@ import org.openide.util.CharSequences;
             map = typedefs;
         } else {
             map = classifiers;
+            if (CsmKindUtilities.isClass(decl)) {
+                CsmClass cls = (CsmClass) decl;
+                Collection<CsmInheritance> base = cls.getBaseClasses();
+                if (!base.isEmpty()) {
+                    try {
+                        declarationsLock.writeLock().lock();
+                        for(CsmInheritance inh : base) {
+                            CharSequence id = inheritanceName(inh);
+                            Set<CsmUID<CsmInheritance>> set = inheritances.get(id);
+                            if (set != null) {
+                                set.remove(UIDCsmConverter.inheritanceToUID(inh));
+                            }
+                        }
+                    } finally {
+                        declarationsLock.writeLock().unlock();
+                    }
+                }
+            }
         }
         CharSequence qn = decl.getQualifiedName();
         removeClassifier(map, qn);
@@ -220,7 +302,7 @@ import org.openide.util.CharSequences;
         }
     }
 
-    public void removeClassifier(Map<CharSequence, CsmUID<CsmClassifier>> map, CharSequence qn) {
+    private void removeClassifier(Map<CharSequence, CsmUID<CsmClassifier>> map, CharSequence qn) {
         CsmUID<CsmClassifier> uid;
         try {
             declarationsLock.writeLock().lock();
@@ -271,6 +353,7 @@ import org.openide.util.CharSequences;
             declarationsLock.readLock().lock();
             UIDObjectFactory.getDefaultFactory().writeStringToUIDMap(this.classifiers, output, false);
             UIDObjectFactory.getDefaultFactory().writeStringToUIDMap(this.typedefs, output, false);
+            UIDObjectFactory.getDefaultFactory().writeStringToUIDMapSet(this.inheritances, output);
         } finally {
             declarationsLock.readLock().unlock();
         }

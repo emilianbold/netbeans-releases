@@ -1238,6 +1238,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         protected void createPasteTypes(Transferable transferable, List<PasteType> list) {
+            if (folder.isTestLogicalFolder()) {
+                // Don't drop items into a regular test folder (IZ 185173)
+                return;
+            }
             DataFlavor[] flavors = transferable.getTransferDataFlavors();
             for (int i = 0; i < flavors.length; i++) {
                 if (flavors[i].getSubType().equals(SUBTYPE)) {
@@ -1358,6 +1362,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         private void copyItemConfigurations(ItemConfiguration[] newConfigurations, ItemConfiguration[] oldConfigurations) {
             // Only allowing copying configurations within same project
+            if (newConfigurations == null || oldConfigurations == null) {
+                return;
+            }
             assert newConfigurations.length == oldConfigurations.length;
             for (int i = 0; i < newConfigurations.length; i++) {
                 newConfigurations[i].assignValues(oldConfigurations[i]);
@@ -1371,10 +1378,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             }
             Item item = viewItemNode.getItem();
             ItemConfiguration[] oldConfigurations = item.getItemConfigurations();
-            if (oldConfigurations.length == 0) {
-                // Item may have been removed or renamed inbetween copy and paste
-                return null;
-            }
+//            if (oldConfigurations.length == 0) {
+//                // Item may have been removed or renamed inbetween copy and paste
+//                return null;
+//            }
             if (type == DnDConstants.ACTION_MOVE) {
                 // Drag&Drop, Cut&Paste
                 if (toFolder.getProject() == viewItemNode.getFolder().getProject()) {
@@ -1791,8 +1798,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 //            File file = new File(item.getAbsPath());
 //            if (file.exists())
 //                file.delete();
-            folder.removeItemAction(item);
             super.destroy();
+            folder.removeItemAction(item);
         }
 
         @Override

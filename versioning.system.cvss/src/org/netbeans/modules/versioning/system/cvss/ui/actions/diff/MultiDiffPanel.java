@@ -302,7 +302,9 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     }
 
     void requestActive() {
-        if (diffView != null) {
+        if (fileTable != null) {
+            fileTable.getTable().requestFocusInWindow();
+        } else if (diffView != null) {
             diffView.requestFocusInWindow();
         }
     }
@@ -541,7 +543,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         } else {
             diffViewPanel.setComponent(diffView);
         }
-        diffView.requestFocusInWindow(); // #181451 HACK
     }
 
     public void actionPerformed(ActionEvent e) {

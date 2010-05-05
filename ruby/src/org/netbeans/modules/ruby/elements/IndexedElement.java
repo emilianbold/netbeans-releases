@@ -74,6 +74,8 @@ public abstract class IndexedElement extends RubyElement {
     public static final int STATIC = 1 << 4;
     /** This element is deliberately not documented (rdoc :nodoc:) */
     public static final int NODOC = 1 << 5;
+    /** This element is virtual, i.e. doesn't have a direct match in sources/AST*/
+    public static final int VIRTUAL = 1 << 6;
     
     protected final FileObject file;
     protected final String clz;
@@ -318,6 +320,13 @@ public abstract class IndexedElement extends RubyElement {
         return (flags & NODOC) != 0;
     }
     
+    /**
+     * @see #VIRTUAL
+     */
+    public boolean isVirtual() {
+        return (flags & VIRTUAL) != 0;
+    }
+
     // For testsuite
     public static String decodeFlags(int flags) {
         StringBuilder sb = new StringBuilder();
@@ -338,6 +347,9 @@ public abstract class IndexedElement extends RubyElement {
         }
         if ((flags & NODOC) != 0) {
             sb.append("|NODOC");
+        }
+        if ((flags & VIRTUAL) != 0) {
+            sb.append("|VIRTUAL");
         }
         
         return sb.toString();
@@ -363,6 +375,9 @@ public abstract class IndexedElement extends RubyElement {
         }
         if (string.indexOf("|NODOC") != -1) {
             flags += NODOC;
+        }
+        if (string.indexOf("|VIRTUAL") != -1) {
+            flags += VIRTUAL;
         }
 
         return flags;

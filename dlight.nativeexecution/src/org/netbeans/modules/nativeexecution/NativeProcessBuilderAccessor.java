@@ -36,21 +36,44 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.spi.pty;
+package org.netbeans.modules.nativeexecution;
 
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
-import org.openide.windows.InputOutput;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.pty.Pty;
 
 /**
- * SPI for connecting <tt>InputOutput</tt> with a nativeprocess/pty
- * 
- * @see PtySupport
+ *
  * @author ak119685
  */
-public interface IOConnector {
+public abstract class NativeProcessBuilderAccessor {
 
-    public boolean connect(InputOutput io, NativeProcess process);
+    private static volatile NativeProcessBuilderAccessor DEFAULT;
 
-    public boolean connect(InputOutput io, Pty pty);
+    public static void setDefault(NativeProcessBuilderAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException(
+                    "ConnectionManagerAccessor is already defined"); // NOI18N
+        }
+
+        DEFAULT = accessor;
+    }
+
+    public static synchronized NativeProcessBuilderAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        try {
+            Class.forName(NativeProcessBuilder.class.getName(), true,
+                    NativeProcessBuilder.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+        }
+
+        return DEFAULT;
+    }
+
+    public abstract void setPty(NativeProcessBuilder builder, Pty pty);
+
+    public abstract ExecutionEnvironment getExecutionEnvironment(NativeProcessBuilder builder);
 }

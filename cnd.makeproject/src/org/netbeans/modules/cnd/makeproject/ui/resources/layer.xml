@@ -296,6 +296,11 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.ConfigurationManagerAction"/>
             </file>            
         </folder>
+        <folder name="Tools">
+            <file name="org-netbeans-modules-cnd-makeproject-actions-TestSubmenuAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.actions.NewTestActionFactory.createNewTestsSubmenu"/>
+            </file>
+        </folder>
     </folder>
     
     <folder name="Menu"> <!-- Hacking menus -->
