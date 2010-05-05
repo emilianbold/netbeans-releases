@@ -39,6 +39,10 @@
 
 package org.netbeans.modules.jira.util;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -52,10 +56,6 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.jira.core.model.IssueType;
-import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
-import org.eclipse.mylyn.internal.jira.core.model.Priority;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.jira.Jira;

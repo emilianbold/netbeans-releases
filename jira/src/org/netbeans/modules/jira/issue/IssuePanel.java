@@ -38,6 +38,15 @@
  */
 package org.netbeans.modules.jira.issue;
 
+import com.atlassian.connector.eclipse.internal.jira.core.IJiraConstants;
+import com.atlassian.connector.eclipse.internal.jira.core.JiraAttribute;
+import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
+import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -105,15 +114,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.jira.core.IJiraConstants;
-import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
-import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
-import org.eclipse.mylyn.internal.jira.core.model.IssueType;
-import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
-import org.eclipse.mylyn.internal.jira.core.model.Priority;
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
-import org.eclipse.mylyn.internal.jira.core.model.Version;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
@@ -268,8 +268,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         componentList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if (value instanceof org.eclipse.mylyn.internal.jira.core.model.Component) {
-                    value = ((org.eclipse.mylyn.internal.jira.core.model.Component)value).getName();
+                if (value instanceof com.atlassian.connector.eclipse.internal.jira.core.model.Component) {
+                    value = ((com.atlassian.connector.eclipse.internal.jira.core.model.Component)value).getName();
                 }
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
@@ -851,7 +851,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         List<String> keys = new ArrayList<String>(values.length);
         for (int i=0; i<values.length; i++) {
             switch (field) {
-                case COMPONENT: keys.add(((org.eclipse.mylyn.internal.jira.core.model.Component)values[i]).getId()); break;
+                case COMPONENT: keys.add(((com.atlassian.connector.eclipse.internal.jira.core.model.Component)values[i]).getId()); break;
                 case AFFECTSVERSIONS: keys.add(((Version)values[i]).getId()); break;
                 case FIXVERSIONS: keys.add(((Version)values[i]).getId()); break;
                 default: throw new UnsupportedOperationException();
@@ -957,9 +957,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         panel.add(label3, c);
     }
 
-    private List<org.eclipse.mylyn.internal.jira.core.model.Component> componentsByIds(String projectId, List<String> componentIds) {
+    private List<com.atlassian.connector.eclipse.internal.jira.core.model.Component> componentsByIds(String projectId, List<String> componentIds) {
         JiraConfiguration config = issue.getRepository().getConfiguration();
-        List<org.eclipse.mylyn.internal.jira.core.model.Component> components = new ArrayList<org.eclipse.mylyn.internal.jira.core.model.Component>(componentIds.size());
+        List<com.atlassian.connector.eclipse.internal.jira.core.model.Component> components = new ArrayList<com.atlassian.connector.eclipse.internal.jira.core.model.Component>(componentIds.size());
         for (String id : componentIds) {
             components.add(config.getComponentById(projectId, id));
         }
@@ -1888,7 +1888,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
                         // Reload components
                         DefaultListModel componentModel = new DefaultListModel();
-                        for (org.eclipse.mylyn.internal.jira.core.model.Component component : config.getComponents(project)) {
+                        for (com.atlassian.connector.eclipse.internal.jira.core.model.Component component : config.getComponents(project)) {
                             componentModel.addElement(component);
                         }
                         componentList.setModel(componentModel);
