@@ -238,19 +238,6 @@ public class EarActionProvider implements ActionProvider {
             }
             setDirectoryDeploymentProperty(p);
             
-            //see issue 83056
-            if (project.evaluator().getProperty("app.client") != null) { //MOI18N
-                NotifyDescriptor nd;
-                nd = new NotifyDescriptor.Message(NbBundle.getMessage(EarActionProvider.class, "MSG_Server_State_Question"), NotifyDescriptor.QUESTION_MESSAGE);
-                nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
-                nd.setOptions(new Object[] {NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION});
-                if (DialogDisplayer.getDefault().notify(nd) != NotifyDescriptor.YES_OPTION) {
-                    nd = new NotifyDescriptor.Message(NbBundle.getMessage(EarActionProvider.class, "MSG_Server_State"), NotifyDescriptor.INFORMATION_MESSAGE);
-                    Object o = DialogDisplayer.getDefault().notify(nd);
-                    return null;
-                }
-            }
-            
             if (isDebugged()) {
                 p.setProperty("is.debugged", "true"); // NOI18N
             }
