@@ -277,7 +277,8 @@ abstract class KenaiRepositories {
                 kenaiProject = null;
                 BugtrackingManager.LOG.log(Level.WARNING,
                         "No Kenai project is available for bugtracking repository " //NOI18N
-                        + " [" + url + "]", ex);                           //NOI18N
+                        + " [" + url + "]"); //NOI18N
+                BugtrackingManager.LOG.log(Level.FINE, null, ex);
             }
             return kenaiProject;
         }
