@@ -60,7 +60,7 @@ public class ShellTermAction extends AbstractAction {
 	Config config = Config.getShellConfig();
 	final TerminalIOProviderSupport support = new TerminalIOProviderSupport(config);
 
-	IOContainer container = TerminalIOProviderSupport.getIOContainer();
+	IOContainer container = TerminalIOProviderSupport.getIOContainer(config);
 	container = null;	// work with default IO container
 
 	IOProvider iop = TerminalIOProviderSupport.getIOProvider();

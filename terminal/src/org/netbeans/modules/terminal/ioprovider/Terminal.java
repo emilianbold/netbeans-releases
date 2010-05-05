@@ -124,7 +124,7 @@ import org.openide.windows.OutputListener;
  * </pre>
  * @author ivan
  */
-public final class Terminal extends JComponent {
+/* package */ final class Terminal extends JComponent {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
@@ -136,7 +136,6 @@ public final class Terminal extends JComponent {
     private final CallBacks callBacks = new CallBacks();
 
     // Not final so we can dispose of them
-    private Action[] actions;
     private ActiveTerm term;
     private final TermListener termListener;
     private FindState findState;
@@ -243,13 +242,12 @@ public final class Terminal extends JComponent {
         }
     }
 
-    /* package */ Terminal(IOContainer ioContainer, TerminalInputOutput tio, Action[] actions, String name) {
+    /* package */ Terminal(IOContainer ioContainer, TerminalInputOutput tio, String name) {
 	if (ioContainer == null)
 	    throw new IllegalArgumentException("ioContainer cannot be null");	// NOI18N
 
         this.ioContainer = ioContainer;
 	this.tio = tio;
-        this.actions = (actions == null)? new Action[0]: actions;
 	this.name = name;
 
         termOptions = TermOptions.getDefault(prefs);
@@ -328,7 +326,6 @@ public final class Terminal extends JComponent {
         term.getScreen().removeMouseListener(mouseAdapter);
 	term.removeListener(termListener);
 	term.setActionListener(null);
-	actions = null;
 	findState = null;
 	term = null;
         termOptions.removePropertyChangeListener(termOptionsPCL);
@@ -398,20 +395,6 @@ public final class Terminal extends JComponent {
     }
 
     private void applyTermOptions(boolean initial) {
-        /* OLD
-        Font font = term.getFont();
-        if (font != null) {
-            Font newFont = new Font(font.getName(),
-                                    font.getStyle(),
-                                    termOptions.getFontSize());
-            term.setFont(newFont);
-        } else {
-            Font newFont = new Font("monospaced",
-                                    java.awt.Font.PLAIN,
-                                    termOptions.getFontSize());
-            term.setFont(newFont);
-        }
-        */
         term.setFixedFont(true);
         term.setFont(termOptions.getFont());
 
@@ -453,10 +436,6 @@ public final class Terminal extends JComponent {
 
     FindState getFindState() {
         return findState;
-    }
-
-    Action[] getActions() {
-        return actions;
     }
 
     private final class ClearAction extends AbstractAction {
@@ -543,8 +522,18 @@ public final class Terminal extends JComponent {
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled())
                 return;
+
+	    // OLD ioContainer.find(Terminal.this);
+	    // the following is code that used to be in TerminalContainer.find():
+	    FindState findState = getFindState();
+	    if (findState.isVisible()) {
+		return;
+	    }
+	    findState.setVisible(true);
 	    /* LATER
-	    ioContainer.find(Terminal.this);
+	    findBar.setState(findState);
+	    add(findBar, BorderLayout.SOUTH);
+	    validate();
 	     */
         }
     }
@@ -685,6 +674,8 @@ public final class Terminal extends JComponent {
 	menu.putClientProperty("container", ioContainer); // NOI18N
         menu.putClientProperty("component", this);             // NOI18N
 
+	/* LATER?
+	 * NB IO APIS don't add sidebar actions to menu
         Action[] acts = getActions();
         if (acts.length > 0) {
             for (Action a : acts) {
@@ -694,6 +685,7 @@ public final class Terminal extends JComponent {
             if (menu.getSubElements().length > 0)
                 menu.add(new JSeparator());
         }
+	 */
         addMenuItem(menu, copyAction);
         addMenuItem(menu, pasteAction);
         addMenuItem(menu, new JSeparator());

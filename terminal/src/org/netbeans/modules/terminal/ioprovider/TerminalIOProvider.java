@@ -67,10 +67,10 @@ public final class TerminalIOProvider extends IOProvider {
 
 	Set<TerminalInputOutput> candidates = new HashSet<TerminalInputOutput>();
 
-	if (!newIO) {
+	if (!newIO && name != null) {
 	    // find candidates for reuse
 	    for (TerminalInputOutput tio : list) {
-		if (tio.name().equals(name) && !tio.terminal().isConnected())
+		if (name.equals(tio.name()) && !tio.terminal().isConnected())
 		    candidates.add(tio);
 	    }
 	}

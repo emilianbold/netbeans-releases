@@ -41,6 +41,8 @@ import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.modules.terminal.api.IOVisibility;
 import org.netbeans.terminal.example.Config.AllowClose;
+import org.netbeans.terminal.example.control.ControlModel;
+import org.netbeans.terminal.example.topcomponent.MuxableTerminalTopComponent;
 import org.netbeans.terminal.example.topcomponent.TerminalTopComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -330,6 +332,8 @@ public final class TerminalIOProviderSupport {
 		actions = new Action[0];
 	    }
 
+	    title = "" + serialNo++ + ":" + title;
+
 	    io = iop.getIO(title, actions, ioContainer);
 
 	    if (IONotifier.isSupported(io)) {
@@ -382,6 +386,9 @@ public final class TerminalIOProviderSupport {
 	    } catch (IOException ex) {
 		Exceptions.printStackTrace(ex);
 	    }
+
+	    ControlModel.add(io, config, title);
+
 	    return io;
 	}
 
@@ -618,6 +625,8 @@ public final class TerminalIOProviderSupport {
 	}
     }
 
+    private static int serialNo = 0;
+
     private final Config config;
 
     private ExecutionSupport richExecutionSupport = new RichExecutionSupport();
@@ -688,9 +697,18 @@ public final class TerminalIOProviderSupport {
     }
 
 
-    public static IOContainer getIOContainer() {
-	TerminalTopComponent ttc = TerminalTopComponent.findInstance();
-	return ttc.ioContainer();
+    public static IOContainer getIOContainer(Config config) {
+	switch (config.getContainerStyle()) {
+	    case MUXED: {
+		MuxableTerminalTopComponent ttc = MuxableTerminalTopComponent.findInstance();
+		return ttc.ioContainer();
+		}
+	    case TABBED:
+	    default: {
+		TerminalTopComponent ttc = TerminalTopComponent.findInstance();
+		return ttc.ioContainer();
+		}
+	}
     }
 
     public static IOProvider getIOProvider() {

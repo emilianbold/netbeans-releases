@@ -43,7 +43,8 @@ import javax.swing.JComponent;
 import org.openide.windows.IOContainer;
 import org.openide.windows.TopComponent;
 
-import org.netbeans.modules.terminal.ioprovider.TerminalContainerImpl;
+import org.netbeans.modules.terminal.iocontainer.TerminalContainerTabbed;
+import org.netbeans.modules.terminal.iocontainer.TerminalContainerMuxable;
 
 /**
  * Help a {@link org.openide.windows.TopComponent} be a an
@@ -58,12 +59,18 @@ import org.netbeans.modules.terminal.ioprovider.TerminalContainerImpl;
  * <li>
  * Change it's Layout to be BorderLayout.
  * <li>
+ * Optionally have it implement {@link org.netbeans.modules.terminal.api.IOTopComponent}.
+ * <li>
  * Add the following code to it:
  * <pre>
     private TerminalContainer tc;
 
     public IOContainer ioContainer() {
         return tc.ioContainer();
+    }
+
+    public TopComponent topComponent() {
+        return this;
     }
 
     private void initComponents2() {
@@ -94,7 +101,11 @@ import org.netbeans.modules.terminal.ioprovider.TerminalContainerImpl;
 public abstract class TerminalContainer extends JComponent {
 
     public static TerminalContainer create(TopComponent tc, String name) {
-	return new TerminalContainerImpl(tc, name);
+	return new TerminalContainerTabbed(tc, name);
+    }
+
+    public static TerminalContainer createMuxable(TopComponent tc, String name) {
+	return new TerminalContainerMuxable(tc, name);
     }
 
     public abstract IOContainer ioContainer();

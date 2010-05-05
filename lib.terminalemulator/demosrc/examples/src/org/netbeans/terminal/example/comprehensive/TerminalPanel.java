@@ -13,6 +13,7 @@ package org.netbeans.terminal.example.comprehensive;
 
 import org.netbeans.terminal.example.Config;
 import org.netbeans.terminal.example.Config.AllowClose;
+import org.netbeans.terminal.example.Config.ContainerStyle;
 import org.netbeans.terminal.example.Config.Provider;
 import org.netbeans.terminal.example.Config.DispatchThread;
 import org.netbeans.terminal.example.Config.Execution;
@@ -38,6 +39,7 @@ public final class TerminalPanel extends javax.swing.JPanel {
 		getThread(),
 		getExecution(),
 		getIOShuttling(),
+		getContainerStyle(),
 		isRestartable(),
 		isHUPOnClose(),
 		isKeep()
@@ -106,6 +108,13 @@ public final class TerminalPanel extends javax.swing.JPanel {
 	    return IOShuttling.EXTERNAL;
     }
 
+    private Config.ContainerStyle getContainerStyle() {
+	if (tabbedRadioButton.isSelected())
+	    return ContainerStyle.TABBED;
+	else
+	    return ContainerStyle.MUXED;
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -124,6 +133,7 @@ public final class TerminalPanel extends javax.swing.JPanel {
                 executionButtonGroup = new javax.swing.ButtonGroup();
                 ioShuttlingButtonGroup = new javax.swing.ButtonGroup();
                 allowCloseButtonGroup = new javax.swing.ButtonGroup();
+                conainerStyleButtonGroup = new javax.swing.ButtonGroup();
                 commandLabel = new javax.swing.JLabel();
                 commandTextField = new javax.swing.JTextField();
                 containerProviderLabel = new javax.swing.JLabel();
@@ -151,6 +161,8 @@ public final class TerminalPanel extends javax.swing.JPanel {
                 hupOnCloseCheckBox = new javax.swing.JCheckBox();
                 keepLabel = new javax.swing.JLabel();
                 keepCheckBox = new javax.swing.JCheckBox();
+                tabbedRadioButton = new javax.swing.JRadioButton();
+                multiplexedRadioButton = new javax.swing.JRadioButton();
 
                 commandLabel.setText(org.openide.util.NbBundle.getMessage(TerminalPanel.class, "TerminalPanel.commandLabel.text")); // NOI18N
 
@@ -226,6 +238,13 @@ public final class TerminalPanel extends javax.swing.JPanel {
 
                 keepCheckBox.setText(org.openide.util.NbBundle.getMessage(TerminalPanel.class, "TerminalPanel.keepCheckBox.text")); // NOI18N
 
+                conainerStyleButtonGroup.add(tabbedRadioButton);
+                tabbedRadioButton.setText(org.openide.util.NbBundle.getMessage(TerminalPanel.class, "TerminalPanel.tabbedRadioButton.text")); // NOI18N
+
+                conainerStyleButtonGroup.add(multiplexedRadioButton);
+                multiplexedRadioButton.setSelected(true);
+                multiplexedRadioButton.setText(org.openide.util.NbBundle.getMessage(TerminalPanel.class, "TerminalPanel.multiplexedRadioButton.text")); // NOI18N
+
                 javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
                 this.setLayout(layout);
                 layout.setHorizontalGroup(
@@ -243,11 +262,8 @@ public final class TerminalPanel extends javax.swing.JPanel {
                                         .addComponent(excutionLabel)
                                         .addComponent(threadLabel)
                                         .addComponent(restartableLabel)
-                                        .addGroup(layout.createSequentialGroup()
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                        .addComponent(keepLabel)
-                                                        .addComponent(hupOnCloseLabel))
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                                        .addComponent(keepLabel)
+                                        .addComponent(hupOnCloseLabel))
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addComponent(commandTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -280,7 +296,11 @@ public final class TerminalPanel extends javax.swing.JPanel {
                                         .addComponent(threadRadioButton_EDT)
                                         .addComponent(restartableCheckBox)
                                         .addComponent(hupOnCloseCheckBox)
-                                        .addComponent(keepCheckBox))
+                                        .addComponent(keepCheckBox)
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(tabbedRadioButton)
+                                                .addGap(18, 18, 18)
+                                                .addComponent(multiplexedRadioButton)))
                                 .addContainerGap(76, Short.MAX_VALUE))
                 );
                 layout.setVerticalGroup(
@@ -295,6 +315,10 @@ public final class TerminalPanel extends javax.swing.JPanel {
                                         .addComponent(containerProviderLabel)
                                         .addComponent(containerProviderRadioButton_DEFAULT)
                                         .addComponent(containerProviderRadioButton_TERM))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(tabbedRadioButton)
+                                        .addComponent(multiplexedRadioButton))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                         .addComponent(jLabel1)
@@ -345,6 +369,7 @@ public final class TerminalPanel extends javax.swing.JPanel {
         private javax.swing.JRadioButton allowCloseRadioButton_NEVER;
         private javax.swing.JLabel commandLabel;
         private javax.swing.JTextField commandTextField;
+        private javax.swing.ButtonGroup conainerStyleButtonGroup;
         private javax.swing.ButtonGroup containerProviderButtonGroup;
         private javax.swing.JLabel containerProviderLabel;
         private javax.swing.JRadioButton containerProviderRadioButton_DEFAULT;
@@ -365,10 +390,12 @@ public final class TerminalPanel extends javax.swing.JPanel {
         private javax.swing.JLabel jLabel1;
         private javax.swing.JCheckBox keepCheckBox;
         private javax.swing.JLabel keepLabel;
+        private javax.swing.JRadioButton multiplexedRadioButton;
         private javax.swing.ButtonGroup providerButtonGroup;
         private javax.swing.JCheckBox restartableCheckBox;
         private javax.swing.JLabel restartableLabel;
         private javax.swing.JRadioButton rpRadioButton;
+        private javax.swing.JRadioButton tabbedRadioButton;
         private javax.swing.ButtonGroup tcButtonGroup;
         private javax.swing.ButtonGroup threadButtonGroup;
         private javax.swing.JLabel threadLabel;
