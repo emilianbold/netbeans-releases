@@ -289,7 +289,7 @@ public class ConfigurationDescriptorProvider {
         String ideType = SunStudioUserCounter.getIDEType().getTag();
         if (USG_PROJECT_CREATE_CND.equals(msg)) {
             // stop here
-            UIGesturesSupport.submit(msg, type, flavor, family, host, platform, "USER_PROJECT", ideType);
+            UIGesturesSupport.submit(msg, type, flavor, family, host, platform, "USER_PROJECT", ideType); //NOI18N
         } else if (projectItems != null) {
             makeConfiguration.reCountLanguages(descr);
             int size = 0;

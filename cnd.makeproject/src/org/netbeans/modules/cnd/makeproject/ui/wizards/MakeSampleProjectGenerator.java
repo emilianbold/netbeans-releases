@@ -234,7 +234,7 @@ public class MakeSampleProjectGenerator {
             family = buffer.toString();
         }
         UIGesturesSupport.submit(ConfigurationDescriptorProvider.USG_PROJECT_CREATE_CND,
-                "APPLICATION", flavor, family, host, platform, "SAMPLE_PROJECT");
+                "APPLICATION", flavor, family, host, platform, "SAMPLE_PROJECT"); //NOI18N
     }
 
     public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, ProjectGenerator.ProjectParameters prjParams) throws IOException {
