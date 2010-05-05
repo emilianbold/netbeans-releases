@@ -56,9 +56,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -69,6 +66,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -199,14 +197,8 @@ public class MakeSampleProjectGenerator {
     
     // http://wiki.netbeans.org/UsageLoggingSpecification
     private static void recordCreateSampleProject(ExecutionEnvironment env) {
-        final Logger logger = Logger.getLogger(ConfigurationDescriptorProvider.USG_LOGGER_NAME);
-        if (!logger.isLoggable(Level.INFO)) {
-            return;
-        }
         CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
         CompilerSet compilerSet = compilerSetManager.getDefaultCompilerSet();
-        LogRecord logRecord = new LogRecord(Level.INFO, ConfigurationDescriptorProvider.USG_PROJECT_CREATE_CND);
-        logRecord.setLoggerName(logger.getName());
         String host;
         if (env.isLocal()) {
             host = "LOCAL"; // NOI18N
@@ -241,8 +233,8 @@ public class MakeSampleProjectGenerator {
             }
             family = buffer.toString();
         }
-        logRecord.setParameters(new Object[]{"APPLICATION", flavor, family, host, platform, "SAMPLE_PROJECT"}); // NOI18N
-        logger.log(logRecord);
+        UIGesturesSupport.submit(ConfigurationDescriptorProvider.USG_PROJECT_CREATE_CND,
+                "APPLICATION", flavor, family, host, platform, "SAMPLE_PROJECT");
     }
 
     public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, ProjectGenerator.ProjectParameters prjParams) throws IOException {
