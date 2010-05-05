@@ -39,20 +39,25 @@
 package org.netbeans.modules.cnd.simpleunit.wizard;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.openide.WizardDescriptor;
+import org.openide.loaders.DataObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-public class GenerateTestChooseElementsWizard implements WizardDescriptor.Panel {
-
+public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.Panel {
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private GenerateTestChooseElementsPanel component;
+    private GenerateTestChooseElementsVisualPanel component;
     private Lookup lookup;
-    
-    public GenerateTestChooseElementsWizard() {
+    private final ChangeSupport cs;
+    public GenerateTestChooseElementsWizardPanel() {
+        cs = new ChangeSupport(this);
     }
 
 
@@ -60,9 +65,10 @@ public class GenerateTestChooseElementsWizard implements WizardDescriptor.Panel 
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
-    public GenerateTestChooseElementsPanel getComponent() {
+    public GenerateTestChooseElementsVisualPanel getComponent() {
         if (component == null) {
-            component = new GenerateTestChooseElementsPanel();
+            ElementNode.Description description = null;
+            component = new GenerateTestChooseElementsVisualPanel(description);
         }
         return component;
     }
@@ -82,33 +88,16 @@ public class GenerateTestChooseElementsWizard implements WizardDescriptor.Panel 
     }
 
     public final void addChangeListener(ChangeListener l) {
+        cs.addChangeListener(l);
     }
 
     public final void removeChangeListener(ChangeListener l) {
+        cs.removeChangeListener(l);
     }
-    /*
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
-    public final void addChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.add(l);
-    }
-    }
-    public final void removeChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.remove(l);
-    }
-    }
+
     protected final void fireChangeEvent() {
-    Iterator<ChangeListener> it;
-    synchronized (listeners) {
-    it = new HashSet<ChangeListener>(listeners).iterator();
+        cs.fireChange();
     }
-    ChangeEvent ev = new ChangeEvent(this);
-    while (it.hasNext()) {
-    it.next().stateChanged(ev);
-    }
-    }
-     */
 
     // You can use a settings object to keep track of state. Normally the
     // settings object will be the WizardDescriptor, so you can use
@@ -116,6 +105,14 @@ public class GenerateTestChooseElementsWizard implements WizardDescriptor.Panel 
     // by the user.
     public void readSettings(Object settings) {
         this.lookup = (Lookup) ((WizardDescriptor)settings).getProperty("UnitTestContextLookup");
+        assert this.lookup != null;
+        DataObject dob = lookup.lookup(DataObject.class);
+        if (dob != null) {
+            CsmFile file = CsmUtilities.getCsmFile(dob, false, true);
+            if (file != null) {
+                
+            }
+        }
     }
 
     public void storeSettings(Object settings) {
