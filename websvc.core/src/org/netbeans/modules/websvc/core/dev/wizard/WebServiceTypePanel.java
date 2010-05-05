@@ -462,9 +462,12 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
             J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
             if (j2eeModule != null) {
                 J2eeModule.Type type = j2eeModule.getType();
-                double version = Double.parseDouble(j2eeModule.getModuleVersion());
-                if (J2eeModule.Type.WAR.equals(type) && (version >= 3.0)) {
-                    return true;
+                String moduleVersion = j2eeModule.getModuleVersion();
+                if (moduleVersion != null) {
+                    double version = Double.parseDouble(moduleVersion);
+                    if (J2eeModule.Type.WAR.equals(type) && (version >= 3.0)) {
+                        return true;
+                    }
                 }
             }
         }
