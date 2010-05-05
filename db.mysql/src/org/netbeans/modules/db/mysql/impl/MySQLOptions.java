@@ -45,7 +45,10 @@ import org.netbeans.modules.db.mysql.util.Utils;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.keyring.Keyring;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -190,8 +193,15 @@ public class MySQLOptions {
     }
 
     public synchronized String getAdminPassword() {
+        // read old settings
+        String pwd = NbPreferences.forModule(MySQLOptions.class).get(PROP_ADMINPWD, null);
+        if (pwd != null) {
+            Keyring.save(MySQLOptions.class.getName(), pwd.toCharArray(), NbBundle.getMessage(MySQLOptions.class, "MySQLOptions_AdminPassword")); // NOI18N
+        }
         if ( isSavePassword() ) {
-            return getProperty(PROP_ADMINPWD);
+            LOGGER.log(Level.FINE, "Reading a Admin Password from Keyring.");
+            char[] chars = Keyring.read(MySQLOptions.class.getName());
+            return chars == null ? "" : String.copyValueOf(chars);
         } else {
             return adminPassword;
         }
@@ -209,8 +219,12 @@ public class MySQLOptions {
         this.adminPassword = adminPassword;
         
         if ( isSavePassword() ) {
-            putProperty(PROP_ADMINPWD, adminPassword);
-        } 
+            LOGGER.log(Level.FINE, "Storing a Admin Password to Keyring.");
+            Keyring.save(MySQLOptions.class.getName(), adminPassword.toCharArray(), NbBundle.getMessage(MySQLOptions.class, "MySQLOptions_AdminPassword")); // NOI18N
+        } else {
+            LOGGER.log(Level.FINE, "Removing a Admin Password from Keyring.");
+            Keyring.delete(MySQLOptions.class.getName());
+        }
     }
     
     public void clearAdminPassword() {
