@@ -57,7 +57,7 @@ import org.openide.nodes.Node;
  * @author  Petr Hrebejk, Dusan Balek
  * @author Vladimir Voskresensky
  */
-public class FunctionSelectorPanel extends JPanel implements ExplorerManager.Provider {
+public final class FunctionSelectorPanel extends JPanel implements ExplorerManager.Provider {
 
     private final ExplorerManager manager = new ExplorerManager();
     private final CheckTreeView elementView;
@@ -68,6 +68,9 @@ public class FunctionSelectorPanel extends JPanel implements ExplorerManager.Pro
         elementView.setRootVisible(false);
         elementView.setUseSubstringInQuickSearch(true);
         add(elementView, BorderLayout.CENTER);
+    }
+
+    public void initFromElement(Description elementDescription, boolean singleSelection) {
         setRootElement(elementDescription, singleSelection);
         //make sure that the first element is pre-selected
         Node root = manager.getRootContext();
