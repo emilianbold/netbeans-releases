@@ -1224,7 +1224,7 @@ exists or setup the property manually. For example like this:
                 <webproject2:javac
                     srcdir="${{build.generated.dir}}/src"
                     destdir="${{build.generated.dir}}/classes"
-                    classpath="${{j2ee.platform.classpath}}:${{build.classes.dir}}:${{libs.jsp-compilation.classpath}}:${{javac.classpath}}"/>
+                    classpath="${{build.classes.dir}}:${{libs.jsp-compilation.classpath}}:${{javac.classpath}}:${{j2ee.platform.classpath}}"/>
                 
             </target>
             
@@ -1254,7 +1254,7 @@ exists or setup the property manually. For example like this:
                 <webproject2:javac
                     srcdir="${{build.generated.dir}}/src"
                     destdir="${{build.generated.dir}}/classes"
-                    classpath="${{j2ee.platform.classpath}}:${{build.classes.dir}}:${{libs.jsp-compilation.classpath}}:${{javac.classpath}}">
+                    classpath="${{build.classes.dir}}:${{libs.jsp-compilation.classpath}}:${{javac.classpath}}:${{j2ee.platform.classpath}}">
                     <customize>
                         <patternset includes="${{javac.jsp.includes}}"/>
                     </customize>
