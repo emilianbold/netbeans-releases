@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -252,6 +253,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
     }
 
     protected final CharSequence getAlternativeHyperlinkTip(Document doc, String altTextKey, CharSequence tooltip) {
+        UIGesturesSupport.submit("USG_CND_HYPERLINK_TOOLTIP", altTextKey); //NOI18N
         Preferences prefs = MimeLookup.getLookup(NbEditorUtilities.getMimeType(doc)).lookup(Preferences.class);
         int shortCut = prefs.getInt(SimpleValueNames.ALT_HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK);
         return NbBundle.getMessage(CsmAbstractHyperlinkProvider.class, altTextKey, tooltip, InputEvent.getModifiersExText(shortCut)); // NOI18N

@@ -37,24 +37,37 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.simpleunit.spi.wizard;
+package org.netbeans.modules.cnd.utils.ui;
 
-import org.netbeans.modules.cnd.simpleunit.wizard.GenerateTestChooseElementsWizardPanel;
-import org.openide.WizardDescriptor;
-import org.openide.util.Lookup;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
- * @author Vladimir Voskrsensky
+ * @author Egor Ushakov
  */
-public final class UnitTestTemplates {
-
-    private UnitTestTemplates() {
+public final class UIGesturesSupport {
+    
+    // Utility class
+    private UIGesturesSupport() {
     }
 
-    /**
-     */
-    public static WizardDescriptor.Panel<WizardDescriptor> createFunctionsPanel(Lookup lookup) throws IllegalArgumentException {
-        return new GenerateTestChooseElementsWizardPanel();
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.cnd"); // NOI18N
+
+    public static void submit(String type, Object... params) {
+        // Do not track from unit tests
+        if (CndUtils.isUnitTestMode()) {
+            return;
+        }
+        LogRecord record = new LogRecord(Level.INFO, type);
+//        record.setResourceBundle(NbBundle.getBundle(UIGesturesSupport.class));
+//        record.setResourceBundleName(UIGesturesSupport.class.getPackage().getName() + ".Bundle"); // NOI18N
+        record.setLoggerName(USG_LOGGER.getName());
+
+        record.setParameters(params);
+
+        USG_LOGGER.log(record);
     }
 }

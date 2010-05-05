@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
@@ -142,6 +143,20 @@ public class KeyUtilities {
             return Utils.getCsmDeclarationKind(((OffsetableDeclarationKey) key).getKind());
         }
         return null;
+    }
+
+    public static CsmVisibility getKeyVisibility(Key key) {
+        if (key instanceof InheritanceKey) {
+            Utils.getCsmVisibility(((InheritanceKey) key).getKind());
+        }
+        return null;
+    }
+
+    public static char getKeyChar(Key key) {
+        if (key instanceof OffsetableKey) {
+            return ((OffsetableKey) key).getKind();
+        }
+        return 0;
     }
 
     public static CharSequence getKeyName(Key key) {
