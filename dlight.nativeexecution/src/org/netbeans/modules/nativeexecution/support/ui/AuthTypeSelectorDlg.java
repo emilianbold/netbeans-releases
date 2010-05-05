@@ -47,9 +47,8 @@ package org.netbeans.modules.nativeexecution.support.ui;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import javax.swing.JButton;
-import javax.swing.event.ChangeEvent;
-import org.netbeans.modules.nativeexecution.api.util.Validateable;
-import org.netbeans.modules.nativeexecution.api.util.ValidationListener;
+import org.netbeans.modules.nativeexecution.api.util.ValidateablePanel;
+import org.netbeans.modules.nativeexecution.api.util.ValidatablePanelListener;
 import org.netbeans.modules.nativeexecution.support.Authentication;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -70,24 +69,31 @@ public final class AuthTypeSelectorDlg extends javax.swing.JPanel {
         ok = new JButton("OK"); // NOI18N
     }
 
-    public void initAuthentication(final Authentication auth) {
+    /**
+     *
+     * @param auth
+     * @return false if cancelled
+     */
+    public boolean initAuthentication(final Authentication auth) {
         AuthenticationSettingsPanel vpanel = new AuthenticationSettingsPanel(auth, false);
         vpanel.addValidationListener(new AuthValidationListener());
         cfgPanel.add(vpanel, BorderLayout.CENTER);
 
         DialogDescriptor dd = new DialogDescriptor(this,
                 NbBundle.getMessage(AuthTypeSelectorDlg.class, "TITLE_AuthTypeSelectorDlg"), // NOI18N
-                true, new Object[]{ok}, ok,
+                true, new Object[]{ok, DialogDescriptor.CANCEL_OPTION}, ok,
                 DialogDescriptor.DEFAULT_ALIGN, null, null);
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setResizable(false);
+        dialog.setVisible(true);
 
-        do {
-            dialog.setVisible(true);
-        } while (vpanel.hasProblem());
-
-        vpanel.applyChanges();
+        if (dd.getValue() == ok) {
+            vpanel.applyChanges(null);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /** This method is called from within the constructor to
@@ -156,21 +162,18 @@ public final class AuthTypeSelectorDlg extends javax.swing.JPanel {
     private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
 
-    private class AuthValidationListener implements ValidationListener {
+    private class AuthValidationListener implements ValidatablePanelListener {
 
         @Override
-        public void stateChanged(ChangeEvent e) {
-            if (e.getSource() instanceof Validateable) {
-                Validateable obj = (Validateable) e.getSource();
-                final boolean isOK = !obj.hasProblem();
-                Mutex.EVENT.readAccess(new Runnable() {
+        public void stateChanged(ValidateablePanel src) {
+            final boolean isOK = !src.hasProblem();
+            Mutex.EVENT.readAccess(new Runnable() {
 
-                    @Override
-                    public void run() {
-                        ok.setEnabled(isOK);
-                    }
-                });
-            }
+                @Override
+                public void run() {
+                    ok.setEnabled(isOK);
+                }
+            });
         }
     }
 }

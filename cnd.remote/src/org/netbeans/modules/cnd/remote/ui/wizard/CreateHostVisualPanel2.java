@@ -55,7 +55,9 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.spi.remote.setup.support.TextComponentWriter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ValidateablePanel;
+import org.netbeans.modules.nativeexecution.api.util.ValidatablePanelListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -63,6 +65,8 @@ import org.openide.util.RequestProcessor;
 
     private final ChangeListener wizardListener;
     private final CreateHostData data;
+    private final ConfigPanelListener cfgListener = new ConfigPanelListener();
+    private final ValidateablePanel configurationPanel;
 
     public CreateHostVisualPanel2(CreateHostData data, ChangeListener listener) {
         this.data = data;
@@ -71,18 +75,10 @@ import org.openide.util.RequestProcessor;
 
         textLoginName.setText(System.getProperty("user.name"));
 
-//        if (Boolean.getBoolean("cnd.remote.keep.pwd")) {
-//            // default password to the last entered one
-//            ExecutionEnvironment lastEnv = CreateHostData.getLastExecutionEnvironment();
-//            if (lastEnv != null) {
-//                char[] passwd = PasswordManager.getInstance().get(lastEnv);
-//                if (passwd != null) {
-//                    textPassword.setText(new String(passwd));
-//                }
-//            }
-//        } else {
-//            textPassword.setText("");
-//        }
+        configurationPanel = ConnectionManager.getInstance().getConfigurationPanel(null);
+        configurationPanel.addValidationListener(cfgListener);
+
+        authPanel.add(configurationPanel, BorderLayout.CENTER);
 
         DocumentListener dl = new DocumentListener() {
 
@@ -126,7 +122,6 @@ import org.openide.util.RequestProcessor;
 //    char[] getPassword() {
 //        return textPassword.getPassword();
 //    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -135,57 +130,74 @@ import org.openide.util.RequestProcessor;
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        textLoginName = new javax.swing.JTextField();
-        pbarStatusPanel = new javax.swing.JPanel();
+        authPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tpOutput = new javax.swing.JTextPane();
-        jLabel3 = new javax.swing.JLabel();
+        pbarStatusPanel = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        textLoginName = new javax.swing.JTextField();
 
         setPreferredSize(new java.awt.Dimension(534, 409));
         setRequestFocusEnabled(false);
 
-        jLabel1.setLabelFor(textLoginName);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.jLabel1.text")); // NOI18N
-
-        textLoginName.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.textLoginName.text")); // NOI18N
-
-        pbarStatusPanel.setMaximumSize(new java.awt.Dimension(2147483647, 10));
-        pbarStatusPanel.setMinimumSize(new java.awt.Dimension(100, 10));
-        pbarStatusPanel.setLayout(new java.awt.BorderLayout());
+        authPanel.setLayout(new java.awt.BorderLayout());
 
         tpOutput.setEditable(false);
         tpOutput.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.tpOutput.text")); // NOI18N
         tpOutput.setOpaque(false);
         jScrollPane1.setViewportView(tpOutput);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.jLabel3.text")); // NOI18N
+        pbarStatusPanel.setMaximumSize(new java.awt.Dimension(2147483647, 10));
+        pbarStatusPanel.setMinimumSize(new java.awt.Dimension(100, 10));
+        pbarStatusPanel.setLayout(new java.awt.BorderLayout());
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.jPanel1.border.title"))); // NOI18N
+
+        jLabel1.setLabelFor(textLoginName);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.jLabel1.text")); // NOI18N
+
+        textLoginName.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.textLoginName.text")); // NOI18N
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(textLoginName, javax.swing.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(textLoginName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textLoginName, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
             .addComponent(pbarStatusPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(authPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel3)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(textLoginName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
+                .addComponent(authPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 88, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pbarStatusPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(32, Short.MAX_VALUE))
+                .addComponent(pbarStatusPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
     private ProgressHandle phandle;
@@ -201,18 +213,19 @@ import org.openide.util.RequestProcessor;
     private Runnable runOnFinish = null;
 
     public void enableControls(boolean enable) {
-//        textPassword.setEnabled(enable);
+        configurationPanel.setEnabled(enable);
         textLoginName.setEnabled(enable);
-//        cbSavePassword.setEnabled(enable);
     }
 
     public boolean canValidateHost() {
         List<ServerRecord> records = new ArrayList<ServerRecord>();
+
         if (data.getCacheManager().getServerUpdateCache() != null && data.getCacheManager().getServerUpdateCache().getHosts() != null) {
             records.addAll(data.getCacheManager().getServerUpdateCache().getHosts());
         } else {
             records = new ArrayList<ServerRecord>(ServerList.getRecords());
         }
+
         for (ServerRecord record : records) {
             if (record.isRemote()) {
                 if (record.getServerName().equals(data.getHostName())
@@ -222,6 +235,7 @@ import org.openide.util.RequestProcessor;
                 }
             }
         }
+
         return true;
     }
 
@@ -244,7 +258,7 @@ import org.openide.util.RequestProcessor;
 
                 try {
                     HostValidatorImpl hostValidator = new HostValidatorImpl(data.getCacheManager());
-                    if (hostValidator.validate(env, /*password, rememberPassword, */new TextComponentWriter(tpOutput))) {
+                    if (hostValidator.validate(env, /*password, rememberPassword, */ new TextComponentWriter(tpOutput))) {
                         hostFound = env;
                         runOnFinish = hostValidator.getRunOnFinish();
                         try { // let user see the log ;-)
@@ -268,12 +282,34 @@ import org.openide.util.RequestProcessor;
         return validationTask;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel authPanel;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel3;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel pbarStatusPanel;
     private javax.swing.JTextField textLoginName;
     private javax.swing.JTextPane tpOutput;
     // End of variables declaration//GEN-END:variables
-}
 
+    boolean hasConfigProblems() {
+        return configurationPanel.hasProblem();
+    }
+
+    String getConfigProblem() {
+        return configurationPanel.getProblem();
+    }
+
+    void storeConfiguration() {
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.createNew(getLoginName(), data.getHostName(), data.getPort());
+        configurationPanel.applyChanges(env);
+    }
+
+    // End of variables declaration
+    private class ConfigPanelListener implements ValidatablePanelListener {
+
+        @Override
+        public void stateChanged(ValidateablePanel src) {
+            fireChange();
+        }
+    }
+}
