@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.simpleunit.codegeneration;
+package org.netbeans.modules.cnd.cncppunit.codegeneration;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -53,22 +53,22 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
  *
  * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-public class CodeGenerator {
+public class CUnitCodeGenerator {
 
-    private CodeGenerator() {
+    private CUnitCodeGenerator() {
     }
 
-    public enum Language {
-        C, CPP
-    };
-
-    public static Map<String, Object> generateTemplateParamsForFunctions(String testName, String testFilePath, List<CsmFunction> functions, Language lang) {
+    public static Map<String, Object> generateTemplateParamsForFunctions(String testName, String testFilePath, List<CsmFunction> functions) {
         Map<String, Object> templateParams = new HashMap<String, Object>();
 
         if (functions != null) {
             StringBuilder testFunctions = new StringBuilder(""); // NOI18N
             StringBuilder testCalls = new StringBuilder(""); // NOI18N
             StringBuilder testIncludes = new StringBuilder(""); // NOI18N
+
+            testCalls.append("if ( "); // NOI18N
+
+            int functionNumber = 0;
             for (CsmFunction fun : functions) {
                 String funName = fun.getName().toString();
                 String testFunctionName = "testFor" + // NOI18N
@@ -126,50 +126,39 @@ public class CodeGenerator {
                 }
                 testFunctions.append(");\n"); // NOI18N
 
-                if (lang == Language.CPP) {
-                    testFunctions.append("    if(true /*check result*/) {\n"); // NOI18N
-                    testFunctions.append("        std::cout << \"%TEST_FAILED% time=0 testname=") // NOI18N
-                            .append(testFunctionName) // NOI18N
-                            .append(" (") // NOI18N
-                            .append(testName) // NOI18N
-                            .append(") message=error message sample\" << std::endl;\n"); // NOI18N
-                } else {
-                    testFunctions.append("    if(1 /*check result*/) {\n"); // NOI18N
-                    testFunctions.append("        printf(\"%%TEST_FAILED%% time=0 testname=") // NOI18N
-                            .append(testFunctionName) // NOI18N
-                            .append(" (") // NOI18N
-                            .append(testName) // NOI18N
-                            .append(") message=error message sample\\n\");\n"); // NOI18N
-                }
+                testFunctions.append("    if(1 /*check result*/) {\n"); // NOI18N
+                testFunctions.append("        CU_ASSERT(0);"); // NOI18N
                 testFunctions.append("    }\n"); // NOI18N
                 testFunctions.append("}\n\n"); // NOI18N
 
-                if (lang == Language.CPP) {
-                    testCalls.append("    std::cout << \"%TEST_STARTED% " + testFunctionName + " (" + testName + ")\" << std::endl;\n"); // NOI18N
-                    testCalls.append("    " + testFunctionName + "();\n"); // NOI18N
-                    testCalls.append("    std::cout << \"%TEST_FINISHED% time=0 " + testFunctionName + " (" + testName + ")\" << std::endl;\n"); // NOI18N
-                    testCalls.append("    \n"); // NOI18N
-                } else {
-                    testCalls.append("    printf(\"%%TEST_STARTED%%  " + testFunctionName + " (" + testName + ")\\n\");\n"); // NOI18N
-                    testCalls.append("    " + testFunctionName + "();\n"); // NOI18N
-                    testCalls.append("    printf(\"%%TEST_FINISHED%% time=0 " + testFunctionName + " (" + testName + ")\\n\");\n"); // NOI18N
-                    testCalls.append("    \n"); // NOI18N
+                if(functionNumber != 0) {
+                    testCalls.append("||\n        "); // NOI18N
                 }
-
+                testCalls.append("(NULL == CU_add_test(pSuite, \"" + testFunctionName + "\", " + testFunctionName + ")) "); // NOI18N
 
                 CsmIncludeResolver inclResolver = CsmIncludeResolver.getDefault();
                 String include = inclResolver.getLocalIncludeDerectiveByFilePath(testFilePath, fun);
-                if(!include.isEmpty()) {
+                if (!include.isEmpty()) {
                     testIncludes.append(include);
                     testIncludes.append("\n"); // NOI18N
                 }
+
+                functionNumber++;
             }
 
-            templateParams.put("testFunctions", testFunctions.toString()); // NOI18N
-            templateParams.put("testCalls", testCalls.toString()); // NOI18N
-            templateParams.put("testIncludes", testIncludes.toString()); // NOI18N
+            testCalls.append(")\n"); // NOI18N
+            testCalls.append("    {\n"); // NOI18N
+            testCalls.append("        CU_cleanup_registry();\n"); // NOI18N
+            testCalls.append("        return CU_get_error();\n"); // NOI18N
+            testCalls.append("    }\n"); // NOI18N
+
+            if(functionNumber != 0) {
+                templateParams.put("testFunctions", testFunctions.toString()); // NOI18N
+                templateParams.put("testCalls", testCalls.toString()); // NOI18N
+                templateParams.put("testIncludes", testIncludes.toString()); // NOI18N
+            }
         }
-        
+
         return templateParams;
     }
 }

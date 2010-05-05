@@ -58,6 +58,7 @@
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="hidden"/>
                 <attr name="addToLogicalFolder" boolvalue="false"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
 
             <file name="cppunittest.cpp">
