@@ -82,6 +82,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
     
     private void resetLastModified() {
         lastModified = System.currentTimeMillis();
+        clearLineCache();
     }
     
     private void fireDocumentChanged() {
