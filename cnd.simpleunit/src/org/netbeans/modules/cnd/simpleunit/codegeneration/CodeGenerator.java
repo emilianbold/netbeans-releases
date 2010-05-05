@@ -125,15 +125,16 @@ public class CodeGenerator {
                     i++;
                 }
                 testFunctions.append(");\n"); // NOI18N
-                testFunctions.append("    if(true /*check result*/) {\n"); // NOI18N
 
                 if (lang == Language.CPP) {
+                    testFunctions.append("    if(true /*check result*/) {\n"); // NOI18N
                     testFunctions.append("        std::cout << \"%TEST_FAILED% time=0 testname=") // NOI18N
                             .append(testFunctionName) // NOI18N
                             .append(" (") // NOI18N
                             .append(testName) // NOI18N
                             .append(") message=error message sample\" << std::endl;\n"); // NOI18N
                 } else {
+                    testFunctions.append("    if(1 /*check result*/) {\n"); // NOI18N
                     testFunctions.append("        printf(\"%%TEST_FAILED%% time=0 testname=") // NOI18N
                             .append(testFunctionName) // NOI18N
                             .append(" (") // NOI18N
