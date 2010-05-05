@@ -73,6 +73,7 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
 
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.oldlibbridge.AnnotationsHighlighting"; //NOI18N
 
+    @SuppressWarnings("LeakingThisInConstructor")
     public AnnotationsHighlighting(Document document) {
         if (document instanceof BaseDocument) {
             this.document = (BaseDocument) document;
@@ -99,6 +100,7 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
     //  HighlightsChangeListener implementation
     // ----------------------------------------------------------------------
 
+    @Override
     public void highlightChanged(HighlightsChangeEvent event) {
         fireHighlightsChange(event.getStartOffset(), event.getEndOffset());
     }
@@ -107,15 +109,17 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
     //  AnnotationsListener implementation
     // ----------------------------------------------------------------------
 
+    @Override
     public void changedLine(final int line) {
         changedAll();
     }
 
+    @Override
     public void changedAll() {
         synchronized (this) {
             if (refreshAllLinesTask == null) {
                 refreshAllLinesTask = RP.post(new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         refreshAllLines();
                         synchronized (AnnotationsHighlighting.this) {
                             refreshAllLinesTask = null;
@@ -157,7 +161,7 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
         }
 
         document.render(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 bag.setHighlights(new FilteringHighlightsSequence(b.getHighlights(0, document.getLength())));
             }
         });
@@ -225,18 +229,22 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
             this.delegate = delegate;
         }
 
+        @Override
         public boolean moveNext() {
             return delegate.moveNext();
         }
 
+        @Override
         public int getStartOffset() {
             return delegate.getStartOffset();
         }
 
+        @Override
         public int getEndOffset() {
             return delegate.getEndOffset();
         }
 
+        @Override
         public AttributeSet getAttributes() {
             AttributeSet attrs = delegate.getAttributes();
             List<Object> attrsList = new ArrayList<Object>();
