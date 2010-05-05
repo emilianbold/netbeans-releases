@@ -104,6 +104,61 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="Fine-grain-select">
+      <api name="io"/>
+      <summary>Added API for fine grain control over IO select operation</summary>
+      <version major="1" minor="23"/>
+      <date day="1" month="5" year="2010"/>
+      <author login="ivan"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" />
+      <description>
+        <p>Added class for fine control over select:
+        <code>
+            <a href="@TOP@/org/openide/windows/IOSelect.html">IOSelect</a>
+        </code>
+        </p>
+      </description>
+      <class package="org.openide.windows" name="IOSelect"/>
+      <!-- apireview
+      <issue number="168894" />
+      -->
+      <issue number="185209" />
+    </change>
+
+    <change id="Incompatible-IOContainer-select">
+      <api name="io"/>
+      <summary>Incompatible change to semantics of IOContainer.select()</summary>
+      <version major="1" minor="23"/>
+      <date day="1" month="5" year="2010"/>
+      <author login="ivan"/>
+      <compatibility addition="no" binary="compatible" semantic="incompatible" />
+      <description>
+	  <p>
+	      After fixing bug#185209
+	      <code>
+	      <a href="@TOP@/org/openide/windows/IOContainer.html#select(javax.swing.JComponent)">IOContainer.select()</a>
+	      </code>
+	      no longer performs these operations for us so implementations of IOProvider
+	      have to do them:
+	      <code>
+	      <a href="@TOP@/org/openide/windows/IOContainer.html#open()">IOContainer.open()</a>
+	      </code>
+	      ,
+	      <code>
+	      <a href="@TOP@/org/openide/windows/IOContainer.html#requestVisible()">IOContainer.requestVisible()</a>
+	      </code>
+	      .
+	  </p>
+	  <p>
+	      Existing implementation of
+	      <a href="@TOP@/org/openide/windows/InputOutput.html#select()">InputOutput.select()</a>
+	      has been adjusted and is still compatible.
+	  </p>
+      </description>
+      <class package="org.openide.windows" name="IOContainer"/>
+      <issue number="185209" />
+    </change>
+
     <change id="Color-printing">
       <api name="io"/>
       <summary>Adding API to have better control of text color and hyperlinks</summary>
