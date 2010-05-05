@@ -115,8 +115,8 @@ public class TestSimpleIterator extends AbstractUnitTestIterator {
 
         List<CsmFunction> fs = new ArrayList<CsmFunction>();
         Object listObj = wiz.getProperty(CND_UNITTEST_FUNCTIONS);
-        if(listObj instanceof List) {
-            List list = (List) listObj;
+        if(listObj instanceof List<?>) {
+            List<?> list = (List<?>) listObj;
             for (Object obj : list) {
                 if(obj instanceof CsmFunction) {
                     fs.add((CsmFunction)obj);

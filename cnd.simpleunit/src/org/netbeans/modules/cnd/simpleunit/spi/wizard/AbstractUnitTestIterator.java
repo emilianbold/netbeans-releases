@@ -119,6 +119,10 @@ public abstract class AbstractUnitTestIterator implements TemplateWizard.Iterato
         }
     }
 
+    /**
+     * can be overriden, but must call this method as well
+     * @param wiz
+     */
     public void initialize(TemplateWizard wiz) {
         this.wizard = wiz;
     }
