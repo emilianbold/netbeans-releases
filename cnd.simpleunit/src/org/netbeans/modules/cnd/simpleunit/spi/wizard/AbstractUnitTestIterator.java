@@ -85,7 +85,9 @@ public abstract class AbstractUnitTestIterator implements TemplateWizard.Iterato
             if (isTestGenerationMode()) {
                 Lookup lookup = (Lookup) wizard.getProperty(CND_UNITTEST_LOOKUP); // NOI18N
                 assert lookup != null : "lookup must be found in wizard.getProperty(\"" + CND_UNITTEST_LOOKUP + "\")";
-                panels = new WizardDescriptor.Panel[otherPanels.length + 1];
+                @SuppressWarnings("unchecked")
+                WizardDescriptor.Panel<WizardDescriptor>[] aPanels = new WizardDescriptor.Panel[otherPanels.length + 1];
+                panels = aPanels;
                 panels[0] = UnitTestTemplates.createFunctionsPanel(lookup);
                 System.arraycopy(otherPanels, 0, panels, 1, otherPanels.length);
                 String[] steps = new String[panels.length];

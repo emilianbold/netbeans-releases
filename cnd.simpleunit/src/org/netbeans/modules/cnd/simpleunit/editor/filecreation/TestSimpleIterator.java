@@ -212,7 +212,9 @@ public class TestSimpleIterator extends AbstractUnitTestIterator {
                 targetChooserDescriptorPanel = getWizard().targetChooser();
             }
         }
-        return new WizardDescriptor.Panel[] { targetChooserDescriptorPanel };
+        @SuppressWarnings("unchecked")
+        Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[]{targetChooserDescriptorPanel};
+        return panels;
     }
 
     private String getTestFileName() {

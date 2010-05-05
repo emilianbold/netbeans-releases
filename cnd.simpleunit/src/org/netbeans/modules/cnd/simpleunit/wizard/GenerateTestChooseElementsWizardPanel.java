@@ -48,7 +48,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.Panel {
+public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.Panel<WizardDescriptor> {
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
@@ -103,8 +103,8 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
     // settings object will be the WizardDescriptor, so you can use
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
-    public void readSettings(Object settings) {
-        this.lookup = (Lookup) ((WizardDescriptor)settings).getProperty("UnitTestContextLookup");
+    public void readSettings(WizardDescriptor settings) {
+        this.lookup = (Lookup) settings.getProperty("UnitTestContextLookup");
         assert this.lookup != null;
         DataObject dob = lookup.lookup(DataObject.class);
         if (dob != null) {
@@ -115,6 +115,6 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
         }
     }
 
-    public void storeSettings(Object settings) {
+    public void storeSettings(WizardDescriptor settings) {
     }
 }
