@@ -87,7 +87,8 @@ public class TestCppUnitIterator extends AbstractUnitTestIterator {
         Project project = Templates.getProject(wiz);
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-        targetChooserDescriptorPanel = new NewTestCppUnitPanel(project, groups, null);
+        targetChooserDescriptorPanel = new NewTestCppUnitPanel(project, groups, null,
+                (String) wiz.getProperty(CND_UNITTEST_DEFAULT_NAME));
     }
 
     @Override
@@ -98,22 +99,6 @@ public class TestCppUnitIterator extends AbstractUnitTestIterator {
             return dataObjects;
         }
         Project project = Templates.getProject(wiz);
-
-//        CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
-//        List<CsmFunction> funs = new ArrayList<CsmFunction>();
-//        for (CsmOffsetableDeclaration decl : csmProject.getGlobalNamespace().getDeclarations()) {
-//            if(CsmKindUtilities.isClass(decl)) {
-//                for (CsmMember member : ((CsmClass)decl).getMembers()) {
-//                    if(CsmKindUtilities.isMethod(member)) {
-//                        funs.add((CsmMethod)member);
-//                    }
-//                }
-//            }
-//            if(CsmKindUtilities.isFunction(decl)) {
-////                funs.add((CsmFunction)decl);
-//            }
-//        }
-//        wiz.putProperty(CNDUNITTESTFUNCTIONS, funs);
 
         DataFolder targetFolder = wiz.getTargetFolder();
 

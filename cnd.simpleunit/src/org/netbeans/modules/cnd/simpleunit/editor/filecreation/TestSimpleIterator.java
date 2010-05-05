@@ -85,23 +85,6 @@ public class TestSimpleIterator extends AbstractUnitTestIterator {
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         Project project = Templates.getProject(wiz);
         
-//        CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
-//
-//        List<CsmFunction> funs = new ArrayList<CsmFunction>();
-//        for (CsmOffsetableDeclaration decl : csmProject.getGlobalNamespace().getDeclarations()) {
-//            if(CsmKindUtilities.isClass(decl)) {
-//                for (CsmMember member : ((CsmClass)decl).getMembers()) {
-//                    if(CsmKindUtilities.isMethod(member)) {
-//                        funs.add((CsmMethod)member);
-//                    }
-//                }
-//            }
-//            if(CsmKindUtilities.isFunction(decl)) {
-////                funs.add((CsmFunction)decl);
-//            }
-//        }
-//        wiz.putProperty(CNDUNITTESTFUNCTIONS, funs);
-
         Set<DataObject> dataObjects = new HashSet<DataObject>();
 
         if(getTestFileName() == null || getTestName() == null) {
@@ -179,7 +162,8 @@ public class TestSimpleIterator extends AbstractUnitTestIterator {
 
     protected WizardDescriptor.Panel<WizardDescriptor>[] createPanels() {
         if (targetChooserDescriptorPanel == null) {
-            DataObject dobj = getWizard().getTemplate();
+            TemplateWizard wiz = getWizard();
+            DataObject dobj = wiz.getTemplate();
             FileObject fobj = dobj.getPrimaryFile();
             String mimeType = fobj.getMIMEType();
             MIMEExtensions extensions = MIMEExtensions.get(mimeType);
@@ -207,7 +191,8 @@ public class TestSimpleIterator extends AbstractUnitTestIterator {
                     defaultExt = fobj.getExt();
                 }
 
-                targetChooserDescriptorPanel = new NewTestSimplePanel(project, groups, null, extensions, defaultExt);
+                targetChooserDescriptorPanel = new NewTestSimplePanel(project, groups, null, extensions, defaultExt,
+                    (String) wiz.getProperty(CND_UNITTEST_DEFAULT_NAME));
             } else {
                 targetChooserDescriptorPanel = getWizard().targetChooser();
             }

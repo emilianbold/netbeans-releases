@@ -70,6 +70,7 @@ import org.openide.util.NbBundle;
  */
 final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener{
   
+    private final String baseTestName;
     private String sourceExt;
     private String headerExt;
     private final MIMEExtensions sourceExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
@@ -80,8 +81,10 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
     protected static final String DEFAULT_TESTS_FOLDER = "tests"; // NOI18N
 
     /** Creates new form NewCndFileChooserPanelGUI */
-    NewTestCppUnitPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel) {
+    NewTestCppUnitPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, String baseTestName) {
         super(project, folders);
+
+        this.baseTestName = baseTestName;
 
         initComponents();
         initMnemonics();
@@ -155,7 +158,9 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
 
         if (template != null) {
             if (documentName == null) {
-                final String baseName = getMessage("NewClassSuggestedName"); // NOI18N
+                final String baseName = (baseTestName == null) ?
+                    getMessage("NewClassSuggestedName") : // NOI18N
+                    getMessage("TestClassSuggestedName", baseTestName).replaceAll(" ", "_").toLowerCase(); // NOI18N
                 documentName = baseName;
                 FileObject currentFolder = preselectedFolder != null ? preselectedFolder : getTargetGroup().getRootFolder().getFileObject(DEFAULT_TESTS_FOLDER);
                 if (currentFolder != null) {
@@ -169,7 +174,9 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         }
 
         if (template != null) {
-            String baseName = getMessage("NewRunnerSuggestedName"); // NOI18N
+            final String baseName = (baseTestName == null) ?
+                    getMessage("NewRunnerSuggestedName") : // NOI18N
+                    getMessage("TestRunnerSuggestedName", baseTestName).replaceAll(" ", "_").toLowerCase(); // NOI18N
             String runnerName = baseName;
             FileObject currentFolder = preselectedFolder != null ? preselectedFolder : getTargetGroup().getRootFolder().getFileObject(DEFAULT_TESTS_FOLDER);
             if (currentFolder != null) {
@@ -182,7 +189,9 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
 
         if (template != null) {
             String testName;
-            final String baseName = NEW_TEST_PREFIX + displayName;
+            final String baseName = (baseTestName == null) ?
+                    NEW_TEST_PREFIX + displayName :
+                    getMessage("TestSuggestedName", baseTestName); // NOI18N
             testName = baseName;
             Folder testsRoot = getTestsRootFolder(project);
             if (testsRoot != null) {
@@ -673,4 +682,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         return NbBundle.getMessage( NewTestCUnitPanelGUI.class, name);
     }
 
+    protected static String getMessage(String name, String param) {
+        return NbBundle.getMessage( NewTestCUnitPanelGUI.class, name, param);
+    }
 }
