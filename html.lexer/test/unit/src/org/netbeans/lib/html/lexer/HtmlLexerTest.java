@@ -68,9 +68,9 @@ public class HtmlLexerTest extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
-    public static Test xsuite() {
+    public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new HtmlLexerTest("testEscapedQuotesInAttrValue"));
+        suite.addTest(new HtmlLexerTest("testFlyweightTokens"));
         return suite;
     }
 
@@ -106,6 +106,42 @@ public class HtmlLexerTest extends NbTestCase {
     public void test149018() throws Exception { //JSP editor not recognizing valid end-of-html comment
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.html.txt",
                 HTMLTokenId.language());
+    }
+
+    public void testFlyweightTokens() {
+        assertEquals("a", HtmlElements.getCachedTagName("a"));
+        assertEquals("div", HtmlElements.getCachedTagName("div"));
+        assertEquals("td", HtmlElements.getCachedTagName("td"));
+        assertNull(HtmlElements.getCachedTagName("Xdiv"));
+        assertNull(HtmlElements.getCachedTagName("divX"));
+        assertNull(HtmlElements.getCachedTagName("t"));
+        assertNull(HtmlElements.getCachedTagName("fKHl"));
+
+        assertEquals("onclick", HtmlElements.getCachedAttrName("onclick"));
+        assertNull(HtmlElements.getCachedAttrName("fKHl"));
+        assertNull(HtmlElements.getCachedAttrName("ht"));
+
+        String code = "<div align='center'></div>";
+        TokenHierarchy th = TokenHierarchy.create(code, HTMLTokenId.language());
+        TokenSequence<HTMLTokenId> ts = th.tokenSequence();
+        ts.moveStart();
+
+        while(ts.moveNext()) {
+            HTMLTokenId id = ts.token().id();
+            switch (id) {
+                case ARGUMENT:
+                case TAG_CLOSE:
+                case TAG_OPEN:
+                case TAG_CLOSE_SYMBOL:
+                case TAG_OPEN_SYMBOL:
+                case OPERATOR:
+
+                    assertTrue(ts.token().isFlyweight());
+
+                    break;
+            }
+        }
+
     }
 
     public void testEmptyTag() {
