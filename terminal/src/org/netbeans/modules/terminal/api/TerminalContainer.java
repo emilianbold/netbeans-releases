@@ -59,12 +59,18 @@ import org.netbeans.modules.terminal.iocontainer.TerminalContainerMuxable;
  * <li>
  * Change it's Layout to be BorderLayout.
  * <li>
+ * Optionally have it implement {@link org.netbeans.modules.terminal.api.IOTopComponent}.
+ * <li>
  * Add the following code to it:
  * <pre>
     private TerminalContainer tc;
 
     public IOContainer ioContainer() {
         return tc.ioContainer();
+    }
+
+    public TopComponent topComponent() {
+        return this;
     }
 
     private void initComponents2() {
