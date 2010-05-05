@@ -131,7 +131,7 @@ public class TestCppUnitIterator extends AbstractUnitTestIterator {
             }
         }
         params.putAll(CppUnitCodeGenerator.generateTemplateParamsForFunctions(
-                targetFolder.getPrimaryFile().getPath(),
+                getRootFolder().getPath(),
                 fs));
 
         String headerName = getTestClassHeaderFileName(); //NOI18N
@@ -223,6 +223,10 @@ public class TestCppUnitIterator extends AbstractUnitTestIterator {
 
     private String getTestName() {
         return ((NewTestCppUnitPanelGUI)targetChooserDescriptorPanel.getComponent()).getTestName();
+    }
+
+    private FileObject getRootFolder() {
+        return ((NewTestCppUnitPanelGUI)targetChooserDescriptorPanel.getComponent()).getTargetGroup().getRootFolder();
     }
 
     private void setCUnitLinkerOptions(Project project, Folder testFolder) {
