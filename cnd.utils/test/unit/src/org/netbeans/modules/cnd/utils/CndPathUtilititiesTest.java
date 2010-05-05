@@ -116,8 +116,6 @@ public class CndPathUtilititiesTest {
                      CndPathUtilitities.toRelativePath("C:\\", "C:\\")); // NOI18N
         assertEquals("D:\\", // NOI18N
                      CndPathUtilitities.toRelativePath("C:\\", "D:\\")); // NOI18N
-        assertEquals("D:\\", // NOI18N
-                     CndPathUtilitities.toRelativePath("C:\\", "D:\\")); // NOI18N
         assertEquals(".", // NOI18N
                      CndPathUtilitities.toRelativePath("/tmp", "/tmp")); // NOI18N
     }
