@@ -58,6 +58,7 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.ResourceBundle;
 import java.util.Set;
 import org.netbeans.swing.plaf.nimbus.NimbusLFCustoms;
 import org.netbeans.swing.plaf.winclassic.WindowsLFCustoms;
@@ -133,39 +134,9 @@ public final class Startup {
       }
       
       if (uiClass == null) {
-          String uiClassName;
-          if (isWindows()) {
-              uiClassName = "com.sun.java.swing.plaf.windows.WindowsLookAndFeel"; //NOI18N
-          } else if (isMac()){
-              uiClassName = "apple.laf.AquaLookAndFeel";
-          } else if (shouldUseMetal()) {
-              uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel"; //NOI18N
-          } else {
-              //Should get us metal where it doesn't get us GTK
-              uiClassName = UIManager.getSystemLookAndFeelClassName();
-              // Enable GTK L&F only for JDK version 1.6.0 update 1 and later.
-              // GTK L&F quality unacceptable for earlier versions.
-              // Also enable GTK L&F for OpenJDK
-              String javaVersion = System.getProperty("java.version");
-              if ("1.6.0_01".compareTo(javaVersion) > 0 && 
-                       System.getProperty("java.vm.name") != null &&
-                       System.getProperty("java.vm.name").indexOf("OpenJDK") < 0) {
-                  // IDE runs on 1.5 or 1.6 - useGtk can enabled Gtk
-                  if (uiClassName.indexOf("gtk") >= 0 && !Boolean.getBoolean("useGtk")) {
-                      uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
-                  }
-              } else {
-                  // IDE runs on 1.6_0_01 or higher - useGtk can disabled Gtk
-                  if (uiClassName.indexOf("gtk") >= 0 && System.getProperty("useGtk") != null && !Boolean.getBoolean("useGtk")) {
-                      uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
-                  }
-              }
-              
-              // #118534 - don't allow Nimbus L&F as default system L&F,
-              // as we're not ready to support it yet
-              if (uiClassName.contains("Nimbus")) {
-                  uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
-              }
+          String uiClassName = ResourceBundle.getBundle("org.netbeans.swing.plaf.Bundle").getString("LookAndFeelClassName"); // NOI18N
+          if ("default".equals(uiClassName)) { // NOI18N
+              uiClassName = defaultLaF();
           }
           try {
               uiClass = UIUtils.classForName(uiClassName);
@@ -200,6 +171,44 @@ public final class Startup {
           }
       }
       return result;
+    }
+
+    /** Default NetBeans logic for finding out the right L&F.
+     * @return name of the LaF to instantiate
+     */
+    private static String defaultLaF() {
+        String uiClassName;
+        if (isWindows()) {
+            uiClassName = "com.sun.java.swing.plaf.windows.WindowsLookAndFeel"; //NOI18N
+        } else if (isMac()) {
+            uiClassName = "apple.laf.AquaLookAndFeel";
+        } else if (shouldUseMetal()) {
+            uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel"; //NOI18N
+        } else {
+            //Should get us metal where it doesn't get us GTK
+            uiClassName = UIManager.getSystemLookAndFeelClassName();
+            // Enable GTK L&F only for JDK version 1.6.0 update 1 and later.
+            // GTK L&F quality unacceptable for earlier versions.
+            // Also enable GTK L&F for OpenJDK
+            String javaVersion = System.getProperty("java.version");
+            if ("1.6.0_01".compareTo(javaVersion) > 0 && System.getProperty("java.vm.name") != null && System.getProperty("java.vm.name").indexOf("OpenJDK") < 0) {
+                // IDE runs on 1.5 or 1.6 - useGtk can enabled Gtk
+                if (uiClassName.indexOf("gtk") >= 0 && !Boolean.getBoolean("useGtk")) {
+                    uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
+                }
+            } else {
+                // IDE runs on 1.6_0_01 or higher - useGtk can disabled Gtk
+                if (uiClassName.indexOf("gtk") >= 0 && System.getProperty("useGtk") != null && !Boolean.getBoolean("useGtk")) {
+                    uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
+                }
+            }
+            // #118534 - don't allow Nimbus L&F as default system L&F,
+            // as we're not ready to support it yet
+            if (uiClassName.contains("Nimbus")) {
+                uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
+            }
+        }
+        return uiClassName;
     }
 
     private void installTheme(LookAndFeel lf) {
@@ -455,30 +464,30 @@ public final class Startup {
         }
     }
 
-    private boolean isWindows() {
+    private static boolean isWindows() {
         String osName = System.getProperty ("os.name");
         return osName.startsWith("Windows");
     }
 
-    private boolean isWindowsVista() {
+    private static boolean isWindowsVista() {
         String osName = System.getProperty ("os.name");
         return osName.indexOf("Vista") >= 0
             || (osName.equals( "Windows NT (unknown)" ) && "6.0".equals( System.getProperty("os.version") ));
     }
 
-    private boolean isWindows7() {
+    private static boolean isWindows7() {
         String osName = System.getProperty ("os.name");
         return osName.indexOf("Windows 7") >= 0
             || (osName.equals( "Windows NT (unknown)" ) && "6.1".equals( System.getProperty("os.version") ));
     }
 
-    private boolean isMac() {
+    private static boolean isMac() {
         String osName = System.getProperty ("os.name");
         boolean result = osName.startsWith ("Darwin") || "Mac OS X".equals(osName);
         return result;
     }
     
-    private boolean isSolaris10 () {
+    private static boolean isSolaris10 () {
         String osName = System.getProperty ("os.name");
         String osVersion = System.getProperty ("os.version");
         boolean result = osName.startsWith ("SunOS") && "5.10".equals(osVersion);
@@ -495,7 +504,7 @@ public final class Startup {
      *
      * @return If metal L&F should be used
      */
-    private boolean shouldUseMetal() {
+    private static boolean shouldUseMetal() {
         String osName = System.getProperty ("os.name");
         boolean result = !"Solaris".equals (osName) &&
             !osName.startsWith ("SunOS") &&

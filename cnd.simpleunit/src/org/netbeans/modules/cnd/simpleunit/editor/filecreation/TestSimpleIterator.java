@@ -41,19 +41,25 @@ package org.netbeans.modules.cnd.simpleunit.editor.filecreation;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.simpleunit.codegeneration.CodeGenerator;
+import org.netbeans.modules.cnd.simpleunit.spi.wizard.AbstractUnitTestIterator;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -62,6 +68,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -69,12 +76,32 @@ import org.openide.loaders.TemplateWizard;
 /**
  * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-public class TestSimpleIterator extends CCFSrcFileIterator {
+public class TestSimpleIterator extends AbstractUnitTestIterator {
+    private WizardDescriptor.Panel<WizardDescriptor> targetChooserDescriptorPanel;
 
     private static final String C_HEADER_MIME_TYPE = "text/x-c/text/x-h"; // NOI18N
 
     @Override
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
+        Project project = Templates.getProject(wiz);
+        
+//        CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
+//
+//        List<CsmFunction> funs = new ArrayList<CsmFunction>();
+//        for (CsmOffsetableDeclaration decl : csmProject.getGlobalNamespace().getDeclarations()) {
+//            if(CsmKindUtilities.isClass(decl)) {
+//                for (CsmMember member : ((CsmClass)decl).getMembers()) {
+//                    if(CsmKindUtilities.isMethod(member)) {
+//                        funs.add((CsmMethod)member);
+//                    }
+//                }
+//            }
+//            if(CsmKindUtilities.isFunction(decl)) {
+////                funs.add((CsmFunction)decl);
+//            }
+//        }
+//        wiz.putProperty(CNDUNITTESTFUNCTIONS, funs);
+
         Set<DataObject> dataObjects = new HashSet<DataObject>();
 
         if(getTestFileName() == null || getTestName() == null) {
@@ -82,13 +109,30 @@ public class TestSimpleIterator extends CCFSrcFileIterator {
         }
 
         DataFolder targetFolder = wiz.getTargetFolder();
-        
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
+
+        List<CsmFunction> fs = new ArrayList<CsmFunction>();
+        Object listObj = wiz.getProperty(CND_UNITTEST_FUNCTIONS);
+        if(listObj instanceof List<?>) {
+            List<?> list = (List<?>) listObj;
+            for (Object obj : list) {
+                if(obj instanceof CsmFunction) {
+                    fs.add((CsmFunction)obj);
+                }
+            }
+        }
+        params.putAll(CodeGenerator.generateTemplateParamsForFunctions(
+                getTestFileName().replaceFirst("[.].*", ""), // NOI18N
+                targetFolder.getPrimaryFile().getPath(),
+                fs,
+                ("cpp".equals(wiz.getTemplate().getPrimaryFile().getExt())?CodeGenerator.Language.CPP:CodeGenerator.Language.C))); // NOI18N
+
         DataObject formDataObject = NewTestSimplePanel.getTemplateDataObject(
                 "simpletestfile." + wiz.getTemplate().getPrimaryFile().getExt()); // NOI18N
         
-        DataObject dataObject = formDataObject.createFromTemplate(targetFolder, getTestFileName());
-
-        Project project = Templates.getProject(wiz);
+        DataObject dataObject = formDataObject.createFromTemplate(targetFolder, getTestFileName(), params);
 
         Folder folder = null;
         Folder testsRoot = getTestsRootFolder(project);
@@ -128,46 +172,49 @@ public class TestSimpleIterator extends CCFSrcFileIterator {
 
             folder.addItemAction(item);
         }
-        
+
         dataObjects.add(dataObject);
         return dataObjects;
     }
 
-    @Override
-    protected Panel<WizardDescriptor> createPanel(TemplateWizard wiz) {
-        DataObject dobj = wiz.getTemplate();
-        FileObject fobj = dobj.getPrimaryFile();
-        String mimeType = fobj.getMIMEType();
-        MIMEExtensions extensions = MIMEExtensions.get(mimeType);
-        if (extensions != null) {
-            Project project = Templates.getProject(wiz);
-            Sources sources = ProjectUtils.getSources(project);
-            SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-            if (MIMENames.HEADER_MIME_TYPE.equals(extensions.getMIMEType())) {
-                // this is the only place where we want to differ c headers from cpp headers (creation of new one)
-                if (dobj.getPrimaryFile().getAttribute(C_HEADER_MIME_TYPE) != null) {
-                    MIMEExtensions cHeaderExtensions = MIMEExtensions.get(C_HEADER_MIME_TYPE);
-                    if ((cHeaderExtensions == null) || !C_HEADER_MIME_TYPE.equals(cHeaderExtensions.getMIMEType())) {
-                        System.err.println("not found extensions for C Headers"); // NOI18N
-                    } else {
-                        extensions = cHeaderExtensions;
+    protected WizardDescriptor.Panel<WizardDescriptor>[] createPanels() {
+        if (targetChooserDescriptorPanel == null) {
+            DataObject dobj = getWizard().getTemplate();
+            FileObject fobj = dobj.getPrimaryFile();
+            String mimeType = fobj.getMIMEType();
+            MIMEExtensions extensions = MIMEExtensions.get(mimeType);
+            if (extensions != null) {
+                Project project = Templates.getProject(getWizard());
+                Sources sources = ProjectUtils.getSources(project);
+                SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+                if (MIMENames.HEADER_MIME_TYPE.equals(extensions.getMIMEType())) {
+                    // this is the only place where we want to differ c headers from cpp headers (creation of new one)
+                    if (dobj.getPrimaryFile().getAttribute(C_HEADER_MIME_TYPE) != null) {
+                        MIMEExtensions cHeaderExtensions = MIMEExtensions.get(C_HEADER_MIME_TYPE);
+                        if ((cHeaderExtensions == null) || !C_HEADER_MIME_TYPE.equals(cHeaderExtensions.getMIMEType())) {
+                            System.err.println("not found extensions for C Headers"); // NOI18N
+                        } else {
+                            extensions = cHeaderExtensions;
+                        }
                     }
                 }
-            }
-            String defaultExt = null; // let the chooser panel decide default extension
-            if (mimeType.equals(MIMENames.SHELL_MIME_TYPE)) {
-                // for shell scripts set default extension explicitly
-                defaultExt = fobj.getExt();
-            } else if (mimeType.equals(MIMENames.HEADER_MIME_TYPE) && fobj.getExt().length() == 0) {
-                // for standard header without extension
-                defaultExt = fobj.getExt();
-            }
+                String defaultExt = null; // let the chooser panel decide default extension
+                if (mimeType.equals(MIMENames.SHELL_MIME_TYPE)) {
+                    // for shell scripts set default extension explicitly
+                    defaultExt = fobj.getExt();
+                } else if (mimeType.equals(MIMENames.HEADER_MIME_TYPE) && fobj.getExt().length() == 0) {
+                    // for standard header without extension
+                    defaultExt = fobj.getExt();
+                }
 
-            NewTestSimplePanel panel = new NewTestSimplePanel(project, groups, null, extensions, defaultExt);
-            return panel;
-        } else {
-            return wiz.targetChooser();
+                targetChooserDescriptorPanel = new NewTestSimplePanel(project, groups, null, extensions, defaultExt);
+            } else {
+                targetChooserDescriptorPanel = getWizard().targetChooser();
+            }
         }
+        @SuppressWarnings("unchecked")
+        Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[]{targetChooserDescriptorPanel};
+        return panels;
     }
 
     private String getTestFileName() {
@@ -176,29 +223,6 @@ public class TestSimpleIterator extends CCFSrcFileIterator {
 
     private String getTestName() {
         return ((NewTestSimplePanelGUI)targetChooserDescriptorPanel.getComponent()).getTestName();
-    }
-
-    private MakeConfigurationDescriptor getMakeConfigurationDescriptor(Project p) {
-        ConfigurationDescriptorProvider pdp = p.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        if (pdp == null) {
-            return null;
-        }
-        return pdp.getConfigurationDescriptor();
-    }
-
-    private static Folder getTestsRootFolder(Project project) {
-        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        MakeConfigurationDescriptor projectDescriptor = cdp.getConfigurationDescriptor();
-
-        Folder root = projectDescriptor.getLogicalFolders();
-        Folder testRootFolder = null;
-        for (Folder folder : root.getFolders()) {
-            if(folder.isTestRootFolder()) {
-                testRootFolder = folder;
-                break;
-            }
-        }
-        return testRootFolder;
     }
 }
 

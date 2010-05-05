@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.ConstructorPanel;
-import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;

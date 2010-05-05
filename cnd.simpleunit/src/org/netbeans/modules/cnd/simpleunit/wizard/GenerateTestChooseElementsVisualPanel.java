@@ -39,18 +39,21 @@
 package org.netbeans.modules.cnd.simpleunit.wizard;
 
 import javax.swing.JPanel;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.openide.util.NbBundle;
 
-public final class GenerateTestChooseElementsPanel extends JPanel {
+public final class GenerateTestChooseElementsVisualPanel extends JPanel {
+    private final ElementNode.Description description;
 
-    /** Creates new form GenerateTestChooseElementsPanel */
-    public GenerateTestChooseElementsPanel() {
+    /** Creates new form GenerateTestChooseElementsVisualPanel */
+    public GenerateTestChooseElementsVisualPanel(ElementNode.Description description) {
+        this.description = description;
         initComponents();
     }
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(GenerateTestChooseElementsPanel.class, "GenerateTestChooseElementsWizardPanelName");
+        return NbBundle.getMessage(GenerateTestChooseElementsVisualPanel.class, "GenerateTestChooseElementsWizardPanelName");
     }
 
     /** This method is called from within the constructor to
@@ -61,35 +64,32 @@ public final class GenerateTestChooseElementsPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lblTestTempalte = new javax.swing.JLabel();
-        cbTestTemplate = new javax.swing.JComboBox();
+        elementSelector = new org.netbeans.modules.cnd.simpleunit.wizard.FunctionSelectorPanel(description, false);
 
-        lblTestTempalte.setLabelFor(cbTestTemplate);
-        org.openide.awt.Mnemonics.setLocalizedText(lblTestTempalte, org.openide.util.NbBundle.getMessage(GenerateTestChooseElementsPanel.class, "GenerateTestChooseElementsPanel.lblTestTempalte.text")); // NOI18N
-
-        cbTestTemplate.setEditor(null);
+        javax.swing.GroupLayout elementSelectorLayout = new javax.swing.GroupLayout(elementSelector);
+        elementSelector.setLayout(elementSelectorLayout);
+        elementSelectorLayout.setHorizontalGroup(
+            elementSelectorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        elementSelectorLayout.setVerticalGroup(
+            elementSelectorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(lblTestTempalte)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cbTestTemplate, 0, 265, Short.MAX_VALUE))
+            .addComponent(elementSelector, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblTestTempalte)
-                    .addComponent(cbTestTemplate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(272, Short.MAX_VALUE))
+            .addComponent(elementSelector, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox cbTestTemplate;
-    private javax.swing.JLabel lblTestTempalte;
+    private javax.swing.JPanel elementSelector;
     // End of variables declaration//GEN-END:variables
 
 }

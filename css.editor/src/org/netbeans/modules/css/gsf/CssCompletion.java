@@ -337,6 +337,9 @@ public class CssCompletion implements CodeCompletionHandler {
             node.visitChildren(propertySearch);
 
             SimpleNode property = result[0];
+            if(property == null) {
+                return CodeCompletionResult.NONE;
+            }
 
             String expressionText = ""; //NOI18N
             if (result[1] != null) {

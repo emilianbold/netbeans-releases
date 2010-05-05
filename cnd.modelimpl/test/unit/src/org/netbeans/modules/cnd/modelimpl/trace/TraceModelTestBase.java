@@ -186,7 +186,11 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
 
         @Override
         public void println(String s) {
-            if (s==null || !s.startsWith("Java Accessibility Bridge for GNOME loaded.")) {
+            if (s==null ||
+                    !s.startsWith("Java Accessibility Bridge for GNOME loaded.") ||
+                    !s.startsWith("WARNING: FileUtil.normalizeFile") ||
+                    !s.contains("org.openide.filesystems.FileUtil normalizeFile")
+                    ) {
                 super.println(s);
             }
         }

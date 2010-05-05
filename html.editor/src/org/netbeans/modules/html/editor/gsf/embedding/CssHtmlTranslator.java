@@ -71,8 +71,8 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
     public static final String HTML_MIME_TYPE = "text/html"; //NOI18N
 
     private static final Pattern CLASSES_LIST_PATTERN = Pattern.compile("[^\\s,]*"); //splits by whitespaces and comma //NOI18N
-    private static final Pattern CDATA_FILTER_PATTERN = Pattern.compile(".*<!\\[CDATA\\[\\s*(<!--)?(.*?)(-->)?\\s*]]>.*", Pattern.DOTALL | Pattern.MULTILINE);
-    private static final int CDATA_BODY_GROUP_INDEX = 2; //                                        ^^^^
+    static final Pattern CDATA_FILTER_PATTERN = Pattern.compile(".*<!\\[CDATA\\[\\s*(\\*/)?\\s*(<!--)?(.*?)(-->)?\\s*(/\\*)?\\s*]]>.*", Pattern.DOTALL | Pattern.MULTILINE);
+    static final int CDATA_BODY_GROUP_INDEX = 3; //                                                  ^^^^
     
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {

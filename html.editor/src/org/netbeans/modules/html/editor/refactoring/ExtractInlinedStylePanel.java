@@ -111,6 +111,27 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
                 //but do not store the mode in the settings
                 mode = Mode.refactorToNewEmbeddedSection;
             }
+        } else if (mode == Mode.refactorToReferedExternalSheet) {
+            if(context.getLinkedExternalStylesheets().isEmpty()) {
+                //there's no linked stylesheet
+                mode = Mode.refactorToNewExternalSheet;
+            }
+
+            if(externalSheetsComboBox.getModel().getSize() == 0) {
+                //no external stylesheet
+                mode = Mode.refactorToNewEmbeddedSection;
+            }
+
+        } else if(mode == Mode.refactorToExistingExternalSheet) {
+            if(!context.getLinkedExternalStylesheets().isEmpty()) {
+                //there's a refered link
+                mode = Mode.refactorToReferedExternalSheet;
+            }
+
+            if(externalSheetsComboBox.getModel().getSize() == 0) {
+                //no external stylesheet
+                mode = Mode.refactorToNewEmbeddedSection;
+            }
         }
         setSectionMode(mode);
 

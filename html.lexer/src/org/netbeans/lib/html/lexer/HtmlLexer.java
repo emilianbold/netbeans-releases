@@ -42,6 +42,7 @@
 package org.netbeans.lib.html.lexer;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
@@ -141,9 +142,19 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         
     }
 
+    private final HashMap<CompoundState, CompoundState> STATES_CACHE = new HashMap<CompoundState, CompoundState>();
+
     @Override
     public Object state() {
-        return new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, attribute, tag);
+        //cache the states so lexing of large files do not eat too much memory
+        CompoundState currentState = new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, attribute, tag);
+        CompoundState cached = STATES_CACHE.get(currentState);
+        if(cached == null) {
+            STATES_CACHE.put(currentState, currentState);
+            return currentState;
+        } else {
+            return cached;
+        }
     }
 
     //script and style tag names
@@ -253,6 +264,14 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     }
 
     private static final String SUPPORTED_SCRIPT_TYPE = "text/javascript"; //NOI18N
+
+    //flyweight token images
+    private static final String IMG_EQUAL_SIGN = "="; //NOI18N
+    private static final String IMG_CLOSE_TAG_SYMBOL = ">"; //NOI18N
+    private static final String IMG_CLOSE_TAG_SYMBOL2 = "/>"; //NOI18N
+    private static final String IMG_OPEN_TAG_SYMBOL = "<"; //NOI18N
+    private static final String IMG_OPEN_TAG_SYMBOL2 = "</"; //NOI18N
+
 
     public HtmlLexer(LexerRestartInfo<HTMLTokenId> info) {
         this.input = info.input();
@@ -1179,10 +1198,62 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             }
             LOGGER.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + tokenId + "; state=" + state() + ")\n"); //NOI18N
         }
-        Token token = propertyKey == null || propertyValue == null ?
-            tokenFactory.createToken(tokenId) :
-            tokenFactory.createPropertyToken(tokenId, input.readLength(), new HtmlTokenPropertyProvider(propertyKey, propertyValue));
-        return token;
+         if(propertyKey != null && propertyValue != null) {
+            return tokenFactory.createPropertyToken(tokenId, input.readLength(), new HtmlTokenPropertyProvider(propertyKey, propertyValue));
+        } else {
+            CharSequence image = input.readText();
+            switch(tokenId) {
+                case OPERATOR:
+                    return tokenFactory.getFlyweightToken(tokenId, IMG_EQUAL_SIGN);
+
+                case TAG_CLOSE_SYMBOL:
+                    switch(image.charAt(0)) {
+                        case '/':
+                            if(input.readLength() > 1) {
+                                if(image.charAt(1) == '>') {
+                                    return tokenFactory.getFlyweightToken(tokenId, IMG_CLOSE_TAG_SYMBOL2);
+                                }
+                            }
+                            break;
+                        case '>':
+                            return tokenFactory.getFlyweightToken(tokenId, IMG_CLOSE_TAG_SYMBOL);
+                    }
+
+                case TAG_OPEN_SYMBOL:
+                    switch(image.charAt(0)) {
+                        case '<':
+                            if(input.readLength() > 1) {
+                                if(image.charAt(1) == '/') {
+                                    return tokenFactory.getFlyweightToken(tokenId, IMG_OPEN_TAG_SYMBOL2);
+                                }
+                                break;
+                            } else  {
+                                return tokenFactory.getFlyweightToken(tokenId, IMG_OPEN_TAG_SYMBOL);
+                            }
+
+                    }
+
+                case TAG_OPEN:
+                case TAG_CLOSE:
+                    String cachedTagName = HtmlElements.getCachedTagName(image);
+                    if(cachedTagName != null) {
+                        assert (cachedTagName.length() <= input.readLength()) : "readlength == " + input.readLength() + "; text=" + cachedTagName + "; image=" + image;
+                        return tokenFactory.getFlyweightToken(tokenId, cachedTagName);
+                    }
+                    break;
+                case ARGUMENT:
+                    String cachedAttrName = HtmlElements.getCachedAttrName(image);
+                    if(cachedAttrName != null) {
+                        assert (cachedAttrName.length() <= input.readLength()) : "readlength == " + input.readLength() + "; text=" + cachedAttrName + "; image=" + image;
+                        return tokenFactory.getFlyweightToken(tokenId, cachedAttrName);
+                    }
+                    break;
+            }
+            
+            return tokenFactory.createToken(tokenId);
+
+        }
+
     }
 
     @Override

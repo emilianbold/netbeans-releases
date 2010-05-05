@@ -39,9 +39,9 @@
 
 package org.netbeans.modules.jira.kenai;
 
-import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
