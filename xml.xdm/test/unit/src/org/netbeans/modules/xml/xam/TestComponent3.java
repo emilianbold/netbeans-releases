@@ -55,22 +55,22 @@ import org.w3c.dom.NodeList;
  *
  * @author Nam Nguyen
  */
-public class TestComponent extends AbstractDocumentComponent<TestComponent> implements NamedReferenceable<TestComponent> {
+public class TestComponent3 extends AbstractDocumentComponent<TestComponent3> implements NamedReferenceable<TestComponent3> {
     public static String NS_URI = "http://www.test.com/TestModel";
     public static String NS2_URI = "http://www.test2.com/TestModel";
     public static String NS_ERR_URI = "http://www.test2.com/TestModel/Err";
     
-    public TestComponent(TestModel model, org.w3c.dom.Element e) {
+    public TestComponent3(TestModel3 model, org.w3c.dom.Element e) {
         super(model, e);
     }
-    public TestComponent(TestModel model, String name, String ns) {
+    public TestComponent3(TestModel3 model, String name, String ns) {
         this(model, model.getDocument().createElementNS(ns, name));
     }
-    public TestComponent(TestModel model, String name, String ns, int index) {
+    public TestComponent3(TestModel3 model, String name, String ns, int index) {
         this(model, name, ns);
         setIndex(index);
     }
-    public TestComponent(TestModel model, String name, String ns, int index, String value) {
+    public TestComponent3(TestModel3 model, String name, String ns, int index, String value) {
         this(model, name, ns, index);
         setValue(value);
     }
@@ -87,14 +87,14 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
     }
 
     @Override
-    protected void populateChildren(List<TestComponent> children) {
+    protected void populateChildren(List<TestComponent3> children) {
         NodeList nl = getPeer().getChildNodes();
         if (nl != null){
             for (int i = 0; i < nl.getLength(); i++) {
                 org.w3c.dom.Node n = nl.item(i);
                 if (n instanceof Element) {
                     Element e = (Element) n;
-                    TestComponent comp = createComponent(getModel(), this, e);
+                    TestComponent3 comp = createComponent(getModel(), this, e);
                     if (comp != null) {
                         children.add(comp);
                     }
@@ -103,25 +103,25 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
         }
     }
     
-    static TestComponent createComponent(TestModel model, TestComponent parent, Element e)  {
+    static TestComponent3 createComponent(TestModel3 model, TestComponent3 parent, Element e)  {
         String namespace = e.getNamespaceURI();
         if (namespace == null && parent != null) {
             namespace = parent.lookupNamespaceURI(e.getPrefix());
         }
         if (e.getLocalName().equals("a") && NS_URI.equals(namespace)) {
-            return new TestComponent.A(model, e);
+            return new TestComponent3.A(model, e);
         } else if (e.getLocalName().equals("a") && NS2_URI.equals(namespace)) {
-            return new TestComponent.Aa(model, e);
+            return new TestComponent3.Aa(model, e);
         } else if (e.getLocalName().equals("b") && NS_URI.equals(namespace)) {
-            return new TestComponent.B(model, e);
+            return new TestComponent3.B(model, e);
         } else if (e.getLocalName().equals("c") && NS_URI.equals(namespace)) {
-            return new TestComponent.C(model, e);
+            return new TestComponent3.C(model, e);
         } else if (e.getLocalName().equals("d") && NS_URI.equals(namespace)) {
-            return new TestComponent.D(model, e);
+            return new TestComponent3.D(model, e);
         } else if (e.getLocalName().equals("e") && NS_URI.equals(namespace)) {
-            return new TestComponent.E(model, e);
+            return new TestComponent3.E(model, e);
         } else if (e.getLocalName().equals(Err.LNAME) && NS_ERR_URI.equals(namespace)) {
-            return new TestComponent.Err(model, e);
+            return new TestComponent3.Err(model, e);
         } else {
             return null;
             //throw new RuntimeException("unsupported element type "+ e.getNodeName());
@@ -129,17 +129,17 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
     }
     
     public void setValue(String v) { 
-        setAttribute(TestAttribute.VALUE.getName(), TestAttribute.VALUE, v); 
+        setAttribute(TestAttribute3.VALUE.getName(), TestAttribute3.VALUE, v);
     }
     public String getValue() { 
-        return getAttribute(TestAttribute.VALUE); 
+        return getAttribute(TestAttribute3.VALUE);
     }
 
     public void setIndex(int index) {
-        setAttribute(TestAttribute.INDEX.getName(), TestAttribute.INDEX, Integer.valueOf(index));
+        setAttribute(TestAttribute3.INDEX.getName(), TestAttribute3.INDEX, Integer.valueOf(index));
     }
     public int getIndex() {
-        String s = getAttribute(TestAttribute.INDEX);
+        String s = getAttribute(TestAttribute3.INDEX);
         return s == null ? -1 : Integer.parseInt(s); 
     }
 
@@ -164,73 +164,73 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
         return stringValue;
     }
     
-    public static class A extends TestComponent {
+    public static class A extends TestComponent3 {
         public static final QName QNAME = new QName(NS_URI, "a");
-        public A(TestModel model, int i) {
+        public A(TestModel3 model, int i) {
             super(model, "a", NS_URI, i);
         }
 
-        public A(TestModel model, Element e) {
+        public A(TestModel3 model, Element e) {
             super(model, e);
         }
 
         @Override
         public QName getQName() { return QNAME; }
     }
-    public static class Aa extends TestComponent {
+    public static class Aa extends TestComponent3 {
         public static final QName QNAME = new QName(NS2_URI, "a");
-        public Aa(TestModel model, int i) {
+        public Aa(TestModel3 model, int i) {
             super(model, "a", NS2_URI, i);
         }
-        public Aa(TestModel model, Element e) {
+        public Aa(TestModel3 model, Element e) {
             super(model, e);
         }
 
         @Override
         public QName getQName() { return QNAME; }
     }
-    public static class B extends TestComponent {
+    public static class B extends TestComponent3 {
         public static final QName QNAME = new QName(NS_URI, "b");
-        public B(TestModel model, int i) {
+        public B(TestModel3 model, int i) {
             super(model, "b", NS_URI, i);
         }
-        public B(TestModel model, Element e) {
+        public B(TestModel3 model, Element e) {
             super(model, e);
         }
 
         @Override
         public QName getQName() { return QNAME; }
     }
-    public static class C extends TestComponent {
+    public static class C extends TestComponent3 {
         public static final QName QNAME = new QName(NS_URI, "c");
-        public C(TestModel model, int i) {
+        public C(TestModel3 model, int i) {
             super(model, "c", NS_URI, i);
         }
-        public C(TestModel model, Element e) {
+        public C(TestModel3 model, Element e) {
             super(model, e);
         }
 
         @Override
         public QName getQName() { return QNAME; }
     }
-    public static class D extends TestComponent {
+    public static class D extends TestComponent3 {
         public static final QName QNAME = new QName(NS_URI, "d");
-        public D(TestModel model, int i) {
+        public D(TestModel3 model, int i) {
             super(model, "d", NS_URI, i);
         }
-        public D(TestModel model, Element e) {
+        public D(TestModel3 model, Element e) {
             super(model, e);
         }
 
         @Override
         public QName getQName() { return QNAME; }
     }
-    public static class E extends TestComponent {
+    public static class E extends TestComponent3 {
         public static final QName QNAME = new QName(NS_URI, "e");
-        public E(TestModel model, int i) {
+        public E(TestModel3 model, int i) {
             super(model, "e", NS_URI, i);
         }
-        public E(TestModel model, Element e) {
+        public E(TestModel3 model, Element e) {
             super(model, e);
         }
 
@@ -247,24 +247,24 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
 
         @Override
         public String getName() {
-            return super.getAttribute(TestAttribute.NAME);
+            return super.getAttribute(TestAttribute3.NAME);
         }
 
         public void setName(String v) {
-            setAttribute(TestAttribute.NAME.getName(), TestAttribute.NAME, v);
+            setAttribute(TestAttribute3.NAME.getName(), TestAttribute3.NAME, v);
         }
     }
 
     /**
      * Special component for testing error processing in ComponentUpdater. 
      */
-    public static class Err extends TestComponent {
+    public static class Err extends TestComponent3 {
         public static final String LNAME = "err";
         public static final QName QNAME = new QName(NS_ERR_URI, LNAME);
-        public Err(TestModel model, int i) {
+        public Err(TestModel3 model, int i) {
             super(model, LNAME, NS_ERR_URI, i);
         }
-        public Err(TestModel model, Element e) {
+        public Err(TestModel3 model, Element e) {
             super(model, e);
         }
 
@@ -281,26 +281,26 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
 
         @Override
         public String getName() {
-            return super.getAttribute(TestAttribute.NAME);
+            return super.getAttribute(TestAttribute3.NAME);
         }
 
         public void setName(String v) {
-            setAttribute(TestAttribute.NAME.getName(), TestAttribute.NAME, v);
+            setAttribute(TestAttribute3.NAME.getName(), TestAttribute3.NAME, v);
         }
     }
     
-    public static class TestComponentReference<T extends TestComponent> 
+    public static class TestComponentReference<T extends TestComponent3>
             extends AbstractNamedComponentReference<T> {
-        public TestComponentReference(Class<T> type, TestComponent parent, String ref) {
+        public TestComponentReference(Class<T> type, TestComponent3 parent, String ref) {
             super(type, parent, ref);
         }
-        public TestComponentReference(T ref, Class<T> type, TestComponent parent) {
+        public TestComponentReference(T ref, Class<T> type, TestComponent3 parent) {
             super(ref, type, parent);
         }
 
         @Override
-        public TestComponent getParent() {
-            return (TestComponent) super.getParent();
+        public TestComponent3 getParent() {
+            return (TestComponent3) super.getParent();
         }
 
         @Override
@@ -315,7 +315,7 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
         public T get() {
             if (getReferenced() == null) {
                 String tns = getQName().getNamespaceURI();
-                TestComponent root = getParent().getModel().getRootComponent();
+                TestComponent3 root = getParent().getModel().getRootComponent();
                 if (tns != null && tns.equals(root.getTargetNamespace())) {
                     setReferenced(getType().cast(new ReferencedFinder().
                             findReferenced(root, getQName().getLocalPart())));
@@ -326,16 +326,16 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
     }
 
     @Override
-    public String getLeadingText(TestComponent child) {
+    public String getLeadingText(TestComponent3 child) {
         return super.getLeadingText(child);
     }
 
     @Override
-    public String getTrailingText(TestComponent child) {
+    public String getTrailingText(TestComponent3 child) {
         return super.getTrailingText(child);
     }
     
-    public void setText(String propName, String value, TestComponent child, final boolean leading) {
+    public void setText(String propName, String value, TestComponent3 child, final boolean leading) {
         if (leading) {
             setLeadingText(propName, value, child);
         } else {
@@ -344,46 +344,46 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
     }
 
     @Override
-    public TestModel getModel() {
-        return (TestModel) super.getModel();
+    public TestModel3 getModel() {
+        return (TestModel3) super.getModel();
     }
     
-    public void accept(TestVisitor visitor) {
+    public void accept(TestVisitor3 visitor) {
         visitor.visit(this);
     }
     
     public String getTargetNamespace() {
-        return getAttribute(TestAttribute.TNS);
+        return getAttribute(TestAttribute3.TNS);
     }
     public void setTargetNamespace(String v) {
-        setAttribute(TestAttribute.TNS.getName(), TestAttribute.NAME, v);
+        setAttribute(TestAttribute3.TNS.getName(), TestAttribute3.NAME, v);
     }
     
-    public <T extends TestComponent> TestComponentReference<T> getRef(Class<T> type) {
-        String v = getAttribute(TestAttribute.REF);
+    public <T extends TestComponent3> TestComponentReference<T> getRef(Class<T> type) {
+        String v = getAttribute(TestAttribute3.REF);
         return v == null ? null : new TestComponentReference<T>(type, this, v);
     }
     
-    public <T extends TestComponent> void setRef(T referenced, Class<T> type) {
+    public <T extends TestComponent3> void setRef(T referenced, Class<T> type) {
         TestComponentReference<T> ref = new TestComponentReference<T>(referenced, type, this);
-        super.setAttribute(TestAttribute.REF.getName(), TestAttribute.REF, ref);
+        super.setAttribute(TestAttribute3.REF.getName(), TestAttribute3.REF, ref);
     }
     
     
-    public static class ReferencedFinder extends TestVisitor {
+    public static class ReferencedFinder extends TestVisitor3 {
         String name;
-        TestComponent found;
+        TestComponent3 found;
         
         public ReferencedFinder() {
         }
-        public TestComponent findReferenced(TestComponent root, String name) {
+        public TestComponent3 findReferenced(TestComponent3 root, String name) {
             this.name = name;
             root.accept(this);
             return found;
         }
 
         @Override
-        public void visit(TestComponent component) {
+        public void visit(TestComponent3 component) {
             if (name.equals(component.getName())) {
                 found = component;
             } else {
@@ -392,8 +392,8 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
         }
 
         @Override
-        public void visitChildren(TestComponent component) {
-            for (TestComponent child : component.getChildren()) {
+        public void visitChildren(TestComponent3 component) {
+            for (TestComponent3 child : component.getChildren()) {
                 child.accept(this);
                 if (found != null) {
                     return;
@@ -402,25 +402,25 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
         }
     }
     
-    static Collection<Class<? extends TestComponent>> EMPTY = new ArrayList<Class<? extends TestComponent>>();
-    public static Collection <Class<? extends TestComponent>> _ANY = new ArrayList<Class<? extends TestComponent>>();
-    static { _ANY.add(TestComponent.class); }
-    public static Collection <Class<? extends TestComponent>> _A = new ArrayList<Class<? extends TestComponent>>();
+    static Collection<Class<? extends TestComponent3>> EMPTY = new ArrayList<Class<? extends TestComponent3>>();
+    public static Collection <Class<? extends TestComponent3>> _ANY = new ArrayList<Class<? extends TestComponent3>>();
+    static { _ANY.add(TestComponent3.class); }
+    public static Collection <Class<? extends TestComponent3>> _A = new ArrayList<Class<? extends TestComponent3>>();
     static {  _A.add(A.class); }
-    public static Collection <Class<? extends TestComponent>> _B = new ArrayList<Class<? extends TestComponent>>();
+    public static Collection <Class<? extends TestComponent3>> _B = new ArrayList<Class<? extends TestComponent3>>();
     static {  _B.add(B.class); }
-    public static Collection <Class<? extends TestComponent>> _C = new ArrayList<Class<? extends TestComponent>>();
+    public static Collection <Class<? extends TestComponent3>> _C = new ArrayList<Class<? extends TestComponent3>>();
     static {  _C.add(C.class); }
-    public static Collection <Class<? extends TestComponent>> _D = new ArrayList<Class<? extends TestComponent>>();
+    public static Collection <Class<? extends TestComponent3>> _D = new ArrayList<Class<? extends TestComponent3>>();
     static {  _D.add(D.class); }
-    public static Collection <Class<? extends TestComponent>> _AB = new ArrayList<Class<? extends TestComponent>>();
+    public static Collection <Class<? extends TestComponent3>> _AB = new ArrayList<Class<? extends TestComponent3>>();
     static {  _AB.add(A.class); _AB.add(B.class); }
-    public static Collection <Class<? extends TestComponent>> _BC = new ArrayList<Class<? extends TestComponent>>();
+    public static Collection <Class<? extends TestComponent3>> _BC = new ArrayList<Class<? extends TestComponent3>>();
     static {  _BC.add(B.class); _BC.add(C.class); }
-    public static Collection <Class<? extends TestComponent>> _AC = new ArrayList<Class<? extends TestComponent>>();
+    public static Collection <Class<? extends TestComponent3>> _AC = new ArrayList<Class<? extends TestComponent3>>();
     static {  _AC.add(A.class); _AC.add(C.class); }
-    public static Collection <Class<? extends TestComponent>> _ABC = new ArrayList<Class<? extends TestComponent>>();
+    public static Collection <Class<? extends TestComponent3>> _ABC = new ArrayList<Class<? extends TestComponent3>>();
     static {  _ABC.add(A.class); _ABC.add(B.class); _ABC.add(C.class); }
-    public static Collection <Class<? extends TestComponent>> _BAC = new ArrayList<Class<? extends TestComponent>>();
+    public static Collection <Class<? extends TestComponent3>> _BAC = new ArrayList<Class<? extends TestComponent3>>();
     static {  _BAC.add(B.class); _BAC.add(A.class); _BAC.add(C.class); }
 }
