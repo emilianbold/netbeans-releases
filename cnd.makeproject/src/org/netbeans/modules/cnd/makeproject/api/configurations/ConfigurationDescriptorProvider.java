@@ -47,13 +47,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -66,7 +66,6 @@ public class ConfigurationDescriptorProvider {
     public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
     public static final String USG_PROJECT_OPEN_CND = "USG_PROJECT_OPEN_CND"; // NOI18N
     public static final String USG_PROJECT_CREATE_CND = "USG_PROJECT_CREATE_CND"; // NOI18N
-    public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.cnd"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
     private FileObject projectDirectory;
@@ -202,136 +201,128 @@ public class ConfigurationDescriptorProvider {
         if (descr == null && makeConfiguration == null) {
             return;
         }
-        Logger logger = Logger.getLogger(USG_LOGGER_NAME);
-        if (logger.isLoggable(Level.INFO)) {
-            LogRecord rec = new LogRecord(Level.INFO, msg);
-            Item[] projectItems = null;
+        Item[] projectItems = null;
+        if (makeConfiguration == null) {
+            if (descr.getConfs() == null || descr.getConfs().getActive() == null){
+                return;
+            }
             if (makeConfiguration == null) {
-                if (descr.getConfs() == null || descr.getConfs().getActive() == null){
-                    return;
-                }
-                if (makeConfiguration == null) {
-                    makeConfiguration = descr.getActiveConfiguration();
-                }
-                projectItems = (descr).getProjectItems();
-                if (!USG_PROJECT_CREATE_CND.equals(msg) && (projectItems == null || projectItems.length == 0)) {
-                    // do not track empty applications
-                    return;
+                makeConfiguration = descr.getActiveConfiguration();
+            }
+            projectItems = (descr).getProjectItems();
+            if (!USG_PROJECT_CREATE_CND.equals(msg) && (projectItems == null || projectItems.length == 0)) {
+                // do not track empty applications
+                return;
+            }
+        }
+        String type;
+        switch (makeConfiguration.getConfigurationType().getValue()) {
+            case MakeConfiguration.TYPE_MAKEFILE:
+                type = "MAKEFILE"; // NOI18N
+                break;
+            case MakeConfiguration.TYPE_APPLICATION:
+                type = "APPLICATION"; // NOI18N
+                break;
+            case MakeConfiguration.TYPE_DYNAMIC_LIB:
+                type = "DYNAMIC_LIB"; // NOI18N
+                break;
+            case MakeConfiguration.TYPE_STATIC_LIB:
+                type = "STATIC_LIB"; // NOI18N
+                break;
+            case MakeConfiguration.TYPE_QT_APPLICATION:
+                type = "QT_APPLICATION"; // NOI18N
+                break;
+            case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+                type = "QT_DYNAMIC_LIB"; // NOI18N
+                break;
+            case MakeConfiguration.TYPE_QT_STATIC_LIB:
+                type = "QT_STATIC_LIB"; // NOI18N
+                break;
+            default:
+                type = "UNKNOWN"; // NOI18N
+        }
+        String host;
+        CompilerSet compilerSet;
+        if (makeConfiguration.getDevelopmentHost().isLocalhost()) {
+            host = "LOCAL"; // NOI18N
+            compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+        } else {
+            host = "REMOTE"; // NOI18N
+            // do not force creation of compiler sets
+            compilerSet = null;
+        }
+        String flavor;
+        String[] families;
+        if (compilerSet != null) {
+            families = compilerSet.getCompilerFlavor().getToolchainDescriptor().getFamily();
+            flavor = compilerSet.getCompilerFlavor().toString();
+        } else {
+            families = new String[0];
+            if (makeConfiguration.getCompilerSet() != null) {
+                families = new String[] { makeConfiguration.getCompilerSet().getName() };
+            }
+            flavor = makeConfiguration.getCompilerSet().getFlavor();
+        }
+        String family;
+        if (families.length == 0) {
+            family = flavor; // NOI18N
+        } else {
+            StringBuilder buffer = new StringBuilder();
+            for (int i = 0; i < families.length; i++) {
+                if (families[i] != null) {
+                    buffer.append(families[i]);
+                    if (i < families.length - 1) {
+                        buffer.append(","); // NOI18N
+                    }
                 }
             }
-                String type;
-                switch (makeConfiguration.getConfigurationType().getValue()) {
-                    case MakeConfiguration.TYPE_MAKEFILE:
-                        type = "MAKEFILE"; // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_APPLICATION:
-                        type = "APPLICATION"; // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_DYNAMIC_LIB:
-                        type = "DYNAMIC_LIB"; // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_STATIC_LIB:
-                        type = "STATIC_LIB"; // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_QT_APPLICATION:
-                        type = "QT_APPLICATION"; // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
-                        type = "QT_DYNAMIC_LIB"; // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_QT_STATIC_LIB:
-                        type = "QT_STATIC_LIB"; // NOI18N
-                        break;
-                    default:
-                        type = "UNKNOWN"; // NOI18N
-                }
-                String host;
-                CompilerSet compilerSet;
-                if (makeConfiguration.getDevelopmentHost().isLocalhost()) {
-                    host = "LOCAL"; // NOI18N
-                    compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
-                } else {
-                    host = "REMOTE"; // NOI18N
-                    // do not force creation of compiler sets
-                    compilerSet = null;
-                }
-                String flavor;
-                String[] families;
-                if (compilerSet != null) {
-                    families = compilerSet.getCompilerFlavor().getToolchainDescriptor().getFamily();
-                    flavor = compilerSet.getCompilerFlavor().toString();
-                } else {
-                    families = new String[0];
-                    if (makeConfiguration.getCompilerSet() != null) {
-                        families = new String[] { makeConfiguration.getCompilerSet().getName() };
-                    }
-                    flavor = makeConfiguration.getCompilerSet().getFlavor();
-                }
-                String family;
-                if (families.length == 0) {
-                    family = flavor; // NOI18N
-                } else {
-                    StringBuilder buffer = new StringBuilder();
-                    for (int i = 0; i < families.length; i++) {
-                        if (families[i] != null) {
-                            buffer.append(families[i]);
-                            if (i < families.length - 1) {
-                                buffer.append(","); // NOI18N
-                            }
-                        }
-                    }
-                    family = buffer.toString();
-                }                
-                String platform;
-                int platformID = makeConfiguration.getDevelopmentHost().getBuildPlatform();
-                if (Platforms.getPlatform(platformID) != null) {
-                    platform = Platforms.getPlatform(platformID).getName();
-                } else {
-                    platform = "UNKNOWN_PLATFORM"; // NOI18N
-                }
+            family = buffer.toString();
+        }
+        String platform;
+        int platformID = makeConfiguration.getDevelopmentHost().getBuildPlatform();
+        if (Platforms.getPlatform(platformID) != null) {
+            platform = Platforms.getPlatform(platformID).getName();
+        } else {
+            platform = "UNKNOWN_PLATFORM"; // NOI18N
+        }
 
-                String ideType = SunStudioUserCounter.getIDEType().getTag();
-                if (USG_PROJECT_CREATE_CND.equals(msg)) {
-                    // stop here
-                    rec.setParameters(new Object[] { type, flavor, family, host, platform, "USER_PROJECT",  ideType}); // NOI18N
-                    rec.setLoggerName(logger.getName());
-                    logger.log(rec);
-                } else if (projectItems != null) {
-                    makeConfiguration.reCountLanguages(descr);
-                    int size = 0;
-                    int allItems = projectItems.length;
-                    boolean cLang = false;
-                    boolean ccLang = false;
-                    boolean fLang = false;
-                    boolean aLang = false;
-                    for (Item item : projectItems) {
-                        ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
-                        if (itemConfiguration != null && !itemConfiguration.getExcluded().getValue()) {
-                            size++;
-                            switch (itemConfiguration.getTool()) {
-                                case CCompiler:
-                                    cLang = true;
-                                    break;
-                                case CCCompiler:
-                                    ccLang = true;
-                                    break;
-                                case FortranCompiler:
-                                    fLang = true;
-                                    break;
-                                case Assembler:
-                                    aLang = true;
-                                    break;
-                            }
-                        }
+        String ideType = SunStudioUserCounter.getIDEType().getTag();
+        if (USG_PROJECT_CREATE_CND.equals(msg)) {
+            // stop here
+            UIGesturesSupport.submit(msg, type, flavor, family, host, platform, "USER_PROJECT", ideType); //NOI18N
+        } else if (projectItems != null) {
+            makeConfiguration.reCountLanguages(descr);
+            int size = 0;
+            int allItems = projectItems.length;
+            boolean cLang = false;
+            boolean ccLang = false;
+            boolean fLang = false;
+            boolean aLang = false;
+            for (Item item : projectItems) {
+                ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
+                if (itemConfiguration != null && !itemConfiguration.getExcluded().getValue()) {
+                    size++;
+                    switch (itemConfiguration.getTool()) {
+                        case CCompiler:
+                            cLang = true;
+                            break;
+                        case CCCompiler:
+                            ccLang = true;
+                            break;
+                        case FortranCompiler:
+                            fLang = true;
+                            break;
+                        case Assembler:
+                            aLang = true;
+                            break;
                     }
-                    String ccUsage = ccLang ? "USE_CPP" : "NO_CPP"; // NOI18N
-                    String cUsage = cLang ? "USE_C" : "NO_C"; // NOI18N
-                    String fUsage = fLang ? "USE_FORTRAN" : "NO_FORTRAN"; // NOI18N
-                    String aUsage = aLang ? "USE_ASM" : "NO_ASM"; // NOI18N
-                    rec.setParameters(new Object[] { type, flavor, family, host, platform, toSizeString(allItems), toSizeString(size), ccUsage, cUsage, fUsage, aUsage, ideType});
-                    rec.setLoggerName(logger.getName());
-                    logger.log(rec);
                 }
+            }
+            String ccUsage = ccLang ? "USE_CPP" : "NO_CPP"; // NOI18N
+            String cUsage = cLang ? "USE_C" : "NO_C"; // NOI18N
+            String fUsage = fLang ? "USE_FORTRAN" : "NO_FORTRAN"; // NOI18N
+            String aUsage = aLang ? "USE_ASM" : "NO_ASM"; // NOI18N
+            UIGesturesSupport.submit(msg, type, flavor, family, host, platform, toSizeString(allItems), toSizeString(size), ccUsage, cUsage, fUsage, aUsage, ideType);
         }
     }
 

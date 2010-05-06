@@ -789,12 +789,14 @@ class OccurenceBuilder {
                 clzName = ((ClassScope) scope).getSuperClassName();
             }
         }
-        for (TypeElement typeElement : index.getTypes(NameKind.exact(clzName))) {
-            constants.addAll(ElementFilter.forName(methodName).filter(index.getAllTypeConstants(typeElement)));
-        }
-        if (elementInfo.setDeclarations(constants)) {
-            buildStaticConstantInvocations(elementInfo, fileScope, cachedOccurences);
-            buildStaticConstantDeclarations(elementInfo, fileScope, cachedOccurences);
+        if (clzName != null && clzName.toString().length() > 0) {
+            for (TypeElement typeElement : index.getTypes(NameKind.exact(clzName))) {
+                constants.addAll(ElementFilter.forName(methodName).filter(index.getAllTypeConstants(typeElement)));
+            }
+            if (elementInfo.setDeclarations(constants)) {
+                buildStaticConstantInvocations(elementInfo, fileScope, cachedOccurences);
+                buildStaticConstantDeclarations(elementInfo, fileScope, cachedOccurences);
+            }
         }
     }
 
@@ -810,13 +812,15 @@ class OccurenceBuilder {
                 clzName = ((ClassScope) scope).getSuperClassName();
             }
         }
-        for (TypeElement typeElement : index.getTypes(NameKind.exact(clzName))) {
-            methods.addAll(ElementFilter.forName(methodName).filter(index.getAllMethods(typeElement)));
-        }
-        if (elementInfo.setDeclarations(methods)) {
-            occurences.clear();
-            buildStaticMethodInvocations(elementInfo, fileScope, occurences);
-            buildMethodDeclarations(elementInfo, fileScope, occurences);
+        if (clzName != null && clzName.toString().length() > 0) {
+            for (TypeElement typeElement : index.getTypes(NameKind.exact(clzName))) {
+                methods.addAll(ElementFilter.forName(methodName).filter(index.getAllMethods(typeElement)));
+            }
+            if (elementInfo.setDeclarations(methods)) {
+                occurences.clear();
+                buildStaticMethodInvocations(elementInfo, fileScope, occurences);
+                buildMethodDeclarations(elementInfo, fileScope, occurences);
+            }
         }
     }
 
@@ -1058,7 +1062,7 @@ class OccurenceBuilder {
                             clzName = ((ClassScope) scope).getSuperClassName();
                         }
                     }
-                    if (clzName != null) {
+                    if (clzName != null && clzName.toString().length() > 0) {
                         if (fieldName.matchesName(PhpElementKind.FIELD, nodeInfo.getName())) {
                             final Exact typeName = NameKind.exact(clzName);
                             boolean isTheSame = false;
@@ -1123,7 +1127,7 @@ class OccurenceBuilder {
                                 clzName = ((ClassScope) scope).getSuperClassName();
                             }
                         }
-                        if (methodName.matchesName(PhpElementKind.METHOD, nodeInfo.getName())) {
+                        if (clzName != null && clzName.toString().length() > 0 && methodName.matchesName(PhpElementKind.METHOD, nodeInfo.getName())) {
                             final Exact typeName = NameKind.exact(clzName);
                             boolean isTheSame = false;
                             //matches with other matching names
@@ -1186,7 +1190,7 @@ class OccurenceBuilder {
                             clzName = ((ClassScope) scope).getSuperClassName();
                         }
                     }
-                    if (clzName != null) {
+                    if (clzName != null && clzName.toString().length() > 0) {
                         if (constantName.matchesName(PhpElementKind.TYPE_CONSTANT, nodeInfo.getName())) {
                             final Exact typeName = NameKind.exact(clzName);
                             boolean isTheSame = false;

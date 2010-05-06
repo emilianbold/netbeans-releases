@@ -233,7 +233,7 @@ public class HtmlCompletionQuery extends UserTask {
 
         //get text before cursor
         Token<HTMLTokenId> item = ts.token();
-        int itemOffset = item.offset(hi);
+        int itemOffset = ts.offset();
         int documentItemOffset = snapshot.getOriginalOffset(itemOffset);
         String preText = item.text().toString();
         String itemText = preText;
@@ -406,7 +406,7 @@ public class HtmlCompletionQuery extends UserTask {
             /* Value finder */
             if (id == HTMLTokenId.WS) {
                 //is the token before an operator? '<div color= |red>'
-                ts.move(item.offset(hi));
+                ts.move(itemOffset);
                 ts.movePrevious();
                 Token t = ts.token();
                 if (t.id() != HTMLTokenId.OPERATOR) {
@@ -416,7 +416,7 @@ public class HtmlCompletionQuery extends UserTask {
 
             if (node.type() == AstNode.NodeType.OPEN_TAG) {
 
-                ts.move(item.offset(hi));
+                ts.move(itemOffset);
                 ts.moveNext();
                 Token argItem = ts.token();
                 while (argItem.id() != HTMLTokenId.ARGUMENT && ts.movePrevious()) {

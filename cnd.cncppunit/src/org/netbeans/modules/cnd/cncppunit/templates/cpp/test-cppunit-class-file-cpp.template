@@ -1,32 +1,36 @@
 /*
- * File:   %<%NAME%>%.%<%EXTENSION%>%
- * Author: %<%USER%>%
+ * File:   ${nameAndExt}
+ * Author: ${user}
  *
- * Created on %<%DATE%>%, %<%TIME%>%
+ * Created on ${date}, ${time}
  */
 
-#include %<%QUOTES%>%%<%NAME%>%.%<%DEFAULT_HEADER_EXT%>%%<%QUOTES%>%
+#include "${headerNameAndExt}"
+<#if testIncludes?? && testIncludes != "">${testIncludes}</#if>
 
-CPPUNIT_TEST_SUITE_REGISTRATION(%<%CLASSNAME%>%);
+CPPUNIT_TEST_SUITE_REGISTRATION(${className});
 
-%<%CLASSNAME%>%::%<%CLASSNAME%>%() {
+${className}::${className}() {
 }
 
-%<%CLASSNAME%>%::~%<%CLASSNAME%>%() {
+${className}::~${className}() {
 }
 
-void %<%CLASSNAME%>%::setUp() {
-    this->example = new int(1);
+void ${className}::setUp() {
 }
 
-void %<%CLASSNAME%>%::tearDown() {
-    delete this->example;
+void ${className}::tearDown() {
 }
 
-void %<%CLASSNAME%>%::testMethod() {
-    CPPUNIT_ASSERT(*example == 1);
+<#if testFunctions?? && testFunctions != "">
+
+${testFunctions}<#else>
+void ${className}::testMethod() {
+    CPPUNIT_ASSERT(true);
 }
 
-void %<%CLASSNAME%>%::testFailedMethod() {
-    CPPUNIT_ASSERT(++*example == 1);
+void ${className}::testFailedMethod() {
+    CPPUNIT_ASSERT(false);
 }
+
+</#if>

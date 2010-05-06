@@ -39,6 +39,14 @@
 
 package org.netbeans.modules.html.editor;
 
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import org.netbeans.editor.ext.html.dtd.DTD;
+import org.netbeans.editor.ext.html.dtd.DTD.Attribute;
+import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.modules.html.editor.test.TestBase;
 
@@ -72,6 +80,42 @@ public class NbReaderProviderTest extends TestBase {
         assertNotNull(Registry.getDTD("-//W3C//DTD XHTML 1.0 Strict//EN", null));
         assertNotNull(Registry.getDTD("-//W3C//DTD XHTML 1.0 Transitional//EN", null));
         assertNotNull(Registry.getDTD("-//W3C//DTD XHTML 1.0 Frameset//EN", null));
+    }
+
+    public void testX() {
+        DTD d = Registry.getDTD("-//W3C//DTD HTML 4.01//EN", null);
+        List l = d.getElementList("");
+        Set<Attribute> all = new TreeSet<Attribute>(new Comparator<Attribute>() {
+            @Override
+            public int compare(Attribute o1, Attribute o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+
+
+        Set<Element> alltags = new TreeSet<Element>(new Comparator<Element>() {
+            @Override
+            public int compare(Element o1, Element o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+
+        });
+        for(Object o : l) {
+            Element e = (Element)o;
+            alltags.add(e);
+            for(Object a : e.getAttributeList("")) {
+                all.add((Attribute)a);
+            }
+        }
+
+//        for(Attribute a : all) {
+//            System.out.print("\"" + a.getName() + "\", ");
+//        }
+//
+        for(Element e : alltags) {
+            System.out.print("\"" + e.getName().toLowerCase() + "\", ");
+        }
+
     }
 
 }

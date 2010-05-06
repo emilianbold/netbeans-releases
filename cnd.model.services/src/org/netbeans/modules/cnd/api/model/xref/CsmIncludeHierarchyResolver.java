@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.spi.model.services.CsmInlcudeHierachyViewProvider;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -76,6 +77,7 @@ public abstract class CsmIncludeHierarchyResolver {
     }
 
     public static void showIncludeHierachyView(CsmFile file) {
+        UIGesturesSupport.submit("USG_CND_SHOW_INCLUDE_HIERARCHY"); //NOI18N
         getInlcudeHierachyViewProvider().showIncludeHierachyView(file);
     }
 

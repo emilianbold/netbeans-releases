@@ -46,7 +46,7 @@ import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.ImplementOverridePanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

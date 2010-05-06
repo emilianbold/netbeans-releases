@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 final class InheritanceKey extends OffsetableKey {
 
     public InheritanceKey(CsmInheritance obj) {
-        super(obj, Utils.getCsmInheritanceKindKey(), obj.getAncestorType().getClassifierText()); // NOI18N
+        super(obj, Utils.getCsmInheritanceKindKey(obj), obj.getAncestorType().getClassifierText()); // NOI18N
     }
 
     /*package*/ InheritanceKey(DataInput aStream) throws IOException {

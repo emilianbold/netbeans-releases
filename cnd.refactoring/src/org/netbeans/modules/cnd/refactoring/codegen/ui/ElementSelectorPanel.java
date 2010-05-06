@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen.ui;
 
+import org.netbeans.modules.cnd.modelutil.ui.CheckTreeView;
 import java.awt.BorderLayout;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
@@ -47,7 +48,8 @@ import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode.Description;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode.Description;
 import org.netbeans.modules.cnd.refactoring.support.DeclarationGenerator;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;

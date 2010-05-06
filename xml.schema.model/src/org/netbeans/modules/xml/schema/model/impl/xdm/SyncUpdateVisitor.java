@@ -67,12 +67,14 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         update(target, (SchemaComponent) child, null);
         return canAdd;
     }
-    
+
+    @Override
     public void update(SchemaComponent target, SchemaComponent child, 
             Operation operation) {
         update(target, child, -1, operation);
     }
-    
+
+    @Override
     public void update(SchemaComponent target, SchemaComponent child, int index,
             Operation operation) {
         assert target != null;
@@ -89,7 +91,8 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         assert (parent instanceof Schema) : "Expect parent component is 'schema'"; //NOI18N
         return (SchemaImpl) parent;
     }
-    
+
+    @Override
     public void visit(Schema schema) {
         if (operation == null) {
             canAdd = false;
@@ -113,7 +116,8 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
     private void removeChild(String eventName, DocumentComponent child) {
         ((AbstractComponent) parent).removeChild(eventName, child);
     }
-    
+
+    @Override
     public void visit(GlobalAttribute child) {
         if(operation == Operation.ADD) {
             getSchema().insertAtIndex(Schema.ATTRIBUTES_PROPERTY, child, index);
@@ -123,7 +127,8 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
             canAdd = isParentSchemaRoot();
         }
     }
-    
+
+    @Override
     public void visit(GlobalAttributeGroup child) {
         canAdd = isParentSchemaRoot() || isParentRedefine();
         if (operation == null || !canAdd) return;
@@ -143,7 +148,8 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
             canAdd = isParentSchemaRoot() || isParentRedefine();
         }
     }
-    
+
+    @Override
     public void visit(GlobalElement child) {
         if(operation == Operation.ADD) {
             getSchema().insertAtIndex(Schema.ELEMENTS_PROPERTY, child, index);
@@ -153,7 +159,8 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
             canAdd = isParentSchemaRoot();
         }
     }
-    
+
+    @Override
     public void visit(GlobalGroup child) {
         canAdd = isParentSchemaRoot() || isParentRedefine();
         if (operation == null || !canAdd) return;
@@ -173,7 +180,8 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
             canAdd = isParentSchemaRoot() || isParentRedefine();
         }
     }
-    
+
+    @Override
     public void visit(GlobalSimpleType child) {
         canAdd = isParentSchemaRoot() || isParentRedefine();
         if (operation == null || !canAdd) return;
@@ -193,7 +201,8 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
             canAdd = isParentSchemaRoot() || isParentRedefine();
         }
     }
-    
+
+    @Override
     public void visit(GlobalComplexType child) {
         canAdd = isParentSchemaRoot() || isParentRedefine();
         if (operation == null || !canAdd) return;
@@ -211,7 +220,8 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
             } 
         }
     }
-    
+
+    @Override
     public void visit(Notation child) {
         if(operation == Operation.ADD) {
             addChild(Schema.NOTATIONS_PROPERTY, child);
@@ -221,7 +231,8 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
             canAdd = isParentSchemaRoot();
         }
     }
-    
+
+    @Override
     public void visit(Import child) {
         if(operation == Operation.ADD) {
             getSchema().addExternalReference(child);
@@ -231,7 +242,8 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
             canAdd = isParentSchemaRoot();
         }
     }
-    
+
+    @Override
     public void visit(Include child) {
         if(operation == Operation.ADD) {
             getSchema().addExternalReference(child);
@@ -241,7 +253,8 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
             canAdd = isParentSchemaRoot();
         }
     }
-    
+
+    @Override
     public void visit(Redefine child) {
         if(operation == Operation.ADD) {
             getSchema().addExternalReference(child);
@@ -252,6 +265,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(LocalSimpleType child) {
         if (parent instanceof List) {
             List list = (List) parent;
@@ -337,6 +351,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(All child) {
         if (parent instanceof ComplexContentRestriction ||
                 parent instanceof ComplexType ||
@@ -383,6 +398,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
 	}
     }
 
+    @Override
     public void visit(ComplexContentRestriction child) {
         if (parent instanceof ComplexContent) {
             //OK
@@ -407,6 +423,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(AnyElement child) {
         if (parent instanceof Choice) {
             Choice target = (Choice) parent;
@@ -429,6 +446,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(GroupReference child) {
 	if (parent instanceof ComplexType) {
 	    ComplexType target = (ComplexType) parent;
@@ -496,6 +514,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
 	}
     }
 
+    @Override
     public void visit(Enumeration child) {
         if (parent instanceof SimpleRestriction) {
             //OK
@@ -533,19 +552,23 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
             canAdd = true;
         }
     }
-    
+
+    @Override
     public void visit(KeyRef child) {
         updateConstraintOnCommonElement(child);
     }
 
+    @Override
     public void visit(Key child) {
         updateConstraintOnCommonElement(child);
     }
 
+    @Override
     public void visit(Unique child) {
         updateConstraintOnCommonElement(child);
     }
 
+    @Override
     public void visit(AttributeGroupReference child) {
         if (parent instanceof LocalAttributeContainer) {
             //OK
@@ -588,6 +611,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(Documentation child) {
         if (parent instanceof Annotation) {
             //OK
@@ -607,6 +631,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(AppInfo child) {
         if (parent instanceof Annotation) {
             //OK
@@ -625,7 +650,8 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
             canAdd = true;
         }
     }
-    
+
+    @Override
     public void visit(Choice child) {
         if (parent instanceof Choice) {
             Choice target = (Choice) parent;
@@ -693,6 +719,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(SimpleContentRestriction child) {
         if (parent instanceof SimpleContent) {
             //OK
@@ -716,6 +743,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(Selector child) {
         if (parent instanceof Constraint) {
             //OK
@@ -739,6 +767,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(LocalElement child) {
 	if (parent instanceof Choice) {
 	    Choice target = (Choice) parent;
@@ -773,7 +802,8 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
             assert false: "Wrong parent "+parent.getClass().getName();
         }
     }
-    
+
+    @Override
     public void visit(ElementReference child) {
 	if (parent instanceof Choice ||
 	       parent instanceof All ||
@@ -817,6 +847,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
 	
     }
 
+    @Override
     public void visit(Annotation child) {
         if (parent instanceof Annotation ||
             parent instanceof Documentation ||
@@ -842,6 +873,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(ComplexExtension child) {
         if (parent instanceof ComplexContent) {
             //OK
@@ -865,6 +897,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(SimpleExtension child) {
         if (parent instanceof SimpleContent) {
             //OK
@@ -888,6 +921,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(Sequence child) {
         if (parent instanceof Choice) {
             Choice target = (Choice) parent;
@@ -955,6 +989,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(MinExclusive child) {
         if (parent instanceof SimpleRestriction) {
             //OK
@@ -974,6 +1009,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(MinInclusive child) {
         if (parent instanceof SimpleRestriction) {
             //OK
@@ -993,6 +1029,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(Pattern child) {
         if (parent instanceof SimpleRestriction) {
             //OK
@@ -1014,6 +1051,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(MinLength child) {
         if (parent instanceof SimpleRestriction) {
             //OK
@@ -1033,6 +1071,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(MaxLength child) {
         if (parent instanceof SimpleRestriction) {
             //OK
@@ -1052,6 +1091,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(Whitespace child) {
         if (parent instanceof SimpleRestriction) {
             //OK
@@ -1071,6 +1111,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(MaxInclusive child) {
         if (parent instanceof SimpleRestriction) {
             //OK
@@ -1090,6 +1131,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(LocalComplexType child) {
 	if (parent instanceof TypeContainer) {
             //OK
@@ -1114,6 +1156,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(FractionDigits child) {
         if (parent instanceof SimpleRestriction) {
             //OK
@@ -1133,6 +1176,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(TotalDigits child) {
         if (parent instanceof SimpleRestriction) {
             //OK
@@ -1174,19 +1218,23 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
             canAdd = (target.getDefinition() == null);
         }
     }
-    
+
+    @Override
     public void visit(List child) {
         updateSimpleType(child);
     }
 
+    @Override
     public void visit(SimpleTypeRestriction child) {
         updateSimpleType(child);
     }
 
+    @Override
     public void visit(Union child) {
         updateSimpleType(child);
     }
 
+    @Override
     public void visit(MaxExclusive child) {
         if (parent instanceof SimpleRestriction) {
             //OK
@@ -1206,6 +1254,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(AttributeReference child) {
         if (parent instanceof LocalAttributeContainer) {
             //OK
@@ -1224,7 +1273,8 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
             canAdd = true;
         }
     }
-    
+
+    @Override
     public void visit(LocalAttribute child) {
         if (parent instanceof LocalAttributeContainer) {
             //OK
@@ -1244,6 +1294,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(SimpleContent child) {
         if (parent instanceof ComplexContentRestriction) {
             ComplexContentRestriction target = (ComplexContentRestriction) parent;
@@ -1279,6 +1330,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(ComplexContent child) {
         if (parent instanceof ComplexContentRestriction) {
             ComplexContentRestriction target = (ComplexContentRestriction) parent;
@@ -1315,6 +1367,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         
     }
 
+    @Override
     public void visit(AnyAttribute child) {
         if (parent instanceof LocalAttributeContainer) {
             //OK
@@ -1338,6 +1391,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(Length child) {
         if (parent instanceof SimpleRestriction) {
             //OK
@@ -1357,6 +1411,7 @@ public class SyncUpdateVisitor<T extends SchemaComponent> implements SchemaVisit
         }
     }
 
+    @Override
     public void visit(Field child) {
         if (parent instanceof Constraint) {
             //OK

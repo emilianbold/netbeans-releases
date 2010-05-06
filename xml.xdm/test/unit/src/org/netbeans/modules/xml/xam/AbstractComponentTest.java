@@ -48,12 +48,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.xml.xam.TestComponent.A;
-import org.netbeans.modules.xml.xam.TestComponent.Aa;
-import org.netbeans.modules.xml.xam.TestComponent.B;
-import org.netbeans.modules.xml.xam.TestComponent.C;
-import org.netbeans.modules.xml.xam.TestComponent.D;
-import org.netbeans.modules.xml.xam.TestComponent.TestComponentReference;
+import org.netbeans.modules.xml.xam.TestComponent3.A;
+import org.netbeans.modules.xml.xam.TestComponent3.Aa;
+import org.netbeans.modules.xml.xam.TestComponent3.B;
+import org.netbeans.modules.xml.xam.TestComponent3.C;
+import org.netbeans.modules.xml.xam.TestComponent3.D;
+import org.netbeans.modules.xml.xam.TestComponent3.TestComponentReference;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xdm.Util;
 import org.netbeans.modules.xml.xdm.nodes.Element;
@@ -68,11 +68,11 @@ import org.w3c.dom.Text;
  */
 public class AbstractComponentTest extends TestCase {
     
-    TestModel model;
-    TestComponent p;
-    A a1; 
-    B b1;
-    C c1;
+    TestModel3 mModel;
+    TestComponent3 p;
+    A mA1;
+    B mB1;
+    C mC1;
     Listener listener;
     TestComponentListener clistener;
     
@@ -80,31 +80,33 @@ public class AbstractComponentTest extends TestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
     }
     
     protected void defaultSetup() throws Exception {
-        model = Util.loadModel("resources/Empty.xml");
-	model.startTransaction();
-        p = TestComponent.class.cast(model.getRootComponent());
+        mModel = Util.loadModel("resources/Empty.xml");
+	mModel.startTransaction();
+        p = TestComponent3.class.cast(mModel.getRootComponent());
         assertEquals("setup", "test-1", p.getName());
         
-        a1 = new A(model, 1);
-        b1 = new B(model, 1);
-        c1 = new C(model, 1);
-        p.appendChild("setup", a1);
-        p.appendChild("setup", b1);
-        p.appendChild("setup", c1);
-        model.endTransaction();
+        mA1 = new A(mModel, 1);
+        mB1 = new B(mModel, 1);
+        mC1 = new C(mModel, 1);
+        p.appendChild("setup", mA1);
+        p.appendChild("setup", mB1);
+        p.appendChild("setup", mC1);
+        mModel.endTransaction();
         assertEquals("setup.children", "[a1, b1, c1]", p.getChildren().toString());
         
         listener = new Listener();
-        model.addPropertyChangeListener(listener);
+        mModel.addPropertyChangeListener(listener);
         clistener = new TestComponentListener();
-        model.addComponentListener(clistener);
+        mModel.addComponentListener(clistener);
     }
     
 
+    @Override
     protected void tearDown() throws Exception {
     }
 
@@ -118,7 +120,8 @@ public class AbstractComponentTest extends TestCase {
         private String event;
         private Object old;
         private Object now;
-        
+
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             assertNotNull(evt);
             if (evt.getPropertyName().equals("setup")) {
@@ -144,15 +147,22 @@ public class AbstractComponentTest extends TestCase {
     
     class TestComponentListener implements ComponentListener {
         List<ComponentEvent> accu = new ArrayList<ComponentEvent>();
+
+        @Override
         public void valueChanged(ComponentEvent evt) {
             accu.add(evt);
         }
+
+        @Override
         public void childrenAdded(ComponentEvent evt) {
             accu.add(evt);
         }
+
+        @Override
         public void childrenDeleted(ComponentEvent evt) {
             accu.add(evt);
         }
+
         public void reset() { accu.clear(); }
         public int getEventCount() { return accu.size(); }
         public List<ComponentEvent> getEvents() { return accu; }
@@ -171,19 +181,19 @@ public class AbstractComponentTest extends TestCase {
     public void testInsertAtIndex() throws Exception {
         defaultSetup();
         String propertyName = "testInsertAtIndex";
-        TestComponent parent = new TestComponent(model, "test", TestComponent.NS_URI);
-        B b0 = new B(model, 0);
-        B b1 = new B(model, 1);
-        B b2 = new B(model, 2);
-        B b3 = new B(model, 3);
+        TestComponent3 parent = new TestComponent3(mModel, "test", TestComponent3.NS_URI);
+        B b0 = new B(mModel, 0);
+        B b1 = new B(mModel, 1);
+        B b2 = new B(mModel, 2);
+        B b3 = new B(mModel, 3);
         parent.insertAtIndex(propertyName, b1, 0, B.class);
         assertEquals("testInsertAtIndex.res", "[b1]", parent.getChildren().toString());
         assertTrue(parent == b1.getParent());
 
-        model.startTransaction();
-        model.getRootComponent().appendChild("test-setup", parent);
+        mModel.startTransaction();
+        mModel.getRootComponent().appendChild("test-setup", parent);
         parent.insertAtIndex(propertyName, b2, 1, B.class);
-        model.endTransaction();
+        mModel.endTransaction();
         assertEquals("testInsertAtIndex.res", "[b1, b2]", parent.getChildren().toString());
         assertTrue(parent == b2.getParent());
         
@@ -194,15 +204,15 @@ public class AbstractComponentTest extends TestCase {
             // expected
         }
 
-        model.startTransaction();
+        mModel.startTransaction();
         parent.insertAtIndex(propertyName, b0, 0, B.class);
-        model.endTransaction();
+        mModel.endTransaction();
         assertEquals("testInsertAtIndex.res", "[b0, b1, b2]", parent.getChildren().toString());
         assertTrue(parent == b0.getParent());
 
-        model.startTransaction();
+        mModel.startTransaction();
         parent.insertAtIndex(propertyName, b3, 3, B.class);
-        model.endTransaction();
+        mModel.endTransaction();
         assertEquals("testInsertAtIndex.res", "[b0, b1, b2, b3]", parent.getChildren().toString());
         assertTrue(parent == b3.getParent());
     }
@@ -210,14 +220,14 @@ public class AbstractComponentTest extends TestCase {
     public void testInsertAtIndexRelative() throws Exception {
         defaultSetup();
         String propertyName = "testInsertAtIndexRelative";
-	model.startTransaction();
-        B b2 = new B(model, 2);
+	mModel.startTransaction();
+        B b2 = new B(mModel, 2);
         p.insertAtIndex(propertyName, b2, 1, B.class);
-	model.endTransaction();
+	mModel.endTransaction();
         assertEventListener(propertyName, null, b2);
         List<B> res1 = p.getChildren(B.class);
         assertEquals("testInsertAtIndexRelative.res1", "[b1, b2]", res1.toString());
-        List<TestComponent> res2 = p.getChildren();
+        List<TestComponent3> res2 = p.getChildren();
         assertEquals("testInsertAtIndexRelative.res2", "[a1, b1, b2, c1]", res2.toString());
     }
 
@@ -225,16 +235,16 @@ public class AbstractComponentTest extends TestCase {
     public void testInsertAtIndexRelative0() throws Exception {
         defaultSetup();
         String propertyName = "testInsertAtIndexRelative0";
-	model.startTransaction();
-        B b0 = new B(model, 0);
+	mModel.startTransaction();
+        B b0 = new B(mModel, 0);
         p.insertAtIndex(propertyName, b0, 0, B.class);
-        model.endTransaction();
+        mModel.endTransaction();
         assertEventListener(propertyName, null, b0);
         assertTrue(p == b0.getParent());
         
         List<B> res1 = p.getChildren(B.class);
         assertEquals("testInsertAtIndexRelative0.res1", "[b0, b1]", res1.toString());
-        List<TestComponent> res2 = p.getChildren();
+        List<TestComponent3> res2 = p.getChildren();
         assertEquals("testInsertAtIndexRelative0.res2", "[a1, b0, b1, c1]", res2.toString());
     }
 
@@ -242,15 +252,15 @@ public class AbstractComponentTest extends TestCase {
     public void testInsertAtIndexRelative0Empty() throws Exception {
         defaultSetup();
         String propertyName = "testInsertAtIndexRelative0Empty";
-	model.startTransaction();
-        D d1 = new D(model, 1);
+	mModel.startTransaction();
+        D d1 = new D(mModel, 1);
         p.insertAtIndex(propertyName, d1, 0, D.class);
-        model.endTransaction();
+        mModel.endTransaction();
         assertEventListener(propertyName, null, d1);
         
         List<D> res1 = p.getChildren(D.class);
         assertEquals("testInsertAtIndexRelative0Empty.res1", "[d1]", res1.toString());
-        List<TestComponent> res2 = p.getChildren();
+        List<TestComponent3> res2 = p.getChildren();
         assertEquals("testInsertAtIndexRelative0Empty.res2", "[a1, b1, c1, d1]", res2.toString());
         assertTrue(p == d1.getParent());
     }
@@ -259,14 +269,14 @@ public class AbstractComponentTest extends TestCase {
     public void testAddBeforeA() throws Exception {
         defaultSetup();
         String propertyName = "testAddBeforeA";
-	model.startTransaction();
-        D d1 = new D(model, 1);
-        p.addBefore(propertyName, d1, TestComponent._A);
-        model.endTransaction();
+	mModel.startTransaction();
+        D d1 = new D(mModel, 1);
+        p.addBefore(propertyName, d1, TestComponent3._A);
+        mModel.endTransaction();
         assertEventListener(propertyName, null, d1);
         assertTrue(p == d1.getParent());
         
-        List<TestComponent> res2 = p.getChildren();
+        List<TestComponent3> res2 = p.getChildren();
         assertEquals("testAddBeforeA.res2", "[d1, a1, b1, c1]", res2.toString());
     }
     
@@ -274,20 +284,20 @@ public class AbstractComponentTest extends TestCase {
     public void testAddBeforeC() throws Exception {
         defaultSetup();
         String propertyName = "testAddBeforeC";
-	model.startTransaction();
-        C c2 = new C(model, 2);
-        p.insertAtIndex("setup", c2, 3, TestComponent.class);
-        model.endTransaction();
+	mModel.startTransaction();
+        C c2 = new C(mModel, 2);
+        p.insertAtIndex("setup", c2, 3, TestComponent3.class);
+        mModel.endTransaction();
         listener.reset();
         
-	model.startTransaction();
-        D d1 = new D(model, 1);
-        p.addBefore(propertyName, d1, TestComponent._C);
-        model.endTransaction();
+	mModel.startTransaction();
+        D d1 = new D(mModel, 1);
+        p.addBefore(propertyName, d1, TestComponent3._C);
+        mModel.endTransaction();
         assertEventListener(propertyName, null, d1);
         assertTrue(p == d1.getParent());
         
-        List<TestComponent> res = p.getChildren();
+        List<TestComponent3> res = p.getChildren();
         assertEquals("testAddBeforeC.res", "[a1, b1, d1, c1, c2]", res.toString());
     }
     
@@ -295,15 +305,15 @@ public class AbstractComponentTest extends TestCase {
     public void testAddBeforeBC() throws Exception {
         defaultSetup();
         String propertyName = "testAddBeforeBC";
-	model.startTransaction();
-        D d1 = new D(model, 1);
-        p.addBefore(propertyName, d1, TestComponent._BC);
+	mModel.startTransaction();
+        D d1 = new D(mModel, 1);
+        p.addBefore(propertyName, d1, TestComponent3._BC);
         assertTrue(p == d1.getParent());
-        model.endTransaction();
+        mModel.endTransaction();
         assertEventListener(propertyName, null, d1);
         assertTrue(p == d1.getParent());
         
-        List<TestComponent> res = p.getChildren();
+        List<TestComponent3> res = p.getChildren();
         assertEquals("testAddBeforeBC.res", "[a1, d1, b1, c1]", res.toString());
     }
     
@@ -311,14 +321,14 @@ public class AbstractComponentTest extends TestCase {
     public void testAddBeforeAC() throws Exception {
         defaultSetup();
         String propertyName = "testAddBeforeAC";
-	model.startTransaction();
-        D d1 = new D(model, 1);
-        p.addBefore(propertyName, d1, TestComponent._AC);
-        model.endTransaction();
+	mModel.startTransaction();
+        D d1 = new D(mModel, 1);
+        p.addBefore(propertyName, d1, TestComponent3._AC);
+        mModel.endTransaction();
         assertEventListener(propertyName, null, d1);
         assertTrue(p == d1.getParent());
         
-        List<TestComponent> res = p.getChildren();
+        List<TestComponent3> res = p.getChildren();
         assertEquals("testAddBeforeAC.res", "[d1, a1, b1, c1]", res.toString());
     }
     
@@ -327,15 +337,15 @@ public class AbstractComponentTest extends TestCase {
     public void testAddBeforeBAC() throws Exception {
         defaultSetup();
         String propertyName = "testAddBeforeBAC";
-	model.startTransaction();
-        D d1 = new D(model, 1);
+	mModel.startTransaction();
+        D d1 = new D(mModel, 1);
 	
-        p.addBefore(propertyName, d1, TestComponent._BAC);
-        model.endTransaction();
+        p.addBefore(propertyName, d1, TestComponent3._BAC);
+        mModel.endTransaction();
         assertEventListener(propertyName, null, d1);
         assertTrue(p == d1.getParent());
         
-        List<TestComponent> res = p.getChildren();
+        List<TestComponent3> res = p.getChildren();
         assertEquals("testAddBeforeBAC.res", "[d1, a1, b1, c1]", res.toString());
     }
     
@@ -343,14 +353,14 @@ public class AbstractComponentTest extends TestCase {
     public void testAddAfterA() throws Exception {
         defaultSetup();
         String propertyName = "testAddAfterA";
-	model.startTransaction();
-        D d1 = new D(model, 1);
-        p.addAfter(propertyName, d1, TestComponent._A);
-        model.endTransaction();
+	mModel.startTransaction();
+        D d1 = new D(mModel, 1);
+        p.addAfter(propertyName, d1, TestComponent3._A);
+        mModel.endTransaction();
         assertEventListener(propertyName, null, d1);
         assertTrue(p == d1.getParent());
         
-        List<TestComponent> res2 = p.getChildren();
+        List<TestComponent3> res2 = p.getChildren();
         assertEquals("testAddAfterA.res2", "[a1, d1, b1, c1]", res2.toString());
     }
     
@@ -358,20 +368,20 @@ public class AbstractComponentTest extends TestCase {
     public void testAddAfterC() throws Exception {
         defaultSetup();
         String propertyName = "testAddAfterC";
-	model.startTransaction();
-        C c2 = new C(model, 2);
-        p.addAfter("setup", c2, TestComponent._AB);
-        model.endTransaction();
+	mModel.startTransaction();
+        C c2 = new C(mModel, 2);
+        p.addAfter("setup", c2, TestComponent3._AB);
+        mModel.endTransaction();
         listener.reset();
         
-	model.startTransaction();
-        D d1 = new D(model, 1);
-        p.addAfter(propertyName, d1, TestComponent._C);
-        model.endTransaction();
+	mModel.startTransaction();
+        D d1 = new D(mModel, 1);
+        p.addAfter(propertyName, d1, TestComponent3._C);
+        mModel.endTransaction();
         assertEventListener(propertyName, null, d1);
         assertTrue(p == d1.getParent());
         
-        List<TestComponent> res = p.getChildren();
+        List<TestComponent3> res = p.getChildren();
         assertEquals("testAddAfterC.res", "[a1, b1, c1, c2, d1]", res.toString());
     }
     
@@ -379,13 +389,13 @@ public class AbstractComponentTest extends TestCase {
     public void testAddAfterAC() throws Exception {
         defaultSetup();
         String propertyName = "testAddAfterAC";
-	model.startTransaction();
-        D d1 = new D(model, 1);
-        p.addAfter(propertyName, d1, TestComponent._AC);
-        model.endTransaction();
+	mModel.startTransaction();
+        D d1 = new D(mModel, 1);
+        p.addAfter(propertyName, d1, TestComponent3._AC);
+        mModel.endTransaction();
         assertEventListener(propertyName, null, d1);
         
-        List<TestComponent> res = p.getChildren();
+        List<TestComponent3> res = p.getChildren();
         assertEquals("testAddAfterAC.res", "[a1, b1, c1, d1]", res.toString());
     }
     
@@ -393,14 +403,14 @@ public class AbstractComponentTest extends TestCase {
     public void testAddAfterAB() throws Exception {
         defaultSetup();
         String propertyName = "testAddAfterAB";
-	model.startTransaction();
-        D d1 = new D(model, 1);
-        p.addAfter(propertyName, d1, TestComponent._AB);
-        model.endTransaction();
+	mModel.startTransaction();
+        D d1 = new D(mModel, 1);
+        p.addAfter(propertyName, d1, TestComponent3._AB);
+        mModel.endTransaction();
         assertEventListener(propertyName, null, d1);
         assertTrue(p == d1.getParent());
         
-        List<TestComponent> res = p.getChildren();
+        List<TestComponent3> res = p.getChildren();
         assertEquals("testAddAfterAC.res", "[a1, b1, d1, c1]", res.toString());
     }
     
@@ -409,13 +419,13 @@ public class AbstractComponentTest extends TestCase {
     public void testAddAfterBAC() throws Exception {
         defaultSetup();
         String propertyName = "testAddAfterBAC";
-	model.startTransaction();
-        D d1 = new D(model, 1);
-        p.addAfter(propertyName, d1, TestComponent._BAC);
-        model.endTransaction();
+	mModel.startTransaction();
+        D d1 = new D(mModel, 1);
+        p.addAfter(propertyName, d1, TestComponent3._BAC);
+        mModel.endTransaction();
         assertEventListener(propertyName, null, d1);
         
-        List<TestComponent> res = p.getChildren();
+        List<TestComponent3> res = p.getChildren();
         assertEquals("testAddAfterBAC.res", "[a1, b1, c1, d1]", res.toString());
     }
     
@@ -423,10 +433,10 @@ public class AbstractComponentTest extends TestCase {
     public void testSetA() throws Exception {
         defaultSetup();
         String propertyName = "testSetA";
-	model.startTransaction();
-        D d1 = new D(model, 1);
-        p.setChild(D.class, propertyName, d1, TestComponent._A);
-        model.endTransaction();
+	mModel.startTransaction();
+        D d1 = new D(mModel, 1);
+        p.setChild(D.class, propertyName, d1, TestComponent3._A);
+        mModel.endTransaction();
         assertEventListener(propertyName, null, d1);
         assertEquals("testSetA.res", "[a1, d1, b1, c1]", p.getChildren().toString());
         assertTrue(p == d1.getParent());
@@ -436,18 +446,18 @@ public class AbstractComponentTest extends TestCase {
     public void testSetBC() throws Exception {
         defaultSetup();
         String propertyName = "testSetBC";
-	model.startTransaction();
-        D d1 = new D(model, 1);
-        p.setChild(D.class, propertyName, d1, TestComponent._BC);
-        model.endTransaction();
+	mModel.startTransaction();
+        D d1 = new D(mModel, 1);
+        p.setChild(D.class, propertyName, d1, TestComponent3._BC);
+        mModel.endTransaction();
         assertEventListener(propertyName, null, d1);
         assertEquals("testSetBC.res", "[a1, b1, c1, d1]", p.getChildren().toString());
         assertTrue(p == d1.getParent());
 
-	model.startTransaction();
-        D d2 = new D(model, 2);
-        p.setChild(D.class, propertyName, d2, TestComponent._BC);
-        model.endTransaction();
+	mModel.startTransaction();
+        D d2 = new D(mModel, 2);
+        p.setChild(D.class, propertyName, d2, TestComponent3._BC);
+        mModel.endTransaction();
         assertEventListener(propertyName, d1, d2);
         assertEquals("testSetBC.res", "[a1, b1, c1, d2]", p.getChildren().toString());
         assertTrue(p == d2.getParent());
@@ -457,19 +467,19 @@ public class AbstractComponentTest extends TestCase {
     public void testSetAfterAB() throws Exception {
         defaultSetup();
         String propertyName = "testSetC";
-	model.startTransaction();
-        B b2 = new B(model, 2);
-        p.addAfter("setup", b2, TestComponent._A);
-        model.endTransaction();
+	mModel.startTransaction();
+        B b2 = new B(mModel, 2);
+        p.addAfter("setup", b2, TestComponent3._A);
+        mModel.endTransaction();
         assertEquals("testSetC.res", "[a1, b1, b2, c1]", p.getChildren().toString());
         assertTrue(p == b2.getParent());
-	model.startTransaction();
-        D d1 = new D(model, 1);
-        p.addAfter("setup", d1, TestComponent._ABC);
-        C c2 = new C(model, 2);
-        p.setChild(C.class, propertyName, c2, TestComponent._AB);
-        model.endTransaction();
-        assertEventListener(propertyName, c1, c2);
+	mModel.startTransaction();
+        D d1 = new D(mModel, 1);
+        p.addAfter("setup", d1, TestComponent3._ABC);
+        C c2 = new C(mModel, 2);
+        p.setChild(C.class, propertyName, c2, TestComponent3._AB);
+        mModel.endTransaction();
+        assertEventListener(propertyName, mC1, c2);
         assertEquals("testSetC.res", "[a1, b1, b2, c2, d1]", p.getChildren().toString());
         assertTrue(p == c2.getParent());
     }
@@ -477,71 +487,71 @@ public class AbstractComponentTest extends TestCase {
     // c1 -> a1 b1 c1
     public void testSpecificOrdering() throws Exception {
         // setup
-        model = Util.loadModel("resources/Empty.xml");
-	model.startTransaction();
-        p = TestComponent.class.cast(model.getRootComponent());
+        mModel = Util.loadModel("resources/Empty.xml");
+	mModel.startTransaction();
+        p = TestComponent3.class.cast(mModel.getRootComponent());
         assertEquals("setup", "test-1", p.getName());
-        c1 = new C(model, 1);
-        p.appendChild("setup", c1);
-        model.endTransaction();
+        mC1 = new C(mModel, 1);
+        p.appendChild("setup", mC1);
+        mModel.endTransaction();
         assertEquals("testSpecificOrdering.setup", "[c1]", p.getChildren().toString());
         
-	model.startTransaction();
-        a1 = new A(model, 1);
-        b1 = new B(model, 1);
-        p.setChildBefore(A.class, "a", a1, TestComponent._BC);
-        p.setChildBefore(B.class, "b", b1, TestComponent._C);
-        model.endTransaction();
+	mModel.startTransaction();
+        mA1 = new A(mModel, 1);
+        mB1 = new B(mModel, 1);
+        p.setChildBefore(A.class, "a", mA1, TestComponent3._BC);
+        p.setChildBefore(B.class, "b", mB1, TestComponent3._C);
+        mModel.endTransaction();
         assertEquals("testSpecificOrdering.res", "[a1, b1, c1]", p.getChildren().toString());
-        assertTrue(p == a1.getParent());
-        assertTrue(p == b1.getParent());
+        assertTrue(p == mA1.getParent());
+        assertTrue(p == mB1.getParent());
     }
     
     public void testGetSetAttribute() throws Exception {
         defaultSetup();
-        String v = a1.getAttribute(TestAttribute.VALUE);
+        String v = mA1.getAttribute(TestAttribute3.VALUE);
         assertNull("testAttribute.initial.value", v);
-        int i = a1.getIndex();
+        int i = mA1.getIndex();
         assertEquals("testAttribute.initial.index", 1, i);
         
         String v2 = "testSetAttribute.set.value"; 
         int i2 = 20;
-	model.startTransaction();
-        a1.setValue(v2);
-	model.endTransaction();
-        assertEventListener(TestAttribute.VALUE.getName(), v, v2);
-	model.startTransaction();
-        a1.setIndex(i2);
-	model.endTransaction();
-        assertEventListener(TestAttribute.INDEX.getName(), i, Integer.valueOf(i2));
+	mModel.startTransaction();
+        mA1.setValue(v2);
+	mModel.endTransaction();
+        assertEventListener(TestAttribute3.VALUE.getName(), v, v2);
+	mModel.startTransaction();
+        mA1.setIndex(i2);
+	mModel.endTransaction();
+        assertEventListener(TestAttribute3.INDEX.getName(), i, Integer.valueOf(i2));
         
         v = v2; i = i2;
         v2 = "testSetAttribute.set.value.again"; 
         i2 = 21;
-	model.startTransaction();
-        a1.setValue(v2); 
-	model.endTransaction();
-        assertEventListener(TestAttribute.VALUE.getName(), v, v2);
-	model.startTransaction();
-        a1.setIndex(i2);
-	model.endTransaction();
-        assertEventListener(TestAttribute.INDEX.getName(), Integer.valueOf(i), Integer.valueOf(i2));
+	mModel.startTransaction();
+        mA1.setValue(v2);
+	mModel.endTransaction();
+        assertEventListener(TestAttribute3.VALUE.getName(), v, v2);
+	mModel.startTransaction();
+        mA1.setIndex(i2);
+	mModel.endTransaction();
+        assertEventListener(TestAttribute3.INDEX.getName(), Integer.valueOf(i), Integer.valueOf(i2));
     }
     
     public void testSetGetChild() throws Exception {
         defaultSetup();
-	model.startTransaction();
-        D myD = new D(model, -1);
-        p.setChildBefore(D.class, "myD", myD, TestComponent._BC);
-	model.endTransaction();
+	mModel.startTransaction();
+        D myD = new D(mModel, -1);
+        p.setChildBefore(D.class, "myD", myD, TestComponent3._BC);
+	mModel.endTransaction();
         assertEquals("testSetGetChild.order", "[a1, d-1, b1, c1]", p.getChildren().toString());
         assertEquals("testSetGetChild.equals", myD, p.getChild(D.class));
         assertTrue(p == myD.getParent());
         
-	model.startTransaction();
-        D myD2 = new D(model, -2);
-        p.setChildBefore(D.class, "myD", myD2, TestComponent._BC);
-	model.endTransaction();
+	mModel.startTransaction();
+        D myD2 = new D(mModel, -2);
+        p.setChildBefore(D.class, "myD", myD2, TestComponent3._BC);
+	mModel.endTransaction();
         assertEventListener("myD", myD, myD2);
         assertEquals("testSetGetChild2.count", 1, p.getChildren(D.class).size());
         assertEquals("testSetGetChild2.order", "[a1, d-2, b1, c1]", p.getChildren().toString());
@@ -551,47 +561,47 @@ public class AbstractComponentTest extends TestCase {
     
     public void testRemoveChild() throws Exception {
         defaultSetup();
-        model.startTransaction();
-        p.removeChild(b1.getName(), b1);
-        model.endTransaction();
+        mModel.startTransaction();
+        p.removeChild(mB1.getName(), mB1);
+        mModel.endTransaction();
         
-        assertEventListener(b1.getName(), b1, null);
+        assertEventListener(mB1.getName(), mB1, null);
         assertNull("testRemoveChild.gone", p.getChild(B.class));
         assertEquals("testRemoveChild.count", 0, p.getChildren(B.class).size());
         assertEquals("testRemoveChild.count.all", 2, p.getChildren().size());
-        assertNull(b1.getParent());
+        assertNull(mB1.getParent());
     }
     
     public void testRemoveAttribute() throws Exception {
         defaultSetup();
-        model.startTransaction();
+        mModel.startTransaction();
         A myA = p.getChild(A.class);
-        assertEquals("testRemoveAttribute.init", "1", myA.getAttribute(TestAttribute.INDEX));
-        myA.setAttribute(TestAttribute.INDEX.getName(), TestAttribute.INDEX, null);
+        assertEquals("testRemoveAttribute.init", "1", myA.getAttribute(TestAttribute3.INDEX));
+        myA.setAttribute(TestAttribute3.INDEX.getName(), TestAttribute3.INDEX, null);
         assertEquals("testRemoveAttribute.result", -1, myA.getIndex());
-        model.endTransaction();
+        mModel.endTransaction();
         
-        assertEventListener(TestAttribute.INDEX.getName(), Integer.valueOf(1), null);
+        assertEventListener(TestAttribute3.INDEX.getName(), Integer.valueOf(1), null);
     }
     
     public void testGetParent() throws Exception {
         defaultSetup();
-        for (TestComponent tc : p.getChildren()) {
+        for (TestComponent3 tc : p.getChildren()) {
             assertTrue("parent pointer not null", tc.getParent() == p);
         }
-        model.startTransaction();
-        p.removeChild("testGetParent.removeChild", a1);
-        assertNull("removed component should have null parent", a1.getParent());
-        model.endTransaction();
+        mModel.startTransaction();
+        p.removeChild("testGetParent.removeChild", mA1);
+        assertNull("removed component should have null parent", mA1.getParent());
+        mModel.endTransaction();
         
-        model = Util.loadModel("resources/test1.xml");
-        A a1 = model.getRootComponent().getChild(A.class);
-        assertTrue("test getParent from loaded doc", a1.getParent() == model.getRootComponent());
+        mModel = Util.loadModel("resources/test1.xml");
+        A a1 = mModel.getRootComponent().getChild(A.class);
+        assertTrue("test getParent from loaded doc", a1.getParent() == mModel.getRootComponent());
     }
     
     public void testAnyAttribute() throws Exception {
         defaultSetup();
-        model.startTransaction();
+        mModel.startTransaction();
         A a1 = p.getChild(A.class);
         String ns = "testAnyAttribute";
         String prefix = "any";
@@ -599,22 +609,22 @@ public class AbstractComponentTest extends TestCase {
         QName attr = new QName(ns, attrName, prefix);
         String value = "any attribute test";
         a1.setAnyAttribute(attr, value);
-        model.endTransaction();
+        mModel.endTransaction();
         
         QName noPrefixAttr = new QName(ns, attrName);
         assertEquals(value, a1.getAnyAttribute(noPrefixAttr));
         assertEquals(prefix, a1.getPeer().lookupPrefix(ns));
         
-        model = Util.dumpAndReloadModel(model);
-        model.addPropertyChangeListener(listener);
-        model.addComponentListener(clistener);
-        a1 = model.getRootComponent().getChild(A.class);
+        mModel = Util.dumpAndReloadModel(mModel);
+        mModel.addPropertyChangeListener(listener);
+        mModel.addComponentListener(clistener);
+        a1 = mModel.getRootComponent().getChild(A.class);
         assertEquals(value, a1.getAnyAttribute(noPrefixAttr));
         assertEquals(prefix, a1.getPeer().lookupPrefix(ns));
         
-        model.startTransaction();
+        mModel.startTransaction();
         a1.setAnyAttribute(attr, null);
-        model.endTransaction();
+        mModel.endTransaction();
         assertNull(a1.getAnyAttribute(attr));
         
         assertEventListener(attr.getLocalPart(), value, null);
@@ -623,25 +633,25 @@ public class AbstractComponentTest extends TestCase {
 
     public void testCopyAndResetNS() throws Exception {
         defaultSetup();
-        model = Util.loadModel("resources/test3.xml");
-        p = model.getRootComponent();
+        mModel = Util.loadModel("resources/test3.xml");
+        p = mModel.getRootComponent();
         Aa aa1 = p.getChild(Aa.class);
-        assertEquals(TestComponent.NS2_URI, aa1.getNamespaceURI());
+        assertEquals(TestComponent3.NS2_URI, aa1.getNamespaceURI());
         D d = aa1.getChild(D.class);
-        assertEquals(TestComponent.NS_URI, d.getNamespaceURI());
+        assertEquals(TestComponent3.NS_URI, d.getNamespaceURI());
         Aa aa2 = (Aa) aa1.copy(p);
-        assertEquals(TestComponent.NS2_URI, aa2.getNamespaceURI());
-        assertEquals(TestComponent.NS_URI, aa2.lookupNamespaceURI(""));
+        assertEquals(TestComponent3.NS2_URI, aa2.getNamespaceURI());
+        assertEquals(TestComponent3.NS_URI, aa2.lookupNamespaceURI(""));
         D dCopy = aa2.getChild(D.class);
-        assertEquals(TestComponent.NS_URI, dCopy.getNamespaceURI());
-        assertEquals(TestComponent.NS_URI, dCopy.lookupNamespaceURI(""));
+        assertEquals(TestComponent3.NS_URI, dCopy.getNamespaceURI());
+        assertEquals(TestComponent3.NS_URI, dCopy.lookupNamespaceURI(""));
         
-        model.startTransaction();
-        aa2.setAttribute("testCopy.setup", TestAttribute.INDEX, 2);
+        mModel.startTransaction();
+        aa2.setAttribute("testCopy.setup", TestAttribute3.INDEX, 2);
         aa2.removePrefix("myNS");
         aa2.getPeer().setPrefix(null);
         p.appendChild("testCopy.setup", aa2);
-        model.endTransaction();
+        mModel.endTransaction();
         
         assertEquals(2, aa2.getIndex());
         assertNull(aa2.lookupNamespaceURI("myNS"));
@@ -650,16 +660,16 @@ public class AbstractComponentTest extends TestCase {
     
     public void testThreeAppendsThenCopy() throws Exception {
         defaultSetup();
-        A compA = model.createA(a1);
-        B compB = model.createB(compA);
-        C compC = model.createC(compB);
-        model.startTransaction();
-        a1.appendChild("compA", compA);
+        A compA = mModel.createA(mA1);
+        B compB = mModel.createB(compA);
+        C compC = mModel.createC(compB);
+        mModel.startTransaction();
+        mA1.appendChild("compA", compA);
         compA.appendChild("compB", compB);
         compB.appendChild("compC", compC);
-        model.endTransaction();
+        mModel.endTransaction();
         
-        assertEquals(compA, a1.getChild(A.class));
+        assertEquals(compA, mA1.getChild(A.class));
         assertEquals(compB, compA.getChild(B.class));
         int length = compB.getPeer().getChildNodes().getLength();
         assertEquals("Got B children count="+length, 3, length);
@@ -667,7 +677,7 @@ public class AbstractComponentTest extends TestCase {
         
         assertEquals(compA.getPeer().getChildNodes().item(1), compB.getPeer());
         
-        A copyA = (A) compA.copy(b1);
+        A copyA = (A) compA.copy(mB1);
         B childOfCopy = copyA.getChild(B.class);
         length = childOfCopy.getPeer().getChildNodes().getLength();
         assertEquals("Got childOfCopy children count="+length, 3, length);
@@ -677,14 +687,14 @@ public class AbstractComponentTest extends TestCase {
 
     public void testCopyHierarchy() throws Exception {
         defaultSetup();
-        model = Util.loadModel("resources/test3.xml");
-        p = model.getRootComponent();
+        mModel = Util.loadModel("resources/test3.xml");
+        p = mModel.getRootComponent();
         B b= p.getChild( B.class );
-        model.startTransaction();
-        C c = new C(model, 0);
+        mModel.startTransaction();
+        C c = new C(mModel, 0);
         b.addBefore( "c" , c , Collections.EMPTY_LIST );
               assertNotNull( b.getChild( C.class ) );
-              D d = new D( model , 0 );
+              D d = new D( mModel , 0 );
         c.addBefore( "d" , d , Collections.EMPTY_LIST );
               assertNotNull( c.getChild( D.class ));
               B component = (B)b.copy( p );
@@ -692,15 +702,15 @@ public class AbstractComponentTest extends TestCase {
               c = component.getChild( C.class );
               assertNotNull( c.getChild( D.class ));
 
-        model.endTransaction();
+        mModel.endTransaction();
     }
 
     public void testCopyAndAppendWithReference() throws Exception {
         defaultSetup();
-        model = Util.loadModel("resources/test3_reference.xml");
-        p = model.getRootComponent();
-        TestModel model2 = Util.loadModel("resources/test3.xml");
-        TestComponent recipient = model2.getRootComponent();
+        mModel = Util.loadModel("resources/test3_reference.xml");
+        p = mModel.getRootComponent();
+        TestModel3 model2 = Util.loadModel("resources/test3.xml");
+        TestComponent3 recipient = model2.getRootComponent();
         Aa aa1 = p.getChild(Aa.class);
         D aa1Child = aa1.getChild(D.class);
         B aa1GrandChild = aa1Child.getChild(B.class);
@@ -711,7 +721,7 @@ public class AbstractComponentTest extends TestCase {
         assertEquals("myTargetNS", copyChild.lookupNamespaceURI("tns"));
         B copyGrandChild = copyChild.getChild(B.class);
         assertEquals("tns", aa1GrandChild.lookupPrefix("myTargetNS"));
-        TestComponentReference<TestComponent> ref = copyGrandChild.getRef(TestComponent.class);
+        TestComponentReference<TestComponent3> ref = copyGrandChild.getRef(TestComponent3.class);
         assertEquals("tns:a1", ref.getRefString());
         
         try {
@@ -743,28 +753,28 @@ public class AbstractComponentTest extends TestCase {
     
     public void testReAddDeep() throws Exception {
         defaultSetup();
-        model = Util.loadModel("resources/test1_deep.xml");
-        p = model.getRootComponent();
+        mModel = Util.loadModel("resources/test1_deep.xml");
+        p = mModel.getRootComponent();
         A a1 = p.getChild(A.class);
         A a1Copy = (A) a1.copy(p);
         
-        model.startTransaction();
+        mModel.startTransaction();
         p.removeChild("testReAddDeep", a1);
-        model.endTransaction();
+        mModel.endTransaction();
         assertNull(p.getChild(A.class));
         
         try {
-            model.startTransaction();
+            mModel.startTransaction();
             p.appendChild("testReAddDeep", a1);
             assertFalse("Failed to get IllegalStateException", true);
         } catch(IllegalStateException ex) {
             //OK
         } finally {
-            model.endTransaction();
+            mModel.endTransaction();
         }
-        model.startTransaction();
+        mModel.startTransaction();
         p.appendChild("testReAddDeep", a1Copy);
-        model.endTransaction();
+        mModel.endTransaction();
         
         A a1ReAdded = p.getChild(A.class);
         assertEquals(3, a1ReAdded.getChildren(B.class).size());
@@ -772,196 +782,196 @@ public class AbstractComponentTest extends TestCase {
     }
     
     public void testAddToSelfClosingRootElement() throws Exception {
-        TestModel refmod = Util.loadModel("resources/Empty_selfClosing.xml");
+        TestModel3 refmod = Util.loadModel("resources/Empty_selfClosing.xml");
         assertEquals(0, refmod.getRootComponent().getPeer().getChildNodes().getLength());
         
-        model = Util.loadModel("resources/Empty.xml");
-        p = model.getRootComponent();
+        mModel = Util.loadModel("resources/Empty.xml");
+        p = mModel.getRootComponent();
         assertEquals(1, p.getPeer().getChildNodes().getLength());
         
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/Empty_selfClosing.xml");
-        model.sync();
+        Util.setDocumentContentTo(mModel.getBaseDocument(), "resources/Empty_selfClosing.xml");
+        mModel.sync();
 
-        A a = model.createA(p);
-        model.startTransaction();
-        p.addAfter("test", a, TestComponent._B);
+        A a = mModel.createA(p);
+        mModel.startTransaction();
+        p.addAfter("test", a, TestComponent3._B);
         a.setValue("foo");
-        model.endTransaction();
+        mModel.endTransaction();
         assertEquals(3, p.getPeer().getChildNodes().getLength());
         
-        File f = Util.dumpToTempFile(model.getBaseDocument());
-        TestModel model2 = Util.loadModel(f);
+        File f = Util.dumpToTempFile(mModel.getBaseDocument());
+        TestModel3 model2 = Util.loadModel(f);
         assertEquals(3, model2.getRootComponent().getPeer().getChildNodes().getLength());
     }
     
     public void testSetText() throws Exception {
-        model = Util.loadModel("resources/test_removeChildren.xml");
-        p = model.getRootComponent();
-        a1 = p.getChild(A.class);
+        mModel = Util.loadModel("resources/test_removeChildren.xml");
+        p = mModel.getRootComponent();
+        mA1 = p.getChild(A.class);
         String a1Leading = "\n function match(a,b) if (a > 0 && b < 7) <a>     \n    ";
-        assertEquals(a1Leading, p.getLeadingText(a1));
+        assertEquals(a1Leading, p.getLeadingText(mA1));
 
-        model.startTransaction();
-        p.setText("test", "---a1---", a1, true);
-        model.endTransaction();
+        mModel.startTransaction();
+        p.setText("test", "---a1---", mA1, true);
+        mModel.endTransaction();
         assertFalse(p.getPeer().getChildNodes().item(1) instanceof Text);
 
-        model.startTransaction();
-        p.setText("test", "---b1---", a1, false);
-        model.endTransaction();
+        mModel.startTransaction();
+        p.setText("test", "---b1---", mA1, false);
+        mModel.endTransaction();
         
         assertEquals("a", p.getPeer().getChildNodes().item(1).getLocalName());
         assertEquals("---b1---", ((Text)p.getPeer().getChildNodes().item(2)).getNodeValue());
         assertEquals("b", p.getPeer().getChildNodes().item(3).getLocalName());
 
-        b1 = p.getChild(B.class);
-        c1 = p.getChild(C.class);
+        mB1 = p.getChild(B.class);
+        mC1 = p.getChild(C.class);
 
-        model.startTransaction();
-        p.setText("test", "---c1---", c1, true);
-        model.endTransaction();
+        mModel.startTransaction();
+        p.setText("test", "---c1---", mC1, true);
+        mModel.endTransaction();
         
         assertEquals("b", p.getPeer().getChildNodes().item(3).getLocalName());
         assertEquals("---c1---", ((Text)p.getPeer().getChildNodes().item(4)).getNodeValue());
         assertEquals("c", p.getPeer().getChildNodes().item(5).getLocalName());
 
-        model.startTransaction();
-        p.setText("test", "---(c1)---", b1, false);
-        model.endTransaction();
+        mModel.startTransaction();
+        p.setText("test", "---(c1)---", mB1, false);
+        mModel.endTransaction();
         
         assertEquals("b", p.getPeer().getChildNodes().item(3).getLocalName());
-        assertEquals("---(c1)---", p.getLeadingText(c1));
+        assertEquals("---(c1)---", p.getLeadingText(mC1));
         assertEquals("c", p.getPeer().getChildNodes().item(5).getLocalName());
 
-        model.startTransaction();
-        p.setText("test", "---d1---", c1, false);
-        model.endTransaction();
+        mModel.startTransaction();
+        p.setText("test", "---d1---", mC1, false);
+        mModel.endTransaction();
         //Util.dumpToFile(model.getBaseDocument(), new File("c:/temp/test1.xml"));
         
         assertEquals("c", p.getPeer().getChildNodes().item(5).getLocalName());
-        assertEquals("---d1---", p.getTrailingText(c1));
+        assertEquals("---d1---", p.getTrailingText(mC1));
         assertEquals(7, p.getPeer().getChildNodes().getLength());
 
-        model.startTransaction();
-        p.setText("test", null, a1, true);
-        p.setText("test", null, b1, false);
-        p.setText("test", null, c1, true);
-        p.setText("test", null, c1, false);
-        model.endTransaction();
+        mModel.startTransaction();
+        p.setText("test", null, mA1, true);
+        p.setText("test", null, mB1, false);
+        p.setText("test", null, mC1, true);
+        p.setText("test", null, mC1, false);
+        mModel.endTransaction();
 
-        assertNull(p.getLeadingText(a1));
-        assertNull(p.getTrailingText(b1));
-        assertNull(p.getLeadingText(c1));
-        assertNull(p.getTrailingText(c1));
+        assertNull(p.getLeadingText(mA1));
+        assertNull(p.getTrailingText(mB1));
+        assertNull(p.getLeadingText(mC1));
+        assertNull(p.getTrailingText(mC1));
     }
           
     public void testGetXmlFragmentInclusiveMiddle() throws Exception {
-        TestModel model = Util.loadModel("resources/test_xmlfragment.xml");
-        TestComponent root = model.getRootComponent();
-        TestComponent.B b = model.getRootComponent().getChildren(TestComponent.B.class).get(0);
+        TestModel3 model = Util.loadModel("resources/test_xmlfragment.xml");
+        TestComponent3 root = model.getRootComponent();
+        TestComponent3.B b = model.getRootComponent().getChildren(TestComponent3.B.class).get(0);
         String result = b.getXmlFragmentInclusive();
         assertTrue(result.startsWith("<b index='1'>"));
         assertTrue(result.endsWith("</b>"));
     }
 
     public void testGetXmlFragmentInclusiveEdgeWithCDATA() throws Exception {
-        TestModel model = Util.loadModel("resources/test_xmlfragment.xml");
-        TestComponent root = model.getRootComponent();
-        TestComponent.C c = model.getRootComponent().getChildren(TestComponent.C.class).get(1);
+        TestModel3 model = Util.loadModel("resources/test_xmlfragment.xml");
+        TestComponent3 root = model.getRootComponent();
+        TestComponent3.C c = model.getRootComponent().getChildren(TestComponent3.C.class).get(1);
         String result = c.getXmlFragmentInclusive();
         assertEquals("<c index='2'/>", result);
     }
 
     public void testGetXmlFragmentInclusiveDeepWithComment() throws Exception {
-        TestModel model = Util.loadModel("resources/test_xmlfragment.xml");
-        TestComponent root = model.getRootComponent();
-        TestComponent.B b = model.getRootComponent().getChildren(TestComponent.B.class).get(0);
-        TestComponent.B bb = b.getChildren(TestComponent.B.class).get(0);
+        TestModel3 model = Util.loadModel("resources/test_xmlfragment.xml");
+        TestComponent3 root = model.getRootComponent();
+        TestComponent3.B b = model.getRootComponent().getChildren(TestComponent3.B.class).get(0);
+        TestComponent3.B bb = b.getChildren(TestComponent3.B.class).get(0);
         String result = bb.getXmlFragmentInclusive();
         assertEquals("<b index='1' value=\"c\"/>", result);
     }
 
     public void testGetXmlFragmentInclusiveOnRoot() throws Exception {
-        TestModel model = Util.loadModel("resources/test_xmlfragment.xml");
-        TestComponent root = model.getRootComponent();
+        TestModel3 model = Util.loadModel("resources/test_xmlfragment.xml");
+        TestComponent3 root = model.getRootComponent();
         String result = root.getXmlFragmentInclusive();
         assertTrue(result.startsWith("<test xmlns=\"http://www.test"));
         assertTrue(result.endsWith("</test  >"));
     }
 
     public void testGetXmlFragmentInclusiveNoTextNode() throws Exception {
-        TestModel model = Util.loadModel("resources/test_xmlfragment.xml");
-        TestComponent root = model.getRootComponent();
-        TestComponent.A a = model.getRootComponent().getChildren(TestComponent.A.class).get(0);
+        TestModel3 model = Util.loadModel("resources/test_xmlfragment.xml");
+        TestComponent3 root = model.getRootComponent();
+        TestComponent3.A a = model.getRootComponent().getChildren(TestComponent3.A.class).get(0);
         String result = a.getXmlFragmentInclusive();
         assertEquals("<a index='1'>CharDataString</a>", result);
     }
     
     public void testAddComponentDoFixupOnChildDefaultPrefix() throws Exception {
-        TestModel model = Util.loadModel("resources/test1_prefix.xml");
-        TestComponent root = model.getRootComponent();
+        TestModel3 model = Util.loadModel("resources/test1_prefix.xml");
+        TestComponent3 root = model.getRootComponent();
         assertEquals(root.getNamespaceURI(), root.lookupNamespaceURI("ns"));
-        TestComponent.Aa aa = model.createAa(root);
+        TestComponent3.Aa aa = model.createAa(root);
         model.startTransaction();
         root.appendChild("testAddComponentDoFixupDefaultPrefix", aa);
         model.endTransaction();
-        TestComponent.A a = root.getChild(TestComponent.A.class);
-        assertEquals(TestComponent.NS_URI, a.getNamespaceURI());
-        assertEquals(TestComponent.NS2_URI, aa.getNamespaceURI());
+        TestComponent3.A a = root.getChild(TestComponent3.A.class);
+        assertEquals(TestComponent3.NS_URI, a.getNamespaceURI());
+        assertEquals(TestComponent3.NS2_URI, aa.getNamespaceURI());
         assertEquals("ns1", aa.getPeer().getPrefix());
     }
     
     public void testAdd_ToStandalone_ComponentDoFixupOnChildDefaultPrefix() throws Exception {
-        TestModel model = Util.loadModel("resources/test1_prefix.xml");
-        TestComponent root = model.getRootComponent();
+        TestModel3 model = Util.loadModel("resources/test1_prefix.xml");
+        TestComponent3 root = model.getRootComponent();
         assertEquals(root.getNamespaceURI(), root.lookupNamespaceURI("ns"));
-        TestComponent.Aa aa = model.createAa(root);
-        TestComponent.Aa aaChild = model.createAa(aa);
+        TestComponent3.Aa aa = model.createAa(root);
+        TestComponent3.Aa aaChild = model.createAa(aa);
         aa.appendChild("appendToStandAloneAa", aaChild);
         model.startTransaction();
         root.appendChild("testAddComponentDoFixupDefaultPrefix", aa);
         model.endTransaction();
-        TestComponent.A a = root.getChild(TestComponent.A.class);
-        assertEquals(TestComponent.NS_URI, a.getNamespaceURI());
-        assertEquals(TestComponent.NS2_URI, aa.getNamespaceURI());
-        assertEquals(TestComponent.NS2_URI, aaChild.getNamespaceURI());
+        TestComponent3.A a = root.getChild(TestComponent3.A.class);
+        assertEquals(TestComponent3.NS_URI, a.getNamespaceURI());
+        assertEquals(TestComponent3.NS2_URI, aa.getNamespaceURI());
+        assertEquals(TestComponent3.NS2_URI, aaChild.getNamespaceURI());
         assertEquals("ns1", aa.getPeer().getPrefix());
         assertEquals("ns1", aaChild.getPeer().getPrefix());
     }
     
     public void testSetRefOnStandAlone() throws Exception {
-        model = Util.loadModel("resources/test4_reference.xml");
-        p = model.getRootComponent();
-        TestComponent.A aa = model.createA(p);
-        TestModel model2 = Util.loadModel("resources/test4.xml");
-        TestComponent root2 = model2.getRootComponent();
+        mModel = Util.loadModel("resources/test4_reference.xml");
+        p = mModel.getRootComponent();
+        TestComponent3.A aa = mModel.createA(p);
+        TestModel3 model2 = Util.loadModel("resources/test4.xml");
+        TestComponent3 root2 = model2.getRootComponent();
         A a1 = root2.getChild(A.class);
-        model.startTransaction();
+        mModel.startTransaction();
         aa.setRef(a1, A.class);
         p.appendChild("testSetRefOnStandAlone", aa);
-        model.endTransaction();
+        mModel.endTransaction();
         assertEquals(root2.getTargetNamespace(), p.lookupNamespaceURI("ns1"));
         assertEquals("myTargetNS3", p.lookupNamespaceURI("ns"));
     }
     
     public void testAddComponentDoFixupOnRefDefaultPrefix() throws Exception {
-        model = Util.loadModel("resources/test4_reference.xml");
-        p = model.getRootComponent();
+        mModel = Util.loadModel("resources/test4_reference.xml");
+        p = mModel.getRootComponent();
         B b1 = p.getChild(B.class);
-        TestModel model2 = Util.loadModel("resources/test4.xml");
-        TestComponent root2 = model2.getRootComponent();
+        TestModel3 model2 = Util.loadModel("resources/test4.xml");
+        TestComponent3 root2 = model2.getRootComponent();
         A a1 = root2.getChild(A.class);
-        model.startTransaction();
+        mModel.startTransaction();
         b1.setRef(a1, A.class);
-        model.endTransaction();
+        mModel.endTransaction();
         assertEquals(root2.getTargetNamespace(), p.lookupNamespaceURI("ns1"));
         assertEquals("myTargetNS3", p.lookupNamespaceURI("ns"));
     }
     
     // TODO support PI inside normal element
     public void FIXME_testProcessingInstruction() throws Exception {
-        model = Util.loadModel("resources/PI_after_prolog.xml");
-        p = model.getRootComponent();
+        mModel = Util.loadModel("resources/PI_after_prolog.xml");
+        p = mModel.getRootComponent();
         A a1 = p.getChild(A.class);
         assertEquals(132, a1.findPosition());
         B b1 = p.getChild(B.class);

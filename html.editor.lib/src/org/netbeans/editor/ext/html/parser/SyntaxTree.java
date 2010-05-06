@@ -84,8 +84,7 @@ public class SyntaxTree {
 
         assert elements != null : "passed elements list cannot but null"; //NOI18N
 
-        SyntaxElement last = elements.size() > 0 ? elements.get(elements.size() - 1) : null;
-        int lastEndOffset = last == null ? 0 : last.offset() + last.length();
+        int lastEndOffset = context.getSourceText().length();
 
         //create a root node, it can contain one or more child nodes
         //normally just <html> node should be its child
