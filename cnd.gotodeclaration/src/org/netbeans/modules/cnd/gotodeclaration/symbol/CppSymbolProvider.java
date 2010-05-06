@@ -67,9 +67,9 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.gotodeclaration.matcher.NameMatcher;
-import org.netbeans.modules.cnd.gotodeclaration.matcher.NameMatcherFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.spi.jumpto.support.NameMatcher;
+import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.util.NbBundle;
@@ -115,15 +115,11 @@ public class CppSymbolProvider implements SymbolProvider {
 
     private CsmSelect.NameAcceptor createNameAcceptor(final Context context) {
         final NameMatcher nameMatcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
-        if (nameMatcher == null) {
-            return null;
-        } else {
-            return new CsmSelect.NameAcceptor() {
-                public boolean accept(CharSequence name) {
-                    return nameMatcher.accept(name.toString());
-                }
-            };
-        }
+        return new CsmSelect.NameAcceptor() {
+            public boolean accept(CharSequence name) {
+                return nameMatcher.accept(name.toString());
+            }
+        };
     }
 
     // synchronized is just in case here - it shouldn't be called async
