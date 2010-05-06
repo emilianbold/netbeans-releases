@@ -39,7 +39,8 @@
             </folder>
         </folder>
         <folder name="Groups">
-            <folder name="OpenedProjects">
+            <file name="TaskList.wsgrp" url="resources/TaskList.wsgrp"/>
+            <folder name="TaskList">
                 <file name="TaskListTopComponent.wstcgrp" url="resources/TaskListTopComponent.wstcgrp"/>
             </folder>
         </folder>

@@ -26,7 +26,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gotodeclaration.matcher;
+package org.netbeans.spi.jumpto.support;
 
 /**
  * Used for encapsulation of the  different matching algorithms
