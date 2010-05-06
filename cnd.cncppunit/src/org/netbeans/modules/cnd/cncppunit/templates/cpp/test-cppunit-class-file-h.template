@@ -1,32 +1,37 @@
 /*
- * File:   %<%NAME%>%.%<%EXTENSION%>%
- * Author: %<%USER%>%
+ * File:   ${nameAndExt}
+ * Author: ${user}
  *
- * Created on %<%DATE%>%, %<%TIME%>%
+ * Created on ${date}, ${time}
  */
 
-#ifndef %<%GUARD_NAME%>%
-#define	%<%GUARD_NAME%>%
+#ifndef ${guardName}
+#define	${guardName}
 
 #include <cppunit/extensions/HelperMacros.h>
 
-class %<%CLASSNAME%>%  : public CPPUNIT_NS::TestFixture {
-	CPPUNIT_TEST_SUITE(%<%CLASSNAME%>%);
-	CPPUNIT_TEST(testMethod);
-	CPPUNIT_TEST(testFailedMethod);
-	CPPUNIT_TEST_SUITE_END();
+class ${className} : public CPPUNIT_NS::TestFixture {
+    CPPUNIT_TEST_SUITE(${className});
+
+    <#if testInits?? && testInits != "">
+    ${testInits}<#else>
+    CPPUNIT_TEST(testMethod);
+    CPPUNIT_TEST(testFailedMethod);</#if>
+
+    CPPUNIT_TEST_SUITE_END();
 
 public:
-	%<%CLASSNAME%>%();
-	virtual ~%<%CLASSNAME%>%();
-	void setUp();
-	void tearDown();
+    ${className}();
+    virtual ~${className}();
+    void setUp();
+    void tearDown();
 
 private:
-	int *example;
-	void testMethod();
-	void testFailedMethod();
+    <#if testDecls?? && testDecls != "">
+    ${testDecls}<#else>
+    void testMethod();
+    void testFailedMethod();</#if>
 };
 
-#endif	/* %<%GUARD_NAME%>% */
+#endif	/* ${guardName} */
 

@@ -20,16 +20,9 @@ the existing makefile.
 </p>
 <p><b>To add a source folder to your project:</b></p>
 <ol>
-<li>Click Add to open the Select Source File Folder dialog 
+<li>Click Add Folder to open the Select Source File Folder dialog
 box.</li>
-<li>Select a folder to add.
-</li>
-<li>If you want the source files added to the project in logical 
-subfolders matching the directory structure in the source folder, 
-leave the Add Subfolders check box selected. To add the files to the
-project folder with no logical subfolders, deselect the check box.
-</li>
-<li>Click Select.
+<li>Select a folder to add and click Select.
 </li>
 </ol>
 <p><b>To remove a source folder from your project:</b></p>
@@ -37,13 +30,14 @@ project folder with no logical subfolders, deselect the check box.
 <li>Select the folder and click Remove.</li>
 </ul>
 <p>
-The Ignored Folders Pattern specifies any folders in the project's directory
+    <b>Exclude Pattern.</b> Specifies any folders in the source directory
 that you do not want the IDE to use for source files. Type POSIX-style regular
-expressions to specify the files you want the IDE to ignore. The IDE includes
-some default patterns for files that are ignored by default. Click the Default
-button to restore the default patterns.</p>
-<p>If the existing sources include test files, you can add them using the Add Folders
-    button for the Test File Folders.
+expressions to specify the files you want the IDE to ignore. The IDE provides
+the default pattern <tt>^(nbproject|build|test|tests)$</tt> to exclude files
+in these folders. You can add other folders to this pattern.</p>
+<p>If the existing sources have test files that you want to include in the
+    project, you can remove the <tt>test|tests</tt> folders from the Exclude Pattern.
+<p>You can also add the folders to the project using the Add Folders button.</p>
 </p>
 
 <table>

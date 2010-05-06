@@ -34,6 +34,11 @@ Use is subject to license terms.
         rebuild only those parts of the project that really depend on the changed header.
         This feature saves time and leads to more consistent build results. Dependency checking
         is performed by the make utility through instructions in the Makefile.</p>
+    <p><b>Rebuild if properties have changed.</b> By default, changing a project property does
+    not trigger a build of a project. Select this option if you want the project to be
+    rebuilt when any property is changed. With large projects that take a long time to build,
+    you should not select this option to ensure that the project is built only when
+    you build it. </p>
 
           
      
