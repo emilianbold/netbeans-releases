@@ -69,6 +69,7 @@ import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Node.Cookie;
 import org.openide.util.Lookup;
@@ -121,7 +122,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 return klass.cast(getJspEditorSupport());
             }
         });
-        
+        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs( FileObject folder, String fileName ) throws IOException {
+                getJspEditorSupport().saveAs( folder, fileName );
+            }
+        });
+
         initialize();
     }
     
