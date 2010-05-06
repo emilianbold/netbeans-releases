@@ -276,7 +276,7 @@ public final class BrandingSupport {
     private NbPlatform getActivePlatform() {
         NbPlatform retval = null;
         if( project instanceof SuiteProject ) {
-            ((SuiteProject)project).getPlatform(true);
+            retval = ((SuiteProject)project).getPlatform(true);
         } else {
             NbModuleProvider moduleProvider = project.getLookup().lookup(NbModuleProvider.class);
             if( null != moduleProvider ) {
