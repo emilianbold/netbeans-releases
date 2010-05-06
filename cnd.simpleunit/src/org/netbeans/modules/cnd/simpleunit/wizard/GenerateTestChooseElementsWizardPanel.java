@@ -40,19 +40,36 @@ package org.netbeans.modules.cnd.simpleunit.wizard;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode.Description;
 import org.netbeans.modules.cnd.simpleunit.spi.wizard.AbstractUnitTestIterator;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.Panel<WizardDescriptor> {
     /**
@@ -62,6 +79,8 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
     private GenerateTestChooseElementsVisualPanel component;
     private Lookup lookup;
     private final ChangeSupport cs;
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
+    private Task task;
     public GenerateTestChooseElementsWizardPanel() {
         cs = new ChangeSupport(this);
     }
@@ -83,8 +102,7 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
     }
 
     public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
-        return true;
+        return initialized.get();
         // If it depends on some condition (form filled out...), then:
         // return someCondition();
         // and when this condition changes (last form field filled in...) then:
@@ -111,25 +129,164 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
     public void readSettings(WizardDescriptor settings) {
         this.lookup = (Lookup) settings.getProperty("UnitTestContextLookup");
         assert this.lookup != null;
-        DataObject dob = lookup.lookup(DataObject.class);
-        if (dob != null) {
-            CsmFile file = CsmUtilities.getCsmFile(dob, false, true);
-            if (file != null) {
-                ElementNode.Description description = null;
-                Collection<CsmOffsetableDeclaration> delcs = file.getDeclarations();
-                List<ElementNode.Description> funDescrs = new ArrayList<ElementNode.Description>();
-                for (CsmOffsetableDeclaration decl : delcs) {
-                    if (CsmKindUtilities.isFunction(decl)) {
-                        funDescrs.add(ElementNode.Description.create(decl, null, true, false));
-                    }
-                }
-                description = ElementNode.Description.create(funDescrs);
-                component.setRootElement(description);
-            }
+        if (!initialized.get() && task == null) {
+            // initialization may take time
+            component.showLoadingNode();
+            Runnable runnable = new RunnableImpl();
+            task = RequestProcessor.getDefault().post(runnable);
         }
     }
 
     public void storeSettings(WizardDescriptor settings) {
         settings.putProperty(AbstractUnitTestIterator.CND_UNITTEST_FUNCTIONS, component.getSelectedElements());
+    }
+
+    private final class RunnableImpl implements Runnable {
+        public RunnableImpl() {
+        }
+        private ElementNode.Description topDescription = null;
+
+        public void run() {
+            if (SwingUtilities.isEventDispatchThread()) {
+                initialized.set(true);
+                component.setRootElement(topDescription);
+                fireChangeEvent();
+            } else {
+                try {
+                    initializeTopLevelDescriptions();
+                } finally {
+                    SwingUtilities.invokeLater(this);
+                }
+            }
+        }
+
+        private void initializeTopLevelDescriptions() {
+            DataObject dob = lookup.lookup(DataObject.class);
+            if (dob != null) {
+                CsmFile file = CsmUtilities.getCsmFile(dob, false, false);
+                topDescription = null;
+                if (file != null) {
+                    Collection<CsmOffsetableDeclaration> delcs = file.getDeclarations();
+                    Map<CsmScope, Collection<CsmFunction>> functions = new HashMap<CsmScope, Collection<CsmFunction>>();
+                    extractFunctions(functions, delcs);
+                    List<Description> topDescrs = convert(functions);
+                    topDescription = ElementNode.Description.create(topDescrs);
+                }
+            }
+        }
+
+        private void extractFunctions(Map<CsmScope, Collection<CsmFunction>> functions, Collection<CsmOffsetableDeclaration> delcs) {
+            for (CsmOffsetableDeclaration decl : delcs) {
+                if (CsmKindUtilities.isFunction(decl)) {
+                    CsmFunction fun = handleFunction((CsmFunction) decl);
+                    if (fun != null) {
+                        CsmScope scope = fun.getScope();
+                        if (scope != null) {
+                            Collection<CsmFunction> scopeFunctions = functions.get(scope);
+                            if (scopeFunctions == null) {
+                                scopeFunctions = new LinkedHashSet<CsmFunction>();
+                            }
+                            if (!scopeFunctions.contains(fun)) {
+                                scopeFunctions.add(fun);
+                                functions.put(scope, scopeFunctions);
+                            }
+                        }
+                    }
+                } else if (CsmKindUtilities.isClass(decl)) {
+                    extractMethods(functions, (CsmClass) decl);
+                } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
+                    CsmNamespaceDefinition nsDef = (CsmNamespaceDefinition) decl;
+                    extractFunctions(functions, nsDef.getDeclarations());
+                }
+            }
+        }
+
+        private void extractMethods(Map<CsmScope, Collection<CsmFunction>> functions, CsmClass clazz) {
+            Collection<CsmFunction> list = functions.get(clazz);
+            if (list == null) {
+                list = new LinkedHashSet<CsmFunction>();
+            }
+            for (CsmMember member : clazz.getMembers()) {
+                if (CsmKindUtilities.isFunction(member)) {
+                    CsmFunction fun = handleFunction((CsmFunction) member);
+                    if (fun != null && !list.contains(fun)) {
+                        list.add(fun);
+                    }
+                }
+            }
+            if (!list.isEmpty()) {
+                functions.put(clazz, list);
+            }
+        }
+
+        private CsmFunction handleFunction(CsmFunction fun) {
+            fun = CsmBaseUtilities.getFunctionDeclaration(fun);
+            CsmFunction out = null;
+            boolean skip = false;
+            if ("main".contentEquals(fun.getName())) { // NOI18N
+                // filter out main functions
+                if ("main".contentEquals(fun.getQualifiedName())) { // NOI18N
+                    skip = true;
+                }
+            } else if (CsmKindUtilities.isOperator(fun)) {
+                // skip static functions
+                skip = true;
+            } else if (CsmKindUtilities.isMethod(fun)) {
+                CsmMethod method = (CsmMethod) fun;
+                if (CsmKindUtilities.isDestructor(method)) {
+                    // skip destructors
+                    skip = true;
+                } else if (method.isAbstract()) {
+                    // skip abstract methods
+                    skip = true;
+                } else if (!method.getVisibility().equals(CsmVisibility.PUBLIC)) {
+                    // test only public methods
+                    skip = true;
+                }
+            } else {
+                CsmScope scope = fun.getScope();
+                // skip static functions
+                if (CsmKindUtilities.isFile(scope)) {
+                    skip = true;
+                }
+            }
+            if (!skip) {
+                out = fun;
+            }
+            return out;
+        }
+
+        private List<Description> convert(Map<CsmScope, Collection<CsmFunction>> functions) {
+            List<Description> descrs = new ArrayList<Description>();
+            if (!functions.isEmpty()) {
+                if (functions.size() == 1) {
+                    Collection<CsmFunction> funs = functions.entrySet().iterator().next().getValue();
+                    // plain list is enough
+                    descrs = convertFunctions2Descriptions(funs);
+                } else {
+                    for (Map.Entry<CsmScope, Collection<CsmFunction>> entry : functions.entrySet()) {
+                        if (!entry.getValue().isEmpty()) {
+                            CsmScope key = entry.getKey();
+                            List<Description> funs = convertFunctions2Descriptions(entry.getValue());
+                            if (CsmKindUtilities.isNamespace(key) && ((CsmNamespace)key).isGlobal()) {
+                                // global elements put on top level directly
+                                descrs.addAll(funs);
+                            } else {
+                                descrs.add(Description.create(entry.getKey(), funs, false, false));
+                            }
+                        }
+                    }
+                }
+            }
+            return descrs;
+        }
+
+        private List<Description> convertFunctions2Descriptions(Collection<CsmFunction> funs) {
+            List<Description> out = new ArrayList<Description>();
+            for (CsmFunction csmFunction : funs) {
+                out.add(Description.create(csmFunction, null, true, false));
+            }
+            return out;
+        }
     }
 }
