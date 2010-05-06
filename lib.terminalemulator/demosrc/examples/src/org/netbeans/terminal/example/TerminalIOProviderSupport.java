@@ -572,8 +572,10 @@ public final class TerminalIOProviderSupport {
 	    //
 	    // Connect the IO
 	    //
-	    org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty
-	    pty = PtySupport.getPty(nativeProcess);
+	    org.netbeans.modules.nativeexecution.api.pty.Pty
+	    // TMP pty = PtySupport.getPty(nativeProcess);
+	    // PtySupport.getPty() is gone.
+	    pty = null;
 	    if (isInternalIOShuttle() && IOTerm.isSupported(io)) {
 		IOTerm.connect(io,
 			       pty.getOutputStream(),
