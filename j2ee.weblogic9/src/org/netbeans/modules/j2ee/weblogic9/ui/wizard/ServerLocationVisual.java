@@ -118,16 +118,6 @@ public class ServerLocationVisual extends JPanel {
             return false;
         }
 
-        if (!WLPluginProperties.domainListExists(serverRoot)) {
-            String msg = NbBundle.getMessage(ServerLocationVisual.class, "ERR_INVALID_SERVER_ROOT") +   // NOI18N
-                         " " +    // NOI18N
-                         NbBundle.getMessage(ServerLocationVisual.class, "DOMAIN_LIST_NOT_FOUND",    // NOI18N
-                            serverRoot.getPath() + File.separator + WLPluginProperties.DOMAIN_LIST
-                         );
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
-            return false;
-        }
-
 
         WLPluginProperties.getInstance().setInstallLocation(location);
         WLPluginProperties.getInstance().saveProperties();
