@@ -347,8 +347,8 @@ public final class AddModulePanel extends JPanel {
                         public @Override void run() {
                             if (filterer == null) {
                                 filterer = new AddModuleFilter(universeModules.getDependencies(), props.getCodeNameBase());
-                                compute.run();
                             }
+                            compute.run();
                         }
                     });
                 }
