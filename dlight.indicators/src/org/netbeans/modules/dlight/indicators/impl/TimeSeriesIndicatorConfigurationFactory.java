@@ -39,12 +39,15 @@
 package org.netbeans.modules.dlight.indicators.impl;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.indicators.Aggregation;
 import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.support.DefaultDataRowToTimeSeries;
 import org.netbeans.modules.dlight.util.ValueFormatter;
@@ -64,12 +67,10 @@ public final class TimeSeriesIndicatorConfigurationFactory {
     private TimeSeriesIndicatorConfigurationFactory() {
     }
 
-    /*package*/ static TimeSeriesIndicatorConfiguration create(Map<?, ?> map) {
-        int position = map.get("position") == null ? 1 : (Integer) map.get("position");//NOI18N
-        FileObject rootFolder = FileUtil.getConfigRoot();
-        String metadataPath = (String) map.get("metadata");//NOI18N
-        FileObject columnsFolder = rootFolder.getFileObject(metadataPath);
-        IndicatorMetadata metadata = (IndicatorMetadata) columnsFolder.getAttribute("instanceCreate");//NOI18N
+    // Replaces incomplete TimeSeriesIndicatorConfigurationFactory.create()
+    static TimeSeriesIndicatorConfiguration createTimeSeriesIndicator(Map<?, ?> map) {
+        IndicatorMetadata metadata = getStringAndCreateInstance(map, "metadata", IndicatorMetadata.class);
+        int position = getInt(map, "position");//NOI18N
         TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(metadata, position);
         if (getString(map, "aggregation") != null) {//NOI18N
             Aggregation aggregation = Aggregation.valueOf(getString(map, "aggregation"));//NOI18N
@@ -84,32 +85,42 @@ public final class TimeSeriesIndicatorConfigurationFactory {
         if (map.get("title") != null) {//NOI18N
             indicatorConfiguration.setTitle(getString(map, "title"));//NOI18N
         }
-        if (getString(map, "row.handler") != null) {//NOI18N
-            String pathToRowHandler = getString(map, "row.handler");//NOI18N
-            FileObject rowHandler = rootFolder.getFileObject(pathToRowHandler);
-            DataRowToTimeSeries dataRowToTimeSeries = (DataRowToTimeSeries) rowHandler.getAttribute("instanceCreate");//NOI18N
-            indicatorConfiguration.setDataRowHandler(dataRowToTimeSeries);
-        } else {
-            //set default
-            List<Column> columns = metadata.getColumns();
-            Column[][] rowHandlerColumns = new Column[columns.size()][1];
-            for (int i = 0, size = columns.size(); i < size; i++) {
-                rowHandlerColumns[i][0] = columns.get(i);
-            }
-            indicatorConfiguration.setDataRowHandler(new DefaultDataRowToTimeSeries(rowHandlerColumns));
-        }
         if (map.get("label.formatter") != null && map.get("label.formatter") instanceof ValueFormatter) {//NOI18N
             indicatorConfiguration.setLabelFormatter((ValueFormatter) map.get("label.formatter"));//NOI18N
         }
-        indicatorConfiguration.setLastNonNull((Boolean) map.get("LastNonNull"));//NOI18N
+        indicatorConfiguration.setLastNonNull(getBoolean(map, "LastNonNull"));//NOI18N
         if (getString(map, "action.displayName") != null) {//NOI18N
             indicatorConfiguration.setActionDisplayName(getString(map, "action.displayName"));//NOI18N
         }
         if (getString(map, "action.tooltip") != null) {//NOI18N
             indicatorConfiguration.setActionTooltip(getString(map, "action.tooltip"));//NOI18N
         }
+        @SuppressWarnings("unchecked")
+        List<TimeSeriesDescriptor> uncheckedDescriptors = getStringAndCreateInstance(map, "timeSeriesDescriptors", List.class); // NOI18N
+        indicatorConfiguration.addTimeSeriesDescriptors(uncheckedDescriptors.toArray(new TimeSeriesDescriptor[uncheckedDescriptors.size()]));
+
+        DataRowToTimeSeries dataRowToTimeSeries = getStringAndCreateInstance(map, "row.handler", DataRowToTimeSeries.class); // NOI18N
+        if (dataRowToTimeSeries == null) {
+            //set default
+            Column[][] rowHandlerColumns = new Column[uncheckedDescriptors.size()][];
+            for (int i = 0, descriptorCount = uncheckedDescriptors.size(); i < descriptorCount; ++i) {
+                Collection<Column> descriptorColumns = TimeSeriesDescriptorAccessor.getDefault().getSourceColumns(uncheckedDescriptors.get(i));
+                rowHandlerColumns[i] = descriptorColumns.toArray(new Column[descriptorColumns.size()]);
+            }
+            dataRowToTimeSeries = new DefaultDataRowToTimeSeries(rowHandlerColumns);
+        }
+        indicatorConfiguration.setDataRowHandler(dataRowToTimeSeries);
+
+        VisualizerConfiguration visualizer = getStringAndCreateInstance(map, "visualizer", VisualizerConfiguration.class); // NOI18N
+        if (visualizer != null) {
+            indicatorConfiguration.addVisualizerConfiguration(visualizer);
+        }
 
         return indicatorConfiguration;
+    }
+
+    private static <T> T getStringAndCreateInstance(Map<?, ?> map, String key, Class<T> clazz) {
+        return createInstance(getString(map, key), clazz);
     }
 
     /*package*/ static <T> T createInstance(String path, Class<T> clazz) {
@@ -143,5 +154,15 @@ public final class TimeSeriesIndicatorConfigurationFactory {
 
     private static String getString(Map<?, ?> map, String key) {
         return (String) map.get(key);
+    }
+
+    private static boolean getBoolean(Map<?, ?> map, String key) {
+        Object value = map.get(key);
+        return value instanceof Boolean ? (Boolean) value : false;
+    }
+
+    private static int getInt(Map<?, ?> map, String key) {
+        Object value = map.get(key);
+        return value instanceof Integer ? (Integer) value : 0;
     }
 }

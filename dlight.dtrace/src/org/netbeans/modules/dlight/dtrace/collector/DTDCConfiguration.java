@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.dlight.dtrace.collector;
 
@@ -70,6 +70,11 @@ public final class DTDCConfiguration implements
      * dtrace(1M))
      */
     public static final String DTRACE_PROC = "dtrace_proc"; // NOI18N
+
+    /**
+     * The property which can be used when tool is created to set path to the script
+     */
+    public static final String  DSCRIPT_TOOL_PROPERTY = "dtrace.script";
     static final String DTDC_CONFIGURATION_ID = "DtraceDataCollectorConfigurationId"; // NOI18N
     private static DTDCConfiguration CPU_SAMPLING;
     private URL scriptUrl;
