@@ -70,6 +70,10 @@ public class LoginPanel extends javax.swing.JPanel {
 
     private Credentials credentials;
 
+    private RequestProcessor.Task chkOnlineTask;
+    RequestProcessor rp = new RequestProcessor(LoginPanel.class.getName(),5);
+
+
     private URL getForgetPasswordUrl() {
         try {
             if (kenai!=null) {
@@ -175,24 +179,29 @@ public class LoginPanel extends javax.swing.JPanel {
     private void setChkOnline() {
         chkIsOnline.setSelected(false);
         chkIsOnline.setEnabled(false);
-        RequestProcessor.getDefault().post(new Runnable() {
+        if (chkOnlineTask != null) {
+            chkOnlineTask.schedule(0);
+        } else {
+            chkOnlineTask = rp.post(new Runnable() {
 
-            public void run() {
-                if (kenai==null)
-                    return;
-                boolean is = Utilities.isChatSupported(kenai);
-                if (is) {
-                    SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (kenai == null) {
+                        return;
+                    }
+                    boolean is = Utilities.isChatSupported(kenai);
+                    if (is) {
+                        SwingUtilities.invokeLater(new Runnable() {
 
-                        public void run() {
-                            final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-                            chkIsOnline.setEnabled(true);
-                            chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(UIUtils.getPrefName(kenai, UIUtils.ONLINE_ON_CHAT_PREF), "true"))); // NOI18N
-                        }
-                    });
+                            public void run() {
+                                final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+                                chkIsOnline.setEnabled(true);
+                                chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(UIUtils.getPrefName(kenai, UIUtils.ONLINE_ON_CHAT_PREF), "true"))); // NOI18N
+                            }
+                        });
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     private void setLoginButtonEnabled(boolean enabled) {

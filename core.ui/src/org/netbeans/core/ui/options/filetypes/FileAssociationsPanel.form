@@ -22,7 +22,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lblFileAssociations" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="sepFileAssociations" pref="542" max="32767" attributes="0"/>
+                      <Component id="sepFileAssociations" pref="613" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="10" pref="10" max="10" attributes="0"/>
@@ -35,12 +35,12 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="lblAssociatedAlso" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="lblAssociatedAlsoExt" pref="323" max="32767" attributes="0"/>
+                              <Component id="lblAssociatedAlsoExt" pref="364" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbExtension" alignment="0" pref="293" max="32767" attributes="1"/>
-                                  <Component id="cbType" alignment="0" pref="293" max="32767" attributes="1"/>
+                                  <Component id="cbExtension" alignment="0" pref="337" max="32767" attributes="1"/>
+                                  <Component id="cbType" alignment="0" pref="337" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -57,36 +57,27 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                                      <Component id="lblPattern" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="autoScan" pref="503" max="32767" attributes="0"/>
-                                      <EmptySpace min="44" pref="44" max="44" attributes="0"/>
-                                  </Group>
-                              </Group>
-                              <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                              <Component id="lblPattern" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                              <Component id="autoScanLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="autoScan" pref="584" max="32767" attributes="0"/>
+                              <EmptySpace min="44" pref="44" max="44" attributes="0"/>
                           </Group>
                       </Group>
-                      <Component id="txtPatternError" pref="72" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
+                      <Component id="txtPatternError" pref="75" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lblFilesIgnored" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Component id="jScrollPane1" pref="407" max="32767" attributes="0"/>
+                              <Component id="jScrollPane1" max="32767" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="btnDefaultIgnored" min="-2" max="-2" attributes="1"/>
                           </Group>
-                          <Component id="setFilesIgnored" alignment="0" pref="499" max="32767" attributes="0"/>
+                          <Component id="setFilesIgnored" alignment="0" pref="565" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -134,16 +125,12 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="txtPatternError" pref="129" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                       <Component id="autoScan" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="autoScanLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="79" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -397,13 +384,6 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="autoScanActionPerformed"/>
       </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="autoScanLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/core/ui/options/filetypes/Bundle.properties" key="FileAssociationsPanel.autoScanLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})"/>
-        </Property>
-      </Properties>
     </Component>
   </SubComponents>
 </Form>

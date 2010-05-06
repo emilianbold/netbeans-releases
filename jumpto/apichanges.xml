@@ -105,6 +105,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Support">
+            <api name="general"/>
+            <summary>Added support SPI to implement name filters</summary>
+            <version major="1" minor="17"/>
+            <date day="6" month="5" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes">
+            </compatibility>
+            <description>
+                Added support SPI to implement common filters used by Go To Type, Go To Symbol,
+                Go To File.
+            </description>
+            <class package="org.netbeans.spi.jumpto.support" name="NameMatcherFactory"/>
+            <class package="org.netbeans.spi.jumpto.support" name="NameMatcher"/>
+            <issue number="185168"/>
+        </change>
         <change id="GoToFile">
             <api name="general"/>
             <summary>Added SPI for Go to File dialog</summary>

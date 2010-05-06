@@ -89,13 +89,14 @@ public final class Startup {
 
     /** Singleton instance */
     private static Startup instance = null;
-    
+
     /** Currently used LF customizer */
     private LFCustoms curCustoms = null;
     private LFCustoms globalCustoms = null;
 
     private static URL themeURL = null;
     private static Class uiClass = null;
+    private static ResourceBundle bundle;
     
     private boolean installed = false;
 
@@ -134,7 +135,8 @@ public final class Startup {
       }
       
       if (uiClass == null) {
-          String uiClassName = ResourceBundle.getBundle("org.netbeans.swing.plaf.Bundle").getString("LookAndFeelClassName"); // NOI18N
+          ResourceBundle b = bundle != null ? bundle : ResourceBundle.getBundle("org.netbeans.swing.plaf.Bundle"); // NOI18N
+          String uiClassName = b.getString("LookAndFeelClassName"); // NOI18N
           if ("default".equals(uiClassName)) { // NOI18N
               uiClassName = defaultLaF();
           }
@@ -440,6 +442,16 @@ public final class Startup {
     
     /**
      * Initialize values in UIDefaults which need to be there for NetBeans' components; apply customizations such
+     * as setting up a custom font size and loading a theme. Basically delegates to
+     * {@link #run(java.lang.Class, int, java.net.URL, java.util.ResourceBundle)} with null
+     * resource bundle.
+     */
+    public static void run (Class uiClass, int uiFontSize, URL themeURL) {
+        run(uiClass, uiFontSize, themeURL, null);
+    }
+
+    /**
+     * Initialize values in UIDefaults which need to be there for NetBeans' components; apply customizations such
      * as setting up a custom font size and loading a theme.
      *
      * @param uiClass The UI class which should be used for the look and feel
@@ -449,8 +461,12 @@ public final class Startup {
      *          than any hard limit the platform imposes on font size.
      * @param themeURL An optional URL for a theme file, or null. Theme file format documentation can be found
      *        <a href="ui.netbeans.org/project/ui/docs/ui/themes/themes.html">here</a>.
+     * @param rb resource bundle to use for branding or null. Allows NetBeans to provide enhanced version
+     *          of bundle that knows how to deal with branding. The bundle shall have the same keys as
+     *          <code>org.netbeans.swing.plaf.Bundle</code> bundle has.
+     * @since 1.16
      */
-    public static void run (Class uiClass, int uiFontSize, URL themeURL) {
+    public static void run (Class uiClass, int uiFontSize, URL themeURL, ResourceBundle rb) {
         if (instance == null) {
           // Modify default font size to the font size passed as a command-line parameter
             if(uiFontSize>0) {
@@ -459,6 +475,7 @@ public final class Startup {
             }
             Startup.uiClass = uiClass;
             Startup.themeURL = themeURL;
+            Startup.bundle = rb;
             instance = new Startup();
             instance.install();
         }

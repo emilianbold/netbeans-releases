@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
 
@@ -55,6 +56,7 @@ import org.openide.windows.WindowManager;
  */
 class OpenProjectsListener implements PropertyChangeListener {
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if( OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName()) ) {
             // open/close navigator and task list windows when project is opened/closed
@@ -64,17 +66,26 @@ class OpenProjectsListener implements PropertyChangeListener {
     
     private void openCloseWindowGroup() {
         Runnable r = new Runnable() {
+            @Override
             public void run() {
-                TopComponentGroup group = WindowManager.getDefault().findTopComponentGroup("OpenedProjects"); //NOI18N
-                if( null != group ) {
-                    boolean show = OpenProjects.getDefault().getOpenProjects().length > 0;
-                    if( show ) {
-                        group.open();
-                    } else {
-                        group.close();
-                    }
-                } else {
+                Project[] projects = OpenProjects.getDefault().getOpenProjects();
+                TopComponentGroup projectsGroup = WindowManager.getDefault().findTopComponentGroup("OpenedProjects"); //NOI18N
+                if( null == projectsGroup )
                     Logger.getLogger(OpenProjectsListener.class.getName()).log( Level.FINE, "OpenedProjects TopComponent Group not found." );
+                TopComponentGroup taskListGroup = WindowManager.getDefault().findTopComponentGroup("TaskList"); //NOI18N
+                if( null == taskListGroup )
+                    Logger.getLogger(OpenProjectsListener.class.getName()).log( Level.FINE, "TaskList TopComponent Group not found." );
+                boolean show = projects.length > 0;
+                if( show ) {
+                    if( null != projectsGroup )
+                        projectsGroup.open();
+                    if( null != taskListGroup && supportsTaskList(projects) )
+                        taskListGroup.open();
+                } else {
+                    if( null != projectsGroup )
+                        projectsGroup.close();
+                    if( null != taskListGroup )
+                        taskListGroup.close();
                 }
             }
         };
@@ -82,5 +93,17 @@ class OpenProjectsListener implements PropertyChangeListener {
             r.run();
         else
             SwingUtilities.invokeLater(r);
+    }
+
+    private boolean supportsTaskList(Project[] projects) {
+        boolean res = false;
+        for( Project p : projects ) {
+            //#184291 - don't show task list for cnd MakeProjects, see also #185488
+            if( !p.getClass().getName().equals("org.netbeans.modules.cnd.makeproject.MakeProject") ) { //NOI18N
+                res = true;
+                break;
+            }
+        }
+        return res;
     }
 }
