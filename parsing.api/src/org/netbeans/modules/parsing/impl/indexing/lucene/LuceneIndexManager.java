@@ -44,6 +44,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -62,6 +64,12 @@ public final class LuceneIndexManager {
 
     public static interface Action<R> {
         public R run () throws IOException;
+    }
+
+    public static enum Mode {
+        OPENED,
+        CREATE,
+        IF_EXIST;
     }
 
 
@@ -98,17 +106,28 @@ public final class LuceneIndexManager {
         return instance;
     }
 
-    public synchronized LuceneIndex getIndex (final URL root, boolean create) throws IOException {
+    public synchronized LuceneIndex getIndex (final URL root, final Mode mode) throws IOException {
         assert root != null;
         if (invalid) {
             return null;
         }
         LuceneIndex li = indexes.get(root);
-        if (create && li == null) {
-            li = new LuceneIndex(root);
-            indexes.put(root,li);
+        if (li == null) {
+            switch (mode) {
+                case CREATE:
+                    li = new LuceneIndex(root);
+                    indexes.put(root,li);
+                    break;
+                case IF_EXIST:
+                    final FileObject fo = URLMapper.findFileObject(root);
+                    if (fo != null && fo.isFolder() && fo.getChildren(false).hasMoreElements()) {
+                        li = new LuceneIndex(root);
+                        indexes.put(root,li);
+                    }
+                    break;
+            }
         }
         return li;
-    }   
+    }
 
 }

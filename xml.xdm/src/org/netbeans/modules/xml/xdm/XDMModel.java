@@ -340,7 +340,8 @@ public class XDMModel {
     private List<Node> mutate(Node parent, Node oldNode, Node newNode, Updater updater) {
         return mutate(parent, oldNode, newNode, updater, null);
     }
-    
+
+    // TODO: Describe result value
     private List<Node> mutate(Node parent, Node oldNode, Node newNode, Updater updater, MutationType type) {
         checkStableOrParsingState();
         if (newNode != null) checkNodeInTree(newNode);
@@ -818,6 +819,8 @@ public class XDMModel {
     
     /**
      * This api returns the latest stable document in the model.
+     * An IllegalStateException can be thrown in case the model
+     * isn't in a STABLE or PARSING state.
      * @return The latest stable document in the model.
      */
     public synchronized Document getDocument() {

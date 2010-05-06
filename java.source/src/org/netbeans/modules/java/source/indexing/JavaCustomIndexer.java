@@ -158,6 +158,10 @@ public class JavaCustomIndexer extends CustomIndexer {
                 JavaIndex.LOG.warning("Source root: " + FileUtil.getFileDisplayName(root) + " is not on its sourcepath"); // NOI18N
                 return;
             }
+            if (!JavaFileFilterListener.getDefault().startListeningOn(root)) {
+                JavaIndex.LOG.fine("Forcing reindex dou to changed JavaFileFilter"); // NOI18N
+                return;
+            }
             final List<Indexable> javaSources = new ArrayList<Indexable>();
             final Collection<? extends CompileTuple> virtualSourceTuples = translateVirtualSources (
                     splitSources(files,javaSources),
@@ -294,7 +298,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         if (!context.checkForEditorModifications() && "file".equals(indexable.getURL().getProtocol()) && (root = FileUtil.toFile(context.getRoot())) != null) { //NOI18N
             try {
                 File file = new File(indexable.getURL().toURI().getPath());
-                return new CompileTuple(FileObjects.fileFileObject(file, root, null, javaContext.encoding), indexable);
+                return new CompileTuple(FileObjects.fileFileObject(file, root, javaContext.filter, javaContext.encoding), indexable);
             } catch (Exception ex) {
             } catch (AssertionError ae) {
                 //Add more debug messages
@@ -793,11 +797,13 @@ public class JavaCustomIndexer extends CustomIndexer {
         public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
             assert removedRoots != null;
             final ClassIndexManager cim = ClassIndexManager.getDefault();
+            final JavaFileFilterListener ffl = JavaFileFilterListener.getDefault();
             try {
                 cim.prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
                     public Void run() throws IOException, InterruptedException {
                         for (URL removedRoot : removedRoots) {
                             cim.removeRoot(removedRoot);
+                            ffl.stopListeningOn(removedRoot);
                         }
                         return null;
                     }

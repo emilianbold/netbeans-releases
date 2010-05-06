@@ -245,7 +245,9 @@ public class WadlSaas extends Saas {
                     Exceptions.printStackTrace(e);
                 }
             }
-            schemaFiles.add(schemaFile);
+            if (schemaFile != null) {
+                schemaFiles.add(schemaFile);
+            }
         }
         return schemaFiles;
     }
