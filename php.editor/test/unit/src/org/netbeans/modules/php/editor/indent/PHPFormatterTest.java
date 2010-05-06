@@ -41,6 +41,9 @@ package org.netbeans.modules.php.editor.indent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import javax.swing.JEditorPane;
+import javax.swing.text.Caret;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
@@ -287,7 +290,7 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue172475.php");
     }
 
-    public void ltest167791() throws Exception {
+    public void test167791() throws Exception {
         reformatFileContents("testfiles/formatting/issue167791.php", 5);
     }
 
@@ -1708,6 +1711,21 @@ public class PHPFormatterTest extends PHPTestBase {
 	reformatFileContents("testfiles/formatting/comment07.php", options);
     }
 
+    public void testComment08() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	reformatFileContents("testfiles/formatting/comment08.php", options);
+    }
+
+    public void testComment09() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	reformatFileContents("testfiles/formatting/comment09.php", options);
+    }
+
+    public void testComment10() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	reformatFileContents("testfiles/formatting/comment10.php", options);
+    }
+
     // the html tests doesn't work properly, the results are deferent then in the ide. i don't know why. 
     public void testHtml01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
@@ -1766,172 +1784,42 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue168396_01.php", options);
     }
 
-    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
-    public void testFore_01() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        reformatFileContents("testfiles/formatting/templates/fore_01.php", options, true);
-    }
-
-    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
-    public void testFore_02() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinForParens, true);
-        reformatFileContents("testfiles/formatting/templates/fore_02.php", options, true);
-    }
-
-    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
-    public void testFore_03() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinForParens, true);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        reformatFileContents("testfiles/formatting/templates/fore_03.php", options, true);
-    }
-
-    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
-    public void testFore_04() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinForParens, true);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        reformatFileContents("testfiles/formatting/templates/fore_04.php", options, true);
-    }
-
-    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
-    public void testFore_05() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinForParens, true);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        reformatFileContents("testfiles/formatting/templates/fore_05.php", options, true);
-    }
-
-    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
-    public void testFore_06() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinForParens, true);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.initialIndent, 4);
-        reformatFileContents("testfiles/formatting/templates/fore_06.php", options, true);
-    }
-
-    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
-    public void testIssue184481_01() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        reformatFileContents("testfiles/formatting/templates/issue184481_01.php", options, true);
-    }
-
-    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
-    public void testIssue184481_02() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        reformatFileContents("testfiles/formatting/templates/issue184481_02.php", options, true);
-    }
-
-    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
-    public void testIssue184481_03() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        reformatFileContents("testfiles/formatting/templates/issue184481_03.php", options, true);
-    }
-
-    //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
-    public void testIssue184481_04() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        reformatFileContents("testfiles/formatting/templates/issue184481_04.php", options, true);
-    }
-
-    public void testIssue184070_01() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        reformatFileContents("testfiles/formatting/templates/issue184070_01.php", options, true);
-    }
-
-    public void testIssue184690_01() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        reformatFileContents("testfiles/formatting/templates/issue184690_01.php", options, true);
-    }
-
-    public void testPrivate_01() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
-        reformatFileContents("testfiles/formatting/templates/private_01.php", options, true);
-    }
-
-    public void testPrivate_02() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
-        reformatFileContents("testfiles/formatting/templates/private_02.php", options, true);
-    }
-
-    public void testFncTemplate_01() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
-        reformatFileContents("testfiles/formatting/templates/function_01.php", options, true);
-    }
-
-    public void testImplementsOverwriteTemplate_01() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
-        reformatFileContents("testfiles/formatting/templates/implementsOverwrite_01.php", options, true);
-    }
-
-    public void testImplementsOverwriteTemplate_02() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        reformatFileContents("testfiles/formatting/templates/implementsOverwrite_02.php", options, true);
-    }
-
-    public void testImplementsOverwriteTemplate_03() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        reformatFileContents("testfiles/formatting/templates/implementsOverwrite_03.php", options, true);
-    }
-
-    public void testIssue184141() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
-        reformatFileContents("testfiles/formatting/templates/issue184141.php", options, true);
-    }
-
     public void testIssue184687_01() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.initialIndent, 4);
-        reformatFileContents("testfiles/formatting/issue184687_01.php", options, true);
+        reformatFileContents("testfiles/formatting/issue184687_01.php", options);
     }
 
     public void testIssue184687_02() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.initialIndent, 4);
-        reformatFileContents("testfiles/formatting/issue184687_02.php", options, true);
+        reformatFileContents("testfiles/formatting/issue184687_02.php", options);
     }
 
     public void testIssue185353_01() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        reformatFileContents("testfiles/formatting/issue185353_01.php", options, true);
+        reformatFileContents("testfiles/formatting/issue185353_01.php", options);
     }
     
     public void testIssue185353_02() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        reformatFileContents("testfiles/formatting/issue185353_02.php", options, true);
+        reformatFileContents("testfiles/formatting/issue185353_02.php", options);
     }
     
     public void testIssue185353_03() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        reformatFileContents("testfiles/formatting/issue185353_03.php", options, true);
+        reformatFileContents("testfiles/formatting/issue185353_03.php", options);
     }
     
     public void testIssue185353_04() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        reformatFileContents("testfiles/formatting/issue185353_04.php", options, true);
+        reformatFileContents("testfiles/formatting/issue185353_04.php", options);
     }
     
     public void testIssue185353_05() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        reformatFileContents("testfiles/formatting/issue185353_05.php", options, true);
+        reformatFileContents("testfiles/formatting/issue185353_05.php", options);
     }
-
-    public void testIssue185353_06() throws Exception {
-	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        reformatFileContents("testfiles/formatting/issue185353_06.php", options, true);
-    }
-
 
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
@@ -1980,12 +1868,7 @@ public class PHPFormatterTest extends PHPTestBase {
         assertDescriptionMatches(file, after, false, ".formatted");
     }
 
-
     protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
-        reformatFileContents(file, options, false);
-    }
-
-    protected void reformatFileContents(String file, Map<String, Object> options, boolean isTemplate) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
 
@@ -1996,7 +1879,6 @@ public class PHPFormatterTest extends PHPTestBase {
         int startMarkPos = text.indexOf(FORMAT_START_MARK);
 
         if (startMarkPos >= 0){
-            //formatStart = startMarkPos + FORMAT_START_MARK.length();
             formatStart = startMarkPos;
             text = text.substring(0, formatStart) + text.substring(formatStart + FORMAT_START_MARK.length());
             formatEnd = text.indexOf(FORMAT_END_MARK);
@@ -2006,12 +1888,8 @@ public class PHPFormatterTest extends PHPTestBase {
                 throw new IllegalStateException();
             }
         }
-        BaseDocument doc = getDocument(text);
 
-        if (isTemplate) {
-            doc.putProperty(TokenFormatter.TEMPLATE_HANDLER_PROPERTY, new Object());
-        }
-        
+        BaseDocument doc = getDocument(text);
         assertNotNull(doc);
         
 
@@ -2042,7 +1920,6 @@ public class PHPFormatterTest extends PHPTestBase {
         }
 
         format(doc, formatter, formatStart, formatEnd, false);
-
         String after = doc.getText(0, doc.getLength());
         assertDescriptionMatches(file, after, false, ".formatted");
     }

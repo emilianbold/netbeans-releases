@@ -41,34 +41,28 @@
 
 package org.netbeans.modules.xml.xam;
 
-import org.netbeans.modules.xml.xam.dom.Attribute;
-
 /**
  *
  * @author Nam Nguyen
  */
-public enum TestAttribute implements Attribute {
-    INDEX("index", Integer.class), 
-    VALUE("value", String.class),
-    TNS("targetNamespace", String.class),
-    NAME("name", String.class),
-    REF("ref", String.class);
+public class TestComponentUpdater3 implements ComponentUpdater<TestComponent3> {
+    @Override
+    public void update(TestComponent3 target, TestComponent3 child, ComponentUpdater.Operation operation) {
+        update(target, child, -1, operation);
+    }
 
-    private String name;
-    private Class type;
-    private Class subtype;
-    
-    TestAttribute(String name, Class type) {
-        this.name = name;
-        this.type = type;
+    @Override
+    public void update(TestComponent3 target, TestComponent3 child, int index, ComponentUpdater.Operation operation) {
+        if (operation.equals(ComponentUpdater.Operation.ADD)) {
+            //
+            // See description of method NsPrefixCreationUndoTest.testInterruptedComponentUpdater()
+            if (child instanceof TestComponent3.Err) {
+                throw new RuntimeException("Test synch crashed.");
+            }
+            //
+            target.insertAtIndex("ChildComponentAdded", child, index, TestComponent3.class);
+        } else {
+            target.removeChild("ChildComponentRemoved", child);
+        }
     }
-    TestAttribute(String name, Class type, Class subtype) {
-        this(name, type);
-        this.subtype = subtype;
-    }
-    
-    public String getName() { return name; }
-    public Class getType() { return type; }
-    public Class getMemberType() { return subtype; }
-    public String toString() { return name; }
 }

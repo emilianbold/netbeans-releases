@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,28 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.xml.xam;
+package org.netbeans.modules.cnd.utils.ui;
 
-import org.netbeans.modules.xml.xam.ComponentUpdater;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
- * @author Nam Nguyen
+ * @author Egor Ushakov
  */
-public class TestComponentUpdater implements ComponentUpdater<TestComponent> {
-    @Override
-    public void update(TestComponent target, TestComponent child, ComponentUpdater.Operation operation) {
-        update(target, child, -1, operation);
+public final class UIGesturesSupport {
+    
+    // Utility class
+    private UIGesturesSupport() {
     }
 
-    @Override
-    public void update(TestComponent target, TestComponent child, int index, ComponentUpdater.Operation operation) {
-        if (operation.equals(ComponentUpdater.Operation.ADD)) {
-            target.insertAtIndex("ChildComponentAdded", child, index, TestComponent.class);
-        } else {
-            target.removeChild("ChildComponentRemoved", child);
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.cnd"); // NOI18N
+
+    public static void submit(String type, Object... params) {
+        // Do not track from unit tests
+        if (CndUtils.isUnitTestMode()) {
+            return;
         }
+        LogRecord record = new LogRecord(Level.INFO, type);
+//        record.setResourceBundle(NbBundle.getBundle(UIGesturesSupport.class));
+//        record.setResourceBundleName(UIGesturesSupport.class.getPackage().getName() + ".Bundle"); // NOI18N
+        record.setLoggerName(USG_LOGGER.getName());
+
+        record.setParameters(params);
+
+        USG_LOGGER.log(record);
     }
 }

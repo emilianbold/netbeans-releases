@@ -39,10 +39,10 @@
 
 package org.netbeans.modules.jira.commands;
 
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 
 /**
  *

@@ -39,11 +39,11 @@
 
 package org.netbeans.modules.jira.issue;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
 import java.util.Date;
-import org.eclipse.mylyn.internal.jira.core.model.IssueType;
-import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
-import org.eclipse.mylyn.internal.jira.core.model.Priority;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
