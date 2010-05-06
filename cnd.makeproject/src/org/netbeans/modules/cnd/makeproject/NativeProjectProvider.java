@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -104,7 +105,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     @Override
-    public void runOnCodeModelReadiness(Runnable task) {
+    public void runOnCodeModelReadiness(NamedRunnable task) {
         if (getMakeConfigurationDescriptor() != null) {
             getMakeConfigurationDescriptor().getConfs().runOnCodeModelReadiness(task);
         }
