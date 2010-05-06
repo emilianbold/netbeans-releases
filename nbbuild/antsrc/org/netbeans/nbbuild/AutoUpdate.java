@@ -291,8 +291,8 @@ public class AutoUpdate extends Task {
         }
     }
 
-    //package private access so that it can be used by L10nTask
-    static boolean unpack200(File src, File dest) {
+    
+    public static boolean unpack200(File src, File dest) {
         // Copy of ModuleUpdater.unpack200        
         String unpack200Executable = new File(System.getProperty("java.home"),
                 "bin/unpack200" + (isWindows() ? ".exe" : "")).getAbsolutePath();

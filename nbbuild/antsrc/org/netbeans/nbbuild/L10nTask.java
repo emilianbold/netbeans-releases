@@ -250,7 +250,9 @@ public class L10nTask extends Task {
             Logger.getLogger(L10nTask.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                lnr.close();
+                if (lnr!=null) {
+                    lnr.close();
+                }
             } catch (IOException ex) {
                 Logger.getLogger(L10nTask.class.getName()).log(Level.SEVERE, null, ex);
             }

@@ -771,7 +771,9 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
             for (String path : filePaths) {
                 File fl = PropertyUtils.resolveFile(base, path);
                 FileObject fo = FileUtil.toFileObject(fl);
-                assert fo != null : fl;
+                if (fo == null) {
+                    continue;
+                }
                 if (FileUtil.isArchiveFile (fo))
                     try {
                         new JarFile (fl);
