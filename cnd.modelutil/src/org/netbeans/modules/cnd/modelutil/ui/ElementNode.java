@@ -48,8 +48,8 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmField;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
@@ -163,10 +163,10 @@ public class ElementNode extends AbstractNode {
         public static Description create(CsmDeclaration element, List<Description> subs, boolean isSelectable, boolean isSelected) {
             String htmlHeader = element.getName().toString();
             if (CsmKindUtilities.isVariable(element)) {
-                CsmField field = (CsmField) element;
+                CsmVariable field = (CsmVariable) element;
                 htmlHeader = field.getName().toString() + " : " + field.getType().getText(); //NOI18N
             } else if (CsmKindUtilities.isFunction(element)) {
-                CsmMethod method = (CsmMethod) element;
+                CsmFunction method = (CsmFunction) element;
                 htmlHeader = method.getSignature() + " : " + method.getReturnType().getText(); //NOI18N
             }
 //            switch (element.getKind()) {

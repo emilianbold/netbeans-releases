@@ -963,7 +963,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private static class ParserBasedTokenBuffer implements ReadOnlyTokenBuffer {
 
-        Parser parser;
+        private final Parser parser;
 
         public ParserBasedTokenBuffer(Parser parser) {
             this.parser = parser;
@@ -2167,19 +2167,34 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     ";length=" + text.length() + "; offset=" + offset); // NOI18N
         }
         final int TABSIZE = ModelSupport.getTabSize();
+        int line = 0;
+        int start = 0;
+        if (true) {
+            try {
+                line = fileBuffer.getLineByOffset(offset);
+                start = fileBuffer.getStartLineOffset(line);
+            } catch (IOException ex) {
+                return lineCol;
+            }
+            lineCol[0] = line;
+        }
         // find line and column
-        for (int curOffset = 0; curOffset < offset; curOffset++) {
+        for (int curOffset = start; curOffset < offset; curOffset++) {
             char curChar = text.charAt(curOffset);
-            if (curChar == '\n') {
-                // just increase line number
-                lineCol[0] = lineCol[0] + 1;
-                lineCol[1] = 1;
-            } else if (curChar == '\t') {
-                int col = lineCol[1];
-                int newCol = (((col - 1) / TABSIZE) + 1) * TABSIZE + 1;
-                lineCol[1] = newCol;
-            } else {
-                lineCol[1]++;
+            switch (curChar) {
+                case '\n':
+                    // just increase line number
+                    lineCol[0] = lineCol[0] + 1;
+                    lineCol[1] = 1;
+                    break;
+                case '\t':
+                    int col = lineCol[1];
+                    int newCol = (((col - 1) / TABSIZE) + 1) * TABSIZE + 1;
+                    lineCol[1] = newCol;
+                    break;
+                default:
+                    lineCol[1]++;
+                    break;
             }
         }
         return lineCol;

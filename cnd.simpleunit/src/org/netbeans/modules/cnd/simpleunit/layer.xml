@@ -32,6 +32,33 @@
 
     <folder name="Templates">
 
+
+        <folder name="cFiles">
+
+            <file name="CSimpleTest.c" url="templates/c/simple-test-c.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.simpleunit.Bundle"/>
+                <attr name="position" intvalue="400"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/simple-test-c.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
+                <attr name="templateCategory" stringvalue="c-types"/>
+            </file>
+
+        </folder> <!-- End cFiles folder -->
+
+        <folder name="cppFiles">
+
+            <file name="cppsimpletest.cc" url="templates/cpp/simple-test-cc.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.simpleunit.Bundle"/>
+                <attr name="position" intvalue="600"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/simple-test-cc.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
+                <attr name="templateCategory" stringvalue="cpp-types"/>
+            </file>
+
+        </folder> <!-- End cppFiles folder -->
+
         <folder name="testFiles">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.simpleunit.resources.Bundle"/>
             <attr name="position" intvalue="555"/>

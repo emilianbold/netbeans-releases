@@ -116,14 +116,20 @@ import org.openide.util.NbBundle;
 
     @Override
     public boolean isValid() {
-        boolean res = component.canValidateHost();
-        if (res) {
-            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
-        } else {
+        if (!component.canValidateHost()) {
             String message = NbBundle.getMessage(getClass(), "MSG_HostAlreadyAdded"); // NOI18N
             settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+            return false;
         }
-        return res;
+
+        if (component.hasConfigProblems()) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, component.getConfigProblem());
+            return false;
+        }
+
+        settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
+
+        return true;
     }
     ////////////////////////////////////////////////////////////////////////////
     // change support
@@ -173,6 +179,7 @@ import org.openide.util.NbBundle;
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
+        component.storeConfiguration();
         data.setExecutionEnvironment(getComponent().getHost());
         data.setRunOnFinish(getComponent().getRunOnFinish());
     }
