@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.simpleunit.spi.wizard.AbstractUnitTestIterator;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -87,6 +88,8 @@ public class TestCppUnitIterator extends AbstractUnitTestIterator {
 
     @Override
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
+        UIGesturesSupport.submit("USG_CND_UNIT_TESTS_CPPUNIT"); //NOI18N
+
         Set<DataObject> dataObjects = new HashSet<DataObject>();
 
         if(getTestName() == null) {
