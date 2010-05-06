@@ -220,7 +220,6 @@ public class WLPluginProperties {
 
     static {
         fileColl.add("common");        // NOI18N
-        fileColl.add("uninstall");     // NOI18N
         fileColl.add("common/bin");    // NOI18N
         fileColl.add("server/lib/weblogic.jar"); // NOI18N
     }

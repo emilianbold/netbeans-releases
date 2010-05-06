@@ -76,6 +76,7 @@ import org.openide.util.NbBundle;
  */
 class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
 
+    private final String baseTestName;
     private final Logger logger;
     private final String defaultExtension;
     private String expectedExtension;
@@ -87,8 +88,10 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
     protected static final String NEW_TEST_PREFIX = getMessage("LBL_NewTest_NewTestPrefix"); // NOI18N
 
     /** Creates new form NewCndFileChooserPanelGUI */
-    NewTestCUnitPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, MIMEExtensions es, String defaultExt) {
+    NewTestCUnitPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, MIMEExtensions es, String defaultExt, String baseTestName) {
         super(project, folders);
+
+        this.baseTestName = baseTestName;
 
         this.logger = Logger.getLogger("cnd.editor.filecreation"); // NOI18N
         this.es = es;
@@ -197,7 +200,9 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
 
         if (template != null) {
             if (documentName == null) {
-                final String baseName = NEW_FILE_PREFIX + template.getName ();
+                String baseName = (baseTestName == null) ?
+                    NEW_FILE_PREFIX + template.getName() :
+                    getMessage("TestFileSuggestedName", baseTestName).replaceAll(" ", "_").toLowerCase(); // NOI18N
                 documentName = baseName;
                 FileObject currentFolder = preselectedFolder != null ? preselectedFolder : getTargetGroup().getRootFolder().getFileObject(DEFAULT_TESTS_FOLDER);
                 if (currentFolder != null) {
@@ -217,7 +222,9 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
 
         if (template != null) {
             String testName;
-            final String baseName = NEW_TEST_PREFIX + displayName;
+            final String baseName = (baseTestName == null) ?
+                    NEW_TEST_PREFIX + displayName :
+                    getMessage("TestSuggestedName", baseTestName); // NOI18N
             testName = baseName;
             Folder testsRoot = getTestsRootFolder(project);
             if (testsRoot != null) {
@@ -611,4 +618,7 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
         return NbBundle.getMessage( NewTestCUnitPanelGUI.class, name);
     }
 
+    protected static String getMessage(String name, String param) {
+        return NbBundle.getMessage( NewTestCUnitPanelGUI.class, name, param);
+    }
 }

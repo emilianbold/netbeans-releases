@@ -49,14 +49,13 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
-import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.sync.SyncUtils;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.Validateable;
-import org.netbeans.modules.nativeexecution.api.util.ValidationListener;
+import org.netbeans.modules.nativeexecution.api.util.ValidateablePanel;
+import org.netbeans.modules.nativeexecution.api.util.ValidatablePanelListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Mutex;
@@ -68,9 +67,9 @@ import org.openide.util.NbBundle;
  */
 public class HostPropertiesDialog extends JPanel {
 
-    private final ValidationListener validationListener;
+    private final ValidatablePanelListener validationListener;
     private final JButton ok;
-    private final Validateable vpanel;
+    private final ValidateablePanel vpanel;
 
     public static boolean invokeMe(RemoteServerRecord record) {
         HostPropertiesDialog pane = new HostPropertiesDialog(record);
@@ -89,7 +88,7 @@ public class HostPropertiesDialog extends JPanel {
         dialog.setVisible(true);
 
         if (dd.getValue() == pane.ok) {
-            pane.vpanel.applyChanges();
+            pane.vpanel.applyChanges(null);
             String displayName = pane.tfName.getText();
             boolean changed = false;
             if (!displayName.equals(record.getDisplayName())) {
@@ -125,14 +124,10 @@ public class HostPropertiesDialog extends JPanel {
 
         ok = new JButton("OK"); // NOI18N
 
-        JPanel panel = ConnectionManager.getInstance().getConfigurationPanel(serverRecord.getExecutionEnvironment());
-        vpanel = (panel instanceof Validateable) ? (Validateable) panel : null;
+        vpanel = ConnectionManager.getInstance().getConfigurationPanel(serverRecord.getExecutionEnvironment());
+        vpanel.addValidationListener(validationListener);
 
-        if (vpanel != null) {
-            vpanel.addValidationListener(validationListener);
-        }
-
-        connectionPanel.add(panel);
+        connectionPanel.add(vpanel);
         tfName.setText(serverRecord.getDisplayName());
         SyncUtils.arrangeComboBox(cbSync, serverRecord.getExecutionEnvironment());
         cbSync.setSelectedItem(serverRecord.getSyncFactory());
@@ -238,8 +233,10 @@ public class HostPropertiesDialog extends JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(connectionPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
-                    .addComponent(errorLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
-                    .addComponent(serverRecordPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(serverRecordPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -275,14 +272,11 @@ public class HostPropertiesDialog extends JPanel {
         });
     }
 
-    private class ValidationListenerImpl implements ValidationListener {
+    private class ValidationListenerImpl implements ValidatablePanelListener {
 
         @Override
-        public void stateChanged(ChangeEvent e) {
-            if (e.getSource() instanceof Validateable) {
-                Validateable obj = (Validateable) e.getSource();
-                setError(obj.hasProblem() ? obj.getProblem() : null);
-            }
+        public void stateChanged(ValidateablePanel src) {
+            setError(src.hasProblem() ? src.getProblem() : null);
         }
     }
 }

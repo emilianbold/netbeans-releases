@@ -60,7 +60,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -228,7 +227,7 @@ public final class ConnectionManager {
             // should not occur
             //but is is occurred when user cancel connection in the CND connection Wizard
             //catch it here and throw CancellationException
-           throw new CancellationException("Connection cancelled for " + env); // NOI18N
+            throw new CancellationException("Connection cancelled for " + env); // NOI18N
         } catch (ExecutionException ex) {
             // should not occur
             // any exception thrown from the connectionTask will be wrapped
@@ -247,7 +246,7 @@ public final class ConnectionManager {
                 // Note that AUTH_FAIL is generated not only on bad password,
                 // but on socket timeout as well. These cases are
                 // indistinguishable based on information from JSch.
-                log.log(Level.FINE, "JSch problem connecting to {0}: {1}", new Object[] {env, connectionTask.problem}); // NOI18N
+                log.log(Level.FINE, "JSch problem connecting to {0}: {1}", new Object[]{env, connectionTask.problem}); // NOI18N
                 if (!UNIT_TEST_MODE) {
                     // Do not clean password when running unit tests.
                     // We want to be able to repeat the connection attempt.
@@ -377,10 +376,24 @@ public final class ConnectionManager {
         }
     }
 
-    public JPanel getConfigurationPanel(ExecutionEnvironment env) {
+    public ValidateablePanel getConfigurationPanel(ExecutionEnvironment env) {
         Authentication auth = Authentication.getFor(env);
-        AuthenticationSettingsPanel panel = new AuthenticationSettingsPanel(auth, true);
+        AuthenticationSettingsPanel panel = new AuthenticationSettingsPanel(auth, env != null);
         return panel;
+    }
+
+    /**
+     * Do clean up for the env.
+     * Any stored settings will be removed
+     * @param env
+     */
+    public void forget(ExecutionEnvironment env) {
+        if (env == null) {
+            return;
+        }
+
+        Authentication.getFor(env).remove();
+        jschPool.remove(env);
     }
 
     private static final class ConnectionTask implements Callable<Session>, Cancellable {
@@ -424,7 +437,11 @@ public final class ConnectionManager {
                 if (jsch == null) {
                     jsch = new JSch();
                     jschPool.put(env, jsch);
-                    initJsch(env);
+                    if (!initJsch(env)) {
+                        jschPool.remove(env);
+                        cancelled = true;
+                        return null;
+                    }
                 }
 
                 newSession = jsch.getSession(env.getUser(), env.getHostAddress(), env.getSSHPort());
@@ -536,16 +553,19 @@ public final class ConnectionManager {
         }
     }
 
-    private static void initJsch(ExecutionEnvironment env) {
+    private static boolean initJsch(ExecutionEnvironment env) {
         Authentication auth = Authentication.getFor(env);
 
-        if (auth.isDefined()) {
-            auth.apply();
-        } else {
+        if (!auth.isDefined()) {
             AuthTypeSelectorDlg dlg = new AuthTypeSelectorDlg();
-            dlg.initAuthentication(auth);
+            if (!dlg.initAuthentication(auth)) {
+                return false;
+            }
+        } else {
             auth.apply();
         }
+
+        return true;
     }
 
     /**

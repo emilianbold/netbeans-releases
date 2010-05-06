@@ -104,7 +104,7 @@ public final class CompilerFlavorImpl extends CompilerFlavor {
 
     @Override
     public boolean isCygwinCompiler() {
-        return "Cygwin".equals(sval); // NOI18N
+        return "Cygwin".equals(sval) || "Cygwin_4.x".equals(sval); // NOI18N
     }
 
     @Override

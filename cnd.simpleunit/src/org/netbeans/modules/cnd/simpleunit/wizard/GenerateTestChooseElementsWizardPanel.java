@@ -38,10 +38,16 @@
  */
 package org.netbeans.modules.cnd.simpleunit.wizard;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
+import org.netbeans.modules.cnd.simpleunit.spi.wizard.AbstractUnitTestIterator;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
@@ -67,8 +73,7 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
     // create only those which really need to be visible.
     public GenerateTestChooseElementsVisualPanel getComponent() {
         if (component == null) {
-            ElementNode.Description description = null;
-            component = new GenerateTestChooseElementsVisualPanel(description);
+            component = new GenerateTestChooseElementsVisualPanel();
         }
         return component;
     }
@@ -110,11 +115,21 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
         if (dob != null) {
             CsmFile file = CsmUtilities.getCsmFile(dob, false, true);
             if (file != null) {
-                
+                ElementNode.Description description = null;
+                Collection<CsmOffsetableDeclaration> delcs = file.getDeclarations();
+                List<ElementNode.Description> funDescrs = new ArrayList<ElementNode.Description>();
+                for (CsmOffsetableDeclaration decl : delcs) {
+                    if (CsmKindUtilities.isFunction(decl)) {
+                        funDescrs.add(ElementNode.Description.create(decl, null, true, false));
+                    }
+                }
+                description = ElementNode.Description.create(funDescrs);
+                component.setRootElement(description);
             }
         }
     }
 
     public void storeSettings(WizardDescriptor settings) {
+        settings.putProperty(AbstractUnitTestIterator.CND_UNITTEST_FUNCTIONS, component.getSelectedElements());
     }
 }

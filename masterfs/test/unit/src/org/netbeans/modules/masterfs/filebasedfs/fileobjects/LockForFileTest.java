@@ -44,6 +44,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
@@ -60,6 +62,7 @@ import org.openide.util.Utilities;
  * @author Radek Matous
  */
 public class LockForFileTest extends NbTestCase {
+    private Logger LOG;
 
     private File testFile = null;
 
@@ -67,7 +70,14 @@ public class LockForFileTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    @Override
     protected void setUp() throws java.lang.Exception {
+        LOG = Logger.getLogger("test." + getName());
         clearWorkDir();
         testFile = new File(getWorkDir(), "testLockFile.txt");
         if (!testFile.exists()) {
@@ -214,16 +224,24 @@ public class LockForFileTest extends NbTestCase {
      */
     @RandomlyFails // NB-Core-Build #2010
     public void testFinalizeImpl() throws Exception {
+        LOG.info("testFinalizeImpl");
         LockForFile lock = LockForFile.tryLock(testFile);
+        LOG.log(Level.INFO, "lock is here: {0}", lock);
         assertFalse(lock.isHardLocked());
         Reference ref = new WeakReference(lock);
         lock = null;
+        LOG.log(Level.INFO, "Hard Reference is cleared: {0}", ref);
         assertGC("", ref);
+        LOG.log(Level.INFO, "GCed successfully {0}", ref);
         lock = LockForFile.tryLock(testFile);
+        LOG.log(Level.INFO, "Try lock: {0}", lock);
         lock.releaseLock();
+        LOG.info("releaseLock");
 
         File lockFile = LockForFile.getLockFile(testFile);
+        LOG.log(Level.INFO, "Get lock file: {0}", lockFile);
         assertFalse(lockFile.exists());
+        LOG.info("OK");
     }
 
     public void testLockingAndReleasingLockAfterRename_82170() throws Exception {
