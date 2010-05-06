@@ -121,44 +121,22 @@ public class TestCUnitIterator extends AbstractUnitTestIterator {
 
         Folder folder = null;
         Folder testsRoot = getTestsRootFolder(project);
+        if(testsRoot == null) {
+            testsRoot = createTestsRootFolder(project);
+        }
         if(testsRoot != null) {
             Folder newFolder = testsRoot.addNewFolder(true, Folder.Kind.TEST);
             newFolder.setDisplayName(getTestName());
             folder = newFolder;
         }
-
+        
         if(folder == null) {
             return dataObjects;
         }
 
         setCUnitLinkerOptions(project, folder);
 
-        MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(project);
-
-        FileObject file = dataObject.getPrimaryFile();
-        Project owner = FileOwnerQuery.getOwner(file);
-
-        if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory()) {
-            File ioFile = FileUtil.toFile(file);
-            if (ioFile.isDirectory()) {
-                return dataObjects;
-            } // don't add directories.
-            if (!makeConfigurationDescriptor.okToChange()) {
-                return dataObjects;
-            }
-            String itemPath;
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                itemPath = CndPathUtilitities.toRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
-            } else {
-                itemPath = ioFile.getPath();
-            }
-            itemPath = CndPathUtilitities.normalize(itemPath);
-            Item item = new Item(itemPath);
-
-            folder.addItemAction(item);
-        }
+        addItemToLogicalFolder(project, folder, dataObject);
         
         dataObjects.add(dataObject);
         return dataObjects;
