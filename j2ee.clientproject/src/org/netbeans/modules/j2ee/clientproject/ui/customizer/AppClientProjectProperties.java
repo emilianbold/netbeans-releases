@@ -422,21 +422,6 @@ final public class AppClientProjectProperties {
             Boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
                 @Override
                 public Boolean run() throws IOException {
-                    if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        AppClientProject.class.getResource("resources/build-impl.xsl")) &
-                            GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
-                        if (showModifiedMessage (NbBundle.getMessage(AppClientProjectProperties.class,"TXT_ModifiedTitle"))) {
-                            //Delete user modified build-impl.xml
-                            FileObject fo = updateHelper.getAntProjectHelper().getProjectDirectory().
-                                getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                            if (fo != null) {
-                                fo.delete();
-                            }
-                        }
-                        else {
-                            return Boolean.FALSE;
-                        }
-                    }
                     storeProperties();
                     return Boolean.TRUE;
                 }
