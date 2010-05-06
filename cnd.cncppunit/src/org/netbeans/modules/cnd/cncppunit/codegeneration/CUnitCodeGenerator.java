@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.cncppunit.codegeneration;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +71,8 @@ public class CUnitCodeGenerator {
 
             testCalls.append("if ( "); // NOI18N
 
+            List<String> testFunctionsNames = new ArrayList<String>();
+
             int functionNumber = 0;
             for (CsmFunction fun : functions) {
 
@@ -84,14 +87,22 @@ public class CUnitCodeGenerator {
                 }
 
                 String funName = fun.getName().toString();
-                String testFunctionName = "testFor" + // NOI18N
+                String testFunctionName = "test" + // NOI18N
                         Character.toUpperCase(funName.charAt(0))
                         + funName.substring(1);
+                if(testFunctionsNames.contains(testFunctionName)) {
+                    int i = 0;
+                    while(testFunctionsNames.contains(testFunctionName + i)) {
+                        i++;
+                    }
+                    testFunctionName = testFunctionName + i;
+                }
+                testFunctionsNames.add(testFunctionName);
                 testFunctions.append("void ") // NOI18N
                         .append(testFunctionName) // NOI18N
                         .append("() {\n"); // NOI18N
                 Collection<CsmParameter> params = fun.getParameters();
-                int i = 0;
+                int i = 2;
                 for (CsmParameter param : params) {
                     testFunctions.append("    "); // NOI18N
                     testFunctions.append(CodeGenerationUtils.generateParameterDeclaration(param, i));

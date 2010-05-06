@@ -38,17 +38,14 @@
  */
 package org.netbeans.modules.cnd.cncppunit.codegeneration;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.simpleunit.utils.CodeGenerationUtils;
 
 /**
@@ -68,6 +65,9 @@ public class CppUnitCodeGenerator {
             StringBuilder testInits = new StringBuilder(""); // NOI18N
             StringBuilder testDecls = new StringBuilder(""); // NOI18N
             StringBuilder testIncludes = new StringBuilder(""); // NOI18N
+
+            List<String> testFunctionsNames = new ArrayList<String>();
+
             for (CsmFunction fun : functions) {
 
                 CsmIncludeResolver inclResolver = CsmIncludeResolver.getDefault();
@@ -81,9 +81,17 @@ public class CppUnitCodeGenerator {
                 }
 
                 String funName = fun.getName().toString();
-                String testFunctionName = "testFor" + // NOI18N
+                String testFunctionName = "test" + // NOI18N
                         Character.toUpperCase(funName.charAt(0))
                         + funName.substring(1);
+                if(testFunctionsNames.contains(testFunctionName)) {
+                    int i = 2;
+                    while(testFunctionsNames.contains(testFunctionName + i)) {
+                        i++;
+                    }
+                    testFunctionName = testFunctionName + i;
+                }
+                testFunctionsNames.add(testFunctionName);
                 testFunctions.append("void ") // NOI18N
                         .append(testFunctionName) // NOI18N
                         .append("() {\n"); // NOI18N
