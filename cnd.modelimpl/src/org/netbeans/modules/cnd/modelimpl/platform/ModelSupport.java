@@ -149,6 +149,7 @@ public class ModelSupport implements PropertyChangeListener {
                 postponeParse = true;
                 WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
 
+                    @Override
                     public void run() {
                         if (TRACE_STARTUP) {
                             System.out.println("Model support: invoked after ready UI"); // NOI18N
@@ -156,6 +157,7 @@ public class ModelSupport implements PropertyChangeListener {
                         postponeParse = false;
                         Runnable task = new Runnable() {
 
+                            @Override
                             public void run() {
                                 OpenProjects.getDefault().addPropertyChangeListener(ModelSupport.this);
                                 openProjects();
@@ -181,6 +183,7 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         try { //FIXUP #109105 OpenProjectList does not get notification about adding a project if the project is stored in the repository
             if (TRACE_STARTUP) {
@@ -193,6 +196,7 @@ public class ModelSupport implements PropertyChangeListener {
                     }
                     RequestProcessor.getDefault().post(new Runnable() {
 
+                        @Override
                         public void run() {
                             openProjects();
                         }
@@ -302,8 +306,8 @@ public class ModelSupport implements PropertyChangeListener {
         StringBuilder sb = new StringBuilder();
         ProjectInformation pi = ProjectUtils.getInformation(project);
         if (pi != null) {
-            sb.append(" Name=" + pi.getName()); // NOI18N
-            sb.append(" DisplayName=" + pi.getDisplayName()); // NOI18N
+            sb.append(" Name=").append(pi.getName()); // NOI18N
+            sb.append(" DisplayName=").append(pi.getDisplayName()); // NOI18N
         }
 //        SourceGroup[] sg = ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
 //        for( int i = 0; i < sg.length; i++ ) {
@@ -536,6 +540,7 @@ public class ModelSupport implements PropertyChangeListener {
 //            }
 //        }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             if (TraceFlags.DEBUG) {
                 traceDataObjectRegistryStateChanged(e);
@@ -688,6 +693,7 @@ public class ModelSupport implements PropertyChangeListener {
             }
         }
 
+        @Override
         public void run() {
             if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
                 System.err.printf("External updates: running update task\n");
