@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.simpleunit.utils.CodeGenerationUtils;
 
 /**
  *
@@ -71,6 +72,17 @@ public class CodeGenerator {
             StringBuilder testCalls = new StringBuilder(""); // NOI18N
             StringBuilder testIncludes = new StringBuilder(""); // NOI18N
             for (CsmFunction fun : functions) {
+
+                CsmIncludeResolver inclResolver = CsmIncludeResolver.getDefault();
+                String include = inclResolver.getLocalIncludeDerectiveByFilePath(testFilePath, fun);
+                if(!include.isEmpty()) {
+                    testIncludes.append(include);
+                    testIncludes.append("\n"); // NOI18N
+                } else {
+                    testFunctions.append(CodeGenerationUtils.generateFunctionDeclaration(fun));
+                    testFunctions.append("\n\n"); // NOI18N
+                }
+
                 String funName = fun.getName().toString();
                 String testFunctionName = "testFor" + // NOI18N
                         Character.toUpperCase(funName.charAt(0))
@@ -81,13 +93,9 @@ public class CodeGenerator {
                 Collection<CsmParameter> params = fun.getParameters();
                 int i = 0;
                 for (CsmParameter param : params) {
-                    String paramName = param.getName().toString();
-                    String paramType = param.getType().getText().toString();
-                    testFunctions.append("    ") // NOI18N
-                            .append(paramType) // NOI18N
-                            .append(" ") // NOI18N
-                            .append(((paramName != null && !paramName.isEmpty()) ? paramName : "p" + i)) // NOI18N
-                            .append(";\n"); // NOI18N
+                    testFunctions.append("    "); // NOI18N
+                    testFunctions.append(CodeGenerationUtils.generateParameterDeclaration(param, i));
+                    testFunctions.append("\n"); // NOI18N
                     i++;
                 }
                 String returnType = fun.getReturnType().getText().toString();
@@ -155,14 +163,6 @@ public class CodeGenerator {
                     testCalls.append("    " + testFunctionName + "();\n"); // NOI18N
                     testCalls.append("    printf(\"%%TEST_FINISHED%% time=0 " + testFunctionName + " (" + testName + ")\\n\");\n"); // NOI18N
                     testCalls.append("    \n"); // NOI18N
-                }
-
-
-                CsmIncludeResolver inclResolver = CsmIncludeResolver.getDefault();
-                String include = inclResolver.getLocalIncludeDerectiveByFilePath(testFilePath, fun);
-                if(!include.isEmpty()) {
-                    testIncludes.append(include);
-                    testIncludes.append("\n"); // NOI18N
                 }
             }
 
