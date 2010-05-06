@@ -246,8 +246,26 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     }
 
     @Override
+    //runs in non-AWT thread
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
+        //update the encoding - will access the jsp parser, may take longer time
         ((JspDataObject) getDataObject()).updateFileEncoding(false);
+        
+        //get the file encoding and check if it's valid. If not show some 
+        //warning message
+        encoding = ((JspDataObject) getDataObject()).getFileEncoding();
+
+        if (!isSupportedEncoding(encoding)) {
+
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(BaseJspEditorSupport.class, "MSG_BadEncodingDuringLoad", //NOI18N
+                    new Object[]{getDataObject().getPrimaryFile().getNameExt(),
+                        encoding,
+                        defaulEncoding}),
+                    NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(nd);
+        }
+
         super.loadFromStreamToKit(doc, stream, kit);
     }
 
@@ -260,21 +278,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     @Override
     public void open() {
 
-        encoding = ((JspDataObject) getDataObject()).getFileEncoding(); //use encoding from fileobject
-
-        if (!isSupportedEncoding(encoding)) {
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(BaseJspEditorSupport.class, "MSG_BadEncodingDuringLoad", //NOI18N
-                    new Object[]{getDataObject().getPrimaryFile().getNameExt(),
-                        encoding,
-                        defaulEncoding}),
-                    NotifyDescriptor.YES_NO_OPTION,
-                    NotifyDescriptor.WARNING_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-            if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
-                return;
-            }
-        }
+        
         super.open();
 
     }
