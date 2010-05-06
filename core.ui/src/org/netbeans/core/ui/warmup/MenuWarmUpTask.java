@@ -331,7 +331,7 @@ public final class MenuWarmUpTask implements Runnable {
             }
 
             if (counter >= 1) {
-                Message nd = new Message(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_SoDInfo"));
+                Message nd = new Message(new RefreshWarningVisual());
                 nd.setOptions(new Object[] { Message.YES_OPTION, Message.NO_OPTION });
                 if (DialogDisplayer.getDefault().notify(nd) == Message.YES_OPTION) {
                     NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction").putBoolean("manual", true); // NOI18N
