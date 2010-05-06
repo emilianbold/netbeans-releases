@@ -43,13 +43,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.simpleunit.utils.CodeGenerationUtils;
 
 /**
@@ -72,6 +68,7 @@ public class CUnitCodeGenerator {
             testCalls.append("if ( "); // NOI18N
 
             List<String> testFunctionsNames = new ArrayList<String>();
+            List<String> addedTestIncludes = new ArrayList<String>();
 
             int functionNumber = 0;
             for (CsmFunction fun : functions) {
@@ -79,8 +76,11 @@ public class CUnitCodeGenerator {
                 CsmIncludeResolver inclResolver = CsmIncludeResolver.getDefault();
                 String include = inclResolver.getLocalIncludeDerectiveByFilePath(testFilePath, fun);
                 if(!include.isEmpty()) {
-                    testIncludes.append(include);
-                    testIncludes.append("\n"); // NOI18N
+                    if(!addedTestIncludes.contains(include)) {
+                        testIncludes.append(include);
+                        testIncludes.append("\n"); // NOI18N
+                    }
+                    addedTestIncludes.add(include);
                 } else {
                     testFunctions.append(CodeGenerationUtils.generateFunctionDeclaration(fun));
                     testFunctions.append("\n\n"); // NOI18N
