@@ -519,11 +519,9 @@ public class Folder implements FileChangeListener, ChangeListener {
                     old = map.get(configurations[i]);
                 }
                 ItemConfiguration ic = new ItemConfiguration(configurations[i], item);
-                if (old != null) {
+                if (old != null && old.ic != null && old.aux != null) {
                     ic.setTool(old.ic.getTool());
                     ic.assignValues(old.aux);
-                } else {
-                    ic = new ItemConfiguration(configurations[i], item);
                 }
                 configurations[i].addAuxObject(ic);
             }
