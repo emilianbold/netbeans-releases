@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.memory;
 
 import java.awt.Color;
+import java.beans.FeatureDescriptor;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -119,6 +120,9 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         toolConfiguration.setLongName(TOOL_NAME_DETAILED);
         toolConfiguration.setIcon("org/netbeans/modules/dlight/memory/resources/memory.png"); // NOI18N
         toolConfiguration.setDescription(loc("MemoryTool.Description"));//NOI18N
+        FeatureDescriptor descriptor = new FeatureDescriptor();
+        descriptor.setValue(DTDCConfiguration.DSCRIPT_TOOL_PROPERTY, getScriptUrl());
+        toolConfiguration.setFeatureDescriptor(descriptor);
         DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
         toolConfiguration.addDataCollectorConfiguration(dcc);
         DTDCConfiguration dtcc = initDtraceDataCollectorConfiguration();

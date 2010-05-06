@@ -345,14 +345,20 @@ final class TableSorter extends AbstractTableModel implements TableModelListener
         fireTableChanged(new TableModelEvent(this));
     }
 
+    public void clickOnColumn(int column){
+        boolean ascending = true;
+        if (TableSorter.this.sortingColumns.contains(column)) {
+            ascending = !TableSorter.this.sortingColumnsOrder.get(TableSorter.this.sortingColumns.indexOf(column));
+        }
+        sortByColumn(column, ascending);
+    }
+
     // There is no-where else to put this.
     // Add a mouse listener to the Table to trigger a table sort
     // when a column heading is clicked in the JTable.
     public void addMouseListenerToHeaderInTable(JTable table) {
         final TableSorter sorter = this;
         final JTable tableView = table;
-        JTableHeader tableHeader = table.getTableHeader();
-        //tableHeader.setDefaultRenderer(defaultRenderer)
         tableView.setColumnSelectionAllowed(false);
         MouseAdapter listMouseListener = new MouseAdapter() {
 
