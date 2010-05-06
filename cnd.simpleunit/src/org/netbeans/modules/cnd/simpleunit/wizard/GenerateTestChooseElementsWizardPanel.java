@@ -68,6 +68,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -77,10 +78,11 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
      * component from this class, just use getComponent().
      */
     private GenerateTestChooseElementsVisualPanel component;
-    private Lookup lookup;
     private final ChangeSupport cs;
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private Task task;
+    private WizardDescriptor wizard;
+
     public GenerateTestChooseElementsWizardPanel() {
         cs = new ChangeSupport(this);
     }
@@ -127,8 +129,7 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     public void readSettings(WizardDescriptor settings) {
-        this.lookup = (Lookup) settings.getProperty("UnitTestContextLookup");
-        assert this.lookup != null;
+        this.wizard = settings;
         if (!initialized.get() && task == null) {
             // initialization may take time
             component.showLoadingNode();
@@ -161,8 +162,11 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
         }
 
         private void initializeTopLevelDescriptions() {
+            Lookup lookup = (Lookup) wizard.getProperty("UnitTestContextLookup"); // NOI18N
+            Parameters.notNull("Lookup must be initialized in 'UnitTestContextLookup' property of wizard", lookup); // NOI18N
             DataObject dob = lookup.lookup(DataObject.class);
             if (dob != null) {
+                wizard.putProperty(AbstractUnitTestIterator.CND_UNITTEST_DEFAULT_NAME, dob.getName());
                 CsmFile file = CsmUtilities.getCsmFile(dob, false, false);
                 topDescription = null;
                 if (file != null) {
