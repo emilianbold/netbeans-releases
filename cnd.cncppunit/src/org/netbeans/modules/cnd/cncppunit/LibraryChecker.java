@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -80,6 +81,8 @@ public class LibraryChecker {
      * @throws IOException if there is a problem launching compiler,
      *      or creating temp files, or connecting to remote host
      * @throws IllegalArgumentException if compiler is not a C or C++ compiler
+     * @throws CancellationException if remote connection was required,
+     *      but user cancelled it
      */
     public static boolean isLibraryAvailable(String lib, AbstractCompiler compiler) throws IOException {
         ExecutionEnvironment execEnv = compiler.getExecutionEnvironment();

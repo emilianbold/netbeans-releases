@@ -68,6 +68,7 @@ public class NewTestCppUnitPanel extends CndPanel {
 
     private String baseTestName = null;
     private RequestProcessor.Task libCheckTask;
+    private volatile boolean libCheckResult;
 
     NewTestCppUnitPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, String baseTestName) {
         super(project, folders, bottomPanel);
@@ -85,14 +86,12 @@ public class NewTestCppUnitPanel extends CndPanel {
     @Override
     public void stateChanged(ChangeEvent e) {
         if (e instanceof TestLibChecker.LibCheckerChangeEvent) {
-            final boolean result = ((TestLibChecker.LibCheckerChangeEvent) e).getResult();
+            libCheckResult = ((TestLibChecker.LibCheckerChangeEvent) e).getResult();
+            libCheckTask = null;
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     getGui().setControlsEnabled(true);
-                    if (!result) {
-                        setErrorMessage(NbBundle.getMessage(NewTestCppUnitPanel.class, "MSG_Missing_Library", CPPUNIT)); // NOI18N
-                    }
                 }
             });
         }
@@ -103,7 +102,7 @@ public class NewTestCppUnitPanel extends CndPanel {
     public void readSettings(WizardDescriptor settings) {
         super.readSettings(settings);
 
-        setErrorMessage(""); // NOI18N
+        libCheckResult = false;
         getGui().setControlsEnabled(false);
 
         AbstractCompiler cppCompiler = TestLibChecker.getCppCompiler(project);
@@ -158,17 +157,22 @@ public class NewTestCppUnitPanel extends CndPanel {
 
     @Override
     public boolean isValid() {
-        if (libCheckTask != null && !libCheckTask.isFinished()) {
+        if (libCheckTask != null) {
+            // Need time for the libCheckTask to finish. Pretend that the panel is invalid.
             return false;
         }
 
-        boolean ok = super.isValid(); 
-        
-        if (!ok) {
-            setErrorMessage (""); // NOI18N
+        setErrorMessage(null);
 
+        if (!libCheckResult) {
+            // Library not found. Display warning but still allow to create test.
+            setErrorMessage(NbBundle.getMessage(NewTestCppUnitPanel.class, "MSG_Missing_Library", CPPUNIT)); // NOI18N
+        }
+
+        if (!super.isValid()) {
             return false;
         }
+
         if (!CndLexerUtilities.isCppIdentifier( getGui().getClassName() )) {
             setErrorMessage( NbBundle.getMessage(NewTestCppUnitPanel.class, "MSG_not_valid_classname") );
             return false;

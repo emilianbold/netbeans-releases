@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.cncppunit.editor.filecreation;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
@@ -53,7 +54,6 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.cncppunit.LibraryChecker;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -71,7 +71,7 @@ import org.openide.util.RequestProcessor;
 
     private final String lib;
     private final AbstractCompiler compiler;
-    private final ChangeListener listener;
+    private ChangeListener listener;
 
     private TestLibChecker(String lib, AbstractCompiler compiler, ChangeListener listener) {
         this.lib = lib;
@@ -86,11 +86,9 @@ import org.openide.util.RequestProcessor;
         progressHandle.start();
         boolean result = false;
         try {
-            Thread.sleep(10000);
             result = LibraryChecker.isLibraryAvailable(lib, compiler);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
+        } catch (CancellationException ex) {
         } finally {
             progressHandle.finish();
             synchronized (CHECKERS) {
@@ -109,8 +107,7 @@ import org.openide.util.RequestProcessor;
         }
         final TestLibChecker that = (TestLibChecker) obj;
         return this.lib.equals(that.lib)
-                && this.compiler == that.compiler
-                && this.listener == that.listener;
+                && this.compiler == that.compiler;
     }
 
     @Override
@@ -118,7 +115,6 @@ import org.openide.util.RequestProcessor;
         int hash = 7;
         hash = 67 * hash + lib.hashCode();
         hash = 67 * hash + compiler.hashCode();
-        hash = 67 * hash + (this.listener != null ? this.listener.hashCode() : 0);
         return hash;
     }
 
@@ -142,14 +138,28 @@ import org.openide.util.RequestProcessor;
         Parameters.notWhitespace("lib", lib); // NOI18N
         Parameters.notNull("compiler", compiler); // NOI18N
         synchronized (CHECKERS) {
-            TestLibChecker checker = new TestLibChecker(lib, compiler, listener);
-            RequestProcessor.Task task = CHECKERS.get(checker);
-            if (task == null) {
-                task = RP.post(checker);
+            TestLibChecker checker = findChecker(lib, compiler);
+            if (checker == null) {
+                checker = new TestLibChecker(lib, compiler, listener);
+                RequestProcessor.Task task = RP.post(checker);
                 CHECKERS.put(checker, task);
+                return task;
+            } else {
+                checker.listener = listener;
+                return CHECKERS.get(checker);
             }
-            return task;
         }
+    }
+
+    // call only inside synchronized (CHECKERS)
+    private static TestLibChecker findChecker(String lib, AbstractCompiler compiler) {
+        for (TestLibChecker checker : CHECKERS.keySet()) {
+            // comparison here must be consistent with equals()
+            if (checker.lib.equals(lib) && checker.compiler == compiler) {
+                return checker;
+            }
+        }
+        return null;
     }
 
     public static final class LibCheckerChangeEvent extends ChangeEvent {

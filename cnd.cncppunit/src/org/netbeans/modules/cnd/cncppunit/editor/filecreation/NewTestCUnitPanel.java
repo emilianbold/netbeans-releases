@@ -69,6 +69,7 @@ public class NewTestCUnitPanel extends CndPanel {
     private final boolean fileWithoutExtension;
     private final String baseTestName = null;
     private RequestProcessor.Task libCheckTask;
+    private volatile boolean libCheckResult;
 
     NewTestCUnitPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, MIMEExtensions es, String defaultExt, String baseTestName) {
         super(project, folders, bottomPanel);
@@ -92,14 +93,12 @@ public class NewTestCUnitPanel extends CndPanel {
     @Override
     public void stateChanged(ChangeEvent e) {
         if (e instanceof TestLibChecker.LibCheckerChangeEvent) {
-            final boolean result = ((TestLibChecker.LibCheckerChangeEvent) e).getResult();
+            libCheckResult = ((TestLibChecker.LibCheckerChangeEvent) e).getResult();
+            libCheckTask = null;
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     getGui().setControlsEnabled(true);
-                    if (!result) {
-                        setErrorMessage(NbBundle.getMessage(NewTestCppUnitPanel.class, "MSG_Missing_Library", CUNIT)); // NOI18N
-                    }
                 }
             });
         }
@@ -134,16 +133,19 @@ public class NewTestCUnitPanel extends CndPanel {
 
     @Override
     public boolean isValid() {
-        if (libCheckTask != null && !libCheckTask.isFinished()) {
+        setErrorMessage(null);
+
+        if (libCheckTask != null) {
+            // Need time for the libCheckTask to finish. Pretend that the panel is invalid.
             return false;
         }
 
-        boolean ok = super.isValid();
+        if (!libCheckResult) {
+            // Library not found. Display warning but still allow to create test.
+            setErrorMessage(NbBundle.getMessage(NewTestCppUnitPanel.class, "MSG_Missing_Library", CUNIT)); // NOI18N
+        }
 
-        setErrorMessage (""); // NOI18N
-
-        if (!ok) {
-
+        if (!super.isValid()) {
             return false;
         }
 
