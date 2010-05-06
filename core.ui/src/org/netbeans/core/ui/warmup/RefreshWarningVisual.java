@@ -43,7 +43,7 @@
  * Created on 16.2.2010, 15:07:58
  */
 
-package org.netbeans.modules.apisupport.osgidemo;
+package org.netbeans.core.ui.warmup;
 
 import javax.swing.event.HyperlinkEvent;
 import org.openide.WizardDescriptor;
@@ -55,13 +55,9 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-class SampleAppWarningVisual extends javax.swing.JPanel {
-    SampleAppWarningPanel panel;
-    SampleAppWarningVisual(SampleAppWarningPanel panel) {
-        this.panel = panel;
+class RefreshWarningVisual extends javax.swing.JPanel {
+    RefreshWarningVisual() {
         initComponents();
-
-        Mnemonics.setLocalizedText(readLicense, NbBundle.getMessage(SampleAppWarningVisual.class, "SampleAppWarningVisual.readLicense.text", new Object[]{})); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -74,23 +70,15 @@ class SampleAppWarningVisual extends javax.swing.JPanel {
     private void initComponents() {
 
         info = new javax.swing.JEditorPane();
-        readLicense = new javax.swing.JCheckBox();
 
-        info.setContentType(org.openide.util.NbBundle.getMessage(SampleAppWarningVisual.class, "SampleAppWarningVisual.info.contentType", new Object[] {})); // NOI18N
+        info.setContentType("text/html"); // NOI18N
         info.setEditable(false);
-        info.setText(org.openide.util.NbBundle.getMessage(SampleAppWarningVisual.class, "MSG_WARNING", new Object[] {})); // NOI18N
+        info.setText(org.openide.util.NbBundle.getMessage(RefreshWarningVisual.class, "MSG_SoDInfo", new Object[] {})); // NOI18N
         info.setOpaque(false);
+        info.setPreferredSize(new java.awt.Dimension(300, 150));
         info.addHyperlinkListener(new javax.swing.event.HyperlinkListener() {
             public void hyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {
                 infoHyperlinkUpdate(evt);
-            }
-        });
-
-        readLicense.setMnemonic(Integer.parseInt(org.openide.util.NbBundle.getMessage(SampleAppWarningVisual.class, "SampleAppWarningVisual.readLicense.textIndex", new Object[] {})));
-        readLicense.setText(org.openide.util.NbBundle.getMessage(SampleAppWarningVisual.class, "SampleAppWarningVisual.readLicense.text", new Object[] {})); // NOI18N
-        readLicense.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                readLicenseActionPerformed(evt);
             }
         });
 
@@ -98,32 +86,13 @@ class SampleAppWarningVisual extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(readLicense, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
-                .addContainerGap())
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addGap(13, 13, 13)
-                    .addComponent(info, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
-                    .addGap(14, 14, 14)))
+            .addComponent(info, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(219, Short.MAX_VALUE)
-                .addComponent(readLicense, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                    .addComponent(info, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
-                    .addGap(43, 43, 43)))
+            .addComponent(info, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void readLicenseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_readLicenseActionPerformed
-        panel.fireChangeEvent();
-    }//GEN-LAST:event_readLicenseActionPerformed
 
     private void infoHyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_infoHyperlinkUpdate
         if (HyperlinkEvent.EventType.ACTIVATED == evt.getEventType()) {
@@ -131,14 +100,8 @@ class SampleAppWarningVisual extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_infoHyperlinkUpdate
 
-    boolean valid(WizardDescriptor wizardDescriptor) {
-        return readLicense.isSelected();
-    }
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JEditorPane info;
-    private javax.swing.JCheckBox readLicense;
     // End of variables declaration//GEN-END:variables
 
 
