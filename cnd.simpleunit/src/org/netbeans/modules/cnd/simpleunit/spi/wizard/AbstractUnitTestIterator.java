@@ -40,20 +40,29 @@
 package org.netbeans.modules.cnd.simpleunit.spi.wizard;
 
 import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * @author Vladimir Voskresensky
@@ -198,5 +207,76 @@ public abstract class AbstractUnitTestIterator implements TemplateWizard.Iterato
         }
         return testRootFolder;
     }
+
+    protected final Folder createTestsRootFolder(Project project) {
+        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        MakeConfigurationDescriptor projectDescriptor = cdp.getConfigurationDescriptor();
+        Folder root = projectDescriptor.getLogicalFolders();
+        Folder newFolder = root.addNewFolder(MakeConfigurationDescriptor.TEST_FILES_FOLDER,
+                NbBundle.getMessage(MakeConfigurationDescriptor.class, "TestsFilesTxt"), false, Folder.Kind.TEST_LOGICAL_FOLDER); // NOI18N
+        return newFolder;
+    }
+
+    protected final void createTestTargets(Project project) {
+        FileObject makefile = project.getProjectDirectory().getFileObject("Makefile"); // NOI18N
+        StringBuilder makefiledata;
+        try {
+            makefiledata = new StringBuilder(makefile.asText());
+            makefiledata.append("\n\n") // NOI18N
+                .append("# build tests\n") // NOI18N
+                .append("build-tests: .build-tests-post\n") // NOI18N
+                .append("\n") // NOI18N
+                .append(".build-tests-pre:\n") // NOI18N
+                .append("# Add your pre 'build-tests' code here...\n") // NOI18N
+                .append("\n") // NOI18N
+                .append(".build-tests-post: .build-tests-impl\n") // NOI18N
+                .append("# Add your post 'build-tests' code here...\n") // NOI18N
+                .append("\n") // NOI18N
+                .append("\n") // NOI18N
+                .append("# run tests\n") // NOI18N
+                .append("test: .test-post\n") // NOI18N
+                .append("\n") // NOI18N
+                .append(".test-pre:\n") // NOI18N
+                .append("# Add your pre 'test' code here...\n") // NOI18N
+                .append("\n") // NOI18N
+                .append(".test-post: .test-impl\n") // NOI18N
+                .append("# Add your post 'test' code here...\n"); // NOI18N
+            makefile.getOutputStream().write(makefiledata.toString().getBytes());
+        } catch (IOException ex) {
+        }
+    }
+
+
+    protected final boolean addItemToLogicalFolder(Project project, Folder folder, DataObject dataObject) {
+        FileObject file = dataObject.getPrimaryFile();
+        Project owner = FileOwnerQuery.getOwner(file);
+
+        MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(project);
+
+        if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory()) {
+            File ioFile = FileUtil.toFile(file);
+            if (ioFile.isDirectory()) {
+                return false;
+            } // don't add directories.
+            if (!makeConfigurationDescriptor.okToChange()) {
+                return false;
+            }
+            String itemPath;
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                itemPath = CndPathUtilitities.toRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
+            } else {
+                itemPath = ioFile.getPath();
+            }
+            itemPath = CndPathUtilitities.normalize(itemPath);
+            Item item = new Item(itemPath);
+
+            folder.addItemAction(item);
+        }
+
+        return true;
+    }
+
 }
 

@@ -21,7 +21,6 @@ void ${className}::setUp() {
 
 void ${className}::tearDown() {
 }
-
 <#if testFunctions?? && testFunctions != "">
 
 ${testFunctions}<#else>

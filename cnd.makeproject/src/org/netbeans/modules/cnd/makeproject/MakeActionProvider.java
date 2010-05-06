@@ -1058,7 +1058,15 @@ public final class MakeActionProvider implements ActionProvider {
             Node node = context.lookup(Node.class);
             return (node != null) && (node.getCookie(ShellExecSupport.class) != null);
         } else if (command.equals(COMMAND_TEST)) {
-            return true;
+            Folder root = projectDescriptor.getLogicalFolders();
+            Folder testRootFolder = null;
+            for (Folder folder : root.getFolders()) {
+                if (folder.isTestRootFolder()) {
+                    testRootFolder = folder;
+                    break;
+                }
+            }
+            return testRootFolder != null;
         } else {
             return false;
         }
