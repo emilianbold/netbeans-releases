@@ -312,6 +312,7 @@ public final class MakeActionProvider implements ActionProvider {
                 }
             }
         };
+        ConfigurationDescriptorProvider.recordActionMetrics(command, pd); //NOI18N
         runActionWorker(activeConf.getDevelopmentHost().getExecutionEnvironment(), actionWorker);
     }
 
