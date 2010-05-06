@@ -115,6 +115,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         if (configListCombo != null) {
             return;
         }
+        LOGGER.finest("initConfigListCombo");
         configListCombo = new JComboBox();
         configListCombo.addPopupMenuListener(new PopupMenuListener() {
             private Component prevFocusOwner = null;
@@ -467,8 +468,11 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                 currentResult.addLookupListener(looklst);
                 if (pcp != null) {
                     pcp.addPropertyChangeListener(lst);
+                } else {
+                    LOGGER.log(Level.FINEST, "currentResult on {0} is empty", currentProject);
                 }
             } else {
+                LOGGER.finest("currentProject is null");
                 pcp = null;
             }
             configurationsListChanged(pcp == null ? null : getConfigurations(pcp));
@@ -486,7 +490,9 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             pcp = all.isEmpty() ? null : all.iterator().next();
             if (pcp != null) {
                 pcp.addPropertyChangeListener(lst);
-            } 
+            } else {
+                LOGGER.finest("currentResult is empty");
+            }
             configurationsListChanged(pcp == null ? null : getConfigurations(pcp));
         }
     }
@@ -508,7 +514,9 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     private static Collection<? extends ProjectConfiguration> getConfigurations(final ProjectConfigurationProvider<?> pcp) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Collection<? extends ProjectConfiguration>>() {
             public @Override Collection<? extends ProjectConfiguration> run() {
-                return pcp.getConfigurations();
+                Collection<? extends ProjectConfiguration> configs = pcp.getConfigurations();
+                assert configs != null : pcp;
+                return configs;
             }
         });
     }
