@@ -122,7 +122,7 @@ public class ChildrenSupport {
 
     private synchronized void addChild(final FileNaming folderName, final FileNaming childName) {
         assert childName != null;
-        assert childName.getParent().equals(folderName);
+        assert childName.getParent().equals(folderName) : "childName: " + childName.getFile() + " folderName: " + folderName.getFile();
         getExisting().add(childName);
         getNotExisting().remove(childName);
     }
