@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -79,9 +80,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -330,14 +331,16 @@ public class ModelSupport implements PropertyChangeListener {
                 dumpProjectFiles(nativeProject);
             }
 
-            nativeProject.runOnCodeModelReadiness(new Runnable() {
-
-                public void run() {
+            String taskName = NbBundle.getMessage(getClass(), "MSG_CodeAssistanceInitializationTask",
+                    nativeProject.getProjectDisplayName());
+            NamedRunnable task = new NamedRunnable(taskName) {
+                @Override
+                protected void runImpl() {
                     boolean enableModel = new CodeAssistanceOptions(project).getCodeAssistanceEnabled();
-
                     model.addProject(nativeProject, nativeProject.getProjectDisplayName(), enableModel);
                 }
-            });
+            };
+            nativeProject.runOnCodeModelReadiness(task);
         }
     }
 

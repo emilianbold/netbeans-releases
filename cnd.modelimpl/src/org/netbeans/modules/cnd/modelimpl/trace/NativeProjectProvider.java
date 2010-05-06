@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -282,7 +283,7 @@ public final class NativeProjectProvider {
             return Collections.<NativeProject>emptyList();
         }
 
-        public void runOnCodeModelReadiness(Runnable task) {
+        public void runOnCodeModelReadiness(NamedRunnable task) {
             task.run();
         }
 
