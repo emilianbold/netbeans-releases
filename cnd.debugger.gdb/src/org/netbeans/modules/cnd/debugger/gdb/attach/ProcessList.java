@@ -232,8 +232,8 @@ final class ProcessList {
                             }
                         }
                         plr.processListCallback(res);
-                    } catch (IOException ioe) {
-                        //do nothing
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             });
