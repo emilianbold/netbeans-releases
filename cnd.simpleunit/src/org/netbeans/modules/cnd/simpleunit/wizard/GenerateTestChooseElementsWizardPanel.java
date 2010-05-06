@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
@@ -173,7 +174,7 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
                     Collection<CsmOffsetableDeclaration> delcs = file.getDeclarations();
                     Map<CsmScope, Collection<CsmFunction>> functions = new HashMap<CsmScope, Collection<CsmFunction>>();
                     extractFunctions(functions, delcs);
-                    List<Description> topDescrs = convert(functions);
+                    List<Description> topDescrs = convert(file, functions);
                     topDescription = ElementNode.Description.create(topDescrs);
                 }
             }
@@ -260,26 +261,22 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
             return out;
         }
 
-        private List<Description> convert(Map<CsmScope, Collection<CsmFunction>> functions) {
+        private List<Description> convert(CsmFile file, Map<CsmScope, Collection<CsmFunction>> functions) {
             List<Description> descrs = new ArrayList<Description>();
-            if (!functions.isEmpty()) {
-                if (functions.size() == 1) {
-                    Collection<CsmFunction> funs = functions.entrySet().iterator().next().getValue();
-                    // plain list is enough
-                    descrs = convertFunctions2Descriptions(funs);
-                } else {
-                    for (Map.Entry<CsmScope, Collection<CsmFunction>> entry : functions.entrySet()) {
-                        if (!entry.getValue().isEmpty()) {
-                            CsmScope key = entry.getKey();
-                            List<Description> funs = convertFunctions2Descriptions(entry.getValue());
-                            if (CsmKindUtilities.isNamespace(key) && ((CsmNamespace)key).isGlobal()) {
-                                // global elements put on top level directly
-                                descrs.addAll(funs);
-                            } else {
-                                descrs.add(Description.create(entry.getKey(), funs, false, false));
-                            }
+            for (Map.Entry<CsmScope, Collection<CsmFunction>> entry : functions.entrySet()) {
+                if (!entry.getValue().isEmpty()) {
+                    CsmObject container = entry.getKey();
+                    List<Description> funs = convertFunctions2Descriptions(entry.getValue());
+                    if (CsmKindUtilities.isNamespace(container) && ((CsmNamespace)container).isGlobal()) {
+                        // global elements put under file container if only one key
+                        if (functions.size() == 1) {
+                            container = file;
+                        } else {
+                            descrs.addAll(funs);
+                            continue;
                         }
                     }
+                    descrs.add(Description.create(container, funs, false, false));
                 }
             }
             return descrs;
