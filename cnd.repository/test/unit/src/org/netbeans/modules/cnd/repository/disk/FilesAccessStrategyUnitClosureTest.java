@@ -74,14 +74,14 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
 	final TraceModelBase traceModel = new TraceModelBase(true);
 	traceModel.setUseSysPredefined(true);
         
-        long waitAfterParseTimeout = 20000;
+        long waitAfterParseTimeout = 30000;
         
         // Open a project, make sure cache is NOT empty
         ProjectBase projectRoot1 = createProject(traceModel, "project-1", "file1.cpp", "int foo1");
         waitCondition(new Condition("Cache should not be empty at that time") {
             @Override
             boolean check() {
-                return !getFileNames(strategy).isEmpty();
+                return getFileNames(strategy).size() == 4;
             }
         }, waitAfterParseTimeout);
         
@@ -97,7 +97,7 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
         waitCondition(new Condition("Cache should not be empty at that time") {
             @Override
             boolean check() {
-                return !getFileNames(strategy).isEmpty();
+                return getFileNames(strategy).size() == 4;
             }
         }, waitAfterParseTimeout);
         final Collection<String> setTwo = strategy.testGetCacheFileNames();
@@ -108,7 +108,7 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
             @Override
             boolean check() {
                 Collection<String> newKeys = getFileNames(strategy);
-                return !newKeys.equals(setTwo) && newKeys.containsAll(setTwo);
+                return newKeys.size() == 8 && newKeys.containsAll(setTwo);
             }
         }, waitAfterParseTimeout);
         
