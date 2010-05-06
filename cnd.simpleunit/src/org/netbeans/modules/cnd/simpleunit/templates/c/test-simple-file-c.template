@@ -27,9 +27,9 @@ void test2() {
 int main(int argc, char** argv) {
     printf("%%SUITE_STARTING%% ${name}\n");
     printf("%%SUITE_STARTED%%\n");
-    <#if testCalls?? && testCalls != "">
-    
-    ${testCalls}<#else>
+<#if testCalls?? && testCalls != "">
+
+${testCalls}<#else>
     printf("%%TEST_STARTED%% test1 (${name})\n");
     test1();
     printf("%%TEST_FINISHED%% time=0 test1 (${name}) \n");

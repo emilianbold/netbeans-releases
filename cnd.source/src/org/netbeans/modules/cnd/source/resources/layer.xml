@@ -17,7 +17,7 @@
 
     <folder name="Loaders">
         <folder name="text">
-            <folder name="x-cnd-sourcefile">
+            <folder name="x-cnd+sourcefile">
                 <folder name="Actions">
                     <file name="OpenAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
@@ -80,7 +80,7 @@
                         <attr name="position" intvalue="1700"/>
                     </file>
                 </folder> <!-- Actions -->
-            </folder> <!-- x-cnd-sourcefile -->
+            </folder> <!-- x-cnd+sourcefile -->
 
             <folder name="x-c">
                 <folder name="Factories">

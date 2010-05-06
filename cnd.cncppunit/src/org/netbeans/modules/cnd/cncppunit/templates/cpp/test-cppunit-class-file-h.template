@@ -12,12 +12,15 @@
 
 class ${className} : public CPPUNIT_NS::TestFixture {
     CPPUNIT_TEST_SUITE(${className});
+<#if testInits?? && testInits != "">
 
-    <#if testInits?? && testInits != "">
-    ${testInits}<#else>
+${testInits}
+<#else>
+
     CPPUNIT_TEST(testMethod);
-    CPPUNIT_TEST(testFailedMethod);</#if>
+    CPPUNIT_TEST(testFailedMethod);
 
+    </#if>
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -26,9 +29,8 @@ public:
     void setUp();
     void tearDown();
 
-private:
-    <#if testDecls?? && testDecls != "">
-    ${testDecls}<#else>
+private:<#if testDecls?? && testDecls != "">
+${testDecls}<#else>
     void testMethod();
     void testFailedMethod();</#if>
 };

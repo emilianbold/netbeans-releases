@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.pty.Pty;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.nativeexecution.terminal.spi.impl.PtyCreatorImpl.PtyImplementation;
 
 /**
  *
@@ -70,7 +70,7 @@ public final class SttySupport {
         ProcessUtils.destroy(sh);
     }
 
-    public synchronized String[] apply(final PtyImplementation pty, final String args) throws IOException {
+    public synchronized String[] apply(final Pty pty, final String args) throws IOException {
         if (stopped) {
             throw new IllegalArgumentException("This SttySupport is already stopped... "); // NOI18N
         }

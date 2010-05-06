@@ -75,6 +75,7 @@ public class TraceModelBase {
         Logger openideLogger = Logger.getLogger("org.openide.loaders"); // NOI18N
         // reduce log level to prevent unnecessary messages in tests
         openideLogger.setLevel(Level.SEVERE);
+        Logger.getLogger("org.openide.filesystems.FileUtil").setLevel(Level.SEVERE); // NOI18N
         model = (ModelImpl) CsmModelAccessor.getModel(); // new ModelImpl(true);
         if (model == null) {
             model = new ModelImpl();

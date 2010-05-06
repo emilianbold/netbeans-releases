@@ -16,10 +16,13 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.EnumMap;
+import java.util.Set;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.lib.terminalemulator.Coord;
 import org.netbeans.lib.terminalemulator.StreamTerm;
@@ -44,6 +47,7 @@ import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.modules.terminal.api.IOVisibility;
 
 import org.netbeans.modules.terminal.api.IOConnect;
+import org.openide.windows.IOSelect;
 import org.netbeans.modules.terminal.ioprovider.Task.ValueTask;
 import org.netbeans.modules.terminal.test.IOTest;
 
@@ -103,7 +107,8 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 						new MyIOVisibility(),
 						new MyIOConnect(),
 						new MyIONotifier(),
-						new MyIOTest()
+						new MyIOTest(),
+						new MyIOSelect()
                                                 );
 
 
@@ -343,7 +348,10 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	protected String getEmulation() {
 	    // Use ValueTask LATER because emulation is at the
 	    // moment an immutable value
-	    return term().getEmulation();
+	    if (term() == null)
+		return "";		// strongly closed
+	    else
+		return term().getEmulation();
 	}
 
 	@Override
@@ -369,17 +377,28 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	protected void setVisible(boolean visible) {
 	    final Task task;
 	    if (visible) {
-		task = new Task.Select(ioContainer, terminal);
+		Set<IOSelect.AdditionalOperation> extraOps =
+		    EnumSet.noneOf(IOSelect.AdditionalOperation.class);
+		task = new Task.Select(ioContainer, terminal, extraOps);
+		task.post();
 	    } else {
 		task = new Task.DeSelect(ioContainer, terminal);
+		task.post();
 	    }
-	    task.post();
 	}
 
 	@Override
 	protected void setClosable(boolean closable) {
 	    Task task = new Task.SetClosable(ioContainer, terminal, closable);
 	    task.post();
+	}
+
+	@Override
+	protected boolean isClosable() {
+	    ValueTask<Boolean> task = new Task.IsClosable(terminal);
+	    task.post();
+	    boolean isClosable = task.get();
+            return isClosable;
 	}
 
 	@Override
@@ -457,6 +476,30 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	@Override
 	protected boolean isQuiescent() {
 	    return Task.isQuiescent();
+	}
+
+	@Override
+	protected void performCloseAction() {
+	    // "conditional" close
+	    SwingUtilities.invokeLater(new Runnable() {
+
+		@Override
+		public void run() {
+		    if (!terminal().isClosable())
+			return;
+		    terminal().close();
+		}
+	    });
+
+	}
+    }
+
+    private class MyIOSelect extends IOSelect {
+
+	@Override
+	protected void select(Set<IOSelect.AdditionalOperation> extraOps) {
+	    Task task = new Task.Select(ioContainer, terminal, extraOps);
+	    task.post();
 	}
     }
 
@@ -539,9 +582,9 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	this.name = name;
         this.ioContainer = ioContainer;
 
-        terminal = new Terminal(ioContainer, this, actions, name);
+        terminal = new Terminal(ioContainer, this, name);
 
-	Task task = new Task.Add(ioContainer, terminal);
+	Task task = new Task.Add(ioContainer, terminal, actions);
 	task.post();
 
         // preset standard colors
@@ -670,7 +713,10 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     @Override
     public void select() {
-	Task task = new Task.Select(ioContainer, terminal);
+	Set<IOSelect.AdditionalOperation> extraOps =
+	    EnumSet.of(IOSelect.AdditionalOperation.OPEN,
+		       IOSelect.AdditionalOperation.REQUEST_VISIBLE);
+	Task task = new Task.Select(ioContainer, terminal, extraOps);
 	task.post();
     }
 

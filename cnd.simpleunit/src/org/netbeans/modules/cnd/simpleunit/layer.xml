@@ -73,6 +73,7 @@
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.simpleunit.editor.filecreation.TestSimpleIterator"/>
                 <attr name="templateCategory" stringvalue="cncpp-test-types"/>
                 <attr name="templateGenerator" boolvalue="true"/>
+                <attr name="supportedMimeTypes" stringvalue="text/x-c;text/x-h"/>
             </file>
 
             <file name="simpletestfile.c" url="templates/c/test-simple-file-c.template">
@@ -92,6 +93,7 @@
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.simpleunit.editor.filecreation.TestSimpleIterator"/>
                 <attr name="templateCategory" stringvalue="cncpp-test-types"/>
                 <attr name="templateGenerator" boolvalue="true"/>
+                <attr name="supportedMimeTypes" stringvalue="text/x-c++;text/x-h"/>
             </file>
 
             <file name="simpletestfile.cpp" url="templates/cpp/test-simple-file-cpp.template">
