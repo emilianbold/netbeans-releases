@@ -863,25 +863,6 @@ public final class EarProjectProperties {
             Boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
                 public Boolean run() throws IOException {
                     saveLibrariesLocation();
-                    URL buildImplXSL = EarProject.class.getResource("resources/build-impl.xsl");
-                    int state = genFilesHelper.getBuildScriptState(
-                            GeneratedFilesHelper.BUILD_IMPL_XML_PATH, buildImplXSL);
-                    if ((state & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {
-                        if (showModifiedMessage(NbBundle.getMessage(EarProjectProperties.class,"TXT_ModifiedTitle"))) {
-                            //Delete user modified build-impl.xml
-                            FileObject fo = updateHelper.getAntProjectHelper().getProjectDirectory().
-                                    getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                            if (fo != null) {
-                                fo.delete();
-                                genFilesHelper.refreshBuildScript(
-                                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                        buildImplXSL,
-                                        false);
-                            }
-                        } else {
-                            return false;
-                        }
-                    }
                     storeProperties();
                     //Delete COS mark
                     if (!DEPLOY_ON_SAVE_MODEL.isSelected()) {

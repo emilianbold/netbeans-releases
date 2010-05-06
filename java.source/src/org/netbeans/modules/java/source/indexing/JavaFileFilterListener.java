@@ -84,7 +84,9 @@ final class JavaFileFilterListener implements ChangeListener {
                     if (filter != null) {
                         filter.addChangeListener(this);
                         listensOn.put(rootURL, filter);
-                        result = verify(rootURL);
+                        if (!(result = verify(rootURL))) {
+                            IndexingManager.getDefault().refreshIndex(rootURL, null, true);
+                        }
                     }
                 }
             }
@@ -114,20 +116,17 @@ final class JavaFileFilterListener implements ChangeListener {
         final Object source = event.getSource();
         for (Map.Entry<URL,JavaFileFilterImplementation> entry : entries) {
             if (entry.getValue().equals(source)) {
-                reindexFolder(entry.getKey());
+                final URL root = entry.getKey();
+                try {
+                    verify(root);
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                } catch (URISyntaxException use) {
+                    Exceptions.printStackTrace(use);
+                } finally {
+                    IndexingManager.getDefault().refreshIndex(root, null, true);
+                }
             }
-        }
-    }
-
-    private void reindexFolder(final URL root) {
-        try {
-            verify(root);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        } catch (URISyntaxException use) {
-            Exceptions.printStackTrace(use);
-        } finally {
-            IndexingManager.getDefault().refreshIndex(root, null, true);
         }
     }
 

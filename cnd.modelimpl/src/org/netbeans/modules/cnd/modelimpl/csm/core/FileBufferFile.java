@@ -101,16 +101,20 @@ public class FileBufferFile extends AbstractFileBuffer {
     
     private synchronized String asString() throws IOException {
         byte[] b;
+        long newLastModified = lastModified();
         if( cachedString != null  ) {
             Object o = cachedString.get();
-            if( o != null && (lastModifiedWhenCachedString == lastModified())) {
+            if( o != null && (lastModifiedWhenCachedString == newLastModified)) {
                 return (String) o;
             }
         }
         // either bytes == null or bytes.get() == null
         b = doGetBytes();
         String str = new String(b, getEncoding());
-        lastModifiedWhenCachedString = lastModified();
+        if (lastModifiedWhenCachedString != newLastModified) {
+            clearLineCache();
+        }
+        lastModifiedWhenCachedString = newLastModified;
         cachedString = new SoftReference<String>(str);
         return str;
     }

@@ -86,7 +86,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 //        }
         folder = null;
     }
-    
+
     private void rename(String newname, boolean nameWithoutExtension) {
         if (newname == null || newname.length() == 0 || getFolder() == null) {
             return;
@@ -339,7 +339,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     public DataObject getDataObject() {
         synchronized (this) {
-            if (lastDataObject != null && lastDataObject.isValid()){
+            if (lastDataObject != null && lastDataObject.isValid()) {
                 return lastDataObject;
             }
         }
@@ -556,9 +556,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public boolean hasHeaderOrSourceExtension(boolean cFiles, boolean ccFiles) {
         // Method return true for source files also.
         String mimeType = getMIMEType();
-        return MIMENames.HEADER_MIME_TYPE.equals(mimeType) ||
-                (ccFiles && MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) ||
-                (cFiles && MIMENames.C_MIME_TYPE.equals(mimeType));
+        return MIMENames.HEADER_MIME_TYPE.equals(mimeType)
+                || (ccFiles && MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType))
+                || (cFiles && MIMENames.C_MIME_TYPE.equals(mimeType));
     }
 
     /**

@@ -566,11 +566,109 @@ exists or setup the property manually. For example like this:
         </exec>
     </target>
     
+    <xsl:variable name="name" select="/p:project/p:configuration/ear2:data/ear2:name"/>
+    
     <!-- application client execution -->
-    <xsl:call-template name="run.target">
-        <xsl:with-param name="id" select="'j2ee-module-car'"/>
-        <xsl:with-param name="type" select="'j2ee_ear_archive'"/>
-    </xsl:call-template>
+    <target name="run-ac" if="app.client">
+        <antcall target="-run-ac"/>
+    </target>
+    <target name="-run-ac" depends="init,-as-retrieve-option-workaround,-init-run-macros,-run-appclient-pregfv3,-run-appclient"/>
+
+    <target name="-run-appclient-pregfv3" if="j2ee.appclient.tool.args">
+        <ear2:run-appclient-pregfv3/>
+    </target>
+
+    <target name="-run-appclient" unless="j2ee.appclient.tool.args">
+        <ear2:run-appclient subprojectname="${{app.client}}"/>
+    </target>
+
+    <!--
+       Idea is to add new non-mandatory option to nbdeploy task. This
+       option should be a replacement for asadmin deploy -retrieve local_dir
+       command. See also http://www.netbeans.org/issues/show_bug.cgi?id=82929.
+    -->
+    <target name="-as-retrieve-option-workaround">
+        <xsl:attribute name="if">j2ee.appclient.mainclass.args</xsl:attribute>
+        <xsl:attribute name="unless">j2ee.clientName</xsl:attribute>
+        <property name="client.jar" value="${{dist.dir}}/{$name}Client.jar"/>
+        <sleep seconds="3"/>
+        <copy file="${{wa.copy.client.jar.from}}/{$name}/{$name}Client.jar" todir="${{dist.dir}}" failonerror="false"/>
+        <copy todir="${{dist.dir}}/" flatten="true" failonerror="false">
+            <fileset dir="${{wa.copy.client.jar.from}}/{$name}" includes="**/{$name}Client.jar"/>
+        </copy>
+        <copy todir="${{dist.dir}}/{$name}Client" flatten="true">
+            <fileset dir="${{wa.copy.client.jar.from}}/{$name}" includes="**/*.*ar"/>
+        </copy>
+        <copy todir="${{dist.dir}}/{$name}Client" flatten="false" failonerror="false">
+            <fileset dir="${{dist.dir}}/gfdeploy/{$name}" includes="**/*.jar"/>
+        </copy>
+    </target>
+
+    <target name="-init-run-macros" depends="init">
+        <macrodef>
+            <xsl:attribute name="name">run-appclient</xsl:attribute>
+            <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-earproject/2</xsl:attribute>
+            <attribute>
+                <xsl:attribute name="name">subprojectname</xsl:attribute>
+            </attribute>
+            <attribute>
+                <xsl:attribute name="name">args</xsl:attribute>
+                <xsl:attribute name="default">${application.args.param}</xsl:attribute>
+            </attribute>
+            <element>
+                <xsl:attribute name="name">customize</xsl:attribute>
+                <xsl:attribute name="optional">true</xsl:attribute>
+            </element>
+            <sequential>
+                <java fork="true" jar="${{client.jar}}">
+                    <xsl:attribute name="dir">${basedir}</xsl:attribute>
+                    <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
+                        <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                    </xsl:if>
+                    <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                    <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}${{client.jar}},arg=-name,arg=@{{subprojectname}}"/>
+                    <arg line="@{{args}}"/>
+                    <syspropertyset>
+                        <propertyref prefix="run-sys-prop."/>
+                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                    </syspropertyset>
+                    <customize/>
+                </java>
+            </sequential>
+        </macrodef>
+
+        <macrodef>
+            <xsl:attribute name="name">run-appclient-pregfv3</xsl:attribute>
+            <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-earproject/2</xsl:attribute>
+            <element>
+                <xsl:attribute name="name">customize</xsl:attribute>
+                <xsl:attribute name="optional">true</xsl:attribute>
+            </element>
+            <sequential>
+                <java fork="true" classname="${{j2ee.appclient.tool.mainclass}}">
+                    <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
+                        <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                    </xsl:if>
+                    <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                    <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
+                    <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
+                    <arg line="${{j2ee.appclient.tool.args}}"/>
+                    <arg line="-client ${{client.jar}}"/>
+                    <arg line="${{j2ee.appclient.mainclass.tool.param}}"/>
+                    <arg line="${{application.args.param}}"/>
+                    <classpath>
+                        <path path="${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
+                    </classpath>
+                    <syspropertyset>
+                        <propertyref prefix="run-sys-prop."/>
+                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                    </syspropertyset>
+                    <customize/>
+                </java>
+            </sequential>
+        </macrodef>
+
+    </target>
 
     <xsl:comment>
     DEBUGGING SECTION
@@ -590,7 +688,7 @@ exists or setup the property manually. For example like this:
     </target>
 
     <target name="connect-debugger" unless="is.debugged">
-        <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
+        <nbjpdaconnect name="${{jpda.host}}:${{jpda.address}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
             <classpath>
                 <path path="${{debug.classpath}}"/>
                 <fileset dir="${{build.dir}}" includes="lib/*.jar"/>
@@ -611,10 +709,115 @@ exists or setup the property manually. For example like this:
     </target>
 
     <!-- application client debugging -->
-    <xsl:call-template name="debug.target">
-        <xsl:with-param name="id" select="'j2ee-module-car'"/>
-        <xsl:with-param name="type" select="'j2ee_ear_archive'"/>
-    </xsl:call-template>
+    <target name="run-debug-appclient" if="can.debug.appclient">
+        <antcall target="-run-debug-appclient"/>
+    </target>
+    <target name="-run-debug-appclient" depends="init,-init-debug-args,-debug-appclient-deploy,-as-retrieve-option-workaround,-init-debug-macros,-debug-appclient-start-nbjpda,-debug-appclient-pregfv3,-debug-appclient,connect-debugger"/>
+    <target name="-init-debug-args">
+        <xsl:choose>
+            <xsl:when test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
+                <exec executable="${{platform.java}}" outputproperty="version-output">
+                    <arg value="-version"/>
+                </exec>
+            </xsl:when>
+            <xsl:otherwise>
+                <property name="version-output" value="java version &quot;${{ant.java.version}}"/>
+            </xsl:otherwise>
+        </xsl:choose>
+        <condition property="have-jdk-older-than-1.4">
+            <!-- <matches pattern="^java version &quot;1\.[0-3]" string="${version-output}"/> (ANT 1.7) -->
+            <or>
+                <contains string="${{version-output}}" substring="java version &quot;1.0"/>
+                <contains string="${{version-output}}" substring="java version &quot;1.1"/>
+                <contains string="${{version-output}}" substring="java version &quot;1.2"/>
+                <contains string="${{version-output}}" substring="java version &quot;1.3"/>
+            </or>
+        </condition>
+        <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
+            <istrue value="${{have-jdk-older-than-1.4}}"/>
+        </condition>
+    </target>
+    <target name="-init-debug-macros" depends="init,-init-debug-args,-as-retrieve-option-workaround,-init-run-macros">
+        <condition else="dt_socket" property="debug-transport-by-os" value="dt_shmem">
+            <os family="windows"/>
+        </condition>
+        <condition else="${{debug-transport-by-os}}" property="debug-transport-appclient" value="${{debug.transport}}">
+            <isset property="debug.transport"/>
+        </condition>
+        <macrodef>
+            <xsl:attribute name="name">nbjpdastart</xsl:attribute>
+            <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-earproject/2</xsl:attribute>
+            <attribute>
+                <xsl:attribute name="name">name</xsl:attribute>
+                <xsl:attribute name="default">${main.class}</xsl:attribute>
+            </attribute>
+            <attribute>
+                <xsl:attribute name="name">classpath</xsl:attribute>
+                <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
+            </attribute>
+            <attribute>
+                <xsl:attribute name="name">stopclassname</xsl:attribute>
+                <xsl:attribute name="default"></xsl:attribute>
+            </attribute>
+            <sequential>
+                <nbjpdastart transport="${{debug-transport-appclient}}" addressproperty="jpda.address.appclient" name="@{{name}}" stopclassname="@{{stopclassname}}">
+                    <classpath>
+                        <path path="@{{classpath}}"/>
+                    </classpath>
+                    <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
+                        <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                        <bootclasspath>
+                            <path path="${{platform.bootcp}}"/>
+                        </bootclasspath>
+                    </xsl:if>
+                </nbjpdastart>
+            </sequential>
+        </macrodef>
+        <macrodef>
+            <xsl:attribute name="name">debug-appclient</xsl:attribute>
+            <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-earproject/2</xsl:attribute>
+            <attribute>
+                <xsl:attribute name="name">subprojectname</xsl:attribute>
+            </attribute>
+            <sequential>
+                <ear2:run-appclient subprojectname="@{{subprojectname}}">
+                    <customize>
+                        <jvmarg value="-Xrunjdwp:transport=${{debug-transport-appclient}},address=${{jpda.address.appclient}}"/>
+                        <jvmarg line="${{debug-args-line}}"/>
+                    </customize>
+                </ear2:run-appclient>
+            </sequential>
+        </macrodef>
+        <macrodef>
+            <xsl:attribute name="name">debug-appclient-pregfv3</xsl:attribute>
+            <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-earproject/2</xsl:attribute>
+            <sequential>
+                <ear2:run-appclient-pregfv3>
+                    <customize>
+                        <jvmarg value="-Xrunjdwp:transport=${{debug-transport-appclient}},address=${{jpda.address.appclient}}"/>
+                        <jvmarg line="${{debug-args-line}}"/>
+                    </customize>
+                </ear2:run-appclient-pregfv3>
+            </sequential>
+        </macrodef>
+    </target>
+    <target name="-debug-appclient-deploy">
+        <nbstartserver debugmode="true"/>
+        <nbdeploy clientModuleUri="${{client.module.uri}}" clientUrlPart="${{client.urlPart}}" debugmode="true"/>
+    </target>
+    <target name="-debug-appclient-start-nbjpda">
+        <ear2:nbjpdastart name="${{app.client}}" classpath=""/>
+    </target>
+    <target name="-debug-appclient-pregfv3" if="j2ee.appclient.tool.args">
+        <ear2:debug-appclient-pregfv3/>
+    </target>
+    <target name="-debug-appclient" unless="j2ee.appclient.tool.args">
+        <mkdir dir="${{dist.dir}}/{$name}Client"/>
+        <copy todir="${{dist.dir}}/{$name}Client" flatten="true">
+            <fileset dir="${{wa.copy.client.jar.from}}/{$name}" includes="**/*.*ar"/>
+        </copy>
+        <ear2:debug-appclient subprojectname="${{app.client}}"/>
+    </target>
     
             <xsl:comment>
     CLEANUP SECTION
@@ -757,234 +960,6 @@ to simulate
         </target>
     </xsl:template>
 
-    
-    <!-- Template to generate run target(s) for AC -->
-    <xsl:template name="run.target">
-        <xsl:param name="id"/>
-        <xsl:param name="type"/>
-        <target name="run-ac" depends="init" if="app.client">
-            <antcall target="run-${{app.client}}"/>
-        </target>
-        <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
-        <xsl:variable name="name" select="/p:project/p:configuration/ear2:data/ear2:name"/>
-        <xsl:for-each select="$references/projdeps:reference[not($type) or (projdeps:artifact-type = $type and projdeps:id = $id)]">
-            <xsl:variable name="subprojname" select="projdeps:foreign-project"/>
-            <xsl:call-template name="runTargets">
-                <xsl:with-param name="subprojname" select="$subprojname"/>
-                <xsl:with-param name="name" select="$name"/>
-            </xsl:call-template>
-        </xsl:for-each>
-        <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
-        <xsl:for-each select="$references2/projdeps2:reference[not($type) or (projdeps2:artifact-type = $type and projdeps2:id = $id)]">
-            <xsl:variable name="subprojname" select="projdeps2:foreign-project"/>
-            <xsl:call-template name="runTargets">
-                <xsl:with-param name="subprojname" select="$subprojname"/>
-                <xsl:with-param name="name" select="$name"/>
-            </xsl:call-template>
-        </xsl:for-each>
-        
-        <!--
-           Idea is to add new non-mandatory option to nbdeploy task. This
-           option should be a replacement for asadmin deploy -retrieve local_dir
-           command. See also http://www.netbeans.org/issues/show_bug.cgi?id=82929.
-        -->
-        <target name="-as-retrieve-option-workaround">
-            <xsl:attribute name="if">j2ee.appclient.mainclass.args</xsl:attribute>
-            <xsl:attribute name="unless">j2ee.clientName</xsl:attribute>
-            <property name="client.jar" value="${{dist.dir}}/{$name}Client.jar"/>
-            <sleep seconds="3"/>
-            <copy file="${{wa.copy.client.jar.from}}/{$name}/{$name}Client.jar" todir="${{dist.dir}}" failonerror="false"/>                
-            <copy todir="${{dist.dir}}/" flatten="true" failonerror="false">
-                <fileset dir="${{wa.copy.client.jar.from}}/{$name}" includes="**/{$name}Client.jar"/>
-            </copy>
-            <copy todir="${{dist.dir}}/{$name}Client" flatten="true">
-                <fileset dir="${{wa.copy.client.jar.from}}/{$name}" includes="**/*.*ar"/>
-            </copy>
-            <copy todir="${{dist.dir}}/{$name}Client" flatten="false" failonerror="false">
-                <fileset dir="${{dist.dir}}/gfdeploy/{$name}" includes="**/*.jar"/>
-            </copy>
-        </target>
-    </xsl:template>
-
-    <xsl:template name="runTargets">
-        <xsl:param name="subprojname"/>
-        <xsl:param name="name"/>
-        <target name="run-{$subprojname}" depends="-tool2-{$subprojname},-old-java-{$subprojname}"/>
-        <target name="-old-java-{$subprojname}" if="j2ee.appclient.tool.args">
-            <antcall target="-tool-{$subprojname}"/>
-            <antcall target="-java-{$subprojname}"/>
-        </target>
-        <target name="-tool-{$subprojname}" unless="j2ee.clientName" if="j2ee.appclient.mainclass.args" depends="-as-retrieve-option-workaround">
-            <java fork="true" classname="${{j2ee.appclient.tool.mainclass}}">
-                <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
-                    <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                </xsl:if>
-                <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
-                <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
-                <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
-                <arg line="${{j2ee.appclient.tool.args}}"/>
-                <arg line="-client ${{client.jar}}"/>
-                <arg line="${{j2ee.appclient.mainclass.tool.param}}"/>
-                <arg line="${{application.args.param}}"/>
-                <classpath>
-                    <path path="${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
-                </classpath>
-                <syspropertyset>
-                    <propertyref prefix="run-sys-prop."/>
-                    <mapper type="glob" from="run-sys-prop.*" to="*"/>
-                </syspropertyset>
-            </java>
-        </target>
-        <target name="-tool2-{$subprojname}" unless="j2ee.appclient.tool.args" if="j2ee.appclient.mainclass.args" depends="run-deploy,-as-retrieve-option-workaround">
-            <mkdir dir="${{dist.dir}}/{$name}Client"/>
-            <copy todir="${{dist.dir}}/{$name}Client" flatten="true">
-                <fileset dir="${{wa.copy.client.jar.from}}/{$name}" includes="**/*.*ar"/>
-            </copy>
-            <java fork="true" jar="${{client.jar}}">
-                <xsl:attribute name="dir">${basedir}</xsl:attribute>
-                <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
-                    <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                </xsl:if>
-                    <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
-                    <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}${{client.jar}},arg=-name,arg={$subprojname}"/>
-                    <arg line="${{application.args.param}}"/>
-                    <syspropertyset>
-                        <propertyref prefix="run-sys-prop."/>
-                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
-                    </syspropertyset>
-            </java>
-        </target>
-        <target name="-java-{$subprojname}" if="j2ee.clientName" unless="j2ee.appclient.mainclass.args">
-            <java fork="true" classname="${{main.class}}">
-                <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
-                    <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                </xsl:if>
-                <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
-                <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
-                <jvmarg line="-Dj2ee.clientName=${{app.client}}"/>
-                <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
-                <arg line="${{application.args.param}}"/>
-                <classpath>
-                    <path path="${{jar.content.additional}}:${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
-                </classpath>
-                <syspropertyset>
-                    <propertyref prefix="run-sys-prop."/>
-                    <mapper type="glob" from="run-sys-prop.*" to="*"/>
-                </syspropertyset>
-            </java>
-        </target>
-    </xsl:template>
-
-    <xsl:template name="debug.target">
-        <xsl:param name="id"/>
-        <xsl:param name="type"/>
-        <target name="-init-debug-args">
-            <xsl:choose>
-                <xsl:when test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
-                    <exec executable="${{platform.java}}" outputproperty="version-output">
-                        <arg value="-version"/>
-                    </exec>
-                </xsl:when>
-                <xsl:otherwise>
-                    <property name="version-output" value="java version &quot;${{ant.java.version}}"/>
-                </xsl:otherwise>
-            </xsl:choose>
-            <condition property="have-jdk-older-than-1.4">
-                <!-- <matches pattern="^java version &quot;1\.[0-3]" string="${version-output}"/> (ANT 1.7) -->
-                <or>
-                    <contains string="${{version-output}}" substring="java version &quot;1.0"/>
-                    <contains string="${{version-output}}" substring="java version &quot;1.1"/>
-                    <contains string="${{version-output}}" substring="java version &quot;1.2"/>
-                    <contains string="${{version-output}}" substring="java version &quot;1.3"/>
-                </or>
-            </condition>
-            <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
-                <istrue value="${{have-jdk-older-than-1.4}}"/>
-            </condition>
-        </target>
-        <target name="run-debug-appclient" depends="init,-init-debug-args" if="can.debug.appclient">
-                <macrodef>
-                    <xsl:attribute name="name">debug-appclient</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-earproject/2</xsl:attribute>
-                    <attribute>
-                        <xsl:attribute name="name">mainclass</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">classpath</xsl:attribute>
-                        <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
-                    </attribute>
-                    <element>
-                        <xsl:attribute name="name">customize</xsl:attribute>
-                        <xsl:attribute name="optional">true</xsl:attribute>
-                    </element>
-                    <attribute>
-                        <xsl:attribute name="name">args</xsl:attribute>
-                        <xsl:attribute name="default">${application.args.param}</xsl:attribute>
-                    </attribute>
-                    <sequential>
-                        <parallel>
-                            <java fork="true" classname="@{{mainclass}}">
-                                <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
-                                    <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                                    <bootclasspath>
-                                        <path path="${{platform.bootcp}}"/>
-                                    </bootclasspath>
-                                </xsl:if>
-                                <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
-                                <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
-                                <jvmarg line="${{debug-args-line}}"/>
-                                <jvmarg value="-Xrunjdwp:transport=${{jpda.transport}},server=y,address=${{jpda.address}},suspend=y"/>
-                                <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
-                                <arg line="@{{args}}"/>
-                                <classpath>
-                                    <path path="${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
-                                    <path path="@{{classpath}}"/>
-                                </classpath>
-                                <syspropertyset>
-                                    <propertyref prefix="run-sys-prop."/>
-                                    <mapper type="glob" from="run-sys-prop.*" to="*"/>
-                                </syspropertyset>
-                                <customize/>
-                            </java>
-                            <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
-                                <classpath>
-                                    <path path="${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
-                                    <path path="@{{classpath}}"/>
-                                </classpath>
-                                <sourcepath>
-                                    <path path="${{src.dir}}"/>
-                                </sourcepath>
-                            </nbjpdaconnect>
-                        </parallel>
-                    </sequential>
-                </macrodef>
-            <nbdeploy debugmode="false" clientUrlPart="${{client.urlPart}}" clientModuleUri="${{client.module.uri}}"/>
-            <antcall target="debug-${{app.client}}"/>
-        </target>
-        <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
-        <xsl:variable name="name" select="/p:project/p:configuration/ear2:data/ear2:name"/>
-        <xsl:for-each select="$references/projdeps:reference[not($type) or (projdeps:artifact-type = $type and projdeps:id = $id)]">
-            <xsl:variable name="subprojname" select="projdeps:foreign-project"/>
-            <target name="debug-{$subprojname}" depends="-debug-tool-{$subprojname},-debug-java-{$subprojname}"/>
-            <target name="-debug-tool-{$subprojname}" unless="j2ee.clientName" if="j2ee.appclient.mainclass.args" depends="init,-as-retrieve-option-workaround">
-                <ear2:debug-appclient mainclass="${{j2ee.appclient.tool.mainclass}}" args="-client ${{client.jar}} ${{j2ee.appclient.tool.args}} ${{j2ee.appclient.mainclass.tool.param}} ${{application.args.param}}"/>
-            </target>
-            <target name="-debug-java-{$subprojname}" if="j2ee.clientName" unless="j2ee.appclient.mainclass.args">
-                <ear2:debug-appclient mainclass="${{main.class}}" args="${{application.args.param}}" classpath="${{jar.content.additional}}"/>
-            </target>
-        </xsl:for-each>
-        <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
-        <xsl:for-each select="$references2/projdeps2:reference[not($type) or (projdeps2:artifact-type = $type and projdeps2:id = $id)]">
-            <xsl:variable name="subprojname" select="projdeps2:foreign-project"/>
-            <target name="debug-{$subprojname}" depends="-debug-tool-{$subprojname},-debug-java-{$subprojname}"/>
-            <target name="-debug-tool-{$subprojname}" unless="j2ee.clientName" if="j2ee.appclient.mainclass.args" depends="init,-as-retrieve-option-workaround">
-                <ear2:debug-appclient mainclass="${{j2ee.appclient.tool.mainclass}}" args="-client ${{client.jar}} ${{j2ee.appclient.tool.args}} ${{j2ee.appclient.mainclass.tool.param}} ${{application.args.param}}"/>
-            </target>
-            <target name="-debug-java-{$subprojname}" if="j2ee.clientName" unless="j2ee.appclient.mainclass.args">
-                <ear2:debug-appclient mainclass="${{main.class}}" args="${{application.args.param}}" classpath="${{jar.content.additional}}"/>
-            </target>
-        </xsl:for-each>
-    </xsl:template>
     
     <!---
     Access Manager deploy template to build subdependencies.

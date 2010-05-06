@@ -95,22 +95,6 @@ public class TestCUnitIterator extends AbstractUnitTestIterator {
 
         Project project = Templates.getProject(wiz);
 
-//        CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
-//        List<CsmFunction> funs = new ArrayList<CsmFunction>();
-//        for (CsmOffsetableDeclaration decl : csmProject.getGlobalNamespace().getDeclarations()) {
-//            if(CsmKindUtilities.isClass(decl)) {
-//                for (CsmMember member : ((CsmClass)decl).getMembers()) {
-//                    if(CsmKindUtilities.isMethod(member)) {
-//                        funs.add((CsmMethod)member);
-//                    }
-//                }
-//            }
-//            if(CsmKindUtilities.isFunction(decl)) {
-////                funs.add((CsmFunction)decl);
-//            }
-//        }
-//        wiz.putProperty(CNDUNITTESTFUNCTIONS, funs);
-
         DataFolder targetFolder = wiz.getTargetFolder();
 
         Map<String, Object> params = new HashMap<String, Object>();
@@ -212,7 +196,8 @@ public class TestCUnitIterator extends AbstractUnitTestIterator {
                     defaultExt = fobj.getExt();
                 }
 
-                targetChooserDescriptorPanel = new NewTestCUnitPanel(project, groups, null, extensions, defaultExt);
+                targetChooserDescriptorPanel = new NewTestCUnitPanel(project, groups, null, extensions, defaultExt,
+                    (String) wiz.getProperty(CND_UNITTEST_DEFAULT_NAME));
             } else {
                 targetChooserDescriptorPanel = wiz.targetChooser();
             }

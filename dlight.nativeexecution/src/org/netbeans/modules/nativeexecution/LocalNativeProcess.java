@@ -232,7 +232,9 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     protected final synchronized void cancel() {
-        ProcessUtils.destroy(process);
+        if (process != null) {
+            ProcessUtils.destroy(process);
+        }
     }
 
     private static String loc(String key, String... params) {

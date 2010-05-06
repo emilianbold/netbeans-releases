@@ -38,17 +38,27 @@
  */
 package org.netbeans.modules.cnd.simpleunit.wizard;
 
+import java.util.List;
 import javax.swing.JPanel;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode.Description;
 import org.openide.util.NbBundle;
 
 public final class GenerateTestChooseElementsVisualPanel extends JPanel {
-    private final ElementNode.Description description;
+    private ElementNode.Description description;
+    private final FunctionSelectorPanel elementSelector;
 
     /** Creates new form GenerateTestChooseElementsVisualPanel */
-    public GenerateTestChooseElementsVisualPanel(ElementNode.Description description) {
-        this.description = description;
+    public GenerateTestChooseElementsVisualPanel() {
         initComponents();
+        elementSelector = new FunctionSelectorPanel(description, false);
+        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
+        add(elementSelector, gridBagConstraints);
     }
 
     @Override
@@ -64,32 +74,19 @@ public final class GenerateTestChooseElementsVisualPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        elementSelector = new org.netbeans.modules.cnd.simpleunit.wizard.FunctionSelectorPanel(description, false);
-
-        javax.swing.GroupLayout elementSelectorLayout = new javax.swing.GroupLayout(elementSelector);
-        elementSelector.setLayout(elementSelectorLayout);
-        elementSelectorLayout.setHorizontalGroup(
-            elementSelectorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        elementSelectorLayout.setVerticalGroup(
-            elementSelectorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(elementSelector, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(elementSelector, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+        setLayout(new java.awt.GridBagLayout());
     }// </editor-fold>//GEN-END:initComponents
+
+    void setRootElement(Description description) {
+        this.description = description;
+        elementSelector.initFromElement(description, false);
+        elementSelector.doInitialExpansion(1);
+    }
+
+    List<CsmDeclaration> getSelectedElements() {
+        return elementSelector.getSelectedElements();
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel elementSelector;
     // End of variables declaration//GEN-END:variables
 
 }
