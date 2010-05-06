@@ -21,6 +21,7 @@ import org.netbeans.lib.terminalemulator.Coord;
 
 import org.netbeans.modules.terminal.api.IOConnect;
 import org.netbeans.modules.terminal.api.IOEmulation;
+import org.netbeans.modules.terminal.api.IOVisibility;
 import org.netbeans.terminal.example.Config;
 
 
@@ -85,6 +86,18 @@ public class ControlView {
 					  IOSelect.AdditionalOperation.REQUEST_ACTIVE);
 		    IOSelect.select(action.io, extraOps);
 		}
+		else if (action.cmd.equals("visibility: on")) {
+		    IOVisibility.setVisible(action.io, true);
+		}
+		else if (action.cmd.equals("visibility: off")) {
+		    IOVisibility.setVisible(action.io, false);
+		}
+		else if (action.cmd.equals("closable: true")) {
+		    IOVisibility.setClosable(action.io, true);
+		}
+		else if (action.cmd.equals("closable: false")) {
+		    IOVisibility.setClosable(action.io, false);
+		}
 
 		refresh();
 	    }
@@ -143,7 +156,14 @@ public class ControlView {
 	    return "no-";
     }
 
-    private void printAction(String cmd, InputOutput io) {
+    private void printAction(InputOutput io, String link, String cmd) {
+	ActiveRegion r = beginRegion();
+	r.setUserObject(new VAction(cmd, io));
+	printf(link);
+	endRegion();
+    }
+
+    private void printAction(InputOutput io, String cmd) {
 	ActiveRegion r = beginRegion();
 	r.setUserObject(new VAction(cmd, io));
 	printf(cmd);
@@ -170,14 +190,44 @@ public class ControlView {
 	tabTo(8);
 	printf("%sclosed", yesNo(io.isClosed()));
 	printf(" ");
-	printAction("closeInputOutput", io);
+	printAction(io, "closeInputOutput");
 	printf(" ");
-	printAction("select", io);
+	printAction(io, "select");
+	printf("\n");
+
+	tabTo(8);
+	boolean closable = IOVisibility.isClosable(io);
+	String vetoable;
+	switch (config.getAllowClose()) {
+	    case ALWAYS:
+		vetoable = "no-vetoable";
+		break;
+	    case DISCONNECTED:
+		vetoable = "vetoable";
+		break;
+	    default:
+	    case NEVER:
+		vetoable = "vetoable-n/a";
+		break;
+	}
+	printf("%sclosable ", yesNo(closable));
+	printf("%s ", vetoable);
+
+	if (IOVisibility.isSupported(io)) {
+	    printf(" visibility: ");
+	    printAction(io, "on", "visibility: on");
+	    printf(" ");
+	    printAction(io, "off", "visibility: off");
+	    printf("  closable: ");
+	    printAction(io, "true", "closable: true");
+	    printf(" ");
+	    printAction(io, "false", "closable: false");
+	}
 	printf("\n");
 
 	tabTo(8);
 	if (IOConnect.isSupported(io)) {
-	    printf("%sconnecetd", yesNo(IOConnect.isConnected(io)));
+	    printf("%sconnected", yesNo(IOConnect.isConnected(io)));
 	} else {
 	    printf("IOConnect not supported");
 	}
@@ -196,13 +246,13 @@ public class ControlView {
 	tabTo(8);
 	if (IOSelect.isSupported(io)) {
 	    printf("IOSelect: ");
-	    printAction("select(<empty>)", io);
+	    printAction(io, "select(<empty>)");
 	    printf(" ");
-	    printAction("select(OPEN)", io);
+	    printAction(io, "select(OPEN)");
 	    printf(" ");
-	    printAction("select(OPEN+REQ_VISIBLE)", io);
+	    printAction(io, "select(OPEN+REQ_VISIBLE)");
 	    printf(" ");
-	    printAction("select(OPEN+REQ_VISIBLE+REQ_ACTIVE)", io);
+	    printAction(io, "select(OPEN+REQ_VISIBLE+REQ_ACTIVE)");
 	} else {
 	    printf("IOSelect not supported");
 	}
@@ -213,7 +263,7 @@ public class ControlView {
 	clear();
 	begin();
 
-	printAction("refresh", null);
+	printAction(null, "refresh");
 	printf("\n");
 
 	// Print all open IO's

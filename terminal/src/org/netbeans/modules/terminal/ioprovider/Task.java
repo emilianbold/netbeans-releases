@@ -92,6 +92,11 @@ import org.netbeans.lib.terminalemulator.LineDiscipline;
 	    future.run();
 	}
 
+	@Override
+	protected boolean isValueTask() {
+	    return true;
+	}
+
 	public V get() {
 	    try {
 		return future.get();
@@ -132,7 +137,7 @@ import org.netbeans.lib.terminalemulator.LineDiscipline;
 
     private void dispatch() {
 	try {
-	    if (terminal().isDisposed()) {
+	    if (terminal().isDisposed() && ! isValueTask()) {
 		// closeInputOutput has been called
 		return;
 	    } else {
@@ -148,6 +153,10 @@ import org.netbeans.lib.terminalemulator.LineDiscipline;
     }
 
     protected abstract void perform();
+
+    protected boolean isValueTask() {
+	return false;
+    }
 
     /**
      * Common task that involves both container and Terminal.
@@ -221,6 +230,9 @@ import org.netbeans.lib.terminalemulator.LineDiscipline;
 	public void perform() {
 	    if (terminal().isDisposed())
 		return;
+
+	    terminal().setClosedUnconditionally(false);
+
 	    if (!terminal().isVisibleInContainer()) {
 		container().add(terminal(), terminal().callBacks());
 		terminal().setVisibleInContainer(true);
@@ -246,7 +258,7 @@ import org.netbeans.lib.terminalemulator.LineDiscipline;
 	@Override
 	public void perform() {
 	    container().setToolbarActions(terminal(), new Action[0]);
-	    container().remove(terminal());
+	    terminal().closeUnconditionally();
 	}
     }
 
@@ -258,7 +270,7 @@ import org.netbeans.lib.terminalemulator.LineDiscipline;
 
 	@Override
 	public void perform() {
-	    terminal().close();
+	    terminal().closeUnconditionally();
 	    terminal().dispose();
 	}
     }
@@ -486,6 +498,18 @@ import org.netbeans.lib.terminalemulator.LineDiscipline;
 	@Override
 	public Reader call() {
 	    return terminal().term().getIn();
+	}
+    }
+
+    static class IsClosable extends ValueTask<Boolean> implements Callable<Boolean> {
+
+	public IsClosable(Terminal terminal) {
+	    super(terminal);
+	}
+
+	@Override
+	public Boolean call() {
+	    return terminal().isClosable();
 	}
     }
 }

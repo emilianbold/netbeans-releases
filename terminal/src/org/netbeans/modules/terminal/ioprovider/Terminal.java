@@ -155,11 +155,13 @@ import org.openide.windows.OutputListener;
     private boolean errConnected;
     private boolean extConnected;
 
-    // AKA stron closed
+    // AKA strong closed
     private boolean disposed;
 
     // properties managed by IOvisibility
     private boolean closable = true;
+
+    private boolean closedUnconditionally;
 
     private class TermOptionsPCL implements PropertyChangeListener {
 	@Override
@@ -207,11 +209,15 @@ import org.openide.windows.OutputListener;
 
 	    @Override
 	    protected boolean okToClose() {
+		if (Terminal.this.isClosedUnconditionally())
+		    return true;
 		return Terminal.this.okToHide();
 	    }
 
 	    @Override
 	    protected boolean isClosable() {
+		if (Terminal.this.isClosedUnconditionally())
+		    return true;
 		return Terminal.this.isClosable();
 	    }
 	}
@@ -572,6 +578,30 @@ import org.openide.windows.OutputListener;
     private final Action wrapAction = new WrapAction();
     private final Action clearAction = new ClearAction();
     private final Action closeAction = new CloseAction();
+
+
+
+    // Ideally IOContainer.remove() would be unconditional and we could check
+    // the isClosable() and vetoing here. However, Closing a tab via it's 'X'
+    // is internal to IOContainer implementation and it calls IOCOntainer.remove()
+    // directly. So we're stuck with it being conditional.
+    //
+    // But we can trick it into being unconditional by having MyIOVisibilityControl,
+    // which gets called from IOCOntainer.remove(), return true if we're
+    // closing unconditionally.
+
+    /* package */ void setClosedUnconditionally(boolean closedUnconditionally) {
+	this.closedUnconditionally = closedUnconditionally;
+    }
+
+    /* package */ boolean isClosedUnconditionally() {
+	return closedUnconditionally;
+    }
+
+    public void closeUnconditionally() {
+	setClosedUnconditionally(true);
+	close();
+    }
 
     public void close() {
 	if (!isVisibleInContainer())

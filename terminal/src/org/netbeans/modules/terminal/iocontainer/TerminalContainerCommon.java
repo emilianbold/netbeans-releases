@@ -353,6 +353,7 @@ abstract class TerminalContainerCommon extends TerminalContainer implements IOCo
 		// Should usually not get here because all relevant
 		// actions or their peformers should've been disabled.
 		// SHOULD emit a warning
+		assert false;
 		return;
 	    }
 

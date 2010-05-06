@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.lib.terminalemulator.Coord;
 import org.netbeans.lib.terminalemulator.StreamTerm;
@@ -376,7 +377,10 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	protected void setVisible(boolean visible) {
 	    final Task task;
 	    if (visible) {
-		select();
+		Set<IOSelect.AdditionalOperation> extraOps =
+		    EnumSet.noneOf(IOSelect.AdditionalOperation.class);
+		task = new Task.Select(ioContainer, terminal, extraOps);
+		task.post();
 	    } else {
 		task = new Task.DeSelect(ioContainer, terminal);
 		task.post();
@@ -387,6 +391,14 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	protected void setClosable(boolean closable) {
 	    Task task = new Task.SetClosable(ioContainer, terminal, closable);
 	    task.post();
+	}
+
+	@Override
+	protected boolean isClosable() {
+	    ValueTask<Boolean> task = new Task.IsClosable(terminal);
+	    task.post();
+	    boolean isClosable = task.get();
+            return isClosable;
 	}
 
 	@Override
@@ -464,6 +476,21 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	@Override
 	protected boolean isQuiescent() {
 	    return Task.isQuiescent();
+	}
+
+	@Override
+	protected void performCloseAction() {
+	    // "conditional" close
+	    SwingUtilities.invokeLater(new Runnable() {
+
+		@Override
+		public void run() {
+		    if (!terminal().isClosable())
+			return;
+		    terminal().close();
+		}
+	    });
+
 	}
     }
 

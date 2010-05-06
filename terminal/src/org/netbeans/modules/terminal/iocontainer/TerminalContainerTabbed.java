@@ -73,7 +73,7 @@ final public class TerminalContainerTabbed extends TerminalContainerCommon {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(TabbedPaneFactory.PROP_CLOSE)) {
                     JComponent comp = (JComponent) evt.getNewValue();
-		    removeTab(comp);
+		    remove(comp);
                 }
             }
         });
