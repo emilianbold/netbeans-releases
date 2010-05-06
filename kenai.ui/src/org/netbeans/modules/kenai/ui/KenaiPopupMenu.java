@@ -43,6 +43,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -209,6 +211,8 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                 kenaiPopup.addSeparator();
                 /* Show actions related to versioning - commit/update */
                 VersioningSystem owner = VersioningSupport.getOwner(FileUtil.toFile(proj.getProjectDirectory()));
+                if (owner == null)
+                    Logger.getLogger(KenaiPopupMenu.class.getName()).log(Level.INFO, "VersioningSupport.getOwner(" + proj.getProjectDirectory() + ") returned null");
                 JMenu versioning = new JMenu(NbBundle.getMessage(KenaiPopupMenu.class, "MSG_VERSIONING")); //NOI18N
                 JComponent[] items = createVersioningSystemItems(owner, nodes);
                 for (int i = 0; i < items.length; i++) {
@@ -225,8 +229,11 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
         }
 
         private JComponent[] createVersioningSystemItems(VersioningSystem owner, Node[] nodes) {
+            if  (owner==null) {
+                return new JComponent[0];
+            }
             VCSAnnotator an = owner.getVCSAnnotator();
-            if (an == null) return null;
+            if (an == null) return new JComponent[0];
             VCSContext ctx = VCSContext.forNodes(nodes);
             Action [] actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
             JComponent [] items = new JComponent[actions.length];
