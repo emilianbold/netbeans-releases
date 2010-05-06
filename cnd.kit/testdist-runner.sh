@@ -3,7 +3,7 @@
 # This script downloads latest CND build and executes its tests.
 # Needs HUDSON_URL, WORKSPACE and EXECUTOR_NUMBER env vars (normally set by Hudson).
 
-rm -rf extralibs/ qa-functional/ unit/ README.txt tasks.jar *.xml *.zip
+rm -rf ${WORKSPACE}/*
 
 BUILD_NUM=${UPSTREAM_NO:-`wget -qO - ${HUDSON_URL}job/cnd-build/lastSuccessfulBuild/buildNumber`}
 wget -q "${HUDSON_URL}job/cnd-build/${BUILD_NUM}/artifact/netbeans.zip"
