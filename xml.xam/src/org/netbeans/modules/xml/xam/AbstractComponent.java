@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * An abstract implementation of the Component. It implies modification capabilities.
  *
  * @author rico
  * @author Vidhya Narayanan
@@ -88,7 +89,8 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
             getModel().removeComponentListener(cl);
         }
     }
-    
+
+    @Override
     public synchronized C getParent() {
         return parent;
     }
@@ -108,7 +110,8 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
     
     private void _appendChildQuietly(C component, List<C> children) {
         if (component.getModel() == null) {
-            throw new IllegalStateException("Cannot add a removed component, should use a fresh or a copy component.");
+            throw new IllegalStateException("Cannot add a removed component, " +
+                    "should use a fresh or a copy component."); // NOI18N
         }
         appendChildQuietly(component, children);
         ((AbstractComponent)component).setModel(getModel());
@@ -117,7 +120,8 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
 
     private void _insertAtIndexQuietly(C component, List<C> children, int index) {
         if (component.getModel() == null) {
-            throw new IllegalStateException("Cannot add a removed component, should use a fresh or a copy component.");
+            throw new IllegalStateException("Cannot add a removed component, " +
+                    "should use a fresh or a copy component."); // NOI18N
         }
         insertAtIndexQuietly(component, children, index);
         ((AbstractComponent)component).setModel(getModel());
@@ -134,6 +138,7 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
      * @return the contained elements, this is the  model element
      * representations of the DOM children. The returned list is unmodifiable.
      */
+    @Override
     public List<C> getChildren() {
         List<C> result = new ArrayList<C>(_getChildren());
         return Collections.unmodifiableList(result);
@@ -192,6 +197,7 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
      * @param type Interested children type to
      *	return.
      */
+    @Override
     public synchronized <T extends C>List<T> getChildren(Class<T> type) {
         List<T> result = new ArrayList<T>(_getChildren().size());
         for (C child : _getChildren()) {
@@ -209,6 +215,7 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
      * @param typeList Collection that accepts the interested types and filters
      *	the return list of Children.
      */
+    @Override
     public List<C> getChildren(Collection<Class<? extends C>> typeList) {
         List<C> comps = new ArrayList<C>();
         // createChildren is not necessary because this method delegates
@@ -218,11 +225,16 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
         }
         return Collections.unmodifiableList(comps);
     }
-    
+
+    @Override
     public synchronized AbstractModel getModel() {
         return model;
     }
     
+    /**
+     * This method ensures that a transaction is currently in progress and
+     * that the current thread is able to write the model.
+     */
     protected void verifyWrite() {
         getModel().validateWrite();
     }
@@ -384,7 +396,8 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
             throw new IllegalArgumentException("component == null"); //NOI18N
         }
         if (! _getChildren().contains(component)) {
-            throw new IllegalArgumentException("component to be deleted is not a child"); //NOI18N
+            throw new IllegalArgumentException(
+                    "component to be deleted is not a child"); //NOI18N
         }
         _removeChildQuietly(component, _getChildren());
         firePropertyChange(propertyName, component, null);
@@ -405,28 +418,36 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
      */
     protected void setChild(Class<? extends C> classType, String propertyName,
             C newComponent, Collection<Class<? extends C>> typeList){
+        //
         setChildAfter(classType, propertyName, newComponent, typeList);
     }
     
-    protected void setChildAfter(Class<? extends C> classType, String propertyName,
-            C newComponent, Collection<Class<? extends C>> typeList){
+    protected void setChildAfter(Class<? extends C> classType, 
+            String propertyName, C newComponent,
+            Collection<Class<? extends C>> typeList){
+        //
         setChild(classType, propertyName, newComponent, typeList, false);
     }
     
-    protected void setChildBefore(Class<? extends C> classType, String propertyName,
-            C newComponent, Collection<Class<? extends C>> typeList){
+    protected void setChildBefore(Class<? extends C> classType, 
+            String propertyName, C newComponent,
+            Collection<Class<? extends C>> typeList){
+        //
         setChild(classType, propertyName, newComponent, typeList, true);
     }
     
-    protected synchronized void setChild(Class<? extends C> classType, String propertyName,
-            C newComponent, Collection<Class<? extends C>> typeList, boolean before){
+    protected synchronized void setChild(Class<? extends C> classType, 
+            String propertyName, C newComponent,
+            Collection<Class<? extends C>> typeList, boolean before){
+        //
         //remove all children of type classType
         verifyWrite();
         List<? extends C> childComponents = getChildren(classType);
         if (childComponents.contains(newComponent)) {
             return; // no change
         }
-        C old = childComponents.isEmpty() ? null : childComponents.get(childComponents.size()-1);
+        C old = childComponents.isEmpty() ?
+            null : childComponents.get(childComponents.size()-1);
         for (C child : childComponents) {
             _removeChildQuietly(child, _getChildren());
             fireChildRemoved();
@@ -445,7 +466,8 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
         public DelegateListener(PropertyChangeListener pcl) {
             delegate = pcl;
         }
-        
+
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource() == AbstractComponent.this) {
                 delegate.propertyChange(evt);
@@ -467,6 +489,7 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
     /**
      * Default implementation, subclass need to override if needed.
      */
+    @Override
     public boolean canPaste(Component child) {
         return true;
     }

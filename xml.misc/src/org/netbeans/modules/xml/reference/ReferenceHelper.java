@@ -517,6 +517,7 @@ final class ReferenceHelper {
 //out("CREATE: " + folder);
 //out("      : " + name);
         name = ReferenceUtil.removeProtocol(name);
+        name = removeColon(name);
 
         try {
             while (true) {
@@ -545,13 +546,7 @@ final class ReferenceHelper {
     }
 
     private String removeColon(String value) {
-        if (value == null) {
-            return null;
-        }
-        if (value.endsWith(":")) { // NOI18N
-            value = value.substring(0, value.length() - 1);
-        }
-        return value;
+        return replace(value, ":", "_"); // NOI18N
     }
 
     private Project myProject;

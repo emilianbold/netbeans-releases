@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -215,16 +217,20 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
 
     private EditCookie getEditCookie() {
         try {
-            FileObject wsdlFo =
-                    JAXWSClientSupport.getJaxWsClientSupport(srcRoot).getLocalWsdlFolderForClient(client.getName(),false).getFileObject(client.getLocalWsdlFile());
-            assert wsdlFo!=null: "Cannot find local WSDL file"; //NOI18N
-            if (wsdlFo!=null) {
-                DataObject dObj = DataObject.find(wsdlFo);
-                return (EditCookie)dObj.getCookie(EditCookie.class);
+            String relativePath = client.getLocalWsdlFile();
+            if (relativePath != null) {
+                FileObject wsdlFolder = JAXWSClientSupport.getJaxWsClientSupport(srcRoot).getLocalWsdlFolderForClient(client.getName(),false);
+                if (wsdlFolder != null) {
+                    FileObject wsdlFo = wsdlFolder.getFileObject(relativePath);
+                    assert wsdlFo!=null: "Cannot find local WSDL file"; //NOI18N
+                    if (wsdlFo != null) {
+                        DataObject dObj = DataObject.find(wsdlFo);
+                        return (EditCookie)dObj.getCookie(EditCookie.class);
+                    }
+                }
             }
         } catch (java.io.IOException ex) {
-            ErrorManager.getDefault().log(ex.getLocalizedMessage());
-            return null;
+            Logger.getLogger(JaxWsClientNode.class.getName()).log(Level.INFO, "Cannot find data object for wsdl file", ex);
         }
         return null;
     }

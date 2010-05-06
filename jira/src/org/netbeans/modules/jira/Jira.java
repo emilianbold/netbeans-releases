@@ -39,6 +39,11 @@
 
 package org.netbeans.modules.jira;
 
+import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
+import com.atlassian.connector.eclipse.internal.jira.core.JiraCorePlugin;
+import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,11 +53,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.jira.core.JiraClientFactory;
-import org.eclipse.mylyn.internal.jira.core.JiraCorePlugin;
-import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.internal.tasks.core.TaskTask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;

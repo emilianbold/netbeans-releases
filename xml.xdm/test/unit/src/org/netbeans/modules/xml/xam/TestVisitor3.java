@@ -39,26 +39,33 @@
  * made subject to such option by the copyright holder.
  */
 
+/*
+ * TestVisitor.java
+ *
+ * Created on January 6, 2006, 4:40 PM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
 package org.netbeans.modules.xml.xam;
 
-import org.netbeans.modules.xml.xam.ComponentUpdater;
+import java.util.List;
 
 /**
  *
  * @author Nam Nguyen
  */
-public class TestComponentUpdater implements ComponentUpdater<TestComponent> {
-    @Override
-    public void update(TestComponent target, TestComponent child, ComponentUpdater.Operation operation) {
-        update(target, child, -1, operation);
+public class TestVisitor3 {
+    
+    public void visit(TestComponent3 c) {
+        visitChildren(c);
     }
-
-    @Override
-    public void update(TestComponent target, TestComponent child, int index, ComponentUpdater.Operation operation) {
-        if (operation.equals(ComponentUpdater.Operation.ADD)) {
-            target.insertAtIndex("ChildComponentAdded", child, index, TestComponent.class);
-        } else {
-            target.removeChild("ChildComponentRemoved", child);
+    
+    protected void visitChildren(TestComponent3 c) {
+        List<TestComponent3> children = c.getChildren();
+        for (int i=0; i<children.size(); i++) {
+            children.get(i).accept(this);
         }
     }
 }

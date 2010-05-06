@@ -39,33 +39,43 @@
  * made subject to such option by the copyright holder.
  */
 
-/*
- * TestVisitor.java
- *
- * Created on January 6, 2006, 4:40 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.xml.xam;
 
-import java.util.List;
+import org.netbeans.modules.xml.xam.dom.Attribute;
 
 /**
  *
  * @author Nam Nguyen
  */
-public class TestVisitor {
+public enum TestAttribute3 implements Attribute {
+    INDEX("index", Integer.class), 
+    VALUE("value", String.class),
+    TNS("targetNamespace", String.class),
+    NAME("name", String.class),
+    REF("ref", String.class);
+
+    private String name;
+    private Class type;
+    private Class subtype;
     
-    public void visit(TestComponent c) {
-        visitChildren(c);
+    TestAttribute3(String name, Class type) {
+        this.name = name;
+        this.type = type;
     }
-    
-    protected void visitChildren(TestComponent c) {
-        List<TestComponent> children = c.getChildren();
-        for (int i=0; i<children.size(); i++) {
-            children.get(i).accept(this);
-        }
+    TestAttribute3(String name, Class type, Class subtype) {
+        this(name, type);
+        this.subtype = subtype;
     }
+
+    @Override
+    public String getName() { return name; }
+
+    @Override
+    public Class getType() { return type; }
+
+    @Override
+    public Class getMemberType() { return subtype; }
+
+    @Override
+    public String toString() { return name; }
 }
