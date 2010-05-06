@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.cncppunit.editor.filecreation;
 
 import java.awt.Component;
-import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.api.project.Project;
@@ -133,10 +132,12 @@ public class NewTestCUnitPanel extends CndPanel {
 
     @Override
     public boolean isValid() {
+        setInfoMessage(null);
         setErrorMessage(null);
 
         if (libCheckTask != null) {
             // Need time for the libCheckTask to finish. Pretend that the panel is invalid.
+            setInfoMessage(NbBundle.getMessage(NewTestCppUnitPanel.class, "MSG_Checking_Library", CUNIT, TestLibChecker.getExecutionEnvironment(project))); // NOI18N
             return false;
         }
 

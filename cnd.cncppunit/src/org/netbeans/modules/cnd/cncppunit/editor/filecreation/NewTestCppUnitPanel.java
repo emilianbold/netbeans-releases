@@ -157,12 +157,14 @@ public class NewTestCppUnitPanel extends CndPanel {
 
     @Override
     public boolean isValid() {
+        setInfoMessage(null);
+        setErrorMessage(null);
+
         if (libCheckTask != null) {
             // Need time for the libCheckTask to finish. Pretend that the panel is invalid.
+            setInfoMessage(NbBundle.getMessage(NewTestCppUnitPanel.class, "MSG_Checking_Library", CPPUNIT, TestLibChecker.getExecutionEnvironment(project))); // NOI18N
             return false;
         }
-
-        setErrorMessage(null);
 
         if (!libCheckResult) {
             // Library not found. Display warning but still allow to create test.
@@ -187,7 +189,9 @@ public class NewTestCppUnitPanel extends CndPanel {
             }
         }
 
-        setErrorMessage(errorMessage);
+        if (errorMessage != null) {
+            setErrorMessage(errorMessage);
+        }
 
         return errorMessage == null;
     }

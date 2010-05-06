@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.cncppunit.LibraryChecker;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -118,9 +119,13 @@ import org.openide.util.RequestProcessor;
         return hash;
     }
 
-    private static CompilerSet getCompilerSet(Project project) {
+    private static MakeConfiguration getDefaultConfiguration(Project project) {
         ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        MakeConfiguration makeConfiguration = (MakeConfiguration) cdp.getConfigurationDescriptor().getConfs().getActive();
+        return (MakeConfiguration) cdp.getConfigurationDescriptor().getConfs().getActive();
+    }
+
+    private static CompilerSet getCompilerSet(Project project) {
+        MakeConfiguration makeConfiguration = getDefaultConfiguration(project);
         return makeConfiguration == null? null : makeConfiguration.getCompilerSet().getCompilerSet();
     }
 
@@ -132,6 +137,11 @@ import org.openide.util.RequestProcessor;
     /*package*/ static AbstractCompiler getCppCompiler(Project project) {
         CompilerSet compilerSet = getCompilerSet(project);
         return compilerSet == null? null : (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
+    }
+
+    /*package*/ static ExecutionEnvironment getExecutionEnvironment(Project project) {
+        MakeConfiguration makeConfiguration = getDefaultConfiguration(project);
+        return makeConfiguration == null? null : makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
     }
 
     /*package*/ static RequestProcessor.Task asyncCheck(String lib, AbstractCompiler compiler, ChangeListener listener) {
