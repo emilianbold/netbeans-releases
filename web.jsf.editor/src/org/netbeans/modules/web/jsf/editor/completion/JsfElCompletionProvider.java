@@ -43,9 +43,13 @@ package org.netbeans.modules.web.jsf.editor.completion;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
@@ -81,84 +85,106 @@ public class JsfElCompletionProvider implements CompletionProvider {
     
     static final class CCQuery extends AsyncCompletionQuery {
         
-        protected void query(CompletionResultSet resultSet, Document doc, final int offset) {
-            FileObject fObject = NbEditorUtilities.getFileObject(doc);
-            WebModule wm = null;
-            if (fObject != null)
-                wm = WebModule.getWebModule(fObject);
-            if (wm != null){
-                final JsfElExpression elExpr = new JsfElExpression (wm, doc);
-                final ArrayList<CompletionItem> complItems = new ArrayList<CompletionItem>();
+        protected void query(CompletionResultSet resultSet, final Document doc, final int offset) {
+            try {
+                //fast check if we are in an expression language
+                final AtomicBoolean inEL = new AtomicBoolean();
+                doc.render(new Runnable() {
 
-                int elParseType = elExpr.parse(offset);
-                final int anchor = offset - elExpr.getReplace().length();
-                
-                switch (elParseType){
-                    case JsfElExpression.EL_START:
-                        final String replace = elExpr.getReplace();
-
-                        // check managed beans
-                        List<FacesManagedBean> beans = JSFBeanCache.getBeans(wm);
-                        for (FacesManagedBean bean : beans) {
-                            String beanName = bean.getManagedBeanName();
-                            if ((beanName != null) && beanName.startsWith(replace)){
-                                complItems.add(new JsfElCompletionItem.JsfBean(
-                                        beanName, anchor, bean.getManagedBeanClass()));
+                    @Override
+                    public void run() {
+                        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+                        List<TokenSequence<?>> embedded = hi.embeddedTokenSequences(offset, false);
+                        for (TokenSequence<?> ts : embedded) {
+                            if (ts.language() == ELTokenId.language()) {
+                                inEL.set(true);
+                                break;
                             }
                         }
+                    }
+                });
 
-			//check web beans
-			JsfSupport jsfSupport = JsfSupport.findFor(fObject);
-			List<WebBean> namedElements = WebBeansModelSupport.getNamedBeans(jsfSupport.getWebBeansModel());
-			for (WebBean bean : namedElements) {
-			    String beanName = bean.getName();
-			    String className = bean.getBeanClassName();
-			    if ((beanName != null) && beanName.startsWith(replace)) {
-				complItems.add(new JsfElCompletionItem.JsfBean(
-					beanName, anchor, className));
-			    }
-			}
-
-
-                        // check bundles properties
-                        List <ResourceBundle> bundles = elExpr.
-                            getJSFResourceBundles(wm);
-                        for (ResourceBundle bundle : bundles) {
-                            String var = bundle.getVar();
-                            if ((var != null) && var.startsWith(replace)) {
-                                complItems.add(new JsfElCompletionItem.
-                                        JsfResourceBundle(var, anchor, 
-                                                bundle.getBaseName()));
-                            }
-                        }
-
-                        //add all declared local variables
-                        complItems.addAll(elExpr.getAvailableDeclaredVariables(replace));
-
-                        break;
-                    case JsfElExpression.EL_JSF_BEAN:
-                    case JsfElExpression.EL_JSF_BEAN_REFERENCE:
-                        List<CompletionItem> items = elExpr.getPropertyCompletionItems(
-                                elExpr.getObjectClass(), anchor);
-                        complItems.addAll(items);
-                        items = elExpr.getMethodCompletionItems(
-                                elExpr.getObjectClass(), anchor);
-                        complItems.addAll(items);
-                        break;
-                    case JsfElExpression.EL_JSF_RESOURCE_BUNDLE:
-                        List<CompletionItem> bitems = elExpr.getPropertyKeysCompletionItems(
-                                elExpr.getBundleName(), anchor, elExpr.getReplace());
-                        complItems.addAll(bitems);
-                        break;
-                    case JsfElExpression.EL_COMPOSITE_COMPONENT:
-                        complItems.addAll(elExpr.getCompositeComponentItems(anchor));
-                        break;
+                if (!inEL.get()) {
+                    return;
                 }
+
+                FileObject fObject = NbEditorUtilities.getFileObject(doc);
+                WebModule wm = fObject != null ? WebModule.getWebModule(fObject) : null;
+                if (wm != null) {
+                    final JsfElExpression elExpr = new JsfElExpression(wm, doc);
+                    final ArrayList<CompletionItem> complItems = new ArrayList<CompletionItem>();
+
+                    int elParseType = elExpr.parse(offset);
+                    final int anchor = offset - elExpr.getReplace().length();
+
+                    switch (elParseType) {
+                        case JsfElExpression.EL_START:
+                            final String replace = elExpr.getReplace();
+
+                            // check managed beans
+                            List<FacesManagedBean> beans = JSFBeanCache.getBeans(wm);
+                            for (FacesManagedBean bean : beans) {
+                                String beanName = bean.getManagedBeanName();
+                                if ((beanName != null) && beanName.startsWith(replace)) {
+                                    complItems.add(new JsfElCompletionItem.JsfBean(
+                                            beanName, anchor, bean.getManagedBeanClass()));
+                                }
+                            }
+
+                            //check web beans
+                            JsfSupport jsfSupport = JsfSupport.findFor(fObject);
+                            List<WebBean> namedElements = WebBeansModelSupport.getNamedBeans(jsfSupport.getWebBeansModel());
+                            for (WebBean bean : namedElements) {
+                                String beanName = bean.getName();
+                                String className = bean.getBeanClassName();
+                                if ((beanName != null) && beanName.startsWith(replace)) {
+                                    complItems.add(new JsfElCompletionItem.JsfBean(
+                                            beanName, anchor, className));
+                                }
+                            }
+
+
+                            // check bundles properties
+                            List<ResourceBundle> bundles = elExpr.getJSFResourceBundles(wm);
+                            for (ResourceBundle bundle : bundles) {
+                                String var = bundle.getVar();
+                                if ((var != null) && var.startsWith(replace)) {
+                                    complItems.add(new JsfElCompletionItem.JsfResourceBundle(var, anchor,
+                                            bundle.getBaseName()));
+                                }
+                            }
+
+                            //add all declared local variables
+                            complItems.addAll(elExpr.getAvailableDeclaredVariables(replace));
+
+                            break;
+                        case JsfElExpression.EL_JSF_BEAN:
+                        case JsfElExpression.EL_JSF_BEAN_REFERENCE:
+                            List<CompletionItem> items = elExpr.getPropertyCompletionItems(
+                                    elExpr.getObjectClass(), anchor);
+                            complItems.addAll(items);
+                            items = elExpr.getMethodCompletionItems(
+                                    elExpr.getObjectClass(), anchor);
+                            complItems.addAll(items);
+                            break;
+                        case JsfElExpression.EL_JSF_RESOURCE_BUNDLE:
+                            List<CompletionItem> bitems = elExpr.getPropertyKeysCompletionItems(
+                                    elExpr.getBundleName(), anchor, elExpr.getReplace());
+                            complItems.addAll(bitems);
+                            break;
+                        case JsfElExpression.EL_COMPOSITE_COMPONENT:
+                            complItems.addAll(elExpr.getCompositeComponentItems(anchor));
+                            break;
+                    }
 //                for (int i = 0; i < complItems.size(); i++)
 //                    ((JspCompletionItem.JspResultItem)complItems.get(i)).setSubstituteOffset(offset - elExpr.getReplace().length());
-                resultSet.addAllItems(complItems);
+                    resultSet.addAllItems(complItems);
+                }
+
+            } finally {
+                resultSet.finish();
             }
-            resultSet.finish();
+
         }
         
     }
