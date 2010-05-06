@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
@@ -91,7 +92,7 @@ public class CUnitCodeGenerator {
                 }
                 String returnType = fun.getReturnType().getText().toString();
                 if (CsmKindUtilities.isMethod(fun)) {
-                    CsmMethod method = (CsmMethod) fun;
+                    CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(fun);
                     CsmClass cls = method.getContainingClass();
                     if (cls != null) {
                         String clsName = cls.getName().toString();
