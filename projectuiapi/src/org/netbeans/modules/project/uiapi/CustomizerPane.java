@@ -52,7 +52,7 @@ import java.util.HashMap;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JLabel;
+import javax.swing.JTextArea;
 import javax.swing.UIManager;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.HelpCtx;
@@ -68,7 +68,7 @@ public class CustomizerPane extends JPanel
     public static final String HELP_CTX_PROPERTY = "helpCtxProperty";
     
     private Component currentCustomizer;
-    private JLabel errorMessageValue = new JLabel();
+    private JTextArea errorMessageValue;
     private HelpCtx currentHelpCtx;
     
     private GridBagConstraints fillConstraints;
@@ -103,7 +103,9 @@ public class CustomizerPane extends JPanel
         categoryModel.addPropertyChangeListener( new CategoryChangeListener() );
         categoryPanel.add( categoryView, fillConstraints );
         
-        // init errorMessageValue
+        errorMessageValue = new JTextArea();
+        errorMessageValue.setLineWrap(true);
+        errorMessageValue.setWrapStyleWord(true);
         errorMessageValue.setBorder(BorderFactory.createEmptyBorder());
         errorMessageValue.setBackground(customizerPanel.getBackground());
         

@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.api.elements.TypedInstanceElement;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
@@ -283,7 +284,10 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             Set<TypeResolver> instanceTypes = typedInstanceElement.getInstanceTypes();
             for (TypeResolver typeResolver : instanceTypes) {
                 if (typeResolver.isResolved()) {
-                    retval.add(typeResolver.getTypeName(false).toString());
+                    final QualifiedName typeName = typeResolver.getTypeName(false);
+                    if (typeName != null) {
+                        retval.add(typeName.toString());
+                    }
                 }
             }
             return retval;

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.api.execution;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -56,6 +57,8 @@ import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.terminal.api.IOTerm;
+import org.openide.util.Exceptions;
+import org.openide.windows.InputOutput;
 
 /**
  * This is a wrapper over an <tt>Executionservice</tt> that handles running
@@ -144,21 +147,52 @@ public final class NativeExecutionService {
                     }
 
                     PtySupport.connect(descriptor.inputOutput, process);
+                    SwingUtilities.invokeAndWait(new Runnable() {
 
-                    try {
-                        return process.waitFor();
-                    } finally {
-                        // TODO: Workaround!!!
-                        // TODO: The problem with the lost output is not solved yet
-                        Thread.sleep(500);
-                        PtySupport.closePty(process);
-                    }
+                        @Override
+                        public void run() {
+                            // connected
+                        }
+                    });
+
+                    return process.waitFor();
                 } finally {
-                    if (descriptor.postExecution != null) {
-                        synchronized (processRef) {
-                            descriptor.postExecution.run();
+                    // draining...
+                    // before starting post execution routine
+                    // need to be sure that all process'es output was read
+                    while (true) {
+                        try {
+                            if (processRef.get().getInputStream().available() == 0) {
+                                processRef.get().getInputStream().close();
+                                break;
+                            }
+                        } catch (IOException ex) {
+                            // already closed ... that's OK
+                            break;
                         }
                     }
+
+                    // After we are sure that our output was read, and queued in
+                    // terminal, our runnable will be started only after
+                    // all streams will be drained (by the terminal)...
+
+                    IOTerm.disconnect(descriptor.inputOutput, new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (descriptor.postExecution != null) {
+                                NativeTaskExecutorService.submit(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        descriptor.postExecution.run();
+                                        IOTerm.term(descriptor.inputOutput).setReadOnly(true);
+                                    }
+                                }, displayName + " postExecution"); // NOI18N
+                            }
+                        }
+                    });
+
                 }
             }
         };
@@ -184,11 +218,11 @@ public final class NativeExecutionService {
 
     private Future<Integer> runRegular() {
         Charset charset = descriptor.charset;
-        
+
         if (charset == null) {
             charset = execCharset;
         }
-        
+
         Logger.getInstance().log(Level.FINE, "Input stream charset: {0}", charset);
 
         ExecutionDescriptor descr = new ExecutionDescriptor()
@@ -203,7 +237,7 @@ public final class NativeExecutionService {
                 .errConvertorFactory(descriptor.errConvertorFactory)
                 .outConvertorFactory(descriptor.outConvertorFactory)
                 .charset(charset);
-        
+
         ExecutionService es = ExecutionService.newService(processBuilder, descr, displayName);
         return es.run();
     }

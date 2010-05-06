@@ -697,11 +697,11 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
     public Shape modelToViewChecked(EditorBoxView boxView, int offset, Shape alloc, Position.Bias bias) {
         int index = getViewIndex(offset, bias);
         if (index >= 0) { // When at least one child the index will fit one of them
+            // First find valid child (can lead to change of child allocation bounds)
+            V view = getWithChildrenValid(boxView, index);
             Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
-            // Forward to the child view
-            V child = getWithChildrenValid(boxView, index);
             // Update the bounds with child.modelToView()
-            return child.modelToViewChecked(offset, childAlloc, bias);
+            return view.modelToViewChecked(offset, childAlloc, bias);
         } else { // No children => fallback by leaving the given bounds
             return alloc;
         }
@@ -711,14 +711,29 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         int index = getViewIndexAtPoint(boxView, x, y, alloc);
         int offset;
         if (index >= 0) {
+            // First find valid child (can lead to change of child allocation bounds)
+            V view = getWithChildrenValid(boxView, index);
             Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
             // forward to the child view
-            V view = getWithChildrenValid(boxView, index);
             offset = view.viewToModelChecked(x, y, childAlloc, biasReturn);
         } else { // at the end
             offset = boxView.getStartOffset();
         }
         return offset;
+    }
+
+    public String getToolTipTextChecked(EditorBoxView boxView, double x, double y, Shape alloc) {
+        int index = getViewIndexAtPoint(boxView, x, y, alloc);
+        int offset;
+        if (index >= 0) {
+            // First find valid child (can lead to change of child allocation bounds)
+            V view = getWithChildrenValid(boxView, index);
+            Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
+            // forward to the child view
+            return view.getToolTipTextChecked(x, y, childAlloc);
+        } else { // at the end
+            return null;
+        }
     }
 
     protected void paint(EditorBoxView boxView, Graphics2D g, Shape alloc, Rectangle clipBounds) {
@@ -752,11 +767,11 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         }
 
         while (index < endIndex) {
-            Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
             // Ensure chlidren are initialized. If they are not the batch size should cover
             // a visible screen height at minimum so there should be just one initialization
             // at maximum for regular painting requests.
             V view = getWithChildrenValid(boxView, index);
+            Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
             view.paint(g, childAlloc, clipBounds);
             index++;
         }

@@ -677,6 +677,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Remove it from folder
         ret = items.remove(item);
         if (!ret) {
+            fireChangeEvent(this, false);
             return ret;
         }
 
@@ -1029,6 +1030,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             return; // FIXUP: error
         }
         if (!FileFilterFactory.getAllSourceFileFilter().accept(file)) {
+            fireChangeEvent(this, false);
             return;
         }
         String itemPath = file.getPath();
@@ -1079,6 +1081,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             removeFolderAction(folder, false);
             return;
         }
+        fireChangeEvent(this, false);
     }
 
     private void copyConfigurations(Folder src) {

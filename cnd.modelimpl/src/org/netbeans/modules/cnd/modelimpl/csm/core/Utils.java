@@ -148,6 +148,11 @@ public class Utils {
         return "I"; // NOI18N
     }
 
+    public static String getCsmInheritanceKindKey() {
+        // Returned string should be differed from getCsmDeclarationKindkey()
+        return "H"; // NOI18N
+    }
+
     public static String getCsmParamListKindKey() {
         // Returned string should be differed from getCsmDeclarationKindkey()
         return "P"; // NOI18N

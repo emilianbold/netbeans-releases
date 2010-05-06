@@ -352,6 +352,15 @@ public abstract class EditorView extends View {
         }
     }
 
+    public String getToolTipTextChecked(double x, double y, Shape allocation) {
+        return null;
+    }
+
+    @Override
+    public String getToolTipText(float x, float y, Shape allocation) {
+        return getToolTipTextChecked(x, y, allocation); // Use coords in doubles
+    }
+
     /**
      * Returns the child view index representing the given position in
      * the view. This iterates over all the children returning the

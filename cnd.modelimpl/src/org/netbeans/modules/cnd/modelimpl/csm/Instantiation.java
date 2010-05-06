@@ -552,6 +552,10 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return resolvedClassifier;
         }
 
+        @Override
+        public CsmScope getScope() {
+            return inheritance.getScope();
+        }
     }
 
     private static class Function extends Instantiation<CsmFunction> implements CsmFunction {

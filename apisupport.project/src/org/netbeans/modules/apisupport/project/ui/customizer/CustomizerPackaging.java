@@ -271,9 +271,9 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
-            String relPath = PropertyUtils.relativizeFile(
-                    getProperties().getProjectDirectoryFile(), chooser.getSelectedFile());
-            licenseValue.setText(relPath);
+            File f = chooser.getSelectedFile();
+            String relPath = PropertyUtils.relativizeFile(getProperties().getProjectDirectoryFile(), f);
+            licenseValue.setText(relPath != null ? relPath : f.getAbsolutePath());
         }
     }//GEN-LAST:event_browseLicense
     
