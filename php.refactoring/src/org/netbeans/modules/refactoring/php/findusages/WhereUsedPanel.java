@@ -253,6 +253,51 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         elementComboBox = new javax.swing.JComboBox();
         searchInComments = new javax.swing.JCheckBox();
 
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return m_isBaseClass;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return m_isBaseClass;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return m_isBaseClass;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  c_subclasses){
+                    return c_directOnly;
+                }
+                if(aComponent ==  c_usages){
+                    return c_subclasses;
+                }
+                if(aComponent ==  searchInComments){
+                    return c_usages;
+                }
+                if(aComponent ==  elementComboBox){
+                    return searchInComments;
+                }
+                return m_isBaseClass;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  c_directOnly){
+                    return c_subclasses;
+                }
+                if(aComponent ==  c_subclasses){
+                    return c_usages;
+                }
+                if(aComponent ==  c_usages){
+                    return searchInComments;
+                }
+                if(aComponent ==  searchInComments){
+                    return elementComboBox;
+                }
+                return m_isBaseClass;//end getComponentBefore
+
+            }}
+        );
         setLayout(new java.awt.BorderLayout());
 
         methodsPanel.setLayout(new java.awt.GridBagLayout());
