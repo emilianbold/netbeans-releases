@@ -64,6 +64,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -380,30 +382,60 @@ public class ProjectTab extends TopComponent
         }
         initValues();
         if (!"false".equals(System.getProperty("netbeans.keep.expansion"))) { // #55701
-            RP.post(new Runnable() {
-                public @Override void run() {
-                    try {
-                        OpenProjects.getDefault().openProjects().get();
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (ExecutionException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    for (Node n : rootNode.getChildren().getNodes()) {
-                        if (btv.isExpanded(n)) {
-                            return;
-                        }
-                    }
-                    btv.expandNodes(exPaths);
-                    EventQueue.invokeLater(new Runnable() {
-                        public @Override void run() {
-                            selectPaths(selPaths);
-                        }
-                    });
-                }
-            });
+            KeepExpansion ke = new KeepExpansion(id, exPaths, selPaths);
+            ke.task.schedule(0);
         }
     }
+
+    private class KeepExpansion implements Runnable {
+        final String id;
+        final RequestProcessor.Task task;
+        final List<String[]> exPaths;
+        final List<String[]> selPaths;
+
+        public KeepExpansion(String id, List<String[]> exPaths, List<String[]> selPaths) {
+            this.id = id;
+            this.exPaths = exPaths;
+            this.selPaths = selPaths;
+            this.task = RP.create(this);
+        }
+
+        @Override
+        public void run() {
+            if (EventQueue.isDispatchThread()) {
+                LOG.log(Level.FINE, "{0}: selecting paths: {1}", new Object[] { id, selPaths });
+                selectPaths(selPaths);
+                LOG.log(Level.FINE, "{0}: done.", id);
+                return;
+            }
+            
+            try {
+                LOG.log(Level.FINE, "{0}: waiting for projects being open", id);
+                OpenProjects.getDefault().openProjects().get(10, TimeUnit.SECONDS);
+            } catch (TimeoutException ex) {
+                LOG.log(Level.FINE, "{0}: Timeout. Will retry in a second", id);
+                task.schedule(1000);
+                return;
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            LOG.log(Level.FINE, "{0}: Checking node state", id);
+            for (Node n : rootNode.getChildren().getNodes()) {
+                if (btv.isExpanded(n)) {
+                    LOG.log(Level.FINE, "{0}: Node {1} has been expanded. Giving up.", new Object[] {id, n});
+                    return;
+                }
+            }
+            LOG.log(Level.FINE, "{0}: Expanding paths: {1}", new Object[] { id, exPaths });
+            btv.expandNodes(exPaths);
+            LOG.log(Level.FINE, "{0}: Switching to AWT", id);
+            EventQueue.invokeLater(this);
+        }
+
+    }
+
     
     // MANAGING ACTIONS
     
@@ -472,7 +504,7 @@ public class ProjectTab extends TopComponent
 
     // Called from the SelectNodeAction
     
-    private final RequestProcessor RP = new RequestProcessor(ProjectTab.class);
+    private final static RequestProcessor RP = new RequestProcessor(ProjectTab.class);
     
     public void selectNodeAsync(FileObject object) {
         setCursor( Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) );
