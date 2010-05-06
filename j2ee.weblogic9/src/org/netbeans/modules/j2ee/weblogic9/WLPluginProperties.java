@@ -200,29 +200,13 @@ public class WLPluginProperties {
         }
     }
 
-    //temporary fix of #65456
-    //TODO domains file should be detected automatically upon nodemanager.properties content;
-    //same problem also in ServerPropertiesPanel.getRegisteredDomains()
-    public static final String DOMAIN_LIST = "common/nodemanager/nodemanager.domains"; // NOI18N
-
-    public static boolean domainListExists(File candidate) {
-        if (null == candidate ||
-                !candidate.exists() ||
-                !candidate.canRead() ||
-                !candidate.isDirectory()  ||
-                !new File(candidate.getPath() + File.separator + DOMAIN_LIST).exists()) {
-            return false;
-        }
-        return true;
-    }
-
     private static Collection fileColl = new java.util.ArrayList();
 
     static {
         fileColl.add("common");        // NOI18N
-        fileColl.add("uninstall");     // NOI18N
         fileColl.add("common/bin");    // NOI18N
         fileColl.add("server/lib/weblogic.jar"); // NOI18N
+        fileColl.add(".product.properties"); // NOI18N
     }
 
     public static boolean isGoodServerLocation(File candidate){

@@ -60,8 +60,9 @@ public class NewTestCUnitPanel extends CndPanel {
     private final MIMEExtensions es;
     private final String defaultExt;
     private final boolean fileWithoutExtension;
+    private final String baseTestName = null;
 
-    NewTestCUnitPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, MIMEExtensions es, String defaultExt) {
+    NewTestCUnitPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, MIMEExtensions es, String defaultExt, String baseTestName) {
         super(project, folders, bottomPanel);
         this.es = es;
         this.defaultExt = defaultExt;
@@ -70,7 +71,7 @@ public class NewTestCUnitPanel extends CndPanel {
 
     public Component getComponent() {
         if (gui == null) {
-            gui = new NewTestCUnitPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), es, defaultExt);
+            gui = new NewTestCUnitPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), es, defaultExt, baseTestName);
             gui.addChangeListener(this);
         }
         return gui;

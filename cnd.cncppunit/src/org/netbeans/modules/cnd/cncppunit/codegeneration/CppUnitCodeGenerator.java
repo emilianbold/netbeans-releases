@@ -58,12 +58,13 @@ public class CppUnitCodeGenerator {
     private CppUnitCodeGenerator() {
     }
 
-    public static Map<String, Object> generateTemplateParamsForFunctions(String testName, String testFilePath, List<CsmFunction> functions) {
+    public static Map<String, Object> generateTemplateParamsForFunctions(String testFilePath, List<CsmFunction> functions) {
         Map<String, Object> templateParams = new HashMap<String, Object>();
 
         if (functions != null) {
             StringBuilder testFunctions = new StringBuilder(""); // NOI18N
-            StringBuilder testCalls = new StringBuilder(""); // NOI18N
+            StringBuilder testInits = new StringBuilder(""); // NOI18N
+            StringBuilder testDecls = new StringBuilder(""); // NOI18N
             StringBuilder testIncludes = new StringBuilder(""); // NOI18N
             for (CsmFunction fun : functions) {
                 String funName = fun.getName().toString();
@@ -123,19 +124,14 @@ public class CppUnitCodeGenerator {
                 testFunctions.append(");\n"); // NOI18N
 
                 testFunctions.append("    if(true /*check result*/) {\n"); // NOI18N
-                testFunctions.append("        std::cout << \"%TEST_FAILED% time=0 testname=") // NOI18N
-                        .append(testFunctionName) // NOI18N
-                        .append(" (") // NOI18N
-                        .append(testName) // NOI18N
-                        .append(") message=error message sample\" << std::endl;\n"); // NOI18N
-
+                testFunctions.append("        CPPUNIT_ASSERT(false);"); // NOI18N
                 testFunctions.append("    }\n"); // NOI18N
+                
                 testFunctions.append("}\n\n"); // NOI18N
 
-                testCalls.append("    std::cout << \"%TEST_STARTED% " + testFunctionName + " (" + testName + ")\" << std::endl;\n"); // NOI18N
-                testCalls.append("    " + testFunctionName + "();\n"); // NOI18N
-                testCalls.append("    std::cout << \"%TEST_FINISHED% time=0 " + testFunctionName + " (" + testName + ")\" << std::endl;\n"); // NOI18N
-                testCalls.append("    \n"); // NOI18N
+                testDecls.append("    void " + testFunctionName + "();\n"); // NOI18N
+
+                testInits.append("    CPPUNIT_TEST(" + testFunctionName + ");\n"); // NOI18N
 
                 CsmIncludeResolver inclResolver = CsmIncludeResolver.getDefault();
                 String include = inclResolver.getLocalIncludeDerectiveByFilePath(testFilePath, fun);
@@ -146,7 +142,8 @@ public class CppUnitCodeGenerator {
             }
 
             templateParams.put("testFunctions", testFunctions.toString()); // NOI18N
-            templateParams.put("testCalls", testCalls.toString()); // NOI18N
+            templateParams.put("testDecls", testDecls.toString()); // NOI18N
+            templateParams.put("testInits", testInits.toString()); // NOI18N
             templateParams.put("testIncludes", testIncludes.toString()); // NOI18N
         }
 

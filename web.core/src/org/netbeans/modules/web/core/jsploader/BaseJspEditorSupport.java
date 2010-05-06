@@ -136,7 +136,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             }
         };
 
-        PARSER_RESTART_TASK = RequestProcessor.getDefault().create(new Runnable() {
+        PARSER_RESTART_TASK = RP.create(new Runnable() {
             public void run() {
                 final TagLibParseSupport sup = (TagLibParseSupport) getDataObject().getCookie(TagLibParseSupport.class);
                 if (sup != null && WebModule.getWebModule(getDataObject().getPrimaryFile()) != null) {

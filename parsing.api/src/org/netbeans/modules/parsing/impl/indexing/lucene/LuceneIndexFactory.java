@@ -61,17 +61,12 @@ public class LuceneIndexFactory implements IndexFactoryImpl {
 
     public IndexImpl createIndex (Context ctx) throws IOException {
         final FileObject luceneIndexFolder = getIndexFolder(ctx.getIndexFolder());
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), true);
+        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), LuceneIndexManager.Mode.CREATE);
     }
 
     public IndexImpl getIndex(final FileObject indexFolder) throws IOException {
         final FileObject luceneIndexFolder = getIndexFolder(indexFolder);
-        if (luceneIndexFolder.isValid() && luceneIndexFolder.isFolder() && luceneIndexFolder.getChildren(false).hasMoreElements()) {
-            // the index exists on the disk so force the manager to create LuceneIndex instance for it
-            return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), true);
-        } else {
-            return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), false);
-        }
+        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), LuceneIndexManager.Mode.IF_EXIST);
     }
 
     private FileObject getIndexFolder (final FileObject indexFolder) throws IOException {

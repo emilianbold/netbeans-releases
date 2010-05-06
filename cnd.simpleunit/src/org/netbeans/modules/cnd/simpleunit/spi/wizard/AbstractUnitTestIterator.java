@@ -140,7 +140,7 @@ public abstract class AbstractUnitTestIterator implements TemplateWizard.Iterato
     }
 
     public final boolean hasNext() {
-        return index < getPanels().length;
+        return index < getPanels().length - 1;
     }
 
     public final boolean hasPrevious() {

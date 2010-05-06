@@ -78,12 +78,12 @@ class JavaParsingContext {
 
     public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath,
             final Collection<? extends CompileTuple> virtualSources) throws IOException, NoSuchAlgorithmException {
+        filter = JavaFileFilterQuery.getFilter(context.getRoot());
         cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,compilePath, sourcePath,
-                null, true, context.isSourceForBinaryRootIndexing(),
+                filter, true, context.isSourceForBinaryRootIndexing(),
                 !virtualSources.isEmpty(), context.checkForEditorModifications());
         registerVirtualSources(cpInfo, virtualSources);
         sourceLevel = SourceLevelQuery.getSourceLevel(context.getRoot());
-        filter = JavaFileFilterQuery.getFilter(context.getRoot());
         encoding = FileEncodingQuery.getEncoding(context.getRoot());
         uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
         sa = uq != null ? uq.getSourceAnalyser() : null;

@@ -132,7 +132,7 @@ public class CompositeComponentModel extends JsfPageModel {
                 String value = attrs.get(key);
                 buf.append(key);
                 buf.append(KEY_VALUE_SEPARATOR);
-                buf.append(value);
+                buf.append(encode(value));
                 if (attrsKeysItr.hasNext()) {
                     buf.append(VALUES_SEPARATOR);
                 }
@@ -283,7 +283,7 @@ public class CompositeComponentModel extends JsfPageModel {
                 while (st2.hasMoreTokens()) {
                     String pair = st2.nextToken();
                     String key = pair.substring(0, pair.indexOf(KEY_VALUE_SEPARATOR));
-                    String value = pair.substring(pair.indexOf(KEY_VALUE_SEPARATOR) + 1);
+                    String value = decode(pair.substring(pair.indexOf(KEY_VALUE_SEPARATOR) + 1));
                     pairs.put(key, value);
                 }
                 parsedAttrs.add(pairs);
@@ -291,5 +291,61 @@ public class CompositeComponentModel extends JsfPageModel {
             return new CompositeComponentModel(result.getFile(), result.getRelativePath(), parsedAttrs, hasImplementation);
 
         }
+    }
+
+
+    static final String encode(String attributeValue) {
+        //comma and equal sign needs to be encoded
+        StringBuilder out = new StringBuilder();
+        for(int i = 0; i < attributeValue.length(); i++) {
+            char c = attributeValue.charAt(i);
+            switch(c) {
+                case ',':
+                    out.append("\\c");
+                    break;
+                case '=':
+                    out.append("\\e");
+                    break;
+                case '\\':
+                    out.append("\\s");
+                    break;
+                default:
+                    out.append(c);
+
+            }
+        }
+        return out.toString();
+    }
+
+    static final String decode(String attributeValue) {
+        //comma and equal sign needs to be encoded
+        StringBuilder out = new StringBuilder();
+        boolean encodeChar = false;
+        for(int i = 0; i < attributeValue.length(); i++) {
+            char c = attributeValue.charAt(i);
+            if(encodeChar) {
+                switch(c) {
+                    case 'c':
+                        out.append(',');
+                        break;
+                    case 'e':
+                        out.append('=');
+                        break;
+                    case 's':
+                        out.append('\\');
+                        break;
+                    default:
+                        assert false;
+                }
+                encodeChar = false;
+            } else {
+                if(c == '\\') {
+                    encodeChar = true;
+                } else {
+                    out.append(c);
+                }
+            }
+        }
+        return out.toString();
     }
 }

@@ -10,10 +10,10 @@
 	</tocitem>
 	<tocitem text="C/C++/Fortran Development" expand="false">
 		<tocitem text="Getting Started">
-			<tocitem text="Workflow for C/C++/Fortran Projects" target="WorkingWithCandC++Projects" />
 			<tocitem text="IDE Tools for C/C++/Fortran Development" target="IDEToolsOverview" />
+			<tocitem text="Workflow for C/C++/Fortran Projects" target="WorkingWithCandC++Projects1" />
 			<tocitem text="About Projects and Makefiles" target="CandC++ProjectsMakefiles" />
-			<tocitem text="Memory Requirements for Large Projects" target="Memory" />
+			<tocitem text="Creating a C/C++/Fortran Project" target="CreatingCorC++Project" />
 		</tocitem>
 		<tocitem text="Working With C/C++/Fortran Projects">
 			<tocitem text="About C/C++/Fortran Projects" target="AboutCandC++Projects" />
@@ -22,11 +22,12 @@
 			<tocitem text="Configuring Default Settings for C/C++/Fortran Projects">
 				<tocitem text="About Configuring Default Settings" target="ConfiguringProjectDefaults" />
 				<tocitem text="Configuring Build Tools" target="ConfiguringBuildTools" />
-				<tocitem text="Configuring Project Settings" target="Configuring" />
+				<tocitem text="Configuring General Project Options" target="Configuring" />
 				<tocitem text="Configuring Code Formatting Style" target="ConfiguringCodeStyle" />
 				<tocitem text="Configuring Code Assistance Settings" target="ConfiguringParsingSettings" />
 				<tocitem text="Configuring Highlighting Settings" target="ConfiguringSemanticHighlighting" />
 				<tocitem text="Configuring File Extensions" target="ConfiguringFileExtensions" />
+				<tocitem text="Memory Requirements for Large Projects" target="Memory" />
 			</tocitem>
 			<tocitem text="Creating and Modifying C/C++/Fortran Projects">
 				<tocitem text="Creating a C/C++/Fortran Project" target="CreatingCorC++Project" />
@@ -37,6 +38,7 @@
 				<tocitem text="Creating a Makefile for a Project with Existing Sources" target="CreatingMakefile" />
 				<tocitem text="Managing Project Configurations" target="ManagingProjectConfigurations" />
 				<tocitem text="Adding Files and Folders to a C/C++/Fortran Project" target="AddingFilesandFolders" />
+				<tocitem text="Adding Unit Tests to a C/C++/Fortran Project" target="AddingUnitTests" />
 				<tocitem text="Running a C/C++/Fortran Project" target="RunningCorC++Project1" />
 				<tocitem text="Profiling a C/C++/Fortran Project" target="ProfilingCandC++Projects" />
 				<tocitem text="Moving, Copying, or Renaming a C/C++/Fortran Project" target="MovingCorC++Project" />
@@ -49,8 +51,8 @@
 				<tocitem text="Creating Dependencies Between C or C++ Projects" target="CreatingDependencies" />
 				<tocitem text="Building a C or C++ Project" target="BuildingCorC++Project" />
 				<tocitem text="Running a C or C++ Project" target="RunningCorC++Project" />
-				<tocitem text="Using a Remote Development Host for a C/C++/Fortran Project" target="RemoteDevelopment" />
 				<tocitem text="Packaging an Application" target="Packaging" />
+				<tocitem text="Setting Up a C/C++/Fortran Project for Remote Development" target="RemoteDevelopmentProjects" />
 			</tocitem>
 			<tocitem text="Editing Source Files in C/C++/Fortran Projects">
 				<tocitem text="About Editing C and C++ Files" target="EditingSourceFiles" />
@@ -61,6 +63,7 @@
 				<tocitem text="Using Pair Completion" target="UsingPairCompletion" />
 				<tocitem text="Folding Blocks of Code" target="CandC++CodeFolding" />
 				<tocitem text="Commenting Lines in Your Code" target="Commenting" />
+				<tocitem text="Adding Documentation to Your Code" target="Documenting" />
 			</tocitem>
 			<tocitem text="Navigating Source Files and Projects">
 				<tocitem text="Using Hyperlink Navigation" target="UsingHyperlinks" />
@@ -69,6 +72,7 @@
 				<tocitem text="Going to a Symbol" target="GoToDeclaration" />
 				<tocitem text="Going to a Declaration" target="GoToDeclaration1" />
 				<tocitem text="Going to a Type" target="GoToType" />
+				<tocitem text="Going to an Overridden or Overriding Method" target="GoToOverride" />
 				<tocitem text="Using the Call Graph" target="CallGraphView" />
 				<tocitem text="Using the Classes Window" target="UsingClassView" />
 				<tocitem text="Using the Navigator Window" target="UsingNavigator" />
@@ -76,6 +80,13 @@
 				<tocitem text="Usages Window" target="UsagesWindow" />
 				<tocitem text="Using the Type Hierarchy Window" target="TypeView" />
 				<tocitem text="Using the Include Hierarchy Window" target="IncludeView" />
+			</tocitem>
+			<tocitem text="Using Remote Development Hosts for C/C++/Fortran Projects">
+				<tocitem text="Overview of C/C++ Remote Development" target="RemoteDevelopment" />
+				<tocitem text="Configuring C/C++ Remote Development Hosts" target="RemoteDevelopmentConfigureHost" />
+				<tocitem text="Managing C/C++ Remote Development Hosts" target="RemoteDevelopmentManageHosts" />
+				<tocitem text="File Sharing with Remote Development Hosts" target="RemoteDevelopmentFileSharing" />
+				<tocitem text="Setting Up C/C++ Projects for Remote Development" target="RemoteDevelopmentProjects" />
 			</tocitem>
 		</tocitem>
 		<tocitem text="Profiling C/C++/Fortran Applications">
@@ -89,6 +100,15 @@
 			<tocitem text="Profiling Threaded C/C++/Fortran Applications" target="ProfilingThreadedCandC++Apps" />
 			<tocitem text="Analyzing Thread Usage of C/C++/Fortran Applications" target="AnalyzingThreadUsageCandC++FortranApps" />
 			<tocitem text="Analyzing Thread Microstates of C/C++/Fortran Applications" target="AnalyzingThreadMicrostatesCandC++FortranApps" />
+		</tocitem>
+		<tocitem text="Testing C/C++ Projects">
+			<tocitem text="About C and C++ Unit Tests" target="c_unit_about" />
+			<tocitem text="Overview of C/C++ Unit Tests" target="c_unit_overview" />
+			<tocitem text="C/C++ Unit Test Tasks: Quick Reference" target="c_unit_quickref" />
+			<tocitem text="Creating C/C++ Unit Tests" target="AddingUnitTests" />
+			<tocitem text="Running C/C++ Unit Tests" target="c_unit_runningtests" />
+			<tocitem text="Viewing C/C++ Test Results" target="c_unit_resultswindow" />
+			<tocitem text="Debugging C/C++ Unit Tests" target="c_unit_debuggingtests" />
 		</tocitem>
 		<tocitem text="Debugging C/C++/Fortran Applications With gdb">
 			<tocitem text="About Debugging C and C++ and Fortran Applications with gdb" target="DebuggingCorC++Project" />
