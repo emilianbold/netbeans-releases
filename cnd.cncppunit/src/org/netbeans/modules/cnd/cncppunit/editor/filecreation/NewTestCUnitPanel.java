@@ -40,8 +40,12 @@
 package org.netbeans.modules.cnd.cncppunit.editor.filecreation;
 
 import java.awt.Component;
+import java.util.concurrent.Future;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.editor.filecreation.CndPanel;
 import org.netbeans.modules.cnd.editor.filecreation.NewCndFileChooserPanel;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
@@ -51,16 +55,20 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
 public class NewTestCUnitPanel extends CndPanel {
 
+    private static final String CUNIT = "cunit"; // NOI18N
+
     private final MIMEExtensions es;
     private final String defaultExt;
     private final boolean fileWithoutExtension;
     private final String baseTestName = null;
+    private RequestProcessor.Task libCheckTask;
 
     NewTestCUnitPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, MIMEExtensions es, String defaultExt, String baseTestName) {
         super(project, folders, bottomPanel);
@@ -77,6 +85,42 @@ public class NewTestCUnitPanel extends CndPanel {
         return gui;
     }
 
+    NewTestCUnitPanelGUI getGui() {
+        return (NewTestCUnitPanelGUI) gui;
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        if (e instanceof TestLibChecker.LibCheckerChangeEvent) {
+            final boolean result = ((TestLibChecker.LibCheckerChangeEvent) e).getResult();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    getGui().setControlsEnabled(true);
+                    if (!result) {
+                        setErrorMessage(NbBundle.getMessage(NewTestCppUnitPanel.class, "MSG_Missing_Library", CUNIT)); // NOI18N
+                    }
+                }
+            });
+        }
+        super.stateChanged(e);
+    }
+
+    @Override
+    public void readSettings(WizardDescriptor settings) {
+        super.readSettings(settings);
+
+        setErrorMessage(""); // NOI18N
+        getGui().setControlsEnabled(false);
+
+        AbstractCompiler cCompiler = TestLibChecker.getCCompiler(project);
+        if (cCompiler != null) {
+            libCheckTask = TestLibChecker.asyncCheck(CUNIT, cCompiler, this);
+        } else {
+            libCheckTask = null;
+        }
+    }
+
     @Override
     protected void doStoreSettings(WizardDescriptor settings) {
         if (getTargetExtension().length() > 0) {
@@ -90,6 +134,10 @@ public class NewTestCUnitPanel extends CndPanel {
 
     @Override
     public boolean isValid() {
+        if (libCheckTask != null && !libCheckTask.isFinished()) {
+            return false;
+        }
+
         boolean ok = super.isValid();
 
         setErrorMessage (""); // NOI18N

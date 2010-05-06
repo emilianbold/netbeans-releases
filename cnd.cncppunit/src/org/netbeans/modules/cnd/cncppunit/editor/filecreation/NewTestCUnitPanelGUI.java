@@ -247,6 +247,16 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
         }
     }
 
+    /*package*/ void setControlsEnabled(boolean enable) {
+        testTextField.setEnabled(enable);
+        projectTextField.setEnabled(enable);
+        locationComboBox.setEnabled(enable);
+        folderTextField.setEnabled(enable);
+        documentNameTextField.setEnabled(enable);
+        cbExtension.setEnabled(enable);
+        fileTextField.setEnabled(enable);
+    }
+
     private static Folder getTestsRootFolder(Project project) {
         ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor projectDescriptor = cdp.getConfigurationDescriptor();

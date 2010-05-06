@@ -41,9 +41,12 @@ package org.netbeans.modules.cnd.cncppunit.editor.filecreation;
 
 import java.awt.Component;
 import java.io.IOException;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.editor.filecreation.CndPanel;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.WizardDescriptor;
@@ -53,14 +56,18 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author sg155630
  */
 public class NewTestCppUnitPanel extends CndPanel {
-    
+
+    private static final String CPPUNIT = "cppunit"; // NOI18N
+
     private String baseTestName = null;
+    private RequestProcessor.Task libCheckTask;
 
     NewTestCppUnitPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, String baseTestName) {
         super(project, folders, bottomPanel);
@@ -73,6 +80,38 @@ public class NewTestCppUnitPanel extends CndPanel {
             gui.addChangeListener(this);
         }
         return gui;
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        if (e instanceof TestLibChecker.LibCheckerChangeEvent) {
+            final boolean result = ((TestLibChecker.LibCheckerChangeEvent) e).getResult();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    getGui().setControlsEnabled(true);
+                    if (!result) {
+                        setErrorMessage(NbBundle.getMessage(NewTestCppUnitPanel.class, "MSG_Missing_Library", CPPUNIT)); // NOI18N
+                    }
+                }
+            });
+        }
+        super.stateChanged(e);
+    }
+
+    @Override
+    public void readSettings(WizardDescriptor settings) {
+        super.readSettings(settings);
+
+        setErrorMessage(""); // NOI18N
+        getGui().setControlsEnabled(false);
+
+        AbstractCompiler cppCompiler = TestLibChecker.getCppCompiler(project);
+        if (cppCompiler != null) {
+            libCheckTask = TestLibChecker.asyncCheck(CPPUNIT, cppCompiler, this);
+        } else {
+            libCheckTask = null;
+        }
     }
 
     @Override
@@ -112,13 +151,17 @@ public class NewTestCppUnitPanel extends CndPanel {
         }
         return headerFolder;
     }
-    
+
     NewTestCppUnitPanelGUI getGui() {
         return (NewTestCppUnitPanelGUI)gui;
     }
 
     @Override
     public boolean isValid() {
+        if (libCheckTask != null && !libCheckTask.isFinished()) {
+            return false;
+        }
+
         boolean ok = super.isValid(); 
         
         if (!ok) {
