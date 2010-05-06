@@ -42,6 +42,7 @@
 package org.netbeans.modules.websvc.core;
 
 import java.io.IOException;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -63,7 +64,10 @@ public final class _RetoucheUtil {
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                result[0] = SourceUtils.getPublicTopLevelElement(controller).getQualifiedName().toString();
+                TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
+                if (classEl != null) {
+                    result[0] = classEl.getQualifiedName().toString();
+                }
             }
         }, true);
         return result[0];

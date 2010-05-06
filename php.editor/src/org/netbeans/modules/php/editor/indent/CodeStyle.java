@@ -77,7 +77,11 @@ public final class CodeStyle {
     }
     
     // General tabs and indents ------------------------------------------------
-    
+
+    public int getTabSize() {
+        return preferences.getInt(tabSize, getDefaultAsInt(tabSize));
+    }
+
     public int getIndentSize() {
         return preferences.getInt(indentSize, getDefaultAsInt(indentSize));
     }

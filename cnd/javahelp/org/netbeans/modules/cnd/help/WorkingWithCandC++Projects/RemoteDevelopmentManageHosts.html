@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
+Use is subject to license terms.
+ -->
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link href="/org/netbeans/modules/usersguide/ide.css" type="text/css" rel="StyleSheet">
+    <title>Managing Remote Host for C/C++/Fortran Development</title>
+  </head>
+  <body>
+    <h2>
+       Managing Remote Hosts for C/C++/Fortran Development
+    </h2>
+    <p>
+       <small><a href="#seealso">See Also</a>&nbsp;</small>
+    </p>
+    <p>
+     After you have configured a remote development host, you can manage properties
+     that specify how the IDE uses the host for C/C++/Fortran projects.
+
+   
+    <p><b>To open the Development Host Manager dialog to manage remote host properties:</b>
+
+    <ul>
+         <li>Select Tools &gt; Options, and click the C/C++ category.
+
+        </li>
+        <li>Click Build Tools.</li>
+      <li>
+        Click the Edit button next to the Development Host list to open the Development Host Manager dialog box.
+      </li>
+      <li>In the Development Host Manager dialog box, click the host that you want to manage.</li>
+    </ul>
+    
+    <p class="note">You can also manage development host from the Services
+        window.  Select Window &gt; Services to open the window, then
+        expand the C/C++ Development Hosts node in the Services window.</p>
+    
+    <p><b>To change remote development host properties:</b>
+    </p>
+    <ul><li>In the Development Host Manager dialog box, click the host that you want to manage.</li>
+        <li>Click Properties to open the Host Properties dialog box.</li>
+        <li>Select SSH key to authenticate with an encryption key, or select Password to authenticate
+            by entering a password.</li>
+        <li>Change the name displayed in the IDE for the host by
+        typing in the Name field. </li>
+        <li>To change the way project files are shared with the remote host,
+        select the file synchronization method in the Synchronization list. If the project files
+        are in a shared folder accessible from the local host and remote host, select File System
+        Sharing. If sharing the files is not possible, select Smart Secure Copy to copy the files.
+        The files are copied to your <tt>.netbeans</tt> directory on the remote host.
+      </li>
+    </ul>
+
+
+    <p><b>To set a host as the default development host:</b></p>
+    <ul>
+        <li>
+        In the Development Host Manager dialog box, select the host, click Set as Default, then click OK.
+        This host is used by default for new projects.
+      </li></ul>
+
+    <p><b>To map shared project sources on the local host to a remote host:
+           </b></p>
+           <ul>
+               <li>
+               See <a href="RemoteDevelopmentFileSharing.html">File Sharing with Remote Development Hosts</a>.
+               </li>
+     </ul>
+      
+   <p><b>To remove a remote host:
+           </b></p>
+           <ul>
+               <li>
+       In the Development Host Manager dialog box, select the
+        host you want to remove, click Remove, then click OK.
+      </li>
+           </ul>
+
+    
+    <table>
+      <tr>
+        <th colspan="2" align="left">
+          <a name="seealso">See also</a> 
+        </th>
+      </tr>
+      <tr>
+        <td width="23">
+          &nbsp;
+        </td>
+        <td>
+            <a href="RemoteDevelopment.html">Overview of C/C++ Remote Development</a><br>
+          <a href="ConfiguringBuildTools.html">Configuring Build Tools</a><br>
+           <a href="ProjectPropsBuild.html">C/C++ Project Properties Dialog Box: Build</a><br>
+               <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/kb/docs/cnd/remotedev-tutorial.html">
+                    <param name="text" value="<html><u>C/C++ Remote
+          Development tutorial (Web document)</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
+        </td>
+      </tr>
+    </table>
+    <hr>
+    <p>
+       <small><a href="../credits.html">Legal Notices</a></small>
+    </p>
+    <table border="0" cellpadding="20">
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

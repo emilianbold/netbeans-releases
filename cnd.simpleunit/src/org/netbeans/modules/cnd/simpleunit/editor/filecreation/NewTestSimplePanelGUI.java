@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.simpleunit.editor.filecreation;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,6 +76,7 @@ import org.openide.util.NbBundle;
  */
 class NewTestSimplePanelGUI extends CndPanelGUI implements ActionListener{
 
+    private final String baseTestName;
     private final Logger logger;
     private final String defaultExtension;
     private String expectedExtension;
@@ -88,8 +88,10 @@ class NewTestSimplePanelGUI extends CndPanelGUI implements ActionListener{
     protected static final String NEW_TEST_PREFIX = getMessage("LBL_NewTest_NewTestPrefix"); // NOI18N
 
     /** Creates new form NewCndFileChooserPanelGUI */
-    NewTestSimplePanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, MIMEExtensions es, String defaultExt) {
+    NewTestSimplePanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, MIMEExtensions es, String defaultExt, String baseTestName) {
         super(project, folders);
+
+        this.baseTestName = baseTestName;
 
         this.logger = Logger.getLogger("cnd.editor.filecreation"); // NOI18N
         this.es = es;
@@ -198,7 +200,9 @@ class NewTestSimplePanelGUI extends CndPanelGUI implements ActionListener{
 
         if (template != null) {
             if (documentName == null) {
-                final String baseName = NEW_FILE_PREFIX + template.getName ();
+                String baseName = (baseTestName == null) ? 
+                    NEW_FILE_PREFIX + template.getName() :
+                    getMessage("TestFileSuggestedName", baseTestName).replaceAll(" ", "_").toLowerCase(); // NOI18N
                 documentName = baseName;
                 FileObject currentFolder = preselectedFolder != null ? preselectedFolder : getTargetGroup().getRootFolder().getFileObject(DEFAULT_TESTS_FOLDER);
                 if (currentFolder != null) {
@@ -218,7 +222,10 @@ class NewTestSimplePanelGUI extends CndPanelGUI implements ActionListener{
 
         if (template != null) {
             String testName;
-            final String baseName = NEW_TEST_PREFIX + displayName;
+            final String baseName = (baseTestName == null) ?
+                    NEW_TEST_PREFIX + displayName :
+                    getMessage("TestSuggestedName", baseTestName); // NOI18N
+
             testName = baseName;
             Folder testsRoot = getTestsRootFolder(project);
             if (testsRoot != null) {
@@ -609,6 +616,10 @@ class NewTestSimplePanelGUI extends CndPanelGUI implements ActionListener{
 
     protected static String getMessage(String name) {
         return NbBundle.getMessage( NewTestSimplePanelGUI.class, name);
+    }
+
+    protected static String getMessage(String name, String param) {
+        return NbBundle.getMessage( NewTestSimplePanelGUI.class, name, param);
     }
 
 }

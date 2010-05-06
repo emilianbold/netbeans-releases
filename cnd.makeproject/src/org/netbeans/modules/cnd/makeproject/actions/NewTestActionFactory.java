@@ -42,15 +42,22 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.openide.DialogDisplayer;
@@ -62,15 +69,18 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Vladimir Voskresensky
  */
-public class NewTestActionFactory {
+public final class NewTestActionFactory {
 
     private NewTestActionFactory() {
     }
@@ -81,11 +91,15 @@ public class NewTestActionFactory {
         if (testFiles.isFolder()) {
             for (FileObject test : testFiles.getChildren()) {
                 if (!"hidden".equals(test.getAttribute("templateCategory"))) { //NOI18N
-                    actions.add(new NewTestAction(project, test));
+                    actions.add(new NewTestAction(test, project, null, false));
                 }
             }
         }
         return actions.toArray(new Action[actions.size()]);
+    }
+
+    public static Action createNewTestsSubmenu() {
+        return SystemAction.get(CreateTestSubmenuAction.class);
     }
 
     public static Action emptyTestFolderAction() {
@@ -96,14 +110,16 @@ public class NewTestActionFactory {
 
         private final FileObject test;
         private final Project project;
+        private final Lookup context;
+        private final boolean generateCode;
 
-        public NewTestAction(Project project, FileObject test) {
-            super(getString("NewTestPrefix") + // NOI18N
-                    NbBundle.getBundle((String) test.getAttribute("SystemFileSystem.localizingBundle")).getString(test.getPath()) + //NOI18N
-                    getString("NewTestPostfix"), // NOI18N
-                    getIcon(test));
+        public NewTestAction(FileObject test, Project project, Lookup context, boolean generateCode) {
+            super.putValue(NAME, NbBundle.getMessage(CreateTestSubmenuAction.class, "NewTestNameWrapper", getName(test)));
+            super.putValue(SMALL_ICON, getIcon(test));
             this.test = test;
             this.project = project;
+            this.context = context;
+            this.generateCode = generateCode;
         }
 
         public
@@ -111,7 +127,20 @@ public class NewTestActionFactory {
         void actionPerformed(ActionEvent e) {
             try {
                 final TemplateWizard templateWizard = new TemplateWizard();
-                templateWizard.putProperty("project", project); // NOI18N
+                Project aProject = project;
+                templateWizard.putProperty("UnitTestContextLookup", context); // NOI18N
+                templateWizard.putProperty("UnitTestCodeGeneration", generateCode); // NOI18N
+                if (aProject == null) {
+                    assert context != null;
+                    Node node = context.lookup(Node.class);
+                    if (node != null) {
+                        FileObject fo = node.getLookup().lookup(FileObject.class);
+                        if (fo != null) {
+                            aProject = FileOwnerQuery.getOwner(fo);
+                        }
+                    }
+                }
+                templateWizard.putProperty("project", aProject); // NOI18N
                 Set<DataObject> files = templateWizard.instantiate(DataObject.find(FileUtil.getConfigFile(test.getPath())));
                 if (files != null && !files.isEmpty()) {
                     MakeLogicalViewProvider.setVisible(project,
@@ -139,14 +168,13 @@ public class NewTestActionFactory {
             return pdp.getConfigurationDescriptor();
         }
         
-        private static Icon getIcon(FileObject test) {
-            URL url = (URL) test.getAttribute("SystemFileSystem.icon"); // NOI18N
-            ImageIcon imageIcon = new ImageIcon(ImageUtilities.loadImage(url.getPath().substring(1), true));
-            return imageIcon;
+        private String getName(FileObject test) {
+            return NbBundle.getBundle((String) test.getAttribute("SystemFileSystem.localizingBundle")).getString(test.getPath());
         }
 
-        private static String getString(String s) {
-            return NbBundle.getBundle(NewTestActionFactory.class).getString(s);
+        private Icon getIcon(FileObject test) {
+            URL url = (URL) test.getAttribute("SystemFileSystem.icon"); // NOI18N
+            return ImageUtilities.loadImageIcon(url.getPath().substring(1), true);
         }
     }
 
@@ -188,12 +216,14 @@ public class NewTestActionFactory {
             MakeLogicalViewProvider.setVisible(project, newFolder);
         }
 
+        @Override
         public boolean enable(Node[] activatedNodes) {
             return true;
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
-            return null;
+            return HelpCtx.DEFAULT_HELP;
         }
 
         @Override
@@ -203,6 +233,117 @@ public class NewTestActionFactory {
 
         private String getString(String s) {
             return NbBundle.getBundle(NewTestActionFactory.class).getString(s);
+        }
+    }
+
+    private final static class CreateTestSubmenuAction extends NodeAction {
+
+        private LazyPopupMenu popupMenu;
+        private final Collection<Action> items = new ArrayList<Action>(5);
+
+        @Override
+        public JMenuItem getPopupPresenter() {
+            createSubMenu();
+            return popupMenu;
+        }
+
+        @Override
+        public JMenuItem getMenuPresenter() {
+            createSubMenu();
+            return popupMenu;
+        }
+
+        private void createSubMenu() {
+            if (popupMenu == null) {
+                popupMenu = new LazyPopupMenu(NbBundle.getMessage(CreateTestSubmenuAction.class, "CTL_TestAction"), items);
+            }
+            items.clear();
+            Node[] nodes = getActivatedNodes();
+            if (nodes != null && nodes.length == 1) {
+                FileObject fo = nodes[0].getLookup().lookup(FileObject.class);
+                if (fo != null) {
+                    Project project = FileOwnerQuery.getOwner(fo);
+                    if (project != null) {
+                        items.addAll(createActions(project));
+                    }
+                }
+            }
+            popupMenu.setEnabled(!items.isEmpty());
+        }
+
+        @Override
+        protected void performAction(Node[] activatedNodes) {
+        }
+
+        @Override
+        protected boolean enable(Node[] activatedNodes) {
+            if (activatedNodes.length == 1) {
+                NativeFileItemSet set = activatedNodes[0].getLookup().lookup(NativeFileItemSet.class);
+                if (set != null && !set.isEmpty()) {
+                    for (NativeFileItem nativeFileItem : set.getItems()) {
+                        if (nativeFileItem instanceof Item) {
+                            Item item = (Item) nativeFileItem;
+                            Folder folder = item.getFolder();
+                            if (folder != null && folder.isTest()) {
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public String getName() {
+            return NbBundle.getMessage(CreateTestSubmenuAction.class, "CTL_TestAction");
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
+        private Collection<Action> createActions(Project project) {
+            ArrayList<Action> actions = new ArrayList<Action>();
+            FileObject testFiles = FileUtil.getConfigFile("Templates/testFiles"); //NOI18N
+            if (testFiles.isFolder()) {
+                for (FileObject test : testFiles.getChildren()) {
+                    if (Boolean.TRUE.equals(test.getAttribute("templateGenerator"))) { //NOI18N
+                        actions.add(new NewTestAction(test, project, org.openide.util.Utilities.actionsGlobalContext(), true));
+                    }
+                }
+            }
+            return actions;
+        }
+    }
+
+    private final static class LazyPopupMenu extends JMenu {
+
+        private final Collection<Action> items;
+
+        public LazyPopupMenu(String name, Collection<Action> items) {
+            super(name);
+            assert items != null : "array must be inited";
+            this.items = items;
+        }
+
+        @Override
+        public synchronized JPopupMenu getPopupMenu() {
+            super.removeAll();
+            for (Action action : items) {
+                if (action instanceof Presenter.Popup) {
+                    JMenuItem item = ((Presenter.Popup) action).getPopupPresenter();
+                    add(item);
+                } else if (action instanceof Presenter.Menu) {
+                    JMenuItem item = ((Presenter.Menu) action).getMenuPresenter();
+                    add(item);
+                } else {
+                    add(action);
+                }
+            }
+            return super.getPopupMenu();
         }
     }
 }

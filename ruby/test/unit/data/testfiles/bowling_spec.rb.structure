@@ -1,3 +1,5 @@
-describe:TEST:[]:ESCAPED{describe}:
-  before: each:TEST:[]:ESCAPED{before: each}:
-  it: should score 0 for gutter game:TEST:[]:ESCAPED{it: should score 0 for gutter game}:
+BowlingSpec:CLASS:[]:ESCAPED{BowlingSpec}:
+  bowling:FIELD:[PRIVATE]:ESCAPED{bowling}:
+  describe: Bowling:TEST:[]:ESCAPED{describe: Bowling}:
+    before: each:TEST:[]:ESCAPED{before: each}:
+    it: should score 0 for gutter game:TEST:[]:ESCAPED{it: should score 0 for gutter game}:

@@ -43,6 +43,7 @@ package org.netbeans.modules.debugger.jpda.projects;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.awt.event.ActionEvent;
@@ -381,7 +382,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                     }
                     Tree tree = mainPath.getLeaf();
                     Tree.Kind kind = tree.getKind();
-                    // do not show tooltip for a string literal (it does not work correctly)
+                    // [TODO] do not show tooltip for a string literal (it does not work correctly)
                     if (kind == Tree.Kind.STRING_LITERAL) {
                         isValid[0] = false;
                         return;
@@ -392,7 +393,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                     int startLine = Utilities.getLineOffset((BaseDocument)doc, startPos);
                     int endLine = Utilities.getLineOffset((BaseDocument)doc, endPos);
                     int line = Utilities.getLineOffset((BaseDocument)doc, offset);
-                    if (startLine != line || endLine != line) {
+                    if (kind != Tree.Kind.VARIABLE && (startLine != line || endLine != line)) {
                         isValid[0] = false;
                         return;
                     }
@@ -436,6 +437,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         if (className[0].length() > 0) {
             Set superTypeNames = new HashSet<String>();
             This thisVar = currentFrame.getThisVariable();
+            // [TODO] how to obtain class name in static context?
             if (thisVar != null) {
                 String fqn = thisVar.getType();
                 // remove anonymous inner class part

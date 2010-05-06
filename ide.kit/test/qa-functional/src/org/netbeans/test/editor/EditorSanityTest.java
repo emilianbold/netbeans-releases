@@ -77,6 +77,15 @@ public class EditorSanityTest extends NbTestCase {
         );
     }
 
+    public void testInitBindings() {
+        try {
+            org.openide.awt.AcceleratorBinding.setAccelerator(null, null);
+            fail("Just initialize the class, otherwise it has to throw NPE");
+        } catch (NullPointerException ex) {
+            // OK
+        }
+    }
+
     /**
      * test for reflection used in multiview module that retrieves a setting value from editor.
      *

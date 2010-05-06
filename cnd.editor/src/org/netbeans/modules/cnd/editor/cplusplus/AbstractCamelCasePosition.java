@@ -130,17 +130,7 @@ import org.openide.util.NbPreferences;
     }        
 
     private boolean isUsingCamelCase() {
-        try {
-            ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
-            Class accpClass = cl.loadClass("org.netbeans.modules.editor.java.AbstractCamelCasePosition"); // NOI18N
-            if (accpClass == null) {
-                return true;
-            }
-            Preferences p = NbPreferences.forModule(accpClass);
-            return p.getBoolean("useCamelCaseStyleNavigation", true); // NOI18N
-        } catch (ClassNotFoundException ex) {
-            return true;
-        }
+        return NbPreferences.root ().getBoolean("useCamelCaseStyleNavigation", true); // NOI18N
     }
 
 }

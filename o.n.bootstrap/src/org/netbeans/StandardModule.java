@@ -71,7 +71,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import org.netbeans.Module.PackageExport;
-import org.netbeans.Util.FileWithSuffix;
+import org.netbeans.LocaleVariants.FileWithSuffix;
 import org.openide.modules.Dependency;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -318,7 +318,7 @@ final class StandardModule extends Module {
     private void findExtensionsAndVariants(Manifest m) {
         assert jar != null : "Cannot load extensions from classpath module " + getCodeNameBase();
         localeVariants = null;
-        List<File> l = Util.findLocaleVariantsOf(jar);
+        List<File> l = LocaleVariants.findLocaleVariantsOf(jar);
         if (!l.isEmpty()) {
             localeVariants = new HashSet<File>(l);
         }
@@ -349,7 +349,7 @@ final class StandardModule extends Module {
                 }
                 if (plainExtensions == null) plainExtensions = new HashSet<File>();
                 plainExtensions.add(extfile);
-                l = Util.findLocaleVariantsOf(extfile);
+                l = LocaleVariants.findLocaleVariantsOf(extfile);
                 if (!l.isEmpty()) {
                     if (localeExtensions == null) {
                         localeExtensions = new HashSet<File>();
@@ -450,9 +450,9 @@ final class StandardModule extends Module {
                     name = locbundle.substring(0, idx);
                     ext = locbundle.substring(idx);
                 }
-                List<Util.FileWithSuffix> pairs = Util.findLocaleVariantsWithSuffixesOf(jar);
+                List<FileWithSuffix> pairs = LocaleVariants.findLocaleVariantsWithSuffixesOf(jar);
                 Collections.reverse(pairs);
-                for (Util.FileWithSuffix pair : pairs) {
+                for (FileWithSuffix pair : pairs) {
                     File localeJar = pair.file;
                     String suffix = pair.suffix;
                     String rsrc = name + suffix + ext;

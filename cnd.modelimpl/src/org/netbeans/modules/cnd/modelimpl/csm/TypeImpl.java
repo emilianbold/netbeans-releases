@@ -360,7 +360,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
 
 
     // package
-    CharSequence getOwnText() {
+    public CharSequence getOwnText() {
         if (qname != null && qname.length>0) {
             return qname[qname.length-1];
         } else {

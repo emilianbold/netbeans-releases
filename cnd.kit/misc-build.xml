@@ -44,15 +44,39 @@ made subject to such option by the copyright holder.
 <project name="cnd" default="build" basedir=".">
 
     <property name="nbroot" location=".."/>
+    <property name="nbbuild" location="${nbroot}/nbbuild"/>
+
+    <!-- When updating an entry within ZIP archive, Ant compares
+         timestamps of the entry and the replacement file. If entry
+         is newer that replacement file, no update is performed.
+         In our case the replacement must be unconditional. -->
+    <macrodef name="replace-zip-entry">
+        <attribute name="zipfile"/>
+        <attribute name="oldentry"/>
+        <attribute name="newentry"/>
+        <sequential>
+            <zip destfile="@{zipfile}.tmp">
+                <zipfileset
+                    src="@{zipfile}"
+                    excludes="@{oldentry}"/>
+                <zipfileset
+                    file="@{newentry}"
+                    fullpath="@{oldentry}"/>
+            </zip>
+            <move overwrite="true"
+                  file="@{zipfile}.tmp"
+                  tofile="@{zipfile}"/>
+        </sequential>
+    </macrodef>
 
     <target name="-init-tasks">
         <taskdef name="sortmodules"
                 classname="org.netbeans.nbbuild.SortSuiteModules"
-                classpath="${nbroot}/nbbuild/nbantext.jar"/>
+                classpath="${nbbuild}/nbantext.jar"/>
     </target>
 
     <target name="-init-modules" depends="-init-tasks">
-        <loadproperties srcfile="${nbroot}/nbbuild/cluster.properties"/>
+        <loadproperties srcfile="${nbbuild}/cluster.properties"/>
         <pathconvert property="cnd.modules.fullpath">
             <path>
                 <dirset dir="${nbroot}" includes="${nb.cluster.cnd}" excludes="jellytools.cnd"/>
@@ -85,7 +109,16 @@ made subject to such option by the copyright holder.
     <target name="build">
         <subant buildpath="${nbroot}" target="build">
             <property name="cluster.config" value="cnd"/>
+            <property name="buildnum" value="dev"/>
         </subant>
+        <antcall target="-replace-jsch-in-build"/>
+    </target>
+
+    <target name="-replace-jsch-in-build" if="replace.jsch.jar">
+        <replace-zip-entry
+            zipfile="${nbbuild}/NetBeans-dev-cnd.zip"
+            oldentry="netbeans/ide/modules/ext/jsch-0.1.41.jar"
+            newentry="${replace.jsch.jar}"/>
     </target>
 
     <target name="build-test-dist">
@@ -93,6 +126,14 @@ made subject to such option by the copyright holder.
             <property name="cluster.config" value="cnd"/>
             <property name="test.fail.on.error" value="true"/>
         </subant>
+        <antcall target="-replace-jsch-in-testdist"/>
+    </target>
+
+    <target name="-replace-jsch-in-testdist" if="replace.jsch.jar">
+        <replace-zip-entry
+            zipfile="${nbbuild}/build/testdist.zip"
+            oldentry="extralibs/jsch-0.1.41.jar"
+            newentry="${replace.jsch.jar}"/>
     </target>
 
     <target name="test-build" depends="-init-modules">

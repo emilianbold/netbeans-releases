@@ -208,7 +208,8 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
         if (CsmKindUtilities.isOffsetable(item)) {
             if (currentFile instanceof FileImpl) {
                 NativeFileItem nativeFile = ((FileImpl) currentFile).getNativeFileItem();
-                String incFilePath = ((CsmOffsetable) item).getContainingFile().getAbsolutePath().toString();
+                CsmFile incFile = ((CsmOffsetable) item).getContainingFile();
+                String incFilePath = incFile.getAbsolutePath().toString();
 
                 StringBuilder includeDirective = new StringBuilder("#include "); // NOI18N
 
@@ -264,6 +265,26 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
         return ""; // NOI18N
     }
 
+    @Override
+    public String getLocalIncludeDerectiveByFilePath(String path, CsmObject item) {
+        CsmFile incFile = ((CsmOffsetable) item).getContainingFile();
+        String incFilePath = incFile.getAbsolutePath().toString();
+
+        StringBuilder includeDirective = new StringBuilder("#include "); // NOI18N
+        includeDirective.append("\""); // NOI18N
+        String projectPath = path;
+        if (!incFilePath.startsWith(projectPath)) {
+            projectPath = ""; // NOI18N
+        }
+        includeDirective.append(CndPathUtilitities.toRelativePath(projectPath, incFilePath));
+        if (!projectPath.equals("")) // NOI18N
+        {
+            includeDirective.append("\""); // NOI18N
+            return includeDirective.toString();
+        }
+        return "";
+    }
+    
     // Returns relative path for file from list of paths
     private String getRelativePath(List<String> paths, String filePath) {
         String goodPath = ""; // NOI18N

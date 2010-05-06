@@ -259,21 +259,21 @@ public class MonitorsUpdateService {
                                 leaks = (long) sumMetrics(leakFunctions);
                             }
 
-                            newData.add(new DataRow(LEAK_COLNAMES, Arrays.asList(leaks)));
+                            newData.add(new DataRow(LEAK_COLNAMES, Collections.singletonList(leaks)));
                         }
 
                         if (isDataRaceMonitor) {
                             List<DataraceImpl> dataraces = erprintSession.getDataRaces(!restarted);
                             restarted = true;
 
-                            newData.add(new DataRow(DATARACE_COLNAMES, Arrays.asList(dataraces.size())));
+                            newData.add(new DataRow(DATARACE_COLNAMES, Collections.singletonList(dataraces.size())));
                         }
 
                         if (isDeadlockMonitor) {
                             List<DeadlockImpl> deadlocks = erprintSession.getDeadlocks(!restarted);
                             restarted = true;
 
-                            newData.add(new DataRow(DEADLOCK_COLNAMES, Arrays.asList(deadlocks.size())));
+                            newData.add(new DataRow(DEADLOCK_COLNAMES, Collections.singletonList(deadlocks.size())));
                         }
 
                     } catch (Throwable ex) {

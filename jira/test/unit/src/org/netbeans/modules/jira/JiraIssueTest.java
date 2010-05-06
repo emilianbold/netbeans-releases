@@ -39,6 +39,24 @@
 
 package org.netbeans.modules.jira;
 
+import com.atlassian.connector.eclipse.internal.jira.core.JiraAttribute;
+import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
+import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
+import com.atlassian.connector.eclipse.internal.jira.core.WorkLogConverter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Attachment;
+import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraAction;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraIssue;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraWorkLog;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.IssueCollector;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.IssueTypeFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.StatusFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -50,25 +68,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
-import org.eclipse.mylyn.internal.jira.core.JiraClientFactory;
-import org.eclipse.mylyn.internal.jira.core.JiraCorePlugin;
-import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
-import org.eclipse.mylyn.internal.jira.core.WorkLogConverter;
-import org.eclipse.mylyn.internal.jira.core.model.Attachment;
-import org.eclipse.mylyn.internal.jira.core.model.IssueType;
-import org.eclipse.mylyn.internal.jira.core.model.JiraAction;
-import org.eclipse.mylyn.internal.jira.core.model.JiraIssue;
-import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
-import org.eclipse.mylyn.internal.jira.core.model.JiraWorkLog;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
-import org.eclipse.mylyn.internal.jira.core.model.filter.IssueCollector;
-import org.eclipse.mylyn.internal.jira.core.model.filter.IssueTypeFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.StatusFilter;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.TaskActivityManager;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
@@ -627,10 +626,10 @@ public class JiraIssueTest extends NbTestCase {
     }*/
 
     private class JiraCollector implements IssueCollector {
-        private List<org.eclipse.mylyn.internal.jira.core.model.JiraIssue> issues = new ArrayList<org.eclipse.mylyn.internal.jira.core.model.JiraIssue>();
+        private List<JiraIssue> issues = new ArrayList<JiraIssue>();
         public void start() { }
         public void done() { }
-        public void collectIssue(org.eclipse.mylyn.internal.jira.core.model.JiraIssue issue) {
+        public void collectIssue(JiraIssue issue) {
             issues.add(issue);
         }
         public boolean isCancelled() {

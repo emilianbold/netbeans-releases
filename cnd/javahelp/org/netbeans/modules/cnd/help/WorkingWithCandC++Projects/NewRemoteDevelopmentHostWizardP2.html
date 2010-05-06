@@ -18,13 +18,25 @@ Use is subject to license terms.
        <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
     </p>
     <p>
-       Enter the user name and password that you use to log in to the remote host. If you do not
-      want to specify the password each time you connect to the server through the IDE, select
-      Remember Password. However, this option can compromise security.
+       Enter the user name that you use to log in to the remote host and click Next.
     </p>
-    <p>Click Next after entering your password.  The IDE then connects to the remote host,
+    <p>In the Authentication Type dialog box, select a method for authenticating 
+        to the host.</p>
+    <p><b>Password. </b> Select this option to be prompted to enter your password
+        when the IDE connects to the host.</p>
+    <p><b>SSH key. </b>  Select this option to use a authentication key to connect to the host.
+    The keypair must already have been set up appropriately on the local client and remote host before
+    the IDE can use the SSH private key. You can browse to the location where the keys are stored and select the private
+    key you want to use.</p>
+    <p>Click OK after making your selection.</p>
+    <p>If you selected password, you are prompted to enter your password. If you selected
+        SSH key, you might be asked to confirm the RSA key fingerprint of the server if this
+        is the first time you have connected to the server using the key.</p>
+
+    <p>The IDE then connects to the remote host,
     determines the host's platform, and searches for tool collections on your path on the remote host.
-    When this process is complete, the Summary page is displayed.</p>
+    When this process is complete, the <a href="NewRemoteDevelopmentHostWizardP3.html">Summary page</a>
+    is displayed.</p>
     <table>
       <tr>
         <th colspan="2" align="left">
@@ -36,7 +48,7 @@ Use is subject to license terms.
           &nbsp;
         </td>
         <td>
-          <a href="RemoteDevelopment.html">Using a Remote Development Host</a><br>
+          <a href="RemoteDevelopment.html">Overview of Remote Development</a><br>
            
         </td>
       </tr>

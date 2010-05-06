@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import java.io.File;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.*;
@@ -146,6 +148,35 @@ public class Utils {
     public static String getCsmIncludeKindKey() {
         // Returned string should be differed from getCsmDeclarationKindkey()
         return "I"; // NOI18N
+    }
+
+    public static String getCsmInheritanceKindKey(CsmInheritance obj) {
+        switch (obj.getVisibility()) {
+            case PRIVATE:
+                return "h"; // NOI18N
+            case PROTECTED:
+                return "y"; // NOI18N
+            case PUBLIC:
+                return "H"; // NOI18N
+            case NONE:
+            default:
+                return "Y"; // NOI18N
+        }
+        // Returned string should be differed from getCsmDeclarationKindkey()
+    }
+
+    public static CsmVisibility getCsmVisibility(char c) {
+        switch (c) {
+            case 'h':
+                return CsmVisibility.PRIVATE;
+            case 'y':
+                return CsmVisibility.PROTECTED;
+            case 'H':
+                return CsmVisibility.PUBLIC;
+            case 'Y':
+            default:
+                return CsmVisibility.NONE;
+        }
     }
 
     public static String getCsmParamListKindKey() {

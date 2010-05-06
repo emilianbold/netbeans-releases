@@ -39,19 +39,17 @@
 
 package org.netbeans.modules.jira.query;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
-import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.Issue;

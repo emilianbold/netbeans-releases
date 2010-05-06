@@ -395,6 +395,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     @Override
+    public final Collection<CsmInheritance> findInheritances(CharSequence name) {
+        return getClassifierSorage().getInheritances(name);
+    }
+
+    @Override
     public final CsmDeclaration findDeclaration(CharSequence uniqueName) {
         return getDeclarationsSorage().getDeclaration(uniqueName);
     }

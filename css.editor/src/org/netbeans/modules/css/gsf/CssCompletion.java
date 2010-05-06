@@ -286,7 +286,7 @@ public class CssCompletion implements CodeCompletionHandler {
             all.addAll(completeHtmlSelectors(prefix, caretOffset));
             return new DefaultCompletionResult(all, false);
 
-        } else if (node.kind() == CssParserTreeConstants.JJTMEDIARULE) {
+        } else if (node.kind() == CssParserTreeConstants.JJTMEDIARULE || node.kind() == CssParserTreeConstants.JJTMEDIARULELIST) {
             return new DefaultCompletionResult(completeHtmlSelectors(prefix, caretOffset), false);
 
         } else if (node.kind() == CssParserTreeConstants.JJTSKIP || node.kind() == CssParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE) {
@@ -337,6 +337,9 @@ public class CssCompletion implements CodeCompletionHandler {
             node.visitChildren(propertySearch);
 
             SimpleNode property = result[0];
+            if(property == null) {
+                return CodeCompletionResult.NONE;
+            }
 
             String expressionText = ""; //NOI18N
             if (result[1] != null) {

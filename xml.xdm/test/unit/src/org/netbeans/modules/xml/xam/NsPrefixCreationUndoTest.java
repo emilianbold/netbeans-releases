@@ -45,7 +45,7 @@ import javax.swing.text.Document;
 import junit.framework.*;
 import javax.swing.undo.UndoManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.xml.xam.TestComponent.A;
+import org.netbeans.modules.xml.xam.TestComponent3.A;
 import org.netbeans.modules.xml.xdm.Util;
 
 /**
@@ -55,7 +55,7 @@ import org.netbeans.modules.xml.xdm.Util;
 public class NsPrefixCreationUndoTest extends NbTestCase {
     AbstractModelTest.PropertyListener plistener;
     AbstractModelTest.TestComponentListener listener;
-    TestModel model;
+    TestModel3 model;
     Document doc;
 
     public NsPrefixCreationUndoTest(String testName) {
@@ -103,14 +103,14 @@ public class NsPrefixCreationUndoTest extends NbTestCase {
         // Add child component to A element
         model.startTransaction();
         try {
-            TestComponent.Aa newChildAa = new TestComponent.Aa(model, 1);
+            TestComponent3.Aa newChildAa = new TestComponent3.Aa(model, 1);
             a.appendChild("setup", newChildAa);
         } finally {
             model.endTransaction();
         }
         //
-        TestComponent.Aa newAa = a.getChild(TestComponent.Aa.class);
-        assertEquals(TestComponent.NS2_URI, newAa.getNamespaceURI());
+        TestComponent3.Aa newAa = a.getChild(TestComponent3.Aa.class);
+        assertEquals(TestComponent3.NS2_URI, newAa.getNamespaceURI());
         //
         String xdmModelTextAfterAdd = Util.getXdmBasedModelText(model);
         String xamModelTextAfterAdd = Util.getXamBasedModelText(model);
@@ -125,6 +125,72 @@ public class NsPrefixCreationUndoTest extends NbTestCase {
         assertEquals(xamModelText, xamModelTextInitial);
         //
         ur.redo();
+        //
+        xdmModelText = Util.getXdmBasedModelText(model);
+        assertEquals(xdmModelText, xdmModelTextAfterAdd);
+        //
+        xamModelText = Util.getXamBasedModelText(model);
+        assertEquals(xamModelText, xamModelTextAfterAdd);
+        //
+        ur.undo();
+        //
+        xdmModelText = Util.getXdmBasedModelText(model);
+        assertEquals(xdmModelText, xdmModelTextInitial);
+        //
+        xamModelText = Util.getXamBasedModelText(model);
+        assertEquals(xamModelText, xamModelTextInitial);
+        //
+    }
+
+    /**
+     * Tests procesing of an interruption inside of ComponentUpdater with
+     * a RuntimeException. According to TestComponentUpdater class,
+     * a RuntimeException should be thrown when an Err element is added to the model. 
+     * 
+     * This test shows that regardless of the exception, the XAM model remains 
+     * valid due to AbstractDocumentModel.refresh() method is called. 
+     *
+     * @throws Exception
+     */
+    public void testInterruptedComponentUpdater() throws Exception {
+        defaultSetup();
+        final UndoManager ur = new UndoManager();
+        model.addUndoableEditListener(ur);
+        A a = model.getRootComponent().getChild(A.class);
+        //
+        String xdmModelTextInitial = Util.getXdmBasedModelText(model);
+        String xamModelTextInitial = Util.getXamBasedModelText(model);
+        //
+        // Add child component to A element
+        model.startTransaction();
+        try {
+            TestComponent3.Err newChildErr = new TestComponent3.Err(model, 1);
+            a.appendChild(TestComponent3.Err.LNAME, newChildErr);
+        } finally {
+            model.endTransaction();
+        }
+        //
+        TestComponent3.Err newErr = a.getChild(TestComponent3.Err.class);
+        assertEquals(TestComponent3.NS_ERR_URI, newErr.getNamespaceURI());
+        //
+        String xdmModelTextAfterAdd = Util.getXdmBasedModelText(model);
+        String xamModelTextAfterAdd = Util.getXamBasedModelText(model);
+        //
+        ur.undo();
+        //
+        // Check the XDM and XAM models' structure return back to initial state after undo.
+        String xdmModelText = Util.getXdmBasedModelText(model);
+        assertEquals(xdmModelText, xdmModelTextInitial);
+        //
+        String xamModelText = Util.getXamBasedModelText(model);
+        assertEquals(xamModelText, xamModelTextInitial);
+        //
+        try {
+            ur.redo();
+        } catch (Exception ex) {
+            String exMsg = ex.getMessage();
+            assertEquals(exMsg, "Test synch crashed.");
+        }
         //
         xdmModelText = Util.getXdmBasedModelText(model);
         assertEquals(xdmModelText, xdmModelTextAfterAdd);

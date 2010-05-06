@@ -79,6 +79,7 @@ public class CookieActionTest extends NbTestCase {
     private CookieNode n1, n2;
     private Node n3;
     
+    @Override
     protected void setUp() throws Exception {
         a1 = SystemAction.get(SimpleCookieAction.class);
         n1 = new CookieNode();
@@ -87,6 +88,7 @@ public class CookieActionTest extends NbTestCase {
         n2.setName("n2");
         n3 = new AbstractNode(Children.LEAF);
         n3.setName("n3");
+        SimpleCookieAction.runOn.clear();
     }
     
     /**
@@ -206,6 +208,23 @@ public class CookieActionTest extends NbTestCase {
             n2.setHasCookie(true);
         }
     }
+
+    public void testAsynchronousInvocationIsOKOnClone() throws Exception {
+        SimpleCookieAction s = SimpleCookieAction.get(AsynchSimpleCookieAction.class);
+
+        CookieNode node = new CookieNode();
+        node.setHasCookie(true);
+        Action clone = s.createContextAwareInstance(node.getLookup());
+        assertTrue("Enabled", clone.isEnabled());
+        synchronized (SimpleCookieAction.runOn) {
+            assertTrue("Empty now", SimpleCookieAction.runOn.isEmpty());
+            clone.actionPerformed(new ActionEvent(this, 0, ""));
+            SimpleCookieAction.runOn.wait();
+            assertEquals("One list is there", 1, SimpleCookieAction.runOn.size());
+            assertEquals("It has one node", 1, SimpleCookieAction.runOn.get(0).size());
+            assertEquals("it is our node", node, SimpleCookieAction.runOn.get(0).get(0));
+        }
+    }
     
     //
     // cloneAction support
@@ -292,24 +311,40 @@ public class CookieActionTest extends NbTestCase {
     }
     
     public static class SimpleCookieAction extends CookieAction {
+        @Override
         protected int mode() {
             return MODE_EXACTLY_ONE;
         }
+        @Override
         protected Class[] cookieClasses() {
             return new Class[] {OpenCookie.class};
         }
-        public static final List runOn = new ArrayList(); // List<List<Node>>
+        public static final List<List<Node>> runOn = new ArrayList<List<Node>>();
+        @Override
         protected void performAction(Node[] activatedNodes) {
-            runOn.add(Arrays.asList(activatedNodes));
+            synchronized (runOn) {
+                runOn.add(Arrays.asList(activatedNodes));
+                runOn.notifyAll();
+            }
         }
+        @Override
         public String getName() {
             return "SimpleCookieAction";
         }
+        @Override
         public HelpCtx getHelpCtx() {
             return null;
         }
+        @Override
         protected boolean asynchronous() {
             return false;
+        }
+    }
+
+    public static class AsynchSimpleCookieAction extends SimpleCookieAction {
+        @Override
+        protected boolean asynchronous() {
+            return true;
         }
     }
     

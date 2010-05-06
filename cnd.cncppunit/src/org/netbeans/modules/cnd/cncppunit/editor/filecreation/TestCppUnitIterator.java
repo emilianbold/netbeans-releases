@@ -40,14 +40,19 @@ package org.netbeans.modules.cnd.cncppunit.editor.filecreation;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.cncppunit.codegeneration.CppUnitCodeGenerator;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -57,10 +62,14 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfigur
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.simpleunit.spi.wizard.AbstractUnitTestIterator;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -69,14 +78,17 @@ import org.openide.loaders.TemplateWizard;
  *
  * @author sg155630
  */
-public class TestCppUnitIterator extends CCFSrcFileIterator {
+public class TestCppUnitIterator extends AbstractUnitTestIterator {
+    private WizardDescriptor.Panel<WizardDescriptor> targetChooserDescriptorPanel;
 
     @Override
     public void initialize(TemplateWizard wiz) {
+        super.initialize(wiz);
         Project project = Templates.getProject(wiz);
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-        targetChooserDescriptorPanel = new NewTestCppUnitPanel(project, groups, null);
+        targetChooserDescriptorPanel = new NewTestCppUnitPanel(project, groups, null,
+                (String) wiz.getProperty(CND_UNITTEST_DEFAULT_NAME));
     }
 
     @Override
@@ -86,10 +98,36 @@ public class TestCppUnitIterator extends CCFSrcFileIterator {
         if(getTestName() == null) {
             return dataObjects;
         }
+        Project project = Templates.getProject(wiz);
 
         DataFolder targetFolder = wiz.getTargetFolder();
 
-        Project project = Templates.getProject(wiz);
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
+
+        List<CsmFunction> fs = new ArrayList<CsmFunction>();
+        Object listObj = wiz.getProperty(CND_UNITTEST_FUNCTIONS);
+        if(listObj instanceof List<?>) {
+            List<?> list = (List<?>) listObj;
+            for (Object obj : list) {
+                if(obj instanceof CsmFunction) {
+                    fs.add((CsmFunction)obj);
+                }
+            }
+        }
+        params.putAll(CppUnitCodeGenerator.generateTemplateParamsForFunctions(
+                getRootFolder().getPath(),
+                fs));
+
+        String headerName = getTestClassHeaderFileName(); //NOI18N
+        StringBuilder guardName = new StringBuilder();
+        for (int i = 0; i < headerName.length(); i++) {
+            char c = headerName.charAt(i);
+            guardName.append(Character.isJavaIdentifierPart(c) ? Character.toUpperCase(c) : '_');
+        }
+        params.put("guardName", guardName.toString()); // NOI18N
+        params.put("className", getTestClassName()); // NOI18N
+        params.put("headerNameAndExt", headerName); // NOI18N
 
         Folder folder = null;
         Folder testsRoot = getTestsRootFolder(project);
@@ -106,22 +144,22 @@ public class TestCppUnitIterator extends CCFSrcFileIterator {
         setCUnitLinkerOptions(project, folder);
 
         DataObject formDataObject = NewTestCppUnitPanel.getTemplateDataObject("cppunittestclassfile.cpp"); // NOI18N
-        DataObject dataObject = formDataObject.createFromTemplate(targetFolder, getTestClassSourceFileName());
+        DataObject dataObject = formDataObject.createFromTemplate(targetFolder, getTestClassSourceFileName(), params);
         addItemToTestFolder(project, folder, dataObject);
 
         formDataObject = NewTestCppUnitPanel.getTemplateDataObject("cppunittestclassfile.h"); // NOI18N
-        dataObject = formDataObject.createFromTemplate(targetFolder, getTestClassHeaderFileName());
+        dataObject = formDataObject.createFromTemplate(targetFolder, getTestClassHeaderFileName(), params);
         addItemToTestFolder(project, folder, dataObject);
 
         formDataObject = NewTestCppUnitPanel.getTemplateDataObject("cppunittestrunnerfile.cpp"); // NOI18N
-        dataObject = formDataObject.createFromTemplate(targetFolder, getTestRunnerFileName());
+        dataObject = formDataObject.createFromTemplate(targetFolder, getTestRunnerFileName(), params);
         addItemToTestFolder(project, folder, dataObject);
 
         dataObjects.add(dataObject);
         return dataObjects;
     }
 
-    private static boolean addItemToTestFolder(Project project, Folder folder, DataObject dataObject) {
+    private boolean addItemToTestFolder(Project project, Folder folder, DataObject dataObject) {
         FileObject file = dataObject.getPrimaryFile();
         Project owner = FileOwnerQuery.getOwner(file);
 
@@ -152,6 +190,10 @@ public class TestCppUnitIterator extends CCFSrcFileIterator {
         return true;
     }
 
+    private String getTestClassName() {
+        return ((NewTestCppUnitPanelGUI)targetChooserDescriptorPanel.getComponent()).getClassName();
+    }
+
     private String getTestClassSourceFileName() {
         return ((NewTestCppUnitPanelGUI)targetChooserDescriptorPanel.getComponent()).getSourceFileName();
     }
@@ -168,30 +210,11 @@ public class TestCppUnitIterator extends CCFSrcFileIterator {
         return ((NewTestCppUnitPanelGUI)targetChooserDescriptorPanel.getComponent()).getTestName();
     }
 
-    private static MakeConfigurationDescriptor getMakeConfigurationDescriptor(Project p) {
-        ConfigurationDescriptorProvider pdp = p.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        if (pdp == null) {
-            return null;
-        }
-        return pdp.getConfigurationDescriptor();
+    private FileObject getRootFolder() {
+        return ((NewTestCppUnitPanelGUI)targetChooserDescriptorPanel.getComponent()).getTargetGroup().getRootFolder();
     }
 
-    private static Folder getTestsRootFolder(Project project) {
-        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        MakeConfigurationDescriptor projectDescriptor = cdp.getConfigurationDescriptor();
-
-        Folder root = projectDescriptor.getLogicalFolders();
-        Folder testRootFolder = null;
-        for (Folder folder : root.getFolders()) {
-            if(folder.isTestRootFolder()) {
-                testRootFolder = folder;
-                break;
-            }
-        }
-        return testRootFolder;
-    }
-
-    private static void setCUnitLinkerOptions(Project project, Folder testFolder) {
+    private void setCUnitLinkerOptions(Project project, Folder testFolder) {
         ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor projectDescriptor = cdp.getConfigurationDescriptor();
         FolderConfiguration folderConfiguration = testFolder.getFolderConfiguration(projectDescriptor.getActiveConfiguration());
@@ -199,6 +222,13 @@ public class TestCppUnitIterator extends CCFSrcFileIterator {
         LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
         librariesConfiguration.add(new LibraryItem.StdLibItem("CppUnit", "CppUnit", new String[]{"cppunit"})); // NOI18N
         linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
+    }
+
+    @Override
+    protected Panel<WizardDescriptor>[] createPanels() {
+        @SuppressWarnings("unchecked")
+        Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[]{targetChooserDescriptorPanel};
+        return panels;
     }
 
 }

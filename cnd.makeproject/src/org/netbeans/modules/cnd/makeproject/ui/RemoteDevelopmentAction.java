@@ -163,7 +163,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
             }
             DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(execEnv);
             DevelopmentHostConfiguration oldDhc = mconf.getDevelopmentHost();
-            if (dhc.getValue() == oldDhc.getValue()) {
+            if (dhc.getExecutionEnvironment() == oldDhc.getExecutionEnvironment()) {
                 return; //true;
             }
             mconf.setDevelopmentHost(dhc);

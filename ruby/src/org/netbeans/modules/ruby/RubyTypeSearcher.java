@@ -210,7 +210,9 @@ public class RubyTypeSearcher implements IndexSearcher {
             }
         } else {
             for (IndexedClass cls : classes) {
-                result.add(new RubyTypeDescriptor(cls, helper));
+                if (!cls.isVirtual()) {
+                    result.add(new RubyTypeDescriptor(cls, helper));
+                }
             }
         }
         

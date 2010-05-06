@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen.ui;
 
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import java.awt.GridBagConstraints;
 import java.util.Collections;
 import java.util.List;

@@ -402,7 +402,7 @@ public final class TimeSeriesIndicator
         SQLDataStorage sqlStorage = (SQLDataStorage) storage;
 
         if (timeSeriesTable != null) {
-            List<String> columnNames = getColumnNames(timeSeriesTable);
+            List<String> columnNames = timeSeriesTable.getColumnNames();
             List<DataRow> dataRows = new ArrayList<DataRow>();
             for (int i = 0; i < data.size(); ++i) {
                 float[] dataArray = data.get(i);
@@ -419,7 +419,7 @@ public final class TimeSeriesIndicator
         }
 
         if (detailsTable != null) {
-            List<String> columnNames = getColumnNames(detailsTable);
+            List<String> columnNames = detailsTable.getColumnNames();
             List<DataRow> dataRows = new ArrayList<DataRow>();
             for (Map.Entry<String, String> entry : detailsValues.entrySet()) {
                 dataRows.add(new DataRow(columnNames, Arrays.asList(entry.getKey(), entry.getValue())));
@@ -428,14 +428,6 @@ public final class TimeSeriesIndicator
         }
 
         return true;
-    }
-
-    private static final List<String> getColumnNames(DataTableMetadata table) {
-        List<String> columnNames = new ArrayList<String>(table.getColumnsCount());
-        for (Column column : table.getColumns()) {
-            columnNames.add(column.getColumnName());
-        }
-        return columnNames;
     }
 
     // for tests

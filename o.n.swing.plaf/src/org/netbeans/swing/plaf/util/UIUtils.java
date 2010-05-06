@@ -461,14 +461,13 @@ public final class UIUtils {
     }
 
     public static Class<?> classForName(String n) throws ClassNotFoundException {
+        ClassLoader l = Thread.currentThread().getContextClassLoader();
+        if( null == l )
+            l = UIUtils.class.getClassLoader();
         try {
-            return Class.forName(n);
+            return Class.forName(n, true, l);
         } catch (ClassNotFoundException x) {
-            try {
-                return ClassLoader.getSystemClassLoader().loadClass(n);
-            } catch (ClassNotFoundException x2) {
-                throw x;
-            }
+            throw x;
         }
     }
 

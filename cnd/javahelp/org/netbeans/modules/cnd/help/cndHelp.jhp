@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/Users/smorgan/netbeans-dev/cnd-main-merge/cnd/javahelp/org/netbeans/modules/cnd/help">
+		<directory title="/Users/smorgan/netbeans-repo-edit/cnd-main/cnd/javahelp/org/netbeans/modules/cnd/help">
 			<directory title="CandC++ProjectBasics">
 				<file title="AddtlIncludeDirectories.html"/>
 				<file title="AddtlLibraryDirectories.html"/>
@@ -77,6 +77,7 @@
 			<directory title="EditingSourceFiles">
 				<file title="CandC++CodeFolding.html"/>
 				<file title="Commenting.html"/>
+				<file title="Documenting.html"/>
 				<file title="EditingFortranSourceFiles.html"/>
 				<file title="EditingSourceFiles.html"/>
 				<file title="ErrorHighlighting.html"/>
@@ -85,6 +86,7 @@
 				<file title="GoToDeclaration.html"/>
 				<file title="GoToFunction.html"/>
 				<file title="GoToInclude.html"/>
+				<file title="GoToOverride.html"/>
 				<file title="GoToType.html"/>
 				<file title="Icons.html"/>
 				<file title="IncludeView.html"/>
@@ -227,6 +229,7 @@
 				<file title="Session.gif"/>
 				<file title="space_8pix.gif"/>
 				<file title="StaticVariable.gif"/>
+				<file title="stop.png"/>
 				<file title="struct_16.png"/>
 				<file title="struct_forward_decl.png"/>
 				<file title="subtypehierarchy.gif"/>
@@ -262,10 +265,20 @@
 				<file title="ProfilingThreadedCandC++Apps.html"/>
 				<file title="RunMonitorWindowforCandC++Fort.html"/>
 			</directory>
+			<directory title="TestingCandC++Projects">
+				<file title="c_unit_about.html"/>
+				<file title="c_unit_creatingtests.html"/>
+				<file title="c_unit_debuggingtests.html"/>
+				<file title="c_unit_overview.html"/>
+				<file title="c_unit_quickref.html"/>
+				<file title="c_unit_resultswindow.html"/>
+				<file title="c_unit_runningtests.html"/>
+			</directory>
 			<directory title="WorkingWithCandC++Projects">
 				<file title="AboutCandC++Projects.html"/>
 				<file title="AboutQtProjects.html"/>
 				<file title="AddingFilesAndFolders.html"/>
+				<file title="AddingUnitTests.html"/>
 				<file title="CandC++BuildingTasks.html"/>
 				<file title="CodeAssistance.html"/>
 				<file title="CodeAssistanceWizardP1.html"/>
@@ -287,6 +300,7 @@
 				<file title="MovingCorC++Project.html"/>
 				<file title="NewAppWizard.html"/>
 				<file title="NewDynamicLibWizard.html"/>
+				<file title="NewMakeWizardP0.html"/>
 				<file title="NewMakeWizardP1.html"/>
 				<file title="NewMakeWizardP2.html"/>
 				<file title="NewMakeWizardP3.html"/>
@@ -311,7 +325,10 @@
 				<file title="ProjectPropsRunning.html"/>
 				<file title="ProjectTasks.html"/>
 				<file title="RemoteDevelopment.html"/>
+				<file title="RemoteDevelopmentConfigureHost.html"/>
 				<file title="RemoteDevelopmentFileSharing.html"/>
+				<file title="RemoteDevelopmentManageHosts.html"/>
+				<file title="RemoteDevelopmentProjects.html"/>
 				<file title="RunningCorC++Project.html"/>
 				<file title="SettingCandC++FileProperties.html"/>
 				<file title="SettingCandC++ProjectProperties.html"/>

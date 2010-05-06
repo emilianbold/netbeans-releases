@@ -105,10 +105,12 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                         return null;
                     }
                     Token<HTMLTokenId> t = ts.token();
+                    int toffs = ts.offset();
                     if (tokenInTag(t)) {
                         //find the tag beginning
                         do {
                             Token<HTMLTokenId> t2 = ts.token();
+                            int t2offs = ts.offset();
                             if (!tokenInTag(t2)) {
                                 return null;
                             } else if (t2.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
@@ -116,6 +118,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                 int tagNameEnd = -1;
                                 while (ts.moveNext()) {
                                     Token<HTMLTokenId> t3 = ts.token();
+                                    int t3offs = ts.offset();
                                     if (!tokenInTag(t3) || t3.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
                                         return null;
                                     } else if (t3.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
@@ -123,8 +126,8 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                             //do no match empty tags
                                             return null;
                                         } else {
-                                            int from = t2.offset(th);
-                                            int to = t3.offset(th) + t3.length();
+                                            int from = t2offs;
+                                            int to = t3offs + t3.length();
                                             if (tagNameEnd != -1) {
                                                 return new int[]{from, to,
                                                             from, tagNameEnd,
@@ -134,7 +137,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                             }
                                         }
                                     } else if (t3.id() == HTMLTokenId.TAG_OPEN || t3.id() == HTMLTokenId.TAG_CLOSE) {
-                                        tagNameEnd = t3.offset(th) + t3.length();
+                                        tagNameEnd = t3offs + t3.length();
                                     }
                                 }
                                 break;
@@ -142,10 +145,10 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                         } while (ts.movePrevious());
                     } else if (t.id() == HTMLTokenId.BLOCK_COMMENT) {
                         String tokenImage = t.text().toString();
-                        if (tokenImage.startsWith(BLOCK_COMMENT_START) && context.getSearchOffset() < (t.offset(th)) + BLOCK_COMMENT_START.length()) {
-                            return new int[]{t.offset(th), t.offset(th) + BLOCK_COMMENT_START.length()};
-                        } else if (tokenImage.endsWith(BLOCK_COMMENT_END) && (context.getSearchOffset() >= (t.offset(th)) + tokenImage.length() - BLOCK_COMMENT_END.length())) {
-                            return new int[]{t.offset(th) + t.length() - BLOCK_COMMENT_END.length(), t.offset(th) + t.length()};
+                        if (tokenImage.startsWith(BLOCK_COMMENT_START) && context.getSearchOffset() < toffs + BLOCK_COMMENT_START.length()) {
+                            return new int[]{toffs, toffs + BLOCK_COMMENT_START.length()};
+                        } else if (tokenImage.endsWith(BLOCK_COMMENT_END) && (context.getSearchOffset() >= toffs + tokenImage.length() - BLOCK_COMMENT_END.length())) {
+                            return new int[]{toffs + t.length() - BLOCK_COMMENT_END.length(), toffs + t.length()};
                         }
                     }
                 }
