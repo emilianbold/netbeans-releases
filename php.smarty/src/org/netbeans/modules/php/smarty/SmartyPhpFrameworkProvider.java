@@ -68,7 +68,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.WindowManager;
 
 /**
  * @author Martin Fousek
@@ -139,7 +138,8 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
         final FoundSmarty fs = new FoundSmarty();
         Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(phpModule.getSourceDirectory()));
         final Set<FileObject> filesWithUsedSmarty = index.getLocationsForIdentifiers(SmartyFramework.BASE_CLASS_NAME);
-        RequestProcessor.getDefault().create(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
+
             @Override
             public void run() {
                 for (FileObject fileObject : filesWithUsedSmarty) {
@@ -153,7 +153,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
                                     SmartyVerificationVisitor smartyVerificationVisitor = new SmartyVerificationVisitor();
                                     result.getProgram().accept(smartyVerificationVisitor);
                                     if (smartyVerificationVisitor.isFoundSmarty()) {
-                                        fs.isFound = true;
+                                        fs.setFound(true);
                                     }
                                 }
 
@@ -164,9 +164,9 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
                     }
                 }
             }
-        }).run();
+        }, 0);
 
-        if (fs.isFound) {
+        if (fs.isFound()) {
             return true;
         } else {
             FileObject sourceDirectory = phpModule.getSourceDirectory();
@@ -250,10 +250,18 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     private class FoundSmarty {
-        public boolean isFound;
+        private boolean isFound;
 
         public FoundSmarty() {
-            isFound = false;
+            setFound(false);
+        }
+
+        public synchronized void setFound(boolean isFound) {
+            this.isFound = isFound;
+        }
+
+        public synchronized boolean isFound() {
+            return this.isFound;
         }
     }
 }
