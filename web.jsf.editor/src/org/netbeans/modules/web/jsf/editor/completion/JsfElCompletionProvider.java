@@ -71,6 +71,7 @@ import org.openide.filesystems.FileObject;
 public class JsfElCompletionProvider implements CompletionProvider {
 
     
+    @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if ((queryType & COMPLETION_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
             return new AsyncCompletionTask(new CCQuery(), 
@@ -79,12 +80,14 @@ public class JsfElCompletionProvider implements CompletionProvider {
         return null;
     }
     
+    @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         return 0;
     }
     
     static final class CCQuery extends AsyncCompletionQuery {
         
+        @Override
         protected void query(CompletionResultSet resultSet, final Document doc, final int offset) {
             try {
                 //fast check if we are in an expression language
@@ -191,6 +194,7 @@ public class JsfElCompletionProvider implements CompletionProvider {
    
     
     static class DocQuery extends AsyncCompletionQuery {
+        @Override
         protected void query(CompletionResultSet resultSet, Document doc, 
                 int caretOffset) 
         {
