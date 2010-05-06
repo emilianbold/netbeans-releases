@@ -95,42 +95,8 @@ public class CppUnitCodeGenerator {
                     testFunctions.append("\n"); // NOI18N
                     i++;
                 }
-                String returnType = fun.getReturnType().getText().toString();
-                if (CsmKindUtilities.isMethod(fun)) {
-                    CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(fun);
-                    CsmClass cls = method.getContainingClass();
-                    if (cls != null) {
-                        String clsName = cls.getName().toString();
-                        String clsVarName =
-                                Character.toLowerCase(clsName.charAt(0))
-                                + clsName.substring(1);
-                        clsVarName = (clsVarName.equals(clsName)) ? '_' + clsVarName : clsVarName; // NOI18N
-                        testFunctions.append("    ") // NOI18N
-                                .append(cls.getQualifiedName()) // NOI18N
-                                .append(" ") // NOI18N
-                                .append(clsVarName) // NOI18N
-                                .append(";\n"); // NOI18N
-                        testFunctions.append("    ") // NOI18N
-                                .append(((!"void".equals(returnType)) ? returnType + " result = " : "")) // NOI18N
-                                .append(clsVarName) // NOI18N
-                                .append(".") // NOI18N
-                                .append(method.getName()); // NOI18N
-                    }
-                } else {
-                    testFunctions.append("    ").append(((!"void".equals(returnType)) ? returnType + " result = " : "")) // NOI18N
-                            .append(fun.getName()); // NOI18N
-                }
-                i = 0;
-                testFunctions.append("("); // NOI18N
-                for (CsmParameter param : params) {
-                    if (i != 0) {
-                        testFunctions.append(", "); // NOI18N
-                    }
-                    String paramName = param.getName().toString();
-                    testFunctions.append(((paramName != null && !paramName.isEmpty()) ? paramName : "p" + i)); // NOI18N
-                    i++;
-                }
-                testFunctions.append(");\n"); // NOI18N
+
+                testFunctions.append(CodeGenerationUtils.generateFunctionCall(fun));
 
                 testFunctions.append("    if(true /*check result*/) {\n"); // NOI18N
                 testFunctions.append("        CPPUNIT_ASSERT(false);"); // NOI18N
