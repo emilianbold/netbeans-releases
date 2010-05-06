@@ -74,7 +74,7 @@ public final class DTDCConfiguration implements
     /**
      * The property which can be used when tool is created to set path to the script
      */
-    public static final String  DSCRIPT_TOOL_PROPERTY = "dtrace.script";
+    public static final String  DSCRIPT_TOOL_PROPERTY = "dtrace.script";//NOI18N
     static final String DTDC_CONFIGURATION_ID = "DtraceDataCollectorConfigurationId"; // NOI18N
     private static DTDCConfiguration CPU_SAMPLING;
     private URL scriptUrl;
