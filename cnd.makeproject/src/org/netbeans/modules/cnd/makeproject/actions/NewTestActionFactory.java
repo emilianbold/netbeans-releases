@@ -44,6 +44,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
+import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -106,7 +107,7 @@ public final class NewTestActionFactory {
         return SystemAction.get(NewEmptyTestAction.class);
     }
     
-    public static class NewTestAction extends AbstractAction {
+    private static class NewTestAction extends AbstractAction {
 
         private final FileObject test;
         private final Project project;
@@ -264,7 +265,7 @@ public final class NewTestActionFactory {
                 if (fo != null) {
                     Project project = FileOwnerQuery.getOwner(fo);
                     if (project != null) {
-                        items.addAll(createActions(project));
+                        items.addAll(createActions(project, fo));
                     }
                 }
             }
@@ -305,17 +306,33 @@ public final class NewTestActionFactory {
             return HelpCtx.DEFAULT_HELP;
         }
 
-        private Collection<Action> createActions(Project project) {
+        private Collection<Action> createActions(Project project, FileObject fo) {
             ArrayList<Action> actions = new ArrayList<Action>();
             FileObject testFiles = FileUtil.getConfigFile("Templates/testFiles"); //NOI18N
             if (testFiles.isFolder()) {
                 for (FileObject test : testFiles.getChildren()) {
                     if (Boolean.TRUE.equals(test.getAttribute("templateGenerator"))) { //NOI18N
-                        actions.add(new NewTestAction(test, project, org.openide.util.Utilities.actionsGlobalContext(), true));
+                        String mimeTypes = (String) test.getAttribute("supportedMimeTypes"); //NOI18N
+                        if (checkMimeType(mimeTypes, fo.getMIMEType())) {
+                            actions.add(new NewTestAction(test, project, org.openide.util.Utilities.actionsGlobalContext(), true));
+                        }
                     }
                 }
             }
             return actions;
+        }
+
+        private boolean checkMimeType(String mimeTypes, String mimeType) {
+            if (mimeTypes == null) {
+                return true;
+            }
+            String[] split = mimeTypes.split(";"); // NOI18N
+            for (String string : split) {
+                if (mimeType.contentEquals(string)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
