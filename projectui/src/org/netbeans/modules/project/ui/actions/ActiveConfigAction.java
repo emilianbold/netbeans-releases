@@ -31,6 +31,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -82,6 +83,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.Presenter;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Action permitting selection of a configuration for the main project.
@@ -102,7 +104,8 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     private boolean listeningToCombo = true;
 
     private Project currentProject;
-    private ProjectConfigurationProvider pcp;
+    private ProjectConfigurationProvider<?> pcp;
+    @SuppressWarnings("rawtypes")
     private Lookup.Result<ProjectConfigurationProvider> currentResult;
 
     private final Lookup lookup;
@@ -115,29 +118,26 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         configListCombo = new JComboBox();
         configListCombo.addPopupMenuListener(new PopupMenuListener() {
             private Component prevFocusOwner = null;
-
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+            public @Override void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                 prevFocusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
                 configListCombo.setFocusable(true);
                 configListCombo.requestFocusInWindow();
             }
-
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                if( null != prevFocusOwner )
+            public @Override void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                if (prevFocusOwner != null) {
                     prevFocusOwner.requestFocusInWindow();
+                }
                 prevFocusOwner = null;
                 configListCombo.setFocusable(false);
             }
-
-            public void popupMenuCanceled(PopupMenuEvent e) {
-            }
+            public @Override void popupMenuCanceled(PopupMenuEvent e) {}
         });
         configListCombo.setRenderer(new ConfigCellRenderer());
         configListCombo.setToolTipText(org.openide.awt.Actions.cutAmpersand(getName()));
         configListCombo.setFocusable(false);
         configurationsListChanged(null);
         configListCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public @Override void actionPerformed(ActionEvent e) {
                 if (!listeningToCombo) {
                     return;
                 }
@@ -152,16 +152,17 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         });
     }
 
+    @SuppressWarnings("LeakingThisInConstructor")
     public ActiveConfigAction() {
         super();
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        putValue("noIconInMenu", true); // NOI18N
         EventQueue.invokeLater(new Runnable() {
             public @Override void run() {
                 initConfigListCombo();
             }
         });
         lst = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+            public @Override void propertyChange(PropertyChangeEvent evt) {
                 if (ProjectConfigurationProvider.PROP_CONFIGURATIONS.equals(evt.getPropertyName())) {
                     configurationsListChanged(getConfigurations(pcp));
                 } else if (ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE.equals(evt.getPropertyName())) {
@@ -170,7 +171,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             }
         };
         looklst = new LookupListener() {
-            public void resultChanged(LookupEvent ev) {
+            public @Override void resultChanged(LookupEvent ev) {
                 activeProjectProviderChanged();
             }
         };
@@ -178,22 +179,20 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
 
         lookup = LookupSensitiveAction.LastActivatedWindowLookup.INSTANCE;
-        Lookup.Result resultPrj = lookup.lookupResult(Project.class);
-        Lookup.Result resultDO = lookup.lookupResult(DataObject.class);
+        Lookup.Result<Project> resultPrj = lookup.lookupResult(Project.class);
+        Lookup.Result<DataObject> resultDO = lookup.lookupResult(DataObject.class);
         resultPrj.addLookupListener(WeakListeners.create(LookupListener.class, this, resultPrj));
         resultDO.addLookupListener(WeakListeners.create(LookupListener.class, this, resultDO));
 
         DynLayer.INSTANCE.setEnabled(true);
         refreshView(lookup);
-
     }
-
 
     private synchronized void configurationsListChanged(Collection<? extends ProjectConfiguration> configs) {
         LOGGER.log(Level.FINER, "configurationsListChanged: {0}", configs);
         if (configs == null) {
             EventQueue.invokeLater(new Runnable() {
-                public void run() {
+                public @Override void run() {
                     configListCombo.setModel(EMPTY_MODEL);
                     configListCombo.setEnabled(false); // possibly redundant, but just in case
                 }
@@ -204,7 +203,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                 model.addElement(CUSTOMIZE_ENTRY);
             }
             EventQueue.invokeLater(new Runnable() {
-                public void run() {
+                public @Override void run() {
                     configListCombo.setModel(model);
                     configListCombo.setEnabled(true);
                 }
@@ -218,7 +217,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     private synchronized void activeConfigurationChanged(final ProjectConfiguration config) {
         LOGGER.log(Level.FINER, "activeConfigurationChanged: {0}", config);
         EventQueue.invokeLater(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 listeningToCombo = false;
                 try {
                     configListCombo.setSelectedIndex(-1);
@@ -238,8 +237,8 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         });
     }
     
-    private synchronized void activeConfigurationSelected(ProjectConfiguration cfg, ProjectConfigurationProvider ppcp) {
-        ProjectConfigurationProvider lpcp = pcp;
+    private synchronized void activeConfigurationSelected(ProjectConfiguration cfg, ProjectConfigurationProvider<?> ppcp) {
+        ProjectConfigurationProvider<?> lpcp = pcp;
         if (ppcp != null) {
             lpcp = ppcp;
         } 
@@ -253,16 +252,16 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         }
     }
     
-    public HelpCtx getHelpCtx() {
+    public @Override HelpCtx getHelpCtx() {
         return new HelpCtx(ActiveConfigAction.class);
     }
 
-    public String getName() {
+    public @Override String getName() {
         return NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.label");
     }
 
-    public void performAction() {
-        java.awt.Toolkit.getDefaultToolkit().beep();
+    public @Override void performAction() {
+        Toolkit.getDefaultToolkit().beep();
     }
 
     @Override
@@ -282,7 +281,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     /**
      * Dynamically inserts or removes the action from the toolbar.
      */
-    @org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.FileSystem.class)
+    @ServiceProvider(service=FileSystem.class)
     public static final class DynLayer extends MultiFileSystem {
 
         static DynLayer INSTANCE;
@@ -292,6 +291,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         /**
          * Default constructor for lookup.
          */
+        @SuppressWarnings("LeakingThisInConstructor")
         public DynLayer() {
             INSTANCE = this;
             fragment = FileUtil.createMemoryFileSystem();
@@ -318,6 +318,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
         private final Lookup context;
 
+        @SuppressWarnings("LeakingThisInConstructor")
         public ConfigMenu(Lookup context) {
             this.context = context;
             if (context != null) {
@@ -341,7 +342,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             }
         }
         
-        public JComponent[] getMenuPresenters() {
+        public @Override JComponent[] getMenuPresenters() {
             removeAll();
             final ProjectConfigurationProvider<?> pcp = findPCP();
             if (pcp != null) {
@@ -350,7 +351,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                 for (final ProjectConfiguration config : getConfigurations(pcp)) {
                     JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(config.getDisplayName(), config.equals(activeConfig));
                     jmi.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
+                        public @Override void actionPerformed(ActionEvent e) {
                             activeConfigurationSelected(config, findPCP());
                         }
                     });
@@ -376,13 +377,13 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             return new JComponent[] {this};
         }
 
-        public JComponent[] synchMenuPresenters(JComponent[] items) {
+        public @Override JComponent[] synchMenuPresenters(JComponent[] items) {
             // Always rebuild submenu.
             // For performance, could try to reuse it if context == null and nothing has changed.
             return getMenuPresenters();
         }
 
-        public void actionPerformed(ActionEvent e) {
+        public @Override void actionPerformed(ActionEvent e) {
             ProjectConfigurationProvider<?> pcp = findPCP();
             if (pcp != null) {
                 pcp.customize();
@@ -405,7 +406,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             setOpaque(true);
         }
 
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public @Override Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             // #89393: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
 
@@ -480,6 +481,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             if (pcp != null) {
                 pcp.removePropertyChangeListener(lst);
             }
+            @SuppressWarnings("rawtypes")
             Collection<? extends ProjectConfigurationProvider> all = currentResult.allInstances();
             pcp = all.isEmpty() ? null : all.iterator().next();
             if (pcp != null) {
@@ -490,13 +492,13 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     }
     
 
-    public Action createContextAwareInstance(final Lookup actionContext) {
+    public @Override Action createContextAwareInstance(final Lookup actionContext) {
         @SuppressWarnings("serial")
         class A extends AbstractAction implements Presenter.Popup {
-            public void actionPerformed(ActionEvent e) {
+            public @Override void actionPerformed(ActionEvent e) {
                 assert false;
             }
-            public JMenuItem getPopupPresenter() {
+            public @Override JMenuItem getPopupPresenter() {
                 return new ConfigMenu(actionContext);
             }
         }
@@ -505,7 +507,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
     private static Collection<? extends ProjectConfiguration> getConfigurations(final ProjectConfigurationProvider<?> pcp) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Collection<? extends ProjectConfiguration>>() {
-            public Collection<? extends ProjectConfiguration> run() {
+            public @Override Collection<? extends ProjectConfiguration> run() {
                 return pcp.getConfigurations();
             }
         });
@@ -513,18 +515,18 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
     private static ProjectConfiguration getActiveConfiguration(final ProjectConfigurationProvider<?> pcp) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<ProjectConfiguration>() {
-            public ProjectConfiguration run() {
+            public @Override ProjectConfiguration run() {
                 return pcp.getActiveConfiguration();
             }
         });
     }
 
-    @SuppressWarnings("unchecked") // XXX would not be necessary in case PCP had a method to get run-time type information: Class<C> configurationType();
+    @SuppressWarnings({"unchecked", "rawtypes"}) // XXX would not be necessary in case PCP had a method to get run-time type information: Class<C> configurationType();
     private static void setActiveConfiguration(ProjectConfigurationProvider<?> pcp, final ProjectConfiguration pc) throws IOException {
         final ProjectConfigurationProvider _pcp = pcp;
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                public Void run() throws IOException {
+                public @Override Void run() throws IOException {
                     _pcp.setActiveConfiguration(pc);
                     return null;
                 }
