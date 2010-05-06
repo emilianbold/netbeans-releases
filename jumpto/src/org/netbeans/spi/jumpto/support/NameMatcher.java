@@ -25,31 +25,18 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.gotodeclaration.matcher;
 
-import org.netbeans.modules.cnd.api.model.services.CsmSelect;
-import org.netbeans.spi.jumpto.support.NameMatcher;
-import org.netbeans.spi.jumpto.type.SearchType;
+package org.netbeans.spi.jumpto.support;
 
 /**
- * A factory that provides comparators
- * depending on SearchType
- *
- * @author Vladimir Kvashin
+ * Used for encapsulation of the  different matching algorithms
+ * (such as String.equals, String.equalsIgnoreCase, String.startWith, etc)
  */
-public class NameMatcherFactory {
-    
-    public static CsmSelect.CsmFilter createNameFilter(String text, SearchType type) {
-        final NameMatcher matcher = org.netbeans.spi.jumpto.support.NameMatcherFactory.createNameMatcher(text, type);
-        if( matcher != null ) {
-            CsmSelect.NameAcceptor acceptor = new CsmSelect.NameAcceptor() {
-                @Override
-                public boolean accept(CharSequence name) {
-                    return matcher.accept(name.toString());
-                }
-            };
-            return CsmSelect.getFilterBuilder().createNameFilter(acceptor);
-        }
-        return null;
-    }
+public interface NameMatcher {
+
+    /**
+     * Determine whether the name matches a pattern or not
+     * return true
+     */
+    boolean accept(String name);
 }

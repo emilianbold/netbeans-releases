@@ -32,8 +32,8 @@ import org.netbeans.modules.cnd.api.model.*;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
-import org.netbeans.modules.cnd.gotodeclaration.matcher.NameMatcher;
-import org.netbeans.modules.cnd.gotodeclaration.matcher.NameMatcherFactory;
+import org.netbeans.spi.jumpto.support.NameMatcher;
+import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
@@ -77,9 +77,9 @@ public class CppTypeProvider implements TypeProvider {
 	
 	
 	
-	CsmSelect.CsmFilter filter = NameMatcherFactory.createNameFilter(text, type);
+	CsmSelect.CsmFilter filter = org.netbeans.modules.cnd.gotodeclaration.matcher.NameMatcherFactory.createNameFilter(text, type);
 	NameMatcher matcher = NameMatcherFactory.createNameMatcher(text, type);
-	if( filter == null || matcher == null) {
+	if( filter == null) {
 	    return;
 	}
         

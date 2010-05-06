@@ -56,6 +56,8 @@ import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
 import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
+import org.netbeans.spi.jumpto.support.NameMatcher;
+import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.filesystems.FileObject;
@@ -92,7 +94,7 @@ public class SpringBeansTypeProvider implements TypeProvider {
 
         final String searchText = context.getText();
         final SearchType searchType = context.getSearchType();
-        final Matcher matcher = getMatcher(searchText, searchType);
+        final NameMatcher matcher = NameMatcherFactory.createNameMatcher(searchText, searchType);
         if (matcher == null) {
             return;
         }
@@ -158,19 +160,19 @@ public class SpringBeansTypeProvider implements TypeProvider {
 
                                 for (SpringBean bean : beans) {
                                     String id = bean.getId();
-                                    if (id != null && matcher.match(id)) {
+                                    if (id != null && matcher.accept(id)) {
                                         currCache.add(new BeanTypeDescriptor(id, bean));
                                     }
 
                                     for (String name : bean.getNames()) {
-                                        if (matcher.match(name)) {
+                                        if (matcher.accept(name)) {
                                             currCache.add(new BeanTypeDescriptor(name, bean));
                                         }
                                     }
                                 }
 
                                 for (String alias : fileBeans.getAliases()) {
-                                    if (matcher.match(alias)) {
+                                    if (matcher.accept(alias)) {
                                         currCache.add(new BeanAliasTypeDescriptor(alias, fo));
                                     }
                                 }
@@ -192,7 +194,7 @@ public class SpringBeansTypeProvider implements TypeProvider {
         if (cache != null) {
             ArrayList<AbstractBeanTypeDescriptor> beans = new ArrayList<AbstractBeanTypeDescriptor>(cache.size());
             for (AbstractBeanTypeDescriptor beanTypeDescriptor : cache) {
-                if (cacheRefresh || matcher.match(beanTypeDescriptor.getSimpleName())) {
+                if (cacheRefresh || matcher.accept(beanTypeDescriptor.getSimpleName())) {
                     beans.add(beanTypeDescriptor);
                 }
             }
@@ -211,85 +213,5 @@ public class SpringBeansTypeProvider implements TypeProvider {
         cache = null;
         lastRefreshText = null;
         lastRefreshSearchType = null;
-    }
-
-    private interface Matcher {
-
-        boolean match(String str);
-    }
-    
-    private static Pattern camelCaseBlock = Pattern.compile("(\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\d|\\.|\\-)*)"); // NOI18N
-
-    private Matcher getMatcher(String searchText, SearchType searchType) {
-        switch (searchType) {
-            case EXACT_NAME:
-                return new StringMatcher(searchText, false, true);
-            case CASE_INSENSITIVE_EXACT_NAME:
-                return new StringMatcher(searchText, false, false);
-            case PREFIX:
-                return new StringMatcher(searchText, true, true);
-            case CASE_INSENSITIVE_PREFIX:
-                return new StringMatcher(searchText, true, false);
-            case REGEXP:
-                String regex = searchText + "*"; // NOI18N
-
-                regex = regex.replace("*", ".*").replace('?', '.'); // NOI18N
-
-                return new RegExpMatcher(regex, true);
-            case CASE_INSENSITIVE_REGEXP:
-                regex = searchText + "*"; // NOI18N
-
-                regex = regex.replace("*", ".*").replace('?', '.'); // NOI18N
-
-                return new RegExpMatcher(regex, false);
-            case CAMEL_CASE:
-                java.util.regex.Matcher m = camelCaseBlock.matcher(searchText);
-                StringBuilder sb = new StringBuilder();
-                while (m.find()) {
-                    sb.append(m.group()).append("(?:\\p{javaLowerCase}|\\d|\\.|\\-)*"); // NOI18N
-
-                }
-                sb.append(".*"); // NOI18N
-                return new RegExpMatcher(sb.toString(), false);
-        }
-
-        assert false; // probably a new type got added to SearchType, would need fixing on our part
-
-        return null;
-    }
-
-    private static final class RegExpMatcher implements Matcher {
-
-        private final String regex;
-        private final boolean caseSensitive;
-        private final Pattern pattern;
-
-        public RegExpMatcher(String regex, boolean caseSensitive) {
-            this.regex = regex;
-            this.caseSensitive = caseSensitive;
-            this.pattern = caseSensitive ? Pattern.compile(regex) : Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-        }
-
-        public boolean match(String str) {
-            return pattern.matcher(str).matches();
-        }
-    }
-
-    private static final class StringMatcher implements Matcher {
-
-        private final String searchText;
-        private final boolean prefix;
-        private final boolean caseSensitive;
-
-        public StringMatcher(String searchText, boolean prefix, boolean caseSensitive) {
-            this.searchText = searchText;
-            this.prefix = prefix;
-            this.caseSensitive = caseSensitive;
-        }
-
-        public boolean match(String str) {
-            int length = prefix ? searchText.length() : Math.max(str.length(), searchText.length());
-            return str.regionMatches(caseSensitive, 0, searchText, 0, length);
-        }
     }
 }
