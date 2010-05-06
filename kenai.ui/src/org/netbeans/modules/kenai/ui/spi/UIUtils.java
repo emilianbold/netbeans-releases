@@ -142,7 +142,6 @@ public final class UIUtils {
             }
             kenai.login(uname, password,
                     force ? true : goOnline);
-            Utilities.isChatSupported(kenai);
         } catch (KenaiException ex) {
             return false;
         }
