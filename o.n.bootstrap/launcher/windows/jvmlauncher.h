@@ -71,7 +71,7 @@ public:
 
     bool initialize(const char *javaPathOrMinVersion);
     bool getJavaPath(std::string &path);
-    bool start(const char *mainClassName, std::list<std::string> args, std::list<std::string> options, bool &separateProcess, DWORD *retCode);
+    bool start(const char *mainClassName, const std::list<std::string> &args, const std::list<std::string> &options, bool &separateProcess, DWORD *retCode);
 
     void setSuppressConsole(bool val) {
         suppressConsole = val;
@@ -83,11 +83,11 @@ private:
     bool checkJava(const char *javaPath, const char *prefix);
     bool findJava(const char *minJavaVersion);
     bool findJava(const char *javaKey, const char *prefix, const char *minJavaVersion);
-    bool startOutProcJvm(const char *mainClassName, std::list<std::string> args, std::list<std::string> options, DWORD *retCode);
-    bool startInProcJvm(const char *mainClassName, std::list<std::string> args, std::list<std::string> options);
+    bool startOutProcJvm(const char *mainClassName, const std::list<std::string> &args, const std::list<std::string> &options, DWORD *retCode);
+    bool startInProcJvm(const char *mainClassName, const std::list<std::string> &args, const std::list<std::string> &options);
     bool isVersionString(const char *str);
     bool canLoadJavaDll();
-    bool findClientOption(std::list<std::string> &options);
+    bool findClientOption(const std::list<std::string> &options);
 
 private:
     bool suppressConsole;
