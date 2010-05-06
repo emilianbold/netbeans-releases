@@ -119,7 +119,6 @@ public final class UIUtils {
         if (kenai.getStatus()!=Kenai.Status.OFFLINE) {
             return true;
         }
-        boolean chatSupported = Utilities.isChatSupported(kenai);
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
 
         if (!force) {
@@ -133,6 +132,7 @@ public final class UIUtils {
         if (uname==null) {
             return false;
         }
+        boolean goOnline = Boolean.parseBoolean(preferences.get(getPrefName(kenai, ONLINE_STATUS_PREF), "false")) && Utilities.isChatSupported(kenai);
         PresenceIndicator.getDefault().init();
         try {
             KenaiConnection.getDefault(kenai);
@@ -141,7 +141,7 @@ public final class UIUtils {
                 return false;
             }
             kenai.login(uname, password,
-                    force ? true : Boolean.parseBoolean(preferences.get(getPrefName(kenai, ONLINE_STATUS_PREF), String.valueOf(chatSupported))));
+                    force ? true : goOnline);
         } catch (KenaiException ex) {
             return false;
         }
