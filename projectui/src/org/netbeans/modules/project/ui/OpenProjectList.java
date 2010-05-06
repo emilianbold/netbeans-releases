@@ -789,7 +789,6 @@ public final class OpenProjectList {
 
                     projects[i].getProjectDirectory().removeFileChangeListener(deleteListener);
 
-                    recentProjects.add( projects[i] );
                     notifyList.add(projects[i]);
 
                     someClosed = true;
@@ -802,7 +801,10 @@ public final class OpenProjectList {
                     this.mainProject = null;
                     saveMainProject( mainProject );
                 }
-                if ( someClosed ) {
+            }
+            if (!notifyList.isEmpty()) {
+                for (Project p : notifyList) {
+                    recentProjects.add(p); // #183681: call outside of lock
                     recentProjects.save();
                 }
             }
@@ -1344,43 +1346,37 @@ public final class OpenProjectList {
             }
         }
         
-        public synchronized void add( Project p ) {
-            int index = getIndex( p );
-            
-            if ( index == -1 ) {
-                // Project not in list
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    log(Level.FINE, "add new recent project: " + p);
-                }
-                if ( recentProjects.size() == size ) {
-                    // Need some space for the newly added project
-                    recentProjects.remove( size - 1 );
-                    recentProjectsInfos.remove(size - 1);
-                }
-                recentProjects.add( 0, new ProjectReference( p ) );
-                try {
-                    recentProjectsInfos.add(0, ProjectInfoAccessor.DEFAULT.getProjectInfo(
+        public void add(Project p) {
+            UnloadedProjectInformation projectInfo;
+            try { // #183681: call outside of lock
+                projectInfo = ProjectInfoAccessor.DEFAULT.getProjectInfo(
                         ProjectUtils.getInformation(p).getDisplayName(),
                         ProjectUtils.getInformation(p).getIcon(),
-                        p.getProjectDirectory().getURL()));
-                } catch(FileStateInvalidException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                }
+                        p.getProjectDirectory().getURL());
+            } catch(FileStateInvalidException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                return;
             }
-            else {
-                LOGGER.log(Level.FINE, "re-add recent project: {0} @{1}", new Object[] {p, index});
-                // Project is in list => just move it to first place
-                recentProjects.remove( index );
-                recentProjects.add( 0, new ProjectReference( p ) );
-                recentProjectsInfos.remove(index);
-                try {
-                    recentProjectsInfos.add(0, ProjectInfoAccessor.DEFAULT.getProjectInfo(
-                        ProjectUtils.getInformation(p).getDisplayName(),
-                        ProjectUtils.getInformation(p).getIcon(),
-                        p.getProjectDirectory().getURL()));
-                } catch(FileStateInvalidException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            synchronized (this) {
+                int index = getIndex(p);
+                if (index == -1) {
+                    // Project not in list
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        log(Level.FINE, "add new recent project: " + p);
+                    }
+                    if (recentProjects.size() == size) {
+                        // Need some space for the newly added project
+                        recentProjects.remove(size - 1);
+                        recentProjectsInfos.remove(size - 1);
+                    }
+                } else {
+                    LOGGER.log(Level.FINE, "re-add recent project: {0} @{1}", new Object[] {p, index});
+                    // Project is in list => just move it to first place
+                    recentProjects.remove(index);
+                    recentProjectsInfos.remove(index);
                 }
+                recentProjects.add(0, new ProjectReference(p));
+                recentProjectsInfos.add(0, projectInfo);
             }
         }
         

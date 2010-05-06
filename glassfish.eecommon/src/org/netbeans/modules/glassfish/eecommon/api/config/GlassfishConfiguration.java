@@ -123,17 +123,17 @@ public abstract class GlassfishConfiguration implements
             throw new ConfigurationException("Unsupported module type: " + module.getType());
         }
 
-        if (null == primarySunDD.getParentFile()) {
-            throw new ConfigurationException("module is not initialized completely");
-        }
-        addConfiguration(primarySunDD, this);
-
-        // Default to 8.1 in new beans.  This is set by the bean parser
-        // in the appropriate root type, if reading from existing file(s).
-        this.appServerVersion = ASDDVersion.SUN_APPSERVER_8_1;
-        this.deferredAppServerChange = false;
-
         try {
+
+            if (null == primarySunDD.getParentFile()) {
+                throw new ConfigurationException("module is not initialized completely");
+            }
+            addConfiguration(primarySunDD, this);
+
+            // Default to 8.1 in new beans.  This is set by the bean parser
+            // in the appropriate root type, if reading from existing file(s).
+            this.appServerVersion = ASDDVersion.SUN_APPSERVER_8_1;
+            this.deferredAppServerChange = false;
             J2eeModule.Type mt = module.getType();
             String moduleVersion = module.getModuleVersion();
 
