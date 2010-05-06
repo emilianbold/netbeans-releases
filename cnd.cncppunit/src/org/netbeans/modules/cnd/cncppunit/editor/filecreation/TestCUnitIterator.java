@@ -120,6 +120,7 @@ public class TestCUnitIterator extends AbstractUnitTestIterator {
         Folder testsRoot = getTestsRootFolder(project);
         if(testsRoot == null) {
             testsRoot = createTestsRootFolder(project);
+            createTestTargets(project);
         }
         if(testsRoot != null) {
             Folder newFolder = testsRoot.addNewFolder(true, Folder.Kind.TEST);
