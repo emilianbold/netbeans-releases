@@ -411,6 +411,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         basePanel.add(makeVerticalStrut(hooksSectionPanel, jLabel2, RELATED));
         basePanel.add(jLabel2);
         basePanel.add(makeVerticalStrut(hooksSectionPanel, bottomPanel, RELATED));
+        basePanel.add(bottomPanel);
         setLayout(new BoxLayout(this, Y_AXIS));
         add(basePanel);
         topPanel.setAlignmentX(LEFT_ALIGNMENT);

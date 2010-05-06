@@ -68,8 +68,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultListCellRenderer;
@@ -100,6 +98,8 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
+import org.netbeans.spi.jumpto.support.NameMatcher;
+import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -467,7 +467,8 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                     }
                 }
                 //Ask GTF providers
-                final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext(text, toJumpToSearchType(searchType), currentProject);
+                final SearchType jumpToSearchType = toJumpToSearchType(searchType);
+                final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext(text, jumpToSearchType, currentProject);
                 final FileProvider.Result fpR = FileProviderAccessor.getInstance().createResult(files,new String[1], ctx);
                 for (FileProvider provider : getProviders()) {
                     currentProvider = provider;
@@ -497,6 +498,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                     allFolders = searchSources(root, allFolders, excludes, filters);
                 }
                 //Looking for matching files in all found folders
+                final NameMatcher matcher = NameMatcherFactory.createNameMatcher(text, jumpToSearchType);
                 for (FileObject folder: allFolders) {
                     assert folder.isFolder();
                     Enumeration<? extends FileObject> filesInFolder = folder.getData(false);
@@ -504,7 +506,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         FileObject file = filesInFolder.nextElement();
                         if (file.isFolder()) continue;
 
-                        if (isMatchedFileObject(searchType, file, text)) {
+                        if (matcher.accept(file.getNameExt())) {
                             Project project = FileOwnerQuery.getOwner(file);
                             boolean preferred = project != null && currentProject != null ? project.getProjectDirectory() == currentProject.getProjectDirectory() : false;
                             String relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), file);
@@ -564,134 +566,6 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 //            }
         }
         return result;
-    }
-
-    private boolean isMatchedFileObject(QuerySupport.Kind searchType, FileObject file, String text) {
-        boolean isMatched = false;
-        switch (searchType) {
-            case EXACT: {
-                isMatched = file.getNameExt().equals(text);
-                break;
-            }
-            case PREFIX: {
-                if (text.length() == 0) {
-                    isMatched = true;
-                } else {
-                    isMatched = file.getNameExt().startsWith(text);
-                }
-                break;
-            }
-            case CASE_INSENSITIVE_PREFIX: {
-                if (text.length() == 0) {
-                    isMatched = true;
-                } else {
-                    isMatched = file.getNameExt().toLowerCase().startsWith(text.toLowerCase());
-                }
-                break;
-            }
-            case CAMEL_CASE: {
-                if (text.length() == 0) {
-                    throw new IllegalArgumentException ();
-                }
-                {
-                    StringBuilder sb = new StringBuilder();
-                    String prefix = null;
-                    int lastIndex = 0;
-                    int index;
-                    do {
-                        index = findNextUpper(text, lastIndex + 1);
-                        String token = text.substring(lastIndex, index == -1 ? text.length(): index);
-                        if ( lastIndex == 0 ) {
-                            prefix = token;
-                        }
-                        sb.append(token);
-                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
-                        lastIndex = index;
-                    }
-                    while(index != -1);
-
-                    final Pattern pattern = Pattern.compile(sb.toString());
-                    Matcher m = pattern.matcher(file.getNameExt());
-                    isMatched = m.matches();
-                }
-                break;
-
-            }
-
-            case CASE_INSENSITIVE_REGEXP:
-                if (text.length() == 0) {
-                    throw new IllegalArgumentException ();
-                } else {
-                    if (Character.isJavaIdentifierStart(text.charAt(0))) {
-                        Pattern pattern = Pattern.compile(text,Pattern.CASE_INSENSITIVE);
-                        Matcher m = pattern.matcher(file.getNameExt());
-                        isMatched = m.matches();
-                    }
-                    else {
-                        Pattern pattern = Pattern.compile(text,Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
-                        Matcher m = pattern.matcher(file.getNameExt());
-                        isMatched = m.matches();
-                    }
-                    break;
-                }
-            case REGEXP:
-                if (text.length() == 0) {
-                    throw new IllegalArgumentException ();
-                } else {
-                    if (Character.isJavaIdentifierStart(text.charAt(0))) {
-                        final Pattern pattern = Pattern.compile(text);
-                        Matcher m = pattern.matcher(file.getNameExt());
-                        isMatched = m.matches();
-                    }
-                    else {
-                        final Pattern pattern = Pattern.compile(text,Pattern.DOTALL);
-                        Matcher m = pattern.matcher(file.getNameExt());
-                        isMatched = m.matches();
-                    }
-                    break;
-                }
-
-            case CASE_INSENSITIVE_CAMEL_CASE: {
-                if (text.length() == 0) {
-                    throw new IllegalArgumentException ();
-                }
-                {
-                    StringBuilder sb = new StringBuilder();
-                    String prefix = null;
-                    int lastIndex = 0;
-                    int index;
-                    do {
-                        index = findNextUpper(text, lastIndex + 1);
-                        String token = text.substring(lastIndex, index == -1 ? text.length(): index);
-                        if ( lastIndex == 0 ) {
-                            prefix = token;
-                        }
-                        sb.append(token);
-                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
-                        lastIndex = index;
-                    }
-                    while(index != -1);
-
-                    final Pattern pattern = Pattern.compile(sb.toString(),Pattern.CASE_INSENSITIVE);
-                    Matcher m = pattern.matcher(file.getNameExt());
-                    isMatched = m.matches();
-                }
-                break;
-            }
-            default:
-                throw new UnsupportedOperationException (searchType.toString());
-
-        }
-        return isMatched;
-    }//checkMatch
-    private static int findNextUpper(String text, int offset ) {
-
-        for( int i = offset; i < text.length(); i++ ) {
-            if ( Character.isUpperCase(text.charAt(i)) ) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     private boolean checkAgainstFilters(FileObject folder, FileObjectFilter[] filters) {
