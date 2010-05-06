@@ -334,6 +334,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_overriders, gridBagConstraints);
+        m_overriders.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.m_overriders.AccessibleContext.accessibleName")); // NOI18N
 
         m_usages.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(m_usages, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindUsages")); // NOI18N
@@ -349,6 +350,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_usages, gridBagConstraints);
+        m_usages.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.m_usages.AccessibleContext.accessibleName")); // NOI18N
 
         add(methodsPanel, java.awt.BorderLayout.CENTER);
 
@@ -370,6 +372,8 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         classesPanel.add(c_subclasses, gridBagConstraints);
+        c_subclasses.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.c_subclasses.AccessibleContext.accessibleName")); // NOI18N
+        c_subclasses.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.c_subclasses.AccessibleContext.accessibleDescription")); // NOI18N
 
         buttonGroup.add(c_usages);
         c_usages.setSelected(true);
@@ -381,6 +385,8 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         classesPanel.add(c_usages, gridBagConstraints);
+        c_usages.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.c_usages.AccessibleContext.accessibleName")); // NOI18N
+        c_usages.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.c_usages.AccessibleContext.accessibleDescription")); // NOI18N
 
         buttonGroup.add(c_directOnly);
         org.openide.awt.Mnemonics.setLocalizedText(c_directOnly, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindDirectSubtypesOnly")); // NOI18N
@@ -390,11 +396,14 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         classesPanel.add(c_directOnly, gridBagConstraints);
+        c_directOnly.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.c_directOnly.AccessibleContext.accessibleName")); // NOI18N
+        c_directOnly.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.c_directOnly.AccessibleContext.accessibleDescription")); // NOI18N
 
         add(classesPanel, java.awt.BorderLayout.CENTER);
 
         org.openide.awt.Mnemonics.setLocalizedText(label, "DUMMY"); // NOI18N
 
+        elementLabel.setLabelFor(elementComboBox);
         elementLabel.setText(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FromFile")); // NOI18N
 
         searchInComments.setSelected(((Boolean) NbPreferences.forModule(WhereUsedPanel.class).getBoolean("searchInComments.whereUsed", Boolean.FALSE)).booleanValue());
@@ -438,9 +447,21 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 .addComponent(searchInComments))
         );
 
-        searchInComments.getAccessibleContext().setAccessibleDescription(searchInComments.getText());
+        label.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.label.AccessibleContext.accessibleName")); // NOI18N
+        label.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.label.AccessibleContext.accessibleDescription")); // NOI18N
+        elementLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.elementLabel.AccessibleContext.accessibleName")); // NOI18N
+        elementLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.elementLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        elementComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.elementComboBox.AccessibleContext.accessibleName")); // NOI18N
+        elementComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.elementComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        searchInComments.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.searchInComments.AccessibleContext.accessibleName")); // NOI18N
+        searchInComments.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.searchInComments.AccessibleContext.accessibleDescription")); // NOI18N
 
         add(commentsPanel, java.awt.BorderLayout.NORTH);
+        commentsPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.commentsPanel.AccessibleContext.accessibleName")); // NOI18N
+        commentsPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.commentsPanel.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void searchInCommentsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchInCommentsItemStateChanged
