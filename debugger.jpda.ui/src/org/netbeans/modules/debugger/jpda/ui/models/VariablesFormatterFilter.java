@@ -295,24 +295,30 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                 VariablesFormatter f = getFormatterForType(ct, formatters);
                 if (f != null) {
                     String expandTestCode = f.getChildrenExpandTestCode();
-                    if (expandTestCode != null && expandTestCode.length() > 0) {
-                        try {
-                            java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
-                            evaluateMethod.setAccessible(true);
-                            Variable ret = (Variable) evaluateMethod.invoke(ov, expandTestCode);
-                            if (ret != null) {
-                                childrenExpandTest.put(ov, !"true".equals(ret.getValue()));
-                            }
-                        } catch (java.lang.reflect.InvocationTargetException itex) {
-                            Throwable t = itex.getTargetException();
-                            if (t instanceof InvalidExpressionException) {
-                                // Ignore, expression failed to evaluate.
-                            } else {
-                                Exceptions.printStackTrace(t);
-                            }
-                        } catch (Exception ex) {
-                            Exceptions.printStackTrace(ex);
+                    if ("false".equals(expandTestCode)) {   // Optimalization for constant
+                        childrenExpandTest.put(ov, true);   // is leaf
+                        continue;
+                    }
+                    if ("true".equals(expandTestCode)) {   // Optimalization for constant
+                        childrenExpandTest.put(ov, false);   // is not leaf
+                        continue;
+                    }
+                    try {
+                        java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
+                        evaluateMethod.setAccessible(true);
+                        Variable ret = (Variable) evaluateMethod.invoke(ov, expandTestCode);
+                        if (ret != null) {
+                            childrenExpandTest.put(ov, !"true".equals(ret.getValue()));
                         }
+                    } catch (java.lang.reflect.InvocationTargetException itex) {
+                        Throwable t = itex.getTargetException();
+                        if (t instanceof InvalidExpressionException) {
+                            // Ignore, expression failed to evaluate.
+                        } else {
+                            Exceptions.printStackTrace(t);
+                        }
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             }
