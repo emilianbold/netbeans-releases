@@ -40,7 +40,7 @@
  */
 package nbterm;
 
-import org.netbeans.lib.termsupport.LineFilter;
+import org.netbeans.lib.terminalemulator.support.LineFilter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -67,18 +67,20 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+
+import org.netbeans.lib.richexecution.program.Program;
+import org.netbeans.lib.richexecution.PtyProcess;
+
 import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.Term;
-import org.netbeans.lib.termsupport.TermExecutor;
-import org.netbeans.lib.termsupport.DefaultFindState;
-import org.netbeans.lib.termsupport.FindBar;
-import org.netbeans.lib.termsupport.FindState;
-import org.netbeans.lib.richexecution.program.Program;
-import org.netbeans.lib.richexecution.PtyProcess;
-import org.netbeans.lib.termsupport.TermOptions;
-import org.netbeans.lib.termsupport.TermOptionsPanel;
+// OLD import org.netbeans.lib.terminalemulator.support.TermExecutor;
+import org.netbeans.lib.terminalemulator.support.DefaultFindState;
+import org.netbeans.lib.terminalemulator.support.FindBar;
+import org.netbeans.lib.terminalemulator.support.FindState;
+import org.netbeans.lib.terminalemulator.support.TermOptions;
+import org.netbeans.lib.terminalemulator.support.TermOptionsPanel;
 
 class Terminal extends JFrame implements Runnable {
 
