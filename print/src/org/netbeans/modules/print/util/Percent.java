@@ -58,7 +58,6 @@ import static org.netbeans.modules.print.util.UI.*;
 public final class Percent extends JComboBox implements ActionListener {
 
     public interface Listener {
-
         double getCustomValue(int index);
         void valueChanged(double value, int index);
         void invalidValue(String value);

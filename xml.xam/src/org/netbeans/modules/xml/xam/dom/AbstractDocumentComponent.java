@@ -66,6 +66,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 /**
+ * An abstract implementation of the Component with support of underlaying DOM model.
  *
  * @author rico
  * @author Vidhya Narayanan
@@ -75,7 +76,8 @@ import org.w3c.dom.Text;
 public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>> 
         extends AbstractComponent<C> implements DocumentComponent<C>, DocumentModelAccess.NodeUpdater {
     private Element node;
-    
+
+    @Override
     protected abstract void populateChildren(List<C> children);
     
     public AbstractDocumentComponent(AbstractDocumentModel model, org.w3c.dom.Element e) {
@@ -90,7 +92,8 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         assert n != null : "n must not be null";
         node = n;
     }
-    
+
+    @Override
     public synchronized Element getPeer() {
         return node;
     }
@@ -98,6 +101,7 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
     /**
      * @return attribute value or null if the attribute is currently undefined
      */
+    @Override
     public String getAttribute(Attribute attr) {
         Attr attrNode = getPeer().getAttributeNode(attr.getName());
         if (attrNode == null) {
@@ -114,6 +118,7 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
      * @param attr attribute name
      * @value attribute value
      */
+    @Override
     public void setAttribute(String eventPropertyName, Attribute attr, Object value) {
         verifyWrite();
         Object old = null;
@@ -206,12 +211,15 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         return getPrefixedName(namespace, localName, null, false);
     }
     
-    protected String getPrefixedName(String namespace, String name, String prefix, boolean declarePrefix) {
+    protected String getPrefixedName(String namespace, String name, 
+            String prefix, boolean declarePrefix) {
+        //
         if (namespace == null || namespace.length() == 0) {
             declarePrefix = false;
         }
         String existingPrefix = lookupPrefix(namespace);
-        AbstractDocumentComponent root = (AbstractDocumentComponent)getModel().getRootComponent();
+        AbstractDocumentComponent root =
+                (AbstractDocumentComponent)getModel().getRootComponent();
         if (existingPrefix == null) {
             //might have not been added to xmd tree, so lookup at tree root
             existingPrefix = root.lookupPrefix(namespace);
@@ -290,13 +298,15 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
     protected void removeAttributeQuietly(Element element, String name) {
         getAccess().removeAttribute(element, name, this);
     }
-    
+
+    @Override
     protected void appendChildQuietly(C component, List<C> children) {
         fixupPrefix(component);
         getAccess().appendChild(getPeer(), component.getPeer(), this);
         children.add(component);
     }
-    
+
+    @Override
     protected void insertAtIndexQuietly(C newComponent, List<C> children, int index) {
         if (index >= 0 && children.size() > 0 && index < children.size()) {
             fixupPrefix(newComponent);
@@ -307,7 +317,8 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
             appendChildQuietly(newComponent, children);
         }
     }
-    
+
+    @Override
     protected void removeChildQuietly(C component, List<C> children) {
         removeChild(component.getPeer());
         children.remove(component);
@@ -422,14 +433,17 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         return text.toString();
     }
     
+    @Override
     public AbstractDocumentModel getModel() {
         return (AbstractDocumentModel) super.getModel();
     }
-    
+
+    @Override
     public boolean referencesSameNode(Node n) {
         return getModel().areSameNodes(getPeer(), n);
     }
-    
+
+    @Override
     public synchronized void updateReference(Element element) {
         node = element;
     }
@@ -441,6 +455,7 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
      * uncorrelated nodes in pathToRootNode.  Individual will need to override
      * this implementation if it has special needs.
      */
+    @Override
     public synchronized <N extends Node> void updateReference(List<N> pathToRoot) {
         AbstractDocumentComponent current = this;
         assert pathToRoot != null && pathToRoot.size() > 0;
@@ -476,7 +491,8 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         checkChildrenPopulated(); //make sure children populated before potential mutation
         return (DocumentModelAccess) getModel().getAccess();
     }
-    
+
+    @Override
     public int findPosition() {
         if (getModel() == null) {
             return 0;
@@ -519,7 +535,7 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         if (prefix.length() == 0) {
             return new PrefixAttribute(XMLConstants.XMLNS_ATTRIBUTE);
         } else {
-            return new PrefixAttribute("xmlns:"+prefix); //NOI18N
+            return new PrefixAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":"+prefix); //NOI18N
         }
     }
     
@@ -569,8 +585,14 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         public PrefixAttribute(String name) {
             prefix = name;
         }
+
+        @Override
         public Class getType() { return String.class; }
+
+        @Override
         public String getName() { return prefix; }
+
+        @Override
         public Class getMemberType() { return null; }
     }
     
@@ -609,7 +631,8 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
                 prefix = "ns"; //NOI18N
             }
             prefix = ensureUnique(prefix, newComponentNS);
-            ((AbstractDocumentComponent)getModel().getRootComponent()).addPrefix(prefix, newComponentNS);
+            ((AbstractDocumentComponent)getModel().getRootComponent()).
+                    addPrefix(prefix, newComponentNS);
             newComponentElement.setPrefix(prefix);
         } else {
             newComponentElement.setPrefix(existingPrefix);
@@ -637,7 +660,8 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
             addPrefix(prefix, newNamespace);
         }
     }
-    
+
+    @Override
     public C findChildComponent(Element e) {
         for (C c : getChildren()) {
             if (c.referencesSameNode(e)) {
@@ -657,16 +681,19 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         }
         return null;
     }
-    
+
+    @Override
     public DocumentComponent copy(C parent) {
         if (getModel() == null) {
             throw new IllegalStateException("Cannot copy component already removed from model");
         }
          Element newPeer = getAccess().duplicate(getPeer());
-        DocumentModel<C> m = parent == null ? getModel() : (DocumentModel) parent.getModel();
+        DocumentModel<C> m = parent == null ?
+            getModel() : (DocumentModel) parent.getModel();
         return m.createComponent(parent, newPeer);
     }
     
+    @Override
     protected void verifyWrite() {
         if (getModel() == null) {
             throw new IllegalStateException("Cannot mutate a component already removed from model.");
@@ -676,24 +703,28 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         }
     }
     
+    @Override
     protected void firePropertyChange(String propName, Object oldValue, Object newValue) {
         if (isInDocumentModel()) {
             super.firePropertyChange(propName, oldValue, newValue);
         }
     }
     
+    @Override
     protected void fireValueChanged() {
         if (isInDocumentModel()) {
             super.fireValueChanged();
         }
     }
     
+    @Override
     protected void fireChildRemoved() {
         if (isInDocumentModel()) {
             super.fireChildRemoved();
         }
     }
     
+    @Override
     protected void fireChildAdded() {
         if (isInDocumentModel()) {
             super.fireChildAdded();
@@ -703,22 +734,27 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
     /**
      * Returns true if the component is part of the document model.
      */
+    @Override
     public boolean isInDocumentModel() {
         if (getModel() == null) return false;
-        AbstractDocumentComponent root = (AbstractDocumentComponent) getModel().getRootComponent();
+        AbstractDocumentComponent root =
+                (AbstractDocumentComponent) getModel().getRootComponent();
         if (root == null) return false;
         if (root == this) return true;
-        AbstractDocumentComponent myRoot = (AbstractDocumentComponent) getEffectiveParent();
+        AbstractDocumentComponent myRoot =
+                (AbstractDocumentComponent) getEffectiveParent();
         if (myRoot == null) return false; // no parent
         while (myRoot != null && myRoot.getEffectiveParent() != null) {
             if (myRoot instanceof EmbeddableRoot) {
-                root = (AbstractDocumentComponent) myRoot.getEffectiveParent().getModel().getRootComponent();
+                root = (AbstractDocumentComponent) myRoot.getEffectiveParent().
+                        getModel().getRootComponent();
             }
             myRoot = (AbstractDocumentComponent) myRoot.getEffectiveParent();
         }
         return root == myRoot;
     }
-    
+
+    @Override
     public int findAttributePosition(String attributeName) {
         org.w3c.dom.Attr a = getPeer().getAttributeNode(attributeName);
         if (a != null) {
@@ -776,7 +812,9 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         return _resolveModel(hint, null);
     }
     
-    private ModelSource _resolveModel(String hint, String backup) throws CatalogModelException {
+    private ModelSource _resolveModel(String hint, String backup) 
+            throws CatalogModelException {
+        //
 	CatalogModel nr = (CatalogModel) 
 	    getModel().getModelSource().getLookup().lookup(CatalogModel.class);
 
@@ -886,12 +924,14 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
             if (childElement != null) {
                 removeChild(childElement);
             }
-            childElement = getModel().getDocument().createElementNS(qname.getNamespaceURI(), qname.getLocalPart());
+            childElement = getModel().getDocument().createElementNS(
+                    qname.getNamespaceURI(), qname.getLocalPart());
             getModel().getAccess().appendChild(getPeer(), childElement, this);
         } else {
             if (text.equals(oldVal)) return;
             if (childElement == null) {
-                childElement = getModel().getDocument().createElementNS(qname.getNamespaceURI(), qname.getLocalPart());
+                childElement = getModel().getDocument().createElementNS(
+                        qname.getNamespaceURI(), qname.getLocalPart());
                 getModel().getAccess().appendChild(getPeer(), childElement, this);
             }
             getModel().getAccess().setText(childElement, text, this);
@@ -903,7 +943,8 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
     /**
      * Returns leading text for the child component of the given index.
      * @param child the child to get associated text from
-     * @return value of the leading text node, or null the indexed component peer does not have leading text nodes.
+     * @return value of the leading text node, or null the indexed component peer
+     * does not have leading text nodes.
      */
     protected String getLeadingText(C child) {
         return getText(child, true, true);
@@ -921,7 +962,8 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
     /**
      * Returns trailing text for the child component of the given index.
      * @param child the child to get associated text from
-     * @return value of the leading text node, or null the indexed component peer does not have trailing text nodes.
+     * @return value of the leading text node, or null the indexed component peer
+     * does not have trailing text nodes.
      */
     protected String getTrailingText(C child) {
         return getText(child, false, true);
@@ -939,7 +981,8 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
     protected String getText(C child, boolean leading, boolean includeComments) {
         int domIndex = getNodeIndexOf(getPeer(), child.getPeer());
         if (domIndex < 0) {
-            throw new IllegalArgumentException("Child peer node is not part of children nodes");
+            throw new IllegalArgumentException(
+                    "Child peer node is not part of children nodes");
         }
         
         StringBuilder value = null;
@@ -953,7 +996,8 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
                 break;
             }
 
-            if (n instanceof Text && (includeComments || n.getNodeType() != Node.COMMENT_NODE)) {
+            if (n instanceof Text &&
+                    (includeComments || n.getNodeType() != Node.COMMENT_NODE)) {
                 if (value == null) value = new StringBuilder();
                 if (leading) {
                     value.insert(0, n.getNodeValue());
@@ -965,14 +1009,17 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         return value == null ? null : value.toString();
     }
     
-    protected void setText(String propName, String value, C child, final boolean leading, boolean includeComments) {
+    protected void setText(String propName, String value, C child, 
+            final boolean leading, boolean includeComments) {
+        //
         verifyWrite();
         StringBuilder oldValue = null;
         ArrayList<Node> toRemove = new ArrayList<Node>();
         NodeList nl = getPeer().getChildNodes();
         int domIndex = getNodeIndexOf(getPeer(), child.getPeer());
         if (domIndex < 0) {
-            throw new IllegalArgumentException("Child peer node is not part of children nodes");
+            throw new IllegalArgumentException(
+                    "Child peer node is not part of children nodes");
         }
 
         Element ref = leading ? child.getPeer() : null;
@@ -988,7 +1035,8 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
                 }
                 break;
             }
-            if (n instanceof Text && (includeComments || n.getNodeType() != Node.COMMENT_NODE)) {
+            if (n instanceof Text &&
+                    (includeComments || n.getNodeType() != Node.COMMENT_NODE)) {
                 toRemove.add(n);
                 if (oldValue == null) oldValue = new StringBuilder();
                 if (leading) {
@@ -1009,7 +1057,8 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
              }
         }
         
-        firePropertyChange(propName, oldValue == null ? null : oldValue.toString(), value);
+        firePropertyChange(propName, oldValue == null ?
+            null : oldValue.toString(), value);
         fireValueChanged();
     }
     

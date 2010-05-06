@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.OverridesPopup;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.PopupUtil;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -153,6 +154,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 }
                 baseMethods.remove(meth); // in the case CsmVirtualInfoQuery added function itself (which was previously the case)
                 if (showOverridesPopup(inDeclaration ? null : meth, baseMethods, overriddenMethods, inDeclaration ? CsmKindUtilities.isFunctionDefinition(item) : true, target, offset)) {
+                    UIGesturesSupport.submit("USG_CND_HYPERLINK_METHOD", type); //NOI18N
                     return true;
                 }
             } else if (CsmKindUtilities.isClass(item)) {
@@ -167,11 +169,13 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                         }
                     }
                     if (showOverridesPopup(null, Collections.<CsmClass>emptyList(), subClasses, false, target, offset)) {
+                        UIGesturesSupport.submit("USG_CND_HYPERLINK_CLASS", type); //NOI18N
                         return true;
                     }
                 }
             }
         }
+        UIGesturesSupport.submit("USG_CND_HYPERLINK", type); //NOI18N
         return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
     }
 
@@ -330,7 +334,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         CharSequence msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
         if (msg != null) {
             if (CsmKindUtilities.isMacro(item)) {
-                msg = getAlternativeHyperlinkTip(doc, "AltHyperlinkHint", msg); // NOI18N
+                msg = getAlternativeHyperlinkTip(doc, "AltMacroHyperlinkHint", msg); // NOI18N
             } else if (CsmKindUtilities.isMethod(item)) {
                 msg = getAlternativeHyperlinkTip(doc, "AltMethodHyperlinkHint", msg); // NOI18N
             } else if (CsmKindUtilities.isClass(item)) {

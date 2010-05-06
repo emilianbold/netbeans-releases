@@ -273,6 +273,7 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
     }
 
     void doExpandTest(Object[] children) {
+        VariablesFormatter[] formatters = null;
         for (Object variable : children) {
             if (variable instanceof ObjectVariable) {
                 ObjectVariable ov = (ObjectVariable) variable;
@@ -280,7 +281,18 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                 if (ct == null) {
                     continue;
                 }
-                VariablesFormatter f = getFormatterForType(ct, new FormattersLoopControl().getFormatters());
+                if (formatters == null) {
+                    formatters = new FormattersLoopControl().getFormatters();
+                    ArrayList<VariablesFormatter> formattersWithExpandTestCode = new ArrayList<VariablesFormatter>();
+                    for (VariablesFormatter vf : formatters) {
+                        String expandTestCode = vf.getChildrenExpandTestCode();
+                        if (expandTestCode != null && expandTestCode.length() > 0) {
+                            formattersWithExpandTestCode.add(vf);
+                        }
+                    }
+                    formatters = (VariablesFormatter[]) formattersWithExpandTestCode.toArray(new VariablesFormatter[]{});
+                }
+                VariablesFormatter f = getFormatterForType(ct, formatters);
                 if (f != null) {
                     String expandTestCode = f.getChildrenExpandTestCode();
                     if (expandTestCode != null && expandTestCode.length() > 0) {

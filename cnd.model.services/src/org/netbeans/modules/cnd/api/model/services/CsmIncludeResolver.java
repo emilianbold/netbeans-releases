@@ -102,6 +102,16 @@ public abstract class CsmIncludeResolver {
      */
     public abstract String getIncludeDirective(CsmFile currentFile, CsmObject item);
 
+    /**
+     * Finds best include directive for CSM object in format 
+     * #include "file.h"
+     * 
+     * @param path - current file path
+     * @param item - CSM object
+     * @return - include directive string
+     */
+    public abstract String getLocalIncludeDerectiveByFilePath(String path, CsmObject item);
+
     //
     // Implementation of the default resolver
     //
@@ -118,6 +128,11 @@ public abstract class CsmIncludeResolver {
         @Override
         public boolean isObjectVisible(CsmFile currentFile, CsmObject item) {
             return false;
+        }
+
+        @Override
+        public String getLocalIncludeDerectiveByFilePath(String path, CsmObject item) {
+            return "";
         }
     }
 }

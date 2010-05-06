@@ -126,7 +126,9 @@ public class WLDatasourceSupport {
     static Set<WLDatasource> getDatasources(File domain, FileObject inputFile,
             boolean systemDefault) throws ConfigurationException {
         if (inputFile == null || !inputFile.isValid() || !inputFile.canRead()) {
-            LOGGER.log(Level.WARNING, NbBundle.getMessage(WLDatasourceManager.class, "ERR_WRONG_CONFIG_DIR"));
+            if (LOGGER.isLoggable(Level.INFO) && inputFile != null) {
+                LOGGER.log(Level.INFO, NbBundle.getMessage(WLDatasourceManager.class, "ERR_WRONG_CONFIG_DIR", inputFile));
+            }
             return Collections.emptySet();
         }
         if (inputFile.isData() && inputFile.hasExt("xml")) {

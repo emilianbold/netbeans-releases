@@ -708,4 +708,9 @@ public final class WLStartServer extends StartServer {
             }
         }
     }
+
+    @Override
+    public boolean needsRestart(Target target) {
+        return dm.isRestartNeeded();
+    }
 }

@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen;
 
-import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode.Description;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode.Description;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import java.awt.Dialog;
@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.GetterSetterPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

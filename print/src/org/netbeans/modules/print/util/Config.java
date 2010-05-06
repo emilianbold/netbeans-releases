@@ -62,8 +62,7 @@ import static org.netbeans.modules.print.util.UI.*;
  */
 public final class Config {
 
-    private Config() {
-    }
+    private Config() {}
 
     public boolean showPageSetup() {
         PrinterJob job = PrinterJob.getPrinterJob();

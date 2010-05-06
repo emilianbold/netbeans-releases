@@ -75,7 +75,7 @@ public abstract class IndexedElement extends RubyElement {
     /** This element is deliberately not documented (rdoc :nodoc:) */
     public static final int NODOC = 1 << 5;
     /** This element is virtual, i.e. doesn't have a direct match in sources/AST*/
-    public static final int VIRTUAL = 1 << 6;
+    public static final int VIRTUAL = 1 << 9;
     
     protected final FileObject file;
     protected final String clz;

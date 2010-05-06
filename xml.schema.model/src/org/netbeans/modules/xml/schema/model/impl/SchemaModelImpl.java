@@ -119,7 +119,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
      * from a document which is not well formed will not result in any changes
      * to the schema model.
      */
-
+    @Override
     public SchemaImpl getSchema() {
         return (SchemaImpl)getRootComponent();
     }
@@ -129,10 +129,12 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
      *
      * @return common schema element factory valid for this instance
      */
+    @Override
     public SchemaComponentFactory getFactory() {
         return csef;
     }
-    
+
+    @Override
     public SchemaComponent createRootComponent(org.w3c.dom.Element root) {
         SchemaImpl newSchema = (SchemaImpl)csef.create(root, null);
         if (newSchema != null) {
@@ -143,10 +145,12 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         return getSchema();
     }
 
+    @Override
     public SchemaComponent getRootComponent() {
         return mSchema;
     }
 
+    @Override
     public <T extends NamedReferenceable>
             T resolve(String namespace, String localName, Class<T> type) 
     {
@@ -229,11 +233,13 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         }
         return refs;
     }
-    
+
+    @Override
     public <T extends NamedReferenceable> T findByNameAndType(String localName, Class<T> type) {
         return mGlobalIndexSupport.findByNameAndType(localName, type);
     }
 
+    @Override
     public Set<Schema> findSchemas(String namespace) {
         Set<Schema> result = new HashSet<Schema>();
         
@@ -334,6 +340,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
 	 * otherwise the component is assumed to be included or redefined and
 	 * the namespace of this schema is returned. 
      */
+    @Override
     public String getEffectiveNamespace(SchemaComponent component) {
 	SchemaModel componentModel = component.getModel();
 	Schema schema = getSchema();
@@ -374,10 +381,12 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         }
     }
 
+    @Override
     public SchemaComponent createComponent(SchemaComponent parent, org.w3c.dom.Element element) {
        return csef.create(element, parent);
     }
 
+    @Override
     protected ComponentUpdater<SchemaComponent> getComponentUpdater() {
         return new SyncUpdateVisitor();
     }
@@ -409,6 +418,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         return SchemaAttributes.getQNameValuedAttributes();
     }
 
+    @Override
     public boolean isEmbedded() {
         return false;
     }

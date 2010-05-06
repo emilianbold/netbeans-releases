@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen.ui;
 
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import java.util.List;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.model.CsmField;

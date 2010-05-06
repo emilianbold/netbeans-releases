@@ -24,7 +24,7 @@ import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.TestModel;
+import org.netbeans.modules.xml.xam.TestModel3;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.dom.ElementIdentity;
@@ -193,19 +193,19 @@ public class Util {
             m1.getDocument(), m2.getDocument());
     }
     
-    public static TestModel loadModel(Document doc) throws Exception {
-        return new TestModel(doc);
+    public static TestModel3 loadModel(Document doc) throws Exception {
+        return new TestModel3(doc);
     }
     
-    public static TestModel loadModel(String path) throws Exception {
-        return new TestModel(getResourceAsDocument(path));
+    public static TestModel3 loadModel(String path) throws Exception {
+        return new TestModel3(getResourceAsDocument(path));
     }
     
-    public static TestModel loadModel(File f) throws Exception {
-        return new TestModel(loadDocument(f));
+    public static TestModel3 loadModel(File f) throws Exception {
+        return new TestModel3(loadDocument(f));
     }
     
-    public static TestModel dumpAndReloadModel(TestModel sm) throws Exception {
+    public static TestModel3 dumpAndReloadModel(TestModel3 sm) throws Exception {
         Document doc = sm.getBaseDocument();
         File f = dumpToTempFile(doc);
         return loadModel(f);
