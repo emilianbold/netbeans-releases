@@ -483,8 +483,13 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
         changeBtn.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                model.set(list.getMinSelectionIndex(), nameText.getText());
-                changeTarget(list.getMinSelectionIndex(), nameText.getText());
+                String name = nameText.getText().trim();
+                if (getMakefileData().validateTargetName(name, getCurrentType())) {
+                    model.set(list.getMinSelectionIndex(), name);
+                    changeTarget(list.getMinSelectionIndex(), name);
+                } else {
+                    // FIXUP What to do?
+                }
             }
         });
 
