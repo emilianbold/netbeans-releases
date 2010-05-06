@@ -134,7 +134,7 @@ public class HtmlStructureScanner implements StructureScanner {
                         if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
                             //do not creare one line folds
                             //XXX this logic could possibly seat in the GSF folding impl.
-                            if(node.type() == AstNode.NodeType.TAG) {
+                            if(node.type() == AstNode.NodeType.OPEN_TAG) {
                                 tags.add(new OffsetRange(so, eo));
                             } else {
                                 comments.add(new OffsetRange(so, eo));

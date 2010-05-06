@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -68,6 +69,7 @@ import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Node.Cookie;
 import org.openide.util.Lookup;
@@ -120,7 +122,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 return klass.cast(getJspEditorSupport());
             }
         });
-        
+        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs( FileObject folder, String fileName ) throws IOException {
+                getJspEditorSupport().saveAs( folder, fileName );
+            }
+        });
+
         initialize();
     }
     
@@ -382,15 +389,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         WebExecSupport.setQueryString(getPrimaryEntry().getFile(), params);
         firePropertyChange(PROP_REQUEST_PARAMS, null, null);
     }
-    
-    @Override
-    protected org.openide.filesystems.FileObject handleRename(String str) throws java.io.IOException {
-        if (!Utilities.isJavaIdentifier(str)) {
-            throw new IOException(NbBundle.getMessage(JspDataObject.class, "FMT_Not_Valid_FileName", str));  //NOI18N
-        }
-        return super.handleRename(str);
-    }
-    
+
     public void addSaveCookie(SaveCookie cookie){
         getCookieSet().add(cookie);
     }

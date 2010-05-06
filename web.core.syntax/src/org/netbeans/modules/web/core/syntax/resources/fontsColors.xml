@@ -65,5 +65,5 @@ made subject to such option by the copyright holder.
     </fontcolor>
     <fontcolor name="scriptlet" bgColor="ffe3f2e1" default="default"/>
     <fontcolor name="scriptlet-delimiter" bgColor="ffe3f2e1" default="default"/>
-    <fontcolor name="expression-language" foreColor="black" bgColor="ffe3f2e1" default="default"/>
+    <fontcolor name="expression-language" bgColor="ffe3f2e1" default="default"/>
 </fontscolors>
