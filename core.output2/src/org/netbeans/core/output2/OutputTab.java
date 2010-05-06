@@ -231,6 +231,10 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
         IOContainer ioContainer = io.getIOContainer();
         if (io.isFocusTaken()) {
+	    // The following two lines pulled up from select per bug#185209
+	    ioContainer.open();
+	    // ioContainer.requestVisible();
+
             ioContainer.select(this);
             ioContainer.requestVisible();
         }

@@ -271,7 +271,8 @@ public final class IOWindow implements IOContainer.Provider {
 
         @Override
         public void open() {
-            super.open();
+            if (!isOpened())
+		super.open();
         }
 
         @Override
@@ -285,10 +286,12 @@ public final class IOWindow implements IOContainer.Provider {
 
         @Override
         public void requestVisible() {
-            super.requestVisible();
-            if (Boolean.TRUE.equals(getClientProperty("isSliding"))) { //NOI18N
-                requestActive();
-            }
+            if (!isShowing()) {
+		super.requestVisible();
+		if (Boolean.TRUE.equals(getClientProperty("isSliding"))) { //NOI18N
+		    requestActive();
+		}
+	    }
         }
 
         boolean activated;
@@ -360,12 +363,15 @@ public final class IOWindow implements IOContainer.Provider {
         }
 
         public void selectTab(JComponent comp) {
-            if (!isOpened()) {
-                open();
-            }
-            if (!isShowing()) {
-                requestVisible();
-            }
+//	    Calls to open/requestVisible() lifted into Controller, case CMD_SELECT.
+//	    Tests pushed into this.open() and this.requestVisible().
+//
+//            if (!isOpened()) {
+//                open();
+//            }
+//            if (!isShowing()) {
+//                requestVisible();
+//            }
             if (singleTab == null) {
                 pane.setSelectedComponent(comp);
             }

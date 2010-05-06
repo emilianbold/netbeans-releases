@@ -37,55 +37,74 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.terminal.test;
+package org.openide.windows;
 
+import java.util.Set;
 import org.openide.util.Lookup;
-import org.openide.windows.InputOutput;
+import org.openide.util.Parameters;
 
 /**
- * Capability of an InputOutput which allows unit tests to access
- * useful information and functionality. Sort-of an analog of the
- * JTAG interface used in microelectronics.
+ * Capability of an InputOutput of finer grained selection of a component.
+ * <p>
+ * InputOutput.select() does too much.
+ * @author ivan
+ * @since 1.23
  */
-public abstract class IOTest {
+public abstract class IOSelect {
 
-    private static IOTest find(InputOutput io) {
+    /**
+     * Additional operations to perform when issuing {@link IOSelect#select}.
+     * @author ivan
+     */
+    public static enum AdditionalOperation {
+	/**
+	 * Additionally issue open() on the TopComponent containing the InputOutput.
+	 */
+	OPEN,
+
+	/**
+	 * Additionally issue requestVisible() on the TopComponent containing the InputOutput.
+	 */
+	REQUEST_VISIBLE,
+
+	/**
+	 * Additionally issue requestActive() on the TopComponent containing the InputOutput.
+	 */
+	REQUEST_ACTIVE
+    }
+
+    private static IOSelect find(InputOutput io) {
         if (io instanceof Lookup.Provider) {
             Lookup.Provider p = (Lookup.Provider) io;
-            return p.getLookup().lookup(IOTest.class);
+            return p.getLookup().lookup(IOSelect.class);
         }
         return null;
     }
 
     /**
-     * Return true if the Task queue associated with this IO's provider
-     * has no more work items.
-     * @param io IO to operate on.
-     * @return If true the Task queue associated with this IO's provider
-     * has no more work items.
+     * With an empty 'extraOps' simply selects this io
+     * without involving it's containing TopComponent.
+     * <p>
+     * For example:
+     * <pre>
+     * if (IOSelect.isSupported(io) {
+     *     IOSelect.select(io, EnumSet.noneOf(IOSelect.AdditionalOperation.class));
+     * }
+     * </pre>
+     * <p>
+     * If this capability is not supported then regular InputOutput.select()
+     * will be called.
+     * @param io InputOutput to operate on.
+     * @param extraOps Additional operations to apply to the containing
+     * TopComponent.
      */
-    public static boolean isQuiescent(InputOutput io) {
-	IOTest ior = find(io);
-	if (ior != null) {
-	    return ior.isQuiescent();
-	} else {
-	    assert false : "isQuiesent isn't implemented";
-	    return false;
-	}
-    }
-
-    /**
-     * Simulate the user issuing the Close action or clicking on
-     * the tab close "X".
-     * We need this because IOVisibility.setVisible(false) is an
-     * unconditional close and we'd like to test isClosable()
-     * and vetoing.
-     */
-    public static void performCloseAction(InputOutput io) {
-	IOTest ior = find(io);
-	if (ior != null) {
-	    ior.performCloseAction();
-	}
+    public static void select(InputOutput io, Set<AdditionalOperation> extraOps) {
+	Parameters.notNull("extraOps", extraOps);	// NOI18N
+	IOSelect ios = find(io);
+	if (ios != null)
+	    ios.select(extraOps);
+	else
+	    io.select();	// fallback
     }
 
     /**
@@ -97,6 +116,11 @@ public abstract class IOTest {
         return find(io) != null;
     }
 
-    abstract protected boolean isQuiescent();
-    abstract protected void performCloseAction();
+    /**
+     * With an empty 'extraOps' simply selects this io
+     * without involving it's containing TopComponent.
+     * @param extraOps Additional operations to apply to the containing
+     * TopComponent.
+     */
+    abstract protected void select(Set<AdditionalOperation> extraOps);
 }

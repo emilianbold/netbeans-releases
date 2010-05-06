@@ -48,6 +48,7 @@ import org.netbeans.modules.terminal.api.IOConnect;
 import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOVisibility;
+import org.netbeans.modules.terminal.test.IOTest;
 import org.openide.windows.InputOutput;
 
 /**
@@ -183,7 +184,7 @@ public class T2_CloseVeto_Test extends TestSupport {
 
 	    // This should first trigger a veto propery change followed by
 	    // an actual property change
-	    IOVisibility.setVisible(io, false);
+	    IOTest.performCloseAction(io);
 
 	    // give it all time to settle down.
 	    sleep(3);
@@ -207,6 +208,7 @@ public class T2_CloseVeto_Test extends TestSupport {
 		    if (visible == false)
 			sawClose = true;
 		} else if (evt.getPropertyName().equals(IOResizable.PROP_SIZE)) {
+		} else if (evt.getPropertyName().equals(IOConnect.PROP_CONNECTED)) {
 		} else {
 		    System.out.printf("Unexpected event '%s'\n", evt.getPropertyName());
 		}
