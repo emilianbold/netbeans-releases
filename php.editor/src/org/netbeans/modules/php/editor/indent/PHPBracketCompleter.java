@@ -1247,7 +1247,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 }
 
                 if (id == PHPTokenId.PHP_CURLY_CLOSE) {
-                    begin = LexUtilities.findBwd(doc, ts, '{', '}');
+                    begin = LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_CURLY_OPEN, '{', PHPTokenId.PHP_CURLY_CLOSE, '}');
                 } else {
                     begin = LexUtilities.findBegin(doc, ts);
                 }
