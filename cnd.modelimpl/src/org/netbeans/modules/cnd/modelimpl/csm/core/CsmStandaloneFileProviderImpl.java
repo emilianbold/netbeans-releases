@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -321,13 +322,9 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
             if (prototype == null) {
                 NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
-                if (set != null) {
-                    for(NativeFileItem item : set.getItems()){
-                        NativeProject p = item.getNativeProject();
-                        if (p != null && ModelImpl.instance().isProjectDiabled(p)){
-                            return null;
-                        }
-                    }
+                if (set != null && ! set.isEmpty()) {
+                    // it does not matter, what is there in the set! - see #185599, #185629
+                    return null;
                 }
                 // Some default implementation should be provided.
                 sysIncludes.addAll(DefaultSystemSettings.getDefault().getSystemIncludes(lang));
@@ -490,7 +487,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
-        public void runOnCodeModelReadiness(Runnable task) {
+        public void runOnCodeModelReadiness(NamedRunnable task) {
             task.run();
         }
 

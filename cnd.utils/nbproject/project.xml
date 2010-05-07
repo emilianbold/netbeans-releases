@@ -74,6 +74,8 @@
                 <friend>com.sun.tools.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.model</friend>
+                <friend>org.netbeans.modules.cnd.api.project</friend>
+                <friend>org.netbeans.modules.cnd.api.remote</friend>
                 <friend>org.netbeans.modules.cnd.apt</friend>
                 <friend>org.netbeans.modules.cnd.asm</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
