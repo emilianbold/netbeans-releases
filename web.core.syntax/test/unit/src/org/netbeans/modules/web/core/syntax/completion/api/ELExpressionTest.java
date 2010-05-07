@@ -39,16 +39,19 @@
 
 package org.netbeans.modules.web.core.syntax.completion.api;
 
+import javax.swing.text.Document;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.test.web.core.syntax.TestBase;
 
 /**
  *
  * @author marekfukala
  */
-public class ELExpressionTest {
+public class ELExpressionTest extends TestBase {
 
-    public ELExpressionTest() {
+    public ELExpressionTest(String testName) {
+        super(testName);
     }
 
     @Test
@@ -57,5 +60,47 @@ public class ELExpressionTest {
         NbTestCase.assertEquals("ID", ELExpression.getPropertyName("getID", 3));
         NbTestCase.assertEquals("i", ELExpression.getPropertyName("getI", 3));
     }
+
+    public void testParseElFunction() {
+        Document doc = createDocument("${f:continue}");
+        //                             012345678
+        ELExpression expr = new ELExpression(doc);
+        int type = expr.parse(8);
+
+        assertEquals(ELExpression.EL_START, type);
+        assertEquals("f:cont", expr.getReplace());
+
+        doc = createDocument("${f:cont}");
+        //                    012345678
+        expr = new ELExpression(doc);
+        type = expr.parse(8);
+
+        assertEquals(ELExpression.EL_START, type);
+        assertEquals("f:cont", expr.getReplace());
+
+        doc = createDocument("${f:cont}");
+        //                    012345678
+        expr = new ELExpression(doc);
+        type = expr.parse(4);
+
+        assertEquals(ELExpression.EL_START, type);
+        assertEquals("f:", expr.getReplace());
+
+        doc = createDocument("${f:}");
+        //                    012345678
+        expr = new ELExpression(doc);
+        type = expr.parse(4);
+
+        assertEquals(ELExpression.EL_START, type);
+        assertEquals("f:", expr.getReplace());
+
+    }
+
+    @Override
+    protected String getPreferredMimeType() {
+        return "text/x-jsp";
+    }
+
+
 
 }
