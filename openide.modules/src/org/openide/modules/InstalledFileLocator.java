@@ -54,13 +54,18 @@ import org.openide.util.LookupListener;
  * Service providing the ability to locate a module-installed file in
  * the NetBeans application's installation.
  * Zero or more instances may be registered to lookup.
+ * <p>For use in declarative formats, or from APIs which require URLs,
+ * there is a matching URL protocol {@code nbinst}. The host field (optional but
+ * recommended) should be the code name base of the module owning the file; the
+ * path is then relative to that module's cluster. For example,
+ * {@code nbinst://my.module/docs/README} should refer to the file found by
+ * {@code InstalledFileLocator.getDefault().locate("docs/README", "my.module", false)}.</p>
  * @author Jesse Glick
  * @since 3.21
- * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=28683">Issue #28683</a>
  */
 public abstract class InstalledFileLocator {
     private static final InstalledFileLocator DEFAULT = new InstalledFileLocator() {
-        public File locate(String rp, String cnb, boolean l) {
+        public @Override File locate(String rp, String cnb, boolean l) {
             InstalledFileLocator[] ifls = getInstances();
             
             for (int i = 0; i < ifls.length; i++) {
@@ -98,6 +103,7 @@ public abstract class InstalledFileLocator {
      * Should not call foreign code while holding this.
      * Cf. comments in #64710.
      */
+    @SuppressWarnings("RedundantStringConstructorCall")
     private static final Object LOCK = new String(InstalledFileLocator.class.getName());
     
     /**
@@ -241,7 +247,7 @@ public abstract class InstalledFileLocator {
         if (_result == null) {
             _result = Lookup.getDefault().lookupResult(InstalledFileLocator.class);
             _result.addLookupListener(new LookupListener() {
-                public void resultChanged(LookupEvent e) {
+                public @Override void resultChanged(LookupEvent e) {
                     synchronized (LOCK) {
                         instances = null;
                     }
