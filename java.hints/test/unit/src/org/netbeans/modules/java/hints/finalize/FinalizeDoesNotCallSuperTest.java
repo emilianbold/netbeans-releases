@@ -102,6 +102,14 @@ public class FinalizeDoesNotCallSuperTest extends TestBase {
                             "}").replaceAll("[ \t\n]+", " "));
     }
 
+    public void testBroken185456() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    protected abstract void finalize();\n" +
+                            "}");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();
