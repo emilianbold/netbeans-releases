@@ -604,16 +604,20 @@ public class ConfigurationMakefileWriter {
         String getPreferredCompiler = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getPreferredCompiler();
         if (linkerConfiguration.getTool().getModified()) {
             return linkerConfiguration.getTool().getValue() + " "; // NOI18N
-        } else if (conf.hasCPPFiles(projectDescriptor)) {
-            if (getPreferredCompiler != null && "c".equals(getPreferredCompiler)) {
+        }
+        if (getPreferredCompiler != null) {
+            if ("c".equals(getPreferredCompiler)) { // NOI18N
                 return "${LINK.c}" + " "; // NOI18N
+            } else if ("cpp".equals(getPreferredCompiler)) { // NOI18N
+                return  "${LINK.cc}" + " "; // NOI18N
+            } else if ("fortran".equals(getPreferredCompiler)) { // NOI18N
+                return  "${LINK.f}" + " "; // NOI18N
             }
+        }
+        if (conf.hasCPPFiles(projectDescriptor)) {
             return  "${LINK.cc}" + " "; // NOI18N
         } else if (conf.hasFortranFiles(projectDescriptor)) {
             return  "${LINK.f}" + " "; // NOI18N
-        }
-        if (getPreferredCompiler != null && "cpp".equals(getPreferredCompiler)) {
-            return "${LINK.cc}" + " "; // NOI18N
         }
         return "${LINK.c}" + " "; // NOI18N
     }
