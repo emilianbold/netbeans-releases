@@ -44,5 +44,6 @@ made subject to such option by the copyright holder.
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <linker>
         <output_file flags="-compat=g -o "/>
+        <preferred_compiler compiler="cpp"/>
     </linker>
 </toolchaindefinition>

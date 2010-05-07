@@ -38,17 +38,14 @@
  */
 package org.netbeans.modules.cnd.cncppunit.codegeneration;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.simpleunit.utils.CodeGenerationUtils;
 
 /**
@@ -70,70 +67,50 @@ public class CUnitCodeGenerator {
 
             testCalls.append("if ( "); // NOI18N
 
+            List<String> testFunctionsNames = new ArrayList<String>();
+            List<String> addedTestIncludes = new ArrayList<String>();
+
             int functionNumber = 0;
             for (CsmFunction fun : functions) {
 
                 CsmIncludeResolver inclResolver = CsmIncludeResolver.getDefault();
                 String include = inclResolver.getLocalIncludeDerectiveByFilePath(testFilePath, fun);
                 if(!include.isEmpty()) {
-                    testIncludes.append(include);
-                    testIncludes.append("\n"); // NOI18N
+                    if(!addedTestIncludes.contains(include)) {
+                        testIncludes.append(include);
+                        testIncludes.append("\n"); // NOI18N
+                    }
+                    addedTestIncludes.add(include);
                 } else {
                     testFunctions.append(CodeGenerationUtils.generateFunctionDeclaration(fun));
                     testFunctions.append("\n\n"); // NOI18N
                 }
 
                 String funName = fun.getName().toString();
-                String testFunctionName = "testFor" + // NOI18N
+                String testFunctionName = "test" + // NOI18N
                         Character.toUpperCase(funName.charAt(0))
                         + funName.substring(1);
+                if(testFunctionsNames.contains(testFunctionName)) {
+                    int i = 0;
+                    while(testFunctionsNames.contains(testFunctionName + i)) {
+                        i++;
+                    }
+                    testFunctionName = testFunctionName + i;
+                }
+                testFunctionsNames.add(testFunctionName);
                 testFunctions.append("void ") // NOI18N
                         .append(testFunctionName) // NOI18N
                         .append("() {\n"); // NOI18N
                 Collection<CsmParameter> params = fun.getParameters();
-                int i = 0;
+                int i = 2;
                 for (CsmParameter param : params) {
                     testFunctions.append("    "); // NOI18N
                     testFunctions.append(CodeGenerationUtils.generateParameterDeclaration(param, i));
                     testFunctions.append("\n"); // NOI18N
                     i++;
                 }
-                String returnType = fun.getReturnType().getText().toString();
-                if (CsmKindUtilities.isMethod(fun)) {
-                    CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(fun);
-                    CsmClass cls = method.getContainingClass();
-                    if (cls != null) {
-                        String clsName = cls.getName().toString();
-                        String clsVarName =
-                                Character.toLowerCase(clsName.charAt(0))
-                                + clsName.substring(1);
-                        clsVarName = (clsVarName.equals(clsName)) ? '_' + clsVarName : clsVarName; // NOI18N
-                        testFunctions.append("    ") // NOI18N
-                                .append(cls.getQualifiedName()) // NOI18N
-                                .append(" ") // NOI18N
-                                .append(clsVarName) // NOI18N
-                                .append(";\n"); // NOI18N
-                        testFunctions.append("    ") // NOI18N
-                                .append(((!"void".equals(returnType)) ? returnType + " result = " : "")) // NOI18N
-                                .append(clsVarName) // NOI18N
-                                .append(".") // NOI18N
-                                .append(method.getName()); // NOI18N
-                    }
-                } else {
-                    testFunctions.append("    ").append(((!"void".equals(returnType)) ? returnType + " result = " : "")) // NOI18N
-                            .append(fun.getName()); // NOI18N
-                }
-                i = 0;
-                testFunctions.append("("); // NOI18N
-                for (CsmParameter param : params) {
-                    if (i != 0) {
-                        testFunctions.append(", "); // NOI18N
-                    }
-                    String paramName = param.getName().toString();
-                    testFunctions.append(((paramName != null && !paramName.isEmpty()) ? paramName : "p" + i)); // NOI18N
-                    i++;
-                }
-                testFunctions.append(");\n"); // NOI18N
+
+                testFunctions.append(CodeGenerationUtils.generateFunctionCall(fun));
 
                 testFunctions.append("    if(1 /*check result*/) {\n"); // NOI18N
                 testFunctions.append("        CU_ASSERT(0);"); // NOI18N

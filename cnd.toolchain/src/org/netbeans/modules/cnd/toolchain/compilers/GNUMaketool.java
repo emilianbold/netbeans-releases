@@ -54,8 +54,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     }
     
     @Override
-    public GNUMaketool createCopy() {
-        return new GNUMaketool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
+    public GNUMaketool createCopy(CompilerFlavor flavor) {
+        return new GNUMaketool(getExecutionEnvironment(), flavor, getName(), getDisplayName(), getPath());
     }
 
     public static GNUMaketool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {

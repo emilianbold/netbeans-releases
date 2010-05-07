@@ -54,8 +54,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     }
 
     @Override
-    public GNUDebuggerTool createCopy() {
-        return new GNUDebuggerTool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
+    public GNUDebuggerTool createCopy(CompilerFlavor flavor) {
+        return new GNUDebuggerTool(getExecutionEnvironment(), flavor, getName(), getDisplayName(), getPath());
     }
 
     public static GNUDebuggerTool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {

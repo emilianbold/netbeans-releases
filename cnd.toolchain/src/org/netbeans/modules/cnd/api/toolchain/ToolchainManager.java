@@ -227,6 +227,8 @@ public final class ToolchainManager {
 
         String getOutputFileFlag();
 
+        String getPreferredCompiler();
+
         String getStripFlag();
     }
 
