@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -79,9 +80,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -148,6 +149,7 @@ public class ModelSupport implements PropertyChangeListener {
                 postponeParse = true;
                 WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
 
+                    @Override
                     public void run() {
                         if (TRACE_STARTUP) {
                             System.out.println("Model support: invoked after ready UI"); // NOI18N
@@ -155,6 +157,7 @@ public class ModelSupport implements PropertyChangeListener {
                         postponeParse = false;
                         Runnable task = new Runnable() {
 
+                            @Override
                             public void run() {
                                 OpenProjects.getDefault().addPropertyChangeListener(ModelSupport.this);
                                 openProjects();
@@ -180,6 +183,7 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         try { //FIXUP #109105 OpenProjectList does not get notification about adding a project if the project is stored in the repository
             if (TRACE_STARTUP) {
@@ -192,6 +196,7 @@ public class ModelSupport implements PropertyChangeListener {
                     }
                     RequestProcessor.getDefault().post(new Runnable() {
 
+                        @Override
                         public void run() {
                             openProjects();
                         }
@@ -301,8 +306,8 @@ public class ModelSupport implements PropertyChangeListener {
         StringBuilder sb = new StringBuilder();
         ProjectInformation pi = ProjectUtils.getInformation(project);
         if (pi != null) {
-            sb.append(" Name=" + pi.getName()); // NOI18N
-            sb.append(" DisplayName=" + pi.getDisplayName()); // NOI18N
+            sb.append(" Name=").append(pi.getName()); // NOI18N
+            sb.append(" DisplayName=").append(pi.getDisplayName()); // NOI18N
         }
 //        SourceGroup[] sg = ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
 //        for( int i = 0; i < sg.length; i++ ) {
@@ -330,14 +335,16 @@ public class ModelSupport implements PropertyChangeListener {
                 dumpProjectFiles(nativeProject);
             }
 
-            nativeProject.runOnCodeModelReadiness(new Runnable() {
-
-                public void run() {
+            String taskName = NbBundle.getMessage(getClass(), "MSG_CodeAssistanceInitializationTask",
+                    nativeProject.getProjectDisplayName());
+            NamedRunnable task = new NamedRunnable(taskName) {
+                @Override
+                protected void runImpl() {
                     boolean enableModel = new CodeAssistanceOptions(project).getCodeAssistanceEnabled();
-
                     model.addProject(nativeProject, nativeProject.getProjectDisplayName(), enableModel);
                 }
-            });
+            };
+            nativeProject.runOnCodeModelReadiness(task);
         }
     }
 
@@ -533,6 +540,7 @@ public class ModelSupport implements PropertyChangeListener {
 //            }
 //        }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             if (TraceFlags.DEBUG) {
                 traceDataObjectRegistryStateChanged(e);
@@ -685,6 +693,7 @@ public class ModelSupport implements PropertyChangeListener {
             }
         }
 
+        @Override
         public void run() {
             if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
                 System.err.printf("External updates: running update task\n");

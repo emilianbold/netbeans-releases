@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetManagerEvents;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 
 public final class Configurations {
 
@@ -56,7 +57,7 @@ public final class Configurations {
     private final PropertyChangeSupport pcs;
     private final List<Configuration> configurations = new ArrayList<Configuration>();
     private final ReadWriteLock configurationsLock = new ReentrantReadWriteLock();
-    private final List<Runnable> tasks = new ArrayList<Runnable>();
+    private final List<NamedRunnable> tasks = new ArrayList<NamedRunnable>();
 
     public Configurations() {
         pcs = new PropertyChangeSupport(this);
@@ -71,7 +72,7 @@ public final class Configurations {
     }
 
     public Configurations init(Configuration[] confs, int defaultConf) {
-        List<Runnable> toRun = new ArrayList<Runnable>();
+        List<NamedRunnable> toRun = new ArrayList<NamedRunnable>();
         Configuration def = null;
         configurationsLock.writeLock().lock();
         try {
@@ -104,17 +105,17 @@ public final class Configurations {
 //            pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, null, def);
 //            pcs.firePropertyChange(PROP_DEFAULT, null, null);
 //        }
-        for (Runnable task : toRun) {
+        for (NamedRunnable task : toRun) {
             runOnCodeModelReadiness(task, false);
         }
         return this;
     }
 
-    public void runOnCodeModelReadiness(Runnable task) {
+    public void runOnCodeModelReadiness(NamedRunnable task) {
         runOnCodeModelReadiness(task, true);
     }
 
-    private void runOnCodeModelReadiness(Runnable task, boolean postpone) {
+    private void runOnCodeModelReadiness(NamedRunnable task, boolean postpone) {
         MakeConfiguration active = null;
         configurationsLock.writeLock().lock();
         try {

@@ -63,5 +63,9 @@ public abstract class NamedRunnable implements Runnable {
         }
     }
 
+    public String getName() {
+        return name;
+    }
+
     protected abstract void runImpl();
 }
