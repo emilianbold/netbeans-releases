@@ -145,9 +145,11 @@ class Commandline {
             cli.waitFor();
             command.commandCompleted(cli.exitValue());
         } catch (InterruptedException ie) {
-            Subversion.LOG.log(Level.INFO, " command interrupted: [" + command.getStringCommand() + "]", ie);
+            Subversion.LOG.log(Level.INFO, " command interrupted"); //NOI18N
+            Subversion.LOG.log(Level.FINE, " command interrupted: [" + command.getStringCommand() + "]", ie); // should be logged with a lower level, password is printed, too
         } catch (InterruptedIOException ie) {
-            Subversion.LOG.log(Level.INFO, " command interrupted: [" + command.getStringCommand() + "]", ie);
+            Subversion.LOG.log(Level.INFO, " command interrupted"); //NOI18N
+            Subversion.LOG.log(Level.FINE, " command interrupted: [" + command.getStringCommand() + "]", ie); // should be logged with a lower level, password is printed, too
         } catch (Throwable t) {
             if(canceled) {
                 Subversion.LOG.fine(t.getMessage());
