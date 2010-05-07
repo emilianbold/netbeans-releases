@@ -70,6 +70,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.mercurial.HgFileNode;
@@ -447,6 +448,11 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         DiffController view = null;
         
         if (currentIndex != -1) {
+            if (dpt != null) {
+                prepareTask.cancel();
+                dpt.setTableIndex(currentIndex);
+                prepareTask.schedule(100);
+            }
             currentModelIndex = showingFileTable() ? fileTable.getModelIndex(currentIndex) : 0;
             view = setups[currentModelIndex].getView();
 
@@ -486,6 +492,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 }
             } else {
                 diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoContent"));
+                displayDiffView();
             }            
             lookup.setData(fileObj, observableEditorCookie, diffView.getActionMap());
         } else {
@@ -746,18 +753,25 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private class DiffPrepareTask implements Runnable {
         
         private final Setup[] prepareSetups;
+        private int tableIndex; // index of a row in the table - viewIndex, needs to be translated to modelIndex
 
         public DiffPrepareTask(Setup [] prepareSetups) {
             this.prepareSetups = prepareSetups;
+            this.tableIndex = 0;
         }
 
         public void run() {
             IOException exception = null;
-            for (int i = 0; i < prepareSetups.length; i++) {
-                if (prepareSetups != setups) return;
+            int[] indexes = prepareIndexesToRefresh();
+            for (int i : indexes) {
+                if (prepareSetups != setups || Thread.interrupted()) return;
+                int modelIndex = fileTable == null ? i : fileTable.getModelIndex(i);
+                if (prepareSetups[modelIndex].getView() != null) {
+                    continue;
+                }
                 try {
-                    prepareSetups[i].initSources();  // slow network I/O
-                    final int fi = i;
+                    prepareSetups[modelIndex].initSources();  // slow network I/O
+                    final int fi = modelIndex;
                     StreamSource ss1 = prepareSetups[fi].getFirstSource();
                     StreamSource ss2 = prepareSetups[fi].getSecondSource();
                     final DiffController view = DiffController.createEnhanced(ss1, ss2);  // possibly executing slow external diff
@@ -765,9 +779,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     if (Thread.interrupted()) {
                         return;
                     }
+                    prepareSetups[fi].setView(view);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            prepareSetups[fi].setView(view);
                             if (prepareSetups != setups) {
                                 return;
                             }
@@ -781,10 +795,14 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                         }
                     });
                 } catch (IOException e) {
-                    Mercurial.LOG.log(Level.INFO, null, e);
-                    if (exception == null) {
-                        // save only the first exception
-                        exception = e;
+                    if (HgUtils.isCanceled(e)) {
+                        Logger.getLogger(MultiDiffPanel.class.getName()).log(Level.FINE, null, e);
+                    } else {
+                        Mercurial.LOG.log(Level.INFO, null, e);
+                        if (exception == null) {
+                            // save only the first exception
+                            exception = e;
+                        }
                     }
                 }
             }
@@ -792,6 +810,26 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 // notify user of the failure
                 DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(exception));
             }
+        }
+
+        private int[] prepareIndexesToRefresh () {
+            int min = Math.max(0, tableIndex - 2);
+            int max = Math.min(prepareSetups.length - 1, tableIndex + 2);
+            int[] indexes = new int[max - min + 1];
+            // adding tableIndex, tableIndex - 1, tableIndex + 1, tableIndex - 2, tableIndex + 2, etc.
+            for (int i = tableIndex, j = tableIndex + 1, k = 0; i >= min || j <= max; --i, ++j) {
+                if (i >= min) {
+                    indexes[k++] = i;
+                }
+                if (j <= max) {
+                    indexes[k++] = j;
+                }
+            }
+            return indexes;
+        }
+
+        private void setTableIndex(int index) {
+            this.tableIndex = index;
         }
     }
 
