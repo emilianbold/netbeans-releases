@@ -36,66 +36,28 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.ui;
 
-import java.io.IOException;
-import java.util.concurrent.CancellationException;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+package org.netbeans.modules.cnd.remote.fs.ui;
+
+import org.netbeans.modules.cnd.spi.remote.ConnectionNotifierImplementation;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.openide.awt.StatusDisplayer;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class ConnectAction extends SingleHostAction {
+@ServiceProvider(service=ConnectionNotifierImplementation.class)
+public class ConnectionNotifierImpl implements ConnectionNotifierImplementation {
 
     @Override
-    public String getName() {
-        return NbBundle.getMessage(HostListRootNode.class, "ConnectMenuItem");
-    }
-
-    protected boolean enable(ExecutionEnvironment env) {
-        return !ConnectionManager.getInstance().isConnectedTo(env);
+    public void addTask(ExecutionEnvironment execEnv, NamedRunnable task) {
+        ConnectionNotifierDelegate.getInstance(execEnv).addTask(task);
     }
 
     @Override
-    public boolean isVisible(Node node) {
-        ExecutionEnvironment env = node.getLookup().lookup(ExecutionEnvironment.class);
-        return env != null && env.isRemote();
-    }
-
-
-    @Override
-    protected void performAction(final ExecutionEnvironment env, Node node) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                connect(env);
-            }
-        });
-    }
-
-    private void connect(ExecutionEnvironment env) {
-        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-            try {
-                ConnectionManager.getInstance().connectTo(env);
-                RemoteUtil.checkSetupAfterConnection(env);
-            } catch (IOException ex) {
-                conectionFailed(env, ex);
-            } catch (CancellationException ex) {
-                conectionFailed(env, ex);
-            }
-        }
-    }
-
-    private void conectionFailed(ExecutionEnvironment env, Exception e) {
-        StatusDisplayer.getDefault().setStatusText(
-                NbBundle.getMessage(HostNode.class, "UnableToConnectMessage", RemoteUtil.getDisplayName(env), e.getMessage()));
-
+    public void removeTask(ExecutionEnvironment execEnv, NamedRunnable task) {
+        ConnectionNotifierDelegate.getInstance(execEnv).removeTask(task);
     }
 }

@@ -46,6 +46,9 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -162,6 +165,19 @@ public class RemoteUtil {
             return execEnv.getDisplayName();
         } else {
             return rec.getDisplayName();
+        }
+    }
+
+    public static void checkSetupAfterConnection(ExecutionEnvironment env) {
+        RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
+        if (!record.isOnline()) {
+            record.resetOfflineState();
+            record.init(null);
+            if (record.isOnline()) {
+                ToolsCacheManager cacheManager = ToolsCacheManager.createInstance(true);
+                CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment(), false);
+                csm.initialize(false, true, null);
+            }
         }
     }
 }
