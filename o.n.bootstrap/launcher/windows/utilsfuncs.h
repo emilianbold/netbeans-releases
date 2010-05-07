@@ -67,6 +67,7 @@ bool setupProcess(int &argc, char *argv[], DWORD &parentProcID, const char *atta
 bool printToConsole(const char *msg);
 bool getParentProcessID(DWORD &id);
 bool isConsoleAttached();
+int convertAnsiToUtf8(const char *ansi, char *utf8, int utf8Len);
 
 #endif	/* _UTILSFUNCS_H */
 

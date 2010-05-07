@@ -77,7 +77,12 @@ final class DotClassPathParser {
         if (!"classpath".equals(classpathEl.getLocalName())) { // NOI18N
             return empty();
         }
-        List<Element> classpathEntryEls = XMLUtil.findSubElements(classpathEl);
+        List<Element> classpathEntryEls;
+        try {
+            classpathEntryEls = XMLUtil.findSubElements(classpathEl);
+        } catch (IllegalArgumentException x) {
+            throw new IOException(x);
+        }
         if (classpathEntryEls == null) {
             return empty();
         }

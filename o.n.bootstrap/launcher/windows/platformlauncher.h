@@ -110,11 +110,11 @@ private:
     bool restartRequested();
 
 private:
-    bool exiting;
     bool separateProcess;
     bool suppressConsole;
     bool heapDumpPathOptFound;
     bool nosplash;
+    bool exiting;
     std::string platformDir;
     std::string userDir;
     std::string clusters;
