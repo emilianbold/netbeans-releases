@@ -377,7 +377,7 @@ made subject to such option by the copyright holder.
         </question>
 -->
     <answer id="exec-property">
-        <api name="LookupAndFeelClassName" category="devel" group="property" type="export">
+        <api name="LookAndFeelClassName" category="devel" group="property" type="export">
             The module initializes proper Look&amp;Feel. The decision is done
             based on various inputs including what has been specified on command
             line. To allow easier branding for those who build applications
