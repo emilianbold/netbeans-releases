@@ -170,7 +170,7 @@ public class WLDeploymentManager implements DeploymentManager {
         return classLoader;
     }
 
-    private <T> T executeAction(Action<T> action) throws ExecutionException {
+    private synchronized <T> T executeAction(Action<T> action) throws ExecutionException {
         ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
         String serverRoot = getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
         // if serverRoot is null, then we are in a server instance registration process, thus this call
