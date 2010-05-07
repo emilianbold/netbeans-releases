@@ -243,7 +243,7 @@ public class JsIndexer extends EmbeddingIndexer {
                     String signature = computeSignature(child);
                     indexFuncOrProperty(child, document, signature);
                     String name = child.getName();
-                    if (Character.isUpperCase(name.charAt(0))) {
+                    if (name.length() > 0 && Character.isUpperCase(name.charAt(0))) {
                         indexClass(child, document, signature);
                     }
                 } else if (childKind == ElementKind.GLOBAL ||
