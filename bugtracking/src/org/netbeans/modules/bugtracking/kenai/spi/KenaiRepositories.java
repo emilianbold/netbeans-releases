@@ -40,14 +40,10 @@
 package org.netbeans.modules.bugtracking.kenai.spi;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -188,6 +184,7 @@ abstract class KenaiRepositories {
      */
     private static class DefaultImpl extends KenaiRepositories {
 
+        @Override
         public Repository[] getRepositories(boolean allOpenProjects) {
             if("true".equals(System.getProperty("netbeans.bugtracking.noOpenProjects", "false"))) {
                 allOpenProjects = false; 
@@ -277,7 +274,8 @@ abstract class KenaiRepositories {
                 kenaiProject = null;
                 BugtrackingManager.LOG.log(Level.WARNING,
                         "No Kenai project is available for bugtracking repository " //NOI18N
-                        + " [" + url + "]", ex);                           //NOI18N
+                        + " [" + url + "]"); //NOI18N
+                BugtrackingManager.LOG.log(Level.FINE, null, ex);
             }
             return kenaiProject;
         }

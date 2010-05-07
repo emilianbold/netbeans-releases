@@ -240,8 +240,10 @@ class CommitTable implements AncestorListener, TableModelListener, MouseListener
             @Override
             public void run() {
                 // invoke later so the selection on the table will be set first
-                JPopupMenu menu = getPopup();
-                menu.show(table, e.getX(), e.getY());
+                if (table.isShowing()) {
+                    JPopupMenu menu = getPopup();
+                    menu.show(table, e.getX(), e.getY());
+                }
             }
         });
     }

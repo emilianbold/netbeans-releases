@@ -45,8 +45,6 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -66,7 +64,6 @@ import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.web.core.palette.JspPaletteFactory;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -318,14 +315,6 @@ public class JspEditorWarmUpTask implements Runnable{
                 frame.dispose();
                 pane.setEditorKit(null);
 
-                // #45934 - initialize palette here to make first-time 
-                // JSP opening faster
-                try {
-                    JspPaletteFactory.getPalette();
-                } catch (IOException e) {
-                    LOG.log(Level.INFO, "Palette per-initialization failed", e);
-                }
-                
                 // Candidates Annotations.getLineAnnotations()
 
                 LOG.fine("View hierarchy initialized: " // NOI18N

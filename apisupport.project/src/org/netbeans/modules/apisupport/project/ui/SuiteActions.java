@@ -251,10 +251,25 @@ public final class SuiteActions implements ActionProvider {
                     }
                 }
             }
+            ExecutorTask task = null;
+            ActionEvent ev;
             try {
-                invokeActionImpl(command, context);
+                task = invokeActionImpl(command, context);
             } catch (IOException e) {
                 Util.err.notify(e);
+            }
+            if (
+                task != null &&
+                (ev = context.lookup(ActionEvent.class)) != null &&
+                "waitFinished".equals(ev.getActionCommand()) // NOI18N
+            ) {
+                task.waitFinished();
+                if (ev.getSource() instanceof ExecutorTask[]) {
+                    ExecutorTask[] arr = (ExecutorTask[])ev.getSource();
+                    if (arr.length > 0) {
+                        arr[0] = task;
+                    }
+                }
             }
         }
     }

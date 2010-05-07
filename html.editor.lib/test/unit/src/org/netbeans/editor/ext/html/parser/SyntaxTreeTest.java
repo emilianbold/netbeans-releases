@@ -45,9 +45,6 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.Registry;
@@ -69,7 +66,7 @@ public class SyntaxTreeTest extends TestBase {
 
     public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new SyntaxTreeTest("testBigFile"));
+        suite.addTest(new SyntaxTreeTest("testComment"));
         return suite;
     }
 
@@ -483,6 +480,18 @@ public class SyntaxTreeTest extends TestBase {
 //
 //        System.out.println("big file lexed in ~ " + ((b-a)/loop));
 
+    }
+
+    public void testComment() throws BadLocationException {
+        String code = "<!-- comment -->";
+        AstNode root = parse(code, null);
+
+        assertEquals(1, root.children().size());
+        AstNode commentNode = root.children().iterator().next();
+
+        assertEquals(AstNode.NodeType.COMMENT, commentNode.type());
+        assertEquals(commentNode.logicalStartOffset(), 0);
+        assertEquals(commentNode.logicalEndOffset(), code.length());
     }
 
     //------------------------ private methods ---------------------------

@@ -225,6 +225,7 @@ Contributor(s): Andrei Badea
                 <package>org.netbeans.spi.jumpto.file</package>
                 <package>org.netbeans.spi.jumpto.symbol</package>
                 <package>org.netbeans.spi.jumpto.type</package>
+                <package>org.netbeans.spi.jumpto.support</package>
             </friend-packages>
         </data>
     </configuration>

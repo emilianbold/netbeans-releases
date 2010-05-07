@@ -47,6 +47,7 @@ import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.Client;
 import org.netbeans.lib.cvsclient.command.BasicCommand;
+import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.lib.cvsclient.command.export.ExportCommand;
 import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.modules.versioning.util.IndexingBridge;
@@ -130,7 +131,8 @@ class CommandRunnable implements Runnable, Cancellable {
                 (cmdName.startsWith("update") && (options == null || !options.isDoNoChanges()))
              || cmdName.startsWith("export")
              || cmdName.startsWith("remove")
-             || cmdName.startsWith("checkout");
+             || (cmdName.startsWith("checkout") 
+             && !(cmd instanceof CheckoutCommand && ((CheckoutCommand) cmd).isPipeToOutput())); //NOI18N checkout (output to pipe) called during diff - do not run under indexing bridge
 
         File[] files = null;
         if(blockIndexing) {

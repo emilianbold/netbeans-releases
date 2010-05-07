@@ -48,6 +48,8 @@ package org.netbeans.modules.apisupport.osgidemo;
 import javax.swing.event.HyperlinkEvent;
 import org.openide.WizardDescriptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -58,6 +60,8 @@ class SampleAppWarningVisual extends javax.swing.JPanel {
     SampleAppWarningVisual(SampleAppWarningPanel panel) {
         this.panel = panel;
         initComponents();
+
+        Mnemonics.setLocalizedText(readLicense, NbBundle.getMessage(SampleAppWarningVisual.class, "SampleAppWarningVisual.readLicense.text", new Object[]{})); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -101,8 +105,8 @@ class SampleAppWarningVisual extends javax.swing.JPanel {
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(13, 13, 13)
-                    .addComponent(info, javax.swing.GroupLayout.PREFERRED_SIZE, 373, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(14, Short.MAX_VALUE)))
+                    .addComponent(info, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+                    .addGap(14, 14, 14)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -112,8 +116,8 @@ class SampleAppWarningVisual extends javax.swing.JPanel {
                 .addContainerGap())
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                    .addComponent(info, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(43, Short.MAX_VALUE)))
+                    .addComponent(info, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                    .addGap(43, 43, 43)))
         );
     }// </editor-fold>//GEN-END:initComponents
 

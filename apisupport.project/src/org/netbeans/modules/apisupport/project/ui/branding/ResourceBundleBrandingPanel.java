@@ -56,6 +56,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.ZipException;
 import javax.swing.Action;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
@@ -95,6 +98,8 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         implements ExplorerManager.Provider {
+
+    private static final Logger LOG = Logger.getLogger(ResourceBundleBrandingPanel.class.getName());
 
     private final ExplorerManager manager;
     private RootNode rootNode;
@@ -245,6 +250,9 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
                         }
                     }
                 }
+            } catch (ZipException ex) {
+                // accessing JAR file failed, log and ignore
+                LOG.log(Level.INFO, "Access failed for " + file.getPath()); // NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

@@ -97,7 +97,6 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
         txtPattern = new javax.swing.JTextArea();
         txtPatternError = new javax.swing.JLabel();
         autoScan = new javax.swing.JCheckBox();
-        autoScanLabel = new javax.swing.JLabel();
 
         lblExtension.setLabelFor(cbExtension);
         org.openide.awt.Mnemonics.setLocalizedText(lblExtension, org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblExtension.text")); // NOI18N
@@ -179,8 +178,6 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(autoScanLabel, org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.autoScanLabel.text", new Object[] {})); // NOI18N
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -191,7 +188,7 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lblFileAssociations)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(sepFileAssociations, javax.swing.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE))
+                        .addComponent(sepFileAssociations, javax.swing.GroupLayout.DEFAULT_SIZE, 613, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(10, 10, 10)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -202,11 +199,11 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(lblAssociatedAlso)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lblAssociatedAlsoExt, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE))
+                                .addComponent(lblAssociatedAlsoExt, javax.swing.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(cbExtension, 0, 293, Short.MAX_VALUE)
-                                    .addComponent(cbType, 0, 293, Short.MAX_VALUE))
+                                    .addComponent(cbExtension, 0, 337, Short.MAX_VALUE)
+                                    .addComponent(cbType, 0, 337, Short.MAX_VALUE))
                                 .addGap(10, 10, 10)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
@@ -217,28 +214,22 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(10, 10, 10)
-                                        .addComponent(lblPattern))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(autoScan, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
-                                        .addGap(44, 44, 44)))
-                                .addGap(41, 41, 41))
+                                .addGap(10, 10, 10)
+                                .addComponent(lblPattern))
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(21, 21, 21)
-                                .addComponent(autoScanLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                        .addComponent(txtPatternError, javax.swing.GroupLayout.DEFAULT_SIZE, 72, Short.MAX_VALUE))
+                                .addComponent(autoScan, javax.swing.GroupLayout.DEFAULT_SIZE, 584, Short.MAX_VALUE)
+                                .addGap(44, 44, 44)))
+                        .addGap(41, 41, 41)
+                        .addComponent(txtPatternError, javax.swing.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lblFilesIgnored)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
+                                .addComponent(jScrollPane1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(btnDefaultIgnored))
-                            .addComponent(setFilesIgnored, javax.swing.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE))))
+                            .addComponent(setFilesIgnored, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -275,15 +266,11 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtPatternError, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE)
                         .addGap(16, 16, 16))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(20, 20, 20)
-                        .addComponent(autoScan)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(autoScanLabel)
-                        .addGap(79, 79, 79))))
+                        .addComponent(autoScan))))
         );
 
         lblExtension.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblExtension.AN")); // NOI18N
@@ -440,7 +427,6 @@ private void autoScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox autoScan;
-    private javax.swing.JLabel autoScanLabel;
     private javax.swing.JButton btnDefault;
     private javax.swing.JButton btnDefaultIgnored;
     private javax.swing.JButton btnNew;
