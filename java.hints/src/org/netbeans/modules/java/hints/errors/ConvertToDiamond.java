@@ -49,15 +49,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
@@ -74,7 +70,7 @@ public class ConvertToDiamond implements ErrorRule<Void> {
     }
 
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
-        return Collections.<Fix>singletonList(new FixImpl(TreePathHandle.create(treePath, info)));
+        return Collections.<Fix>singletonList(JavaFix.toEditorFix(new FixImpl(info, treePath)));
     }
 
     public String getId() {
@@ -87,43 +83,28 @@ public class ConvertToDiamond implements ErrorRule<Void> {
 
     public void cancel() {}
 
-    private static final class FixImpl implements Fix {
+    private static final class FixImpl extends JavaFix {
 
-        private final TreePathHandle handle;
-
-        public FixImpl(TreePathHandle handle) {
-            this.handle = handle;
+        public FixImpl(CompilationInfo info, TreePath path) {
+            super(info, path);
         }
 
         public String getText() {
             return NbBundle.getMessage(ConvertToDiamond.class, "FIX_ConvertToDiamond");
         }
 
-        public ChangeInfo implement() throws Exception {
-            JavaSource.forFileObject(handle.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
+        @Override
+        protected void performRewrite(WorkingCopy copy, TreePath tp, UpgradeUICallback callback) {
+            if (tp.getLeaf().getKind() != Kind.PARAMETERIZED_TYPE) {
+                //XXX: warning
+                return ;
+            }
 
-                public void run(WorkingCopy copy) throws Exception {
-                    copy.toPhase(Phase.RESOLVED);
-                    TreePath tp = handle.resolve(copy);
+            TreeMaker make = copy.getTreeMaker();
+            ParameterizedTypeTree ptt = (ParameterizedTypeTree) tp.getLeaf();
+            ParameterizedTypeTree nue = make.ParameterizedType(ptt.getType(), Collections.<Tree>emptyList());
 
-                    if (tp == null) {
-                        return ;
-                    }
-
-                    if (tp.getLeaf().getKind() != Kind.PARAMETERIZED_TYPE) {
-                        //XXX: warning
-                        return ;
-                    }
-
-                    TreeMaker make = copy.getTreeMaker();
-                    ParameterizedTypeTree ptt = (ParameterizedTypeTree) tp.getLeaf();
-                    ParameterizedTypeTree nue = make.ParameterizedType(ptt.getType(), Collections.<Tree>emptyList());
-
-                    copy.rewrite(ptt, nue);
-                }
-            }).commit();
-
-            return null;
+            copy.rewrite(ptt, nue);
         }
         
     }
