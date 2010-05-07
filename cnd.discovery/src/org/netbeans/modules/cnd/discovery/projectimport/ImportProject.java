@@ -518,7 +518,9 @@ public class ImportProject implements PropertyChangeListener {
                     }
                     if (runMake && rc == 0) {
                         //parseConfigureLog(configureLog);
-                        makeProject(false, configureLog);
+                        // when run scripts we do full "clean && build" to
+                        // remove old build artifacts as well
+                        makeProject(true, configureLog);
                     } else {
                         switchModel(true);
                         postModelDiscovery(true);
