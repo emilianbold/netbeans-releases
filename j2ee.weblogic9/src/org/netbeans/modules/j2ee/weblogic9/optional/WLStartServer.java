@@ -529,6 +529,9 @@ public final class WLStartServer extends StartServer {
                 // send the completed event to j2eeserver
                 while ((System.currentTimeMillis() - start) < TIMEOUT) {
                     if (isRunning()) {
+                        // reset the restart flag
+                        dm.setRestartNeeded(false);
+
                         serverProgress.notifyStart(StateType.COMPLETED,
                                 NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STARTED", serverName));
 
