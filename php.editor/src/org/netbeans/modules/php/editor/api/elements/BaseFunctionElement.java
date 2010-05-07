@@ -53,6 +53,7 @@ public interface BaseFunctionElement extends PhpElement{
         DeclarationWithoutBody,
         DeclarationWithEmptyBody,
         DeclarationWithParentCallInBody,
+        ReturnSemiTypes,
         ReturnTypes
     }
     List<ParameterElement> getParameters();
