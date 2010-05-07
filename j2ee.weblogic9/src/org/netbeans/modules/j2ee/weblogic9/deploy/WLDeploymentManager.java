@@ -98,24 +98,24 @@ public class WLDeploymentManager implements DeploymentManager {
     private final String uri;
     private final String host;
     private final String port;
-    private volatile boolean disconnected;
+    private final WLMutableState mutableState;
+
+    private final boolean disconnected;
 
     /* GuardedBy("this") */
-    private boolean restartNeeded;
-
-    /* GuardedBy(WLDeploymentManager.class) */
-    private static Map<String, WLClassLoader> classLoaderCache = new WeakHashMap<String, WLClassLoader>();
+    private WLClassLoader classLoader;
 
     /* GuardedBy("this") */
     private InstanceProperties instanceProperties;
 
     public WLDeploymentManager(WLDeploymentFactory factory, String uri,
-            String host, String port, boolean disconnected) {
+            String host, String port, boolean disconnected, WLMutableState mutableState) {
         this.factory = factory;
         this.uri = uri;
         this.host = host;
         this.port = port;
         this.disconnected = disconnected;
+        this.mutableState = mutableState;
     }
 
     /**
@@ -139,12 +139,12 @@ public class WLDeploymentManager implements DeploymentManager {
         return port;
     }
 
-    public synchronized boolean isRestartNeeded() {
-        return restartNeeded;
+    public boolean isRestartNeeded() {
+        return mutableState.isRestartNeeded();
     }
 
-    public synchronized void setRestartNeeded(boolean restartNeeded) {
-        this.restartNeeded = restartNeeded;
+    public void setRestartNeeded(boolean restartNeeded) {
+        mutableState.setRestartNeeded(restartNeeded);
     }
 
     /**
@@ -158,14 +158,11 @@ public class WLDeploymentManager implements DeploymentManager {
         return instanceProperties;
     }
 
-    private static synchronized ClassLoader getWLClassLoader(String uri, String serverRoot) {
-        WLClassLoader classLoader = classLoaderCache.get(uri);
-
+    private synchronized ClassLoader getWLClassLoader(String uri, String serverRoot) {
         if (classLoader == null) {
             try {
                 URL[] urls = new URL[] {new File(serverRoot + "/server/lib/weblogic.jar").toURI().toURL()}; // NOI18N
                 classLoader = new WLClassLoader(urls, WLDeploymentManager.class.getClassLoader());
-                classLoaderCache.put(uri, classLoader);
             } catch (MalformedURLException e) {
                 LOGGER.log(Level.WARNING, null, e);
             }
@@ -377,7 +374,7 @@ public class WLDeploymentManager implements DeploymentManager {
 
     @Override
     public void release() {
-        disconnected = true;
+        // noop as manager is cached and reused
     }
 
     public DeploymentConfiguration createConfiguration(
