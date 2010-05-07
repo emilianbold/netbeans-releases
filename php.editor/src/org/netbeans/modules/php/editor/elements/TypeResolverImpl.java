@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.editor.elements;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -63,7 +64,15 @@ public final class TypeResolverImpl implements TypeResolver {
         if (typeSignature != null && typeSignature.length() > 0) {
             final String regexp = String.format("\\%s", SEPARATOR.PIPE.toString());//NOI18N
             for (String typeName : typeSignature.split(regexp)) {
-                if (typeName.equals(ParameterElementImpl.encode(typeName))) {
+                String encodedTypeName = null;
+                if (isResolvedImpl(typeName)) {
+                    encodedTypeName = ParameterElementImpl.encode(typeName);
+                } else {
+                    final EnumSet<SEPARATOR> separators = SEPARATOR.toEnumSet();
+                    separators.remove(SEPARATOR.COLON);
+                    encodedTypeName = ParameterElementImpl.encode(typeName, separators);
+                }
+                if (typeName.equals(encodedTypeName)) {
                     retval.add(new TypeResolverImpl(typeName));
                 } else {
                     log(String.format("wrong typename: \"%s\" parsed from \"%s\"", typeSignature, typeName), Level.FINE);//NOI18N
@@ -98,6 +107,10 @@ public final class TypeResolverImpl implements TypeResolver {
 
     @Override
     public final boolean isResolved() {
+        return isResolvedImpl(typeName);
+    }
+
+    private static boolean isResolvedImpl(final String typeName) {
         return typeName != null && typeName.indexOf(SEMI_TYPE_MARKER) == -1;
     }
 
