@@ -191,6 +191,19 @@ public class AstNodeUtilsTest extends TestBase {
 
     }
 
+    public void testIssue169206() throws BadLocationException {
+        String code = "<html><head><title></title></head><body><table> </table></body></html>";
+        //             0123456789012345678901234567890123456789012345678901234
+        //             0         1         2         3         4         5
+
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+//        assertPossibleElements(root, 47, arr("thead","tbody","tr"), Match.CONTAINS);
+
+
+    }
+
     private AstNode assertDescendant(AstNode searchedNode, int searchOffset, String name, AstNode.NodeType type, int from, int to) {
         AstNode node = AstNodeUtils.findDescendant(searchedNode, searchOffset);
         assertNotNull(node);
