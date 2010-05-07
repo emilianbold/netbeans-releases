@@ -49,6 +49,7 @@ import com.sun.source.util.TreePath;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
@@ -79,6 +80,8 @@ import org.openide.util.NbBundle;
  */
 @Hint(id="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", category="logging", suppressWarnings="LoggerStringConcat")
 public class LoggerStringConcat {
+
+    private static final Logger LOG = Logger.getLogger(LoggerStringConcat.class.getName());
 
     @TriggerPattern(value = "$logger.log($level, $message)",
                     constraints = {
@@ -149,9 +152,32 @@ public class LoggerStringConcat {
         MemberSelectTree sel = (MemberSelectTree) mit.getMethodSelect();
         String methodName = sel.getIdentifier().toString();
 
-        assert findConstant(ctx.getInfo(), methodName) != null;
+        if (findConstant(ctx.getInfo(), methodName) != null) {
+            return compute(ctx, methodName);
+        } else {
+            //#180865: should not happen, but apparently does. Print some debug info in dev builds:
+            boolean dev = false;
 
-        return compute(ctx, methodName);
+            assert dev = true;
+
+            if (dev) {
+                StringBuilder log = new StringBuilder();
+                
+                log.append("Please add the following info the bug #180865:\n");
+                log.append("tree: ").append(ctx.getPath().getLeaf()).append("\n");
+                TreePath loggerVar = ctx.getVariables().get("$logger");
+                if (loggerVar != null) {
+                    log.append("logger type: ").append(ctx.getInfo().getTrees().getTypeMirror(loggerVar)).append("\n");
+                } else {
+                    log.append("$logger == null\n");
+                }
+                log.append("source level: ").append(ctx.getInfo().getSourceVersion()).append("\n");
+                log.append("End of #180865 debug info");
+                LOG.info(log.toString());
+            }
+
+            return null;
+        }
     }
 
     private static ErrorDescription compute(HintContext ctx, String methodName) {
