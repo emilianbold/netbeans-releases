@@ -71,10 +71,10 @@ public final class HostInfoUtils {
             stream.println("OS Bitness    : " + hostinfo.getOS().getBitness()); // NOI18N
             stream.println("CPU Family    : " + hostinfo.getCpuFamily()); // NOI18N
             stream.println("CPU #         : " + hostinfo.getCpuNum()); // NOI18N
-            stream.println("shell to use  : " + hostinfo.getShell()); // NOI18N
+            stream.println("user shell    : " + hostinfo.getShell()); // NOI18N
             stream.println("tmpdir to use : " + hostinfo.getTempDir()); // NOI18N
             stream.println("tmpdir (file) to use : " + hostinfo.getTempDirFile().toString()); // NOI18N
-            stream.println("PATH          : " + hostinfo.getPath()); // NOI18N
+            stream.println("envfile       : " + hostinfo.getEnvFile()); // NOI18N
         }
         stream.println("------------"); // NOI18N
     }

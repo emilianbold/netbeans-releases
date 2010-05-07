@@ -134,8 +134,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
         //return null;
         try {
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
-            HostInfo hinfo = HostInfoUtils.getHostInfo(env);
-            pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
+            pb.setExecutable("/bin/sh").setArguments("-s"); // NOI18N
             Process process = pb.call();
             process.getOutputStream().write(ToolchainScriptGenerator.generateScript(path).getBytes());
             process.getOutputStream().close();

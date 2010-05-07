@@ -4,12 +4,13 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.Channel;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelParams;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
@@ -40,9 +41,6 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), envVars);
         }
 
-        // Always append /bin and /usr/bin to PATH
-        envVars.appendPathVariable("PATH", hostInfo.getPath() + ":/bin:/usr/bin"); // NOI18N
-
         if (isInterrupted()) {
             throw new InterruptedException();
         }
@@ -51,31 +49,40 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
         params.setX11Forwarding(info.getX11Forwarding());
 
         synchronized (lock) {
-            streams = JschSupport.execCommand(info.getExecutionEnvironment(), hostInfo.getShell() + " -s", params); // NOI18N
+            // To execute a command we use shell (/bin/sh) as a trampoline ..
+            streams = JschSupport.startCommand(info.getExecutionEnvironment(), "/bin/sh -s", params); // NOI18N
 
             setErrorStream(streams.err);
             setInputStream(streams.out);
             setOutputStream(streams.in);
 
+            // 1. get the PID of the shell
             streams.in.write("echo $$\n".getBytes()); // NOI18N
             streams.in.flush();
 
             final String workingDirectory = info.getWorkingDirectory(true);
 
+            // 2. cd to working directory
             if (workingDirectory != null) {
                 streams.in.write(EnvWriter.getBytes(
                         "cd \"" + workingDirectory + "\" || exit " + startupErrorExitValue + "\n", true)); // NOI18N
             }
 
+            // 3. setup env
+            String envFile = HostInfoUtils.getHostInfo(info.getExecutionEnvironment()).getEnvFile();
+            streams.in.write(EnvWriter.getBytes(". " + envFile + ">/dev/null 2>&1\n", true)); // NOI18N
+
             EnvWriter ew = new EnvWriter(streams.in, true);
             ew.write(envVars);
 
+            // 4. additional setup
             if (info.getInitialSuspend()) {
                 streams.in.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N
                 streams.in.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
                 streams.in.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
             }
 
+            // 5. finally do exec
             streams.in.write(EnvWriter.getBytes("exec " + commandLine + "\n", true)); // NOI18N
             streams.in.flush();
 
@@ -113,7 +120,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
     @Override
     public synchronized void cancel() {
-        ChannelExec channel;
+        Channel channel;
 
         synchronized (lock) {
             channel = streams == null ? null : streams.channel;

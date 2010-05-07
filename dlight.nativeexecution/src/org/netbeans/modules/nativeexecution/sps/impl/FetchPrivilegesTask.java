@@ -48,7 +48,6 @@ import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.Computable;
 import org.netbeans.modules.nativeexecution.support.Logger;
@@ -57,6 +56,7 @@ public final class FetchPrivilegesTask implements Computable<ExecutionEnvironmen
 
     private static final java.util.logging.Logger log = Logger.getInstance();
 
+    @Override
     public List<String> compute(ExecutionEnvironment execEnv) {
         /*
          * To find out actual privileges that tasks will have use
@@ -68,11 +68,10 @@ public final class FetchPrivilegesTask implements Computable<ExecutionEnvironmen
 
         NativeProcess ppriv = null;
         try {
-            String shell = HostInfoUtils.getHostInfo(execEnv).getShell();
-            String command = "ppriv -v $$ | grep [IL]"; // NOI18N
+            String command = "/usr/bin/ppriv -v $$ | grep [IL]"; // NOI18N
 
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable(shell).setArguments("-c", command); // NOI18N
+            npb.setExecutable("/bin/sh").setArguments("-c", command); // NOI18N
 
             ppriv = npb.call();
             int result = ppriv.waitFor();
