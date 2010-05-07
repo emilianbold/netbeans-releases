@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -58,6 +59,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.SaveCookie;
@@ -243,5 +245,17 @@ public final class PhpProjectUtils {
             logRecord.setParameters(params.toArray(new Object[params.size()]));
         }
         USG_LOGGER.log(logRecord);
+    }
+
+    public static String getFrameworksForUsage(Collection<PhpFrameworkProvider> frameworks) {
+        assert frameworks != null;
+        StringBuilder buffer = new StringBuilder(200);
+        for (PhpFrameworkProvider provider : frameworks) {
+            if (buffer.length() > 0) {
+                buffer.append("|"); // NOI18N
+            }
+            buffer.append(provider.getName());
+        }
+        return buffer.toString();
     }
 }
