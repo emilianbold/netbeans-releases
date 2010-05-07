@@ -479,9 +479,11 @@ public class DbSchemaEjbGenerator {
            named cmp-fieldname1. Therefore, we do not change the cmr-field
            name and instead use the name of the other ejb (default).
          */
-        if (!containsColumns(key.getColumns(), getPrimaryOrCandidateKey(key.getDeclaringTable()))) {
-            roleACmr = EntityMember.makeRelationshipFieldName(roleB.getRoleName(), colectionType, false);
-        }
+//        #185253 I don't see a good reason to have one case when it's possible to use column name and anothe case when it's not possible
+//        comment code below for now, may need review or deletion in next release if there will be any negative feedback
+//        if (!containsColumns(key.getColumns(), getPrimaryOrCandidateKey(key.getDeclaringTable()))) {
+//            roleACmr = EntityMember.makeRelationshipFieldName(roleB.getRoleName(), colectionType, false);
+//        }
         
         roleACmr = uniqueAlgorithm(getFieldNames(roleAHelper), roleACmr, null);
         

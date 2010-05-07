@@ -161,21 +161,16 @@ public final class MakeActionProvider implements ActionProvider {
         COMMAND_MOVE,
         COMMAND_RENAME,
         COMMAND_CUSTOM_ACTION,
-        
         COMMAND_TEST,
-        COMMAND_TEST_SINGLE,
-    };
-
+        COMMAND_TEST_SINGLE,};
     // Project
     private MakeProject project;
-
     // Project Descriptor
     private MakeConfigurationDescriptor projectDescriptor = null;
     /** Map from commands to ant targets */
     private Map<String, String[]> commands;
     private Map<String, String[]> commandsNoBuild;
     private boolean lastValidation = false;
-
     private static final String SAVE_STEP = "save"; // NOI18N
     private static final String BUILD_STEP = "build"; // NOI18N
     private static final String BUILD_PACKAGE_STEP = "build-package"; // NOI18N
@@ -205,8 +200,8 @@ public final class MakeActionProvider implements ActionProvider {
         if (folder != null && folder.isFolder()) {
             for (FileObject subFolder : folder.getChildren()) {
                 if (subFolder.isFolder()) {
-                    TreeMap<Integer,String> map = new TreeMap<Integer, String>();
-                    for(FileObject file : subFolder.getChildren()) {
+                    TreeMap<Integer, String> map = new TreeMap<Integer, String>();
+                    for (FileObject file : subFolder.getChildren()) {
                         Integer position = (Integer) file.getAttribute("position"); // NOI18N
                         map.put(position, file.getNameExt());
                     }
@@ -294,6 +289,7 @@ public final class MakeActionProvider implements ActionProvider {
         final String finalCommand = command;
 
         CancellableTask actionWorker = new CancellableTask() {
+
             @Override
             protected void runImpl() {
                 final ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
@@ -301,7 +297,7 @@ public final class MakeActionProvider implements ActionProvider {
                     addAction(actionEvents, pd, conf, finalCommand, context, cancelled);
                 }
                 // Execute actions
-                if (actionEvents.size() > 0 && ! cancelled.get()) {
+                if (actionEvents.size() > 0 && !cancelled.get()) {
                     RequestProcessor.getDefault().post(new NamedRunnable("Make Project Action Worker") { //NOI18N
 
                         @Override
@@ -324,7 +320,8 @@ public final class MakeActionProvider implements ActionProvider {
 
     public void invokeCustomAction(final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
         CancellableTask actionWorker = new CancellableTask() {
-           @Override
+
+            @Override
             protected void runImpl() {
                 ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
                 addAction(actionEvents, pd, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null, cancelled);
@@ -353,6 +350,7 @@ public final class MakeActionProvider implements ActionProvider {
             }
             // start validation phase
             wrapper = new CancellableTask() {
+
                 @Override
                 public boolean cancel() {
                     return actionWorker.cancel();
@@ -375,6 +373,7 @@ public final class MakeActionProvider implements ActionProvider {
                         final String message = MessageFormat.format(getString("ERR_Cant_Connect"), record.getDisplayName()); //NOI18N
                         final String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
                         SwingUtilities.invokeLater(new Runnable() {
+
                             @Override
                             public void run() {
                                 JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
@@ -418,7 +417,7 @@ public final class MakeActionProvider implements ActionProvider {
             }
             List<String> delegate = validateStep(targetName, tail);
             if (delegate != null) {
-                for(String target : delegate) {
+                for (String target : delegate) {
                     if (!addTarget(target, actionEvents, pd, conf, context, cancelled, validated)) {
                         break;
                     }
@@ -431,7 +430,7 @@ public final class MakeActionProvider implements ActionProvider {
         }
     }
 
-    private boolean addTarget(String targetName, ArrayList<ProjectActionEvent> actionEvents, 
+    private boolean addTarget(String targetName, ArrayList<ProjectActionEvent> actionEvents,
             MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, AtomicBoolean cancelled, AtomicBoolean validated) throws IllegalArgumentException {
         if (cancelled.get()) {
             return false; // getPlatformInfo() might be costly for remote host
@@ -553,7 +552,7 @@ public final class MakeActionProvider implements ActionProvider {
             return false;
         } else if (conf.isApplicationConfiguration()) { // RUN MANAGED
             RunProfile runProfile = createRunProfile(conf, cancelled);
-            if(runProfile == null) {
+            if (runProfile == null) {
                 if (cancelled.get()) {
                     return false; // getEnv() might be costly for remote host
                 }
@@ -730,8 +729,8 @@ public final class MakeActionProvider implements ActionProvider {
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
         String buildCommand;
         String makeCommand = getMakeCommand(pd, conf);
-        if(actionEvent == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
-            buildCommand = makeArtifact.getBuildCommand(makeCommand,  "build-tests"); // NOI18N
+        if (actionEvent == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
+            buildCommand = makeArtifact.getBuildCommand(makeCommand, "build-tests"); // NOI18N
         } else {
             buildCommand = makeArtifact.getBuildCommand(makeCommand, ""); // NOI18N
         }
@@ -869,7 +868,7 @@ public final class MakeActionProvider implements ActionProvider {
             if (conf.isCompileConfiguration() && !validateProject(conf)) {
                 return true;
             }
-            
+
             Folder targetFolder = context.lookup(Folder.class);
             if (targetFolder == null) {
                 Node node = context.lookup(Node.class);
@@ -889,7 +888,7 @@ public final class MakeActionProvider implements ActionProvider {
 
             for (Folder folder : list) {
                 CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-                if(compilerSet == null) {
+                if (compilerSet == null) {
                     continue;
                 }
                 String target = folder.getFolderConfiguration(conf).getLinkerConfiguration().getOutputValue();
@@ -940,8 +939,8 @@ public final class MakeActionProvider implements ActionProvider {
             for (int i = 0; i < getProjectDescriptor().getProjectItems().length; i++) {
                 Item item = getProjectDescriptor().getProjectItems()[i];
                 ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);
-                if (itemConfiguration != null && !itemConfiguration.getExcluded().getValue() &&
-                        (itemConfiguration.getTool() != PredefinedToolKind.CustomTool || itemConfiguration.getCustomToolConfiguration().getCommandLine().getValue().length() > 0)) {
+                if (itemConfiguration != null && !itemConfiguration.getExcluded().getValue()
+                        && (itemConfiguration.getTool() != PredefinedToolKind.CustomTool || itemConfiguration.getCustomToolConfiguration().getCommandLine().getValue().length() > 0)) {
                     ret = true;
                     break;
                 }
@@ -962,11 +961,11 @@ public final class MakeActionProvider implements ActionProvider {
         String[] targetNames = new String[0];
         if (command.equals(COMMAND_COMPILE_SINGLE)) {
             targetNames = commands.get(command);
-        } else if (command.equals(COMMAND_RUN) ||
-                command.equals(COMMAND_DEBUG) ||
-                command.equals(COMMAND_DEBUG_STEP_INTO) ||
-                command.equals(COMMAND_DEBUG_LOAD_ONLY) ||
-                command.equals(COMMAND_CUSTOM_ACTION)) {
+        } else if (command.equals(COMMAND_RUN)
+                || command.equals(COMMAND_DEBUG)
+                || command.equals(COMMAND_DEBUG_STEP_INTO)
+                || command.equals(COMMAND_DEBUG_LOAD_ONLY)
+                || command.equals(COMMAND_CUSTOM_ACTION)) {
             MakeConfigurationDescriptor pd = getProjectDescriptor();
             MakeConfiguration conf = pd.getActiveConfiguration();
             if (conf == null) {
@@ -1049,10 +1048,10 @@ public final class MakeActionProvider implements ActionProvider {
                 }
             }
             return enabled;
-        } else if (command.equals(COMMAND_DELETE) ||
-                command.equals(COMMAND_COPY) ||
-                command.equals(COMMAND_MOVE) ||
-                command.equals(COMMAND_RENAME)) {
+        } else if (command.equals(COMMAND_DELETE)
+                || command.equals(COMMAND_COPY)
+                || command.equals(COMMAND_MOVE)
+                || command.equals(COMMAND_RENAME)) {
             return true;
         } else if (command.equals(COMMAND_RUN_SINGLE)) {
             Node node = context.lookup(Node.class);
@@ -1102,7 +1101,7 @@ public final class MakeActionProvider implements ActionProvider {
         return cmd;
     }
 
-    private List<String> validateStep(String id, List<String> tailSteps){
+    private List<String> validateStep(String id, List<String> tailSteps) {
         StepController validator = StepControllerProvider.getController(id);
         if (validator == null) {
             return null;
@@ -1167,7 +1166,7 @@ public final class MakeActionProvider implements ActionProvider {
                 cs = CompilerSetManager.get(env).getDefaultCompilerSet();
             }
             errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_UnknownCompiler", csname)); // NOI18N
-            errsNoBTA.add(errs.get(errs.size()-1));
+            errsNoBTA.add(errs.get(errs.size() - 1));
             runBTA = true;
         } else if (csconf.isValid()) {
             csname = csconf.getOption();
@@ -1300,8 +1299,8 @@ public final class MakeActionProvider implements ActionProvider {
                 // so showing above dialog will only confuse him
                 String message = NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET", // NOI18N
                         csname, conf.getDevelopmentHost().getDisplayName(false));
-                for(String error : errsNoBTA) {
-                    message +="\n"+error; // NOI18N
+                for (String error : errsNoBTA) {
+                    message += "\n" + error; // NOI18N
                 }
                 NotifyDescriptor nd = new NotifyDescriptor.Message(message);
                 DialogDisplayer.getDefault().notify(nd);
@@ -1337,7 +1336,7 @@ public final class MakeActionProvider implements ActionProvider {
 
         return lastValidation;
     }
-    
+
     private boolean validatePackaging(MakeConfiguration conf) {
         String errormsg = null;
 
@@ -1382,16 +1381,15 @@ public final class MakeActionProvider implements ActionProvider {
 
         return true;
     }
-
     /** cache for file existence status. */
     private static Map<String, Boolean> fileExistenceCache = new HashMap<String, Boolean>();
-
     /** cache for valid executables */
     private static Map<String, Boolean> validExecutablesCache = new HashMap<String, Boolean>();
 
     private static boolean isValidExecutable(String path, PlatformInfo pi) {
         return existsImpl(path, pi, true);
     }
+
     private static boolean exists(String path, PlatformInfo pi) {
         return existsImpl(path, pi, false);
     }
@@ -1412,7 +1410,7 @@ public final class MakeActionProvider implements ActionProvider {
         if (checkExecutable) {
             result = ServerList.isValidExecutable(execEnv, path);
         } else {
-            result = pi.fileExists(path) || pi.isWindows() && pi.fileExists(path+".lnk") || pi.findCommand(path) != null; // NOI18N
+            result = pi.fileExists(path) || pi.isWindows() && pi.fileExists(path + ".lnk") || pi.findCommand(path) != null; // NOI18N
         }
 
         if (result) {
@@ -1423,11 +1421,11 @@ public final class MakeActionProvider implements ActionProvider {
         return result;
     }
 
-    private String removeQuotes(String command){
+    private String removeQuotes(String command) {
         if (command.startsWith("\"") && command.endsWith("\"")) { // NOI18N
-            return command.substring(1,command.length()-1);
+            return command.substring(1, command.length() - 1);
         } else if (command.startsWith("'") && command.endsWith("'")) { // NOI18N
-            return command.substring(1,command.length()-1);
+            return command.substring(1, command.length() - 1);
         }
         return command;
     }
@@ -1435,9 +1433,9 @@ public final class MakeActionProvider implements ActionProvider {
     private int getArgsIndex(String command) {
         boolean inQuote = false;
         int quote = 0;
-        for(int i = 0; i < command.length(); i++){
+        for (int i = 0; i < command.length(); i++) {
             char c = command.charAt(i);
-            switch(c){
+            switch (c) {
                 case ' ':
                     if (!inQuote) {
                         return i;
@@ -1465,6 +1463,7 @@ public final class MakeActionProvider implements ActionProvider {
     private static String getString(String s) {
         return NbBundle.getMessage(MakeActionProvider.class, s);
     }
+
     private static String getString(String s, String arg1, String arg2) {
         return NbBundle.getMessage(MakeActionProvider.class, s, arg1, arg2);
     }
@@ -1489,7 +1488,6 @@ public final class MakeActionProvider implements ActionProvider {
             }
             return true;
         }
-
         private volatile Thread thread;
         protected final AtomicBoolean cancelled = new AtomicBoolean(false);
     }

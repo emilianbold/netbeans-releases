@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -174,32 +175,39 @@ public final class NativeProjectProvider {
 	    }
 	}
 	
+        @Override
         public Object getProject() {
             return null;
         }
 
+        @Override
         public List<String> getSourceRoots() {
             return Collections.<String>emptyList();
         }
                 
+        @Override
         public String getProjectRoot() {
             return this.projectRoot;
         }
 
+        @Override
         public String getProjectDisplayName() {
             return "DummyProject"; // NOI18N
         }
 
+        @Override
         public List<NativeFileItem> getAllFiles() {
             return Collections.unmodifiableList(files);
         }
 
+        @Override
         public void addProjectItemsListener(NativeProjectItemsListener listener) {
             synchronized( listenersLock ) {
 		listeners.add(listener);
 	    }
         }
 
+        @Override
         public void removeProjectItemsListener(NativeProjectItemsListener listener) {
             synchronized( listenersLock ) {
 		listeners.remove(listener);
@@ -242,6 +250,7 @@ public final class NativeProjectProvider {
 	    }
 	}
 
+        @Override
         public NativeFileItem findFileItem(File file) {
             String path = file.getAbsolutePath();
             for (NativeFileItem item : files) {
@@ -252,18 +261,22 @@ public final class NativeProjectProvider {
             return null;
         }
 
+        @Override
         public List<String> getSystemIncludePaths() {
             return this.sysIncludes;
         }
 
+        @Override
         public List<String> getUserIncludePaths() {
             return this.usrIncludes;
         }
 
+        @Override
         public List<String> getSystemMacroDefinitions() {
             return this.sysMacros;
         }
 
+        @Override
         public List<String> getUserMacroDefinitions() {
             return this.usrMacros;
         }
@@ -278,11 +291,13 @@ public final class NativeProjectProvider {
             return item;
 	}
 	
+        @Override
         public List<NativeProject> getDependences() {
             return Collections.<NativeProject>emptyList();
         }
 
-        public void runOnCodeModelReadiness(Runnable task) {
+        @Override
+        public void runOnCodeModelReadiness(NamedRunnable task) {
             task.run();
         }
 
@@ -339,19 +354,23 @@ public final class NativeProjectProvider {
             this.lang = language;
         }
         
+        @Override
         public NativeProject getNativeProject() {
             return project;
         }
 
+        @Override
         public File getFile() {
             return file;
         }
 
+        @Override
         public List<String> getSystemIncludePaths() {
 	    List<String> result = project.getSystemIncludePaths();
 	    return project.pathsRelCurFile ? toAbsolute(result) : result;
         }
 
+        @Override
         public List<String> getUserIncludePaths() {
 	    List<String> result = project.getUserIncludePaths();
             return project.pathsRelCurFile ? toAbsolute(result) : result;
@@ -373,22 +392,27 @@ public final class NativeProjectProvider {
 	    return result;
 	}
 
+        @Override
         public List<String> getSystemMacroDefinitions() {
             return project.getSystemMacroDefinitions();
         }
 
+        @Override
         public List<String> getUserMacroDefinitions() {
             return project.getUserMacroDefinitions();
         }
 
+        @Override
         public NativeFileItem.Language getLanguage() {
             return lang;
         }
 
+        @Override
         public NativeFileItem.LanguageFlavor getLanguageFlavor() {
             return NativeFileItem.LanguageFlavor.GENERIC;
         }
 
+        @Override
         public boolean isExcluded() {
             return false;
         }

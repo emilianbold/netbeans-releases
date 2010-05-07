@@ -612,6 +612,8 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
     public static final class VerifyAction extends AbstractAction implements ContextAwareAction {
 
         public VerifyAction() {
+            setEnabled(false);
+            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
             putValue(Action.NAME, NbBundle.getMessage(AbstractLogicalViewProvider.class, "LBL_VerifyAction_Name"));
         }
 
@@ -623,14 +625,14 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         public @Override Action createContextAwareInstance(Lookup actionContext) {
             Project p = actionContext.lookup(Project.class);
             if (p == null) {
-                return null;
+                return this;
             }
             J2eeModuleProvider provider = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
             if (provider == null) {
-                return null;
+                return this;
             }
             if (!provider.hasVerifierSupport()) {
-                return null;
+                return this;
             }
             return ProjectSensitiveActions.projectCommandAction( "verify", NbBundle.getMessage(AbstractLogicalViewProvider.class, "LBL_VerifyAction_Name" ), null );
         }

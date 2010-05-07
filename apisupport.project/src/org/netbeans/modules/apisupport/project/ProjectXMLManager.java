@@ -420,9 +420,14 @@ public final class ProjectXMLManager {
             }
             boolean cyclicDep = ProjectUtils.hasSubprojectCycles(project, candidate);
             if (cyclicDep) {
-                String c = ProjectUtils.getInformation(candidate).getDisplayName();
-                String m = ProjectUtils.getInformation(project).getDisplayName();
-                return NbBundle.getMessage(ProjectXMLManager.class, "MSG_cyclic_dep", c, m);
+                if (ProjectUtils.hasSubprojectCycles(project, null)) {
+                    LOG.log(Level.WARNING, "Starting out with subproject cycles in {0} before even changing them", project);
+                    return null;
+                } else {
+                    String c = ProjectUtils.getInformation(candidate).getDisplayName();
+                    String m = ProjectUtils.getInformation(project).getDisplayName();
+                    return NbBundle.getMessage(ProjectXMLManager.class, "MSG_cyclic_dep", c, m);
+                }
             }
         }
         return null;
@@ -452,11 +457,7 @@ public final class ProjectXMLManager {
             addedDeps.removeAll(currentDeps);
             String warning = getDependencyCycleWarning(addedDeps);
             if (warning != null) {
-                if (ProjectUtils.hasSubprojectCycles(project, null)) {
-                    LOG.log(Level.WARNING, "Starting out with subproject cycles in {0} before even changing them", project);
-                } else {
-                    throw new CyclicDependencyException(warning);
-                }
+                throw new CyclicDependencyException(warning);
             }
         } catch (IOException x) { // getDirectDependencies
             LOG.log(Level.INFO, null, x); // and skip check

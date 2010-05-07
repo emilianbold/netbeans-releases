@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.api.toolchain;
 
 import org.openide.util.Utilities;
@@ -49,7 +48,7 @@ import org.openide.util.Utilities;
  * @author gordonp
  */
 public final class PlatformTypes {
-    
+
     // Platform id's
     public static final int PLATFORM_SOLARIS_SPARC = 0;
     public static final int PLATFORM_SOLARIS_INTEL = 1;
@@ -58,12 +57,11 @@ public final class PlatformTypes {
     public static final int PLATFORM_MACOSX = 4;
     public static final int PLATFORM_GENERIC = 5;
     public static final int PLATFORM_NONE = 6;
-
     private static int defaultPlatform = -1;
 
-    private PlatformTypes(){
+    private PlatformTypes() {
     }
-    
+
     public static int getDefaultPlatform() {
         if (defaultPlatform <= 0) {
             String arch = System.getProperty("os.arch"); // NOI18N
@@ -71,7 +69,7 @@ public final class PlatformTypes {
                 defaultPlatform = PlatformTypes.PLATFORM_WINDOWS;
             } else if (Utilities.isMac()) {
                 defaultPlatform = PlatformTypes.PLATFORM_MACOSX;
-            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS){
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
                 if (arch.indexOf("86") >= 0) { // NOI18N
                     defaultPlatform = PlatformTypes.PLATFORM_SOLARIS_INTEL;
                 } else {
@@ -111,7 +109,7 @@ public final class PlatformTypes {
                 out = "PLATFORM_NONE"; // NOI18N
                 break;
             default:
-                 out = "Error"; // NOI18N
+                out = "Error"; // NOI18N
         }
         return out;
     }
