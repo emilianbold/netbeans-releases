@@ -136,6 +136,7 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
                             }
                         }
                     }
+                    LOGGER.log(Level.FINE, "Restart flag configured");
                     manager.setRestartNeeded(true);
                 }
                 progress.fireProgressEvent(null, new WLDeploymentStatus(
