@@ -67,6 +67,7 @@ public class ParameterizedTypeTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ParameterizedTypeTest("test115176HowTo"));
 //        suite.addTest(new ParameterizedTypeTest("test115176TestCase"));
 //        suite.addTest(new ParameterizedTypeTest("testChangeToDiamond"));
+//        suite.addTest(new ParameterizedTypeTest("test185306"));
         return suite;
     }
 
@@ -210,6 +211,43 @@ public class ParameterizedTypeTest extends GeneratorTestMDRCompat {
                 ParameterizedTypeTree ptt = (ParameterizedTypeTree) ((NewClassTree) var.getInitializer()).getIdentifier();
 
                 workingCopy.rewrite(ptt, make.ParameterizedType(ptt.getType(), Collections.<Tree>emptyList()));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test185306() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "import java.util.LinkedList;\n" +
+            "public class Test {" +
+            "    private LinkedList<?> o = null;\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "import java.util.LinkedList;\n" +
+            "public class Test {" +
+            "    private LinkedList<?> o = null;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree var = (VariableTree) classTree.getMembers().get(1);
+                ParameterizedTypeTree man = make.ParameterizedType(make.Identifier("LinkedList"), Collections.singletonList(make.Wildcard(Tree.Kind.UNBOUNDED_WILDCARD, make.Identifier("Object"))));
+
+                workingCopy.rewrite(var.getType(), man);
             }
 
         };

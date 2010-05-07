@@ -1627,9 +1627,11 @@ public class CasualDiff {
             printer.print(newT.kind.toString());
             localPointer = oldT.pos + oldT.kind.toString().length();
         }
-        int[] innerBounds = getBounds(oldT.inner);
+        JCTree oldBound = oldT.kind.kind != BoundKind.UNBOUND ? oldT.inner : null;
+        JCTree newBound = newT.kind.kind != BoundKind.UNBOUND ? newT.inner : null;
+        int[] innerBounds = getBounds(oldBound);
         copyTo(localPointer, innerBounds[0]);
-        localPointer = diffTree(oldT.inner, newT.inner, innerBounds);
+        localPointer = diffTree(oldBound, newBound, innerBounds);
         copyTo(localPointer, bounds[1]);
 
         return bounds[1];
