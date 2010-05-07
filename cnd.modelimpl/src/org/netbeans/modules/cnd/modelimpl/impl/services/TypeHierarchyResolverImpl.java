@@ -165,6 +165,12 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         for (CsmInheritance inh : project.findInheritances(referencedClass.getName())){
             CsmClassifier classifier = inh.getClassifier();
             if (classifier != null) {
+                if (CsmKindUtilities.isInstantiation(classifier)) {
+                    CsmOffsetableDeclaration template = ((CsmInstantiation)classifier).getTemplateDeclaration();
+                    if (CsmKindUtilities.isClassifier(template)) {
+                        classifier = (CsmClassifier) template;
+                    }
+                }
                 CsmUID<CsmClassifier> classifierUID = UIDs.get(classifier);
                 if (referencedClassUID.equals(classifierUID)) {
                     CsmScope scope = inh.getScope();
