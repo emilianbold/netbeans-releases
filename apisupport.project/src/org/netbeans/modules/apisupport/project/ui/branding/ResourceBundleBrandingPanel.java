@@ -229,6 +229,9 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         } else {
             jars = LayerUtils.getPlatformJarsForStandaloneProject(prj);
         }
+        Set<File> brandableJars = branding.getBrandableJars();
+        jars.retainAll(brandableJars);
+        
         for (File file : jars) {
             try {
                 URI juri = file.toURI();
