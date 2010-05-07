@@ -510,7 +510,7 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
         TypeElement clazzC = info.getTopLevelElements().iterator().next();
         assertNotNull(clazzC);
 
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, clazzC);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, null, clazzC);
         assertNotNull(jdts);
         assertTrue(jdts.moveNext());
 
@@ -518,7 +518,7 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
         Element defConstructor = clazzC.getEnclosedElements().get(0);
         assertNotNull(defConstructor);
         assertTrue(info.getElementUtilities().isSynthetic(defConstructor));
-        assertNull(JavadocCompletionUtils.findJavadocTokenSequence(info, defConstructor));
+        assertNull(JavadocCompletionUtils.findJavadocTokenSequence(info, null, defConstructor));
     }
 
     public void testIsInvalidDocInstance() throws Exception {
@@ -569,7 +569,7 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
 
         Element fieldEl = info.getTopLevelElements().get(0).getEnclosedElements().get(4);
         assertNotNull(fieldEl);
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, fieldEl);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, null, fieldEl);
         assertNotNull(jdts);
         doIsInvalidJavadoc(5, null, null, jdts, true);
 
@@ -595,7 +595,7 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
         assertNotNull(fieldEl);
         jdoc = jdoc != null ? jdoc : info.getElementUtilities().javaDocFor(fieldEl);
         assertNotNull(jdoc);
-        jdts = jdts != null ? jdts : JavadocCompletionUtils.findJavadocTokenSequence(info, fieldEl);
+        jdts = jdts != null ? jdts : JavadocCompletionUtils.findJavadocTokenSequence(info, null, fieldEl);
         assertNotNull(jdts);
         assertEquals(fieldEl.getSimpleName().toString(), isInvalid, JavadocCompletionUtils.isInvalidDocInstance(jdoc, jdts));
     }
@@ -603,7 +603,7 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
     private void doIsTokenOfEmptyJavadoc(int fieldIndex, boolean isEmpty) {
         Element fieldEl = info.getTopLevelElements().get(0).getEnclosedElements().get(fieldIndex);
         assertNotNull(fieldEl);
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, fieldEl);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, null, fieldEl);
         assertNotNull(jdts);
         jdts.moveStart();
         if (jdts.moveNext()) {
