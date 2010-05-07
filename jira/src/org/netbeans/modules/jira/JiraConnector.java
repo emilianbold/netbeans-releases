@@ -82,7 +82,7 @@ public class JiraConnector extends BugtrackingConnector {
 
     @Override
     public String getTooltip() {
-        return "Jira Issue Tracking System";
+        return NbBundle.getMessage(BugtrackingConnector.class, "LBL_ConnectorTooltip"); // NOI18N
     }
 
     @Override
