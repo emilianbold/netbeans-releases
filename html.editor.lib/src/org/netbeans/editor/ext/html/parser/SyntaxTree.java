@@ -523,7 +523,8 @@ public class SyntaxTree {
                     stack.getLast().addChild(closeTagNode);
                 }
 
-            } else if (element.type() == SyntaxElement.TYPE_ERROR) { //error
+            } else if (element.type() == SyntaxElement.TYPE_ERROR ||
+                    element.type() == SyntaxElement.TYPE_COMMENT) { //error || comment
                 // add a new AST node to the last node on the stack
                 AstNode.NodeType nodeType = intToNodeType(element.type());
 

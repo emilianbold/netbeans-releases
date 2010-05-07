@@ -67,7 +67,7 @@ public final class CommandTerminalAction implements ActionListener {
 
 	switch (config.getContainerProvider()) {
 	    case TERM:
-		container = TerminalIOProviderSupport.getIOContainer();
+		container = TerminalIOProviderSupport.getIOContainer(config);
 		break;
 	    case DEFAULT:
 	    default:

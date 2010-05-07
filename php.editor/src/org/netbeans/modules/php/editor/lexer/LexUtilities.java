@@ -345,15 +345,15 @@ public class LexUtilities {
 //    }
     
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
-    public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, char up, char down) {
+    public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, PHPTokenId tokenUpId, char up, PHPTokenId tokenDownId, char down) {
         int balance = 0;
 
         while (ts.moveNext()) {
             Token<?extends PHPTokenId> token = ts.token();
             
-            if (textEquals(token.text(), up)) {
+            if (token.id() == tokenUpId && textEquals(token.text(), up)) {
                 balance++;
-            } else if (textEquals(token.text(), down)) {
+            } else if (token.id() == tokenDownId && textEquals(token.text(), down)) {
                 if (balance == 0) {
                     return new OffsetRange(ts.offset(), ts.offset() + token.length());
                 }
@@ -366,20 +366,20 @@ public class LexUtilities {
     }
 
     /** Search backwards in the token sequence until a token of type <code>up</code> is found */
-    public static OffsetRange findBwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, char up, char down) {
+    public static OffsetRange findBwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, PHPTokenId tokenUpId, char up, PHPTokenId tokenDownId, char down) {
         int balance = 0;
 
         while (ts.movePrevious()) {
             Token<?extends PHPTokenId> token = ts.token();
             TokenId id = token.id();
 
-            if (textEquals(token.text(), up)) {
+            if (token.id() == tokenUpId && textEquals(token.text(), up)) {
                 if (balance == 0) {
                     return new OffsetRange(ts.offset(), ts.offset() + token.length());
                 }
 
                 balance++;
-            } else if (textEquals(token.text(), down)) {
+            } else if (token.id() == tokenDownId && textEquals(token.text(), down)) {
                 balance--;
             }
         }

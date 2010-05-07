@@ -41,6 +41,7 @@
 package org.netbeans.modules.php.editor.indent;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -63,10 +64,15 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.openide.util.Exceptions;
 
 
 /** 
@@ -479,14 +485,24 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             
             if (isEmptyComment) {
                 final int indent = GsfUtilities.getLineIndent(doc, ts.offset());
-                //XXX: workaround for issue #133210:
-                if (!IndexingManager.getDefault().isIndexing()) {
-                    SwingUtilities.invokeLater(new Runnable() {
+                try {
+                    //XXX: workaround for issue #133210:
+                    final long currentTimeMillis = System.currentTimeMillis();
+                    ParserManager.parseWhenScanFinished(Collections.<Source>singleton(Source.create(document)), new UserTask() {
                         @Override
-                        public void run() {
-                            GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            if (System.currentTimeMillis() - currentTimeMillis < 1500) {
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
+                                    }
+                                });
+                            }
                         }
                     });
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
             
@@ -1247,7 +1263,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 }
 
                 if (id == PHPTokenId.PHP_CURLY_CLOSE) {
-                    begin = LexUtilities.findBwd(doc, ts, '{', '}');
+                    begin = LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_CURLY_OPEN, '{', PHPTokenId.PHP_CURLY_CLOSE, '}');
                 } else {
                     begin = LexUtilities.findBegin(doc, ts);
                 }

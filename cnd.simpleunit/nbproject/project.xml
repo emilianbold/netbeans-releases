@@ -153,6 +153,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <package>org.netbeans.modules.cnd.simpleunit.spi.wizard</package>
+                <package>org.netbeans.modules.cnd.simpleunit.utils</package>
             </friend-packages>
         </data>
     </configuration>

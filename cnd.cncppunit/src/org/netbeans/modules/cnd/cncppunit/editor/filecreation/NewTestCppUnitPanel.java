@@ -41,9 +41,12 @@ package org.netbeans.modules.cnd.cncppunit.editor.filecreation;
 
 import java.awt.Component;
 import java.io.IOException;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.editor.filecreation.CndPanel;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.WizardDescriptor;
@@ -53,14 +56,19 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author sg155630
  */
 public class NewTestCppUnitPanel extends CndPanel {
-    
+
+    private static final String CPPUNIT = "cppunit"; // NOI18N
+
     private String baseTestName = null;
+    private RequestProcessor.Task libCheckTask;
+    private volatile boolean libCheckResult;
 
     NewTestCppUnitPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, String baseTestName) {
         super(project, folders, bottomPanel);
@@ -73,6 +81,36 @@ public class NewTestCppUnitPanel extends CndPanel {
             gui.addChangeListener(this);
         }
         return gui;
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        if (e instanceof TestLibChecker.LibCheckerChangeEvent) {
+            libCheckResult = ((TestLibChecker.LibCheckerChangeEvent) e).getResult();
+            libCheckTask = null;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    getGui().setControlsEnabled(true);
+                }
+            });
+        }
+        super.stateChanged(e);
+    }
+
+    @Override
+    public void readSettings(WizardDescriptor settings) {
+        super.readSettings(settings);
+
+        libCheckResult = false;
+        getGui().setControlsEnabled(false);
+
+        AbstractCompiler cppCompiler = TestLibChecker.getCppCompiler(project);
+        if (cppCompiler != null) {
+            libCheckTask = TestLibChecker.asyncCheck(CPPUNIT, cppCompiler, this);
+        } else {
+            libCheckTask = null;
+        }
     }
 
     @Override
@@ -112,20 +150,31 @@ public class NewTestCppUnitPanel extends CndPanel {
         }
         return headerFolder;
     }
-    
+
     NewTestCppUnitPanelGUI getGui() {
         return (NewTestCppUnitPanelGUI)gui;
     }
 
     @Override
     public boolean isValid() {
-        boolean ok = super.isValid(); 
-        
-        if (!ok) {
-            setErrorMessage (""); // NOI18N
+        setInfoMessage(null);
+        setErrorMessage(null);
 
+        if (libCheckTask != null) {
+            // Need time for the libCheckTask to finish. Pretend that the panel is invalid.
+            setInfoMessage(NbBundle.getMessage(NewTestCppUnitPanel.class, "MSG_Checking_Library", CPPUNIT, TestLibChecker.getExecutionEnvironment(project))); // NOI18N
             return false;
         }
+
+        if (!libCheckResult) {
+            // Library not found. Display warning but still allow to create test.
+            setErrorMessage(NbBundle.getMessage(NewTestCppUnitPanel.class, "MSG_Missing_Library", CPPUNIT)); // NOI18N
+        }
+
+        if (!super.isValid()) {
+            return false;
+        }
+
         if (!CndLexerUtilities.isCppIdentifier( getGui().getClassName() )) {
             setErrorMessage( NbBundle.getMessage(NewTestCppUnitPanel.class, "MSG_not_valid_classname") );
             return false;
@@ -140,7 +189,9 @@ public class NewTestCppUnitPanel extends CndPanel {
             }
         }
 
-        setErrorMessage(errorMessage);
+        if (errorMessage != null) {
+            setErrorMessage(errorMessage);
+        }
 
         return errorMessage == null;
     }

@@ -51,6 +51,7 @@
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.cncppunit.editor.filecreation.TestCUnitIterator"/>
                 <attr name="templateCategory" stringvalue="cncpp-test-types"/>
                 <attr name="templateGenerator" boolvalue="true"/>
+                <attr name="supportedMimeTypes" stringvalue="text/x-c;text/x-h"/>
             </file>
 
             <file name="cunittestfile.c" url="templates/c/test-cunit-file-c.template">
@@ -70,6 +71,7 @@
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.cncppunit.editor.filecreation.TestCppUnitIterator"/>
                 <attr name="templateCategory" stringvalue="cncpp-test-types"/>
                 <attr name="templateGenerator" boolvalue="true"/>
+                <attr name="supportedMimeTypes" stringvalue="text/x-c++;text/x-h"/>
             </file>
 
             <file name="cppunittestclassfile.cpp" url="templates/cpp/test-cppunit-class-file-cpp.template">

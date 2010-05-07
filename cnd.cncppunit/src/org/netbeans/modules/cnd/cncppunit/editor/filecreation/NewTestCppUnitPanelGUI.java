@@ -104,7 +104,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         
         setName (NbBundle.getMessage(NewTestCppUnitPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
     }
-    
+
     @Override
     public void initValues( FileObject template, FileObject preselectedFolder, String documentName ) {
         assert project != null;
@@ -213,6 +213,21 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
             testTextField.selectAll();
         }
 
+    }
+
+    /*package*/ void setControlsEnabled(boolean enable) {
+        testTextField.setEnabled(enable);
+        projectTextField.setEnabled(enable);
+        locationComboBox.setEnabled(enable);
+        folderTextField.setEnabled(enable);
+        browseButton.setEnabled(enable);
+        classNameTextField.setEnabled(enable);
+        cbSourceExtension.setEnabled(enable);
+        cbHeaderExtension.setEnabled(enable);
+        fileTextField.setEnabled(enable);
+        headerTextField.setEnabled(enable);
+        runnerNameTextField.setEnabled(enable);
+        runnerTextField.setEnabled(enable);
     }
 
     private static Folder getTestsRootFolder(Project project) {

@@ -41,8 +41,13 @@
 package org.netbeans.modules.ruby.lexer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.NodeChangeEvent;
+import java.util.prefs.NodeChangeListener;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import org.netbeans.api.lexer.Token;
@@ -96,29 +101,27 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
      * rather than having a contract API with it, based on
      * tasklist/docscan/src/org/netbeans/modules/tasklist/docscan/Settings.java)
      */
-    private String[] getTodoMarkers() {
+    private synchronized String[] getTodoMarkers() {
         if (markers == null) {
-            final String MARKER_PREFIX = "Tag"; // NOI18N
-            final int MARKER_PREFIX_LENGTH = MARKER_PREFIX.length();
-            List<String> markerList = new ArrayList<String>();
+            final String TODO_MARKERS_KEY = "patterns"; // NOI18N
 
-            try {
-                Preferences preferences =
-                    NbPreferences.root().node("org/netbeans/modules/tasklist/docscan"); // NOI18N
-                String[] keys = preferences.keys();
+            Preferences preferences =
+                    NbPreferences.root().node("/org/netbeans/modules/tasklist/todo"); // NOI18N
 
-                for (int i = 0; i < keys.length; i++) {
-                    String key = keys[i];
+            preferences.addPreferenceChangeListener(new PreferenceChangeListener() {
 
-                    if ((key != null) && key.startsWith(MARKER_PREFIX)) {
-                        markerList.add(key.substring(MARKER_PREFIX_LENGTH));
+                @Override
+                public void preferenceChange(PreferenceChangeEvent evt) {
+                    synchronized (RubyCommentLexer.this) {
+                        markers = null;
                     }
                 }
-            } catch (BackingStoreException bse) {
-                ErrorManager.getDefault().notify(bse);
-            }
-
-            if (markerList.size() > 0) {
+            });
+            
+            List<String> markerList = new ArrayList<String>();
+            markerList.addAll(Arrays.asList(preferences.get(TODO_MARKERS_KEY, "").split("\\|")));
+            
+            if (!markerList.isEmpty()) {
                 markerList.remove("@todo"); // Applies to javadoc, and these tags are now colorized separately
                 markers = markerList.toArray(new String[markerList.size()]);
             } else {

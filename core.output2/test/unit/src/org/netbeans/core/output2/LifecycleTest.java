@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.EnumSet;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -54,6 +55,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOContainer;
+import org.openide.windows.IOSelect;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -336,6 +338,52 @@ public class LifecycleTest extends NbTestCase {
 
         assertFalse ("Reset on a used writer should replace its underlying output", writer.out() == out);
 
+    }
+
+    // Not really a Lifecycle feature but requires a bonafide TC container
+    // which this Test provides.
+    public void testFineSelect() {
+        System.out.println("testFineSelect");
+
+	EnumSet<IOSelect.AdditionalOperation> extraOps;
+
+	extraOps = null;
+	boolean sawException = false;
+	try {
+	    IOSelect.select(io, extraOps);
+	} catch (NullPointerException ex) {
+	    // extraOps is NonNull
+	    sawException = true;
+	}
+	assertTrue("null pointer not caught", sawException);
+	sleep();
+
+	extraOps = EnumSet.noneOf(IOSelect.AdditionalOperation.class);
+	IOSelect.select(io, extraOps);
+	sleep();
+
+	extraOps = EnumSet.of(IOSelect.AdditionalOperation.OPEN);
+	IOSelect.select(io, extraOps);
+	sleep();
+
+	extraOps = EnumSet.of(IOSelect.AdditionalOperation.REQUEST_ACTIVE);
+	IOSelect.select(io, extraOps);
+	sleep();
+
+	extraOps = EnumSet.of(IOSelect.AdditionalOperation.REQUEST_VISIBLE);
+	IOSelect.select(io, extraOps);
+	sleep();
+
+	extraOps = EnumSet.of(IOSelect.AdditionalOperation.OPEN,
+		              IOSelect.AdditionalOperation.REQUEST_VISIBLE);
+	IOSelect.select(io, extraOps);
+	sleep();
+
+	extraOps = EnumSet.of(IOSelect.AdditionalOperation.OPEN,
+		              IOSelect.AdditionalOperation.REQUEST_VISIBLE,
+			      IOSelect.AdditionalOperation.REQUEST_ACTIVE);
+	IOSelect.select(io, extraOps);
+	sleep();
     }
 
     static JComponent getIOWindow() {

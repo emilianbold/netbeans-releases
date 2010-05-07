@@ -346,10 +346,15 @@ public class PHPTypeSearcher implements IndexSearcher {
             sb.append("[$]*");//NOI18N
         }
         for (int i = 0; i < chars.length; i++) {
-            if (chars[i] == '?') {//NOI18N
+            if (i+1 < chars.length && chars[i] == '.' && chars[i+1] == '*') {//NOI18N
+                sb.append(".*");//NOI18N
+                i++;
+            } else if (chars[i] == '?') {//NOI18N
                 sb.append('.');//NOI18N
             } else if (chars[i] == '*') {
                 sb.append(".*");//NOI18N
+            } else if (chars[i] == '.') {
+                sb.append(".");//NOI18N
             } else if (Character.isUpperCase(chars[i])) {
                 if (incamel) {
                     sb.append("[a-z0-9_]*");//NOI18N

@@ -57,13 +57,12 @@ Dramatis personae
 IOProvider	Has a list of IO's
 InputOutput	Abstract entity owned by an IOProvider
 		Has Streams.
-		Has a "Component" (IOTab in output2/Terminal in terminal)
-IOContainer 	Abstract entity.
+		Has a "Component".
+IOContainer Abstract entity.
 		Has a list of Components that are visible.
 		The actual container implementation is hidden.
 Component	Concrete entity (Typically a JComponent) that appears in an
-                IOContainer.
-		IOTab in output2/Terminal in terminal.
+	    IOContainer. (IOTab in output2/Terminal in terminal).
 
 Major state transitions
 -----------------------
@@ -78,7 +77,7 @@ of an IO:
   undefined.
 
   Both output2 and terminal use the words dispose[d] internally. So
-  we'll adopt dipose.
+  we'll adopt dispose for our terminology.
 
   Disposal frees all resources used by an IO and additionally calls eof()
   in IO.getIn().
@@ -86,7 +85,7 @@ of an IO:
   There is no associated UI action for disposal so clients need to ensure
   that they call closeInputOutput() when appropriate (heh-heh).
 
-  Disposing was previously called "Strong closing".
+  Disposing was called "Strong closing" in some earlier discussions.
 
 - Visibility
   An IO is visible when it is visible in it's container (with or without a tab)
@@ -94,28 +93,40 @@ of an IO:
   an IO tab may be added to the Output window even though the output
   window itself is closed.
 
-  An IO can be made visible using ...
+  An IO can be made visible (opened?) using ...
   o IO.select()
     Also ensures that the container (it's TopComponent) is visible.
+  o IOSelect.select() which allows finer control over the visibility
+    of the containing TopComponent.
   o IOVisibility.setVisible(true)
     This one is independent of the visibility of the container itself.
+
+  A freshly created IO is visible by default but not selected! That is,
+  it is added to a container but the TopComponent will not be made
+  visible.
 
   An IO can be made invisible (closed) using ...
   o Close Action in context menu
   o Clicking on the X of it's tab.
   o IOVisibility.setVisible(false)
 
-  A freshly created IO is visible by default but not selected! That is,
-  it is added to a container but the TopComponent will not be made
-  visible.
-
   By far the most common use of the term "close" applies to this
-  state transition so we'll adopt close.
+  state transition so we'll adopt close for our terminology.
 
-  The ability of a user to close a Component can be defeated using
-  IOVisibility.setClosable().
+  This kind of closing was called "Weak closing" in some earlier discussions.
 
-  Thic kind of closing was previously called "Weak closing".
+  Conditional vs Unconditional closing
+  ....................................
+  The following closing operations ...
+  o Close Action in context menu
+  o Clicking on the X of it's tab.
+  are tempered using IOVisibility.setClosable() and additionally via
+  the vetoing mechanism provided by IONotifier.addVetoableChangeListener()
+  and IOVisibility.PROP_VISIBILITY.
+
+  The following closing operations succeed unconditionally:
+  o IOVisibility.setVisible(false)
+  o InputOutput.closeInputOutput()
 
 - Connectedness
   An IO starts life in a disconnected state.
@@ -139,12 +150,12 @@ of an IO:
   after closing them one can write to the OutputWriters provided by getOut()
   and getErr()!
 
-  It's probaby best to never save the OutputWriter returned by getOut/Err()
-  and call getOut/Err() every time. That will ensure the correct maitenance
+  It's probably best to never save the OutputWriter returned by getOut/Err()
+  and call getOut/Err() every time. That will ensure the correct maintenance
   of the connected state.
 
-  So, if close() doesn't really close anything,  what does it really mean
-  to be disconnected? It serves two purposes:
+  So, if close() doesn't really close anything, what does it really mean to be
+  disconnected? It serves two purposes:
 
   o A disconnected IO is eligible for reuse via
     	IOProvider.getIO(String name, boolean newIO = false)
@@ -162,7 +173,7 @@ of an IO:
   A disconnected IO retains it's buffer so if it's is to be reused, 
   IO.getOut().reset() should be used to clear the buffer.
 
-  Disconnecting was previously called "Stream closing".
+  Disconnecting was called "Stream closing" in some earlier discussions.
   [ The output2 implementation seems to track this state in two ways:
     - OutputWriter.isClosed().
     - An internal property streamClosed. ]
@@ -172,8 +183,8 @@ four combinations make sense and are allowed.
 
 A disposed (IO.closeInputOutput()) IO becomes invisible and is disconnected.
 It is not eligible for reuse via IOProvider.getIO(..., newIO = false).
-	output2 allows a disposed IO to be re-select()ed.
-	terminal ignores all operations on a dispose IO.
+	- output2 allows a disposed IO to be re-select()ed.
+	- terminal ignores all operations on a dispose IO.
 
 Typical lifecycle
 -----------------
@@ -193,22 +204,21 @@ Typical lifecycle
 
 Querying the state
 ------------------
-The state of an IO needs to be queried with caution.
-
 Operations on an IO may be requested on any thread. However, they
 are mostly performed on the EDT. As a result the state transition will
-not happen serially wrt to the request!
-Therefore, querying the state of an IO on any thread but the EDT thread
-is unreliable.
-For the same reason expecting IO reuse semantics to work correctly
-immediately after a closeInputOutput() is unrealistic.
+not happen serially with request to the request!
+
+Querying of state, e.g. using IOVisibility.isClosable(), works as follows:
+If the call is performed on the EDT the result is returned immediately.
+Otherwise the call is blocked while the result is computed on the EDT
+and passed back via a Future.
 
 Misc. notes on IOContainer
 --------------------------
 Although IOContainer is part of the API it is primarily intended for use
 by implementations (analog of a protected final method).
 
-- IOContainer.remove() s used to implement closing (setVisible(false)).
+- IOContainer.remove() is used to implement closing (setVisible(false)).
   It removes the Component and calls IOContainer.CallBacks.closed().
 
   Because a disconnected IO may be reused, CallBacks.closed() should not
