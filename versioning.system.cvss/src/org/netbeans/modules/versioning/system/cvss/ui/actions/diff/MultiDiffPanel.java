@@ -59,7 +59,6 @@ import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.awt.UndoRedo;
-import org.openide.windows.WindowManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.LifecycleManager;
@@ -350,6 +349,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/diff/Bundle").
                                                    getString("CTL_DiffPanel_Next_Tooltip"));                
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onNextButton();
             }
@@ -359,6 +359,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/diff/Bundle").
                                                    getString("CTL_DiffPanel_Prev_Tooltip"));                
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onPrevButton();
             }
@@ -404,6 +405,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         Dimension dim = parent == null ? new Dimension() : parent.getSize();
         if (dim.width <=0 || dim.height <=0) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     updateSplitLocation();
                 }
@@ -431,6 +433,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         super.removeNotify();
     }
     
+    @Override
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
             if (!affectsView(event)) return;
@@ -545,6 +548,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         }
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
         if (source == commitButton) onCommitButton();
@@ -661,6 +665,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     /**
      * @return setups, takes into account Local, Remote, All switch
      */
+    @Override
     public Collection<Setup> getSetups() {
         if (setups == null) {
             return Collections.emptySet();
@@ -669,6 +674,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         }
     }
 
+    @Override
     public String getSetupDisplayName() {
         return contextName;
     }
@@ -779,6 +785,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         refreshTask.schedule(0);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
             refreshComponents();
@@ -793,6 +800,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             this.prepareSetups = prepareSetups;
         }
 
+        @Override
         public void run() {
             try {
                 for (int i = 0; i < prepareSetups.length; i++) {
@@ -808,6 +816,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                             return;
                         }
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 prepareSetups[fi].setView(view);
                                 if (prepareSetups != setups) {

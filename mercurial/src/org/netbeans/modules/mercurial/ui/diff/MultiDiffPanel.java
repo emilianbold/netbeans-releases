@@ -350,6 +350,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/diff/Bundle").
                                                    getString("CTL_DiffPanel_Next_Tooltip"));                
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onNextButton();
             }
@@ -359,6 +360,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/diff/Bundle").
                                                    getString("CTL_DiffPanel_Prev_Tooltip"));                
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onPrevButton();
             }
@@ -403,6 +405,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         Dimension dim = parent == null ? new Dimension() : parent.getSize();
         if (dim.width <=0 || dim.height <=0) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     updateSplitLocation();
                 }
@@ -525,6 +528,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         }
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
         if (source == commitButton) onCommitButton();
@@ -535,7 +539,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     private void refreshStatuses() {
-        if (context == null || context.getRootFiles().size() == 0) {
+        if (context == null || context.getRootFiles().isEmpty()) {
             return;
         }
 
@@ -547,6 +551,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         LifecycleManager.getDefault().saveAll();
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor();
         executeStatusSupport = new HgProgressSupport() {
+            @Override
             public void perform() {                                                
                 StatusAction.executeStatus(context, this);
                 refreshSetups();
@@ -616,6 +621,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     /**
      * @return setups, takes into account Local, Remote, All switch
      */
+    @Override
     public Collection<Setup> getSetups() {
         if (setups == null) {
             return Collections.emptySet();
@@ -624,6 +630,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         }
     }
 
+    @Override
     public String getSetupDisplayName() {
         return contextName;
     }
@@ -653,6 +660,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         final Setup[] localSetups = computeSetups(files);
         final EditorCookie[] cookies = DiffUtils.setupsToEditorCookies(localSetups);
         Runnable runnable = new Runnable() {
+            @Override
             public void run() {
                 displayStatuses = localDisplayStatuses;
                 setSetups(localSetups, cookies);
@@ -732,6 +740,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         return newSetups.toArray(new Setup[newSetups.size()]);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
             refreshComponents();
@@ -760,6 +769,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             this.tableIndex = 0;
         }
 
+        @Override
         public void run() {
             IOException exception = null;
             int[] indexes = prepareIndexesToRefresh();
@@ -781,6 +791,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     }
                     prepareSetups[fi].setView(view);
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             if (prepareSetups != setups) {
                                 return;
@@ -842,6 +853,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             cache = Mercurial.getInstance().getFileStatusCache();
         }
 
+        @Override
         public int compare(Setup setup1, Setup setup2) {
             int cmp = delegate.compare(cache.getStatus(setup1.getBaseFile()), cache.getStatus(setup2.getBaseFile()));
             if (cmp == 0) {
@@ -852,6 +864,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     private class RefreshViewTask implements Runnable {
+        @Override
         public void run() {
             refreshSetups();
         }
