@@ -23,10 +23,10 @@ if [ ! -z $WORKSPACE ]; then
     hg clone $WORKSPACE $NB_ALL
 fi
 
-if [ $ML_BUILD == 1 ]; then
-    cd $NB_ALL
-    hg clone $ML_REPO $NB_ALL/l10n
-fi
+#if [ $ML_BUILD == 1 ]; then
+#    cd $NB_ALL
+#    hg clone $ML_REPO $NB_ALL/l10n
+#fi
 
 ###################################################################
 #
