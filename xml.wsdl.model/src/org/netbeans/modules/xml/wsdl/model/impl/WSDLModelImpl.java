@@ -44,7 +44,6 @@ package org.netbeans.modules.xml.wsdl.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,8 +70,9 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.dom.ChangeInfo;
-import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 import org.netbeans.modules.xml.xam.dom.SyncUnit;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -315,6 +315,21 @@ public class WSDLModelImpl extends WSDLModel {
     @Override
     public Map<QName, List<QName>> getQNameValuedAttributes() {
         return WSDLAttribute.getQNameValuedAttributes();
+    }
+
+    @Override
+    public String toString() {
+        ModelSource source = getModelSource();
+        if (source != null) {
+            Lookup lookup = source.getLookup();
+            if (lookup != null) {
+                FileObject fileObject = lookup.lookup(FileObject.class);
+                if (fileObject != null) {
+                    return fileObject.getNameExt();
+                }
+            }
+        }
+        return super.toString();
     }
 
 }
