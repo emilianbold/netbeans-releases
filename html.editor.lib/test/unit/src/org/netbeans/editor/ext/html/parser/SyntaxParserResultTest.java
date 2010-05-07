@@ -54,7 +54,7 @@ public class SyntaxParserResultTest extends TestBase {
         super(testName);
     }
 
-    
+
     public void testBasic() {
         String code = "<html><head><title>xxx</title></head><body>yyy</body></html>";
         SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
@@ -104,13 +104,13 @@ public class SyntaxParserResultTest extends TestBase {
         assertEquals("http://www.w3.org/1999/xhtml", nsmap.get("").toString());
         assertEquals("http://java.sun.com/JSP/Page", nsmap.get("jsp").toString());
     }
-    
+
     public void testGetDeclaredNamespaces() {
         String code = "<html xmlns=\"http://www.w3.org/1999/xhtml\" " +
                 "xmlns:jsp=\"http://java.sun.com/JSP/Page\">" +
                 "<ui:composition xmlns:ui=\"http://java.sun.com/jsf/facelets\"/>" +
                 "</html>";
-        
+
         SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
 
         assertNotNull(result);
@@ -127,7 +127,7 @@ public class SyntaxParserResultTest extends TestBase {
         assertEquals(null, nsmap.get("http://www.w3.org/1999/xhtml"));
         assertEquals("ui", nsmap.get("http://java.sun.com/jsf/facelets"));
         assertEquals("jsp", nsmap.get("http://java.sun.com/JSP/Page"));
-        
+
     }
 
     public void testGetAstRoot() {
@@ -148,7 +148,23 @@ public class SyntaxParserResultTest extends TestBase {
         assertEquals(2, root.children().size());
         assertNotNull(AstNodeUtils.query(root, "html"));
         assertNotNull(AstNodeUtils.query(root, "html/div"));
-        
+
+    }
+
+    public void testUndeclaredTagsParseTree() {
+        String code = "<html>" +
+                          "<x:out><div><x:in></x:in></div></x:out>" +
+                      "</html>";
+
+        SyntaxParserResult result = SyntaxParser.parse(SyntaxParserContext.createContext(code));
+
+        AstNode froot = result.getASTRoot(SyntaxParserResult.UNDECLARED_TAGS_NAMESPACE);
+
+        assertNotNull(froot);
+        assertEquals(2, froot.children().size());
+        assertNotNull(AstNodeUtils.query(froot, "x:out"));
+        assertNotNull(AstNodeUtils.query(froot, "x:out/x:in"));
+
     }
 
 }
