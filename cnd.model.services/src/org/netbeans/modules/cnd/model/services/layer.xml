@@ -3,31 +3,31 @@
 <filesystem>
     <folder name="Editors">
         <folder name="text">
-            <folder name="x-cnd-sourcefile">
+            <folder name="x-cnd+sourcefile">
                 <file name="org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
                 </file>
             </folder>
             <folder name="x-h">
                 <file name="org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.shadow">
-                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.instance"/>
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd+sourcefile/org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.instance"/>
                 </file>
             </folder>
             <folder name="x-c++">
                 <file name="org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.shadow">
-                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.instance"/>
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd+sourcefile/org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.instance"/>
                 </file>
             </folder>
 
             <folder name="x-c">
                 <file name="org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.shadow">
-                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.instance"/>
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd+sourcefile/org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.instance"/>
                 </file>
             </folder>
 
             <folder name="x-fortran">
                 <file name="org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.shadow">
-                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.instance"/>
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd+sourcefile/org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.instance"/>
                 </file>
             </folder>
         </folder>

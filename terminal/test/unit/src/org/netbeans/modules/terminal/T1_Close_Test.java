@@ -48,6 +48,7 @@ import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.modules.terminal.api.IOConnect;
 import org.netbeans.modules.terminal.api.IOVisibility;
+import org.netbeans.modules.terminal.test.IOTest;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
@@ -345,5 +346,19 @@ public class T1_Close_Test extends TestSupport {
 	sleep(1);
 
 	sleep(3);
+    }
+
+    public void testUnconditionalClose() {
+	IOVisibility.setClosable(io, false);
+
+	// conditional close ... should not close
+	IOTest.performCloseAction(io);
+	sleep(1);
+	assertTrue("CloseAction wasn't ignored", io.isClosed() == false);
+
+	// unconditional close ... should close
+	IOVisibility.setVisible(io, false);
+	sleep(1);
+	assertTrue("setVisibility(false) was ignored", io.isClosed() == true);
     }
 }

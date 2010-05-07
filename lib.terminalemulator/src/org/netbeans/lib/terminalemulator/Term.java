@@ -610,6 +610,7 @@ public class Term extends JComponent implements Accessible {
      */
     public void addListener(TermListener l) {
         listeners.add(l);
+	updateTtySize();
     }
 
     /**

@@ -242,9 +242,13 @@ public class JBStartServer extends StartServer implements ProgressObject{
                     serverHome = Util.getMBeanParameter(dm, "ServerHomeDir", "jboss.system:type=ServerConfig"); //NOI18N
                 }
                 try {
-                    serverHome = isJBoss6
-                            ? new File(((URL) serverHome).toURI()).getAbsolutePath()
-                            : ((File) serverHome).getAbsolutePath();
+                    if (serverHome != null) {
+                        if (isJBoss6) {
+                            serverHome = new File(((URL) serverHome).toURI()).getAbsolutePath();
+                        } else {
+                            serverHome = ((File) serverHome).getAbsolutePath();
+                        }
+                    }
                 } catch (URISyntaxException use) {
                     Logger.getLogger(JBStartServer.class.getName()).log(Level.WARNING, "error getting file from URI: " + serverHome, use); //NOI18N
                 }

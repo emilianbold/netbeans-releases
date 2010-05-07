@@ -41,24 +41,23 @@ package org.netbeans.modules.cnd.simpleunit.wizard;
 import java.util.List;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode.Description;
 import org.openide.util.NbBundle;
 
 public final class GenerateTestChooseElementsVisualPanel extends JPanel {
-    private ElementNode.Description description;
     private final FunctionSelectorPanel elementSelector;
 
     /** Creates new form GenerateTestChooseElementsVisualPanel */
     public GenerateTestChooseElementsVisualPanel() {
         initComponents();
-        elementSelector = new FunctionSelectorPanel(description, false);
-        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
-        add(elementSelector, gridBagConstraints);
+        elementSelector = (FunctionSelectorPanel) funSelector;
+//        elementSelector = new FunctionSelectorPanel(false);
+//        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+//        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+//        gridBagConstraints.weightx = 1.0;
+//        gridBagConstraints.weighty = 1.0;
+//        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
+//        add(elementSelector, gridBagConstraints);
     }
 
     @Override
@@ -74,11 +73,29 @@ public final class GenerateTestChooseElementsVisualPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setLayout(new java.awt.GridBagLayout());
+        jLabel1 = new javax.swing.JLabel();
+        funSelector = new FunctionSelectorPanel(false);
+
+        jLabel1.setLabelFor(funSelector);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(GenerateTestChooseElementsVisualPanel.class, "GenerateTestChooseElementsVisualPanel.jLabel1.text")); // NOI18N
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+            .addComponent(funSelector, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(funSelector, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     void setRootElement(Description description) {
-        this.description = description;
         elementSelector.initFromElement(description, false);
         elementSelector.doInitialExpansion(1);
     }
@@ -87,6 +104,11 @@ public final class GenerateTestChooseElementsVisualPanel extends JPanel {
         return elementSelector.getSelectedElements();
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel funSelector;
+    private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 
+    void showLoadingNode() {
+        elementSelector.showLoadingNode();
+    }
 }

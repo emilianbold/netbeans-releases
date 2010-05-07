@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode.Description;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -62,15 +63,15 @@ public final class FunctionSelectorPanel extends JPanel implements ExplorerManag
     private final ExplorerManager manager = new ExplorerManager();
     private final CheckTreeView elementView;
     /** Creates new form FunctionSelectorPanel */
-    public FunctionSelectorPanel(ElementNode.Description elementDescription, boolean singleSelection) {
+    public FunctionSelectorPanel(boolean singleSelection) {
         setLayout(new BorderLayout());
         elementView = new CheckTreeView();
-        elementView.setRootVisible(false);
         elementView.setUseSubstringInQuickSearch(true);
         add(elementView, BorderLayout.CENTER);
     }
 
     public void initFromElement(Description elementDescription, boolean singleSelection) {
+        elementView.setRootVisible(false);
         setRootElement(elementDescription, singleSelection);
         //make sure that the first element is pre-selected
         Node root = manager.getRootContext();
@@ -198,5 +199,19 @@ public final class FunctionSelectorPanel extends JPanel implements ExplorerManag
             }
         }
         return children[0];
+    }
+
+    void showLoadingNode() {
+        elementView.setRootVisible(true);
+        manager.setRootContext(getWaitNode());
+    }
+
+    private static Node WAIT_NODE;
+
+    static synchronized Node getWaitNode() {
+        if (WAIT_NODE == null) {
+            WAIT_NODE = ElementNode.getWaitNode(NbBundle.getMessage(FunctionSelectorPanel.class, "LBL_WaitNode"));
+        }
+        return WAIT_NODE;
     }
 }

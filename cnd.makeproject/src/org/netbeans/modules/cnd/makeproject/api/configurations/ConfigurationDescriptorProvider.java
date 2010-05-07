@@ -66,6 +66,7 @@ public class ConfigurationDescriptorProvider {
     public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
     public static final String USG_PROJECT_OPEN_CND = "USG_PROJECT_OPEN_CND"; // NOI18N
     public static final String USG_PROJECT_CREATE_CND = "USG_PROJECT_CREATE_CND"; // NOI18N
+    private static final String USG_CND_PROJECT_ACTION = "USG_CND_PROJECT_ACTION"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
     private FileObject projectDirectory;
@@ -184,16 +185,23 @@ public class ConfigurationDescriptorProvider {
     }
 
     public static void recordMetrics(String msg, MakeConfigurationDescriptor descr) {
-        recordMetricsImpl(msg, null, descr);
+        recordMetricsImpl(msg, null, descr, null);
     }
 
     public static void recordCreatedProjectMetrics(MakeConfiguration[] confs) {
         if (confs != null && confs.length > 0) {
-            recordMetricsImpl(USG_PROJECT_CREATE_CND, confs[0], null);
+            recordMetricsImpl(USG_PROJECT_CREATE_CND, confs[0], null, null);
         }
     }
 
-    private static void recordMetricsImpl(String msg, MakeConfiguration makeConfiguration, MakeConfigurationDescriptor descr) {
+    public static void recordActionMetrics(String action, MakeConfigurationDescriptor descr) {
+        recordMetricsImpl(USG_CND_PROJECT_ACTION, null, descr, action);
+    }
+
+    private static void recordMetricsImpl(String msg,
+            MakeConfiguration makeConfiguration,
+            MakeConfigurationDescriptor descr,
+            String action) {
         if (CndUtils.isUnitTestMode()) {
             // we don't want to count own tests
             return;
@@ -290,6 +298,8 @@ public class ConfigurationDescriptorProvider {
         if (USG_PROJECT_CREATE_CND.equals(msg)) {
             // stop here
             UIGesturesSupport.submit(msg, type, flavor, family, host, platform, "USER_PROJECT", ideType); //NOI18N
+        } else if (USG_CND_PROJECT_ACTION.equals(msg)) {
+            UIGesturesSupport.submit(msg, action, type, flavor, family, host, platform, ideType); //NOI18N
         } else if (projectItems != null) {
             makeConfiguration.reCountLanguages(descr);
             int size = 0;

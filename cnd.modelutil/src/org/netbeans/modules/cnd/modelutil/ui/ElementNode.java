@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.modelutil.ui;
 
 import java.awt.Image;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,14 +49,23 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.lookup.Lookups;
 
@@ -87,10 +97,26 @@ public class ElementNode extends AbstractNode {
 
     @Override
     public Image getIcon(int type) {
-        if (description.elementHandle == null) {
+        if (description.iconElementHandle == null) {
             return super.getIcon(type);
         }
-        return ImageUtilities.icon2Image(CsmImageLoader.getIcon(description.elementHandle));
+        if (CsmKindUtilities.isFile(description.iconElementHandle)) {
+            CsmFile file = (CsmFile) description.iconElementHandle;
+            CharSequence absolutePath = file.getAbsolutePath();
+            FileObject fo = FileUtil.toFileObject(new File(absolutePath.toString()));
+            if (fo != null) {
+                try {
+                    DataObject dob = DataObject.find(fo);
+                    Node node = dob.getNodeDelegate();
+                    if (node != null) {
+                        return node.getIcon(type);
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                }
+            }
+            return super.getIcon(type);
+        }
+        return ImageUtilities.icon2Image(CsmImageLoader.getIcon(description.iconElementHandle));
     }
 
     @Override
@@ -126,6 +152,10 @@ public class ElementNode extends AbstractNode {
         }
     }
 
+    public static Node getWaitNode(String displayName) {
+        return new WaitNode(displayName);
+    }
+
     private static final class ElementChilren extends Children.Keys<Description> {
 
         public ElementChilren(List<Description> descriptions, boolean sortChildren) {
@@ -144,30 +174,40 @@ public class ElementNode extends AbstractNode {
 
     /** Stores all interesting data about given element.
      */
-    public static class Description {
+    public static final class Description {
 
         public static final Comparator<Description> ALPHA_COMPARATOR = new DescriptionComparator();
         private ElementNode node;
-        private String name;
-        private CsmDeclaration elementHandle;
-        private Set<CsmVisibility> modifiers;
-        private List<Description> subs;
-        private String htmlHeader;
+        private final String name;
+        private final CsmDeclaration elementHandle;
+        private final CsmObject iconElementHandle;
+        private final Set<CsmVisibility> modifiers;
+        private final List<Description> subs;
+        private final String htmlHeader;
         private boolean isSelected;
-        private boolean isSelectable;
+        private final boolean isSelectable;
 
         public static Description create(List<Description> subs) {
             return new Description("<root>", null, null, subs, null, false, false); // NOI18N
         }
 
-        public static Description create(CsmDeclaration element, List<Description> subs, boolean isSelectable, boolean isSelected) {
-            String htmlHeader = element.getName().toString();
+        public static Description create(CsmObject element, List<Description> subs, boolean isSelectable, boolean isSelected) {
+            String name = "";
+            if (CsmKindUtilities.isNamedElement(element)) {
+                name = ((CsmNamedElement)element).getName().toString();
+            }
+            String htmlHeader = name;
             if (CsmKindUtilities.isVariable(element)) {
                 CsmVariable field = (CsmVariable) element;
                 htmlHeader = field.getName().toString() + " : " + field.getType().getText(); //NOI18N
             } else if (CsmKindUtilities.isFunction(element)) {
                 CsmFunction method = (CsmFunction) element;
                 htmlHeader = method.getSignature() + " : " + method.getReturnType().getText(); //NOI18N
+            } else if (CsmKindUtilities.isNamespace(element)) {
+                CsmNamespace ns = (CsmNamespace)element;
+                if (!ns.isGlobal()) {
+                    htmlHeader = ns.getQualifiedName().toString();
+                }
             }
 //            switch (element.getKind()) {
 //                case ANNOTATION_TYPE:
@@ -185,7 +225,7 @@ public class ElementNode extends AbstractNode {
 //                    htmlHeader = createHtmlHeader((ExecutableElement) element);
 //                    break;
 //            }
-            return new Description(element.getName().toString(),
+            return new Description(name,
                     element,
                     Collections.<CsmVisibility>emptySet(),
                     subs,
@@ -194,11 +234,12 @@ public class ElementNode extends AbstractNode {
                     isSelected);
         }
 
-        private Description(String name, CsmDeclaration elementHandle,
+        private Description(String name, CsmObject elementHandle,
                 Set<CsmVisibility> modifiers, List<Description> subs, String htmlHeader,
                 boolean isSelectable, boolean isSelected) {
             this.name = name;
-            this.elementHandle = elementHandle;
+            this.iconElementHandle = elementHandle;
+            this.elementHandle = CsmKindUtilities.isDeclaration(elementHandle) ? (CsmDeclaration)elementHandle : null;
             this.modifiers = modifiers;
             this.subs = subs;
             this.htmlHeader = htmlHeader;
@@ -481,6 +522,37 @@ public class ElementNode extends AbstractNode {
                         return 100;
                 }
             }
+        }
+    }
+
+    private static class WaitNode extends AbstractNode {
+
+        private final Image waitIcon = ImageUtilities.loadImage("org/netbeans/modules/cnd/modelutil/resources/wait.gif"); // NOI18N
+        private final String displayName;
+
+        WaitNode(String displayName) {
+            super(Children.LEAF);
+            this.displayName = displayName;// NOI18N
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return waitIcon;
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return getIcon(type);
+        }
+
+        @java.lang.Override
+        public java.lang.String getDisplayName() {
+            return displayName;
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            return displayName;
         }
     }
 }
