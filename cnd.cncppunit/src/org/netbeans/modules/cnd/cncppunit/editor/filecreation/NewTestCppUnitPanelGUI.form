@@ -36,7 +36,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="modifiedFilesArea" alignment="0" pref="345" max="32767" attributes="0"/>
+                  <Component id="modifiedFilesArea" alignment="0" min="0" pref="345" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="sourceExtComboBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -55,7 +55,7 @@
                   <Component id="classNameTextField" alignment="0" pref="345" max="32767" attributes="2"/>
                   <Component id="testTextField" alignment="0" pref="345" max="32767" attributes="2"/>
                   <Component id="runnerTextField" alignment="0" pref="345" max="32767" attributes="1"/>
-                  <Component id="createdFilesArea" alignment="0" pref="345" max="32767" attributes="0"/>
+                  <Component id="createdFilesArea" alignment="0" min="0" pref="345" max="32767" attributes="0"/>
               </Group>
           </Group>
       </Group>

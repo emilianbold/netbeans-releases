@@ -33,7 +33,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="createdFilesArea" pref="266" max="32767" attributes="0"/>
+                  <Component id="createdFilesArea" min="0" pref="266" max="32767" attributes="0"/>
                   <Component id="sourceTextField" pref="266" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="folderTextField" pref="191" max="32767" attributes="0"/>
@@ -47,7 +47,7 @@
                       <Component id="sourceExtComboBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Component id="modifiedFilesArea" alignment="0" pref="266" max="32767" attributes="0"/>
+                  <Component id="modifiedFilesArea" alignment="0" min="0" pref="266" max="32767" attributes="0"/>
               </Group>
           </Group>
           <Component id="targetSeparator" alignment="1" pref="391" max="32767" attributes="0"/>
@@ -228,7 +228,7 @@
     <Component class="javax.swing.JLabel" name="createdFilesLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="default"/>
+          <ComponentRef name="createdFilesArea"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/cnd/cncppunit/editor/filecreation/Bundle.properties" key="LBL_TargetChooser_CreatedFiles_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

@@ -454,6 +454,7 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
             }
         });
 
+        createdFilesLabel.setLabelFor(createdFilesArea);
         org.openide.awt.Mnemonics.setLocalizedText(createdFilesLabel, org.openide.util.NbBundle.getMessage(NewTestCUnitPanelGUI.class, "LBL_TargetChooser_CreatedFiles_Label")); // NOI18N
 
         createdFilesArea.setColumns(20);
@@ -488,7 +489,7 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
                     .addComponent(modifiedFilesLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(createdFilesArea, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
+                    .addComponent(createdFilesArea, 0, 266, Short.MAX_VALUE)
                     .addComponent(sourceTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(folderTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
@@ -500,7 +501,7 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(sourceExtComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
-                    .addComponent(modifiedFilesArea, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)))
+                    .addComponent(modifiedFilesArea, 0, 266, Short.MAX_VALUE)))
             .addComponent(targetSeparator, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
             .addComponent(bottomPanelContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
         );
