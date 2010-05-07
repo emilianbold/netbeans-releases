@@ -54,8 +54,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     }
     
     @Override
-    public GNUFortranCompiler createCopy() {
-        return new GNUFortranCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
+    public GNUFortranCompiler createCopy(CompilerFlavor flavor) {
+        return new GNUFortranCompiler(getExecutionEnvironment(), flavor, getKind(), getName(), getDisplayName(), getPath());
     }
 
     public static GNUFortranCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {

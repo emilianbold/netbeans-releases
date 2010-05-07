@@ -59,8 +59,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
    }
 
    @Override
-   public MsvcCompiler createCopy() {
-       MsvcCompiler copy = new MsvcCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath()); // NOI18N
+   public MsvcCompiler createCopy(CompilerFlavor flavor) {
+       MsvcCompiler copy = new MsvcCompiler(getExecutionEnvironment(), flavor, getKind(), getName(), getDisplayName(), getPath()); // NOI18N
        if (isReady()) {
            copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
            copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());
