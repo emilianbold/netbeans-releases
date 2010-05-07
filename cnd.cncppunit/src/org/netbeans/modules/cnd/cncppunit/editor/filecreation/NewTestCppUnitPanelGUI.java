@@ -56,6 +56,8 @@ import org.netbeans.modules.cnd.editor.filecreation.CndPanelGUI;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.simpleunit.spi.wizard.AbstractUnitTestIterator;
+import org.netbeans.modules.cnd.simpleunit.utils.MakefileUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
@@ -212,6 +214,14 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
             testTextField.selectAll();
         }
 
+        if (MakefileUtils.hasTestTargets(project)) {
+            modifiedFilesLabel.setVisible(false);
+            modifiedFilesArea.setVisible(false);
+        } else {
+            modifiedFilesLabel.setVisible(true);
+            modifiedFilesArea.setVisible(true);
+            modifiedFilesArea.setText(FileUtil.getFileDisplayName(MakefileUtils.getMakefile(project)));
+        }
     }
 
     /*package*/ void setControlsEnabled(boolean enable) {
@@ -225,6 +235,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         headerExtComboBox.setEnabled(enable);
         runnerTextField.setEnabled(enable);
         createdFilesArea.setEnabled(enable);
+        modifiedFilesArea.setEnabled(enable);
     }
 
     private static Folder getTestsRootFolder(Project project) {
@@ -390,6 +401,8 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         runnerTextField = new javax.swing.JTextField();
         createdFilesLabel = new javax.swing.JLabel();
         createdFilesArea = new javax.swing.JTextArea();
+        modifiedFilesLabel = new javax.swing.JLabel();
+        modifiedFilesArea = new javax.swing.JTextArea();
         targetSeparator = new javax.swing.JSeparator();
         bottomPanelContainer = new javax.swing.JPanel();
 
@@ -449,6 +462,15 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         createdFilesArea.setFocusable(false);
         createdFilesArea.setOpaque(false);
 
+        modifiedFilesLabel.setLabelFor(modifiedFilesArea);
+        org.openide.awt.Mnemonics.setLocalizedText(modifiedFilesLabel, org.openide.util.NbBundle.getMessage(NewTestCppUnitPanelGUI.class, "LBL_TargetChooser_ModifiedFiles_Label")); // NOI18N
+
+        modifiedFilesArea.setColumns(20);
+        modifiedFilesArea.setEditable(false);
+        modifiedFilesArea.setRows(1);
+        modifiedFilesArea.setFocusable(false);
+        modifiedFilesArea.setOpaque(false);
+
         bottomPanelContainer.setFocusable(false);
         bottomPanelContainer.setLayout(new java.awt.BorderLayout());
 
@@ -457,6 +479,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(targetSeparator, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
+            .addComponent(bottomPanelContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(testLabel)
@@ -466,9 +489,11 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
                     .addComponent(classNameLbl)
                     .addComponent(sourceExtLabel)
                     .addComponent(runnerLabel)
-                    .addComponent(createdFilesLabel))
+                    .addComponent(createdFilesLabel)
+                    .addComponent(modifiedFilesLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(modifiedFilesArea, javax.swing.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(sourceExtComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
@@ -486,7 +511,6 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
                     .addComponent(testTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE)
                     .addComponent(runnerTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE)
                     .addComponent(createdFilesArea, javax.swing.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE)))
-            .addComponent(bottomPanelContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -526,9 +550,13 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
                     .addComponent(createdFilesLabel)
                     .addComponent(createdFilesArea, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(modifiedFilesArea, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(modifiedFilesLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(targetSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(bottomPanelContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE))
+                .addComponent(bottomPanelContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))
         );
 
         projectTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestCppUnitPanelGUI.class).getString("AD_projectTextField")); // NOI18N
@@ -563,6 +591,8 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
     private javax.swing.JLabel headerExtLabel;
     private javax.swing.JComboBox locationComboBox;
     private javax.swing.JLabel locationLabel;
+    private javax.swing.JTextArea modifiedFilesArea;
+    private javax.swing.JLabel modifiedFilesLabel;
     private javax.swing.JLabel projectLabel;
     private javax.swing.JTextField projectTextField;
     private javax.swing.JLabel runnerLabel;

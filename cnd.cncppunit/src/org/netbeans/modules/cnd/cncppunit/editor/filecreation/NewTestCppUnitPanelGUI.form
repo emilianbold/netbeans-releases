@@ -21,6 +21,7 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="targetSeparator" alignment="1" pref="502" max="32767" attributes="2"/>
+          <Component id="bottomPanelContainer" alignment="0" pref="502" max="32767" attributes="2"/>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="testLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -31,9 +32,11 @@
                   <Component id="sourceExtLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="runnerLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="createdFilesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="modifiedFilesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="modifiedFilesArea" alignment="0" pref="345" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="sourceExtComboBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -55,7 +58,6 @@
                   <Component id="createdFilesArea" alignment="0" pref="345" max="32767" attributes="0"/>
               </Group>
           </Group>
-          <Component id="bottomPanelContainer" alignment="0" pref="502" max="32767" attributes="2"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -104,9 +106,14 @@
                   <Component id="createdFilesArea" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="modifiedFilesArea" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="modifiedFilesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="targetSeparator" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="bottomPanelContainer" pref="61" max="32767" attributes="0"/>
+              <Component id="bottomPanelContainer" pref="71" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -289,6 +296,25 @@
         <Property name="columns" type="int" value="20"/>
         <Property name="editable" type="boolean" value="false"/>
         <Property name="rows" type="int" value="3"/>
+        <Property name="focusable" type="boolean" value="false"/>
+        <Property name="opaque" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="modifiedFilesLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="modifiedFilesArea"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cnd/cncppunit/editor/filecreation/Bundle.properties" key="LBL_TargetChooser_ModifiedFiles_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextArea" name="modifiedFilesArea">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+        <Property name="editable" type="boolean" value="false"/>
+        <Property name="rows" type="int" value="1"/>
         <Property name="focusable" type="boolean" value="false"/>
         <Property name="opaque" type="boolean" value="false"/>
       </Properties>
