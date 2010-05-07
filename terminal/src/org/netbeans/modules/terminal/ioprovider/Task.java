@@ -45,6 +45,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -56,11 +57,12 @@ import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.openide.util.Exceptions;
 
 import org.openide.windows.IOContainer;
+import org.openide.windows.IOSelect;
+import org.openide.windows.OutputListener;
 import org.openide.xml.XMLUtil;
 
 import org.netbeans.lib.terminalemulator.Coord;
 import org.netbeans.lib.terminalemulator.LineDiscipline;
-import org.openide.windows.OutputListener;
 
 /**
  * Perform a Task on the EDT.
@@ -88,6 +90,11 @@ import org.openide.windows.OutputListener;
 	@Override
 	protected final void perform() {
 	    future.run();
+	}
+
+	@Override
+	protected boolean isValueTask() {
+	    return true;
 	}
 
 	public V get() {
@@ -130,7 +137,7 @@ import org.openide.windows.OutputListener;
 
     private void dispatch() {
 	try {
-	    if (terminal().isDisposed()) {
+	    if (terminal().isDisposed() && ! isValueTask()) {
 		// closeInputOutput has been called
 		return;
 	    } else {
@@ -146,6 +153,10 @@ import org.openide.windows.OutputListener;
     }
 
     protected abstract void perform();
+
+    protected boolean isValueTask() {
+	return false;
+    }
 
     /**
      * Common task that involves both container and Terminal.
@@ -176,9 +187,11 @@ import org.openide.windows.OutputListener;
 
 
     static class Add extends Task {
+	private final Action[] actions;
 
-	public Add(IOContainer container, Terminal terminal) {
+	public Add(IOContainer container, Terminal terminal, Action[] actions) {
 	    super(container, terminal);
+	    this.actions = actions;
 	}
 
 	@Override
@@ -187,34 +200,50 @@ import org.openide.windows.OutputListener;
 	    // container impl will assert.
 	    container().add(terminal(), terminal().callBacks());
 
-	    container().setToolbarActions(terminal(), terminal().getActions());
+	    container().setToolbarActions(terminal(), actions);
 	    terminal().setVisibleInContainer(true);
 	    /* OLD bug #181064
 	    container().open();
 	    container().requestActive();
 	     */
+	    /* OLD
 	    // output2 tacks on this " ".
 	    // If anything it protects against null names.
 	    terminal().setTitle(terminal().name() + " ");	// NOI18N
+	     */
+	    terminal().setTitle(terminal().name());
 
 	    // TMP container().add(terminal(), terminal().callBacks());
 	}
     }
 
     static class Select extends Task {
+	private final Set<IOSelect.AdditionalOperation> extraOps;
 
-	public Select(IOContainer container, Terminal terminal) {
+	public Select(IOContainer container, Terminal terminal,
+		      Set<IOSelect.AdditionalOperation> extraOps) {
 	    super(container, terminal);
+	    this.extraOps = extraOps;
 	}
 
 	@Override
 	public void perform() {
 	    if (terminal().isDisposed())
 		return;
+
+	    terminal().setClosedUnconditionally(false);
+
 	    if (!terminal().isVisibleInContainer()) {
 		container().add(terminal(), terminal().callBacks());
-		container().setToolbarActions(terminal(), terminal().getActions());
 		terminal().setVisibleInContainer(true);
+	    }
+	    if (extraOps != null) {
+		if (extraOps.contains(IOSelect.AdditionalOperation.OPEN))
+		    container().open();
+		if (extraOps.contains(IOSelect.AdditionalOperation.REQUEST_VISIBLE))
+		    container().requestVisible();
+		if (extraOps.contains(IOSelect.AdditionalOperation.REQUEST_ACTIVE))
+		    container().requestActive();
 	    }
 	    container().select(terminal());
 	}
@@ -229,7 +258,7 @@ import org.openide.windows.OutputListener;
 	@Override
 	public void perform() {
 	    container().setToolbarActions(terminal(), new Action[0]);
-	    container().remove(terminal());
+	    terminal().closeUnconditionally();
 	}
     }
 
@@ -241,7 +270,7 @@ import org.openide.windows.OutputListener;
 
 	@Override
 	public void perform() {
-	    terminal().close();
+	    terminal().closeUnconditionally();
 	    terminal().dispose();
 	}
     }
@@ -469,6 +498,18 @@ import org.openide.windows.OutputListener;
 	@Override
 	public Reader call() {
 	    return terminal().term().getIn();
+	}
+    }
+
+    static class IsClosable extends ValueTask<Boolean> implements Callable<Boolean> {
+
+	public IsClosable(Terminal terminal) {
+	    super(terminal);
+	}
+
+	@Override
+	public Boolean call() {
+	    return terminal().isClosable();
 	}
     }
 }

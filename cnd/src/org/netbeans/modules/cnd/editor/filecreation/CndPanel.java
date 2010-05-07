@@ -198,6 +198,10 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
         return targetFolder;
     }
 
+    protected void setInfoMessage(String message) {
+        wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, message);
+    }
+
     protected void setErrorMessage(String message) {
         wizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.terminal.test;
 
-import org.netbeans.modules.terminal.api.*;
 import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
@@ -76,6 +75,20 @@ public abstract class IOTest {
     }
 
     /**
+     * Simulate the user issuing the Close action or clicking on
+     * the tab close "X".
+     * We need this because IOVisibility.setVisible(false) is an
+     * unconditional close and we'd like to test isClosable()
+     * and vetoing.
+     */
+    public static void performCloseAction(InputOutput io) {
+	IOTest ior = find(io);
+	if (ior != null) {
+	    ior.performCloseAction();
+	}
+    }
+
+    /**
      * Checks whether this feature is supported for provided IO
      * @param io IO to check on
      * @return true if supported
@@ -85,4 +98,5 @@ public abstract class IOTest {
     }
 
     abstract protected boolean isQuiescent();
+    abstract protected void performCloseAction();
 }

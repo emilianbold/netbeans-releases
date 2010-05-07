@@ -49,11 +49,6 @@ import org.openide.windows.InputOutput;
  * <p>
  * Support for this capability not only depends on which IOProvider this IO
  * originated from but also which IOContainer it is contained in.
- * <p>
- * setVisible(true) is roughly equivalent to InutOutput.select().
- * setVisible(false) is equivalent to X'ing the tab or Closing from
- * the context menu. setVisible(false) may fail silently if the IO is not
- * closable.
  * @author ivan
  */
 public abstract class IOVisibility {
@@ -70,10 +65,11 @@ public abstract class IOVisibility {
 
     /**
      * Control the visibility of this I/O.
-     * setVisible(true) is roughly equivalent to InutOutput.select().
-     * setVisible(false) is equivalent to X'ing the tab or Closing from
-     * the context menu. setVisible(false) may fail silently if the IO is not
-     * closable.
+     * setVisible(true) is roughly equivalent to {@link org.openide.windows.IOSelect#select}
+     * with an empty <code>extraOps</code>.
+     * setVisible(false) will unconditionally remove this IO from it's container.
+     * I.e. it is not the same as X'ing the tab or Closing from the context menu,
+     * operations which are tempered by isClosable() and vetoing.
      * @param visible
      */
     public static void setVisible(InputOutput io, boolean visible) {
@@ -85,10 +81,11 @@ public abstract class IOVisibility {
     /**
      * Control whether this IO is closable. When closable...
      * <ul>
-     * <li>The X on the tab goes away
-     * <li>Close actions are disabled
+     * <li>The X on the tab goes away.
+     * <li>Close actions are disabled.
      * <li>Close all tabs actions will close only closable tabs.
-     * <li>setVisible(false) is ineffective.
+     * <li>setVisible(false) is still effective!
+     * <li>closeInputOutput() is still effective!
      * </ul>
      * @param io
      * @param closable
@@ -97,6 +94,14 @@ public abstract class IOVisibility {
 	IOVisibility iov = find(io);
 	if (iov != null)
 	    iov.setClosable(closable);
+    }
+
+    public static boolean isClosable(InputOutput io) {
+	IOVisibility iov = find(io);
+	if (iov != null)
+	    return iov.isClosable();
+	else
+	    return true;
     }
 
     /**
@@ -116,5 +121,6 @@ public abstract class IOVisibility {
 
     abstract protected void setVisible(boolean visible);
     abstract protected void setClosable(boolean closable);
+    abstract protected boolean isClosable();
     abstract protected boolean isSupported();
 }

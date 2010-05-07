@@ -27,9 +27,9 @@ void test2() {
 int main(int argc, char** argv) {
     std::cout << "%SUITE_STARTING% ${name}" << std::endl;
     std::cout << "%SUITE_STARTED%" << std::endl;
-    <#if testCalls?? && testCalls != "">
+<#if testCalls?? && testCalls != "">
 
-    ${testCalls}<#else>
+${testCalls}<#else>
     std::cout << "%TEST_STARTED% test1 (${name})" << std::endl;
     test1();
     std::cout << "%TEST_FINISHED% time=0 test1 (${name})" << std::endl;

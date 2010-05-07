@@ -1875,6 +1875,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     } else if (oldActions[i] != null && oldActions[i] instanceof PasteAction) {
                         newActions.add(oldActions[i]);
                         newActions.add(SystemAction.get(CompileSingleAction.class));
+                        if (!getItem().getFolder().isTest()) {
+                            newActions.add(NewTestActionFactory.createNewTestsSubmenu());
+                        }
                     } else if (oldActions[i] != null && oldActions[i] instanceof RenameAction) {
                         newActions.add(createRenameAction());
                         addSyncActions(newActions);

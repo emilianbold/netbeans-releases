@@ -41,6 +41,10 @@ package org.netbeans.modules.cnd.cncppunit;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -77,6 +81,8 @@ public class LibraryChecker {
      * @throws IOException if there is a problem launching compiler,
      *      or creating temp files, or connecting to remote host
      * @throws IllegalArgumentException if compiler is not a C or C++ compiler
+     * @throws CancellationException if remote connection was required,
+     *      but user cancelled it
      */
     public static boolean isLibraryAvailable(String lib, AbstractCompiler compiler) throws IOException {
         ExecutionEnvironment execEnv = compiler.getExecutionEnvironment();
@@ -91,13 +97,15 @@ public class LibraryChecker {
                 dummySourcePath = convertToCompilerPath(dummySourcePath, compilerSet);
             }
 
+            List<String> args = new ArrayList<String>();
+            // linker.getOutputFileFlag() can actually give several flags separated with spaces,
+            // e.g. for Solaris Studio on Linux it is "-compat=g -o"
+            args.addAll(Arrays.asList(Utilities.parseParameters(linker.getOutputFileFlag())));
+            args.addAll(Arrays.asList(dummySourcePath + ".out", linker.getLibraryFlag() + lib, dummySourcePath)); // NOI18N
+
             NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(execEnv);
             processBuilder.setExecutable(compilerPath);
-            processBuilder.setArguments(
-                    linker.getOutputFileFlag(),
-                    dummySourcePath + ".out", // NOI18N
-                    linker.getLibraryFlag() + lib,
-                    dummySourcePath);
+            processBuilder.setArguments(args.toArray(new String[args.size()]));
 
             NativeProcess process = processBuilder.call();
             try {

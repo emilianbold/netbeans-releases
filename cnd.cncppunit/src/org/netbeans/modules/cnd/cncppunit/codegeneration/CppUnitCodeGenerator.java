@@ -47,7 +47,9 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.simpleunit.utils.CodeGenerationUtils;
 
 /**
  *
@@ -67,6 +69,17 @@ public class CppUnitCodeGenerator {
             StringBuilder testDecls = new StringBuilder(""); // NOI18N
             StringBuilder testIncludes = new StringBuilder(""); // NOI18N
             for (CsmFunction fun : functions) {
+
+                CsmIncludeResolver inclResolver = CsmIncludeResolver.getDefault();
+                String include = inclResolver.getLocalIncludeDerectiveByFilePath(testFilePath, fun);
+                if(!include.isEmpty()) {
+                    testIncludes.append(include);
+                    testIncludes.append("\n"); // NOI18N
+                } else {
+                    testFunctions.append(CodeGenerationUtils.generateFunctionDeclaration(fun));
+                    testFunctions.append("\n\n"); // NOI18N
+                }
+
                 String funName = fun.getName().toString();
                 String testFunctionName = "testFor" + // NOI18N
                         Character.toUpperCase(funName.charAt(0))
@@ -77,18 +90,14 @@ public class CppUnitCodeGenerator {
                 Collection<CsmParameter> params = fun.getParameters();
                 int i = 0;
                 for (CsmParameter param : params) {
-                    String paramName = param.getName().toString();
-                    String paramType = param.getType().getText().toString();
-                    testFunctions.append("    ") // NOI18N
-                            .append(paramType) // NOI18N
-                            .append(" ") // NOI18N
-                            .append(((paramName != null && !paramName.isEmpty()) ? paramName : "p" + i)) // NOI18N
-                            .append(";\n"); // NOI18N
+                    testFunctions.append("    "); // NOI18N
+                    testFunctions.append(CodeGenerationUtils.generateParameterDeclaration(param, i));
+                    testFunctions.append("\n"); // NOI18N
                     i++;
                 }
                 String returnType = fun.getReturnType().getText().toString();
                 if (CsmKindUtilities.isMethod(fun)) {
-                    CsmMethod method = (CsmMethod) fun;
+                    CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(fun);
                     CsmClass cls = method.getContainingClass();
                     if (cls != null) {
                         String clsName = cls.getName().toString();
@@ -133,12 +142,6 @@ public class CppUnitCodeGenerator {
 
                 testInits.append("    CPPUNIT_TEST(" + testFunctionName + ");\n"); // NOI18N
 
-                CsmIncludeResolver inclResolver = CsmIncludeResolver.getDefault();
-                String include = inclResolver.getLocalIncludeDerectiveByFilePath(testFilePath, fun);
-                if (!include.isEmpty()) {
-                    testIncludes.append(include);
-                    testIncludes.append("\n"); // NOI18N
-                }
             }
 
             templateParams.put("testFunctions", testFunctions.toString()); // NOI18N

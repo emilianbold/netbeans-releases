@@ -67,7 +67,7 @@ public class CmdTermAction extends AbstractAction {
 	Config config = Config.getCmdConfig(cmd);
 	final TerminalIOProviderSupport support = new TerminalIOProviderSupport(config);
 
-	IOContainer container = TerminalIOProviderSupport.getIOContainer();
+	IOContainer container = TerminalIOProviderSupport.getIOContainer(config);
 	container = null;	// work with default IO container
 
 	IOProvider iop = TerminalIOProviderSupport.getIOProvider();
