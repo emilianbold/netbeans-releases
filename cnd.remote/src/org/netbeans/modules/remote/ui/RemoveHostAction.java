@@ -91,6 +91,7 @@ public class RemoveHostAction extends SingleHostAction {
             }
             cacheManager.setDefaultRecord(defaultRecord);
             cacheManager.applyChanges();
+            ConnectionManager.getInstance().disconnect(env);
         }
     }
 }

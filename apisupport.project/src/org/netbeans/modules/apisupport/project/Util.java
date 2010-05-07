@@ -43,6 +43,8 @@ package org.netbeans.modules.apisupport.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,6 +64,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
@@ -104,11 +107,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  * Utility methods for the module.
@@ -339,6 +337,21 @@ public final class Util {
                             jarFile.close();
                         }
                     }
+                }
+                if (mf.getMainAttributes().getValue(ManifestManager.BUNDLE_SYMBOLIC_NAME) != null) {
+                    Properties p = new Properties();
+                    String[] from = {"Bundle-Name", "Bundle-Category", "Bundle-Description", "Bundle-Description"};
+                    String[] to = {LocalizedBundleInfo.NAME, LocalizedBundleInfo.DISPLAY_CATEGORY,
+                                   LocalizedBundleInfo.SHORT_DESCRIPTION, LocalizedBundleInfo.LONG_DESCRIPTION};
+                    for (int i = 0; i < from.length; i++) {
+                        String v = mf.getMainAttributes().getValue(from[i]);
+                        if (v != null) {
+                            p.setProperty(to[i], v);
+                        }
+                    }
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    p.store(baos, null);
+                    return LocalizedBundleInfo.load(new InputStream[] {new ByteArrayInputStream(baos.toByteArray())});
                 }
             } finally {
                 main.close();

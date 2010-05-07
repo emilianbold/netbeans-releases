@@ -455,3 +455,14 @@ bool isWow64()
     }
     return IsWow64;
 }
+
+int convertAnsiToUtf8(const char *ansi, char *utf8, int utf8Len) {
+    const int len = 32*1024;
+    WCHAR tmp[len] = L"";
+    if (MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, ansi, -1, tmp, len) == 0)
+        return -1;
+    if (WideCharToMultiByte(CP_UTF8, 0, tmp, -1, utf8, utf8Len, NULL, NULL) == 0)
+        return -1;
+    return 0;
+}
+

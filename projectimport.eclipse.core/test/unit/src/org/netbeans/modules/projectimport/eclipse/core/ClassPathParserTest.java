@@ -42,6 +42,7 @@
 package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -113,6 +114,15 @@ public class ClassPathParserTest extends NbTestCase {
         assertEquals("1 cp entry", 1, cp.getClassPathEntries().size());
         entry = cp.getClassPathEntries().get(0);
         assertEquals("/tmp/libs/commons-lang-2.1.jar", entry.getProperty("path"));
+    }
+
+    public void testParseMalformedClasspath() {
+        try {
+            DotClassPathParser.parse(new File(getDataDir(), "180876.classpath"), Collections.<Link>emptyList());
+            fail();
+        } catch (IOException x) {
+            // OK
+        }
     }
     
 }
