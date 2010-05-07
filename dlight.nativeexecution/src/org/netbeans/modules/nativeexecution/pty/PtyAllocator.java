@@ -98,7 +98,7 @@ public final class PtyAllocator {
                     ptyOpenUtilityPath = WindowsSupport.getInstance().convertToCygwinPath(ptyOpenUtilityPath);
                 }
 
-                ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
+                ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-s"); // NOI18N
                 Process pty = pb.start();
                 output = pty.getOutputStream();
                 input = pty.getInputStream();
@@ -110,13 +110,12 @@ public final class PtyAllocator {
                 // localhost (solaris/linux)] cases.
                 // The workaround below is to use sh -s ...
                 // It works, though I don't fully understand the reason...
-                ChannelStreams streams = JschSupport.execCommand(env, hostInfo.getShell() + " -s", null); // NOI18N
+                ChannelStreams streams = JschSupport.startCommand(env, "/bin/sh -s", null); // NOI18N
                 output = streams.in;
                 input = streams.out;
                 error = streams.err;
             }
 
-            output.write(("PATH=/usr/bin:$PATH && export PATH\n").getBytes()); // NOI18N
             output.write(("exec " + ptyOpenUtilityPath + "\n").getBytes()); // NOI18N
             output.flush();
 

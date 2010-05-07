@@ -38,20 +38,12 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Serializable;
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -61,7 +53,6 @@ import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
 import org.netbeans.modules.nativeexecution.support.windows.PathConverter;
 import org.netbeans.modules.nativeexecution.support.windows.PathConverter.PathType;
 import org.netbeans.modules.nativeexecution.support.windows.SimpleConverter;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -73,17 +64,10 @@ public final class WindowsSupport {
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final WindowsSupport instance = new WindowsSupport();
     private final boolean isWindows;
-    private static final String cmd;
     private Shell activeShell = null;
-    private Map<String, String> env = null;
     private String REG_EXE;
     private PathConverter pathConverter = null;
     private Charset charset;
-
-    static {
-        String os = System.getProperty("os.name").toLowerCase(); // NOI18N
-        cmd = os.contains("windows 9") ? "command.com" : "cmd.exe"; // NOI18N
-    }
 
     private WindowsSupport() {
         isWindows = Utilities.isWindows();
@@ -344,56 +328,11 @@ public final class WindowsSupport {
                 : pathConverter.convertAll(from, to, path);
     }
 
-    public synchronized Map<String, String> getEnv() {
-        if (env == null && isWindows) {
-            env = Collections.unmodifiableMap(readEnv());
-        }
-
-        return env;
-    }
-
     /**
      * @return charset to be used when 'communicating' with a shell
      */
     public Charset getShellCharset() {
         return charset;
-    }
-
-    private static Map<String, String> readEnv() {
-        Map<String, String> result = new TreeMap<String, String>(new CaseInsensitiveComparator());
-
-        try {
-            String codepage = getCodePage();
-
-            ProcessBuilder pb = new ProcessBuilder(cmd, "/C", "set"); // NOI18N
-            Process p = pb.start();
-
-            String line;
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream(), codepage));
-
-            while ((line = br.readLine()) != null) {
-                int idx = line.indexOf('=');
-                String key = line.substring(0, idx).trim();
-                String value = line.substring(idx + 1);
-                result.put(key, value);
-            }
-
-            int exitStatus = -1;
-
-            try {
-                exitStatus = p.waitFor();
-            } catch (InterruptedException ex) {
-            }
-
-            if (exitStatus != 0) {
-                log.log(Level.FINE, "Unable to read environment"); // NOI18N
-                ProcessUtils.logError(Level.FINE, log, p);
-            }
-        } catch (IOException ex) {
-            log.log(Level.FINE, "Unable to read environment", ex); // NOI18N
-        }
-
-        return result;
     }
 
     private Shell initShell(ShellType type, String root) {
@@ -460,46 +399,5 @@ public final class WindowsSupport {
             }
         } catch (Exception ex) {
         }
-    }
-
-    private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {
-
-        CaseInsensitiveComparator() {
-        }
-
-        @Override
-        public int compare(String s1, String s2) {
-            if (s1 == null && s2 == null) {
-                return 0;
-            }
-
-            if (s1 == null) {
-                return 1;
-            }
-
-            if (s2 == null) {
-                return -1;
-            }
-
-            return s1.toUpperCase().compareTo(s2.toUpperCase());
-        }
-    }
-
-    private static String getCodePage() {
-        try {
-            ProcessBuilder pb = new ProcessBuilder(Arrays.asList(cmd, "/C", "chcp")); // NOI18N
-            Process p = pb.start();
-            p.waitFor();
-            String out = ProcessUtils.readProcessOutputLine(p);
-            Pattern pattern = Pattern.compile(".*: ([0-9]+)"); // NOI18N
-            Matcher m = pattern.matcher(out);
-            if (m.matches()) {
-                return "CP" + m.group(1); // NOI18N
-            }
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        return "CP866"; // NOI18N
     }
 }
