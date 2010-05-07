@@ -48,10 +48,16 @@ import org.netbeans.editor.ext.html.dtd.DTD;
 
 /**
  * Html parser result.
- * 
+ *
  * @author mfukala@netbeans.org
  */
 public class SyntaxParserResult {
+
+    /** special namespace which can be used for obtaining a parse tree
+     * of tags with undeclared namespace.
+     */
+    public static String UNDECLARED_TAGS_NAMESPACE = "undeclared_tags_namespace"; //NOI18N
+    private static String UNDECLARED_TAGS_PREFIX = "undeclared_tags_prefix"; //NOI18N
 
     private static final String FALLBACK_DOCTYPE =
             "-//W3C//DTD HTML 4.01 Transitional//EN";  // NOI18N
@@ -102,20 +108,23 @@ public class SyntaxParserResult {
         if(astRoots == null) {
              astRoots = new HashMap<String, AstNode>();
         }
-        
+
         if(astRoots.containsKey(namespace)) {
             return astRoots.get(namespace);
         } else {
             //filter the elements
             List<SyntaxElement> filtered = new ArrayList<SyntaxElement>();
 
-            String prefix = getDeclaredNamespaces().get(namespace);
+            String prefix = UNDECLARED_TAGS_NAMESPACE.equals(namespace) ?
+                UNDECLARED_TAGS_PREFIX:
+                getDeclaredNamespaces().get(namespace);
+            
             for(SyntaxElement e : getElements()) {
                 if(e.type() == SyntaxElement.TYPE_TAG || e.type() == SyntaxElement.TYPE_ENDTAG) {
                     SyntaxElement.Tag tag = (SyntaxElement.Tag)e;
                     String tagNamePrefix = getTagNamePrefix(tag);
                     if((tagNamePrefix == null && prefix == null) ||
-                            (tagNamePrefix != null && prefix == null && !getDeclaredNamespaces().containsValue(tagNamePrefix)) || //unknown prefixed tags falls to the default html content
+                            (tagNamePrefix != null && UNDECLARED_TAGS_PREFIX.equals(prefix)  && !getDeclaredNamespaces().containsValue(tagNamePrefix)) || //unknown prefixed tags falls to the 'undeclared tags parse tree'
                             (tagNamePrefix != null && prefix != null && tagNamePrefix.equals(prefix))) {
                         //either the tag has no prefix and the prefix is null
                         //or the prefix matches
@@ -143,7 +152,7 @@ public class SyntaxParserResult {
                     dtd = defaultDTD;
                 }
             }
-            
+
             AstNode root = SyntaxTree.makeTree(context.clone().setElements(filtered).setDTD(dtd));
             root.setProperty(AstNode.NAMESPACE_PROPERTY, namespace); //NOI18N
             astRoots.put(namespace, root);

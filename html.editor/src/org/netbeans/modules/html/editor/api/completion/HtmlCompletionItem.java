@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.html.editor.api.completion;
 
+import java.util.Arrays;
 import org.netbeans.modules.html.editor.completion.*;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -392,13 +393,12 @@ public class HtmlCompletionItem implements CompletionItem {
             if (orderIndex == -1) {
                 return super.getSortText();
             } else {
-                int zeros = orderIndex > 100 ? 0 : orderIndex > 10 ? 1 : 2;
-                StringBuffer sb = new StringBuffer();
-                for (int i = 0; i < zeros; i++) {
-                    sb.append('0'); //NOI18N
-                }
-                sb.append("" + orderIndex);
-                return sb;
+                char[] result = new char[Integer.toString(Integer.MAX_VALUE).length()];
+                char[] orderIndexChars = Integer.toString(orderIndex).toCharArray();
+                Arrays.fill(result,'0'); //NOI18N
+                System.arraycopy(orderIndexChars, 0, result, result.length - orderIndexChars.length, orderIndexChars.length);
+
+                return new String(result);
             }
         }
 

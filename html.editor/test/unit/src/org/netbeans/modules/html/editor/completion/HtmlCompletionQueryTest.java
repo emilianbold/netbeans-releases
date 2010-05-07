@@ -68,7 +68,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
 
     public static Test xsuite() throws IOException, BadLocationException {
 	TestSuite suite = new TestSuite();
-        suite.addTest(new HtmlCompletionQueryTest("testSimpleEndTag"));
+        suite.addTest(new HtmlCompletionQueryTest("testEndTagsCompletionOfUndeclaredTags"));
         return suite;
     }
 
@@ -309,6 +309,54 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
 
     public void testNoCompletionInDoctype() throws BadLocationException, ParseException {
         assertItems("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" |  \"http://www.w3.org/TR/html40/strict.dtd\">", arr(), Match.EMPTY);
+    }
+
+    public void testEndTagsAutoCompletionOfUndeclaredTags() throws BadLocationException, ParseException {
+        assertItems("<x:out>|", arr("x:out"), Match.CONTAINS);
+    }
+
+    public void testEndTagsCompletionOfUndeclaredTags() throws BadLocationException, ParseException {
+
+        assertItems("<x:out></|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out></x|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out></x:|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out></x:ou|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out></x:out|", arr("x:out"), Match.CONTAINS);
+        
+        //nested - the tags needs to be close, so only the closest unclosed tag is offered
+        assertItems("<x:out><x:in></|", arr("x:in"), Match.CONTAINS);
+        assertItems("<x:out><x:in></x:|", arr("x:in"), Match.CONTAINS);
+        assertItems("<x:out><x:in></|", arr("x:out"), Match.DOES_NOT_CONTAIN);
+        assertItems("<x:out><x:in></x:|", arr("x:out"), Match.DOES_NOT_CONTAIN);
+
+        assertItems("<x:out><x:in></x:in></|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out><x:in></x:in></x|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out><x:in></x:in></x:|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out><x:in></x:in></|", arr("x:in"), Match.DOES_NOT_CONTAIN);
+    }
+
+    public void testEndTagsCompletionOfUndeclaredTagsMixedWithHtml() throws BadLocationException, ParseException {
+        //including html content
+        assertItems("<div><x:out></|", arr("x:out"), Match.CONTAINS);
+        assertItems("<div><x:out></x| </div>", arr("x:out"), Match.CONTAINS);
+        assertItems("<div><x:out></x:|", arr("x:out"), Match.CONTAINS);
+        assertItems("<p><x:out></x:ou| </p>", arr("x:out"), Match.CONTAINS);
+        assertItems("<div><div><x:out></x:out|", arr("x:out"), Match.CONTAINS);
+
+        //nested - the tags needs to be close, so only the closest unclosed tag is offered
+        assertItems("<div><x:out><div><x:in></|", arr("x:in", "div"), Match.CONTAINS);
+        assertItems("<div><x:out><div><x:in></x:| </div></div>", arr("x:in"), Match.CONTAINS);
+        assertItems("<p><x:out><x:in></|", arr("x:out"), Match.DOES_NOT_CONTAIN);
+        assertItems("<p><x:out><x:in></x:|", arr("x:out"), Match.DOES_NOT_CONTAIN);
+
+        assertItems("<x:out><div><x:in></x:in></div></|", arr("x:out"), Match.CONTAINS);
+        assertItems("<x:out><div><x:in></div></x:in></x|", arr("x:out"), Match.CONTAINS); //crossed
+        assertItems("<div><x:out><div><x:in></x:in></div></x:| </div>", arr("x:out"), Match.CONTAINS);
+        assertItems("<p><x:out><x:in></x:in></|", arr("x:in"), Match.DOES_NOT_CONTAIN);
+
+
+
+//        assertCompletedText("<x:out>| ", "div", "<div| ");
     }
 
     //helper methods ------------
