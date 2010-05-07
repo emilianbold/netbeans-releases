@@ -193,7 +193,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
         Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager").setLevel(Level.SEVERE);
-        Logger.getLogger("org.openide.filesystems.FileUtil").setLevel(Level.SEVERE);
+        Logger.getLogger("org.openide.filesystems.FileUtil").setLevel(Level.OFF);
         System.setProperty("cnd.mode.unittest", "true");
         System.setProperty("SUNW_NO_UPDATE_NOTIFY", "true");
         List<Class<?>> list = new ArrayList<Class<?>>();
