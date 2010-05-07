@@ -393,10 +393,11 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
 
         private void refreshList() {
-            List keys = new ArrayList();
-            for (Node node : resourceBundleNodes) {
+            List<BundleNode> keys = new ArrayList();
+            for (BundleNode node : resourceBundleNodes) {
                 keys.add(node);
             }
+            Collections.sort(keys);
             setKeys(keys);
         }
 
