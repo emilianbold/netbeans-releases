@@ -291,13 +291,20 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         private final Object listenersLock = new Lock();
 
         static NativeProject getNativeProjectImpl(File file) {
-
+            DataObject dao = getDataObject(file);
+            if (dao == null) {
+                return null;
+            }
+            NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
+            if (set == null || !set.isEmpty()) {
+                // it does not matter, what is there in the set! - see #185599, #185629
+                return null;
+            }
             CsmModel model = ModelImpl.instance();
             List<String> sysIncludes = new ArrayList<String>();
             List<String> usrIncludes = new ArrayList<String>();
             List<String> sysMacros = new ArrayList<String>();
             List<String> usrMacros = new ArrayList<String>();
-            DataObject dao = getDataObject(file);
             NativeFileItem.Language lang = NativeProjectProvider.getLanguage(file, dao);
             NativeProject prototype = null;
             for (CsmProject csmProject : model.projects()) {
@@ -321,11 +328,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             }
 
             if (prototype == null) {
-                NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
-                if (set != null && ! set.isEmpty()) {
-                    // it does not matter, what is there in the set! - see #185599, #185629
-                    return null;
-                }
                 // Some default implementation should be provided.
                 sysIncludes.addAll(DefaultSystemSettings.getDefault().getSystemIncludes(lang));
                 sysMacros.addAll(DefaultSystemSettings.getDefault().getSystemMacros(lang));
@@ -340,12 +342,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             }
             NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros);
             impl.addFile(file);
-            if (dao != null) {
-                NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
-                if (set != null) {
-                    set.add(impl.findFileItem(file));
-                }
-            }
+            set.add(impl.findFileItem(file));
             return impl;
         }
 
