@@ -45,6 +45,9 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import org.netbeans.modules.projectapi.AuxiliaryConfigBasedPreferencesProvider;
@@ -68,6 +71,8 @@ import org.openide.util.Parameters;
 public class ProjectUtils {
 
     private ProjectUtils() {}
+
+    private static final Logger LOG = Logger.getLogger(ProjectUtils.class.getName());
     
     /**
      * Get basic information about a project.
@@ -178,12 +183,19 @@ public class ProjectUtils {
      */
     private static boolean visit(Map<Project,Boolean> encountered, Project curr, Project master, Project candidate) {
         if (encountered.containsKey(curr)) {
-            return !encountered.get(curr);
+            if (encountered.get(curr)) {
+                return false;
+            } else {
+                LOG.log(Level.FINE, "Encountered cycle in {0} from {1} at {2} via {3}", new Object[] {master, candidate, curr, encountered});
+                return true;
+            }
         }
         encountered.put(curr, false);
         SubprojectProvider spp = curr.getLookup().lookup(SubprojectProvider.class);
         if (spp != null) {
-            for (Project child : spp.getSubprojects()) {
+            Set<? extends Project> subprojects = spp.getSubprojects();
+            LOG.log(Level.FINEST, "Found subprojects {0} from {1}", new Object[] {subprojects, curr});
+            for (Project child : subprojects) {
                 if (visit(encountered, child, master, candidate)) {
                     return true;
                 } else if (candidate == child) {
