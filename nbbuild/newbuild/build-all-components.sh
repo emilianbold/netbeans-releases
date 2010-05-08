@@ -2,6 +2,7 @@ set -x
 
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
+SCRIPT_DIR=`pwd`
 source init.sh
 
 #Clean old tests results
@@ -10,7 +11,6 @@ if [ -n $WORKSPACE ]; then
 fi
 
 cd  $NB_ALL
-
 
 ###################################################################
 #
@@ -79,100 +79,6 @@ for TEST_SUITE in mobility.project j2ee.kit; do
         #TEST_CODE=1;
     fi
 done
-# Init application server for tests
-#sh -x `dirname $0`/initAppserver.sh
-# SOA (BPEL, XSLT) and XML UI validation tests
-#for i in 1 2 3; do
-#    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-enterprise -Dxtest.instance.name="Enterprise tests" -Dxtest.no.cleanresults=true -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
-#    ERROR_CODE=$?
-#    if [ $ERROR_CODE = 0 ]; then
-#        break;
-#    fi
-#done
-#
-#if [ $ERROR_CODE != 0 ]; then
-#    echo "ERROR: $ERROR_CODE - SOA (BPEL, XSLT) and XML UI validation failed"
-#    TEST_CODE=1;
-#fi
-# CND UI validation tests
-#for i in 1 2 3; do
-#    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-cnd -Dxtest.instance.name="CND tests" -Dxtest.no.cleanresults=true -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
-#    ERROR_CODE=$?
-#    if [ $ERROR_CODE = 0 ]; then
-#        break;
-#    fi
-#done
-#
-#if [ $ERROR_CODE != 0 ]; then
-#    echo "ERROR: $ERROR_CODE - CND UI validation failed"
-#    TEST_CODE=1;
-#fi
-# Profiler UI validation tests
-#for i in 1 2 3; do
-#    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-profiler -Dxtest.instance.name="Profiler tests" -Dxtest.no.cleanresults=true -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
-#    ERROR_CODE=$?
-#    if [ $ERROR_CODE = 0 ]; then
-#        break;
-#    fi
-#done
-
-#if [ $ERROR_CODE != 0 ]; then
-#    echo "ERROR: $ERROR_CODE - Profiler UI validation failed"
-#    TEST_CODE=1;
-#fi
-# J2EE UI validation tests
-#for i in 1 2 3; do
-#    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-j2ee -Dxtest.instance.name="J2EE tests" -Dxtest.no.cleanresults=true -D"xtest.userdata|com.sun.aas.installRoot"=$GLASSFISH_HOME -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
-#    ERROR_CODE=$?
-#    if [ $ERROR_CODE = 0 ]; then
-#        break;
-#    fi
-#done
-
-#if [ $ERROR_CODE != 0 ]; then
-#    echo "ERROR: $ERROR_CODE - J2EE UI validation failed"
-#    TEST_CODE=1;
-#fi
-# Mobility UI validation tests
-#for i in 1 2 3; do
-#    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-mobility -Dxtest.instance.name="Mobility tests" -Dxtest.no.cleanresults=true -Dwtk.dir=/hudson runtests
-#    ERROR_CODE=$?
-#    if [ ERROR_CODE = 0 ]; then
-#        break;
-#    fi
-#done
-#ERROR_CODE=$?
-#
-#if [ $ERROR_CODE != 0 ]; then
-#    echo "ERROR: $ERROR_CODE - Mobility UI validation failed"
-#    TEST_CODE=1;
-#fi
-# UML UI validation tests
-#for i in 1 2 3; do
-#    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-uml -Dxtest.instance.name="UML tests" -Dxtest.no.cleanresults=true -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
-#    ERROR_CODE=$?
-#    if [ $ERROR_CODE = 0 ]; then
-#        break;
-#    fi
-#done
-#
-#if [ $ERROR_CODE != 0 ]; then
-#    echo "ERROR: $ERROR_CODE - UML UI validation failed"
-#    TEST_CODE=1;
-#fi
-# Ruby UI validation tests
-#for i in 1 2 3; do
-#    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-ruby -Dxtest.instance.name="Ruby tests" -Dxtest.no.cleanresults=true -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
-#    ERROR_CODE=$?
-#    if [ $ERROR_CODE = 0 ]; then
-#        break;
-#    fi
-#done
-#
-#if [ $ERROR_CODE != 0 ]; then
-#    echo "ERROR: $ERROR_CODE - Ruby UI validation failed"
-#    TEST_CODE=1;
-#fi
 
 if [ -n $WORKSPACE ]; then
     cp -r $NB_ALL/nbbuild/build/test/results $WORKSPACE
@@ -187,6 +93,20 @@ fi
 
 #Remove file created during commit validation
 rm -rf $NB_ALL/nbbuild/netbeans/nb?.*/servicetag
+
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-test-dist -Dtest.fail.on.error=false -Dbuild.compiler.debuglevel=source,lines 
+ERROR_CODE=$?
+
+create_test_result "build.test.dist" "Build Test Distribution" $ERROR_CODE
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Building of Test Distrubution failed"
+    exit $ERROR_CODE;
+else
+    mv nbbuild/build/testdist.zip $DIST/zip/testdist-${BUILDNUMBER}.zip
+fi
+
+bash ${SCRIPT_DIR}/pack-base.sh
+cd $NB_ALL
 
 #Build JNLP
 ant -Djnlp.codebase=http://bits.netbeans.org/trunk/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp
@@ -270,17 +190,6 @@ if [ $ERROR_CODE != 0 ]; then
 #    exit $ERROR_CODE;
 fi
 cd ..
-
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-test-dist -Dtest.fail.on.error=false -Dbuild.compiler.debuglevel=source,lines 
-ERROR_CODE=$?
-
-create_test_result "build.test.dist" "Build Test Distribution" $ERROR_CODE
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Building of Test Distrubution failed"
-    exit $ERROR_CODE;
-else
-    mv nbbuild/build/testdist.zip $DIST/zip/testdist-${BUILDNUMBER}.zip
-fi
 
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/javadoctools/build.xml build-javadoc
 ERROR_CODE=$?
