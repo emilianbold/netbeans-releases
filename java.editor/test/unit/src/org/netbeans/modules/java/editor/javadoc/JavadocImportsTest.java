@@ -142,7 +142,7 @@ public class JavadocImportsTest extends JavadocTestSupport {
         prepareTest(code);
 
         // C.m()
-        Element member = findElement(code, "m() throws");
+        TreePath member = findPath(code, "m() throws");
         assertNotNull(member);
         List <TypeElement> exp = Arrays.asList(
                 info.getElements().getTypeElement("java.lang.Runnable"),
@@ -159,7 +159,7 @@ public class JavadocImportsTest extends JavadocTestSupport {
         assertEquals(exp, sortedResult);
 
         // C.field
-        member = findElement(code, "field;");
+        member = findPath(code, "field;");
         assertNotNull(member);
         exp = Arrays.asList(
                 info.getElements().getTypeElement("java.util.Collections")
@@ -172,7 +172,7 @@ public class JavadocImportsTest extends JavadocTestSupport {
         assertEquals(exp, sortedResult);
 
         // C.InnerInterface
-        member = findElement(code, "InnerInterface {");
+        member = findPath(code, "InnerInterface {");
         assertNotNull(member);
         exp = Arrays.asList(
                 info.getElements().getTypeElement("java.io.IOException")
@@ -185,7 +185,7 @@ public class JavadocImportsTest extends JavadocTestSupport {
         assertEquals(exp, sortedResult);
 
         // C.InnerAnnotationType
-        member = findElement(code, "InnerAnnotationType {");
+        member = findPath(code, "InnerAnnotationType {");
         assertNotNull(member);
         exp = Arrays.asList(
                 info.getElements().getTypeElement("java.util.Collections")
@@ -198,7 +198,7 @@ public class JavadocImportsTest extends JavadocTestSupport {
         assertEquals(exp, sortedResult);
 
         // TopLevelEnum
-        member = findElement(code, "TopLevelEnum {");
+        member = findPath(code, "TopLevelEnum {");
         assertNotNull(member);
         exp = Arrays.asList(
                 info.getElements().getTypeElement("java.util.Collections")
@@ -211,7 +211,7 @@ public class JavadocImportsTest extends JavadocTestSupport {
         assertEquals(exp, sortedResult);
 
         // TopLevelEnum.E1
-        member = findElement(code, "E1\n");
+        member = findPath(code, "E1\n");
         assertNotNull(member);
         exp = Arrays.asList(
                 info.getElements().getTypeElement("java.util.Collections")
@@ -244,9 +244,9 @@ public class JavadocImportsTest extends JavadocTestSupport {
                 "}\n";
         prepareTest(code);
 
-        Element where = findElement(code, "m() throws");
+        TreePath where = findPath(code, "m() throws");
         assertNotNull(where);
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, where);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, null, info.getTrees().getElement(where));
         assertNotNull(jdts);
         List<Token> exp;
         
@@ -311,9 +311,9 @@ public class JavadocImportsTest extends JavadocTestSupport {
                 "}\n";
         prepareTest(code);
 
-        Element where = findElement(code, "m(T param2find) throws");
+        TreePath where = findPath(code, "m(T param2find) throws");
         assertNotNull(where);
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, where);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, null, info.getTrees().getElement(where));
         assertNotNull(jdts);
         List<Token> exp;
 
@@ -356,7 +356,7 @@ public class JavadocImportsTest extends JavadocTestSupport {
 
         Element where = findElement(code, "m(T param2find) throws");
         assertNotNull(where);
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, where);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, null, where);
         assertNotNull(jdts);
 
         // resolve @param param2find
@@ -396,7 +396,7 @@ public class JavadocImportsTest extends JavadocTestSupport {
 
         Element where = findElement(code, "m() throws");
         assertNotNull(where);
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, where);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, null, where);
         assertNotNull(jdts);
 
         // java.lang.Runnable
@@ -472,7 +472,7 @@ public class JavadocImportsTest extends JavadocTestSupport {
 
         Element where = findElement(code, "m() throws");
         assertNotNull(where);
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, where);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, null, where);
         assertNotNull(jdts);
 
         assertFalse(JavadocImports.isInsideReference(jdts, code.indexOf("link1")));
@@ -503,7 +503,7 @@ public class JavadocImportsTest extends JavadocTestSupport {
 
         Element where = findElement(code, "m(T param2find) throws");
         assertNotNull(where);
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, where);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, null, where);
         assertNotNull(jdts);
 
         assertTrue(JavadocImports.isInsideParamName(jdts, code.indexOf("T> type parameter")));
@@ -512,9 +512,12 @@ public class JavadocImportsTest extends JavadocTestSupport {
     }
     
     private Element findElement(String code, String pattern) {
+        return info.getTrees().getElement(findPath(code, pattern));
+    }
+
+    private TreePath findPath(String code, String pattern) {
         int offset = code.indexOf(pattern) + 1;
-        TreePath tpath = info.getTreeUtilities().pathFor(offset);
-        return info.getTrees().getElement(tpath);
+        return info.getTreeUtilities().pathFor(offset);
     }
     
     private static class ElementComparator implements Comparator<TypeElement> {

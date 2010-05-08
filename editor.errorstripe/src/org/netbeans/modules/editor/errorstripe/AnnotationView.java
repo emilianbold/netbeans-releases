@@ -116,6 +116,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     
     private static final int QUIET_TIME = 100;
 
+    private static final RequestProcessor WORKER = new RequestProcessor(AnnotationView.class.getName(), 1, false, false); //NOI18N
     private final RequestProcessor.Task repaintTask;
     private final RepaintTask           repaintTaskRunnable;
     
@@ -138,8 +139,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         // is turned on for the pane in CustomizableSideBar.
         setName("errorStripe");
         
-        repaintTask = new RequestProcessor(AnnotationView.class.getName() + "-" + pane.getClass().getSimpleName() + "@" + System.identityHashCode(pane)) //NOI18N
-            .create(repaintTaskRunnable = new RepaintTask());
+        repaintTask = WORKER.create(repaintTaskRunnable = new RepaintTask());
         data = new AnnotationViewDataImpl(this, pane);
         
         FoldHierarchy.get(pane).addFoldHierarchyListener(this);
