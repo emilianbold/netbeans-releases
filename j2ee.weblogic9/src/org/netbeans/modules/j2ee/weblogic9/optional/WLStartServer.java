@@ -87,7 +87,7 @@ import org.openide.windows.InputOutput;
  * @author Petr Hejl
  */
 public final class WLStartServer extends StartServer {
-    
+
     private static final String SUN = "Sun";        // NOI18N
 
     /**
@@ -202,7 +202,7 @@ public final class WLStartServer extends StartServer {
         removeServerInDebug(uri);
         return serverProgress;
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer#startProfiling(javax.enterprise.deploy.spi.Target, org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings)
      */
@@ -248,7 +248,7 @@ public final class WLStartServer extends StartServer {
     public boolean supportsStartDeploymentManager() {
         return true;
     }
-    
+
     @Override
     public boolean supportsStartProfiling( Target target ) {
         return true;
@@ -356,16 +356,18 @@ public final class WLStartServer extends StartServer {
         }
         return true;
     }
-    
+
     private class WLProfilingStartTask extends WLStartTask {
 
-        WLProfilingStartTask(String uri, WLServerProgress serverProgress,
-                WLDeploymentManager dm, ProfilerServerSettings settings ) 
-        {
+        private final ProfilerServerSettings mySettings;
+
+        public WLProfilingStartTask(String uri, WLServerProgress serverProgress,
+                WLDeploymentManager dm, ProfilerServerSettings settings) {
+
             super( uri , serverProgress, dm );
             mySettings = settings;
         }
-        
+
         /* (non-Javadoc)
          * @see org.netbeans.modules.j2ee.weblogic9.optional.WLStartServer.WLStartTask#run()
          */
@@ -375,7 +377,7 @@ public final class WLStartServer extends StartServer {
             int state = ProfilerSupport.getState();
             if ( state == ProfilerSupport.STATE_INACTIVE){
                 getProgress().notifyStart(StateType.FAILED,
-                        NbBundle.getMessage(WLStartServer.class, 
+                        NbBundle.getMessage(WLStartServer.class,
                                 "MSG_START_PROFILED_SERVER_FAILED",
                                 dm.getInstanceProperties().getProperty(
                                         InstanceProperties.DISPLAY_NAME_ATTR)));
@@ -386,35 +388,35 @@ public final class WLStartServer extends StartServer {
                 process.destroy();
             }
         }
-        
+
         @Override
-        protected ExternalProcessBuilder initBuilder(
-                ExternalProcessBuilder builder )
-        {
+        protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
+
             ExternalProcessBuilder result = builder;
             JavaPlatform javaPlatform = getSettings().getJavaPlatform();
             String vendor = javaPlatform.getVendor();
-            
+
             String javaHome = getJavaHome(javaPlatform);
             result = result.addEnvironmentVariable("JAVA_HOME", javaHome);  // NOI18N
-            if ( SUN.equals( vendor )){
+            if (SUN.equals(vendor)) {
                 result = result.addEnvironmentVariable("SUN_JAVA_HOME",     // NOI18N
                         javaHome);
             }
-            
+
             StringBuilder javaOptsBuilder = new StringBuilder();
             String[] profJvmArgs = getSettings().getJvmArgs();
             for (int i = 0; i < profJvmArgs.length; i++) {
                 javaOptsBuilder.append(" ").append(profJvmArgs[i]);         // NOI18N
             }
-            result = result.addEnvironmentVariable("JAVA_OPTIONS",          // NOI18N 
-                    javaOptsBuilder.toString());                        
+            result = result.addEnvironmentVariable("JAVA_OPTIONS",          // NOI18N
+                    javaOptsBuilder.toString());
             return result;
         }
-        
+
+        @Override
         protected boolean isRunning(){
             int state = ProfilerSupport.getState();
-            if (state == ProfilerSupport.STATE_BLOCKING || 
+            if (state == ProfilerSupport.STATE_BLOCKING ||
                     state == ProfilerSupport.STATE_RUNNING  ||
                     state == ProfilerSupport.STATE_PROFILING )
             {
@@ -422,35 +424,30 @@ public final class WLStartServer extends StartServer {
             }
             return super.isRunning();
         }
-        
+
         private String getJavaHome(JavaPlatform platform) {
             FileObject fo = (FileObject)platform.getInstallFolders().iterator().next();
             return FileUtil.toFile(fo).getAbsolutePath();
         }
-        
-        private ProfilerServerSettings getSettings(){
-            return mySettings; 
+
+        private ProfilerServerSettings getSettings() {
+            return mySettings;
         }
-        
-        private ProfilerServerSettings mySettings;
     }
-    
+
     private class WLDebugStartTask extends WLStartTask {
-        WLDebugStartTask(String uri, WLServerProgress serverProgress,
-                WLDeploymentManager dm ) 
-        {
+
+        public WLDebugStartTask(String uri, WLServerProgress serverProgress,
+                WLDeploymentManager dm) {
             super( uri , serverProgress, dm  );
         }
-        
-        
+
         @Override
-        protected ExternalProcessBuilder initBuilder(
-                ExternalProcessBuilder builder )
-        {
+        protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
             int debugPort = 4000;
             debugPort = Integer.parseInt(dm.getInstanceProperties().getProperty(
                     WLPluginProperties.DEBUGGER_PORT_ATTR));
-            
+
             ExternalProcessBuilder result = builder.addEnvironmentVariable("JAVA_OPTIONS",
                     "-Xdebug -Xnoagent -Djava.compiler=none " +
                     "-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address="
@@ -473,12 +470,12 @@ public final class WLStartServer extends StartServer {
         private static final int DELAY = 1000;
 
         /**
-         * Name of the startup script for windows
+         * Name of the startup script for Unices
          */
         private static final String STARTUP_SH = "startWebLogic.sh";   // NOI18N
 
         /**
-         * Name of the startup script for Unices
+         * Name of the startup script for windows
          */
         private static final String STARTUP_BAT = "startWebLogic.cmd"; // NOI18N
 
@@ -488,14 +485,13 @@ public final class WLStartServer extends StartServer {
 
         private final WLDeploymentManager dm;
 
-        public WLStartTask(String uri, WLServerProgress serverProgress,
-                WLDeploymentManager dm) 
-        {
+        public WLStartTask(String uri, WLServerProgress serverProgress, WLDeploymentManager dm) {
             this.uri = uri;
             this.serverProgress = serverProgress;
             this.dm = dm;
         }
 
+        @Override
         public void run() {
             String domainString = dm.getInstanceProperties().getProperty(
                     WLPluginProperties.DOMAIN_ROOT_ATTR);
@@ -533,6 +529,9 @@ public final class WLStartServer extends StartServer {
                 // send the completed event to j2eeserver
                 while ((System.currentTimeMillis() - start) < TIMEOUT) {
                     if (isRunning()) {
+                        // reset the restart flag
+                        dm.setRestartNeeded(false);
+
                         serverProgress.notifyStart(StateType.COMPLETED,
                                 NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STARTED", serverName));
 
@@ -566,15 +565,15 @@ public final class WLStartServer extends StartServer {
                 LOGGER.log(Level.WARNING, null, e);
             }
         }
-        
+
         protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder){
             return builder;
         }
-        
+
         protected boolean isRunning(){
             return WLStartServer.this.isRunning();
         }
-        
+
         protected WLServerProgress getProgress(){
             return serverProgress;
         }
@@ -618,6 +617,7 @@ public final class WLStartServer extends StartServer {
             this.dm = dm;
         }
 
+        @Override
         public void run() {
             String username = dm.getInstanceProperties().getProperty(InstanceProperties.USERNAME_ATTR);
             String password = dm.getInstanceProperties().getProperty(InstanceProperties.PASSWORD_ATTR);

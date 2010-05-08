@@ -850,7 +850,7 @@ public class JsfElExpression extends ELExpression {
 
         public void run(CompilationController controller ) throws Exception {
             controller .toPhase(Phase.ELEMENTS_RESOLVED);
-            TypeElement bean = getTypePreceedingCaret(controller );
+            TypeElement bean = getTypePreceedingCaret(controller, getResolvedExpression() );
 
             if (bean != null){
                 String suffix = removeQuotes(getPropertyBeingTypedName());

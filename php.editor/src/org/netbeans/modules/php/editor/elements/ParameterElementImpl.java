@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.editor.elements;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -176,14 +177,16 @@ public final class ParameterElementImpl implements ParameterElement {
     }
 
     static String encode(String inStr) {
-        StringBuffer outStr = new StringBuffer(6 * inStr.length());
+        return encode(inStr, SEPARATOR.toEnumSet());
+    }
+    static String encode(String inStr, final EnumSet<SEPARATOR> separators) {
+        StringBuilder outStr = new StringBuilder(6 * inStr.length());
 
         for (int i = 0; i < inStr.length(); i++) {
             final char charAt = inStr.charAt(i);
             boolean encode = isEncodedChar(i, inStr);
             if (!encode) {
-                SEPARATOR[] values = SEPARATOR.values();
-                for (SEPARATOR separator : values) {
+                for (SEPARATOR separator : separators) {
                     char separatorChar = separator.toString().charAt(0);
                     if (charAt == separatorChar) {
                         encode = true;

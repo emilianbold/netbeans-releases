@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.EnumSet;
 import java.util.Set;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -70,6 +71,10 @@ public abstract class PhpElementImpl implements PhpElement {
         COMMA,
         COLON,
         PIPE;
+
+        public static EnumSet<SEPARATOR> toEnumSet() {
+            return EnumSet.allOf(SEPARATOR.class);
+        }
 
         @Override
         public String toString() {

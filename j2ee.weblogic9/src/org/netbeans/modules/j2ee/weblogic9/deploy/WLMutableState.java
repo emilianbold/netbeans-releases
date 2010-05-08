@@ -37,26 +37,22 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.api.elements;
-
-import java.util.Collection;
-import java.util.List;
+package org.netbeans.modules.j2ee.weblogic9.deploy;
 
 /**
+ * <i>ThreadSafe</i>
  *
- * @author Radek Matous
+ * @author Petr Hejl
  */
-public interface BaseFunctionElement extends PhpElement{
-    enum PrintAs {
-        NameAndParamsDeclaration,
-        NameAndParamsInvocation,
-        DeclarationWithoutBody,
-        DeclarationWithEmptyBody,
-        DeclarationWithParentCallInBody,
-        ReturnSemiTypes,
-        ReturnTypes
+public class WLMutableState {
+
+    private boolean restartNeeded;
+
+    public synchronized boolean isRestartNeeded() {
+        return restartNeeded;
     }
-    List<ParameterElement> getParameters();
-    Collection<TypeResolver> getReturnTypes();
-    String asString(PrintAs as);
+
+    public synchronized void setRestartNeeded(boolean restartNeeded) {
+        this.restartNeeded = restartNeeded;
+    }
 }

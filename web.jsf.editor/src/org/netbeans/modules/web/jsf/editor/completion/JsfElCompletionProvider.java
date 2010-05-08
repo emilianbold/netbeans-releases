@@ -97,12 +97,19 @@ public class JsfElCompletionProvider implements CompletionProvider {
                     @Override
                     public void run() {
                         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-                        List<TokenSequence<?>> embedded = hi.embeddedTokenSequences(offset, false);
-                        for (TokenSequence<?> ts : embedded) {
-                            if (ts.language() == ELTokenId.language()) {
+                        TokenSequence<?> ts = hi.tokenSequence();
+                        while(ts != null) {
+                            if(ts.language() == ELTokenId.language()) {
                                 inEL.set(true);
-                                break;
+                                return ;
                             }
+
+                            ts.move(offset);
+                            if(!ts.moveNext() && !ts.movePrevious()) {
+                                return ;
+                            }
+
+                            ts = ts.embedded();
                         }
                     }
                 });
