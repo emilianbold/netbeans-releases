@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.viewmodel;
 
+import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
@@ -114,8 +115,11 @@ public class TreeModelNode extends AbstractNode {
     private ColumnModel[]        columns;
     protected TreeModelRoot      treeModelRoot;
     protected Object             object;
-    
+
+    private String              displayName, oldDisplayName;
     private String              htmlDisplayName;
+    private final Object        displayNameLock = new Object();
+    private boolean             iconLoaded;
     private String              shortDescription;
     private final Object        shortDescriptionLock = new Object();
     private final Map<String, Object> properties = new HashMap<String, Object>();
@@ -206,8 +210,7 @@ public class TreeModelNode extends AbstractNode {
         }
         // </RAVE>
         
-        treeModelRoot.registerNode (object, this); 
-        refreshNode ();
+        treeModelRoot.registerNode (object, this);
         initProperties (columns);
     }
 
@@ -527,22 +530,21 @@ public class TreeModelNode extends AbstractNode {
         }
         boolean refreshed = false;
         if ((ModelEvent.NodeChanged.DISPLAY_NAME_MASK & changeMask) != 0) {
-            try {
-                setModelDisplayName();
-            } catch (UnknownTypeException e) {
-                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
+            boolean doFireDisplayNameChange;
+            synchronized (displayNameLock) {
+                doFireDisplayNameChange = displayName != null;
+                displayName = null;
+            }
+            if (doFireDisplayNameChange) {
+                fireDisplayNameChange(null, null);
             }
             refreshed = true;
         }
         if ((ModelEvent.NodeChanged.ICON_MASK & changeMask) != 0) {
-            try {
-                String iconBase = model.getIconBaseWithExtension (object);
-                if (iconBase != null)
-                    setIconBaseWithExtension (iconBase);
-                else
-                    setIconBaseWithExtension ("org/openide/resources/actions/empty.gif");
-            } catch (UnknownTypeException e) {
-                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
+            if (iconLoaded) {
+                iconLoaded = false;
+                fireIconChange();
+                fireOpenedIconChange();
             }
             refreshed = true;
         }
@@ -584,32 +586,27 @@ public class TreeModelNode extends AbstractNode {
         }
     }
 
-    private void setName (String name, boolean italics) {
+    private boolean setName (String name, boolean italics) {
         // XXX HACK: HTMLDisplayName is missing in the models!
-        String oldHtmlDisplayName = htmlDisplayName;
-        String oldDisplayName = getDisplayName();
-        
-        String newDisplayName;
-        if (name.startsWith ("<html>")) {
-            htmlDisplayName = name;
-            newDisplayName = removeHTML(name);
-        } else if (name.startsWith ("<_html>")) { //[TODO] use empty string as name in the case of <_html> tag
-            htmlDisplayName = '<' + name.substring(2);
-            newDisplayName = "";
-        } else {
-            htmlDisplayName = null;
-            newDisplayName = name;
-        }
-        if ((oldDisplayName == null) || !oldDisplayName.equals(newDisplayName)) {
-            setDisplayName(newDisplayName);
-        } else {
-            if (oldHtmlDisplayName != null && !oldHtmlDisplayName.equals(htmlDisplayName) ||
-                htmlDisplayName != null && !htmlDisplayName.equals(oldHtmlDisplayName)) {
-                
-                // Display names are equal, but HTML display names differ!
-                // We hope that this is sufficient to refresh the HTML display name:
-                fireDisplayNameChange(oldDisplayName + "_HACK", getDisplayName());
+        synchronized (displayNameLock) {
+            String oldHtmlDisplayName = htmlDisplayName;
+            String _oldDisplayName = oldDisplayName;
+
+            String newDisplayName;
+            if (name.startsWith ("<html>")) {
+                htmlDisplayName = name;
+                newDisplayName = removeHTML(name);
+            } else if (name.startsWith ("<_html>")) { //[TODO] use empty string as name in the case of <_html> tag
+                htmlDisplayName = '<' + name.substring(2);
+                newDisplayName = "";
+            } else {
+                htmlDisplayName = null;
+                newDisplayName = name;
             }
+            displayName = newDisplayName;
+            oldDisplayName = newDisplayName;
+            return _oldDisplayName == null || !_oldDisplayName.equals(newDisplayName) ||
+                   oldHtmlDisplayName == null || !oldHtmlDisplayName.equals(htmlDisplayName);
         }
     }
 
@@ -628,7 +625,7 @@ public class TreeModelNode extends AbstractNode {
                 setName (name, false);
             }
         } else {
-            final String originalDisplayName = getDisplayName();
+            final String originalDisplayName = (oldDisplayName != null) ? oldDisplayName : "";
             setName(EVALUATING_STR, false);
             exec.execute(new Runnable() {
                 public void run() {
@@ -638,6 +635,7 @@ public class TreeModelNode extends AbstractNode {
                     } catch (UnknownTypeException ex) {
                         Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
                         setName(originalDisplayName, false);
+                        fireDisplayNameChange(null, originalDisplayName);
                         return ;
                     }
                     if (name == null) {
@@ -648,29 +646,83 @@ public class TreeModelNode extends AbstractNode {
                             );
                         Exceptions.printStackTrace(t);
                         setName(originalDisplayName, false);
+                        fireDisplayNameChange(null, originalDisplayName);
                     } else {
-                        setName (name, false);
+                        if (setName (name, false)) {
+                            fireDisplayNameChange(null, name);
+                        }
                     }
                 }
             });
         }
     }
-    
-    private void refreshNode () {
-        try {
-            setModelDisplayName();
-            String iconBase = null;
-            if (model.getRoot() != object) {
-                iconBase = model.getIconBaseWithExtension (object);
+
+    @Override
+    public String getDisplayName() {
+        synchronized (displayNameLock) {
+            if (displayName == null) {
+                try {
+                    setModelDisplayName();
+                } catch (UnknownTypeException ex) {
+                    Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
+                }
             }
-            if (iconBase != null)
-                setIconBaseWithExtension (iconBase);
-            else
-                setIconBaseWithExtension ("org/openide/resources/actions/empty.gif");
-            firePropertyChange(null, null, null);
-        } catch (UnknownTypeException e) {
-            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
+            return displayName;
         }
+    }
+
+    private void setModelIcon() throws UnknownTypeException {
+        String iconBase = null;
+        if (model.getRoot() != object) {
+            iconBase = model.getIconBaseWithExtension (object);
+        }
+        if (iconBase != null)
+            setIconBaseWithExtension (iconBase);
+        else
+            setIconBaseWithExtension ("org/openide/resources/actions/empty.gif");
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        if (!iconLoaded) {
+            try {
+                setModelIcon();
+            } catch (UnknownTypeException ex) {
+                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
+            }
+            iconLoaded = true;
+        }
+        return super.getIcon(type);
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        if (!iconLoaded) {
+            try {
+                setModelIcon();
+            } catch (UnknownTypeException ex) {
+                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
+            }
+            iconLoaded = true;
+        }
+        return super.getOpenedIcon(type);
+    }
+
+    private void refreshNode () {
+        boolean doFireDisplayNameChange;
+        synchronized (displayNameLock) {
+            doFireDisplayNameChange = displayName != null;
+            displayName = null;
+        }
+        if (doFireDisplayNameChange) {
+            fireDisplayNameChange(null, null);
+        }
+        if (iconLoaded) {
+            iconLoaded = false;
+            fireIconChange();
+            fireOpenedIconChange();
+        }
+        firePropertyChange(null, null, null);
     }
     
     void refreshColumn(String column) {
@@ -1530,7 +1582,7 @@ public class TreeModelNode extends AbstractNode {
             synchronized (evaluated) {
                 if (evaluated[0] != 1) {
                     try {
-                        evaluated.wait(25);
+                        evaluated.wait(5);
                     } catch (InterruptedException iex) {}
                     if (evaluated[0] != 1) {
                         evaluated[0] = -1; // timeout
