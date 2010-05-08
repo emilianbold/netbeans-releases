@@ -55,33 +55,22 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  *
  * @author Jaroslav Bachorik
  */
-public class ClassnameCompletionItem implements CompletionItem {
+public class PackageCompletionItem implements CompletionItem {
     final private String text;
-    final private String sortPrefix;
     final private int caret;
     final private int correction;
-    final private String pkgName;
-    final private String typeName;
 
-    final private static Color fieldColor = Color.decode("0xa38000");
+    final private static Color fieldColor = Color.GRAY;
 
-    public ClassnameCompletionItem(String sortPrefix, String text, int caretOffset) {
-        this(sortPrefix, text, caretOffset, 0);
+    public PackageCompletionItem(String text, int caretOffset) {
+        this(text, caretOffset, 0);
     }
 
-    public ClassnameCompletionItem(String sortPrefix, String text, int caretOffset, int correction) {
+    public PackageCompletionItem(String text, int caretOffset, int correction) {
         this.text = text;
         this.caret = caretOffset;
         this.correction = correction;
-        this.sortPrefix = sortPrefix;
-        int pkgPos = text.lastIndexOf('.');
-        if (pkgPos > -1) {
-            pkgName = text.substring(0, pkgPos);
-            typeName = text.substring(pkgPos + 1);
-        } else {
-            pkgName = "";
-            typeName = text;
-        }
+
     }
 
     public CompletionTask createDocumentationTask() {
@@ -93,19 +82,13 @@ public class ClassnameCompletionItem implements CompletionItem {
     }
 
     public void defaultAction(JTextComponent component) {
-        final BaseDocument doc = (BaseDocument) component.getDocument();
-        doc.runAtomicAsUser(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    doc.remove(caret, correction);
-                    doc.insertString(caret, text, null);
-                } catch (BadLocationException ex) {
-                    // shouldn't happen
-                }
-            }
-        });
+        BaseDocument doc = (BaseDocument) component.getDocument();
+        try {
+            doc.remove(caret, correction);
+            doc.insertString(caret, text, null);
+        } catch (BadLocationException ex) {
+            // shouldn't happen
+        }
         //This statement will close the code completion box:
         Completion.get().hideAll();
 
@@ -116,7 +99,7 @@ public class ClassnameCompletionItem implements CompletionItem {
     }
 
     public int getPreferredWidth(Graphics g, Font defaultFont) {
-        return CompletionUtilities.getPreferredWidth(typeName + " (" + text + ")", null, g, defaultFont);
+        return CompletionUtilities.getPreferredWidth(text, null, g, defaultFont);
     }
 
     public int getSortPriority() {
@@ -124,7 +107,7 @@ public class ClassnameCompletionItem implements CompletionItem {
     }
 
     public CharSequence getSortText() {
-        return sortPrefix + "_" + text;
+        return "00_" + text;
     }
 
     public boolean instantSubstitution(JTextComponent component) {
@@ -137,7 +120,7 @@ public class ClassnameCompletionItem implements CompletionItem {
     }
 
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
-        CompletionUtilities.renderHtml(null, "<b>"+typeName+"</b> <i>(" + text + ")</i>", null, g, defaultFont, (selected ? Color.white : fieldColor), width, height, selected);
+        CompletionUtilities.renderHtml(null, "<b>"+text+"</b>", null, g, defaultFont, (selected ? Color.white : fieldColor), width, height, selected);
     }
 
 }

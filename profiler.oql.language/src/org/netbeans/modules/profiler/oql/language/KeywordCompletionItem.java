@@ -83,12 +83,22 @@ public class KeywordCompletionItem implements CompletionItem {
     }
 
     public void defaultAction(JTextComponent component) {
-        BaseDocument doc = (BaseDocument) component.getDocument();
-        try {
-            doc.insertString(caret, text.substring(correction), null);
-        } catch (BadLocationException ex) {
-            // shouldn't happen
-        }
+        final BaseDocument doc = (BaseDocument) component.getDocument();
+        doc.runAtomicAsUser(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    if (caret > doc.getLength()) {
+                        doc.insertString(caret - 1, text.substring(correction), null);
+                    } else {
+                        doc.insertString(caret, text.substring(correction), null);
+                    }
+                } catch (BadLocationException ex) {
+                    // shouldn't happen
+                }
+            }
+        });
         //This statement will close the code completion box:
         Completion.get().hideAll();
 
