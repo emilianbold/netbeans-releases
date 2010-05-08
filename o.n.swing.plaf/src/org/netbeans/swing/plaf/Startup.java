@@ -433,7 +433,11 @@ public final class Startup {
                             result = new XPLFCustoms();
                         }
                     } else {
-                        result = new WindowsLFCustoms();
+                        if( UIManager.getLookAndFeel() instanceof MetalLookAndFeel ) {
+                            result = new MetalLFCustoms();
+                        } else {
+                            result = new WindowsLFCustoms();
+                        }
                     }
             }
         }

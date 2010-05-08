@@ -169,6 +169,52 @@ public final class TreeViewTest extends NbTestCase {
         EventQueue.invokeLater(new Tester(true, 1));    //just collapse the tree
         Thread.sleep(2000);
     }
+
+    public void testExpandNodePreparedOutsideOfAWT() throws Exception {
+        assertFalse(EventQueue.isDispatchThread());
+
+        class OutOfAWT extends Keys {
+            Exception noAWTAddNotify;
+            Exception noAWTCreateNodes;
+
+            public OutOfAWT(boolean lazy, String... args) {
+                super(lazy, args);
+            }
+
+            @Override
+            protected void addNotify() {
+                if (EventQueue.isDispatchThread()) {
+                    noAWTAddNotify = new Exception();
+                }
+                super.addNotify();
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (EventQueue.isDispatchThread()) {
+                    noAWTCreateNodes = new Exception();
+                }
+                return super.createNodes(key);
+            }
+        }
+        AbstractNode root = new AbstractNode(new Children.Array());
+        final OutOfAWT ch = new OutOfAWT(false, "A", "B", "C");
+        AbstractNode an = new AbstractNode(ch);
+        root.getChildren().add(new Node[] { an });
+        testWindow = new ExplorerWindow();
+        testWindow.showWindow();
+        testWindow.getExplorerManager().setRootContext(root);
+
+        testWindow.treeView.expandNode(an);
+        Thread.sleep(2000);
+
+        if (ch.noAWTAddNotify != null) {
+            throw ch.noAWTAddNotify;
+        }
+        if (ch.noAWTCreateNodes != null) {
+            throw ch.noAWTCreateNodes;
+        }
+    }
     
     
     private static final class TestTreeView extends BeanTreeView {

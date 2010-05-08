@@ -229,6 +229,9 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         } else {
             jars = LayerUtils.getPlatformJarsForStandaloneProject(prj);
         }
+        Set<File> brandableJars = branding.getBrandableJars();
+        jars.retainAll(brandableJars);
+        
         for (File file : jars) {
             try {
                 URI juri = file.toURI();
@@ -390,10 +393,11 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
 
         private void refreshList() {
-            List keys = new ArrayList();
-            for (Node node : resourceBundleNodes) {
+            List<BundleNode> keys = new ArrayList();
+            for (BundleNode node : resourceBundleNodes) {
                 keys.add(node);
             }
+            Collections.sort(keys);
             setKeys(keys);
         }
 
