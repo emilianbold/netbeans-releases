@@ -486,6 +486,8 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             mapper.setLongValue(attribute.createMappedAttribute(WorkLogConverter.TIME_SPENT.key()), spentTime);
             mapper.setDateValue(attribute.createMappedAttribute(WorkLogConverter.START_DATE.key()), startDate);
             mapper.setValue(attribute.createMappedAttribute(WorkLogConverter.COMMENT.key()), comment);
+            mapper.setValue(attribute.createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG), "true"); // NOI18N
+            mapper.setBooleanValue(attribute.createMappedAttribute(WorkLogConverter.ADJUST_ESTIMATE.key()), Boolean.TRUE);
         }
     }
 

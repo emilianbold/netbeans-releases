@@ -78,11 +78,9 @@ public final class LocalFileSearcherImpl implements FileSearcher {
             try {
                 Map<String, String> environment = HostInfoUtils.getHostInfo(execEnv).getEnvironment();
                 String path = null;
-                if (environment.containsKey("Path")) {
-                    // NOI18N
+                if (environment.containsKey("Path")) { // NOI18N
                     path = environment.get("Path"); // NOI18N
-                } else if (environment.containsKey("PATH")) {
-                    // NOI18N
+                } else if (environment.containsKey("PATH")) { // NOI18N
                     path = environment.get("PATH"); // NOI18N
                 }
                 if (path != null) {

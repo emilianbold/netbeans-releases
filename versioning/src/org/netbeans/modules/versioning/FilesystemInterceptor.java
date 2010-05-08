@@ -47,6 +47,8 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Plugs into IDE filesystem and delegates file operations to registered versioning systems.
@@ -74,6 +76,8 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
      * Determines if a file is versioned or not
      */
     private static final String ATTRIBUTE_VCS_MANAGED = "ProvidedExtensions.VCSManaged";
+
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.versioning.FilesystemInterceptor");
 
     private VersioningManager master;
 
@@ -105,6 +109,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     @Override
     public boolean canWrite(File file) {
+         LOG.log(Level.FINE, "canWrite {0}", file);
         if (Utils.canWrite(file)) {
             return true;
         }
@@ -117,6 +122,8 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     @Override
     public Object getAttribute(File file, String attrName) {
+        // LOG.log(Level.FINE, "getAttribute {0}, {1}", new Object[] {file, attrName});
+
         if(ATTRIBUTE_REMOTE_LOCATION.equals(attrName) ||           
            ATTRIBUTE_REFRESH.equals(attrName) ||
            ATTRIBUTE_SEARCH_HISTORY.equals(attrName))
@@ -133,17 +140,28 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     // CHANGE
     // ==================================================================================================
 
+    @Override
     public void fileChanged(FileEvent fe) {
+        LOG.log(Level.FINE, "fileChanged {0}", fe.getFile());
         removeFromDeletedFiles(fe.getFile());
         getInterceptor(fe, "afterChange").afterChange();
     }
 
+    @Override
     public void beforeChange(FileObject fo) {
-        getInterceptor(FileUtil.toFile(fo), fo.isFolder(), "beforeChange").beforeChange(); // NOI18N
+        File file = FileUtil.toFile(fo);
+        LOG.log(Level.FINE, "beforeChange {0}", file);
+        getInterceptor(file, fo.isFolder(), "beforeChange").beforeChange(); // NOI18N
     }
 
     @Override
     public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        LOG.log(Level.FINE, "refreshRecursively {0}, {1}", new Object[]{dir, lastTimeStamp});
+        if(LOG.isLoggable(Level.FINER)) {
+            for (Object f : children) {
+                LOG.log(Level.FINE, "  refreshRecursively child {1}", f);
+            }
+        }
         DelegatingInterceptor interceptor = getRefreshInterceptor(dir);
         return interceptor.refreshRecursively(dir, lastTimeStamp, children);
     }
@@ -175,13 +193,17 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         }
     }
 
+    @Override
     public DeleteHandler getDeleteHandler(File file) {
+        LOG.log(Level.FINE, "getDeleteHandler {0}", file);
         removeFromDeletedFiles(file);
         DelegatingInterceptor dic = getInterceptor(file, false, "beforeDelete", "doDelete"); // NOI18N
         return dic.beforeDelete() ? dic : null;
     }
 
+    @Override
     public void fileDeleted(FileEvent fe) {
+        LOG.log(Level.FINE, "fileDeleted {0}", fe.getFile());
         removeFromDeletedFiles(fe.getFile());
         getInterceptor(fe, "afterDelete").afterDelete(); // NOI18N
     }
@@ -196,7 +218,9 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
      */
     private final Map<FileEx, DelegatingInterceptor> filesBeingCreated = new HashMap<FileEx, DelegatingInterceptor>(10);
 
+    @Override
     public void beforeCreate(FileObject parent, String name, boolean isFolder) {
+        LOG.log(Level.FINE, "beforeCreate {0}, {1}, {2} ", new Object[] {parent, name, isFolder});
         File file = FileUtil.toFile(parent);
         if (file == null) return;
         file = new File(file, name);
@@ -206,15 +230,21 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         }
     }
 
+    @Override
     public void createFailure(FileObject parent, String name, boolean isFolder) {
+        LOG.log(Level.FINE, "createFailure {0}, {1}, {2} ", new Object[] {parent, name, isFolder});
         filesBeingCreated.remove(new FileEx(parent, name, isFolder));
     }
 
+    @Override
     public void fileFolderCreated(FileEvent fe) {
+        LOG.log(Level.FINE, "fileFolderCreated {0}", fe.getFile());
         fileDataCreated(fe);
     }
 
+    @Override
     public void fileDataCreated(FileEvent fe) {
+        LOG.log(Level.FINE, "fileDataCreated {0}", fe.getFile());
         FileObject fo = fe.getFile();
         FileEx fileEx = new FileEx(fo.getParent(), fo.getNameExt(), fo.isFolder());
         DelegatingInterceptor interceptor = filesBeingCreated.remove(fileEx);
@@ -236,22 +266,30 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     // MOVE
     // ==================================================================================================
 
+    @Override
     public IOHandler getMoveHandler(File from, File to) {
+        LOG.log(Level.FINE, "getMoveHandler {0}, {1}", new Object[] {from, to});
         DelegatingInterceptor dic = getInterceptor(from, to, "beforeMove", "doMove"); // NOI18N
         return dic.beforeMove() ? dic : null;
     }
 
+    @Override
     public IOHandler getRenameHandler(File from, String newName) {
+        LOG.log(Level.FINE, "getRenameHandler {0}, {1}", new Object[] {from, newName});
         File to = new File(from.getParentFile(), newName);
         return getMoveHandler(from, to);
     }
 
+    @Override
     public void fileRenamed(FileRenameEvent fe) {
+        LOG.log(Level.FINE, "fileRenamed {0}", fe.getFile());
         removeFromDeletedFiles(fe.getFile());
         getInterceptor(fe, "afterMove").afterMove();                            // NOI18N
     }
 
+    @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
+         LOG.log(Level.FINE, "fileAttributeChanged {0}", fe.getFile());
         // not interested
     }
 
@@ -261,7 +299,9 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
      *
      * @param fo a FileObject
      */
+    @Override
     public void fileLocked(FileObject fo) {
+        LOG.log(Level.FINE, "fileLocked {0}", fo);
         getInterceptor(new FileEvent(fo), "beforeEdit").beforeEdit();           // NOI18N
     }
 

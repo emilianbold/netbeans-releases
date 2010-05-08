@@ -82,7 +82,7 @@ public class Jira {
     private static Jira instance;
     private JiraStorageManager storageManager;
 
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.jira.Jira");
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.jira.Jira");
     private RequestProcessor rp;
 
     private KenaiSupport kenaiSupport;
