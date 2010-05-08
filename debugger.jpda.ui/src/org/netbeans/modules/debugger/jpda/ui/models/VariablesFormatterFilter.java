@@ -68,9 +68,11 @@ import org.netbeans.spi.debugger.jpda.VariablesFilterAdapter;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
+import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -84,9 +86,14 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
     //private JPDADebugger debugger;
     private IOManager ioManager;
     private boolean formattersLoopWarned = false;
-    private Map<ObjectVariable, Boolean> childrenExpandTest = new WeakHashMap<ObjectVariable, Boolean>();
+    private final Map<ObjectVariable, Boolean> childrenExpandTest = new WeakHashMap<ObjectVariable, Boolean>();
+    private final Set<ObjectVariable> childrenExpandTestProcessing = new HashSet<ObjectVariable>();
+    private final RequestProcessor expandTestProcessor = new RequestProcessor("Variables expand test processor", 1);
+    private final ContextProvider lookupProvider;
+    private VariablesTreeModelFilter vtmf;
 
     public VariablesFormatterFilter(ContextProvider lookupProvider) {
+        this.lookupProvider = lookupProvider;
         //debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         List lamls = lookupProvider.lookup
             (null, LazyActionsManagerListener.class);
@@ -155,7 +162,6 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
             children = getChildren(original, variable, from, to,
                            new FormattersLoopControl());
         }
-        //doExpandTest(children); - non-functional here, we get just variables in getChildren()
         return children;
     }
 
@@ -169,6 +175,21 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
 
         if (variable instanceof ObjectVariable) {
             ObjectVariable ov = (ObjectVariable) variable;
+
+            synchronized (childrenExpandTestProcessing) {
+                while (childrenExpandTestProcessing.contains(ov)) {
+                    try {
+                        childrenExpandTestProcessing.wait();
+                    } catch (InterruptedException ex) {
+                        return new Object[] {};
+                    }
+                }
+            }
+            if (Boolean.TRUE.equals(childrenExpandTest.get(ov))) {
+                // The variable should be a leaf in fact - do not ask for children!
+                return new Object[] {};
+            }
+
             JPDAClassType ct = ov.getClassType();
 
             if (ct == null) {
@@ -272,17 +293,15 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
         return Integer.MAX_VALUE;
     }
 
-    void doExpandTest(Object[] children) {
-        VariablesFormatter[] formatters = null;
-        for (Object variable : children) {
-            if (variable instanceof ObjectVariable) {
-                ObjectVariable ov = (ObjectVariable) variable;
-                JPDAClassType ct = ov.getClassType();
-                if (ct == null) {
-                    continue;
-                }
-                if (formatters == null) {
-                    formatters = new FormattersLoopControl().getFormatters();
+    private void doExpandTest(final ObjectVariable ov, final JPDAClassType ct, final TreeModel original) {
+        synchronized (childrenExpandTestProcessing) {
+            childrenExpandTestProcessing.add(ov);
+        }
+        expandTestProcessor.post(new Runnable() {
+            public void run() {
+                boolean isLeaf = false;
+                try {
+                    VariablesFormatter[] formatters = new FormattersLoopControl().getFormatters();
                     ArrayList<VariablesFormatter> formattersWithExpandTestCode = new ArrayList<VariablesFormatter>();
                     for (VariablesFormatter vf : formatters) {
                         String expandTestCode = vf.getChildrenExpandTestCode();
@@ -291,37 +310,61 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                         }
                     }
                     formatters = (VariablesFormatter[]) formattersWithExpandTestCode.toArray(new VariablesFormatter[]{});
-                }
-                VariablesFormatter f = getFormatterForType(ct, formatters);
-                if (f != null) {
-                    String expandTestCode = f.getChildrenExpandTestCode();
-                    if ("false".equals(expandTestCode)) {   // Optimalization for constant
-                        childrenExpandTest.put(ov, true);   // is leaf
-                        continue;
-                    }
-                    if ("true".equals(expandTestCode)) {   // Optimalization for constant
-                        childrenExpandTest.put(ov, false);   // is not leaf
-                        continue;
-                    }
-                    try {
-                        java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
-                        evaluateMethod.setAccessible(true);
-                        Variable ret = (Variable) evaluateMethod.invoke(ov, expandTestCode);
-                        if (ret != null) {
-                            childrenExpandTest.put(ov, !"true".equals(ret.getValue()));
+                    VariablesFormatter f = getFormatterForType(ct, formatters);
+                    if (f != null) {
+                        String expandTestCode = f.getChildrenExpandTestCode();
+                        if ("false".equals(expandTestCode)) {   // Optimalization for constant
+                            childrenExpandTest.put(ov, true);   // is leaf
+                            isLeaf = true;
                         }
-                    } catch (java.lang.reflect.InvocationTargetException itex) {
-                        Throwable t = itex.getTargetException();
-                        if (t instanceof InvalidExpressionException) {
-                            // Ignore, expression failed to evaluate.
-                        } else {
-                            Exceptions.printStackTrace(t);
+                        if ("true".equals(expandTestCode)) {   // Optimalization for constant
+                            childrenExpandTest.put(ov, false);   // is not leaf
                         }
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
+                        try {
+                            java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
+                            evaluateMethod.setAccessible(true);
+                            Variable ret = (Variable) evaluateMethod.invoke(ov, expandTestCode);
+                            if (ret != null) {
+                                isLeaf = !"true".equals(ret.getValue());
+                                childrenExpandTest.put(ov, isLeaf);
+                                
+                            }
+                        } catch (java.lang.reflect.InvocationTargetException itex) {
+                            Throwable t = itex.getTargetException();
+                            if (t instanceof InvalidExpressionException) {
+                                // Ignore, expression failed to evaluate.
+                            } else {
+                                Exceptions.printStackTrace(t);
+                            }
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                } finally {
+                    synchronized (childrenExpandTestProcessing) {
+                        childrenExpandTestProcessing.remove(ov);
+                        childrenExpandTestProcessing.notifyAll();
+                    }
+                    if (isLeaf) {
+                        fireLeafChange(original, ov);
                     }
                 }
             }
+        });
+    }
+
+    private void fireLeafChange(TreeModel original, Variable variable) {
+        if (vtmf == null) {
+            List<? extends TreeModelFilter> tmfs = lookupProvider.lookup("LocalsView", TreeModelFilter.class); // NOI18N
+            for (TreeModelFilter tmf : tmfs) {
+                if (tmf instanceof VariablesTreeModelFilter) {
+                    vtmf = (VariablesTreeModelFilter) tmf;
+                    break;
+                }
+            }
+        }
+        if (vtmf != null) {
+            vtmf.fireChildrenChange(variable);
         }
     }
 
@@ -343,9 +386,13 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
             if (ct == null) {
                 return original.isLeaf (variable);
             }
+            // We do the check for children expansion in a separate thread, it must not execute in AWT.
             Boolean leaf = childrenExpandTest.get(ov);
             if (leaf != null) {
                 return leaf;
+            } else {
+                doExpandTest(ov, ct, original);
+                return false; // Suppose that we're not leaf if expand test is not yet computed
             }
         }
         String type = variable.getType ();
