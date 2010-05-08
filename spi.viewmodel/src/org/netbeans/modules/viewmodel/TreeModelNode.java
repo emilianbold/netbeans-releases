@@ -1444,6 +1444,20 @@ public class TreeModelNode extends AbstractNode {
 
     }
 
+    // Adaptive property refresh time. Belongs to MyProperty, but can not be there since it's static :-(
+    private static AtomicLong lastPropertyRefresh = new AtomicLong(0);
+
+    private static long getPropertyRefreshWaitTime() {
+        long now = System.currentTimeMillis();
+        long last = lastPropertyRefresh.getAndSet(now);
+        if ((now - last) < 1000) {
+            // Refreshes in less than a second - the system needs to respond fast
+            return 1;
+        } else {
+            return 25;
+        }
+    }
+
     private class MyProperty extends PropertySupport implements Runnable { //LazyEvaluator.Evaluable {
         
         private String      id;
@@ -1582,7 +1596,7 @@ public class TreeModelNode extends AbstractNode {
             synchronized (evaluated) {
                 if (evaluated[0] != 1) {
                     try {
-                        evaluated.wait(5);
+                        evaluated.wait(getPropertyRefreshWaitTime());
                     } catch (InterruptedException iex) {}
                     if (evaluated[0] != 1) {
                         evaluated[0] = -1; // timeout
