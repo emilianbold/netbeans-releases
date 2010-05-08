@@ -59,6 +59,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.security.auth.Refreshable;
 import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -374,8 +375,15 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     public boolean isLeaf (Object o) throws UnknownTypeException {
         if (o.equals (ROOT))
             return false;
-        if (o instanceof AbstractVariable)
+        if (o instanceof AbstractVariable) {
+            if (o instanceof FieldVariable) {
+                return true;
+            }
+            if (o instanceof Refreshable && !((Refreshable) o).isCurrent()) {
+                return false;
+            }
             return !(((AbstractVariable) o).getInnerValue () instanceof ObjectReference);
+        }
         if (o.toString().startsWith("SubArray")) {
             return false;
         }

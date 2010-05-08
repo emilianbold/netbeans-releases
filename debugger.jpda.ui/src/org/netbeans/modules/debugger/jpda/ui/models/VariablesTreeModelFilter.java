@@ -99,12 +99,11 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     private RequestProcessor.Task evaluationTask;
     
-    private LinkedList evaluationQueue = new LinkedList();
+    private final LinkedList evaluationQueue = new LinkedList();
 
     private EvaluatorListener evalListener;
     private VariablesPreferenceChangeListener prefListener;
     private Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(VariablesViewButtons.PREFERENCES_NAME);
-    private VariablesFormatterFilter formatterFilter;
     
     public VariablesTreeModelFilter (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -149,6 +148,8 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     }
     
     private void postEvaluationMonitor(Object o, Runnable whenEvaluated) {
+        //Logger.getLogger(VariablesTreeModelFilter.class.getName()).fine("postEvaluationMonitor("+o+", whenEvaluated="+(whenEvaluated != null)+")");
+        //Logger.getLogger(VariablesTreeModelFilter.class.getName()).log(Level.FINE, "Called from ", new IllegalStateException("TEST POST EVAL MONITOR"));
         synchronized (evaluationQueue) {
             if (evaluationQueue.contains(o) &&
                 evaluationQueue.contains(whenEvaluated)) return ;
@@ -217,19 +218,6 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
             ch = original.getChildren (parent, from, to);
         else
             ch = vf.getChildren (original, (Variable) parent, from, to);
-        if (formatterFilter == null) {
-            List l = lookupProvider.lookup (null, VariablesFilter.class);
-            for (Object o : l) {
-                if (o instanceof VariablesFormatterFilter) {
-                    formatterFilter = ((VariablesFormatterFilter) o);
-                    break;
-                }
-            }
-        }
-        if (formatterFilter != null) {
-            // Help to decide whether variables are expandable
-            formatterFilter.doExpandTest(ch);
-        }
         return ch;
     }
     
@@ -307,7 +295,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
     }
 
-    private void fireChildrenChange(Object row) {
+    void fireChildrenChange(Object row) {
         Object[] listeners;
         synchronized (modelListeners) {
             listeners = modelListeners.toArray();

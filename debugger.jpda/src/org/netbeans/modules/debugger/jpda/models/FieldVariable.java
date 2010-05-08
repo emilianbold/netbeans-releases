@@ -49,6 +49,10 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.Value;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.security.auth.RefreshFailedException;
+import javax.security.auth.Refreshable;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
@@ -71,10 +75,16 @@ import org.openide.util.Exceptions;
  * @author   Jan Jancura
  */
 class FieldVariable extends AbstractVariable implements
-org.netbeans.api.debugger.jpda.Field {
+org.netbeans.api.debugger.jpda.Field, Refreshable {
+
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
 
     protected Field field;
     private ObjectReference objectReference;
+    private boolean valueSet = true;
+    private final Object valueLock = new Object();
+    private boolean valueRetrieved = false;
+    private PrimitiveValue value;
     
 
     FieldVariable (
@@ -93,6 +103,22 @@ org.netbeans.api.debugger.jpda.Field {
         this.field = field;
         //this.className = className;
         this.objectReference = objectReference;
+    }
+
+    FieldVariable (
+        JPDADebuggerImpl debugger,
+        Field field,
+        String parentID,
+        ObjectReference objectReference
+    ) {
+        this (
+            debugger,
+            null,
+            field,
+            parentID,
+            objectReference
+        );
+        this.valueSet = false;
     }
 
     private static String getID(String parentID, Field field) {
@@ -176,6 +202,37 @@ org.netbeans.api.debugger.jpda.Field {
         return TypeComponentWrapper.isStatic0(field);
     }
     
+    @Override
+    protected Value getInnerValue() {
+        if (valueSet) {
+            return super.getInnerValue();
+        }
+        synchronized (valueLock) {
+            if (!valueRetrieved) {
+                Value v;
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("STARTED (FV): "+objectReference+".getValue("+field+")");
+                }
+                try {
+                    v = ObjectReferenceWrapper.getValue (objectReference, field);
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                    v = null;
+                } catch (InternalExceptionWrapper ocex) {
+                    v = null;
+                } catch (VMDisconnectedExceptionWrapper ocex) {
+                    v = null;
+                }
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("FINISHED(FV): "+objectReference+".getValue("+field+") = "+v);
+                    logger.log(Level.FINE, "Called from ", new IllegalStateException("TEST"));
+                }
+                this.value = (PrimitiveValue) v;
+                this.valueRetrieved = true;
+            }
+            return value;
+        }
+    }
+
     protected void setValue (Value value) throws InvalidExpressionException {
         try {
             boolean set = false;
@@ -192,6 +249,10 @@ org.netbeans.api.debugger.jpda.Field {
             }
             if (!set) {
                 throw new InvalidExpressionException(field.toString());
+            } else if (!valueSet) {
+                synchronized (valueLock) {
+                    this.value = (PrimitiveValue) value;
+                }
             }
         } catch (IllegalArgumentExceptionWrapper ex) {
             throw new InvalidExpressionException (ex.getCause());
@@ -208,6 +269,24 @@ org.netbeans.api.debugger.jpda.Field {
         } catch (ObjectCollectedExceptionWrapper ex) {
             throw new InvalidExpressionException (ex);
         }
+    }
+
+    /** Does wait for the value to be evaluated. */
+    @Override
+    public void refresh() throws RefreshFailedException {
+        if (valueSet) return ;
+        synchronized (valueLock) {
+            if (!valueRetrieved) {
+                getInnerValue();
+            }
+        }
+    }
+
+    /** Tells whether the variable is fully initialized and getValue()
+     *  returns the value immediately. */
+    @Override
+    public synchronized boolean isCurrent() {
+        return valueSet || valueRetrieved;
     }
 
     public FieldVariable clone() {
