@@ -773,6 +773,47 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
             data.appendChild(element);
             helper.putPrimaryConfigurationData(data, true);
+
+            // Remove old source root node
+            nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ROOT_LIST_ELEMENT);
+            if (nodeList != null && nodeList.getLength() > 0) {
+                for (int i = 0; i < nodeList.getLength(); i++) {
+                    Node node = nodeList.item(i);
+                    data.removeChild(node);
+                }
+            }
+            // Create new source root node
+            element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.SOURCE_ROOT_LIST_ELEMENT);
+            List<String> sourceRootist = getSourceRoots();
+            for (String loc : sourceRootist) {
+                Node n1;
+                n1 = doc.createElement(MakeProjectType.SOURCE_ROOT_ELEMENT);
+                n1.appendChild(doc.createTextNode(loc));
+                element.appendChild(n1);
+            }
+            data.appendChild(element);
+            helper.putPrimaryConfigurationData(data, true);
+
+            // Remove old configuration node
+            nodeList = data.getElementsByTagName(MakeProjectType.CONFIGURATION_LIST_ELEMENT);
+            if (nodeList != null && nodeList.getLength() > 0) {
+                for (int i = 0; i < nodeList.getLength(); i++) {
+                    Node node = nodeList.item(i);
+                    data.removeChild(node);
+                }
+            }
+            // Create new configuration node
+            element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.CONFIGURATION_LIST_ELEMENT);
+            String[] confsNames = getConfs().getConfsAsNames();
+            for (String name : confsNames) {
+                Node n1;
+                n1 = doc.createElement(MakeProjectType.CONFIGURATION_ELEMENT);
+                n1.appendChild(doc.createTextNode(name));
+                element.appendChild(n1);
+            }
+            data.appendChild(element);
+            helper.putPrimaryConfigurationData(data, true);
+
             // Create source encoding node
             nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ENCODING_TAG);
             if (nodeList != null && nodeList.getLength() > 0) {
