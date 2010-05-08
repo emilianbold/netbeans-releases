@@ -462,6 +462,7 @@ public class Term extends JComponent implements Accessible {
     public static final int DEBUG_OUTPUT = 1 << 3;
     public static final int DEBUG_WRAP = 1 << 4;
     public static final int DEBUG_MARGINS = 1 << 5;
+    public static final int DEBUG_KEYPASS = 1 << 6;
     private int debug_gutter_width = 0;
 
     public void setDebugFlags(int flags) {
@@ -479,6 +480,10 @@ public class Term extends JComponent implements Accessible {
 
     private boolean debugWrap() {
         return (debug & DEBUG_WRAP) == DEBUG_WRAP;
+    }
+
+    private boolean debugKeypass() {
+        return (debug & DEBUG_KEYPASS) == DEBUG_KEYPASS;
     }
 
     private boolean debugMargins() {
@@ -777,15 +782,16 @@ public class Term extends JComponent implements Accessible {
     public void setKeyStrokeSet(HashSet keystroke_set) {
         this.keystroke_set = keystroke_set;
 
-    /* DEBUG
-    System.out.println("-----------------------------------------");//NOI18N
-    java.util.Iterator i = keystroke_set.iterator();
-    while (i.hasNext()) {
-    KeyStroke ks = (KeyStroke) i.next();
-    System.out.println("--- " + ks);	// NOI18N
+	if (debugKeypass()) {
+	    System.out.println("---- setKeyStrokeSet --------------------");//NOI18N
+	    java.util.Iterator i = keystroke_set.iterator();
+	    while (i.hasNext()) {
+		KeyStroke ks = (KeyStroke) i.next();
+		System.out.println("--- " + ks);	// NOI18N
+	    }
+	}
     }
-     */
-    }
+
     private HashSet keystroke_set = new HashSet();
     // attempted partial fix for IZ 17337
     // 'keystroke_set' is a collection of KeyStrokes in the form:
@@ -815,11 +821,11 @@ public class Term extends JComponent implements Accessible {
 
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
 
-        /* DEBUG
-        System.out.println("Term.maybeConsume(" + e + ")");	// NOI18N
-        System.out.println("\tKS = " + ks);	// NOI18N
-        System.out.println("\tcontained = " + keystroke_set.contains(ks));	// NOI18N
-         */
+	if (debugKeypass()) {
+	    System.out.println("Term.maybeConsume(" + e + ")");	// NOI18N
+	    System.out.println("\tKS = " + ks);	// NOI18N
+	    System.out.println("\tcontained = " + keystroke_set.contains(ks));	// NOI18N
+	}
 
         if (keystroke_set == null || !keystroke_set.contains(ks)) {
             e.consume();
