@@ -112,7 +112,7 @@ public class TreeModelNode extends AbstractNode {
     // variables ...............................................................
 
     private Models.CompoundModel model;
-    private ColumnModel[]        columns;
+    private final ColumnModel[]  columns;
     protected TreeModelRoot      treeModelRoot;
     protected Object             object;
 
@@ -211,7 +211,7 @@ public class TreeModelNode extends AbstractNode {
         // </RAVE>
         
         treeModelRoot.registerNode (object, this);
-        initProperties (columns);
+        this.columns = columns;
     }
 
     private static Lookup createLookup(Object object, Models.CompoundModel model,
@@ -264,18 +264,18 @@ public class TreeModelNode extends AbstractNode {
 
 
     // Node implementation .....................................................
-    
-    private void initProperties (ColumnModel[] columns) {
+
+    @Override
+    protected Sheet createSheet() {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet ();
-        this.columns = columns;
         int i, k = columns.length;
         for (i = 0; i < k; i++)
             ps.put (new MyProperty (columns [i], treeModelRoot));
         sheet.put (ps);
-        setSheet (sheet);
+        return sheet;
     }
-    
+
     private static Children createChildren (
         Models.CompoundModel model,
         ColumnModel[] columns,
