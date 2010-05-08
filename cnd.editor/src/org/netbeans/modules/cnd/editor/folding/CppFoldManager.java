@@ -139,8 +139,8 @@ final class CppFoldManager extends CppFoldManagerBase
 
     synchronized private void updateFolds() {
         if (log.isLoggable(Level.FINE)){
-            log.log(Level.FINE, "CFM.updateFolds: Processing " + getShortName() + " [" +
-                    Thread.currentThread().getName() + "]"); // NOI18N
+            log.log(Level.FINE, "CFM.updateFolds: Processing {0} [{1}]",
+                    new Object[]{getShortName(), Thread.currentThread().getName()}); // NOI18N
         }
         final UpdateFoldsRequest request = collectFoldUpdates();
 
@@ -160,8 +160,8 @@ final class CppFoldManager extends CppFoldManagerBase
                         return; // can happen (e.g. after component close)
                     }
                     if (log.isLoggable(Level.FINE)){
-                        log.log(Level.FINE, "CFM.updateFolds$X1.run: Processing " + getShortName() + " [" +
-                                Thread.currentThread().getName() + "]"); // NOI18N
+                        log.log(Level.FINE, "CFM.updateFolds$X1.run: Processing {0} [{1}]",
+                                new Object[]{getShortName(), Thread.currentThread().getName()}); // NOI18N
                     }
 
                     AbstractDocument adoc = (AbstractDocument) doc;
@@ -173,9 +173,9 @@ final class CppFoldManager extends CppFoldManagerBase
                             FoldHierarchyTransaction t = getOperation().openTransaction();
                             try {
                                 if (log.isLoggable(Level.FINE)){
-                                    log.log(Level.FINE, "CFM.updateFolds$X1.run: Calling " + // NOI18N
-                                            "processUpdateFoldRequest for " + getShortName() + " [" + // NOI18N
-                                            Thread.currentThread().getName() + "]"); // NOI18N
+                                    log.log(Level.FINE, "CFM.updateFolds$X1.run: Calling " +
+                                            "processUpdateFoldRequest for {0} [{1}]",  // NOI18N
+                                            new Object[]{getShortName(), Thread.currentThread().getName()}); // NOI18N
                                 }
 //                                System.out.println("=========== " + getShortName() + " ===========");
 //                                System.out.println(hierarchy.toString());
@@ -196,7 +196,8 @@ final class CppFoldManager extends CppFoldManagerBase
         };
         // Do fold updates in AWT
         if (log.isLoggable(Level.FINE)){
-            log.log(Level.FINE, "CFM.updateFolds: Starting update for " + getShortName() + " on AWT thread"); // NOI18N
+            log.log(Level.FINE, "CFM.updateFolds: Starting update for {0} on AWT thread",
+                    getShortName()); // NOI18N
         }
         SwingUtilities.invokeLater(hierarchyUpdate);
     }
@@ -204,14 +205,15 @@ final class CppFoldManager extends CppFoldManagerBase
     /** Collect all updates into an update request */
     private UpdateFoldsRequest collectFoldUpdates() {
         if (log.isLoggable(Level.FINE)){
-            log.log(Level.FINE, "CFM.collectFoldUpdates: Processing " + getShortName() +
-                    " [" + Thread.currentThread().getName() + "]"); // NOI18N
+            log.log(Level.FINE, "CFM.collectFoldUpdates: Processing {0} [{1}]",
+                    new Object[]{getShortName(), Thread.currentThread().getName()}); // NOI18N
         }
         Document doc = getDocument();
 
         if (getOperation().isReleased() || !(doc instanceof AbstractDocument)) {
             if (log.isLoggable(Level.FINE)){
-               log.log(Level.FINE, "CFM.collectFoldUpdates: No doc found for " + getShortName()); // NOI18N
+               log.log(Level.FINE, "CFM.collectFoldUpdates: No doc found for {0}",
+                       getShortName()); // NOI18N
             }
             return null;
         }
@@ -255,8 +257,8 @@ final class CppFoldManager extends CppFoldManagerBase
     private void processUpdateFoldRequest(UpdateFoldsRequest request, FoldHierarchyTransaction transaction) {
         if (request != null && request.isValid()) {
             if (log.isLoggable(Level.FINE)){
-                log.log(Level.FINE, "CFM.processUpdateFoldRequest: Processing " + getShortName() +
-                        " [" + Thread.currentThread().getName() + "]"); // NOI18N
+                log.log(Level.FINE, "CFM.processUpdateFoldRequest: Processing {0} [{1}]",
+                        new Object[]{getShortName(), Thread.currentThread().getName()}); // NOI18N
             }
             LinkedHashMap<BlockFoldInfo, BlockFoldInfo> map = new LinkedHashMap<BlockFoldInfo, BlockFoldInfo>();
             for(BlockFoldInfo info : blockFoldInfos){
@@ -313,24 +315,24 @@ final class CppFoldManager extends CppFoldManagerBase
         try {
             if ((new File(getFilename())).exists()) {
                 if (log.isLoggable(Level.FINE)){
-                    log.log(Level.FINE, "CFM.run: Processing " + getShortName() +
-                            " [" + Thread.currentThread().getName() + "]"); // NOI18N
+                    log.log(Level.FINE, "CFM.run: Processing {0} [{1}]",
+                            new Object[]{getShortName(), Thread.currentThread().getName()}); // NOI18N
                 }
                 if (!listeningOnParsing) {
                     if (log.isLoggable(Level.FINE)){
-                        log.log(Level.FINE, "CFM.run: Processing " + getShortName() +
-                                " [" + Thread.currentThread().getName() + "]"); // NOI18N
+                        log.log(Level.FINE, "CFM.run: Processing {0} [{1}]",
+                                new Object[]{getShortName(), Thread.currentThread().getName()});
                     }
                     listeningOnParsing = true;
                     if (log.isLoggable(Level.FINE)){
-                        log.log(Level.FINE, "CFM.run: Starting WeakParsingListener [" +
-                                Thread.currentThread().getName() + "]"); // NOI18N
+                        log.log(Level.FINE, "CFM.run: Starting WeakParsingListener [{0}]",
+                                Thread.currentThread().getName()); // NOI18N
                     }
                     new WeakParsingListener(this).startListening();
                 }
                 if (log.isLoggable(Level.FINE)){
-                    log.log(Level.FINE, "CFM.run: Calling updateFolds [" +
-                            Thread.currentThread().getName() + "]"); // NOI18N
+                    log.log(Level.FINE, "CFM.run: Calling updateFolds [{0}]",
+                            Thread.currentThread().getName()); // NOI18N
                 }
                 updateFolds();
             }
@@ -366,8 +368,8 @@ final class CppFoldManager extends CppFoldManagerBase
     public void initFolds(FoldHierarchyTransaction transaction) {
         if (getFilename() != null && getFilename().length() > 0) {
             if (log.isLoggable(Level.FINE)){
-                log.log(Level.FINE, "CFM.initFolds: Posting for " + getShortName() +
-                        " on Cpp Folds RP [" + Thread.currentThread().getName() + "]"); // NOI18N
+                log.log(Level.FINE, "CFM.initFolds: Posting for {0} on Cpp Folds RP [{1}]",// NOI18N
+                        new Object[]{getShortName(), Thread.currentThread().getName()});
             }
             getCppFoldsRP().post(this, 1000, Thread.MIN_PRIORITY);
         }
@@ -377,7 +379,7 @@ final class CppFoldManager extends CppFoldManagerBase
         // we parse only documents assigned to files on disk        
         // TODO: why above?
         if (log.isLoggable(Level.FINE)){
-            log.log(Level.FINE, "TitleProperty: " + doc.getProperty(Document.TitleProperty));
+            log.log(Level.FINE, "TitleProperty: {0}", doc.getProperty(Document.TitleProperty));
         }
         if (doc.getProperty(Document.TitleProperty) != null) {
             CppMetaModel.getDefault().scheduleParsing(doc);
@@ -387,7 +389,7 @@ final class CppFoldManager extends CppFoldManagerBase
     @Override
     public void insertUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
         if (log.isLoggable(Level.FINE)){
-            log.log(Level.FINE, "FoldManager.insertUpdate: " + evt.getDocument().toString());
+            log.log(Level.FINE, "FoldManager.insertUpdate: {0}", evt.getDocument().toString()); // NOI18N
         }
         scheduleParsing(evt.getDocument());
     }
@@ -447,7 +449,7 @@ final class CppFoldManager extends CppFoldManagerBase
                 String pfile = FileUtil.getFileDisplayName(primaryFile);
                 if (pfile.equals(path)) {
                     if (log.isLoggable(Level.FINE)){
-                        log.log(Level.FINE, "CFM.objectParsed: Calling updateFolds for " + getShortName()); // NOI18N
+                        log.log(Level.FINE, "CFM.objectParsed: Calling updateFolds for {0}", getShortName()); // NOI18N
                     }
                     updateFolds();
                 } else {
@@ -485,7 +487,7 @@ final class CppFoldManager extends CppFoldManagerBase
                     blockFoldInfos.add(new BlockFoldInfo(foldRecord));
                 } catch (BadLocationException ex) {
                     if (log.isLoggable(Level.FINE)){
-                        log.log(Level.FINE, "CFM.addBlockFoldInfo: Got BadLocationException\n    " + // NOI18N
+                        log.log(Level.FINE, "CFM.addBlockFoldInfo: Got BadLocationException\n    {0}", // NOI18N
                                 ex.getMessage());
                     }
                 }
@@ -593,8 +595,8 @@ final class CppFoldManager extends CppFoldManagerBase
             if (FoldOperation.isBoundsValid(startOffset, endOffset,
                     template.getStartGuardedLength(), template.getEndGuardedLength())) {
                 if (log.isLoggable(Level.FINE)){
-                    log.log(Level.FINE, "CFM.BlockFoldInfo.updateHierarchy: Creating fold at (" + // NOI18N
-                            startOffset + ", " + endOffset + ")"); // NOI18N
+                    log.log(Level.FINE, "CFM.BlockFoldInfo.updateHierarchy: Creating fold at ({0}, {1})",  // NOI18N
+                            new Object[]{startOffset, endOffset});
                 }
                 fold = getOperation().addToHierarchy(
                         template.getType(), template.getDescription(), collapse,

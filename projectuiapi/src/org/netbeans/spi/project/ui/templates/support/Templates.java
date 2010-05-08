@@ -42,16 +42,20 @@
 package org.netbeans.spi.project.ui.templates.support;
 
 import java.io.IOException;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.modules.project.uiapi.Utilities;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Parameters;
 
 /**
  * Default implementations of template UI. 
@@ -60,6 +64,8 @@ import org.openide.loaders.TemplateWizard;
 public class Templates {
     
     private Templates() {}
+
+    private static final String SET_AS_MAIN = "setAsMain"; // NOI18N
     
     /**
      * Find the project selected for a custom template wizard iterator.
@@ -72,8 +78,18 @@ public class Templates {
      *                         or {@link TemplateWizard.Iterator#initialize}
      * @return the project into which the user has requested this iterator create a file (or null if not set)
      */
-    public static Project getProject( WizardDescriptor wizardDescriptor ) {
-        return (Project) wizardDescriptor.getProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT );
+    public static Project getProject(WizardDescriptor wizardDescriptor) {
+        Project p = (Project) wizardDescriptor.getProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT);
+        if (p != null) {
+            return p;
+        } else {
+            FileObject target = getTargetFolder(wizardDescriptor);
+            if (target != null) {
+                return FileOwnerQuery.getOwner(target);
+            } else {
+                return null;
+            }
+        }
     }
     
     /**
@@ -198,32 +214,109 @@ public class Templates {
             wizardDescriptor.putProperty( ProjectChooserFactory.WIZARD_KEY_TARGET_NAME, targetName );
         }
     }
+
+    /**
+     * Checks whether a project wizard will set the main project.
+     * (The default is true.)
+     * @param wizardDescriptor a New Project wizard
+     * @return true if it will set a main project
+     * @since org.netbeans.modules.projectuiapi/1 1.47
+     */
+    public static boolean getDefinesMainProject(WizardDescriptor wizardDescriptor) {
+        return !Boolean.FALSE.equals(wizardDescriptor.getProperty(SET_AS_MAIN));
+    }
+
+    /**
+     * Specify whether a project wizard will set the main project.
+     * If so, and it {@linkplain org.openide.WizardDescriptor.InstantiatingIterator#instantiate returns}
+     * at least one {@linkplain Project#getProjectDirectory project directory} to signal
+     * that a project will be created, the first such project will be
+     * {@linkplain OpenProjects#setMainProject set as the main project}.
+     * @param wizardDescriptor a New Project wizard
+     * @param definesMainProject true if it will set a main project
+     * @since org.netbeans.modules.projectuiapi/1 1.47
+     */
+    public static void setDefinesMainProject(WizardDescriptor wizardDescriptor, boolean definesMainProject) {
+        wizardDescriptor.putProperty(SET_AS_MAIN, definesMainProject);
+    }
             
     /**
-     * Create a basic target chooser suitable for many kinds of templates.
-     * The user is prompted to choose a location for the new file and a (base) name.
-     * Instantiation is handled by {@link DataObject#createFromTemplate}.
-     * @param project The project to work on.
-     * @param folders a list of possible roots to create the new file in
-     * @return a wizard panel(s) prompting the user to choose a name and location
+     * @deprecated Use {@link #buildSimpleTargetChooser} instead.
      */
+    @Deprecated
     public static WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser( Project project, SourceGroup[] folders ) {        
-        return createSimpleTargetChooser( project, folders, null );
+        return buildSimpleTargetChooser(project, folders).create();
     }
     
     /**
-     * Create a basic target chooser suitable for many kinds of templates.
-     * The user is prompted to choose a location for the new file and a (base) name.
+     * @deprecated Use {@link #buildSimpleTargetChooser} instead.
+     */
+    @Deprecated
+    public static WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
+        return buildSimpleTargetChooser(project, folders).bottomPanel(bottomPanel).create();
+    }
+
+    /**
+     * Builder for simple target choosers.
+     * The chooser is suitable for many kinds of templates.
+     * The user is prompted to choose a location for the new file and a name.
      * Instantiation is handled by {@link DataObject#createFromTemplate}.
-     * Resulting panel can be decorated with additional panel placed below the standard target 
-     * chooser.
      * @param project The project to work on.
      * @param folders a list of possible roots to create the new file in
-     * @param bottomPanel panel which should be placed underneth the default chooser
-     * @return a wizard panel(s) prompting the user to choose a name and location
+     * @return a builder which can be used to customize and then create the target chooser
+     * @since org.netbeans.modules.projectuiapi/1 1.45
      */
-    public static WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
-        return Utilities.getProjectChooserFactory().createSimpleTargetChooser( project, folders, bottomPanel );
+    public static SimpleTargetChooserBuilder buildSimpleTargetChooser(Project project, SourceGroup[] folders) {
+        Parameters.notNull("project", project);
+        Parameters.notNull("folders", folders);
+        return new SimpleTargetChooserBuilder(project, folders);
+    }
+
+    /**
+     * A builder for simple target choosers.
+     * @see #buildSimpleTargetChooser
+     * @since org.netbeans.modules.projectuiapi/1 1.45
+     */
+    public static final class SimpleTargetChooserBuilder {
+        final Project project;
+        final SourceGroup[] folders;
+        WizardDescriptor.Panel<WizardDescriptor> bottomPanel;
+        boolean freeFileExtension;
+        SimpleTargetChooserBuilder(Project project, SourceGroup[] folders) {
+            this.project = project;
+            this.folders = folders;
+        }
+        /**
+         * Sets a panel which should be placed underneath the default chooser.
+         * @param bottomPanel a custom bottom panel
+         * @return this builder
+         */
+        public SimpleTargetChooserBuilder bottomPanel(WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
+            this.bottomPanel = bottomPanel;
+            return this;
+        }
+        /**
+         * Permits the file extension of the created file to be customized by the user.
+         * By default, the file extension is fixed to be the same as that of the template:
+         * whatever is entered for the filename is taken to be a base name only.
+         * In this mode, the GUI makes it possible to use an alternate extension: it
+         * simply checks for a file name containing a period (<samp>.</samp>) and
+         * suppresses the automatic appending of the template's extension,
+         * taking the entered filename as complete.
+         * @return this builder
+         * @see CreateFromTemplateHandler#FREE_FILE_EXTENSION
+         */
+        public SimpleTargetChooserBuilder freeFileExtension() {
+            this.freeFileExtension = true;
+            return this;
+        }
+        /**
+         * Creates the target chooser panel.
+         * @return a wizard panel prompting the user to choose a name and location
+         */
+        public WizardDescriptor.Panel<WizardDescriptor> create() {
+            return Utilities.getProjectChooserFactory().createSimpleTargetChooser(project, folders, bottomPanel, freeFileExtension);
+        }
     }
         
 }

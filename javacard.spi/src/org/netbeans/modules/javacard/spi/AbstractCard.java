@@ -257,11 +257,14 @@ public abstract class AbstractCard implements Card {
     /**
      * Add a capability to this card.
      * @param c The capability
+     * @throws AssertionError if assertions are enabled, and this call would 
+     * result in two of the passed capability subclass in the card's
+     * capabilities.
      */
     protected final void addCapability(ICardCapability c) {
         Logger log = Logger.getLogger (AbstractCard.class.getName());
         if (log.isLoggable(Level.FINER)) {
-            log.log(Level.FINER, "Add Capability " + c + " to " + this); //NOI18N
+            log.log(Level.FINER, "Add Capability {0} to {1}", new Object[]{c, this}); //NOI18N
         }
         logAddition (c);
         if (!initializing) {
@@ -271,6 +274,8 @@ public abstract class AbstractCard implements Card {
             }
         }
         content.add(c);
+        assert new HashSet<Object>(getLookup().lookupAll(c.getClass())).size() == getLookup().lookupAll(c.getClass()).size() :
+            "Lookup should not contain multiple instances of " + c.getClass() + "(" + getLookup().lookupAll(c.getClass()); //NOI18N
     }
 
     void logAddition(ICardCapability c) {

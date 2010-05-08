@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -119,7 +119,7 @@ public class CatalogHelper {
             if (entry.getEntryType() == CatalogElement.nextCatalog) {
                 findSystems(getCatalog(entry.getSource()), systems, extension);
             } else if (entry.getEntryType() == CatalogElement.system) {
-                if (entry.getSource().endsWith("." + extension) && entry.getTarget().endsWith("." + extension) &&
+                if ((entry.getSource().endsWith("." + extension) || entry.getTarget().endsWith("." + extension)) &&
                         !entry.getTarget().startsWith(ProjectConstants.NBURI_SCHEME)) {
                     systems.add(entry);
                     map.put(entry, catalog);
@@ -175,8 +175,15 @@ public class CatalogHelper {
     }
 
     private FileObject getFileFromProject(CatalogEntry entry, String name) {
+        //1. Absolute path
         FileObject file = FileUtil.toFileObject(FileUtil.normalizeFile(new File(name)));
         String target = entry.getTarget();
+
+        //2. Relative path
+        if (file == null) {
+            CatalogWriteModel catalog = map.get(entry);
+            file = catalog.getCatalogFileObject().getParent().getFileObject(name);
+        }
 
         if (file == null && target.startsWith("src/")) { // NOI18N
             if (catalogWriteModelForProject != null) {

@@ -268,31 +268,37 @@ public class ProjectUtilitiesTest extends NbTestCase {
         FileObject d = FileUtil.toFileObject(getWorkDir());
         FileObject p1 = d.getFileObject("project1");
         assertNotNull(p1);
-        assertNull("normal file addition", ProjectUtilities.canUseFileName(p1, null, "foo", "java", false));
-        assertNull("normal file addition with no extension is OK", ProjectUtilities.canUseFileName(p1, null, "foo", null, false));
-        assertNull("normal file addition in an existing subdir", ProjectUtilities.canUseFileName(d, "project1", "foo", "java", false));
-        assertNull("normal file addition in a new subdir", ProjectUtilities.canUseFileName(d, "dir", "foo", "java", false));
+        assertNull("normal file addition", ProjectUtilities.canUseFileName(p1, null, "foo", "java", false, false));
+        assertNull("normal file addition with no extension is OK", ProjectUtilities.canUseFileName(p1, null, "foo", null, false, false));
+        assertNull("normal file addition in an existing subdir", ProjectUtilities.canUseFileName(d, "project1", "foo", "java", false, false));
+        assertNull("normal file addition in a new subdir", ProjectUtilities.canUseFileName(d, "dir", "foo", "java", false, false));
         //assertNotNull("no target name", ProjectUtilities.canUseFileName(d, "dir", null, "java"));
-        assertNotNull("no target folder", ProjectUtilities.canUseFileName(null, "dir", "foo", "java", false));
-        assertNotNull("file already exists", ProjectUtilities.canUseFileName(p1, null, "f1_1", "java", false));
-        assertNotNull("file already exists in subdir", ProjectUtilities.canUseFileName(d, "project1", "f1_1", "java", false));
-        assertNull("similar file already exists in subdir", ProjectUtilities.canUseFileName(d, "project1", "f1_1", "properties", false));
-        assertNull("similar file already exists in subdir", ProjectUtilities.canUseFileName(d, "project1", "f1_1", null, false));
+        assertNotNull("no target folder", ProjectUtilities.canUseFileName(null, "dir", "foo", "java", false, false));
+        assertNotNull("file already exists", ProjectUtilities.canUseFileName(p1, null, "f1_1", "java", false, false));
+        assertNotNull("file already exists in subdir", ProjectUtilities.canUseFileName(d, "project1", "f1_1", "java", false, false));
+        assertNull("similar file already exists in subdir", ProjectUtilities.canUseFileName(d, "project1", "f1_1", "properties", false, false));
+        assertNull("similar file already exists in subdir", ProjectUtilities.canUseFileName(d, "project1", "f1_1", null, false, false));
         d = new XMLFileSystem().getRoot();
-        assertNotNull("FS is r/o", ProjectUtilities.canUseFileName(d, null, "foo", "java", false));
+        assertNotNull("FS is r/o", ProjectUtilities.canUseFileName(d, null, "foo", "java", false, false));
         // #59876: deal with non-disk-based filesystems sensibly
         d = FileUtil.createMemoryFileSystem().getRoot();
         d.createData("bar.java");
         FileUtil.createData(d, "sub/dir/foo.java");
-        assertNull("can create file in non-disk FS", ProjectUtilities.canUseFileName(d, null, "foo", "java", false));
-        assertNotNull("file already exists", ProjectUtilities.canUseFileName(d, null, "bar", "java", false));
-        assertNotNull("file already exists in subsubdir", ProjectUtilities.canUseFileName(d, "sub/dir", "foo", "java", false));
-        assertNull("can otherwise create file in subsubdir", ProjectUtilities.canUseFileName(d, "sub/dir", "bar", "java", false));
+        assertNull("can create file in non-disk FS", ProjectUtilities.canUseFileName(d, null, "foo", "java", false, false));
+        assertNotNull("file already exists", ProjectUtilities.canUseFileName(d, null, "bar", "java", false, false));
+        assertNotNull("file already exists in subsubdir", ProjectUtilities.canUseFileName(d, "sub/dir", "foo", "java", false, false));
+        assertNull("can otherwise create file in subsubdir", ProjectUtilities.canUseFileName(d, "sub/dir", "bar", "java", false, false));
         //#66792: allow to create whole directory tree at once using Folder Template:
-        assertNull("can create directory subtree", ProjectUtilities.canUseFileName(d, null, "a/b/c", null, true));
+        assertNull("can create directory subtree", ProjectUtilities.canUseFileName(d, null, "a/b/c", null, true, false));
         //#59654: do not allow slash and backslash for common templates:
-        assertNotNull("cannot create file with slashes", ProjectUtilities.canUseFileName(d, null, "a/b/c", "txt", false));
-        assertNotNull("cannot create file with backslashes", ProjectUtilities.canUseFileName(d, null, "a\\b\\c", "txt", false));
+        assertNotNull("cannot create file with slashes", ProjectUtilities.canUseFileName(d, null, "a/b/c", "txt", false, false));
+        assertNotNull("cannot create file with backslashes", ProjectUtilities.canUseFileName(d, null, "a\\b\\c", "txt", false, false));
+        // Check freeFileExtension mode:
+        assertNull(ProjectUtilities.canUseFileName(d, null, "foo", "java", false, true));
+        assertNotNull(ProjectUtilities.canUseFileName(d, null, "bar", "java", false, true));
+        assertNotNull(ProjectUtilities.canUseFileName(d, null, "bar.java", "java", false, true));
+        assertNull(ProjectUtilities.canUseFileName(d, null, "bar.java", "java", false, false));
+
     }
     
     public void testNavigatorIsNotClosed() throws Exception {

@@ -56,10 +56,8 @@ public class FunctionNavigator implements NavigatorPanel {
     private AsmDataObject curDataObject;
     private StateListener stateListener;
     private LookupListener lookupListener;
-    private boolean traceState;
 
     public FunctionNavigator() {
-        traceState = false;
         asmTemplate = new Lookup.Template<AsmDataObject>(AsmDataObject.class);
     }
 
@@ -86,8 +84,12 @@ public class FunctionNavigator implements NavigatorPanel {
     }
 
     public void panelDeactivated() {
-        unsubscribe();
         result.removeLookupListener(getLookupListener());
+        runInEDT(new Runnable() {
+            public void run() {
+                unsubscribe();
+            }
+        });
     }
 
     public Lookup getLookup() {
@@ -119,10 +121,7 @@ public class FunctionNavigator implements NavigatorPanel {
     }
 
     private void unsubscribe() {
-
         if (curDataObject != null) {
-            assert traceState == true;
-
             AsmModelAccessor acc = getAccessor(curDataObject);
             if (acc != null) {
                 acc.removeParseListener(getStateListener());
@@ -132,21 +131,16 @@ public class FunctionNavigator implements NavigatorPanel {
                 pane.removeCaretListener(getStateListener());
             }
             curDataObject = null;
-
-            traceState = false;
         }
     }
 
     private void subscribe(AsmDataObject dob) {
-        assert traceState == false;
-
         curDataObject = dob;
 
         if (curDataObject != null) {
             try {
                 final EditorCookie ec = dob.getCookie(EditorCookie.class);
                 if (ec == null) {
-                    traceState = true;
                     return;
                 }
 
@@ -160,8 +154,6 @@ public class FunctionNavigator implements NavigatorPanel {
                 if (pane != null) {
                     pane.addCaretListener(getStateListener());
                 }
-
-                traceState = true;
             } catch (IOException ex) {
                 return;
             }

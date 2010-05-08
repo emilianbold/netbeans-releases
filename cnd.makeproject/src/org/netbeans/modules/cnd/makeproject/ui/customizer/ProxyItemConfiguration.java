@@ -61,8 +61,16 @@ class ProxyItemConfiguration extends ItemConfiguration {
     private FortranCompilerConfiguration fortranCompilerConfiguration;
     private CustomToolConfiguration customToolConfiguration;
 
-    ProxyItemConfiguration(Configuration configuration, Item item) {
-        super(item.getItemConfiguration(configuration));
+    static ProxyItemConfiguration proxyFactory(Configuration configuration, Item item){
+        ItemConfiguration itemConfiguration = item.getItemConfiguration(configuration);
+        if (itemConfiguration != null) {
+            return new ProxyItemConfiguration(itemConfiguration);
+        }
+        return null;
+    }
+
+    private ProxyItemConfiguration(ItemConfiguration itemConfiguration) {
+        super(itemConfiguration);
     }
 
     @Override

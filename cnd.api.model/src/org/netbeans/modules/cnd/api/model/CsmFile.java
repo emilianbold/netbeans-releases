@@ -96,5 +96,16 @@ public interface CsmFile extends CsmNamedElement, CsmScope, CsmValidable {
 
     /** returns true if file is header file. */
     public boolean isHeaderFile();
+
+    public FileType getFileType();
     
+    public static enum FileType {
+
+        UNDEFINED_FILE,
+        SOURCE_FILE,
+        SOURCE_C_FILE,
+        SOURCE_CPP_FILE,
+        SOURCE_FORTRAN_FILE,
+        HEADER_FILE,
+    };
 }

@@ -121,16 +121,16 @@ bool JvmLauncher::getJavaPath(string &path) {
     return !javaPath.empty();
 }
 
-bool JvmLauncher::start(const char *mainClassName, list<string> args, list<string> options, bool &separateProcess, DWORD *retCode) {
+bool JvmLauncher::start(const char *mainClassName, const list<string> &args, const list<string> &options, bool &separateProcess, DWORD *retCode) {
     assert(mainClassName);
     logMsg("JvmLauncher::start()\n\tmainClassName: %s\n\tseparateProcess: %s",
             mainClassName, separateProcess ? "true" : "false");
     logMsg("  args:");
-    for (list<string>::iterator it = args.begin(); it != args.end(); ++it) {
+    for (list<string>::const_iterator it = args.begin(); it != args.end(); ++it) {
         logMsg("\t%s", it->c_str());
     }
     logMsg("  options:");
-    for (list<string>::iterator it = options.begin(); it != options.end(); ++it) {
+    for (list<string>::const_iterator it = options.begin(); it != options.end(); ++it) {
         logMsg("\t%s", it->c_str());
     }
 
@@ -166,8 +166,8 @@ bool JvmLauncher::start(const char *mainClassName, list<string> args, list<strin
             : startInProcJvm(mainClassName, args, options);
 }
 
-bool JvmLauncher::findClientOption(list<string> &options) {
-    for (list<string>::iterator it = options.begin(); it != options.end(); ++it) {
+bool JvmLauncher::findClientOption(const list<string> &options) {
+    for (list<string>::const_iterator it = options.begin(); it != options.end(); ++it) {
         if (*it == "-client") {
             return true;
         }
@@ -195,7 +195,7 @@ bool JvmLauncher::isVersionString(const char *str) {
     return *end == '\0';
 }
 
-bool JvmLauncher::startInProcJvm(const char *mainClassName, std::list<std::string> args, std::list<std::string> options) {
+bool JvmLauncher::startInProcJvm(const char *mainClassName, const std::list<std::string> &args, const std::list<std::string> &options) {
 
     class Jvm {
     public:
@@ -228,7 +228,7 @@ bool JvmLauncher::startInProcJvm(const char *mainClassName, std::list<std::strin
             }
         }
 
-        bool init(list<string> options) {
+        bool init(const list<string> &options) {
             logMsg("JvmLauncher::Jvm::init()");
             logMsg("LoadLibrary(\"%s\")", jvmLauncher->javaDllPath.c_str());
             {
@@ -249,8 +249,8 @@ bool JvmLauncher::startInProcJvm(const char *mainClassName, std::list<std::strin
             logMsg("JVM options:");
             jvmOptions = new JavaVMOption[options.size()];
             int i = 0;
-            for (list<string>::iterator it = options.begin(); it != options.end(); ++it, ++i) {
-                string &option = *it;
+            for (list<string>::const_iterator it = options.begin(); it != options.end(); ++it, ++i) {
+                const string &option = *it;
                 logMsg("\t%s", option.c_str());
                 jvmOptions[i].optionString = (char *) option.c_str();
                 jvmOptions[i].extraInfo = 0;
@@ -314,9 +314,13 @@ bool JvmLauncher::startInProcJvm(const char *mainClassName, std::list<std::strin
         return false;
     }
     int i = 0;
-    for (list<string>::iterator it = args.begin(); it != args.end(); ++it, ++i) {
-        string &arg = *it;
-        jstring jstringArg = jvm.env->NewStringUTF(arg.c_str());
+    for (list<string>::const_iterator it = args.begin(); it != args.end(); ++it, ++i) {
+        const string &arg = *it;
+        const int len = 32*1024;
+        char utf8[len] = "";
+        if (convertAnsiToUtf8(arg.c_str(), utf8, len))
+            logMsg("Conversion to UTF8 failed");
+        jstring jstringArg = jvm.env->NewStringUTF(utf8);
         if (!jstringArg) {
             logErr(false, true, "NewStringUTF() failed");
             return false;
@@ -329,10 +333,10 @@ bool JvmLauncher::startInProcJvm(const char *mainClassName, std::list<std::strin
 }
 
 
-bool JvmLauncher::startOutProcJvm(const char *mainClassName, std::list<std::string> args, std::list<std::string> options, DWORD *retCode) {
+bool JvmLauncher::startOutProcJvm(const char *mainClassName, const std::list<std::string> &args, const std::list<std::string> &options, DWORD *retCode) {
     string cmdLine = '\"' + (suppressConsole ? javawExePath : javaExePath) + '\"';
     cmdLine.reserve(32*1024);
-    for (list<string>::iterator it = options.begin(); it != options.end(); ++it) {
+    for (list<string>::const_iterator it = options.begin(); it != options.end(); ++it) {
         cmdLine += " \"";
         cmdLine += *it;
         cmdLine += "\"";
@@ -341,7 +345,7 @@ bool JvmLauncher::startOutProcJvm(const char *mainClassName, std::list<std::stri
     // mainClass and args
     cmdLine += ' ';
     cmdLine += mainClassName;
-    for (list<string>::iterator it = args.begin(); it != args.end(); ++it) {
+    for (list<string>::const_iterator it = args.begin(); it != args.end(); ++it) {
         if (javaClientDllPath.empty() && *it == "-client") {
             logMsg("Removing -client option, client java dll not found.");
             // remove client parameter, no client java found
@@ -398,6 +402,7 @@ bool JvmLauncher::findJava(const char *minJavaVersion) {
 bool JvmLauncher::findJava(const char *javaKey, const char *prefix, const char *minJavaVersion) {
     logMsg("JvmLauncher::findJava()\n\tjavaKey: %s\n\tprefix: %s\n\tminJavaVersion: %s", javaKey, prefix, minJavaVersion);
     string value;
+    bool result = false;
     if (getStringFromRegistry(HKEY_LOCAL_MACHINE, javaKey, CUR_VERSION_NAME, value)) {
         if (value >= minJavaVersion) {
             string path;
@@ -405,9 +410,23 @@ bool JvmLauncher::findJava(const char *javaKey, const char *prefix, const char *
                 if (*path.rbegin() == '\\') {
                     path.erase(path.length() - 1, 1);
                 }
-                return checkJava(path.c_str(), prefix);
+                result = checkJava(path.c_str(), prefix);
             }
         }
     }
-    return false;    
+    if(!result && isWow64()) {
+        if (getStringFromRegistry64bit(HKEY_LOCAL_MACHINE, javaKey, CUR_VERSION_NAME, value)) {
+            if (value >= minJavaVersion) {
+                string path;
+                if (getStringFromRegistry64bit(HKEY_LOCAL_MACHINE, (string(javaKey) + "\\" + value).c_str(), JAVA_HOME_NAME, path)) {
+                    if (*path.rbegin() == '\\') {
+                        path.erase(path.length() - 1, 1);
+                    }
+                    result = checkJava(path.c_str(), prefix);
+                }
+            }
+        }
+    } 
+    // probably also need to check 32bit registry when launcher becomes 64-bit but is not the case now.
+    return result;    
 }

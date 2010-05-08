@@ -94,10 +94,7 @@ public class WSDLRefactoringElement extends SimpleRefactoringElementImplementati
         }
         return source;
     }
-  
-         
-   
-        
+
     public String getText() {
         if(node == null){
             //in case of embedded SchemaComponent, use the TreeElementFactory as the UIHelper 
@@ -158,17 +155,14 @@ public class WSDLRefactoringElement extends SimpleRefactoringElementImplementati
     }
     
     public void openInEditor(){
-    //     System.out.println("XMLRefactoringElement:: openInEditor called");
          Action preferredAction = SystemAction.get(ShowSourceAction.class);
          String command = (String)preferredAction.getValue(Action.ACTION_COMMAND_KEY);
          if(node == null) {
              node  = new AbstractNode(Children.LEAF);
          }
-	 ActionEvent ae = new ActionEvent(node, 0, command);
-	 preferredAction.actionPerformed(ae);
-     
+         ActionEvent ae = new ActionEvent(node, 0, command);
+         preferredAction.actionPerformed(ae);
      }
-    
     
     void addTransactionObject(XMLRefactoringTransaction transaction) {
         this.transaction = transaction;
@@ -185,9 +179,6 @@ public class WSDLRefactoringElement extends SimpleRefactoringElementImplementati
                return null;
            }
          }
-        
          return null;
     }
-     
-            
 }

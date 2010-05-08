@@ -81,6 +81,12 @@ public class TermOptions {
 	background = Color.white;
 	selectionBackground =
 	    UIManager.getColor("TextArea.selectionBackground");	// NOI18N
+	if (selectionBackground == null) {
+	    // bug #185154
+	    // Nimbus L&F doesn't define "TextArea.selectionBackground"
+	    selectionBackground =
+		UIManager.getColor("textHighlight");		// NOI18N
+	}
 	historySize = 5000;
 	tabSize = 8;
 	clickToType = true;

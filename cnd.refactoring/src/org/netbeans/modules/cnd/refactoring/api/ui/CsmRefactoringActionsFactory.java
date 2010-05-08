@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.refactoring.api.ui;
 
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.refactoring.actions.ChangeParametersAction;
 import org.netbeans.modules.cnd.refactoring.actions.EncapsulateFieldsAction;
 import org.openide.util.ContextAwareAction;
@@ -60,6 +61,11 @@ import org.openide.util.ContextAwareAction;
  * @author Vladimir Voskresensky
  */
 public final class CsmRefactoringActionsFactory {
+
+    public static boolean supportRefactoring(CsmFile file) {
+        // no refactorings for Fortran yet
+        return file.getFileType() != CsmFile.FileType.SOURCE_FORTRAN_FILE;
+    }
     
     private CsmRefactoringActionsFactory(){}
     

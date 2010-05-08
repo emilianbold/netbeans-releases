@@ -172,10 +172,11 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
         TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION);
+        indicatorConfiguration.setPersistencePrefix("dlight_sync"); // NOI18N
         indicatorConfiguration.setTitle(loc("indicator.title")); // NOI18N
         indicatorConfiguration.setGraphScale(2);
-        final TimeSeriesDescriptor threadsDesciptor = new TimeSeriesDescriptor(new Color(0xB2, 0xBC, 0x00), loc("graph.description.threads"), TimeSeriesDescriptor.Kind.ABS_SURFACE); // NOI18N
-        final TimeSeriesDescriptor syncDescriptor = new TimeSeriesDescriptor(new Color(231, 111, 0), loc("graph.description.locks"), TimeSeriesDescriptor.Kind.ABS_SURFACE); // NOI18N
+        final TimeSeriesDescriptor threadsDesciptor = new TimeSeriesDescriptor("threads", loc("graph.description.threads"), new Color(0xB2, 0xBC, 0x00), TimeSeriesDescriptor.Kind.ABS_SURFACE); // NOI18N
+        final TimeSeriesDescriptor syncDescriptor = new TimeSeriesDescriptor("locks", loc("graph.description.locks"), new Color(231, 111, 0), TimeSeriesDescriptor.Kind.ABS_SURFACE); // NOI18N
         final List<Column> threadColumnsList = Arrays.asList(threadsColumn, ProcDataProviderConfiguration.THREADS, LLDataCollectorConfiguration.threads_count);
         final List<Column> lockColumnsList = Arrays.asList(locksColumn, SunStudioDCConfiguration.c_ulockSummary, LLDataCollectorConfiguration.LOCKS_COUNT);
         threadsDesciptor.setSourceColumns(threadColumnsList);

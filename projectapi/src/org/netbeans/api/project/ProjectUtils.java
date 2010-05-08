@@ -43,11 +43,11 @@ package org.netbeans.api.project;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import org.netbeans.modules.projectapi.AuxiliaryConfigBasedPreferencesProvider;
@@ -71,6 +71,8 @@ import org.openide.util.Parameters;
 public class ProjectUtils {
 
     private ProjectUtils() {}
+
+    private static final Logger LOG = Logger.getLogger(ProjectUtils.class.getName());
     
     /**
      * Get basic information about a project.
@@ -146,7 +148,7 @@ public class ProjectUtils {
     public static boolean hasSubprojectCycles(final Project master, final Project candidate) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {
-                return visit(new HashSet<Project>(), new HashMap<Project,Set<? extends Project>>(), master, master, candidate);
+                return visit(new HashMap<Project,Boolean>(), master, master, candidate);
             }
         });
     }
@@ -174,36 +176,40 @@ public class ProjectUtils {
     
     /**
      * Do a DFS traversal checking for cycles.
-     * @param encountered projects already encountered in the DFS (added and removed as you go)
+     * @param encountered projects already encountered in the DFS
      * @param curr current node to visit
      * @param master the original master project (for use with candidate param)
      * @param candidate a candidate added subproject for master, or null
      */
-    private static boolean visit(Set<Project> encountered, Map<Project,Set<? extends Project>> cache, Project curr, Project master, Project candidate) {
-        if (!encountered.add(curr)) {
-            return true;
-        }
-        Set<? extends Project> subprojects = cache.get(curr);
-        if (subprojects == null) {
-            SubprojectProvider spp = curr.getLookup().lookup(SubprojectProvider.class);
-            subprojects = spp != null ? spp.getSubprojects() : Collections.<Project>emptySet();
-            cache.put(curr, subprojects);
-        }
-        for (Project child : subprojects) {
-            if (candidate == child) {
-                candidate = null;
-            }
-            if (visit(encountered, cache, child, master, candidate)) {
+    private static boolean visit(Map<Project,Boolean> encountered, Project curr, Project master, Project candidate) {
+        if (encountered.containsKey(curr)) {
+            if (encountered.get(curr)) {
+                return false;
+            } else {
+                LOG.log(Level.FINE, "Encountered cycle in {0} from {1} at {2} via {3}", new Object[] {master, candidate, curr, encountered});
                 return true;
+            }
+        }
+        encountered.put(curr, false);
+        SubprojectProvider spp = curr.getLookup().lookup(SubprojectProvider.class);
+        if (spp != null) {
+            Set<? extends Project> subprojects = spp.getSubprojects();
+            LOG.log(Level.FINEST, "Found subprojects {0} from {1}", new Object[] {subprojects, curr});
+            for (Project child : subprojects) {
+                if (visit(encountered, child, master, candidate)) {
+                    return true;
+                } else if (candidate == child) {
+                    candidate = null;
+                }
             }
         }
         if (candidate != null && curr == master) {
-            if (visit(encountered, cache, candidate, master, candidate)) {
+            if (visit(encountered, candidate, master, candidate)) {
                 return true;
             }
         }
-        assert encountered.contains(curr);
-        encountered.remove(curr);
+        assert !encountered.get(curr);
+        encountered.put(curr, true);
         return false;
     }
     
@@ -261,6 +267,7 @@ public class ProjectUtils {
      * @since org.netbeans.modules.projectapi/1 1.17
      */
     public static AuxiliaryConfiguration getAuxiliaryConfiguration(Project project) {
+        Parameters.notNull("project", project);
         return new AuxiliaryConfigImpl(project);
     }
 

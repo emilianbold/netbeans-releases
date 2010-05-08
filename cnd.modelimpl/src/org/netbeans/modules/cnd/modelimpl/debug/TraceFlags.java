@@ -53,6 +53,8 @@ import org.netbeans.modules.cnd.debug.DebugUtils;
  * @author Vladimir Kvashim
  */
 public class TraceFlags {
+    public static volatile boolean TRACE_182342_BUG = Boolean.getBoolean("cnd.modelimpl.trace182342");
+
     public static final boolean TRACE_CPU_CPP = false;
     public static final boolean TRACE_PARSER_QUEUE_DETAILS = Boolean.getBoolean("cnd.parser.queue.trace.details"); // NOI18N
     public static final boolean TRACE_PARSER_PROGRESS = Boolean.getBoolean("cnd.parser.progress.trace"); // NOI18N
@@ -151,7 +153,7 @@ public class TraceFlags {
     public static final int REPARSE_DELAY = DebugUtils.getInt("cnd.reparse.delay", 1001); // NOI18N
 
     // experimental expression evaluator for template instantiations
-    public static boolean EXPRESSION_EVALUATOR = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator", false); // NOI18N
+    public static final boolean EXPRESSION_EVALUATOR = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator", true); // NOI18N
 
     public static final List<String> logMacros;
     static {

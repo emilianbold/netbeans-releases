@@ -70,19 +70,20 @@ public class CallFinalize {
     public static ErrorDescription hint(final HintContext ctx) {
         assert ctx != null;
         final TreePath ins = ctx.getVariables().get("$ins");    //NOI18N
-        assert ins != null;
-        Tree target = ins.getLeaf();
-        if (target.getKind() == Tree.Kind.IDENTIFIER && "super".contentEquals(((IdentifierTree)target).getName())) {    //NOI18N
-            TreePath parent = ins.getParentPath();
-            while (parent.getLeaf().getKind() != Tree.Kind.METHOD) {
-                parent = parent.getParentPath();
-            }
-            final MethodTree owner = (MethodTree) parent.getLeaf();
-            if (Util.isFinalize(owner)) {
-                return null;
+        if (ins != null) {
+            Tree target = ins.getLeaf();
+            if (target.getKind() == Tree.Kind.IDENTIFIER && "super".contentEquals(((IdentifierTree)target).getName())) {    //NOI18N
+                TreePath parent = ins.getParentPath();
+                while (parent.getLeaf().getKind() != Tree.Kind.METHOD) {
+                    parent = parent.getParentPath();
+                }
+                final MethodTree owner = (MethodTree) parent.getLeaf();
+                if (Util.isFinalize(owner)) {
+                    return null;
+                }
             }
         }
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), NbBundle.getMessage(CallFinalize.class, "TXT_CallFinalize"),
-               FixFactory.createSuppressWarningsFix(ctx.getInfo(), ins, "FinalizeCalledExplicitly"));   //NOI18N
+               FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "FinalizeCalledExplicitly"));   //NOI18N
     }
 }

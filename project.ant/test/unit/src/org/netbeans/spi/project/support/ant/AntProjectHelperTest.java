@@ -54,7 +54,6 @@ import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
-import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileObject;
@@ -156,12 +155,12 @@ public class AntProjectHelperTest extends NbTestCase {
         Element data = h.getPrimaryConfigurationData(true);
         assertEquals("correct element name", "data", data.getLocalName());
         assertEquals("correct element namespace", "urn:test:shared", data.getNamespaceURI());
-        Element stuff = Util.findElement(data, "shared-stuff", "urn:test:shared");
+        Element stuff = XMLUtil.findElement(data, "shared-stuff", "urn:test:shared");
         assertNotNull("had nested stuff in it", stuff);
         data = h.getPrimaryConfigurationData(false);
         assertEquals("correct element name", "data", data.getLocalName());
         assertEquals("correct element namespace", "urn:test:private", data.getNamespaceURI());
-        stuff = Util.findElement(data, "private-stuff", "urn:test:private");
+        stuff = XMLUtil.findElement(data, "private-stuff", "urn:test:private");
         assertNotNull("had nested stuff in it", stuff);
     }
     
@@ -181,7 +180,7 @@ public class AntProjectHelperTest extends NbTestCase {
         }
         assertEquals("correct element name", "data", data.getLocalName());
         assertEquals("correct element namespace", "urn:test:shared", data.getNamespaceURI());
-        Element stuff = Util.findElement(data, "shared-stuff", "urn:test:shared");
+        Element stuff = XMLUtil.findElement(data, "shared-stuff", "urn:test:shared");
         /* This now retains the former contents:
         assertNull("had no stuff in it", stuff);
          */
@@ -192,13 +191,13 @@ public class AntProjectHelperTest extends NbTestCase {
         pm.saveProject(p);
         Document doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
         Element root = doc.getDocumentElement();
-        Element type = Util.findElement(root, "type", AntProjectHelper.PROJECT_NS);
-        assertEquals("correct restored type", "test", Util.findText(type));
-        Element config = Util.findElement(root, "configuration", AntProjectHelper.PROJECT_NS);
+        Element type = XMLUtil.findElement(root, "type", AntProjectHelper.PROJECT_NS);
+        assertEquals("correct restored type", "test", XMLUtil.findText(type));
+        Element config = XMLUtil.findElement(root, "configuration", AntProjectHelper.PROJECT_NS);
         assertNotNull("have <configuration>", config);
-        data = Util.findElement(config, "data", "urn:test:shared");
+        data = XMLUtil.findElement(config, "data", "urn:test:shared");
         assertNotNull("have <data>", data);
-        Element details = Util.findElement(data, "details", "urn:test:shared");
+        Element details = XMLUtil.findElement(data, "details", "urn:test:shared");
         assertNotNull("have <details>", details);
     }
     
@@ -463,7 +462,7 @@ public class AntProjectHelperTest extends NbTestCase {
     public void testPutPrimaryConfigurationData() throws Exception {
         h.addAntProjectListener(l);
         Element data = h.getPrimaryConfigurationData(true);
-        assertNotNull("<shared-stuff/> is there to start", Util.findElement(data, "shared-stuff", "urn:test:shared"));
+        assertNotNull("<shared-stuff/> is there to start", XMLUtil.findElement(data, "shared-stuff", "urn:test:shared"));
         assertTrue("project is not initially modified", !pm.isModified(p));
         assertEquals("gPCD fires no events", 0, l.events().length);
         assertNotNull("config data has an owner document", data.getOwnerDocument());
@@ -471,7 +470,7 @@ public class AntProjectHelperTest extends NbTestCase {
         data.appendChild(nue);
         assertTrue("project is not modified after uncommitted change", !pm.isModified(p));
         assertEquals("no events fired after uncommitted change", 0, l.events().length);
-        assertEquals("after uncommitted change gPCD does not yet have new <misc/>", null, Util.findElement(h.getPrimaryConfigurationData(true), "misc", "urn:test:shared"));
+        assertEquals("after uncommitted change gPCD does not yet have new <misc/>", null, XMLUtil.findElement(h.getPrimaryConfigurationData(true), "misc", "urn:test:shared"));
         h.putPrimaryConfigurationData(data, true);
         assertTrue("project is modified after committed change", pm.isModified(p));
         AntProjectEvent[] evs = l.events();
@@ -479,28 +478,28 @@ public class AntProjectHelperTest extends NbTestCase {
         assertEquals("correct helper", h, evs[0].getHelper());
         assertEquals("correct path", AntProjectHelper.PROJECT_XML_PATH, evs[0].getPath());
         assertTrue("expected change", evs[0].isExpected());
-        nue = Util.findElement(h.getPrimaryConfigurationData(true), "misc", "urn:test:shared");
+        nue = XMLUtil.findElement(h.getPrimaryConfigurationData(true), "misc", "urn:test:shared");
         assertNotNull("after committed change gPCD has new <misc/>", nue);
         assertEquals("new element name is correct", "misc", nue.getLocalName());
         assertEquals("new element namespace is correct", "urn:test:shared", nue.getNamespaceURI());
         Document doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
-        Element configuration = Util.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
+        Element configuration = XMLUtil.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
         assertNotNull("still has <configuration> on disk", configuration);
-        data = Util.findElement(configuration, "data", "urn:test:shared");
+        data = XMLUtil.findElement(configuration, "data", "urn:test:shared");
         assertNotNull("still has <data> on disk", data);
-        nue = Util.findElement(data, "misc", "urn:test:shared");
+        nue = XMLUtil.findElement(data, "misc", "urn:test:shared");
         assertEquals("<misc/> not yet on disk", null, nue);
         pm.saveProject(p);
         assertTrue("project is not modified after save", !pm.isModified(p));
         assertEquals("saving changes fires no new events", 0, l.events().length);
-        nue = Util.findElement(h.getPrimaryConfigurationData(true), "misc", "urn:test:shared");
+        nue = XMLUtil.findElement(h.getPrimaryConfigurationData(true), "misc", "urn:test:shared");
         assertNotNull("after save gPCD still has new <misc/>", nue);
         doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
-        configuration = Util.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
+        configuration = XMLUtil.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
         assertNotNull("still has <configuration> on disk", configuration);
-        data = Util.findElement(configuration, "data", "urn:test:shared");
+        data = XMLUtil.findElement(configuration, "data", "urn:test:shared");
         assertNotNull("still has <data> on disk", data);
-        nue = Util.findElement(data, "misc", "urn:test:shared");
+        nue = XMLUtil.findElement(data, "misc", "urn:test:shared");
         assertNotNull("<misc/> now on disk", nue);
         // #42147: changes made on disk should result in firing of an AntProjectEvent
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -516,12 +515,12 @@ public class AntProjectHelperTest extends NbTestCase {
         assertFalse("unexpected change", evs[0].isExpected());
         assertEquals("correct new display name", "Some New Name", ProjectUtils.getInformation(p).getDisplayName());
         data = h.getPrimaryConfigurationData(true);
-        Element stuff = Util.findElement(data, "other-shared-stuff", "urn:test:shared");
+        Element stuff = XMLUtil.findElement(data, "other-shared-stuff", "urn:test:shared");
         assertNotNull("have <other-shared-stuff/> now", stuff);
         AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
         data = aux.getConfigurationFragment("data", "urn:test:shared-aux", true);
         assertNotNull("have aux <data>", data);
-        stuff = Util.findElement(data, "other-aux-shared-stuff", "urn:test:shared-aux");
+        stuff = XMLUtil.findElement(data, "other-aux-shared-stuff", "urn:test:shared-aux");
         assertNotNull("have <other-aux-shared-stuff/> now", stuff);
         // XXX try private.xml too
         // XXX try modifying both XML files, or different parts of the same, and saving in a batch
@@ -551,7 +550,7 @@ public class AntProjectHelperTest extends NbTestCase {
         assertNotNull("found shared <data>", data);
         assertEquals("correct name", "data", data.getLocalName());
         assertEquals("correct namespace", "urn:test:shared-aux", data.getNamespaceURI());
-        Element stuff = Util.findElement(data, "aux-shared-stuff", "urn:test:shared-aux");
+        Element stuff = XMLUtil.findElement(data, "aux-shared-stuff", "urn:test:shared-aux");
         assertNotNull("found <aux-shared-stuff/>", stuff);
         assertEquals("gCF fires no changes", 0, l.events().length);
         // Check write of shared data.
@@ -567,11 +566,11 @@ public class AntProjectHelperTest extends NbTestCase {
         pm.saveProject(p);
         assertEquals("saving project fires no new changes", 0, l.events().length);
         Document doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
-        Element config = Util.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
+        Element config = XMLUtil.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
         assertNotNull("<configuration> still exists", config);
-        data = Util.findElement(config, "data", "urn:test:shared-aux");
+        data = XMLUtil.findElement(config, "data", "urn:test:shared-aux");
         assertNotNull("<data> still exists", data);
-        stuff = Util.findElement(data, "aux-shared-stuff", "urn:test:shared-aux");
+        stuff = XMLUtil.findElement(data, "aux-shared-stuff", "urn:test:shared-aux");
         assertNotNull("still have <aux-shared-stuff/>", stuff);
         assertEquals("attr written correctly", "val", stuff.getAttribute("attr"));
         // Check read of private data.
@@ -579,7 +578,7 @@ public class AntProjectHelperTest extends NbTestCase {
         assertNotNull("found shared <data>", data);
         assertEquals("correct name", "data", data.getLocalName());
         assertEquals("correct namespace", "urn:test:private-aux", data.getNamespaceURI());
-        stuff = Util.findElement(data, "aux-private-stuff", "urn:test:private-aux");
+        stuff = XMLUtil.findElement(data, "aux-private-stuff", "urn:test:private-aux");
         assertNotNull("found <aux-private-stuff/>", stuff);
         assertEquals("gCF fires no changes", 0, l.events().length);
         // Check write of private data.
@@ -596,9 +595,9 @@ public class AntProjectHelperTest extends NbTestCase {
         assertEquals("saving project fires no new changes", 0, l.events().length);
         doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PRIVATE_XML_PATH);
         config = doc.getDocumentElement();
-        data = Util.findElement(config, "data", "urn:test:private-aux");
+        data = XMLUtil.findElement(config, "data", "urn:test:private-aux");
         assertNotNull("<data> still exists", data);
-        stuff = Util.findElement(data, "aux-private-stuff", "urn:test:private-aux");
+        stuff = XMLUtil.findElement(data, "aux-private-stuff", "urn:test:private-aux");
         assertNotNull("still have <aux-private-stuff/>", stuff);
         assertEquals("attr written correctly", "val", stuff.getAttribute("attr"));
         // Check that missing fragments are not returned.
@@ -625,11 +624,11 @@ public class AntProjectHelperTest extends NbTestCase {
         data = aux.getConfigurationFragment("hello", "urn:test:whatever", true);
         assertNotNull("can retrieve new frag", data);
         doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
-        config = Util.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
+        config = XMLUtil.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
         assertNotNull("<configuration> still exists", config);
-        data = Util.findElement(config, "hello", "urn:test:whatever");
+        data = XMLUtil.findElement(config, "hello", "urn:test:whatever");
         assertNotNull("<hello> still exists", data);
-        assertEquals("correct nested contents too", "stuff", Util.findText(data));
+        assertEquals("correct nested contents too", "stuff", XMLUtil.findText(data));
         // Try removing a fragment.
         assertFalse("project is unmodified", pm.isModified(p));
         assertTrue("can remove new frag", aux.removeConfigurationFragment("hello", "urn:test:whatever", true));
@@ -637,9 +636,9 @@ public class AntProjectHelperTest extends NbTestCase {
         assertNull("now frag is gone", aux.getConfigurationFragment("hello", "urn:test:whatever", true));
         pm.saveProject(p);
         doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
-        config = Util.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
+        config = XMLUtil.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
         assertNotNull("<configuration> still exists", config);
-        data = Util.findElement(config, "hello", "urn:test:whatever");
+        data = XMLUtil.findElement(config, "hello", "urn:test:whatever");
         assertNull("now <hello> is gone", data);
         assertFalse("cannot remove a frag that is not there", aux.removeConfigurationFragment("hello", "urn:test:whatever", true));
         assertFalse("trying to remove a nonexistent frag does not modify project", pm.isModified(p));
@@ -659,7 +658,7 @@ public class AntProjectHelperTest extends NbTestCase {
         aux.putConfigurationFragment(data, true);
         pm.saveProject(p);
         doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
-        config = Util.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
+        config = XMLUtil.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
         String[] names = new String[]{"aaa-namespace", "aaaa-namespace", "bbb-name-sp", "bbb-namespace", "bbb-namespace-1", "ccc-namespace", "data-urn:test:shared", "data-urn:test:shared-aux"};
         int count = 0;
         NodeList list = config.getChildNodes();
@@ -684,7 +683,7 @@ public class AntProjectHelperTest extends NbTestCase {
         assertNotNull("AuxiliaryConfiguration present", aux);
 
         Element data = aux.getConfigurationFragment("data", "urn:test:private-aux", false);
-        Element stuff = Util.findElement(data, "aux-private-stuff", "urn:test:private-aux");
+        Element stuff = XMLUtil.findElement(data, "aux-private-stuff", "urn:test:private-aux");
         assertNotNull("found <aux-private-stuff/>", stuff);
         // Check write of private data.
         stuff.setAttribute("attr", "val");
@@ -710,9 +709,9 @@ public class AntProjectHelperTest extends NbTestCase {
         //check the data are written:
         Document doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PRIVATE_XML_PATH);
         Element config = doc.getDocumentElement();
-        data = Util.findElement(config, "data", "urn:test:private-aux");
+        data = XMLUtil.findElement(config, "data", "urn:test:private-aux");
         assertNotNull("<data> still exists", data);
-        stuff = Util.findElement(data, "aux-private-stuff", "urn:test:private-aux");
+        stuff = XMLUtil.findElement(data, "aux-private-stuff", "urn:test:private-aux");
         assertNotNull("still have <aux-private-stuff/>", stuff);
         assertEquals("attr written correctly", "val", stuff.getAttribute("attr"));
         
@@ -788,7 +787,7 @@ public class AntProjectHelperTest extends NbTestCase {
                 System.out.println("starting #" + x);
                 for (int i = 0; i < 1000; i++) {
                     Element data = h.getPrimaryConfigurationData(true);
-                    Util.findSubElements(data);
+                    XMLUtil.findSubElements(data);
                     if (i % 100 == 0) {
                         System.out.println("in the middle of #" + x);
                         try {

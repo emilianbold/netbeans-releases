@@ -43,7 +43,7 @@
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new OperationConfigurationPanel(this.mProject, true, mModel, false);"/>
       </AuxValues>
     </Component>
-    <Component class="org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel" name="commonMessagePanel1">
+    <Component class="org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel" name="commonMessagePanel1">
     </Component>
   </SubComponents>
 </Form>

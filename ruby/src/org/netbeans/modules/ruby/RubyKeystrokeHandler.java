@@ -639,10 +639,10 @@ public class RubyKeystrokeHandler implements KeystrokeHandler {
                     }
                 }
             } else if (ch == '#' && 
-                    (LexUtilities.isInsideQuotedString(doc, target.getSelectionStart()) &&
+                    ((LexUtilities.isInsideQuotedString(doc, target.getSelectionStart()) &&
                     LexUtilities.isInsideQuotedString(doc, target.getSelectionEnd())) ||
                     (LexUtilities.isInsideRegexp(doc, target.getSelectionStart()) &&
-                    LexUtilities.isInsideRegexp(doc, target.getSelectionEnd()))) {
+                    LexUtilities.isInsideRegexp(doc, target.getSelectionEnd())))) {
                 String selection = target.getSelectedText();
                 if (selection != null && selection.length() > 0 && selection.charAt(0) != ch) {
                     int start = target.getSelectionStart();

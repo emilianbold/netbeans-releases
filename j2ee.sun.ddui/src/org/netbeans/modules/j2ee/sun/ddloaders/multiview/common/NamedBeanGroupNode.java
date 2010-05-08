@@ -545,7 +545,7 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
             DDBinding binding = ((NamedBeanNode) parentNode).getBinding();
             if(binding != null) {
                 parentName = binding.isBound() ? binding.getBindingName() : binding.getBeanName();
-                if(parentName.length() == 0) {
+                if(parentName == null || parentName.length() == 0) {
                     parentName = null;
                 }
             }

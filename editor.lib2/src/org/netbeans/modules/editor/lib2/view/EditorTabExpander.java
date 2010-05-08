@@ -42,8 +42,9 @@
 package org.netbeans.modules.editor.lib2.view;
 
 import java.util.logging.Logger;
-import javax.swing.text.PlainDocument;
 import javax.swing.text.TabExpander;
+import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 
 /**
  * Tab expander of the editor.
@@ -69,9 +70,9 @@ public final class EditorTabExpander implements TabExpander {
         updateTabSize();
     }
 
-    private void updateTabSize() {
-        Integer tabSizeInteger = (Integer) documentView.getDocument().getProperty(PlainDocument.tabSizeAttribute);
-        tabSize = (tabSizeInteger != null) ? tabSizeInteger : 8;
+    /* package */ void updateTabSize() {
+        Integer tabSizeInteger = (Integer) documentView.getDocument().getProperty(SimpleValueNames.TAB_SIZE);
+        tabSize = (tabSizeInteger != null) ? tabSizeInteger : EditorPreferencesDefaults.defaultTabSize;
     }
 
     @Override

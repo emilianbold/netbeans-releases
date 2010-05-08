@@ -313,14 +313,14 @@ public class CompletionUtil {
            ((Datatype)type).getEnumerations() == null)
             return null;                
         for(Object value: ((Datatype)type).getEnumerations()) {
+            String str = (value != null) ? value.toString() : null;
             if(context.getTypedChars() == null || context.getTypedChars().equals("")) {
-                ValueResultItem item = new ValueResultItem(attr, (String)value, context);
+                ValueResultItem item = new ValueResultItem(attr, str, context);
                 result.add(item);
                 continue;
             }
-            String str = (String)value;
-            if(str.startsWith(context.getTypedChars())) {
-                ValueResultItem item = new ValueResultItem(attr, (String)value, context);
+            if (str != null && str.startsWith(context.getTypedChars())) {
+                ValueResultItem item = new ValueResultItem(attr, str, context);
                 result.add(item);
             }
         }
@@ -931,20 +931,25 @@ public class CompletionUtil {
 
     private static boolean isClosingEndTagFoundAfter(int caretPos,
         TokenSequence tokenSequence, String startTagName) {
+        if ((tokenSequence == null) || (startTagName == null)) return false;
         tokenSequence.move(caretPos);
 
-        boolean closingTagFound = false,  endTagPrefixFound = false;
+        int unclosedTagCount = 1;
         while (tokenSequence.moveNext()) {
             Token token = tokenSequence.token();
-            if (isEndTagPrefix(token)) {
-                String endTagName = getTokenTagName(token);
-                endTagPrefixFound = startTagName.equals(endTagName);
-            } else if (isTagLastChar(token) && endTagPrefixFound) {
-                closingTagFound = true;
-                break;
+            String nextTagName = getTokenTagName(token);
+            if (nextTagName != null) {
+                if (startTagName.equals(nextTagName)) {
+                    // fix for issue #185048
+                    // (http://netbeans.org/bugzilla/show_bug.cgi?id=185048)
+                    unclosedTagCount += isEndTagPrefix(token) ? -1 :
+                                       (isTagFirstChar(token) ?  1 : 0);
+                }
+            } else if (isTagLastChar(token) && (unclosedTagCount < 1)) {
+                return true;
             }
         }
-        return closingTagFound;
+        return false;
     }
 
     public static boolean isTokenSequenceUsable(TokenSequence tokenSequence) {

@@ -55,8 +55,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     }
     
     @Override
-    public SunFortranCompiler createCopy() {
-        return new SunFortranCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
+    public SunFortranCompiler createCopy(CompilerFlavor flavor) {
+        return new SunFortranCompiler(getExecutionEnvironment(), flavor, getKind(), getName(), getDisplayName(), getPath());
     }
 
     public static SunFortranCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {

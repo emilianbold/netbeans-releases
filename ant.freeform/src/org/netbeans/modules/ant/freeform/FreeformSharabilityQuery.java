@@ -54,9 +54,7 @@ import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.openide.filesystems.FileUtil;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  *
@@ -117,9 +115,9 @@ public class FreeformSharabilityQuery implements SharabilityQueryImplementation,
                     final NodeList exports = root.getElementsByTagNameNS(FreeformProjectType.NS_GENERAL, "export"); //NOI18N
                     for (int i=0; i< exports.getLength(); i++) {
                         final Element export = (Element) exports.item(i);
-                        final Element location = Util.findElement(export, "location", FreeformProjectType.NS_GENERAL);   //NOI18N
+                        final Element location = XMLUtil.findElement(export, "location", FreeformProjectType.NS_GENERAL);   //NOI18N
                         if (location != null) {
-                            final String path = Util.findText(location);
+                            final String path = XMLUtil.findText(location);
                             if (path != null) {
                                 final File exportedFile = Util.resolveFile(project.evaluator(), FileUtil.toFile(project.getProjectDirectory()), path);
                                 if (exportedFile != null) {

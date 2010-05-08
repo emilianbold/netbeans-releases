@@ -47,25 +47,27 @@ import javax.swing.event.UndoableEditListener;
 /**
  * Interface describing an abstract model. The model is based on a
  * document representation that represents the persistent form.
+ *
  * @author Chris Webster
  * @author Nam Nguyen
  * @author Rico Cruz
  */
 public interface Model<C extends Component<C>> extends Referenceable {
+    
     public static final String STATE_PROPERTY = "state";
     
     /**
-     * Add coarse-grained change listener for events on model components.
+     * Adds coarse-grained change listener for events on model components.
      */
     public void removeComponentListener(ComponentListener cl);
 
     /**
-     * Remove component event listener.
+     * Removes component event listener.
      */
     public void addComponentListener(ComponentListener cl);
 
     /**
-     * Add fine-grained property change listener for events on model components.
+     * Adds fine-grained property change listener for events on model components.
      */
     public void addPropertyChangeListener(PropertyChangeListener pcl);
 
@@ -101,13 +103,13 @@ public interface Model<C extends Component<C>> extends Referenceable {
     void addUndoableRefactorListener(UndoableEditListener uel);
 
     /**
-     * make the current memory model consistent with the underlying
+     * Makes the current memory model consistent with the underlying
      * representation, typically a swing document. 
      */
     void sync() throws java.io.IOException;
     
     /**
-     * return true if sync is being performed. 
+     * Returns true if sync is being performed.
      */
     boolean inSync();
     
@@ -154,7 +156,7 @@ public interface Model<C extends Component<C>> extends Referenceable {
     void endTransaction();
     
     /**
-     * Add child component at specified index.
+     * Adds child component at specified index.
      * @param target the parent component.
      * @param child the child component to be added.
      * @param index position among same type of child components, or -1 if not relevant.
@@ -162,7 +164,7 @@ public interface Model<C extends Component<C>> extends Referenceable {
     void addChildComponent(Component target, Component child, int index);
     
     /**
-     * Remove specified component from model.
+     * Removes specified component from model.
      */
     void removeChildComponent(Component child);
 

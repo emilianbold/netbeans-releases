@@ -42,6 +42,7 @@ package org.netbeans.editor.ext.html.dtd.spi;
 
 import java.io.Reader;
 import java.util.Collection;
+import org.openide.filesystems.FileObject;
 
 /**
  * DTDReaderProvider is interface used as a source of Readers used to parse DTD
@@ -74,7 +75,14 @@ public interface ReaderProvider {
      * @returns a Collection of all identifiers for which this ReaderProvider
      * is able to provide Readers for.
      */
-    public Collection getIdentifiers();
+    public Collection<String> getIdentifiers();
+
+    /**
+     *
+     * @param publicId
+     * @return an internall system ID resource as FileObject for the given public ID
+     */
+    public FileObject getSystemId(String publicId);
 
     /**
      * @param public identifiers

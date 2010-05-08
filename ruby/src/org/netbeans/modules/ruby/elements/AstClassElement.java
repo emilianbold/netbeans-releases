@@ -14,6 +14,7 @@ public class AstClassElement extends AstElement implements ClassElement {
     
     private String fqn;
     private Set<String> includes;
+    private boolean virtual;
 
     public AstClassElement(ParserResult info, Node node) {
         super(info, node);
@@ -57,6 +58,10 @@ public class AstClassElement extends AstElement implements ClassElement {
         return fqn;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+    
     public void setFqn(String fqn) {
         this.fqn = fqn;
     }
@@ -74,4 +79,13 @@ public class AstClassElement extends AstElement implements ClassElement {
     public ElementKind getKind() {
         return ElementKind.CLASS;
     }
+
+    public boolean isVirtual() {
+        return virtual;
+    }
+
+    public void setVirtual(boolean virtual) {
+        this.virtual = virtual;
+    }
+    
 }

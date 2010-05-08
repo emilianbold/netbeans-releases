@@ -10,6 +10,8 @@ myapp*
     customer
       customer_id
       address_line
+    asummary[view]
+      asummary_id
   accounting
     invoice
       invoice_id

@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -220,7 +220,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return (flags & mask) == mask;
     }
     
-    protected void setFlags(byte mask, boolean value) {
+    protected final void setFlags(byte mask, boolean value) {
         if (value) {
             flags |= mask;
         } else {
@@ -228,11 +228,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
     }
 
-    public boolean isStatic() {
+    public final boolean isStatic() {
         return hasFlags(FLAGS_STATIC);
     }
     
-    protected void setStatic(boolean value) {
+    protected final void setStatic(boolean value) {
         setFlags(FLAGS_STATIC, value);
     }
     
@@ -249,19 +249,19 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     protected CharSequence getScopeSuffix() {
-        return classTemplateSuffix != null ? classTemplateSuffix : CharSequenceKey.empty();
+        return classTemplateSuffix != null ? classTemplateSuffix : CharSequences.empty();
     }
 
     protected String initName(AST node) {
         return findFunctionName(node);
     }
 
-    protected CharSequence[] initRawName(AST node) {
+    protected final CharSequence[] initRawName(AST node) {
         return findFunctionRawName(node);
     }
     
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
+        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
     
     public List<CsmTemplateParameter> getTemplateParameters() {
@@ -383,7 +383,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) || (scope instanceof CsmNamespaceDefinition) ) {
             CharSequence scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
             if( scopeQName != null && scopeQName.length() > 0 ) {
-                return CharSequenceKey.create(scopeQName.toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix()); // NOI18N
+                return CharSequences.create(scopeQName.toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix()); // NOI18N
             }
         }
         return getName();
@@ -506,7 +506,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 CsmFunctionDefinition def = (CsmFunctionDefinition) decl;
                 int candidateParamSize = def.getParameters().size();
                 if (!isVoid && parmSize == 0) {
-                    if (!ProjectBase.isCppFile(decl.getContainingFile())){
+                    if (!Utils.isCppFile(decl.getContainingFile())){
                         return def;
                     }
                 }
@@ -515,7 +515,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                     if (candidate == null) {
                         candidate = def;
                     } else {
-                        return null;
+//                        return null;
                     }
                 }
             }

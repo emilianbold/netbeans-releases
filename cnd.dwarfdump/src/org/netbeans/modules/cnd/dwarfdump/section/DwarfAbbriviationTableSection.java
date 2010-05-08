@@ -63,7 +63,7 @@ import java.util.HashMap;
  * @author ak119685
  */
 public class DwarfAbbriviationTableSection extends ElfSection {
-    HashMap<Long, DwarfAbbriviationTable> tables = new HashMap<Long, DwarfAbbriviationTable>();
+    private final HashMap<Long, DwarfAbbriviationTable> tables = new HashMap<Long, DwarfAbbriviationTable>();
     
     /** Creates a new instance of DwarfAbbriviationTableSection */
     public DwarfAbbriviationTableSection(ElfReader reader, int sectionIdx) {

@@ -57,6 +57,7 @@ static void* parallel_threadfunc(void *p) {
     while (!done) {
         work_run(work, MICROS_PER_SECOND);
     }
+    return NULL;
 }
 
 void parallel_demo(int work_count, work_t* works, int seconds_per_work) {
@@ -73,7 +74,7 @@ void parallel_demo(int work_count, work_t* works, int seconds_per_work) {
 
     estimate_usage(work_count, works, seconds_per_work);
 
-    TRACE("Allocating %ld bytes of memory for thread descriptors with calloc()\n", work_count * sizeof(pthread_t));
+    TRACE("Allocating %ld bytes of memory for thread descriptors with calloc()\n", (long) (work_count * sizeof(pthread_t)));
     pthread_t* t = calloc(work_count, sizeof (pthread_t));
     done = 0;
 
@@ -92,7 +93,7 @@ void parallel_demo(int work_count, work_t* works, int seconds_per_work) {
         pthread_join(t[i], NULL);
     }
 
-    TRACE("Freeing memory used for thread descriptors\n", work_count * sizeof(pthread_t));
+    TRACE("Freeing %ld bytes of memory used for thread descriptors\n", (long) (work_count * sizeof(pthread_t)));
     free(t);
     PRINT("\n");
 }

@@ -58,7 +58,7 @@ public class EmptyNode extends LeafNode {
 
     private JPanel panel;
     private JLabel lbl;
-    private JLabel progress;
+    private ProgressLabel progress;
     private String title;
     private String p;
 
@@ -105,6 +105,10 @@ public class EmptyNode extends LeafNode {
             loadingCounter--;
             if( loadingCounter < 0 )
                 loadingCounter = 0;
+            if (loadingCounter == 0) {
+                if (progress!=null)
+                    progress.stop();
+            }
             fireContentChanged();
         }
     }

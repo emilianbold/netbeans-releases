@@ -39,13 +39,13 @@
 package org.netbeans.modules.websvc.saas.services.twitter.resources;
 
 import junit.framework.TestSuite;
-import org.netbeans.modules.websvc.saas.kit.SchemaTest;
+import org.netbeans.modules.websvc.saas.util.SchemaTestBase;
 
 /**
  *
  * @author lukas
  */
-public class TwitterResponseSchemaTest extends SchemaTest {
+public class TwitterResponseSchemaTest extends SchemaTestBase {
 
     private TwitterResponseSchemaTest() {
         super();

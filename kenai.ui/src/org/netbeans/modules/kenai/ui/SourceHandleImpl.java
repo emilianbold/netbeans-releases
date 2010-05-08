@@ -85,6 +85,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     private String externalScmType=SCM_TYPE_UNKNOWN;
     public static final String SCM_TYPE_UNKNOWN = "unknown";//NOI18N
     public static final String SCM_TYPE_CVS = "cvs";//NOI18N
+    private RequestProcessor rp = new RequestProcessor(SourceHandleImpl.class);
 
     public String getExternalScmType() {
         return externalScmType;
@@ -160,8 +161,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
 
     public void propertyChange(PropertyChangeEvent evt) {
         final List<Project> newProjects = getNewProjects((Project[])evt.getOldValue(), (Project[])evt.getNewValue());
-        RequestProcessor.getDefault().post(new Runnable() {
-
+        rp.post(new Runnable() {
             public void run() {
                 addToRecentProjects(newProjects, true);
             }

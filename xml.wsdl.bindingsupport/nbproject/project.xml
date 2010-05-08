@@ -41,6 +41,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.dialogs</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -61,7 +67,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.0</specification-version>
+                        <specification-version>8.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -76,12 +82,13 @@
             <friend-packages>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <friend>org.netbeans.modules.compapp.manager.jbi</friend>
-                <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <friend>org.netbeans.modules.sca.designer</friend>
                 <friend>org.netbeans.modules.sca.platform.openesb</friend>
                 <friend>org.netbeans.modules.sca.platform.tuscany</friend>
+                <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <package>org.netbeans.modules.xml.wsdl.bindingsupport.appconfigeditor</package>
                 <package>org.netbeans.modules.xml.wsdl.bindingsupport.appconfigeditor.ui</package>
+                <package>org.netbeans.modules.xml.wsdl.bindingsupport.common</package>
                 <package>org.netbeans.modules.xml.wsdl.bindingsupport.configeditor</package>
                 <package>org.netbeans.modules.xml.wsdl.bindingsupport.configeditor.ui</package>
                 <package>org.netbeans.modules.xml.wsdl.bindingsupport.template</package>

@@ -381,6 +381,7 @@ public abstract class PhpUnit extends PhpProgram {
         final File bootstrapFile = new File(getBootstrapFilepath(project));
         final File[] files = new File[1];
         FileUtil.runAtomicAction(new Runnable() {
+            @Override
             public void run() {
                 try {
                     DataObject dataTemplate = DataObject.find(configFile);
@@ -438,7 +439,7 @@ public abstract class PhpUnit extends PhpProgram {
         }
 
         if (!tmpBootstrap.delete()) {
-            LOGGER.info("Cannot delete temporary file " + tmpBootstrap);
+            LOGGER.log(Level.INFO, "Cannot delete temporary file {0}", tmpBootstrap);
             tmpBootstrap.deleteOnExit();
         }
 
@@ -608,14 +609,17 @@ public abstract class PhpUnit extends PhpProgram {
         //                                                              PHPUnit 3.3.1 by Sebastian Bergmann.
         private static final Pattern PHPUNIT_VERSION = Pattern.compile("PHPUnit\\s+(\\d+)\\.(\\d+)\\.(\\d+)\\s+"); // NOI18N
 
+        @Override
         public InputProcessor newInputProcessor(final InputProcessor defaultProcessor) {
             return InputProcessors.bridge(new LineProcessor() {
+                @Override
                 public void processLine(String line) {
                     int[] match = match(line);
                     if (match != null) {
                         version = match;
                     }
                 }
+                @Override
                 public void reset() {
                     try {
                         defaultProcessor.reset();
@@ -623,6 +627,7 @@ public abstract class PhpUnit extends PhpProgram {
                         Exceptions.printStackTrace(ex);
                     }
                 }
+                @Override
                 public void close() {
                     try {
                         defaultProcessor.close();

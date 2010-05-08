@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.cnd.test;
 
-import junit.framework.TestCase;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 
 /**
@@ -68,7 +69,14 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
  * @author Vladimir Voskresensky
  */
 public class CndBaseTestSuite extends NativeExecutionBaseTestSuite {
-    
+    static {
+        Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
+        Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager").setLevel(Level.SEVERE);
+        Logger.getLogger("org.openide.filesystems.FileUtil").setLevel(Level.OFF);
+
+//        System.setProperty("cnd.pp.condition.comparision.trace", "true");
+//        System.setProperty("cnd.modelimpl.trace.file", "gmodule-dl.c");
+    }
     /**
      * Constructs an empty TestSuite.
      */

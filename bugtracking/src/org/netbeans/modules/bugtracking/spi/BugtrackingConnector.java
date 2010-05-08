@@ -42,6 +42,7 @@ package org.netbeans.modules.bugtracking.spi;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Collection;
 import org.openide.util.Lookup;
 
 /**
@@ -132,7 +133,17 @@ public abstract class BugtrackingConnector implements Lookup.Provider {
      * Notify listeners on this connector that a repository was either removed or saved
      * XXX make use of new/old value
      */
+    @Deprecated
     protected void fireRepositoriesChanged() {
-        changeSupport.firePropertyChange(EVENT_REPOSITORIES_CHANGED, null, null);
-    }    
+        fireRepositoriesChanged(null, null);
+    }
+
+    /**
+     *
+     * @param oldRepositories - lists repositories which were available for the connector before the change
+     * @param newRepositories - lists repositories which are available for the connector after the change
+     */
+    protected void fireRepositoriesChanged(Collection<Repository> oldRepositories, Collection<Repository> newRepositories) {
+        changeSupport.firePropertyChange(EVENT_REPOSITORIES_CHANGED, oldRepositories, newRepositories);
+    }
 }

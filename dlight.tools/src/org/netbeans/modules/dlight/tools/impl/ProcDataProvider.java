@@ -164,6 +164,8 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
             if (!HostInfoUtils.fileExists(env, "/proc")) { // NOI18N
                 return ValidationStatus.invalidStatus(getMessage("ValidationStatus.ProcNotFound")); // NOI18N
             }
+        } catch (InterruptedException ex) {
+            return ValidationStatus.invalidStatus(getMessage("ValidationStatus.Interrupted"));
         } catch (IOException ex) {
             return ValidationStatus.invalidStatus(ex.getMessage());
         }

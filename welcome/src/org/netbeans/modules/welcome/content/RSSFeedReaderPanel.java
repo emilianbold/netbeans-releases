@@ -80,6 +80,7 @@ public class RSSFeedReaderPanel extends JPanel implements PropertyChangeListener
     protected void feedContentLoaded() {
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if( RSSFeed.FEED_CONTENT_PROPERTY.equals( evt.getPropertyName() ) ) {
             feedContentLoaded();

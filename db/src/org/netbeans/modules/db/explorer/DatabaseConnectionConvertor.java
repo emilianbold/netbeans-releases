@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -61,6 +61,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.keyring.Keyring;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -78,7 +79,7 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
-import org.netbeans.modules.db.util.Base64;
+import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -88,7 +89,7 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * Reads and writes the database connection registration format.
  *
- * @author Radko Najman, Andrei Badea
+ * @author Radko Najman, Andrei Badea, Jiri Rechtacek
  */
 public class DatabaseConnectionConvertor implements Environment.Provider, InstanceCookie.Of {
     
@@ -99,6 +100,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     
     public static final Logger LOGGER = 
             Logger.getLogger(DatabaseConnectionConvertor.class.getName());
+
+    private static final RequestProcessor RP = new RequestProcessor(DatabaseConnectionConvertor.class);
     
     /**
      * The delay by which the write of the changes is postponed.
@@ -133,6 +136,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         holder = new WeakReference<XMLDataObject>(null);
     }
 
+    @SuppressWarnings("LeakingThisInConstructor")
     private DatabaseConnectionConvertor(XMLDataObject object) {
         holder = new WeakReference<XMLDataObject>(object);
         InstanceContent cookies = new InstanceContent();
@@ -148,6 +152,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     
     // Environment.Provider methods
     
+    @Override
     public Lookup getEnvironment(DataObject obj) {
         DatabaseConnection existingInstance = newFile2Conn.remove(obj.getPrimaryFile());
         if (existingInstance != null) {
@@ -159,19 +164,23 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     
     // InstanceCookie.Of methods
 
+    @Override
     public String instanceName() {
         XMLDataObject obj = getHolder();
         return obj == null ? "" : obj.getName();
     }
     
+    @Override
     public Class<DatabaseConnection> instanceClass() {
         return DatabaseConnection.class;
     }
     
+    @Override
     public boolean instanceOf(Class<?> type) {
         return (type.isAssignableFrom(DatabaseConnection.class));
     }
 
+    @Override
     public Object instanceCreate() throws java.io.IOException, ClassNotFoundException {
         synchronized (this) {
             Object o = refConnection.get();
@@ -220,14 +229,27 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     }
 
     private static DatabaseConnection createDatabaseConnection(Handler handler) {
+        // If the password was saved, then it means the user checked
+        // the box to say the password should be remembered.
+        boolean rememberPassword = false;
+        String password = null;
+        char[] chars = Keyring.read(handler.connectionFileName);
+        if (chars != null) {
+            LOGGER.log(Level.FINE, "A password read for " + handler.connectionFileName);
+            password = String.valueOf(chars);
+            rememberPassword = true;
+        } else {
+            LOGGER.log(Level.FINE, "No password read for " + handler.connectionFileName);
+        }
+
         DatabaseConnection dbconn = new DatabaseConnection(
                 handler.driverClass, 
                 handler.driverName,
                 handler.connectionUrl,
                 handler.schema,
                 handler.user,
-                handler.password, 
-                handler.rememberPassword);
+                password,
+                rememberPassword);
         if (handler.displayName != null) {
             dbconn.setDisplayName(handler.displayName);
         }
@@ -320,6 +342,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         AtomicWriter(DatabaseConnection instance, MultiDataObject holder) {
             this.instance = instance;
             this.holder = holder;
+            this.fileName = holder.getPrimaryFile().getNameExt();
         }
 
         /**
@@ -331,6 +354,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             this.parent = parent;
         }
 
+        @Override
         public void run() throws java.io.IOException {
             FileLock lck;
             FileObject data;
@@ -348,7 +372,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             try {
                 OutputStream ostm = data.getOutputStream(lck);
                 PrintWriter writer = new PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N
-                write(writer);
+                write(writer, data.getNameExt());
                 writer.flush();
                 writer.close();
                 ostm.close();
@@ -365,7 +389,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             }
         }
 
-        void write(PrintWriter pw) throws IOException {
+        void write(PrintWriter pw, String name) throws IOException {
             pw.println("<?xml version='1.0'?>"); //NOI18N
             pw.println("<!DOCTYPE connection PUBLIC '-//NetBeans//DTD Database Connection 1.1//EN' 'http://www.netbeans.org/dtds/connection-1_1.dtd'>"); //NOI18N
             pw.println("<connection>"); //NOI18N
@@ -382,17 +406,15 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 pw.println("  <display-name value='" + XMLUtil.toAttributeValue(instance.getDisplayName()) + "'/>"); //NOI18N
             }
             if (instance.rememberPassword() ) {
-                String password = instance.getPassword();
-                
-                
-                if ( password == null ) {
-                    LOGGER.log(Level.INFO, "Password is null, saving it as an empty string");
-                    password = "";
-                }
-                
-                pw.println("  <password value='" + 
-                        Base64.byteArrayToBase64(
-                        password.getBytes("UTF-8")) + "'/>"); // NO18N
+                char[] password = instance.getPassword() == null ? new char[0] : instance.getPassword().toCharArray();
+
+                // use Keyring API instead Base64.byteArrayToBase64
+                assert name != null : "The parameter name cannot be null.";
+                LOGGER.log(Level.FINE, "Storing password for " + name);
+                Keyring.save(name, password, NbBundle.getMessage(DatabaseConnectionConvertor.class, "DatabaseConnectionConvertor.password_description", name)); //NOI18N
+            } else {
+                LOGGER.log(Level.FINE, "Deleting password for " + name);
+                Keyring.delete(name);
             }
             pw.println("</connection>"); //NOI18N
         }        
@@ -410,7 +432,6 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         private static final String ELEMENT_USER = "user"; // NOI18N
         private static final String ELEMENT_PASSWORD = "password"; // NOI18N
         private static final String ELEMENT_DISPLAY_NAME = "display-name"; // NOI18N
-        private static final String ELEMENT_REMEMBER_PASSWORD = "remember-password";
         private static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
         
         private final String connectionFileName;
@@ -420,8 +441,6 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         String connectionUrl;
         String schema;
         String user;
-        String password;
-        boolean rememberPassword;
         String displayName;
         
         public Handler(String connectionFileName) {
@@ -437,6 +456,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         }
 
         @Override
+        @SuppressWarnings("deprecation") // Backward compatibility
         public void startElement(String uri, String localName, String qName, Attributes attrs) throws SAXException {
             String value = attrs.getValue(ATTR_PROPERTY_VALUE);
             if (ELEMENT_DRIVER_CLASS.equals(qName)) {
@@ -452,32 +472,29 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             } else if (ELEMENT_DISPLAY_NAME.equals(qName)) {
                 displayName = value;
             } else if (ELEMENT_PASSWORD.equals(qName)) {
-                // If the password was saved, then it means the user checked
-                // the box to say the password should be remembered.
-                rememberPassword = true;
-                
+                // reading old settings
                 byte[] bytes = null;
                 try {
-                    bytes = Base64.base64ToByteArray(value);
+                    bytes = org.netbeans.modules.db.util.Base64.base64ToByteArray(value);
                 } catch (IllegalArgumentException e) {
-                    Logger.getLogger("global").log(Level.WARNING, 
+                    LOGGER.log(Level.WARNING,
                             "Illegal Base 64 string in password for connection " 
-                            + connectionFileName); // NOI18N
+                            + connectionFileName + ", cause: " + e); // NOI18N
                     
-                    // This will require the user to re-enter
-                    // the password.
-                    rememberPassword = false;
+                        // no password stored => this will require the user to re-enter the password
                 }
                 if (bytes != null) {
                     try {
-                        password = decodePassword(bytes);
+                        // use Keyring API instead Base64.byteArrayToBase64
+                        LOGGER.log(Level.FINE, "Reading old settings from " + connectionFileName);
+                        Keyring.save(connectionFileName,
+                                decodePassword(bytes).toCharArray(),
+                                NbBundle.getMessage(DatabaseConnectionConvertor.class, "DatabaseConnectionConvertor.password_description", connectionFileName)); //NOI18N
                     } catch (CharacterCodingException e) {
-                        Logger.getLogger("global").log(Level.WARNING, 
+                        LOGGER.log(Level.WARNING,
                                 "Illegal UTF-8 bytes in password for connection " 
-                                + connectionFileName); // NOI18N
-                        
-                        // This will require the user to re-enter the password 
-                        rememberPassword = false;
+                                + connectionFileName + ", cause: " + e); // NOI18N
+                        // no password stored => this will require the user to re-enter the password
                     }
                 }
             }
@@ -494,15 +511,17 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         
         RequestProcessor.Task saveTask = null;
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (this) {
                 if (saveTask == null)
-                    saveTask = RequestProcessor.getDefault().create(this);
+                    saveTask = RP.create(this);
                 keepAlive.add(evt);
             }
             saveTask.schedule(DELAY);
         }
         
+        @Override
         public void run() {
             PropertyChangeEvent e;
 

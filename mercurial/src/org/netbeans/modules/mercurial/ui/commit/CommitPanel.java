@@ -74,6 +74,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -163,19 +164,20 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                TemplateSelector ts = new TemplateSelector(HgModuleConfig.getDefault().getPreferences());
-                if(ts.isAutofill()) {
-                    messageTextArea.setText(ts.getTemplate());
-                } else {
-                    messageTextArea.setText(HgModuleConfig.getDefault().getLastCommitMessage());
+        TemplateSelector ts = new TemplateSelector(HgModuleConfig.getDefault().getPreferences());
+        if (ts.isAutofill()) {
+            messageTextArea.setText(ts.getTemplate());
+        } else {
+            String lastCommitMessage = HgModuleConfig.getDefault().getLastCanceledCommitMessage();
+            if (lastCommitMessage.isEmpty() && new StringSelector.RecentMessageSelector(HgModuleConfig.getDefault().getPreferences()).isAutoFill()) {
+                List<String> messages = Utils.getStringList(HgModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
+                if (messages.size() > 0) {
+                    lastCommitMessage = messages.get(0);
                 }
-                messageTextArea.selectAll();
             }
-        });
-
+            messageTextArea.setText(lastCommitMessage);
+        }
+        messageTextArea.selectAll();
         initCollapsibleSections();
     }
 
@@ -300,7 +302,8 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     }
 
     private void onBrowseRecentMessages() {
-        String message = StringSelector.select(getMessage("CTL_CommitForm_RecentTitle"),  // NOI18N
+        StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(HgModuleConfig.getDefault().getPreferences());
+        String message = selector.getRecentMessage(getMessage("CTL_CommitForm_RecentTitle"),  // NOI18N
                                                getMessage("CTL_CommitForm_RecentPrompt"),  // NOI18N
             Utils.getStringList(HgModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
         if (message != null) {

@@ -1045,10 +1045,10 @@ public final class SourceUtils {
                     // resolve field at cursor
 
                     if (resolveField && ((element.getKind() == ElementKind.FIELD) || (element.getKind() == ElementKind.LOCAL_VARIABLE)) && (element.asType().getKind() == TypeKind.DECLARED)) {
-                        TypeElement jclass = (TypeElement)ci.getTypes().erasure(element.asType());
+                        TypeMirror jclassMirror = ci.getTypes().erasure(element.asType());
+                        TypeElement jclass = (TypeElement)ci.getTypes().asElement(jclassMirror);
                         String vmClassName = ElementUtilities.getBinaryName(jclass);
                         resolvedClass.setValue(new ResolvedClass(jclass, vmClassName));
-
                         return;
 
                     }

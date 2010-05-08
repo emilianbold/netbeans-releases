@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="code_maturity")
+@Hint(category="code_maturity", suppressWarnings="UseOfSystemOutOrSystemErr")
 public class SystemOut {
 
     @TriggerPatterns ({

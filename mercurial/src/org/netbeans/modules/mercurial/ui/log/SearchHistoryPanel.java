@@ -60,6 +60,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dimension;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
 
@@ -323,7 +324,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
         setResults(null, true);
         currentSearch = new SearchExecutor(this);
-        currentSearchTask = RequestProcessor.getDefault().create(currentSearch);
+        currentSearchTask = Mercurial.getInstance().getParallelRequestProcessor().create(currentSearch);
         currentSearchTask.schedule(0);
     }
     

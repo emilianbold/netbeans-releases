@@ -186,7 +186,7 @@ public final class IsOverriddenAnnotationAction extends AbstractAction {
         if (doc instanceof BaseDocument) {
             final int currentPosition = comp.getCaretPosition();
             final Annotations annotations = ((BaseDocument) doc).getAnnotations();
-            final Map<String, List<AlternativeLocation>> caption2Descriptions = new LinkedHashMap<String, List<AlternativeLocation>>();
+            final Map<String, List<OverrideDescription>> caption2Descriptions = new LinkedHashMap<String, List<OverrideDescription>>();
             final Point[] p = new Point[1];
             
             doc.render(new Runnable() {
@@ -211,7 +211,7 @@ public final class IsOverriddenAnnotationAction extends AbstractAction {
 
                         for (IsOverriddenAnnotation a : annots) {
                             if (a != null) {
-                                caption2Descriptions.put(computeCaption(a.getType(), a.getShortDescription()), new ArrayList<AlternativeLocation>(a.getDeclarations()));
+                                caption2Descriptions.put(computeCaption(a.getType(), a.getShortDescription()), new ArrayList<OverrideDescription>(a.getDeclarations()));
                             }
                         }
                     }  catch (BadLocationException ex) {
@@ -233,13 +233,13 @@ public final class IsOverriddenAnnotationAction extends AbstractAction {
         return false;
     }
 
-    private static void mouseClicked(Map<String, List<AlternativeLocation>> caption2Descriptions, JTextComponent c, Point p) {
+    private static void mouseClicked(Map<String, List<OverrideDescription>> caption2Descriptions, JTextComponent c, Point p) {
         if (caption2Descriptions.size() == 1 && caption2Descriptions.values().iterator().next().size() == 1) {
-            AlternativeLocation desc = caption2Descriptions.values().iterator().next().get(0);
-            FileObject file = desc.getLocation().getFileObject();
+            OverrideDescription desc = caption2Descriptions.values().iterator().next().get(0);
+            FileObject file = desc.location.getLocation().getFileObject();
 
             if (file != null) {
-                UiUtils.open(file, desc.getLocation().getOffset());
+                UiUtils.open(file, desc.location.getLocation().getOffset());
             } else {
                 Toolkit.getDefaultToolkit().beep();
             }
@@ -252,10 +252,10 @@ public final class IsOverriddenAnnotationAction extends AbstractAction {
         SwingUtilities.convertPointToScreen(position, c);
 
         StringBuilder caption = new StringBuilder();
-        List<AlternativeLocation> descriptions = new LinkedList<AlternativeLocation>();
+        List<OverrideDescription> descriptions = new LinkedList<OverrideDescription>();
         boolean first = true;
 
-        for (Entry<String, List<AlternativeLocation>> e : caption2Descriptions.entrySet()) {
+        for (Entry<String, List<OverrideDescription>> e : caption2Descriptions.entrySet()) {
             if (!first) {
                 caption.append("/");
             }

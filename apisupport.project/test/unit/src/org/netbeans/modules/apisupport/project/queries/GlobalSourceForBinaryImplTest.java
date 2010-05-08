@@ -109,6 +109,7 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
     }
     
     public void testListeningToNbPlatform() throws Exception {
+        NbPlatform.getDefaultPlatform(); // initBuildProperties
         File nbSrcZip = generateNbSrcZip("");
         URL loadersURL = FileUtil.urlForArchiveOrDir(file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"));
         SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(loadersURL);

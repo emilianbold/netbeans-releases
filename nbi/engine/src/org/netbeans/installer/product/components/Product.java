@@ -233,9 +233,11 @@ public final class Product extends RegistryNode implements StatusInterface {
                 
                 final String iconName = "icon.icns"; //NOI18N
                 
-                installedFiles.add(utils.createSymLink(
+                if(configurationLogic.getIcon() != null) {
+                    installedFiles.add(utils.createSymLink(
                         new File(resourcesDir, iconName),
                         new File(getInstallationLocation(), configurationLogic.getIcon())));
+                }
                 
                 installedFiles.add(FileUtils.writeFile(infoplist, StringUtils.format(
                         INFO_PLIST_STUB,

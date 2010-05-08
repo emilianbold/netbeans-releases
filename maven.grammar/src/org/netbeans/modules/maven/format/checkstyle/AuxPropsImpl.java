@@ -176,6 +176,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                                 try {
                                     final URL url = new URL(loc);
                                     RP.post(new Runnable() {
+                                        @Override
                                         public void run() {
                                             InputStream urlis = null;
                                             try {
@@ -255,6 +256,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                             cpFiles.add(f);
                         } else {
                             RP.post(new Runnable() {
+                                @Override
                                 public void run() {
                                     try {
                                         //TODO add progress bar.
@@ -291,6 +293,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
         return cache;
     }
 
+    @Override
     public String get(String key, boolean shared) {
         if (Constants.HINT_CHECKSTYLE_FORMATTING.equals(key)) {
             return null;
@@ -301,11 +304,13 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
         return null;
     }
 
+    @Override
     public void put(String key, String value, boolean shared) {
         throw new UnsupportedOperationException("Not supported.");
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public Iterable<String> listKeys(boolean shared) {
         if (shared) {
             List<String> str = new ArrayList<String>();
@@ -317,6 +322,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
         return new ArrayList<String>();
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
             synchronized (this) {

@@ -91,6 +91,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -358,6 +359,14 @@ public class BaseKit extends DefaultEditorKit {
 
     private final SearchableKit searchableKit;
 
+    /* package */ static final boolean LINEWRAP_ENABLED;
+    static {
+        String value = System.getProperty("org.netbeans.editor.linewrap");
+        LINEWRAP_ENABLED = (value != null)
+                ? value.equalsIgnoreCase("true")
+                : true; // false for NB6.9 Beta
+    }
+
 //    static SettingsChangeListener settingsListener = new SettingsChangeListener() {
 //        public void settingsChange(SettingsChangeEvent evt) {
 //            String settingName = (evt != null) ? evt.getSettingName() : null;
@@ -559,7 +568,8 @@ public class BaseKit extends DefaultEditorKit {
      * @return the view factory
      */
     public @Override ViewFactory getViewFactory() {
-        return Boolean.getBoolean("org.netbeans.editor.linewrap")
+        //Boolean.getBoolean("org.netbeans.editor.linewrap")
+        return  HighlightingManager.LINEWRAP_ENABLED
                 ? org.netbeans.modules.editor.lib2.view.ViewFactoryImpl.INSTANCE
                 : null;
     }
@@ -880,6 +890,7 @@ public class BaseKit extends DefaultEditorKit {
                    new PreviousWordAction(selectionPreviousWordAction),
                    new ActionFactory.RemoveWordNextAction(),
                    new ActionFactory.RemoveWordPreviousAction(),
+                   new ActionFactory.ToggleHighlightSearchAction(),
 
                    // Self test actions
                    //      new EditorDebug.SelfTestAction(),

@@ -81,15 +81,16 @@ public final class Context {
     }
 
     static {
-        ContextAccessor.DEFAULT = new ComtextImpl();
+        ContextAccessor.DEFAULT = new ContextAccessorImpl();
+    }
+
+    private static final class ContextAccessorImpl extends ContextAccessor {
+
+        @Override
+        public Context newContext(int position, AtomicBoolean cancel) {
+            return new Context(position, cancel);
+        }
+
     }
 }
 
-final class ComtextImpl extends ContextAccessor {
-
-    @Override
-    public Context newContext(int position, AtomicBoolean cancel) {
-        return new Context(position, cancel);
-    }
-
-}

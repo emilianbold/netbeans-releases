@@ -40,8 +40,9 @@
 package org.netbeans.modules.db.explorer.action;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Vector;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
@@ -64,6 +65,7 @@ import org.openide.util.actions.SystemAction;
 public class AddIndexAction extends BaseAction {
     private static final Logger LOGGER = Logger.getLogger(AddIndexAction.class.getName());
 
+    @Override
     public String getName() {
         return NbBundle.getMessage (AddIndexAction.class, "AddIndex"); // NOI18N
     }
@@ -86,6 +88,7 @@ public class AddIndexAction extends BaseAction {
         final IndexListNode node = activatedNodes[0].getLookup().lookup(IndexListNode.class);
         RequestProcessor.getDefault().post(
             new Runnable() {
+            @Override
                 public void run() {
                     perform(node);
                 }
@@ -115,7 +118,7 @@ public class AddIndexAction extends BaseAction {
             final DriverSpecification drvSpec = connector.getDriverSpecification(catalogName);
 
             // List columns not present in current index
-            Vector<String> cols = new Vector<String> (5);
+            List<String> cols = new ArrayList<String> (5);
 
             drvSpec.getColumns(tablename, "%");
             ResultSet rs = drvSpec.getResultSet();
@@ -127,7 +130,7 @@ public class AddIndexAction extends BaseAction {
             }
             rs.close();
 
-            if (cols.size() == 0)
+            if (cols.isEmpty())
                 throw new Exception(NbBundle.getMessage (AddIndexAction.class, "EXC_NoUsableColumnInPlace")); // NOI18N
 
             // Create and execute command
@@ -135,6 +138,7 @@ public class AddIndexAction extends BaseAction {
             dlg.setIndexName(tablename + "_idx"); // NOI18N
             if (dlg.run()) {
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         Node refreshNode = node.getParentNode();
                         if (refreshNode == null) {
@@ -146,7 +150,7 @@ public class AddIndexAction extends BaseAction {
                 });
             }
         } catch(Exception exc) {
-            LOGGER.log(Level.INFO, exc.getMessage(), exc);
+            LOGGER.log(Level.INFO, exc.getLocalizedMessage(), exc);
             DbUtilities.reportError(NbBundle.getMessage (AddIndexAction.class, "ERR_UnableToAddIndex"), exc.getMessage()); // NOI18N
         }
     }

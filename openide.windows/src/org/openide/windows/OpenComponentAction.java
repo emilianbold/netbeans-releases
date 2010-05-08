@@ -54,6 +54,7 @@ final class OpenComponentAction implements ActionListener {
     private final Map<?,?> map;
 
     OpenComponentAction(TopComponent component) {
+        assert component != null; //to diagnose #185355
         this.component = component;
         map = null;
     }

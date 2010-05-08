@@ -67,7 +67,8 @@ public abstract class EnablementSpeedBase extends NbTestCase {
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").
-            enableModules("ide[0-9]*", ".*")
+            enableModules("ide[0-9]*", ".*").
+            honorAutoloadEager(true)
         );
     }
 

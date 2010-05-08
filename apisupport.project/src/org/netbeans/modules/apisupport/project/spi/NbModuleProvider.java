@@ -43,6 +43,7 @@ package org.netbeans.modules.apisupport.project.spi;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 
@@ -76,7 +77,7 @@ public interface NbModuleProvider {
      * Returns the specification version of the module
      * @return specification version of the module
      */ 
-    String getSpecVersion();
+    @CheckForNull String getSpecVersion();
     
     /**
      * Returns the codenamebase of the module

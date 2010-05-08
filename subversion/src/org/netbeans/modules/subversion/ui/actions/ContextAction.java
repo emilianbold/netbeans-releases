@@ -91,6 +91,7 @@ public abstract class ContextAction extends NodeAction {
      */
     protected abstract String getBaseName(Node[] activatedNodes);
 
+    @Override
     protected boolean enable(Node[] nodes) {
         File[] rootFiles = getCachedContext(nodes).getRootFiles();
         // has at least one file as a root node -> either all rootfiles are managed or all rootfiles are unmanaged
@@ -103,6 +104,7 @@ public abstract class ContextAction extends NodeAction {
      * Synchronizes memory modificatios with disk and calls
      * {@link  #performContextAction}.
      */
+    @Override
     protected void performAction(final Node[] nodes) {
         // TODO try to save files in invocation context only
         // list somehow modified file in the context and save
@@ -125,21 +127,25 @@ public abstract class ContextAction extends NodeAction {
     protected abstract void performContextAction(Node[] nodes);
 
     /** Be sure nobody overwrites */
+    @Override
     public final boolean isEnabled() {
         return super.isEnabled();
     }
 
     /** Be sure nobody overwrites */
+    @Override
     public final void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
     }
 
     /** Be sure nobody overwrites */
+    @Override
     public final void actionPerformed(ActionEvent event) {
         super.actionPerformed(event);
     }
 
     /** Be sure nobody overwrites */
+    @Override
     public final void performAction() {
         super.performAction();
     }    
@@ -158,6 +164,7 @@ public abstract class ContextAction extends NodeAction {
         return getName("Running", activatedNodes); // NOI18N
     }
 
+    @Override
     public String getName() {
         return getName("", TopComponent.getRegistry().getActivatedNodes()); // NOI18N
     }
@@ -293,6 +300,7 @@ public abstract class ContextAction extends NodeAction {
         }
     }    
         
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(this.getClass());
     }
@@ -313,6 +321,7 @@ public abstract class ContextAction extends NodeAction {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -349,8 +358,10 @@ public abstract class ContextAction extends NodeAction {
             return start(rp, url, runningName);
         }
 
+        @Override
         public abstract void perform();
 
+        @Override
         protected void startProgress() {
             getLogger().logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + runningName); // NOI18N
             ProgressHandle progress = getProgressHandle();
@@ -359,6 +370,7 @@ public abstract class ContextAction extends NodeAction {
             progress.start();
         }
 
+        @Override
         protected void finnishProgress() {
             // TODO add failed and restart texts                
             if (isCanceled()) {
@@ -368,7 +380,8 @@ public abstract class ContextAction extends NodeAction {
                 progress.switchToDeterminate(100);
                 progress.progress(NbBundle.getMessage(ContextAction.class, "MSG_Progress_Done"), 100); // NOI18N
                 if (System.currentTimeMillis() > progressStamp) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                        @Override
                         public void run() {
                             progress.finish();
                         }

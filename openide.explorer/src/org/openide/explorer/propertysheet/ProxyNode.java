@@ -226,12 +226,16 @@ final class ProxyNode extends AbstractNode {
      */
     private Sheet.Set[] computePropertySets() {
         if (original.length > 0) {
-            Node.PropertySet[] firstSet = getOriginalPropertySets().get( 0 );
+            final ArrayList<PropertySet[]> ops = getOriginalPropertySets();
+            if (ops.isEmpty()) {
+                return new Sheet.Set[0];
+            }
+            Node.PropertySet[] firstSet = ops.get( 0 );
             java.util.Set<Node.PropertySet> sheets = new HashSet<Node.PropertySet>(Arrays.asList(firstSet));
 
             // compute intersection of all Node.PropertySets for given nodes
-            for (int i = 1; i < original.length; i++) {
-                sheets.retainAll(new HashSet(Arrays.asList(getOriginalPropertySets().get(i))));
+            for (int i = 1; i < ops.size(); i++) {
+                sheets.retainAll(new HashSet(Arrays.asList(ops.get(i))));
             }
 
             ArrayList<Sheet.Set> resultSheets = new ArrayList<Sheet.Set>(sheets.size());
@@ -261,8 +265,8 @@ final class ProxyNode extends AbstractNode {
                 String propsHelpID = null;
 
                 // intersection of properties from the corresponding tabs
-                for (int j = 0; j < original.length; j++) {
-                    Node.PropertySet[] p = getOriginalPropertySets().get(j);
+                for (int j = 0; j < ops.size(); j++) {
+                    Node.PropertySet[] p = ops.get(j);
 
                     for (int k = 0; k < p.length; k++) {
                         if (current.getName().equals(p[k].getName())) {

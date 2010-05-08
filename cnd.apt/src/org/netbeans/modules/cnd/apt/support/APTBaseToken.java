@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import org.netbeans.modules.cnd.utils.cache.TextCache;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.openide.util.CharSequences;
 
 /**
  * token to be used in APT infrastructure
@@ -74,7 +74,7 @@ public class APTBaseToken implements APTToken {
         // This constructor is used with the existing tokens so do not use setText here,
         // because we do not need to go through APTStringManager once again
         text = token.getTextID();
-        assert text instanceof TinyCharSequence;
+        assert CharSequences.isCompact(text);
 
         this.setType(ttype);
         this.setOffset(token.getOffset());

@@ -51,7 +51,11 @@
  */
 package org.netbeans.modules.cnd.spi.model.services;
 
+import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 
 /**
  * Provider for expression evaluator.
@@ -76,4 +80,16 @@ public interface CsmExpressionEvaluatorProvider {
      * @return result object
      */
     public Object eval(String expr, CsmInstantiation inst);
+
+
+    /**
+     * Evaluates expression.
+     *
+     * @param expr - expression as string
+     * @param decl - context declaration
+     * @param mapping - specialization mapping
+     * @return result object
+     */
+    public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping);
+
 }

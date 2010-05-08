@@ -64,6 +64,7 @@ public abstract class EditorAwareCsmFileTaskFactory extends CsmFileTaskFactory {
     }
     
     /**@inheritDoc*/
+    @Override
     public List<FileObject> getFileObjects() {
         List<FileObject> files = OpenedEditors.filterSupportedFiles(OpenedEditors.getDefault().getVisibleEditorsFiles());
 
@@ -71,6 +72,7 @@ public abstract class EditorAwareCsmFileTaskFactory extends CsmFileTaskFactory {
     }
 
     private class ChangeListenerImpl implements ChangeListener {
+        @Override
         public void stateChanged(ChangeEvent e) {
             fileObjectsChanged();
         }
@@ -78,14 +80,17 @@ public abstract class EditorAwareCsmFileTaskFactory extends CsmFileTaskFactory {
 
     private class ModelListenerImpl implements CsmModelListener {
 
+        @Override
         public void projectOpened(CsmProject project) {
             fileObjectsChanged();
         }
 
+        @Override
         public void projectClosed(CsmProject project) {
             fileObjectsChanged();
         }
 
+        @Override
         public void modelChanged(CsmChangeEvent e) {
             if (e.getRemovedFiles().size() > 0 || e.getNewFiles().size() > 0) {
                 fileObjectsChanged();

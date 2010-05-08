@@ -70,7 +70,7 @@ final class ReplaceTask implements Runnable {
      */
     private static final int MAX_ERRORS_CHECKED = 20;
     
-    private final MatchingObject[] matchingObjects;
+    private final List<MatchingObject> matchingObjects;
     private final ProgressHandle progressHandle;
     private final List<String> problems;
     
@@ -85,7 +85,7 @@ final class ReplaceTask implements Runnable {
     
     /**
      */
-    ReplaceTask(MatchingObject[] matchingObjects) {
+    ReplaceTask(List<MatchingObject> matchingObjects) {
         this.matchingObjects = matchingObjects;
         
         problems = new ArrayList<String>(4);
@@ -98,7 +98,7 @@ final class ReplaceTask implements Runnable {
     public void run() {
         assert !EventQueue.isDispatchThread();
         
-        progressHandle.start(matchingObjects.length * 2);
+        progressHandle.start(matchingObjects.size() * 2);
         try {
             replace();
             assert resultStatus != null;
@@ -129,11 +129,10 @@ final class ReplaceTask implements Runnable {
         
         int errorsCount = 0;
         
-        for (int i = 0; i < matchingObjects.length; i++) {
-            InvalidityStatus status = matchingObjects[i].checkValidity();
+        for(MatchingObject mo: matchingObjects) {
+            InvalidityStatus status = mo.checkValidity();
             if (status != null) {
-                problems.add(status.getDescription(
-                                       matchingObjects[i].getFile().getPath()));
+                problems.add(status.getDescription(mo.getFile().getPath()));
                 if (++errorsCount > MAX_ERRORS_CHECKED) {
                     break;
                 }
@@ -151,12 +150,12 @@ final class ReplaceTask implements Runnable {
      */
     private void doReplace() {
         assert !EventQueue.isDispatchThread();
-        
-        for (int i = 0; i < matchingObjects.length; i++) {
-            final MatchingObject obj = matchingObjects[i];
-            
-            progressHandle.progress(obj.getName(),
-                                    i + matchingObjects.length);
+
+        int i = 0;
+        int moSize = matchingObjects.size();
+        for(final MatchingObject obj: matchingObjects) {
+            int workunit = moSize + i++;
+            progressHandle.progress(obj.getName(), workunit);
             if (!obj.isSelected() || !obj.isValid()) {
                 continue;
             }

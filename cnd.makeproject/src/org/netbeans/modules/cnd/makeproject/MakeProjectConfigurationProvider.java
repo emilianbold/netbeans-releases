@@ -49,7 +49,9 @@ import java.util.Collections;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 
@@ -91,8 +93,11 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
     @Override
     public void addPropertyChangeListener(PropertyChangeListener lst) {
         pcs.addPropertyChangeListener(lst);
-        if (projectDescriptorProvider != null && projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD) != null) { // IZ 122372
-            projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD).getConfs().addPropertyChangeListener(this);
+        if (projectDescriptorProvider != null) {
+            MakeConfigurationDescriptor makeConfigurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD);
+            if (makeConfigurationDescriptor != null && makeConfigurationDescriptor.getState() != State.BROKEN) {  // IZ 122372 // IZ 182321
+                makeConfigurationDescriptor.getConfs().addPropertyChangeListener(this);
+            }
         }
     }
 

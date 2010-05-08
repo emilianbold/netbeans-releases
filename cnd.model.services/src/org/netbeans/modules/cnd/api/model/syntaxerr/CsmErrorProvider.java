@@ -118,7 +118,7 @@ public abstract class CsmErrorProvider implements NamedEntity {
 
     private static final boolean ENABLE = CndUtils.getBoolean("cnd.csm.errors", true); //NOI18N
     private static final boolean ASYNC = CndUtils.getBoolean("cnd.csm.errors.async", true); //NOI18N
-
+    private static final RequestProcessor RP = new RequestProcessor("ErrorsProvider", CndUtils.getConcurrencyLevel()*2); // NOI18N
     private static abstract class BaseMerger extends CsmErrorProvider {
 
         protected final Lookup.Result<CsmErrorProvider> res;
@@ -169,7 +169,7 @@ public abstract class CsmErrorProvider implements NamedEntity {
                 if (request.isCancelled()) {
                     break;
                 }
-                RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+                RequestProcessor.Task task = RP.post(new Runnable() {
                     public void run() {
                         if (!request.isCancelled()){
                             try {

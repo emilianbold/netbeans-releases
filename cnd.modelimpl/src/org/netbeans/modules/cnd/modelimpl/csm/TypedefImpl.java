@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * Implements CsmTypedef
@@ -190,11 +190,11 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
     public CharSequence getQualifiedName() {
         CsmObject container = _getContainer();
         if (CsmKindUtilities.isClass(container)) {
-            return CharSequenceKey.create(((CsmClass) container).getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
+            return CharSequences.create(((CsmClass) container).getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
         } else if (CsmKindUtilities.isNamespace(container)) {
             CharSequence nsName = ((CsmNamespace) container).getQualifiedName();
             if (nsName != null && nsName.length() > 0) {
-                return CharSequenceKey.create(nsName.toString() + "::" + getQualifiedNamePostfix()); // NOI18N
+                return CharSequences.create(nsName.toString() + "::" + getQualifiedNamePostfix()); // NOI18N
             }
         }
         return getName();

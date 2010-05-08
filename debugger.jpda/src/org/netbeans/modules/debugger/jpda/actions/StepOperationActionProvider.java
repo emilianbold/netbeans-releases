@@ -113,8 +113,15 @@ public class StepOperationActionProvider extends ActionsProviderSupport
     }
     
     public void doAction (Object action) {
+        doAction(debugger, null);
+    }
+
+    static void doAction (JPDADebugger debugger, PropertyChangeListener listener) {
         JPDAStep step = debugger.createJPDAStep(JPDAStep.STEP_OPERATION, JPDAStep.STEP_OVER);
         step.addStep(debugger.getCurrentThread());
+        if (listener != null) {
+            step.addPropertyChangeListener(listener);
+        }
         if (debugger.getSuspend() == JPDADebugger.SUSPEND_EVENT_THREAD) {
             //debugger.getCurrentThread().resume();
             ((JPDADebuggerImpl) debugger).resumeCurrentThread();

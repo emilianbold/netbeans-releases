@@ -62,6 +62,8 @@ enum file_state {
 
     ERROR = 'e',
     DIRECTORY = 'D',
+    LINK = 'L',
+    LINK_FILE = 'l',
     PENDING = 'p',
     
     /** The file does not exist on local host (although belongs to the project) */

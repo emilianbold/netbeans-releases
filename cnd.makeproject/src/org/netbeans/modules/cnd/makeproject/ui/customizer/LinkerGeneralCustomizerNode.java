@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
@@ -57,9 +58,25 @@ class LinkerGeneralCustomizerNode extends CustomizerNode {
 
     @Override
     public Sheet getSheet(Configuration configuration) {
-        return ((MakeConfiguration) configuration).getLinkerConfiguration().getGeneralSheet(
-                getContext().getProject(), (MakeConfigurationDescriptor) getContext().getConfigurationDescriptor(),
-                (MakeConfiguration) configuration, getContext().isQtMode());
+        switch (getContext().getKind()) {
+            case Folder:
+                // folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()
+                Folder folder = getContext().getFolder();
+                if(folder.isTest()) {
+                    return folder.getFolderConfiguration(configuration).getLinkerConfiguration().getGeneralSheet(
+                            getContext().getProject(), (MakeConfigurationDescriptor) getContext().getConfigurationDescriptor(),
+                            (MakeConfiguration) configuration, getContext().isQtMode(), false);
+                } else {
+                    return folder.getFolderConfiguration(configuration).getLinkerConfiguration().getGeneralSheet(
+                            getContext().getProject(), (MakeConfigurationDescriptor) getContext().getConfigurationDescriptor(),
+                            (MakeConfiguration) configuration, getContext().isQtMode(), true);
+                }
+            case Project:
+                return ((MakeConfiguration) configuration).getLinkerConfiguration().getGeneralSheet(
+                        getContext().getProject(), (MakeConfigurationDescriptor) getContext().getConfigurationDescriptor(),
+                        (MakeConfiguration) configuration, getContext().isQtMode(), false);
+        }
+        return null;
     }
 
     @Override

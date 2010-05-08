@@ -112,7 +112,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
                 }
                 pb = pb.setWorkingDirectory(path);
             }
-            RemoteUtil.LOGGER.fine("RNES<Init>: Running [" + cmd + "] on " + executionEnvironment + " in " + path);
+            RemoteUtil.LOGGER.log(Level.FINE, "RNES<Init>: Running [{0}] on {1} in {2}", new Object[]{cmd, executionEnvironment, path});
             synchronized (procLock) {
                 process = pb.call();
             }
@@ -142,18 +142,18 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 
             int rc = process.waitFor();
             if (rc != 0 && RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
-                    RemoteUtil.LOGGER.finest("RNES: " + cmd + " on " + executionEnvironment + " in " + path + " finished; rc=" + rc);
+                    RemoteUtil.LOGGER.log(Level.FINEST, "RNES: {0} on {1} in {2} finished; rc={3}", new Object[]{cmd, executionEnvironment, path, rc});
                     if (env == null) {
                         RemoteUtil.LOGGER.finest("RNES: env == null");
                     } else {
                         for (Map.Entry<String, String> entry : env.entrySet()) {
-                            RemoteUtil.LOGGER.finest("\tRNES: " + entry.getKey() + "=" + entry.getValue());
+                            RemoteUtil.LOGGER.log(Level.FINEST, "\tRNES: {0}={1}", new Object[]{entry.getKey(), entry.getValue()});
                         }
                     }
                     String errMsg;
                     final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                     while ((errMsg = reader.readLine()) != null) {
-                        RemoteUtil.LOGGER.finest("RNES ERROR: " + errMsg);
+                        RemoteUtil.LOGGER.log(Level.FINEST, "RNES ERROR: {0}", errMsg);
                     }
             }
             setExitStatus(rc);
@@ -174,7 +174,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         } catch (Exception ex) {
             RemoteUtil.LOGGER.log(Level.WARNING, ex.getMessage(), ex);
         } finally {
-            RemoteUtil.LOGGER.finest("RNES return value: " + getExitStatus());
+            RemoteUtil.LOGGER.log(Level.FINEST, "RNES return value: {0}", getExitStatus());
 //            disconnect();
         }
     }
@@ -187,13 +187,13 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         if (p == null) {
             RemoteUtil.LOGGER.fine("RNES: process is null, can't kill");
         } else {
-            RemoteUtil.LOGGER.fine("RNES: killing " + p);
+            RemoteUtil.LOGGER.log(Level.FINE, "RNES: killing {0}", p);
             p.destroy();
         }
     }
 
     public void stop() {
-        RemoteUtil.LOGGER.fine("RNES: stop " + process);
+        RemoteUtil.LOGGER.log(Level.FINE, "RNES: stop {0}", process);
         kill();
     }
 
@@ -246,6 +246,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             this.reader = reader;
         }
 
+        @Override
         public int read() throws IOException {
             int t = reader.read();
             return t;

@@ -107,9 +107,9 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<W
             currentProject = project;
             Sources sources = ProjectUtils.getSources(project);
             if (isFolder) {
-                panel = new SimpleTargetChooserPanel(project, sources.getSourceGroups(Sources.TYPE_GENERIC), null, true);
+                panel = new SimpleTargetChooserPanel(project, sources.getSourceGroups(Sources.TYPE_GENERIC), null, true, false);
             } else {
-                panel = Templates.createSimpleTargetChooser(project, sources.getSourceGroups(Sources.TYPE_GENERIC));
+                panel = Templates.buildSimpleTargetChooser(project, sources.getSourceGroups(Sources.TYPE_GENERIC)).create();
             }
         }
         return panel;

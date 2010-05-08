@@ -46,6 +46,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.openide.util.NbBundle;
 
 /** Utility class for opening elements in editor.
  *
@@ -152,10 +155,14 @@ public final class ElementOpen {
     private static int getOffset(FileObject fo, final ElementHandle<? extends Element> handle) throws IOException {
         final int[]  result = new int[] {-1};
         
-        JavaSource js = JavaSource.forFileObject(fo);
+        final JavaSource js = JavaSource.forFileObject(fo);
         if (js != null) {
-            Task<CompilationController> t = new Task<CompilationController>() {
+            final AtomicBoolean cancel = new AtomicBoolean();
+            final Task<CompilationController> t = new Task<CompilationController>() {
                 public void run(CompilationController info) {
+                    if (cancel.get()) {
+                        return;
+                    }
                     try {
                         info.toPhase(JavaSource.Phase.RESOLVED);
                     } catch (IOException ioe) {
@@ -202,6 +209,19 @@ public final class ElementOpen {
                     log.info("Skipping location of element offset within file, Scannig in progress");
                     return 0; //we are opening @ 0 position. Fix #160478
                 }
+            } else if (SwingUtilities.isEventDispatchThread() && !JavaSourceAccessor.holdsParserLock()) {
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                        public void run() {
+                            try {
+                                js.runUserActionTask(t, true);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    },
+                    NbBundle.getMessage(ElementOpen.class, "TXT_CalculatingDeclPos"),
+                    cancel,
+                    false);
             } else {
                 js.runUserActionTask(t, true);
             }

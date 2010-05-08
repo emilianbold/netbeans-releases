@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.openide.loaders.DataObject;
 
 import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
@@ -64,7 +65,8 @@ import org.openide.windows.CloneableOpenSupport;
  *  If we plan to use guarded sections, we'd need to implement that
  *  here. For now, this is used to get toggle-breakpoint behavior.
  */
-public class CppEditorSupport extends DataEditorSupport implements EditorCookie, EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie, ReadOnlySupport {
+public class CppEditorSupport extends DataEditorSupport implements EditCookie,
+        EditorCookie, EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie, ReadOnlySupport {
 
     /** SaveCookie for this support instance. The cookie is adding/removing 
      * data object's cookie set depending on if modification flag was set/unset. */

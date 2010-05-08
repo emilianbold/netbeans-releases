@@ -66,8 +66,7 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.openide.util.CharSequences;
 
 /**
  * utilities for APT serialization
@@ -293,7 +292,7 @@ public class APTSerializeUtils {
         output.writeInt(macros.size());
         for (Entry<CharSequence, APTMacro> entry : macros.entrySet()) {
             assert entry != null;
-            assert entry.getKey() instanceof TinyCharSequence;
+            assert CharSequences.isCompact(entry.getKey());
             String key = entry.getKey().toString();
             output.writeUTF(key);
             APTMacro macro = entry.getValue();
@@ -304,7 +303,7 @@ public class APTSerializeUtils {
 
     public static void readStringToMacroMap(int collSize, Map<CharSequence, APTMacro> macros, DataInput input) throws IOException {
         for (int i = 0; i < collSize; ++i) {
-            CharSequence key = CharSequenceKey.create(input.readUTF());
+            CharSequence key = CharSequences.create(input.readUTF());
             assert key != null;
             APTMacro macro = readMacro(input);
             assert macro != null;

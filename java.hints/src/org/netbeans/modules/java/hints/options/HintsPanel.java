@@ -361,7 +361,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         Map<String, HintCategory> cat2CatDesc =  new HashMap<String, HintCategory>();
 
         for (HintMetadata m : metadata) {
-            if (m.kind != HintMetadata.Kind.HINT) continue;
+            if (m.kind != HintMetadata.Kind.HINT && m.kind != HintMetadata.Kind.SUGGESTION) continue;
 
             HintCategory cat = cat2CatDesc.get(m.category);
 
@@ -401,7 +401,10 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     }
 
     void select(HintMetadata hm) {
-        errorTree.setSelectionPath(hint2Path.get(hm));
+	TreePath path = hint2Path.get(hm);
+	
+        errorTree.setSelectionPath(path);
+	errorTree.scrollPathToVisible(path);
     }
 
     private static int compare(String s1, String s2) {

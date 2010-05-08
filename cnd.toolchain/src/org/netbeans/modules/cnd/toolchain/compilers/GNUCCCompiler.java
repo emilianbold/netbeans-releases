@@ -54,8 +54,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     }
     
     @Override
-    public GNUCCCompiler createCopy() {
-        GNUCCCompiler copy = new GNUCCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
+    public GNUCCCompiler createCopy(CompilerFlavor flavor) {
+        GNUCCCompiler copy = new GNUCCCompiler(getExecutionEnvironment(), flavor, getKind(), getName(), getDisplayName(), getPath());
         if (isReady()) {
             copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
             copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());

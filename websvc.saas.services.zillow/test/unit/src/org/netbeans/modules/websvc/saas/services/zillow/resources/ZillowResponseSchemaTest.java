@@ -39,13 +39,13 @@
 package org.netbeans.modules.websvc.saas.services.zillow.resources;
 
 import junit.framework.TestSuite;
-import org.netbeans.modules.websvc.saas.kit.SchemaTest;
+import org.netbeans.modules.websvc.saas.util.SchemaTestBase;
 
 /**
  *
  * @author lukas
  */
-public class ZillowResponseSchemaTest extends SchemaTest {
+public class ZillowResponseSchemaTest extends SchemaTestBase {
 
     private ZillowResponseSchemaTest() {
         super();

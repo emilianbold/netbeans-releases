@@ -133,7 +133,9 @@ public final class ResultBar extends JComponent implements ActionListener{
     }
 
     private String getString() {
-        return String.format("%.1f %%", passedPercentage); // NOI18N
+        // #183996 (PHP project) requires to use the format "%.2f".
+        // It lets to have not rounding a value if number of tests <= 10000
+        return String.format("%.2f %%", passedPercentage); // NOI18N
     }
 
     @Override

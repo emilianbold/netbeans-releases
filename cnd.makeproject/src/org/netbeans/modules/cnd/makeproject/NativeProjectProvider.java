@@ -64,6 +64,8 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
@@ -81,6 +83,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -102,7 +105,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     @Override
-    public void runOnCodeModelReadiness(Runnable task) {
+    public void runOnCodeModelReadiness(NamedRunnable task) {
         if (getMakeConfigurationDescriptor() != null) {
             getMakeConfigurationDescriptor().getConfs().runOnCodeModelReadiness(task);
         }
@@ -560,12 +563,20 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 cInheritIncludes = itemConfiguration.getCCompilerConfiguration().getInheritIncludes();
                 cInheritMacros = itemConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
                 cPpreprocessorOption = itemConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+                if (itemConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
+                    itemConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
+                    cFiles = true;
+                }
             }
             if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                 ccIncludeDirectories = itemConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
                 ccInheritIncludes = itemConfiguration.getCCCompilerConfiguration().getInheritIncludes();
                 ccPreprocessorOption = itemConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
                 ccInheritMacros = itemConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
+                if (itemConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
+                    itemConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
+                    ccFiles = true;
+                }
             }
             if (itemConfiguration.getExcluded().getDirty()) {
                 itemConfiguration.getExcluded().setDirty(false);
@@ -584,15 +595,21 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             cIncludeDirectories = makeConfiguration.getCCompilerConfiguration().getIncludeDirectories();
             cInheritIncludes = makeConfiguration.getCCompilerConfiguration().getInheritIncludes();
             cPpreprocessorOption = makeConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+            if (makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
+                makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
+                cFiles = true;
+            }
             cInheritMacros = makeConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
             ccIncludeDirectories = makeConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
             ccInheritIncludes = makeConfiguration.getCCCompilerConfiguration().getInheritIncludes();
             ccPreprocessorOption = makeConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
             ccInheritMacros = makeConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
+            if (makeConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
+                makeConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
+                ccFiles = true;
+            }
             items = getMakeConfigurationDescriptor().getProjectItems();
             projectChanged = true;
-//            cFiles = true;
-//            ccFiles = true;
         }
 
         if (cIncludeDirectories != null
@@ -787,7 +804,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 arguments += " " + s; // NOI18N
             }
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            StringBuffer output = new StringBuffer();
+            StringBuilder output = new StringBuilder();
 
             try {
                 Process p0 = Runtime.getRuntime().exec(exePath + " " + arguments, env); // NOI18N
@@ -796,7 +813,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 BufferedReader br = new BufferedReader(ist);
                 String line;
                 while ((line = br.readLine()) != null) {
-                    output.append(line + "\n"); // NOI18N
+                    output.append(line).append("\n"); // NOI18N
                 }
                 br.close();
                 ist.close();
@@ -807,12 +824,23 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 throw ioe;
             }
         } else {
-            ExitStatus exitStatus = ProcessUtils.execute(ev, executable, args); // NOI18N
-            // FIXUP: need to handle env!
-            return new NativeExitStatus(exitStatus.exitCode, exitStatus.output, exitStatus.error);
+            ServerRecord record = ServerList.get(ev);
+            if (!record.isOnline()) {
+                return new NativeExitStatus(-1, "", getString("HOST_OFFLINE", ev.getHost()));
+            }
+            try {
+                // FIXUP: need to handle env!
+                ExitStatus exitStatus;
+                exitStatus = ProcessUtils.execute(ev, executable, args);
+                return new NativeExitStatus(exitStatus.exitCode, exitStatus.output, exitStatus.error);
+            }
+            catch (Exception e) {
+                return new NativeExitStatus(-1, "", e.getMessage());
+            }
         }
     }
 
+    @Override
     public String getPlatformName() {
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         String platformName = makeConfiguration.getDevelopmentHost().getBuildPlatformName();

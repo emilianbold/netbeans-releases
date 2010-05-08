@@ -63,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
@@ -407,7 +408,7 @@ public class PropertyUtils {
      *         just <samp>.</samp> in case the paths are the same
      * @throws IllegalArgumentException if the basedir is known to be a file and not a directory
      */
-    public static String relativizeFile(File basedir, File file) {
+    public static @CheckForNull String relativizeFile(File basedir, File file) {
         if (basedir.isFile()) {
             throw new IllegalArgumentException("Cannot relative w.r.t. a data file " + basedir); // NOI18N
         }

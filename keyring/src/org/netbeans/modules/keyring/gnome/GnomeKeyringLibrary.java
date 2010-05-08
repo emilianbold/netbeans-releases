@@ -41,9 +41,12 @@ package org.netbeans.modules.keyring.gnome;
 
 import com.sun.jna.Library;
 import com.sun.jna.Native;
+import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 
 /**
+ * JNA wrapper for certain functions from GNOME Keyring API.
+ * #178571: must work against GNOME 2.6 to support JDS 3 (Solaris 10).
  * @see <a href="http://library.gnome.org/devel/gnome-keyring/stable/">gnome-keyring API Reference</a>
  */
 public interface GnomeKeyringLibrary extends Library {
@@ -52,29 +55,64 @@ public interface GnomeKeyringLibrary extends Library {
 
     boolean gnome_keyring_is_available();
 
-    int gnome_keyring_store_password_sync(GnomeKeyringPasswordSchema schema,
-                                                         String keyring,
-                                                         String display_name,
-                                                         String password,
-                                                         String... attrs);
+    /*GnomeKeyringItemType*/int GNOME_KEYRING_ITEM_GENERIC_SECRET = 0;
 
-    int gnome_keyring_find_password_sync(GnomeKeyringPasswordSchema schema,
-                                         String[] password,
-                                         String... attrs);
+    // GnomeKeyringAttributeList gnome_keyring_attribute_list_new() = g_array_new(FALSE, FALSE, sizeof(GnomeKeyringAttribute))
+    int GnomeKeyringAttribute_SIZE = Pointer.SIZE * 3; // conservatively: 2 pointers + 1 enum
 
-    int gnome_keyring_delete_password_sync(GnomeKeyringPasswordSchema schema,
-                                           String... attrs);
+    void gnome_keyring_attribute_list_append_string(
+            /*GnomeKeyringAttributeList*/Pointer attributes,
+            String name,
+            String value);
 
+    void gnome_keyring_attribute_list_free(
+            /*GnomeKeyringAttributeList*/Pointer attributes);
+
+    int gnome_keyring_item_create_sync(
+            String keyring,
+            /*GnomeKeyringItemType*/int type,
+            String display_name,
+            /*GnomeKeyringAttributeList*/Pointer attributes,
+            String secret,
+            boolean update_if_exists,
+            int[] item_id);
+
+    int gnome_keyring_item_delete_sync(
+            String keyring,
+            int id);
+
+    int gnome_keyring_find_items_sync(
+            /*GnomeKeyringItemType*/int type,
+            /*GnomeKeyringAttributeList*/Pointer attributes,
+            /*GList<GnomeKeyringFound>*/Pointer[] found);
+
+    void gnome_keyring_found_list_free(
+            /*GList<GnomeKeyringFound>*/Pointer found_list);
+
+    class GnomeKeyringFound extends Structure {
+        public String keyring;
+        public int item_id;
+        public /*GnomeKeyringAttributeList*/Pointer attributes;
+        public String secret;
+    }
+
+    /** http://library.gnome.org/devel/glib/2.6/glib-Miscellaneous-Utility-Functions.html#g-set-application-name */
     void g_set_application_name(String name);
 
-    class GnomeKeyringPasswordSchema extends Structure {
-        public int item_type;
-        public GnomeKeyringPasswordSchemaAttribute[] attributes = new GnomeKeyringPasswordSchemaAttribute[32];
-    }
+    /** http://library.gnome.org/devel/glib/2.6/glib-Arrays.html */
 
-    class GnomeKeyringPasswordSchemaAttribute extends Structure {
-        public String name;
-        public int type;
-    }
+    Pointer g_array_new(
+            /*gboolean*/int zero_terminated,
+            /*gboolean*/int clear,
+            int element_size);
+
+    /** http://library.gnome.org/devel/glib/2.6/glib-Doubly-Linked-Lists.html */
+
+    int g_list_length(
+            Pointer list);
+
+    /*gpointer*/GnomeKeyringFound g_list_nth_data(
+            Pointer list,
+            int n);
 
 }

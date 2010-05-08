@@ -6,8 +6,10 @@
 
 # Macros
 TOP=`pwd`
-PLATFORM=Cygwin-Windows
-TMPDIR=build/nbexec/${PLATFORM}/tmp-packaging
+CND_PLATFORM=Cygwin-Windows
+CND_CONF=nbexec
+CND_DISTDIR=dist
+TMPDIR=build/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
 OUTPUT_PATH=nbexec.dll
 OUTPUT_BASENAME=nbexec.dll
@@ -50,7 +52,7 @@ function copyFileToTmpDir
 
 # Setup
 cd "${TOP}"
-mkdir -p dist/nbexec/${PLATFORM}/package
+mkdir -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package
 rm -rf ${TMPDIR}
 mkdir -p ${TMPDIR}
 
@@ -62,9 +64,9 @@ copyFileToTmpDir "${OUTPUT_PATH}" "${TMPDIR}/${PACKAGE_TOP_DIR}lib/${OUTPUT_BASE
 
 # Generate tar file
 cd "${TOP}"
-rm -f dist/nbexec/${PLATFORM}/package/libwindows.dll.tar
+rm -f ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/libwindows.dll.tar
 cd ${TMPDIR}
-tar -vcf ../../../../dist/nbexec/${PLATFORM}/package/libwindows.dll.tar *
+tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/libwindows.dll.tar *
 checkReturnCode
 
 # Cleanup

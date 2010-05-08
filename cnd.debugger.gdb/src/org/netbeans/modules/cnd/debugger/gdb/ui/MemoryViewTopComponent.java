@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.debugger.gdb.proxy.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -192,7 +191,7 @@ final class MemoryViewTopComponent extends TopComponent implements PropertyChang
         if (len < 1) {
             return;
         }
-        RequestProcessor.getDefault().post(new Runnable() {
+        debugger.getRequestProcessor().post(new Runnable() {
             public void run() {
                 if (!debugger.isStopped()) {
                     return;

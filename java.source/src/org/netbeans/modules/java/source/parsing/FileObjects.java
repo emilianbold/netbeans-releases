@@ -110,8 +110,10 @@ public class FileObjects {
     public static final String RS    = "rs";   //NOI18N
     public static final String RX    = "rx";   //NOI18N
     public static final String RAPT  = "rapt"; //NOI18N
-    
-    
+    public static final String RES   = "res";  //NOI18N
+
+    public static final String RESOURCES = "resouces." + FileObjects.RES;  //NOI18N
+
     /** Creates a new instance of FileObjects */
     private FileObjects() {
     }
@@ -828,11 +830,8 @@ public class FileObjects {
     }
 
     public static String getRelativePath (final URL root, final URL fo) throws URISyntaxException {
-        String path = getRelativePath(new File(root.toURI()), new File(fo.toURI()));
-        if (File.separatorChar != '/') {
-            path.replace(File.separatorChar, '/');
-        }
-        return path;
+        final String path = getRelativePath(new File(root.toURI()), new File(fo.toURI()));
+        return path.replace(File.separatorChar, '/');
     }
 
     public static CharSequence getCharContent(InputStream ins, Charset encoding, JavaFileFilterImplementation filter, long expectedLength, boolean ignoreEncodingErrors) throws IOException {

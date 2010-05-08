@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.css.gsf;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.csl.api.ColoringAttributes;
@@ -54,6 +53,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -63,19 +63,16 @@ public class CssOccurancesFinder extends OccurrencesFinder {
 
     private int caretDocumentPosition;
     private boolean cancelled;
-    private Map<OffsetRange, ColoringAttributes> occurances = Collections.emptyMap();
+    private Map<OffsetRange, ColoringAttributes> occurrences;
 
     @Override
     public void setCaretPosition(int position) {
         caretDocumentPosition = position;
-        
-        //TODO Add an optimalization which caches the occurances for some
-        //document range - typically a token start-end.
     }
 
     @Override
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
-        return occurances;
+        return occurrences;
     }
 
     @Override
@@ -86,7 +83,11 @@ public class CssOccurancesFinder extends OccurrencesFinder {
 
     @Override
     public void run(Result result, SchedulerEvent event) {
+        //remove the last occurrences - the CSL caches the last found occurences for us
+        occurrences = null;
+
         if(cancelled) {
+            cancelled = false;
             return ;
         }
 
@@ -117,24 +118,33 @@ public class CssOccurancesFinder extends OccurrencesFinder {
                 return ;
         }
 
+        final String currentNodeImage = SimpleNodeUtil.getNodeImage(currentNode);
+
         final Map<OffsetRange, ColoringAttributes> occurancesLocal = new HashMap<OffsetRange, ColoringAttributes>();
         SimpleNodeUtil.visitChildren(root, new NodeVisitor() {
 
             @Override
             public void visit(SimpleNode node) {
-                if(currentNode.kind() == node.kind() && currentNode.image().equals(node.image())) {
+                if (cancelled) {
+                    cancelled = false;
+                    return;
+                }
+                if(currentNode.kind() == node.kind() && 
+                        LexerUtils.equals(currentNodeImage.trim(), SimpleNodeUtil.getNodeImage(node).trim(), currentNode.kind() == CssParserTreeConstants.JJTHEXCOLOR, false)) {
+
+                    OffsetRange trimmedNodeRange = SimpleNodeUtil.getTrimmedNodeRange(node);
                     //something to highlight
-                    int docFrom = snapshot.getOriginalOffset(node.startOffset());
+                    int docFrom = snapshot.getOriginalOffset(trimmedNodeRange.getStart());
 
                     //virtual class or id handling - the class and id elements inside
                     //html tag's CLASS or ID attribute has the dot or hash prefix just virtual
                     //so if we want to highlight such occurances we need to increment the
                     //start offset by one
                     if(docFrom == -1 && (node.kind() == CssParserTreeConstants.JJT_CLASS || node.kind() == CssParserTreeConstants.JJTHASH )) {
-                        docFrom = snapshot.getOriginalOffset(node.startOffset() + 1); //lets try +1 offset
+                        docFrom = snapshot.getOriginalOffset(trimmedNodeRange.getStart() + 1); //lets try +1 offset
                     }
 
-                    int docTo = snapshot.getOriginalOffset(node.endOffset());
+                    int docTo = snapshot.getOriginalOffset(trimmedNodeRange.getEnd());
 
                     if(docFrom == -1 || docTo == -1) {
                         return ; //something is virtual
@@ -145,8 +155,13 @@ public class CssOccurancesFinder extends OccurrencesFinder {
             }
         });
 
+        if (cancelled) {
+            cancelled = false;
+            return;
+        }
+
         if(occurancesLocal.size() > 0) {
-            occurances = occurancesLocal;
+            occurrences = occurancesLocal;
         }
 
     }

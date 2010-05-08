@@ -139,6 +139,8 @@ public class MultiFileSystem extends FileSystem {
 
     /** root */
     private transient MultiFileObject root;
+    /** known attributes on read only FS roots */
+    private transient Set<String> rootAttributes;
 
     /** Creates new empty MultiFileSystem. Useful only for
     * subclasses.
@@ -180,6 +182,7 @@ public class MultiFileSystem extends FileSystem {
 
         // set them
         this.systems = fileSystems;
+        this.rootAttributes = null;
 
         getMultiRoot().updateAllAfterSetDelegates(oldSystems);
 
@@ -463,7 +466,7 @@ public class MultiFileSystem extends FileSystem {
         }
     };
     FileSystem writableLayer(String path) {
-        if (!insideWritableLayer.get()) {
+        if (!insideWritableLayer.get() && /* #183936 */!isReadOnly()) {
             // #181460: avoid stack overflow when createWritableOn calls e.g. findResource
             insideWritableLayer.set(true);
             try {
@@ -652,5 +655,29 @@ public class MultiFileSystem extends FileSystem {
 
     static boolean isMaskFile(FileObject fo) {
         return fo.getExt().endsWith(MASK);
+    }
+
+    boolean canHaveRootAttributeOnReadOnlyFS(String name) {
+        Set<String> tmp = rootAttributes;
+        if (tmp == null) {
+            tmp = new HashSet<String>();
+            for (FileSystem fs : getDelegates()) {
+                if (fs == null) {
+                    continue;
+                }
+                if (!fs.isReadOnly()) {
+                    continue;
+                }
+                Enumeration<String> en = fs.getRoot().getAttributes();
+                while (en.hasMoreElements()) {
+                    tmp.add(en.nextElement());
+                }
+                rootAttributes = tmp;
+            }
+        }
+        if (tmp == Collections.<String>emptySet()) {
+            return true;
+        }
+        return tmp.contains(name);
     }
 }

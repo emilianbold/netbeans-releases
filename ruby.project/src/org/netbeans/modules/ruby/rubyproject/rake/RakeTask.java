@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represent <em>task</em> or <em>namespace</em> element from Rakefile.
@@ -51,6 +53,7 @@ import java.util.TreeSet;
  */
 public final class RakeTask implements Comparable<RakeTask> {
 
+    private static final Pattern EXPLICIT_PARAMS = Pattern.compile("(\\w+)\\[.+\\]"); //NOI18N
     private final String task;
     private final String description;
     private final String displayName;
@@ -113,6 +116,14 @@ public final class RakeTask implements Comparable<RakeTask> {
     }
 
     /**
+     * @return whether this task explictly defines any params and accepts
+     * them using <code>task_name[param_name]</code> format (Rake 0.8 style).
+     */
+    boolean acceptsExplicitParameters() {
+        return EXPLICIT_PARAMS.matcher(displayName).matches();
+    }
+    
+    /**
      * Useful only for <em>task</em>, return <tt>null</tt> for
      * <em>namespace</em>.
      *
@@ -120,7 +131,9 @@ public final class RakeTask implements Comparable<RakeTask> {
      *         task, e.g. <tt>test:coverage</tt>, <tt>db:migrate</tt>
      */
     public String getTask() {
-        return task;
+        // return the task w/o its params
+        Matcher matcher = EXPLICIT_PARAMS.matcher(task);
+        return matcher.matches() ? matcher.group(1) : task;
     }
 
     public Set<RakeTask> getChildren() {

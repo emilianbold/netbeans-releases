@@ -38,14 +38,18 @@
  */
 package org.netbeans.modules.php.editor.api.elements;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.NameKind.Exact;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.openide.filesystems.FileObject;
@@ -78,7 +82,7 @@ public abstract class ElementFilter {
     }
 
     public static ElementFilter anyOf(final Collection<ElementFilter> filters) {
-        return ElementFilter.allOf(filters.toArray(new ElementFilter[filters.size()]));
+        return ElementFilter.anyOf(filters.toArray(new ElementFilter[filters.size()]));
     }
 
     public static ElementFilter anyOf(final ElementFilter... filters) {
@@ -135,6 +139,24 @@ public abstract class ElementFilter {
             }
         };
     }
+    public static <T extends PhpElement> ElementFilter forExcludedElements(final Collection<T> excludedElements) {
+        return new ElementFilter() {
+            private ElementFilter delegate = null;
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                if (delegate == null) {
+                    PhpElementKind kind = PhpElementKind.CLASS;
+                    if (excludedElements.size() > 0) {
+                        kind = excludedElements.iterator().next().getPhpElementKind();
+                    }
+                    delegate  = ElementFilter.forExcludedNames(toNames(excludedElements), kind);
+                }
+                return delegate.isAccepted(element);
+            }
+        };
+
+    }
+
 
     public static ElementFilter forOffset(final int offset) {
         return new ElementFilter() {
@@ -163,6 +185,8 @@ public abstract class ElementFilter {
             public boolean isAccepted(PhpElement element) {
                 boolean retval = true;
                 for (FileObject fileObject : files) {
+                    //if file is deleted
+                    if (fileObject == null) continue;
                     String nameExt = fileObject.getNameExt();
                     String elementURL = element.getFilenameUrl();
                     if ((elementURL != null && elementURL.indexOf(nameExt) < 0) || element.getFileObject() != fileObject) {
@@ -216,6 +240,29 @@ public abstract class ElementFilter {
         };
     }
 
+    public static ElementFilter forTypesFromNamespaces(final Set<QualifiedName> namespaces) {
+        Set<ElementFilter> filters = new HashSet<ElementFilter>();
+        for (QualifiedName ns : namespaces) {
+            filters.add(ElementFilter.forTypesFromNamespace(ns));
+        }
+        return ElementFilter.anyOf(filters);
+
+    }
+
+    public static ElementFilter forTypesFromNamespace(final QualifiedName namespace) {
+        final Exact nsName = NameKind.exact(namespace);
+        return new ElementFilter() {
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                if (element instanceof TypeElement) {
+                    TypeElement type = (TypeElement) element;
+                    return nsName.matchesName(type.getPhpElementKind(), type.getNamespaceName());
+                }
+                return true;
+            }
+        };
+    }
+
     public static ElementFilter forEqualTypes(final TypeElement typeElement) {
         return ElementFilter.allOf(
                 ElementFilter.forName(NameKind.exact(typeElement.getName())),
@@ -224,6 +271,14 @@ public abstract class ElementFilter {
 
     }
 
+    public static ElementFilter forMembersOfTypes(final Set<TypeElement> typeElements) {
+        List<ElementFilter> filters = new ArrayList<ElementFilter>();
+        for (TypeElement typeElement : typeElements) {
+            filters.add(ElementFilter.forMembersOfType(typeElement));
+        }
+        return ElementFilter.anyOf(filters);
+    }
+    
     public static ElementFilter forMembersOfType(final TypeElement typeElement) {
         return new ElementFilter() {
             private ElementFilter filterDelegate = null;
@@ -232,6 +287,22 @@ public abstract class ElementFilter {
                 if (element instanceof TypeMemberElement) {
                     if (filterDelegate == null) {
                         filterDelegate = forEqualTypes(typeElement);
+                    }
+                    //return thisTypeElement.equals(typeElement);
+                    return filterDelegate.isAccepted(((TypeMemberElement) element).getType());
+                }
+                return true;
+            }
+        };
+    }
+    public static ElementFilter forMembersOfTypeName(final TypeElement typeElement) {
+        return new ElementFilter() {
+            private ElementFilter filterDelegate = null;
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                if (element instanceof TypeMemberElement) {
+                    if (filterDelegate == null) {
+                        filterDelegate = forName(NameKind.exact(typeElement.getFullyQualifiedName()));
                     }
                     //return thisTypeElement.equals(typeElement);
                     return filterDelegate.isAccepted(((TypeMemberElement) element).getType());
@@ -307,6 +378,9 @@ public abstract class ElementFilter {
 
     public abstract boolean isAccepted(PhpElement element);
 
+    public <T extends PhpElement> Set<T> filter(T original) {
+        return filter(Collections.<T>singleton(original));
+    }
     public <T extends PhpElement> Set<T> filter(Set<T> original) {
         Set<T> retval = new HashSet<T>();
         for (T baseElement : original) {
@@ -326,28 +400,47 @@ public abstract class ElementFilter {
         return Collections.unmodifiableSet(retval);
     }
 
+    //slow impl.
     public <T extends PhpElement> Set<T> prefer(Set<T> original) {
         Set<T> retval = original;
-        Set<T> remove = new HashSet<T>();
-        Map<Pair<PhpElementKind, String>, T> map = new HashMap<Pair<PhpElementKind, String>, T>();
+        Set<T> notAccepted = new HashSet<T>();
+        Map<T, ElementFilter>  accepted = new HashMap<T, ElementFilter>();
+
         for (T baseElement : original) {
-            final PhpElementKind kind = baseElement.getPhpElementKind();
-            final String name = baseElement.getName();
-            final Pair<PhpElementKind, String> key =
-                    Pair.<PhpElementKind, String>of(kind, name);
-            T old = map.put(key, baseElement);
-            if (old != null) {
-                if (isAccepted(baseElement)) {
-                    remove.add(old);
+            if (isAccepted(baseElement)) {
+                List<ElementFilter> filters = new ArrayList<ElementFilter>();
+                if (baseElement instanceof FullyQualifiedElement) {
+                    FullyQualifiedElement fqnElement = (FullyQualifiedElement) baseElement;
+                    filters.add(ElementFilter.forName(NameKind.exact(fqnElement.getFullyQualifiedName())));
                 } else {
-                    remove.add(map.put(key, old));
+                    filters.add(ElementFilter.forName(NameKind.exact(baseElement.getName())));
                 }
+                if (baseElement instanceof TypeMemberElement) {
+                    TypeMemberElement member = (TypeMemberElement)baseElement;
+                    filters.add(ElementFilter.forMembersOfTypeName(member.getType()));
+                }
+                accepted.put(baseElement, ElementFilter.allOf(filters));
+            } else {
+                notAccepted.add(baseElement);
             }
         }
-        if (!remove.isEmpty()) {
+        if (accepted.size() > 0 && notAccepted.size() > 0) {
             retval = new HashSet<T>(original);
-            retval.removeAll(remove);
+            for (Entry<T, ElementFilter> entry : accepted.entrySet()) {
+                ElementFilter filter = entry.getValue();
+                retval.removeAll(filter.filter(notAccepted));
+            }
         }
+
         return Collections.unmodifiableSet(retval);
     }
+
+    private static Set<String> toNames(Collection<? extends PhpElement> elements) {
+        Set<String> names = new HashSet<String>();
+        for (PhpElement elem : elements) {
+            names.add(elem.getName());
+        }
+        return names;
+    }
+
 }

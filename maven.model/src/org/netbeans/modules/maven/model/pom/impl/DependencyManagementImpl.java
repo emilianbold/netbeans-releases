@@ -59,6 +59,7 @@ public class DependencyManagementImpl extends POMComponentImpl implements Depend
 
     // attributes
 
+    @Override
     public List<Dependency> getDependencies() {
         ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
         if (childs != null) {
@@ -67,6 +68,7 @@ public class DependencyManagementImpl extends POMComponentImpl implements Depend
         return null;
     }
 
+    @Override
     public void addDependency(Dependency dep) {
         ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
         if (childs == null) {
@@ -80,6 +82,7 @@ public class DependencyManagementImpl extends POMComponentImpl implements Depend
         childs.addListChild(dep);
     }
 
+    @Override
     public void removeDependency(Dependency dep) {
         ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
         if (childs != null) {
@@ -87,10 +90,11 @@ public class DependencyManagementImpl extends POMComponentImpl implements Depend
         }
     }
 
+    @Override
     public Dependency findDependencyById(String groupId, String artifactId, String classifier) {
         assert groupId != null;
         assert artifactId != null;
-        java.util.List<Dependency> deps = getDependencies();
+        List<Dependency> deps = getDependencies();
         if (deps != null) {
             for (Dependency d : deps) {
                 if (groupId.equals(d.getGroupId()) && artifactId.equals(d.getArtifactId()) &&
@@ -103,8 +107,25 @@ public class DependencyManagementImpl extends POMComponentImpl implements Depend
     }
 
 
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    public static class DMList extends DependencyImpl.List {
+
+        public DMList(POMModel model, Element element) {
+            super(model, element);
+        }
+
+        public DMList(POMModel model) {
+            super(model);
+        }
+
+        @Override
+        protected DependencyContainer getDependencyContainer() {
+            return getModel().getProject().getDependencyManagement();
+        }
+
+    }
 }

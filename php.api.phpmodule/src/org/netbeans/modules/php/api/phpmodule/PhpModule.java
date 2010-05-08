@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.php.api.phpmodule;
 
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -86,6 +88,18 @@ public abstract class PhpModule {
      * @since 1.19
      */
     public abstract PhpModuleProperties getProperties();
+
+    /**
+     * Get {@link Preferences} of this PHP module for the given PHP framework provider.
+     * This method is suitable for storing (and reading) PHP module specific properties.
+     * For more information, see {@link org.netbeans.api.project.ProjectUtils#getPreferences(org.netbeans.api.project.Project, Class, boolean)}.
+     * @param clazz PHP framework provider class which defines the namespace of preferences
+     * @param shared whether the returned settings should be shared
+     * @return {@link Preferences} for this PHP module and the given PHP framework provider
+     * @since 1.26
+     * @see org.netbeans.api.project.ProjectUtils#getPreferences(org.netbeans.api.project.Project, Class, boolean)
+     */
+    public abstract <T extends PhpFrameworkProvider> Preferences getPreferences(Class<T> clazz, boolean shared);
 
     /**
      * Gets PHP module for the given {@link FileObject}.
@@ -165,5 +179,30 @@ public abstract class PhpModule {
             }
         }
         return null;
+    }
+
+    /**
+     * This class is used to notify about changes in the direction from frameworks to PHP module.
+     * @see org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender#save(PhpModule)
+     * @since 1.26
+     */
+    public enum Change {
+        /**
+         * Directory with source files changed.
+         */
+        SOURCES_CHANGE,
+        /**
+         * Directory with test files changed.
+         */
+        TESTS_CHANGE,
+        /**
+         * Directory with Selenium files changed.
+         */
+        SELENIUM_CHANGE,
+        /**
+         * Ignored files changed.
+         * @see org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender
+         */
+        IGNORED_FILES_CHANGE,
     }
 }

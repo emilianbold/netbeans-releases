@@ -9,5 +9,6 @@
     }
     session.removeAttribute("facebook_session_key");
     session.removeAttribute("facebook_auth_token");
+    session.removeAttribute("facebook_return_url");
     httpServletRequest = null;
 }

@@ -35,7 +35,7 @@
 
 static long mem_min(int threads, work_t* works) {
     int i;
-    unsigned long min = -1;
+    unsigned long min = (unsigned long) -1;
     for (i = 0; i < threads; ++i) {
         if (works[i].mem_size < min) {
             min = works[i].mem_size;
@@ -96,6 +96,7 @@ static void* mutex_threadfunc(void *p) {
         pthread_mutex_unlock(&mutex);
         usleep(MICROS_PER_SECOND / 100);
     }
+    return NULL;
 }
 
 void mutex_demo(int work_count, work_t* works, int seconds) {
@@ -113,7 +114,7 @@ void mutex_demo(int work_count, work_t* works, int seconds) {
 
     estimate_usage(work_count, works, seconds);
 
-    TRACE("Allocating %ld bytes of memory for thread descriptors with calloc()\n", work_count * sizeof(pthread_t));
+    TRACE("Allocating %ld bytes of memory for thread descriptors with calloc()\n", (long) (work_count * sizeof(pthread_t)));
     pthread_t* t = calloc(work_count, sizeof (pthread_t));
     done = 0;
     pthread_barrier_init(&start, NULL, work_count + 1);
@@ -132,7 +133,7 @@ void mutex_demo(int work_count, work_t* works, int seconds) {
         pthread_join(t[i], NULL);
     }
 
-    TRACE("Freeing memory used for thread descriptors\n", work_count * sizeof(pthread_t));
+    TRACE("Freeing %ld bytes of memory used for thread descriptors\n", (long) (work_count * sizeof(pthread_t)));
     free(t);
     PRINT("\n");
 }

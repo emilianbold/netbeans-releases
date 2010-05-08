@@ -154,8 +154,7 @@ class SearchExecutor implements Runnable {
         return a.length() - ai - 1;
     }
 
-
-
+    @Override
     public void run() {
         populatePathToRoot();
 
@@ -166,8 +165,9 @@ class SearchExecutor implements Runnable {
         if (searchingUrl()) {
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(master.getRepositoryUrl());
             SvnProgressSupport support = new SvnProgressSupport() {
+                @Override
                 public void perform() {
-                    search(master.getRepositoryUrl(), null, fromRevision, toRevision, this);
+                    search(master.getRepositoryUrl(), null, fromRevision, toRevision, this, master.fileInfoCheckBox.isSelected());
                 }
             };
             support.start(rp, master.getRepositoryUrl(), NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
@@ -177,8 +177,9 @@ class SearchExecutor implements Runnable {
                 final Set<File> files = workFiles.get(rootUrl);
                 RequestProcessor rp = Subversion.getInstance().getRequestProcessor(rootUrl);
                 SvnProgressSupport support = new SvnProgressSupport() {
+                    @Override
                     public void perform() {
-                        search(rootUrl, files, fromRevision, toRevision, this);
+                        search(rootUrl, files, fromRevision, toRevision, this, master.fileInfoCheckBox.isSelected());
                     }
                 };
                 support.start(rp, rootUrl, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
@@ -186,7 +187,7 @@ class SearchExecutor implements Runnable {
         }
     }
 
-    private void search(SVNUrl rootUrl, Set<File> files, SVNRevision fromRevision, SVNRevision toRevision, SvnProgressSupport progressSupport) {
+    private void search(SVNUrl rootUrl, Set<File> files, SVNRevision fromRevision, SVNRevision toRevision, SvnProgressSupport progressSupport, boolean fetchDetailsPaths) {
         SvnClient client;
         try {
             client = Subversion.getInstance().getClient(rootUrl, progressSupport);
@@ -200,7 +201,7 @@ class SearchExecutor implements Runnable {
         }
         if (searchingUrl()) {
             try {
-                ISVNLogMessage [] messages = client.getLogMessages(rootUrl, null, fromRevision, toRevision, false, true, 0);
+                ISVNLogMessage [] messages = client.getLogMessages(rootUrl, null, fromRevision, toRevision, false, fetchDetailsPaths, 0);
                 appendResults(rootUrl, messages);
             } catch (SVNClientException e) {
                 if(!SvnClientExceptionHandler.handleLogException(rootUrl, toRevision, e)) {
@@ -218,7 +219,7 @@ class SearchExecutor implements Runnable {
                     }
                     paths[idx++] = p;
                 }
-                ISVNLogMessage [] messages = SvnUtils.getLogMessages(client, rootUrl, paths, fromRevision, toRevision, false, true);
+                ISVNLogMessage [] messages = SvnUtils.getLogMessages(client, rootUrl, paths, fromRevision, toRevision, false, fetchDetailsPaths);
                 appendResults(rootUrl, messages);
             } catch (SVNClientException e) {
                 try {
@@ -227,7 +228,7 @@ class SearchExecutor implements Runnable {
                     // listed in paths[]. This causes problems when the given user has restricted access only to a specific folder.
                     if(SvnClientExceptionHandler.isHTTP403(e.getMessage())) { // 403 forbidden
                         for(String path : paths) {
-                            ISVNLogMessage [] messages = client.getLogMessages(rootUrl.appendPath(path), null, fromRevision, toRevision, false, true, 0);
+                            ISVNLogMessage [] messages = client.getLogMessages(rootUrl.appendPath(path), null, fromRevision, toRevision, false, fetchDetailsPaths, 0);
                             appendResults(rootUrl, messages);
                         }
                         return;
@@ -309,6 +310,7 @@ class SearchExecutor implements Runnable {
         completedSearches++;
         if (searchingUrl() && completedSearches >= 1 || workFiles.size() == completedSearches) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     master.setResults(results);
                 }

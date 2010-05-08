@@ -77,7 +77,11 @@ public final class CodeStyle {
     }
     
     // General tabs and indents ------------------------------------------------
-    
+
+    public int getTabSize() {
+        return preferences.getInt(tabSize, getDefaultAsInt(tabSize));
+    }
+
     public int getIndentSize() {
         return preferences.getInt(indentSize, getDefaultAsInt(indentSize));
     }
@@ -202,6 +206,17 @@ public final class CodeStyle {
         return preferences.getInt(blankLinesBeforeFunctionEnd, getDefaultAsInt(blankLinesBeforeFunctionEnd));
     }
 
+    public int getBlankLinesAfterOpenPHPTag() {
+        return preferences.getInt(blankLinesAfterOpenPHPTag, getDefaultAsInt(blankLinesAfterOpenPHPTag));
+    }
+
+    public int getBlankLinesAfterOpenPHPTagInHTML() {
+        return preferences.getInt(blankLinesAfterOpenPHPTagInHTML, getDefaultAsInt(blankLinesAfterOpenPHPTagInHTML));
+    }
+
+    public int getBlankLinesBeforeClosePHPTag() {
+        return preferences.getInt(blankLinesBeforeClosePHPTag, getDefaultAsInt(blankLinesBeforeClosePHPTag));
+    }
 
     // Spaces ------------------------------------------------------------------
 
@@ -243,6 +258,10 @@ public final class CodeStyle {
 
     public boolean spaceBeforeSwitchParen() {
         return preferences.getBoolean(spaceBeforeSwitchParen, getDefaultAsBoolean(spaceBeforeSwitchParen));
+    }
+
+    public boolean spaceBeforeArrayDeclParen() {
+        return preferences.getBoolean(spaceBeforeArrayDeclParen, getDefaultAsBoolean(spaceBeforeArrayDeclParen));
     }
 
     public boolean spaceAroundUnaryOps() {
@@ -414,6 +433,10 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceCheckAfterKeywords, getDefaultAsBoolean(spaceCheckAfterKeywords));
     }
 
+    public boolean spaceBeforeClosePHPTag() {
+        return preferences.getBoolean(spaceBeforeClosePHPTag, getDefaultAsBoolean(spaceBeforeClosePHPTag));
+    }
+
     // alignment
     public boolean alignMultilineMethodParams() {
         return preferences.getBoolean(alignMultilineMethodParams, getDefaultAsBoolean(alignMultilineMethodParams));
@@ -423,16 +446,8 @@ public final class CodeStyle {
         return preferences.getBoolean(alignMultilineCallArgs, getDefaultAsBoolean(alignMultilineCallArgs));
     }
 
-    public boolean alignMultilineAnnotationArgs() {
-        return preferences.getBoolean(alignMultilineAnnotationArgs, getDefaultAsBoolean(alignMultilineAnnotationArgs));
-    }
-
     public boolean alignMultilineImplements() {
         return preferences.getBoolean(alignMultilineImplements, getDefaultAsBoolean(alignMultilineImplements));
-    }
-
-    public boolean alignMultilineThrows() {
-        return preferences.getBoolean(alignMultilineThrows, getDefaultAsBoolean(alignMultilineThrows));
     }
 
     public boolean alignMultilineParenthesized() {
@@ -547,6 +562,14 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    public boolean wrapBlockBrace() {
+        return preferences.getBoolean(wrapBlockBraces, getDefaultAsBoolean(wrapBlockBraces));
+    }
+
+    public boolean wrapStatementsOnTheSameLine() {
+        return preferences.getBoolean(wrapStatementsOnTheLine, getDefaultAsBoolean(wrapStatementsOnTheLine));
+    }
+
     private static class Producer implements FmtOptions.CodeStyleProducer {
 
         public CodeStyle create(Preferences preferences) {
@@ -563,7 +586,7 @@ public final class CodeStyle {
 
     public enum WrapStyle {
         WRAP_ALWAYS,
-        //WRAP_IF_LONG,
+        WRAP_IF_LONG,
         WRAP_NEVER
     }
 }

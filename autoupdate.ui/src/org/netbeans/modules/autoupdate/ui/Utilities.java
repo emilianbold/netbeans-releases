@@ -112,6 +112,8 @@ public class Utilities {
     
     private static final String ALLOW_SHOWING_BALLOON = "plugin.manager.allow.showing.balloon"; // NOI18N
     private static final String SHOWING_BALLOON_TIMEOUT = "plugin.manager.showing.balloon.timeout"; // NOI18N
+
+    private static final RequestProcessor WORKER_THREADS_PROCESSOR = new RequestProcessor("autoupdate-ui-worker", 10, false);
     
     private static Collection<String> first_class_modules = null;
     
@@ -663,7 +665,7 @@ public class Utilities {
     }   
     
     public static RequestProcessor.Task startAsWorkerThread(final Runnable runnableCode, final int delay) {
-        RequestProcessor.Task retval = RequestProcessor.getDefault().create(runnableCode);
+        RequestProcessor.Task retval = WORKER_THREADS_PROCESSOR.create(runnableCode);
         if (SwingUtilities.isEventDispatchThread ()) {
             retval.schedule(delay);
         } else {

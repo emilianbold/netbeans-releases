@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
@@ -99,16 +100,16 @@ public final class EditDependencyPanel extends JPanel {
         UIUtil.setText(codeNameBaseValue, me.getCodeNameBase());
         UIUtil.setText(jarLocationValue, me.getJarLocation().getAbsolutePath());
         UIUtil.setText(releaseVersionValue, origDep.getReleaseVersion());
-        UIUtil.setText(specVerValue, origDep.hasImplementationDepedendency() ?
+        UIUtil.setText(specVerValue, origDep.hasImplementationDependency() ?
             me.getSpecificationVersion() :
             origDep.getSpecificationVersion());
-        implVer.setSelected(origDep.hasImplementationDepedendency());
+        implVer.setSelected(origDep.hasImplementationDependency());
         availablePkg.setEnabled(hasAvailablePackages());
         includeInCP.setSelected(origDep.hasCompileDependency());
         refreshAvailablePackages();
         refresh();
         ActionListener versionListener = new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
+            public @Override void actionPerformed(ActionEvent arg0) {
                 refreshAvailablePackages();
             }
         };
@@ -138,12 +139,16 @@ public final class EditDependencyPanel extends JPanel {
     }
     
     public ModuleDependency getEditedDependency() {
-        ModuleDependency dep = new ModuleDependency(origDep.getModuleEntry(),
-                releaseVersionValue.getText().trim(),
-                specVerValue.getText().trim(),
-                includeInCP.isSelected(),
-                implVer.isSelected());
-        return dep;
+        try {
+            return new ModuleDependency(origDep.getModuleEntry(),
+                    releaseVersionValue.getText().trim(),
+                    specVerValue.getText().trim(),
+                    includeInCP.isSelected(),
+                    implVer.isSelected());
+        } catch (NumberFormatException x) {
+            // XXX would be better to notify the user somehow
+            return origDep;
+        }
     }
     
     /** This method is called from within the constructor to

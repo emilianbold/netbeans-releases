@@ -380,82 +380,85 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                 AliasNode an = (AliasNode)closest;
 
                 // TODO - determine if the click is over the new name or the old name
-                String newName = an.getNewName();
+                String newName = AstUtilities.getNameOrValue(an.getNewName());
+                if (newName != null) {
 
-                // XXX I don't know where the old and new names are since the user COULD
-                // have used more than one whitespace character for separation. For now I'll
-                // just have to assume it's the normal case with one space:  alias new old. 
-                // I -could- use the getPosition.getEndOffset() to see if this looks like it's
-                // the case (e.g. node length != "alias ".length + old.length+new.length+1).
-                // In this case I could go peeking in the source buffer to see where the
-                // spaces are - between alias and the first word or between old and new. XXX.
-                int newLength = newName.length();
-                int aliasPos = an.getPosition().getStartOffset();
-                String name = null;
+                    // XXX I don't know where the old and new names are since the user COULD
+                    // have used more than one whitespace character for separation. For now I'll
+                    // just have to assume it's the normal case with one space:  alias new old.
+                    // I -could- use the getPosition.getEndOffset() to see if this looks like it's
+                    // the case (e.g. node length != "alias ".length + old.length+new.length+1).
+                    // In this case I could go peeking in the source buffer to see where the
+                    // spaces are - between alias and the first word or between old and new. XXX.
+                    int newLength = newName.length();
+                    int aliasPos = an.getPosition().getStartOffset();
+                    String name = null;
 
-                if (astOffset > (aliasPos + 6)) { // 6: "alias ".length()
+                    if (astOffset > (aliasPos + 6)) { // 6: "alias ".length()
 
-                    if (astOffset > (aliasPos + 6 + newLength)) {
-                        OffsetRange range = AstUtilities.getAliasOldRange(an);
-                        highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-                        name = an.getOldName();
-                    } else {
-                        OffsetRange range = AstUtilities.getAliasNewRange(an);
-                        highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-                        name = an.getNewName();
+                        if (astOffset > (aliasPos + 6 + newLength)) {
+                            OffsetRange range = AstUtilities.getAliasOldRange(an);
+                            highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                            name = AstUtilities.getNameOrValue(an.getOldName());
+                        } else {
+                            OffsetRange range = AstUtilities.getAliasNewRange(an);
+                            highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                            name = AstUtilities.getNameOrValue(an.getNewName());
+                        }
                     }
-                }
 
-                if (name != null) {
-                    // It's over the old word: this counts as a usage.
-                    // The problem is that we don't know if it's a local, a dynamic, an instance
-                    // variable, etc. (The $ and @ parts are not included in the alias statement).
-                    // First see if it's a local variable.
-                    int count = highlights.size();
-                    Node method = AstUtilities.findLocalScope(closest, path);
+                    if (name != null) {
+                        // It's over the old word: this counts as a usage.
+                        // The problem is that we don't know if it's a local, a dynamic, an instance
+                        // variable, etc. (The $ and @ parts are not included in the alias statement).
+                        // First see if it's a local variable.
+                        int count = highlights.size();
+                        Node method = AstUtilities.findLocalScope(closest, path);
 
-                    // We don't want alias nodes being added while searching for locals since that
-                    // will make it look like a local was found (since the set will grow)
-                    ignoreAlias = true;
+                        // We don't want alias nodes being added while searching for locals since that
+                        // will make it look like a local was found (since the set will grow)
+                        ignoreAlias = true;
 
-                    try {
-                        highlightLocal(method, name, highlights);
-
-                        if (highlights.size() == count) {
-                            // Didn't find locals... try dynvars
-                            List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, true);
-                            for (Node block : applicableBlocks) {
-                                highlightDynamnic(block, name, highlights);
-                            }
+                        try {
+                            highlightLocal(method, name, highlights);
 
                             if (highlights.size() == count) {
-                                // Didn't find locals... try methods
-                                highlightMethod(root, name,
-                                    Collections.singletonList(Arity.UNKNOWN), highlights);
+                                // Didn't find locals... try dynvars
+                                List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, true);
+                                for (Node block : applicableBlocks) {
+                                    highlightDynamnic(block, name, highlights);
+                                }
 
                                 if (highlights.size() == count) {
-                                    // Didn't find methods... try instance fields
-                                    highlightInstance(root, name, highlights);
+                                    // Didn't find locals... try methods
+                                    highlightMethod(root, name,
+                                            Collections.singletonList(Arity.UNKNOWN), highlights);
 
                                     if (highlights.size() == count) {
-                                        // Didn't find instance methods, try globals
-                                        highlightGlobal(root, name, highlights);
+                                        // Didn't find methods... try instance fields
+                                        highlightInstance(root, name, highlights);
 
                                         if (highlights.size() == count) {
-                                            // Didn't find globals, try classes
-                                            highlightClass(root, name, highlights);
+                                            // Didn't find instance methods, try globals
+                                            highlightGlobal(root, name, highlights);
 
                                             if (highlights.size() == count) {
-                                                // Now try classvars
-                                                highlightClassVar(root, name, highlights);
+                                                // Didn't find globals, try classes
+                                                highlightClass(root, name, highlights);
+
+                                                if (highlights.size() == count) {
+                                                    // Now try classvars
+                                                    highlightClassVar(root, name, highlights);
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
+
+                        } finally {
+                            ignoreAlias = false;
                         }
-                    } finally {
-                        ignoreAlias = false;
                     }
                 }
             } else if (closest instanceof ArgumentNode) {
@@ -654,14 +657,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
             AliasNode an = (AliasNode)node;
-
-            if (an.getNewName().equals(name)) {
-                OffsetRange range = AstUtilities.getAliasNewRange(an);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            } else if (an.getOldName().equals(name)) {
-                OffsetRange range = AstUtilities.getAliasOldRange(an);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            }
+            handleAliasNode(an, name, highlights);
         } else if (node instanceof SymbolNode) {
             if (((INameNode)node).getName().equals(name)) { // NOI18N
 
@@ -699,14 +695,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         case ALIASNODE:
             if (!ignoreAlias) {
                 AliasNode an = (AliasNode)node;
-
-                if (an.getNewName().equals(name)) {
-                    OffsetRange range = AstUtilities.getAliasNewRange(an);
-                    highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-                } else if (an.getOldName().equals(name)) {
-                    OffsetRange range = AstUtilities.getAliasOldRange(an);
-                    highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-                }
+                handleAliasNode(an, name, highlights);
             }
             break;
         }
@@ -732,6 +721,18 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         }
     }
 
+    private static void handleAliasNode(AliasNode alias, String name, Map<OffsetRange, ColoringAttributes> highlights) {
+        String oldName = AstUtilities.getNameOrValue(alias.getOldName());
+        String newName = AstUtilities.getNameOrValue(alias.getNewName());
+        if (name.equals(newName)) {
+            OffsetRange range = AstUtilities.getAliasNewRange(alias);
+            highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+        } else if (name.equals(oldName)) {
+            OffsetRange range = AstUtilities.getAliasOldRange(alias);
+            highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+        }
+    }
+
     private void highlightInstance(Node node, String name,
         Map<OffsetRange, ColoringAttributes> highlights) {
         if (node instanceof InstVarNode) {
@@ -745,15 +746,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                 highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            AliasNode an = (AliasNode)node;
-
-            if (an.getNewName().equals(name)) {
-                OffsetRange range = AstUtilities.getAliasNewRange(an);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            } else if (an.getOldName().equals(name)) {
-                OffsetRange range = AstUtilities.getAliasOldRange(an);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            }
+            handleAliasNode((AliasNode) node, name, highlights);
         } else if (AstUtilities.isAttr(node)) {
             // TODO: Compute the symbols and check for equality
             // attr_reader, attr_accessor, attr_writer
@@ -815,15 +808,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                 highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            AliasNode an = (AliasNode)node;
-
-            if (an.getNewName().equals(name)) {
-                OffsetRange range = AstUtilities.getAliasNewRange(an);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            } else if (an.getOldName().equals(name)) {
-                OffsetRange range = AstUtilities.getAliasOldRange(an);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            }
+            handleAliasNode((AliasNode) node, name, highlights);
         } else if (node instanceof SymbolNode) {
             if (("@@" + ((INameNode)node).getName()).equals(name)) { // NOI18N
 
@@ -882,14 +867,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
             AliasNode an = (AliasNode)node;
-
-            if (an.getNewName().equals(name)) {
-                OffsetRange range = AstUtilities.getAliasNewRange(an);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            } else if (an.getOldName().equals(name)) {
-                OffsetRange range = AstUtilities.getAliasOldRange(an);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            }
+            handleAliasNode(an, name, highlights);
         } else if (node instanceof SymbolNode) {
             if (("$" + ((INameNode)node).getName()).equals(name)) { // NOI18N
 
@@ -934,14 +912,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
             AliasNode an = (AliasNode)node;
-
-            if (an.getNewName().equals(name)) {
-                OffsetRange range = AstUtilities.getAliasNewRange(an);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            } else if (an.getOldName().equals(name)) {
-                OffsetRange range = AstUtilities.getAliasOldRange(an);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            }
+            handleAliasNode(an, name, highlights);
         } else if (node instanceof SymbolNode) {
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);
@@ -999,14 +970,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
             AliasNode an = (AliasNode)node;
-
-            if (an.getNewName().equals(name)) {
-                OffsetRange range = AstUtilities.getAliasNewRange(an);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            } else if (an.getOldName().equals(name)) {
-                OffsetRange range = AstUtilities.getAliasOldRange(an);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            }
+            handleAliasNode(an, name, highlights);
         } else if (node instanceof SymbolNode) {
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);

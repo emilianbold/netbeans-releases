@@ -33,6 +33,7 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.sun.appsrv81</code-name-base>
+                    <build-prerequisite/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.7</specification-version>

@@ -62,6 +62,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -227,14 +228,14 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
         Element el = Util.getPrimaryConfigurationData(helper);
-        el = Util.findElement(el, "ide-actions", FreeformProjectType.NS_GENERAL);
+        el = XMLUtil.findElement(el, "ide-actions", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
-        List<Element> subElements = Util.findSubElements(el);
+        List<Element> subElements = XMLUtil.findSubElements(el);
         assertEquals(2, subElements.size());
         // compare first target mapping
         Element el2 = subElements.get(0);
         assertElement(el2, "action", null, "name", "first-targetName");
-        List<Element> l1 = Util.findSubElements(el2);
+        List<Element> l1 = XMLUtil.findSubElements(el2);
         assertEquals(7, l1.size());
         assertElementArray(l1, 
             new String[]{"script", "target", "target", "target", "property", "property", "context"}, 
@@ -244,16 +245,16 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         el2 = l1.get(5);
         assertElement(el2, "property", "v2", "name", "k2");
         el2 = l1.get(6);
-        List<Element> l2 = Util.findSubElements(el2);
+        List<Element> l2 = XMLUtil.findSubElements(el2);
         assertEquals(5, l2.size());
         assertElementArray(l2, 
             new String[]{"property", "folder", "pattern", "format", "arity"}, 
             new String[]{"someProperty1", "someFolder1", "somePattern1", "relative-path", null});
-        assertNotNull("have <one-file-only>", Util.findElement(l2.get(4), "one-file-only", FreeformProjectType.NS_GENERAL));
+        assertNotNull("have <one-file-only>", XMLUtil.findElement(l2.get(4), "one-file-only", FreeformProjectType.NS_GENERAL));
         // compare second target mapping
         el2 = subElements.get(1);
         assertElement(el2, "action", null, "name", "second-targetName");
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(7, l1.size());
         assertElementArray(l1, 
             new String[]{"script", "target", "target", "target", "property", "property", "context"},
@@ -263,14 +264,14 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         el2 = l1.get(5);
         assertElement(el2, "property", "second-v2", "name", "second-k2");
         el2 = l1.get(6);
-        l2 = Util.findSubElements(el2);
+        l2 = XMLUtil.findSubElements(el2);
         assertEquals(4, l2.size());
         assertElementArray(l2, 
             new String[]{"property", "folder", "format", "arity"}, 
             new String[]{"second-someProperty1", "second-someFolder1", "java-name", null});
-        Element sepFilesEl = Util.findElement(l2.get(3), "separated-files", FreeformProjectType.NS_GENERAL);
+        Element sepFilesEl = XMLUtil.findElement(l2.get(3), "separated-files", FreeformProjectType.NS_GENERAL);
         assertNotNull("have <separated-files>", sepFilesEl);
-        assertEquals("right separator", "someSeparator1", Util.findText(sepFilesEl));
+        assertEquals("right separator", "someSeparator1", XMLUtil.findText(sepFilesEl));
         ProjectManager.getDefault().saveAllProjects();
             
         // test updating
@@ -289,14 +290,14 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
         el = Util.getPrimaryConfigurationData(helper);
-        el = Util.findElement(el, "ide-actions", FreeformProjectType.NS_GENERAL);
+        el = XMLUtil.findElement(el, "ide-actions", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
-        subElements = Util.findSubElements(el);
+        subElements = XMLUtil.findSubElements(el);
         assertEquals(1, subElements.size());
         // compare first target mapping
         el2 = subElements.get(0);
         assertElement(el2, "action", null, "name", "foo");
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(5, l1.size());
         assertElementArray(l1, 
             new String[]{"script", "target", "target", "property", "property"}, 
@@ -319,14 +320,14 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
         el = Util.getPrimaryConfigurationData(helper);
-        el = Util.findElement(el, "ide-actions", FreeformProjectType.NS_GENERAL);
+        el = XMLUtil.findElement(el, "ide-actions", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
-        subElements = Util.findSubElements(el);
+        subElements = XMLUtil.findSubElements(el);
         assertEquals(1, subElements.size());
         // compare first target mapping
         el2 = subElements.get(0);
         assertElement(el2, "action", null, "name", "foo");
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(5, l1.size());
         assertElementArray(l1, 
             new String[]{"script", "target", "target", "property", "property"}, 
@@ -361,11 +362,11 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         FreeformProjectGenerator.putContextMenuAction(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
         Element el = Util.getPrimaryConfigurationData(helper);
-        el = Util.findElement(el, "view", FreeformProjectType.NS_GENERAL);
+        el = XMLUtil.findElement(el, "view", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
-        el = Util.findElement(el, "context-menu", FreeformProjectType.NS_GENERAL);
+        el = XMLUtil.findElement(el, "context-menu", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
-        List<Element> subElements = Util.findSubElements(el);
+        List<Element> subElements = XMLUtil.findSubElements(el);
         assertEquals(2, subElements.size());
         assertElementArray(subElements, 
             new String[]{"ide-action", "ide-action"}, 
@@ -386,11 +387,11 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         FreeformProjectGenerator.putContextMenuAction(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
         el = Util.getPrimaryConfigurationData(helper);
-        el = Util.findElement(el, "view", FreeformProjectType.NS_GENERAL);
+        el = XMLUtil.findElement(el, "view", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
-        el = Util.findElement(el, "context-menu", FreeformProjectType.NS_GENERAL);
+        el = XMLUtil.findElement(el, "context-menu", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
-        subElements = Util.findSubElements(el);
+        subElements = XMLUtil.findSubElements(el);
         assertEquals(4, subElements.size());
         assertElementArray(subElements, 
             new String[]{"ide-action", "ide-action", "ide-action", "ide-action"},
@@ -437,18 +438,18 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         FreeformProjectGenerator.putCustomContextMenuActions(helper, customActions);
 //        ProjectManager.getDefault().saveAllProjects();
         Element el = Util.getPrimaryConfigurationData(helper);
-        el = Util.findElement(el, "view", FreeformProjectType.NS_GENERAL);
+        el = XMLUtil.findElement(el, "view", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
-        el = Util.findElement(el, "context-menu", FreeformProjectType.NS_GENERAL);
+        el = XMLUtil.findElement(el, "context-menu", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
-        List<Element> subElements = Util.findSubElements(el);
+        List<Element> subElements = XMLUtil.findSubElements(el);
         assertEquals(2, subElements.size());
         assertElementArray(subElements, 
             new String[]{"action", "action"}, 
             new String[]{null, null});
         // compare first custom action
         Element el2 = subElements.get(0);
-        List<Element> l1 = Util.findSubElements(el2);
+        List<Element> l1 = XMLUtil.findSubElements(el2);
         assertEquals(6, l1.size());
         assertElementArray(l1, 
             new String[]{"script", "label", "target", "target", "property", "property"}, 
@@ -459,7 +460,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertElement(el2, "property", "v2", "name", "k2");
         // compare second custom action
         el2 = subElements.get(1);
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(6, l1.size());
         assertElementArray(l1, 
             new String[]{"script", "label", "target", "target", "property", "property"}, 
@@ -482,25 +483,25 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         FreeformProjectGenerator.putCustomContextMenuActions(helper, customActions);
 //        ProjectManager.getDefault().saveAllProjects();
         el = Util.getPrimaryConfigurationData(helper);
-        el = Util.findElement(el, "view", FreeformProjectType.NS_GENERAL);
+        el = XMLUtil.findElement(el, "view", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
-        el = Util.findElement(el, "context-menu", FreeformProjectType.NS_GENERAL);
+        el = XMLUtil.findElement(el, "context-menu", FreeformProjectType.NS_GENERAL);
         assertNotNull("Target mapping were not saved correctly",  el);
-        subElements = Util.findSubElements(el);
+        subElements = XMLUtil.findSubElements(el);
         assertEquals(2, subElements.size());
         assertElementArray(subElements, 
             new String[]{"action", "action"}, 
             new String[]{null, null});
         // compare first custom action
         el2 = subElements.get(0);
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(1, l1.size());
         assertElementArray(l1, 
             new String[]{"label"}, 
             new String[]{"fooLabel"});
         // compare second custom action
         el2 = subElements.get(1);
-        l1 = Util.findSubElements(el2);
+        l1 = XMLUtil.findSubElements(el2);
         assertEquals(1, l1.size());
         assertElementArray(l1, 
             new String[]{"label"}, 
@@ -518,7 +519,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         String message = "Element "+element+" does not match [name="+expectedName+",value="+expectedValue+"]"; // NOI18N
         assertEquals(message, expectedName, element.getLocalName());
         if (expectedValue != null) {
-            assertEquals(message, expectedValue, Util.findText(element));
+            assertEquals(message, expectedValue, XMLUtil.findText(element));
         }
     }
 
@@ -546,7 +547,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
             expectedValue+", attr="+expectedAttrName+", attrvalue="+expectedAttrValue+"]"; // NOI18N
         assertEquals(message, expectedName, element.getLocalName());
         if (expectedValue != null) {
-            assertEquals(message, expectedValue, Util.findText(element));
+            assertEquals(message, expectedValue, XMLUtil.findText(element));
         }
         String val = element.getAttribute(expectedAttrName);
         assertEquals(expectedAttrValue, val);

@@ -52,7 +52,6 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -73,13 +72,15 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
     private File                            repository;
     private File[]                          roots;
     private RequestProcessor.Task           refreshViewTask;
-    private Thread                          refreshViewThread;
-    private static final RequestProcessor   rp = new RequestProcessor("ChangesetPicker", 1);  // NOI18N
+    private static final RequestProcessor   rp = new RequestProcessor("ChangesetPicker", 1, true);  // NOI18N
     private HgLogMessage[] messages;
     private int fetchRevisionLimit = Mercurial.HG_NUMBER_TO_FETCH_DEFAULT;
     private boolean bGettingRevisions = false;
     private Set<String> revisions;
     private static final String HG_TIP = "tip"; // NOI18N
+    private final MessageInfoFetcher defaultMessageInfoFetcher;
+    private MessageInfoFetcher messageInfofetcher;
+    private HgProgressSupport hgProgressSupport;
 
     /** Creates new form ReverModificationsPanel */
      public ChangesetPickerPanel(File repo, File[] files) {
@@ -89,6 +90,7 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
         initComponents();
         jPanel1.setVisible(false);
         revisionsComboBox.setMaximumRowCount(Mercurial.HG_MAX_REVISION_COMBO_SIZE);
+        defaultMessageInfoFetcher = new MessageInfoFetcher();
     }
 
     public File[] getRootFiles () {
@@ -146,6 +148,20 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
 
     protected String getRevisionLabel (RepositoryRevision rev) {
         return new StringBuilder(rev.getLog().getRevision()).append(" (").append(rev.getLog().getCSetShortID()).append(")").toString(); //NOI18N
+    }
+
+    protected void setInitMessageInfoFetcher (MessageInfoFetcher fetcher) {
+        this.messageInfofetcher = fetcher;
+    }
+
+    @Override
+    public void removeNotify() {
+        refreshViewTask.cancel();
+        HgProgressSupport supp = hgProgressSupport;
+        if (supp != null) {
+            supp.cancel();
+        }
+        super.removeNotify();
     }
 
     /** This method is called from within the constructor to
@@ -244,11 +260,13 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
             limit = Mercurial.HG_FETCH_ALL_REVISIONS;
         }
         if (bGetMore && !bGettingRevisions) {
+            messageInfofetcher = defaultMessageInfoFetcher;
             fetchRevisionLimit = limit;
-            RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
-            HgProgressSupport hgProgressSupport = new HgProgressSupport() {
+            hgProgressSupport = new HgProgressSupport() {
+                @Override
                 public void perform() {
                     refreshRevisions();
+                    hgProgressSupport = null;
                 }
             };
             hgProgressSupport.start(rp, repository,
@@ -273,7 +291,6 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
             }
             ComboBoxModel targetsModel = new DefaultComboBoxModel(new Vector<String>(revisions));
             revisionsComboBox.setModel(targetsModel);
-            refreshViewThread = Thread.currentThread();
             Thread.interrupted();  // clear interupted status
             ph.start();
             if (displayedRevision == null) {
@@ -286,7 +303,6 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     ph.finish();
-                    refreshViewThread = null;
                 }
             });
         }
@@ -304,7 +320,9 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
 
         OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
         Set<File> setRoots = new HashSet<File>(Arrays.asList(roots));
-        messages = HgCommand.getLogMessagesNoFileInfo(repository, setRoots, fetchRevisionLimit, logger);
+        MessageInfoFetcher fetcher = getMessageInfoFetcher();
+        messages = fetcher.getMessageInfo(repository, setRoots, fetchRevisionLimit, logger);
+        String id = messages.length > 0 ? HgCommand.getCurrentHeadChangeset(repository, logger) : "";
 
         Set<String>  targetRevsSet = new LinkedHashSet<String>();
 
@@ -316,7 +334,12 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
             size = messages.length;
             int i = 0 ;
             while(i < size){
-                targetRevsSet.add(messages[i].getRevision() + " (" + messages[i].getCSetShortID() + ")"); // NOI18N
+                StringBuilder sb = new StringBuilder().append(messages[i].getRevision()).append(" (").append(messages[i].getCSetShortID()); //NOI18N
+                if (id.equals(messages[i].getCSetShortID())) {
+                    sb.append(" - ").append(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_ChangesetPickerPanel.currentHead")); //NOI18N
+                }
+                sb.append(")"); //NOI18N
+                targetRevsSet.add(sb.toString());
                 i++;
             }
         }
@@ -335,6 +358,14 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
         bGettingRevisions = false;
     }
 
+    private MessageInfoFetcher getMessageInfoFetcher() {
+        MessageInfoFetcher f = messageInfofetcher;
+        if (f == null) {
+            f = defaultMessageInfoFetcher;
+        }
+        return f;
+    }
+
     private class RefreshViewTask implements Runnable {
         public void run() {
             setupModels();
@@ -349,5 +380,10 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
     private javax.swing.JComboBox revisionsComboBox;
     protected javax.swing.JLabel revisionsLabel;
     // End of variables declaration//GEN-END:variables
-    
+
+    protected static class MessageInfoFetcher {
+        protected HgLogMessage[] getMessageInfo(File repository, Set<File> setRoots, int fetchRevisionLimit, OutputLogger logger) {
+            return HgCommand.getLogMessagesNoFileInfo(repository, setRoots, fetchRevisionLimit, logger);
+        }
+    }
 }

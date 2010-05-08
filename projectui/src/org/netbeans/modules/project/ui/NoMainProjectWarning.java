@@ -66,7 +66,7 @@ public class NoMainProjectWarning extends JPanel {
     public NoMainProjectWarning (Project[] projects) {
         initComponents();
 
-        Arrays.sort(projects, OpenProjectList.PROJECT_BY_DISPLAYNAME); // #88907
+        Arrays.sort(projects, OpenProjectList.projectByDisplayName()); // #88907
         ProjectsListModel model = new ProjectsListModel (projects);
         jList1.setModel (model);
         jList1.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);

@@ -42,6 +42,8 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -60,6 +62,7 @@ import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -109,6 +112,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
 
     @Override
     protected void performAction(final Document originalDoc, final JTextComponent target, final int offset, final HyperlinkType type) {
+        UIGesturesSupport.submit("USG_CND_INCLUDE_HYPERLINK", type); //NOI18N
         goToInclude(originalDoc, target, offset, type);
     }
 
@@ -122,6 +126,13 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             CsmFile toShow = incl.getIncludeFile();
             if (toShow == null) {
                 toShow = incl.getContainingFile();
+            } else {
+                CsmInclude brokenInclude = getFirstBrokenIncludeInsideIncludedFiles(toShow, new HashSet<CsmFile>());
+                if (brokenInclude != null) {
+                    toShow = brokenInclude.getContainingFile();
+                    // jump into problem file
+                    postJump(brokenInclude, "goto_source_source_not_found", "cannot-open-include-element");//NOI18N
+                }
             }
             CsmIncludeHierarchyResolver.showIncludeHierachyView(toShow);
             return true;
@@ -224,9 +235,27 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         CharSequence tooltip = target == null ? null : CsmDisplayUtilities.getTooltipText(target);
         boolean extraText = (type == HyperlinkType.ALT_HYPERLINK);
         if (tooltip != null) {
-            StringBuilder buf;
+            StringBuilder buf = new StringBuilder();
+            String altKey = "AltIncludeHyperlinkHint"; // NOI18N
             List<CsmInclude> includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(csmFile);
-            if (extraText || target.getIncludeFile() == null) {
+            CsmFile includedFile = target.getIncludeFile();
+            if (includedFile != null) {
+                // check if inside file include hierarchy we have unresolved includes
+                CsmInclude brokenInclude = getFirstBrokenIncludeInsideIncludedFiles(includedFile, new HashSet<CsmFile>());
+                if (brokenInclude != null) {
+                    altKey = "AltIncludeHyperlinkHintBrokenIncludeFile"; // NOI18N
+                    buf = new StringBuilder(tooltip);
+                    String inclString;
+                    if (brokenInclude.isSystem()) {
+                        inclString = "#include <" + brokenInclude.getIncludeName() + ">"; // NOI18N
+                    } else {
+                        inclString = "#include \"" + brokenInclude.getIncludeName() + "\""; // NOI18N
+                    }
+                    buf.append(i18n("InresolvedInFile", CsmDisplayUtilities.htmlize(inclString), brokenInclude.getContainingFile().getAbsolutePath())); // NOI18N
+                    tooltip = buf.toString();
+                }
+            }
+            if (extraText || includedFile == null) {
                 buf = new StringBuilder(tooltip);
                 buf.append("<br><pre>"); // NOI18N
                 // append search paths
@@ -235,8 +264,8 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 // append include stack
                 appendInclStack(buf, includeStack);
                 buf.append("</pre>"); // NOI18N
-            } else {
-                buf = new StringBuilder(getAlternativeHyperlinkTip(doc, "AltIncludeHyperlinkHint", tooltip)); // NOI18N
+                altKey = "AltIncludeHyperlinkHintNoPaths";// NOI18N
+                tooltip = buf.toString();
             }
             // for testing put info into output window
             if (extraText && (TRACE_INCLUDES || NEED_TO_TRACE_UNRESOLVED_INCLUDE)) {
@@ -254,7 +283,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 out.println(buf.toString().replaceAll("<br>", "\n"));   // NOI18N             
                 out.flush();
             }
-            tooltip = buf.toString();
+            tooltip = getAlternativeHyperlinkTip(doc, altKey, tooltip);
         }
         return tooltip == null ? null : tooltip.toString();
     }
@@ -321,5 +350,28 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         @Override
         public void outputLineCleared(OutputEvent ev) {
         }
+    }
+
+    private CsmInclude getFirstBrokenIncludeInsideIncludedFiles(CsmFile file, Collection<CsmFile> visited) {
+        if (visited.contains(file)) {
+            return null;
+        }
+        visited.add(file);
+        if (CsmFileInfoQuery.getDefault().hasBrokenIncludes(file)) {
+            Collection<CsmInclude> brokenIncludes = CsmFileInfoQuery.getDefault().getBrokenIncludes(file);
+            if (!brokenIncludes.isEmpty()) {
+                return brokenIncludes.iterator().next();
+            }
+        }
+        for (CsmInclude incl : file.getIncludes()) {
+            CsmFile newFile = incl.getIncludeFile();
+            if (newFile != null) {
+                CsmInclude brokenIncl = getFirstBrokenIncludeInsideIncludedFiles(newFile, visited);
+                if (brokenIncl != null) {
+                    return brokenIncl;
+                }
+            }
+        }
+        return null;
     }
 }

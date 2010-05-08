@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.UpdateType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -60,7 +61,7 @@ public class EntityClass {
     private final String className;
     private final String packageName;
     private final Set<List<String>> uniqueConstraints;
-    private final String updateType;
+    private final UpdateType updateType;
     
     private List<RelationshipRole> roles;
     private List<EntityMember> fields;
@@ -71,7 +72,7 @@ public class EntityClass {
     private boolean forTable = true;  // false means forView
     
     public EntityClass( String catalogName, String schemaName, String tableName, 
-            FileObject rootFolder, String packageName, String className, String updateType, Set<List<String>> uniqueConstraints) {
+            FileObject rootFolder, String packageName, String className, UpdateType updateType, Set<List<String>> uniqueConstraints) {
         this.catalogName = catalogName;
         this.schemaName = schemaName;
         this.tableName = tableName;
@@ -151,7 +152,7 @@ public class EntityClass {
         return className;
     }
 
-    public String getUpdateType() {
+    public UpdateType getUpdateType() {
         return updateType;
     }
 

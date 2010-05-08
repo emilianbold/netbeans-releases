@@ -115,14 +115,14 @@ public class ProductDescriptor extends Task {
         // display name /////////////////////////////////////////////////////////////
         xml.append("            <display-name>\n"); // NOI18N
         xml.append("                <default><![CDATA[" + // NOI18N
-                Utils.convertToAscii(get("product.display.name.default")) + "]]></default>\n"); // NOI18N
+                Utils.toAscii(get("product.display.name.default")) + "]]></default>\n"); // NOI18N
         if (!locales.equals("")) { // NOI18N
             for (String locale: locales.split(" ")) { // NOI18N
                 String name = get("product.display.name." + locale);
                 if (name != null) {
                     xml.append("                <localized locale=\"" + // NOI18N
                             locale + "\"><![CDATA[" + // NOI18N
-                            Utils.convertToAscii(name) + // NOI18N
+                            Utils.toAscii(name) + // NOI18N
                             "]]></localized>\n"); // NOI18N
                 }
             }
@@ -132,14 +132,14 @@ public class ProductDescriptor extends Task {
         // description //////////////////////////////////////////////////////////////
         xml.append("            <description>\n"); // NOI18N
         xml.append("                <default><![CDATA[" + // NOI18N
-                Utils.convertToAscii(get("product.description.default")) + "]]></default>\n"); // NOI18N
+                get("product.description.default") + "]]></default>\n"); // NOI18N
         if (!locales.equals("")) { // NOI18N
             for (String locale: locales.split(" ")) { // NOI18N
                 String desc = get("product.description." + locale);
                 if (desc != null) {
                     xml.append("                <localized locale=\"" + // NOI18N
                             locale + "\"><![CDATA[" + // NOI18N
-                            Utils.convertToAscii(desc) + // NOI18N
+                            Utils.toAscii(desc) + // NOI18N
                             "]]></localized>\n"); // NOI18N
                 }
             }

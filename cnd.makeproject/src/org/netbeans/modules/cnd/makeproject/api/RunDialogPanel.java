@@ -51,7 +51,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
@@ -553,9 +552,9 @@ public final class RunDialogPanel extends javax.swing.JPanel {
             updateRunProfile(conf.getBaseDir(), conf.getProfile());
         } else {
             try {
-                String projectFolder = ProjectGenerator.getDefaultProjectFolder();
-                String projectName = ProjectGenerator.getValidProjectName(projectFolder, new File(getExecutablePath()).getName());
-                String baseDir = projectFolder + File.separator + projectName;
+                String projectParentFolder = ProjectGenerator.getDefaultProjectFolder();
+                String projectName = ProjectGenerator.getValidProjectName(projectParentFolder, new File(getExecutablePath()).getName());
+                String baseDir = projectParentFolder + File.separator + projectName;
                 MakeConfiguration conf = new MakeConfiguration(baseDir, "Default", MakeConfiguration.TYPE_MAKEFILE);  // NOI18N
                 // Working dir
                 String wd = new File(getExecutablePath()).getParentFile().getPath();
@@ -569,8 +568,9 @@ public final class RunDialogPanel extends javax.swing.JPanel {
                 conf.getMakefileConfiguration().getOutput().setValue(exe);
                 
                 updateRunProfile(baseDir, conf.getProfile());
-                
-                project = MakeProjectGenerator.createBlankProject(projectName, projectFolder, new MakeConfiguration[] {conf}, true);
+                ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectParentFolder);
+                prjParams.setOpenFlag(true).setConfiguration(conf);
+                project = ProjectGenerator.createBlankProject(prjParams);
             } catch (Exception e) {
                 project = null;
             }

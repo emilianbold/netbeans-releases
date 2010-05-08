@@ -41,9 +41,12 @@
 
 package org.netbeans.modules.javadoc.search;
 
-import java.util.*;
-import java.util.regex.*;
-
+import java.util.LinkedList;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
@@ -53,7 +56,6 @@ import org.openide.ErrorManager;
  * search in it.
  *
  * @author  Petr Suchomel
- * @version 1.1
  */
 public abstract class JavadocSearchType {
 
@@ -67,11 +69,12 @@ public abstract class JavadocSearchType {
     private Pattern[]  overviewLabelFilters;
 
     private synchronized void prepareOverviewFilter() {
-        if (overviewLabelFilters != null)
+        if (overviewLabelFilters != null) {
             return;
+        }
         String filter = NbBundle.getMessage(JavadocSearchType.class, "FILTER_OverviewIndiceLabel"); // NOI18N
         StringTokenizer tok = new StringTokenizer(filter, "\n"); // NOI18N
-        LinkedList ll = new LinkedList();
+        List<Pattern> ll = new LinkedList<Pattern>();
         while (tok.hasMoreTokens()) {
             try {
                 String expr = tok.nextToken();
@@ -81,7 +84,7 @@ public abstract class JavadocSearchType {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
-        overviewLabelFilters = (Pattern[])ll.toArray(new Pattern[ll.size()]);
+        overviewLabelFilters = ll.toArray(new Pattern[ll.size()]);
     }
     
     /**

@@ -296,12 +296,18 @@ class ContextManager extends Object {
             this.result.allItems();
         }
 
+        @Override
         public void resultChanged(LookupEvent ev) {
             Mutex.EVENT.readAccess(this);
         }
         
+        @Override
         public void run() {
-            for (ContextAction a : this) {
+            ContextAction[] arr;
+            synchronized (CACHE) {
+                arr = toArray(new ContextAction[0]);
+            }
+            for (ContextAction a : arr) {
                 a.updateState();
             }
         }

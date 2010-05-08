@@ -193,4 +193,6 @@ public abstract class SourceAccessor {
      * @return the Source or null
      */
     public abstract Source get (final FileObject file);
+
+    public abstract int getLineStartOffset(Snapshot snapshot, int lineIdx);
 }

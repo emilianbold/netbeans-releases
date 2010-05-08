@@ -42,18 +42,25 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.util.Iterators;
 
 /**
@@ -86,10 +93,11 @@ public class ProxyFileManager implements JavaFileManager {
     private final JavaFileManager aptSources;
     private final MemoryFileManager memoryFileManager;
     private final JavaFileManager outputhPath;
-
+    private final GeneratedFileMarker marker;
+    private final SiblingSource siblings;
     private JavaFileObject lastInfered;
     private String lastInferedResult;
-    private boolean apt;
+    
 
     private static final Logger LOG = Logger.getLogger(ProxyFileManager.class.getName());
 
@@ -100,16 +108,22 @@ public class ProxyFileManager implements JavaFileManager {
             final JavaFileManager sourcePath,
             final JavaFileManager aptSources,
             final JavaFileManager outputhPath,
-            final MemoryFileManager memoryFileManager) {
+            final MemoryFileManager memoryFileManager,
+            final GeneratedFileMarker marker,
+            final SiblingSource siblings) {
         assert bootPath != null;
         assert classPath != null;
         assert memoryFileManager == null || sourcePath != null;
+        assert marker != null;
+        assert siblings != null;
         this.bootPath = bootPath;
         this.classPath = classPath;
         this.sourcePath = sourcePath;
         this.aptSources = aptSources;
         this.memoryFileManager = memoryFileManager;
         this.outputhPath = outputhPath;
+        this.marker = marker;
+        this.siblings = siblings;
     }
 
     private JavaFileManager[] getFileManager (final Location location) {
@@ -218,29 +232,7 @@ public class ProxyFileManager implements JavaFileManager {
             return null;
         }
         else {
-            FileObject result = fms[0].getFileForOutput(l, packageName, relativeName, sibling);
-            //Workaround for wrongly written processors,
-            //see Issue #180605
-            if (apt && l == StandardLocation.CLASS_OUTPUT) {
-                boolean exists = false;
-                try {
-                    result.openInputStream().close();
-                    exists = true;
-                } catch (IOException ioe) {
-                }
-                if (!exists) {
-                    fms = getFileManager(SOURCE_PATH_WRITE);
-                    if (fms.length == 1) {
-                        FileObject otherResult = fms[0].getFileForOutput(StandardLocation.SOURCE_PATH, packageName, relativeName, sibling);
-                        try {
-                            otherResult.openInputStream().close();
-                            result = otherResult;
-                        } catch (IOException ioe) {
-                        }
-                    }
-                }
-            }
-            return result;
+            return mark(fms[0].getFileForOutput(l, packageName, relativeName, sibling), l);
         }
     }
 
@@ -270,7 +262,23 @@ public class ProxyFileManager implements JavaFileManager {
         final Iterable<String> defensiveCopy = copy(remains);
         if (AptSourceFileManager.ORIGIN_FILE.equals(current)) {
             final Iterator<String> it = defensiveCopy.iterator();
-            apt = it.hasNext() && it.next().length() != 0;
+            if (!it.hasNext()) {
+                throw new IllegalArgumentException("The apt-source-root requires folder.");    //NOI18N
+            }
+            final String sib = it.next();
+            if(sib.length() != 0) {
+                try {
+                    siblings.push(new URL(sib));
+                } catch (MalformedURLException ex) {
+                    throw new IllegalArgumentException("Invalid path argument: " + sib);    //NOI18N
+                }
+            } else {
+                try {
+                    markerFinished();
+                } finally {
+                    siblings.pop();
+                }
+            }
         }
         for (JavaFileManager m : getFileManager(ALL)) {
             if (m.handleOption(current, defensiveCopy.iterator())) {
@@ -318,7 +326,8 @@ public class ProxyFileManager implements JavaFileManager {
             return null;
         }
         else {
-            return fms[0].getJavaFileForOutput (l, className, kind, sibling);
+            final JavaFileObject result = fms[0].getJavaFileForOutput (l, className, kind, sibling);
+            return mark (result,l);
         }
     }
 
@@ -361,6 +370,61 @@ public class ProxyFileManager implements JavaFileManager {
             }
         }
         return fileObject.toUri().equals (fileObject0.toUri());
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends javax.tools.FileObject> T mark(final T result, JavaFileManager.Location l) throws MalformedURLException {
+        GeneratedFileMarker.Type type = null;
+        if (l == StandardLocation.CLASS_OUTPUT) {
+            type = GeneratedFileMarker.Type.RESOURCE;
+        } else if (l == StandardLocation.SOURCE_OUTPUT) {
+            type = GeneratedFileMarker.Type.SOURCE;
+        }
+        final boolean hasSibling = siblings.getProvider().hasSibling();
+        final boolean write = marker.allowsWrite() || !hasSibling;
+        if (result != null && hasSibling) {
+            if (type == GeneratedFileMarker.Type.SOURCE) {
+                marker.mark(result.toUri().toURL(), type);
+            } else if (type == GeneratedFileMarker.Type.RESOURCE) {
+                try {
+                    result.openInputStream().close();
+                } catch (IOException ioe) {
+                    //Marking only created files
+                    marker.mark(result.toUri().toURL(), type);
+                }
+            }
+        }
+        return write ? result : (T) new NullFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
+    }
+
+    private void markerFinished() {
+        if (siblings.getProvider().hasSibling()) {
+            marker.finished(siblings.getProvider().getSibling());
+        }
+    }
+
+    private static final class NullFileObject extends ForwardingInferableJavaFileObject {
+        private NullFileObject (@NonNull final InferableJavaFileObject delegate) {
+            super (delegate);
+        }
+
+        @Override
+        public OutputStream openOutputStream() throws IOException {
+            return new NullOutputStream();
+        }
+
+        @Override
+        public Writer openWriter() throws IOException {
+            return new OutputStreamWriter(openOutputStream());
+        }
+    }
+
+
+    private static class NullOutputStream extends OutputStream {
+        @Override
+        public void write(int b) throws IOException {
+            //pass
+        }
     }
 
 }

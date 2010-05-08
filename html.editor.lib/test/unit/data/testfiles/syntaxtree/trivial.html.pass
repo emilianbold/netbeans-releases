@@ -1,9 +1,5 @@
 root:ROOT(0-62)
    <html>(0-6/61)[OO!]unresolved_tag ;S:root
-      TEXT(6-11)
       <body>(11-17/53)[OO]unexpected_tag ;S:root,html
-         TEXT(17-46)
       </body>(46-53)[OO];S:root,html,body
-      TEXT(53-54)
    </html>(54-61)[OO!];S:root,html
-   TEXT(61-62)

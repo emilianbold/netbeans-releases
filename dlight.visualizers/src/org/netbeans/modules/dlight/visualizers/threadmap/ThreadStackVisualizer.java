@@ -80,6 +80,7 @@ import org.openide.util.RequestProcessor;
  */
 public final class ThreadStackVisualizer extends JPanel implements Visualizer<ThreadStackVisualizerConfiguration>, SessionStateListener, DataFilterListener {
 
+    private static final RequestProcessor RP = new RequestProcessor(ThreadStackVisualizer.class.getName(), 1);
     private final ThreadStackVisualizerConfiguration configuration;
     private ThreadDump descriptor;
     private StackNameProvider stackNameProvider;
@@ -139,6 +140,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
             //collect all and then update UI
             DLightExecutorService.submit(new Runnable() {
 
+                @Override
                 public void run() {
 
                     //synchronized (lock) {                    
@@ -156,6 +158,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
                     }
                     UIThread.invoke(new Runnable() {
 
+                        @Override
                         public void run() {
                             synchronized(uiLock){
 				assert SwingUtilities.isEventDispatchThread();
@@ -195,8 +198,9 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
 
     void selectRootNode() {
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
 
+            @Override
             public void run() {
                 if (configuration.getPrefferedExpansion() == ExpansionMode.ExpandAll) {
                     stackPanel.expandAll();
@@ -224,14 +228,17 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
         return NbBundle.getMessage(getClass(), "CallStackDetails"); //NOI18N
     }
 
+    @Override
     public ThreadStackVisualizerConfiguration getVisualizerConfiguration() {
         return configuration;
     }
 
+    @Override
     public JComponent getComponent() {
         return this;
     }
 
+    @Override
     public VisualizerContainer getDefaultContainer() {
         return CallStackTopComponent.findInstance();
     }
@@ -244,6 +251,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
         return super.requestFocus(temporary);
     }
 
+    @Override
     public void refresh() {
         synchronized (lock) {
             if (!needUpdate) {
@@ -262,6 +270,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
             if (!EventQueue.isDispatchThread()) {
                 UIThread.invoke(new Runnable() {
 
+                    @Override
                     public void run() {
                         if (descriptor == null || descriptor.getThreadStates().isEmpty()) {
                             setEmptyContent();
@@ -299,6 +308,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
         }
     }
 
+    @Override
     public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
         if (this.session == null | this.session != session) {
             if (this.session != session && this.session != null) {
@@ -311,6 +321,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
         }
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         if (isAdjusting) {
             return;
@@ -322,6 +333,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
         }
     }
 
+    @Override
     public void updateVisualizerConfiguration(ThreadStackVisualizerConfiguration aConfiguration) {
         configuration.update(aConfiguration);
     }

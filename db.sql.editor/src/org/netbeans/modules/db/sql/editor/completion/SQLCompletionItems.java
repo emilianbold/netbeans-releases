@@ -55,6 +55,8 @@ import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElement;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.Tuple;
+import org.netbeans.modules.db.metadata.model.api.View;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionResultSet;
 import org.netbeans.modules.db.sql.editor.api.completion.SubstitutionHandler;
@@ -142,6 +144,32 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         });
     }
 
+    public void addViews(Schema schema, Set<String> restrict, String prefix, final boolean quote, final int substitutionOffset) {
+        addViews(schema, null, restrict, prefix, quote, substitutionOffset, false);
+    }
+
+    public void addViewsAtInsertInto(Schema schema, QualIdent fullyTypedIdent, Set<String> restrict, String prefix, final boolean quote, final int substitutionOffset) {
+        addViews(schema, fullyTypedIdent, restrict, prefix, quote, substitutionOffset, true);
+    }
+
+    private void addViews(Schema schema, QualIdent fullyTypedIdent, Set<String> restrict, String prefix, final boolean quote, final int substitutionOffset, final boolean ownHandler) {
+        final String schema4display = fullyTypedIdent == null ? "" : fullyTypedIdent.getSimpleName () + '.'; // NOI18N
+        final int ownOffset = fullyTypedIdent == null ? substitutionOffset :
+            substitutionOffset - (fullyTypedIdent.getSimpleName ().length () + 1);
+        filterMetadata(schema.getViews(), restrict, prefix, new Handler<View>() {
+            public void handle(View view) {
+                String viewName = view.getName();
+                items.add(SQLCompletionItem.view(
+                        viewName,
+                        doQuote(viewName, quote),
+                        ownOffset,
+                        ownHandler ?
+                            new ExtendedSubstitutionHandler (substitutionHandler, schema4display, " (") // NOI18N
+                            : substitutionHandler));
+            }
+        });
+    }
+
     public void addAliases(Map<String, QualIdent> aliases, String prefix, final boolean quote, final int substitutionOffset) {
         filterMap(aliases, null, prefix, new ParamHandler<String, QualIdent>() {
             public void handle(String alias, QualIdent tableName) {
@@ -151,16 +179,16 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         });
     }
 
-    public void addColumnsWithTableName (Table table, QualIdent fullyTypedIdent, String prefix, final boolean quote, final int substitutionOffset) {
-        addColumns (table, fullyTypedIdent, prefix, quote, substitutionOffset, true);
+    public void addColumnsWithTupleName (Tuple tuple, QualIdent fullyTypedIdent, String prefix, final boolean quote, final int substitutionOffset) {
+        addColumns (tuple, fullyTypedIdent, prefix, quote, substitutionOffset, true);
     }
 
-    public void addColumns(Table table, String prefix, final boolean quote, final int substitutionOffset) {
-        addColumns (table, null, prefix, quote, substitutionOffset, false);
+    public void addColumns(Tuple tuple, String prefix, final boolean quote, final int substitutionOffset) {
+        addColumns (tuple, null, prefix, quote, substitutionOffset, false);
     }
 
-    private void addColumns(final Table table, QualIdent fullyTypedIdent, String prefix, final boolean quote, final int substitutionOffset, final boolean ownHandler) {
-        Schema schema = table.getParent();
+    private void addColumns(final Tuple tuple, QualIdent fullyTypedIdent, String prefix, final boolean quote, final int substitutionOffset, final boolean ownHandler) {
+        Schema schema = tuple.getParent();
         Catalog catalog = schema.getParent();
         List<String> parts = new ArrayList<String>(3);
         if (!catalog.isDefault()) {
@@ -169,16 +197,17 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         if (!schema.isSynthetic() && !schema.isDefault()) {
             parts.add(schema.getName());
         }
-        parts.add(table.getName());
+        parts.add(tuple.getName());
         final QualIdent qualTableName = new QualIdent(parts);
-        final String table4display = fullyTypedIdent == null ? table.getName () :
+        final String table4display = fullyTypedIdent == null ? tuple.getName () :
             fullyTypedIdent.getFirstQualifier () + '.' + fullyTypedIdent.getSecondQualifier (); // NOI18N
         final int ownOffset = fullyTypedIdent == null ? substitutionOffset :
             substitutionOffset - (fullyTypedIdent.getFirstQualifier ().length () + fullyTypedIdent.getSecondQualifier ().length () + 2);
-        filterMetadata(table.getColumns(), null, prefix, new Handler<Column>() {
+        filterMetadata(tuple.getColumns(), null, prefix, new Handler<Column>() {
             public void handle(Column column) {
                 String columnName = column.getName();
                 items.add(SQLCompletionItem.column (
+                        tuple instanceof View,
                         qualTableName,
                         columnName,
                         doQuote(columnName, quote),

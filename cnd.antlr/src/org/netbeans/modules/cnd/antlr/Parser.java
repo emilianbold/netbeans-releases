@@ -21,6 +21,7 @@ public abstract class Parser extends MatchExceptionState {
         protected int guessing = 0;
         protected String filename;
         protected TokenBuffer input;
+        private static int meaningLessErrorsLimit = 100;
         
     /** Nesting level of registered handlers */
     // protected int exceptionLevel = 0;
@@ -270,13 +271,23 @@ public abstract class Parser extends MatchExceptionState {
 
     /** Parser error-reporting function can be overridden in subclass */
     public void reportError(RecognitionException ex) {
-        System.err.println(ex);
+        if (ex.fileName == null) {
+            if (meaningLessErrorsLimit > 0) {
+                System.err.println(ex);
+                meaningLessErrorsLimit--;
+            }
+        } else {
+            System.err.println(ex);
+        }
     }
 
     /** Parser error-reporting function can be overridden in subclass */
     public void reportError(String s) {
         if (getFilename() == null) {
-            System.err.println("error: " + s);
+            if (meaningLessErrorsLimit > 0) {
+                System.err.println("error: " + s);
+                meaningLessErrorsLimit--;
+            }
         }
         else {
             System.err.println(getFilename() + ": error: " + s);
@@ -286,7 +297,10 @@ public abstract class Parser extends MatchExceptionState {
     /** Parser warning-reporting function can be overridden in subclass */
     public void reportWarning(String s) {
         if (getFilename() == null) {
-            System.err.println("warning: " + s);
+            if (meaningLessErrorsLimit > 0) {
+                System.err.println("warning: " + s);
+                meaningLessErrorsLimit--;
+            }
         }
         else {
             System.err.println(getFilename() + ": warning: " + s);

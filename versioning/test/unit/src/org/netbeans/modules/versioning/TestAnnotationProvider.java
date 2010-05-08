@@ -181,6 +181,15 @@ public class TestAnnotationProvider extends AnnotationProvider {
         public void fileRenamed(FileRenameEvent fe) { }
         public void fileAttributeChanged(FileAttributeEvent fe) { }
    
+        /**
+         * WARNING! need this to return -1 otherwise other VCSInterceptor implementations in this test will be skipped
+         */
+        @Override
+        public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+            events.add("refreshRecursively");
+            return -1;
+    }    
+
     }    
 
     private Set<FileSystem> getRootFilesystems() {

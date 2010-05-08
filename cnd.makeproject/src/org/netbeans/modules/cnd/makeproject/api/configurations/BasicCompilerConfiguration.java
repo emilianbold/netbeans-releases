@@ -271,24 +271,12 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
             dirName = MakeConfiguration.OBJECTDIR_MACRO;
         }
 
-        if (CndPathUtilitities.isPathAbsolute(fileName)) {
-            String absPath = fileName;
-            if (absPath.charAt(0) != '/') {
-                absPath = '/' + absPath;
-            }
-            absPath = dirName + '/' + MakeConfiguration.EXT_FOLDER + absPath; // UNIX path
+        if (CndPathUtilitities.isPathAbsolute(fileName) || filePath.startsWith("..")) { // NOI18N;
+            String ofileName = CndPathUtilitities.getBaseName(fileName);
+            String odirName = CndPathUtilitities.getDirName(fileName);
+            String absPath = dirName + '/' + MakeConfiguration.EXT_FOLDER + '/' + Math.abs(odirName.hashCode()) + '/' + ofileName; // UNIX path
             absPath = CndPathUtilitities.replaceOddCharacters(absPath, '_');
             return absPath;
-        } else if (filePath.startsWith("..")) { // NOI18N
-//            String absPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), fileName);
-//            absPath = FilePathAdaptor.normalize(absPath);
-//            absPath = CndPathUtilitities.replaceOddCharacters(absPath, '_');
-//            if (absPath.charAt(0) != '/') {
-//                absPath = '/' + absPath;
-//            }
-            String ofilePath = fileName.replace("..", "_DOTDOT"); // NOI18N
-            ofilePath = CndPathUtilitities.replaceOddCharacters(ofilePath, '_');
-            return dirName + '/' + MakeConfiguration.EXT_FOLDER + '/' + ofilePath; // UNIX path
         } else {
             fileName = CndPathUtilitities.escapeOddCharacters(fileName);
             return dirName + '/' + fileName; // UNIX path

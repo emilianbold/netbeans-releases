@@ -51,7 +51,6 @@ import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.netbeans.modules.xml.search.api.SearchTarget;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie.View;
-import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -156,4 +155,3 @@ final class SearchProvider extends org.netbeans.modules.xml.search.spi.SearchPro
     create(org.netbeans.modules.xml.wsdl.model.Types.class),
   };
 }
-

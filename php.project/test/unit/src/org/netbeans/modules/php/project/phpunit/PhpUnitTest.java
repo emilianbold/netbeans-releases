@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.project.phpunit;
 
-import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import java.io.File;
 import java.util.Arrays;
 import java.util.regex.Matcher;

@@ -206,6 +206,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
 
     // Implementation of LookupListener ----------------------------------------
 
+    @Override
     public void resultChanged( LookupEvent e ) {
         if ( refreshing ) {
             return;
@@ -218,16 +219,19 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
         }
     }
 
+    @Override
     public void run() {
         doRefresh();
     }
 
     // Implementation of Presenter.Menu and Presenter.Popup --------------------
     
+    @Override
     public JMenuItem getMenuPresenter () {
         return new DynamicMenuItem(this, false);
     }
     
+    @Override
     public JMenuItem getPopupPresenter () {
         return new DynamicMenuItem(this, true);
     }
@@ -243,12 +247,14 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
             org.openide.awt.Actions.connect(this, action, popup);
         }
         
+        @Override
         public JComponent[] getMenuPresenters() {
             JMenuItem menuPresenter = new JMenuItem();
             org.openide.awt.Actions.connect(menuPresenter, action, popup);
             return new JComponent [] { menuPresenter };
         }
         
+        @Override
         public JComponent[] synchMenuPresenters(JComponent[] items) {
             return getMenuPresenters();
         }
@@ -279,6 +285,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
             setLookups(delegates);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent ev) {
             if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(ev.getPropertyName())) {
                 updateLookups();

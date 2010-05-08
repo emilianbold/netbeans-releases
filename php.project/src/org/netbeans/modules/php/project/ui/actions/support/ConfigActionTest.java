@@ -240,6 +240,7 @@ class ConfigActionTest extends ConfigAction {
             return info.testName == null;
         }
 
+        @Override
         public ExecutionDescriptor getDescriptor() throws IOException {
             boolean phpUnitValid = PhpUnit.hasValidVersion(phpUnit);
             ExecutionDescriptor executionDescriptor = PhpProgram.getExecutionDescriptor()
@@ -250,12 +251,14 @@ class ConfigActionTest extends ConfigAction {
             if (phpUnitValid) {
                 executionDescriptor = executionDescriptor
                         .preExecution(new Runnable() {
+                            @Override
                             public void run() {
                                 rerunUnitTestHandler.disable();
                                 testRunner.start();
                             }
                         })
                         .postExecution(new Runnable() {
+                            @Override
                             public void run() {
                                 testRunner.showResults();
                                 rerunUnitTestHandler.enable();
@@ -269,6 +272,7 @@ class ConfigActionTest extends ConfigAction {
             return executionDescriptor;
         }
 
+        @Override
         public ExternalProcessBuilder getProcessBuilder() {
             File startFile = FileUtil.toFile(info.startFile);
             ConfigFiles configFiles = PhpUnit.getConfigFiles(project, allTests(info));
@@ -304,6 +308,7 @@ class ConfigActionTest extends ConfigAction {
             return externalProcessBuilder;
         }
 
+        @Override
         public String getOutputTabTitle() {
             String title = null;
             if (allTests(info)) {
@@ -319,6 +324,7 @@ class ConfigActionTest extends ConfigAction {
             return String.format("%s - %s", phpUnit.getProgram(), title);
         }
 
+        @Override
         public boolean isValid() {
             return phpUnit.isValid() && info.startFile != null;
         }
@@ -360,10 +366,12 @@ class ConfigActionTest extends ConfigAction {
             super(info);
         }
 
+        @Override
         public PhpProject getProject() {
             return project;
         }
 
+        @Override
         public FileObject getStartFile() {
             return info.startFile;
         }
@@ -390,22 +398,27 @@ class ConfigActionTest extends ConfigAction {
             this.info = info;
         }
 
+        @Override
         public void rerun() {
             PhpActionProvider.submitTask(new Runnable() {
+                @Override
                 public void run() {
                     ConfigActionTest.this.run(info);
                 }
             });
         }
 
+        @Override
         public boolean enabled() {
             return enabled;
         }
 
+        @Override
         public void addChangeListener(ChangeListener listener) {
             changeSupport.addChangeListener(listener);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener listener) {
             changeSupport.removeChangeListener(listener);
         }
@@ -433,6 +446,7 @@ class ConfigActionTest extends ConfigAction {
         @Override
         public void rerun() {
             PhpActionProvider.submitTask(new Runnable() {
+                @Override
                 public void run() {
                     ConfigActionTest.this.debug(info);
                 }
@@ -447,14 +461,18 @@ class ConfigActionTest extends ConfigAction {
             this.phpUnit = phpUnit;
         }
 
+        @Override
         public InputProcessor newInputProcessor(final InputProcessor defaultProcessor) {
             return new InputProcessor() {
+                @Override
                 public void processInput(char[] chars) throws IOException {
                     defaultProcessor.processInput(chars);
                 }
+                @Override
                 public void reset() throws IOException {
                     defaultProcessor.reset();
                 }
+                @Override
                 public void close() throws IOException {
                     String msg = NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit));
                     char[] separator = new char[msg.length()];
@@ -473,6 +491,7 @@ class ConfigActionTest extends ConfigAction {
     }
 
     static final class PhpUnitLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
+        @Override
         public LineConvertor newLineConvertor() {
             return LineConvertors.filePattern(null, PhpUnit.LINE_PATTERN, null, 1, 2);
         }

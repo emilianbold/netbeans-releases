@@ -116,6 +116,7 @@ public abstract class APTMacroCache  {
          * @exception NullPointerException If the <code>text</code> parameter
          *                                 is <code>null</code>.
          */
+        @Override
         public APTMacro getMacro(APTMacro macro) {
             if (macro == null) {
                 throw new NullPointerException("null string is illegal to share"); // NOI18N
@@ -123,18 +124,19 @@ public abstract class APTMacroCache  {
             APTMacro outMacro = null;
 
             synchronized (lock) {
-                outMacro = storage.addOrGet(macro);
+                outMacro = storage.putIfAbsent(macro);
             }
             assert (outMacro != null);
             assert (outMacro.equals(macro));
             return outMacro;
         }
 
+        @Override
         public final void dispose() {
             if (CndTraceFlags.TRACE_SLICE_DISTIBUTIONS) {
                 Object[] arr = storage.toArray();
                 System.out.println("Dispose macro cache "+arr.length + " " + getClass().getName()); // NOI18N
-                Map<Class, Integer> classes = new HashMap<Class,Integer>();
+                Map<Class<?>, Integer> classes = new HashMap<Class<?>,Integer>();
                 for(Object o : arr){
                     if (o != null) {
                         Integer i = classes.get(o.getClass());
@@ -146,7 +148,7 @@ public abstract class APTMacroCache  {
                         classes.put(o.getClass(), i);
                     }
                 }
-                for(Map.Entry<Class,Integer> e:classes.entrySet()){
+                for(Map.Entry<Class<?>,Integer> e:classes.entrySet()){
                     System.out.println("   "+e.getValue()+" of "+e.getKey().getName()); // NOI18N
                 }
             }
@@ -185,10 +187,12 @@ public abstract class APTMacroCache  {
             return instances[index];
         }
 
+        @Override
         public APTMacro getMacro(APTMacro macro) {
             return getDelegate(macro).getMacro(macro);
         }
 
+        @Override
         public final void dispose() {
             for (int i = 0; i < instances.length; i++) {
                 instances[i].dispose();

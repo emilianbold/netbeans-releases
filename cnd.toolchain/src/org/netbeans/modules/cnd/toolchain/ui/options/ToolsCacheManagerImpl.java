@@ -38,22 +38,33 @@
  */
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
+import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerAccessorImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -65,6 +76,8 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
     private ServerUpdateCache serverUpdateCache;
     private HashMap<ExecutionEnvironment, CompilerSetManager> copiedManagers =
             new HashMap<ExecutionEnvironment, CompilerSetManager>();
+    private AtomicBoolean canceled = new AtomicBoolean(false);
+    private Cancellable longTaskCancelable;
 
     public ToolsCacheManagerImpl(boolean initialize) {
         if (initialize) {
@@ -96,9 +109,13 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
     @Override
     public void applyChanges() {
         applyChanges(ServerList.get(ExecutionEnvironmentFactory.getLocal()));
-        fireChange(this);
     }
-    
+
+    @Override
+    public void discardChanges() {
+        clear();
+    }
+
     @Override
     public synchronized CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env, boolean initialize) {
         CompilerSetManagerImpl out = (CompilerSetManagerImpl) copiedManagers.get(env);
@@ -117,21 +134,127 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
         copiedManagers.put(((CompilerSetManagerImpl)newCsm).getExecutionEnvironment(), newCsm);
     }
 
-    public void applyChanges(ServerRecord selectedRecord) {
-        List<ExecutionEnvironment> liveServers = null;
-        if (serverUpdateCache != null) {
-            liveServers = new ArrayList<ExecutionEnvironment>();
-            ServerList.set(serverUpdateCache.getHosts(), serverUpdateCache.getDefaultRecord());
-            for (ServerRecord rec : serverUpdateCache.getHosts()) {
-                liveServers.add(rec.getExecutionEnvironment());
+    public CompilerSetManagerImpl restoreCompilerSets(CompilerSetManagerImpl oldCsm) {
+
+        ExecutionEnvironment execEnv = oldCsm.getExecutionEnvironment();
+
+        ServerRecord record = ServerList.get(execEnv);
+        if (record.isOffline()) {
+            record.validate(true);
+            if (record.isOffline()) {
+                return null;
             }
-            serverUpdateCache = null;
-        } else {
-            ServerList.setDefaultRecord(selectedRecord);
         }
 
-        saveCompileSetManagers(liveServers);
-        fireChange(this);
+        CompilerSetManagerImpl newCsm = CompilerSetManagerAccessorImpl.create(execEnv);
+        String progressMessage = NbBundle.getMessage(CompilerSetManagerImpl.class, "PROGRESS_TEXT", execEnv.getDisplayName()); // NOI18N
+        final AtomicBoolean cancel = new AtomicBoolean(false);
+        longTaskCancelable = new Cancellable() {
+            @Override
+            public boolean cancel() {
+                cancel.set(true);
+                return true;
+            }
+        };
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressMessage, longTaskCancelable);
+        progressHandle.start();
+        try {
+            newCsm.initialize(false, true, null);
+            while (newCsm.isPending()) {
+                if (cancel.get()) {
+                    if (newCsm.cancel()) {
+                        return null;
+                    }
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    return null;
+                }
+            }
+        } finally {
+            progressHandle.finish();
+            longTaskCancelable = null;
+        }
+
+        if (cancel.get()) {
+            return null;
+        }
+
+        List<CompilerSet> list = oldCsm.getCompilerSets();
+        for (CompilerSet cs : list) {
+            if (!cs.isAutoGenerated()) {
+                String name = cs.getName();
+                String newName = newCsm.getUniqueCompilerSetName(name);
+                if (!name.equals(newName)) {
+                    // FIXUP: show a dialog with renamed custom sets. Can't do now because of UI freeze.
+                    ((CompilerSetImpl) cs).setName(newName);
+                }
+                newCsm.add(cs);
+            }
+        }
+
+        String oldDefaultName;
+        CompilerSet oldDefault = oldCsm.getDefaultCompilerSet();
+        if (oldDefault != null) {
+            oldDefaultName = oldDefault.getName();
+        } else {
+            oldDefaultName = null;
+        }
+
+        CompilerSet newDefault = newCsm.getCompilerSet(oldDefaultName);
+        if (newDefault != null) {
+            newCsm.setDefault(newDefault);
+        }
+
+        if (execEnv.isLocal()) {
+            WindowsSupport.getInstance().init();
+        }
+
+        if (canceled.get()) {
+            return null;
+        }
+        addCompilerSetManager(newCsm);
+
+        return newCsm;
+    }
+
+    public void applyChanges(final ServerRecord selectedRecord) {
+        Cancellable aLongTaskCancelable = longTaskCancelable;
+        if (aLongTaskCancelable != null) {
+            aLongTaskCancelable.cancel();
+        }
+        final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
+            @Override
+            public void doWork() {
+                List<ExecutionEnvironment> liveServers = null;
+                if (serverUpdateCache != null) {
+                    liveServers = new ArrayList<ExecutionEnvironment>();
+                    ServerList.set(serverUpdateCache.getHosts(), serverUpdateCache.getDefaultRecord());
+                    for (ServerRecord rec : serverUpdateCache.getHosts()) {
+                        liveServers.add(rec.getExecutionEnvironment());
+                    }
+                    serverUpdateCache = null;
+                } else if (selectedRecord != null) {
+                    ServerList.setDefaultRecord(selectedRecord);
+                }
+
+                saveCompileSetManagers(liveServers);
+            }
+            @Override
+            public void doPostRunInEDT() {
+                fireChange(ToolsCacheManagerImpl.this);
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            Frame mainWindow = WindowManager.getDefault().getMainWindow();
+            String title = NbBundle.getMessage(ToolsCacheManagerImpl.class, "DLG_TITLE_ApplyChanges"); // NOI18N
+            String msg = NbBundle.getMessage(ToolsCacheManagerImpl.class, "MSG_TITLE_ApplyChanges"); // NOI18N
+            ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
+        } else {
+            runner.doWork();
+            runner.doPostRunInEDT();
+        }
     }
 
     public Collection<? extends ServerRecord> getHosts() {
@@ -154,6 +277,17 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
     }
 
     public synchronized void clear() {
+        canceled.set(false);
+        serverUpdateCache = null;
+        copiedManagers.clear();
+    }
+
+    public synchronized void cancel() {
+        canceled.set(true);
+        Cancellable aLongTaskCancelable = longTaskCancelable;
+        if (aLongTaskCancelable != null) {
+            aLongTaskCancelable.cancel();
+        }
         serverUpdateCache = null;
         copiedManagers.clear();
     }

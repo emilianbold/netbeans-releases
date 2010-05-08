@@ -71,6 +71,7 @@ public final class CppSwitchAction extends BaseAction {
     private static final String actionName = "cpp-switch-header-source"; // NOI18N
     private static final String ICON = "org/netbeans/modules/cnd/navigation/resources/header_source_icon.png"; // NOI18N
     private static CppSwitchAction instance;
+    private static final RequestProcessor RP = new RequestProcessor(CppSwitchAction.class.getName(), 1);
 
     public static synchronized CppSwitchAction getInstance() {
         if (instance == null) {
@@ -86,6 +87,7 @@ public final class CppSwitchAction extends BaseAction {
         putValue(SHORT_DESCRIPTION, getDefaultShortDescription());
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt, JTextComponent txt) {
         final Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
 
@@ -232,8 +234,9 @@ public final class CppSwitchAction extends BaseAction {
             JTextComponent textComponent = EditorRegistry.lastFocusedComponent();
             JumpList.checkAddEntry(textComponent);
             // try to open ASAP, but better not in EQ
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
+                @Override
                 public void run() {
                     // open component
                     oc.open();

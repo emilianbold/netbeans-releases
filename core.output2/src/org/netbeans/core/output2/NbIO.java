@@ -41,6 +41,7 @@
 
 package org.netbeans.core.output2;
 
+import java.util.Set;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -57,6 +58,7 @@ import org.openide.windows.IOColorPrint;
 import org.openide.windows.IOColors;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOPosition;
+import org.openide.windows.IOSelect;
 import org.openide.windows.IOTab;
 
 /** Implementation of InputOutput.  Implements calls as a set of
@@ -272,7 +274,7 @@ class NbIO implements InputOutput, Lookup.Provider {
         if (lookup == null) {
             ioTab = new IOTabImpl();
             ioColors = new IOColorsImpl();
-            lookup = Lookups.fixed(ioTab, ioColors, new IOPositionImpl(), new IOColorLinesImpl(), new IOColorPrintImpl());
+            lookup = Lookups.fixed(ioTab, ioColors, new IOPositionImpl(), new IOColorLinesImpl(), new IOColorPrintImpl(), new IOSelectImpl());
         }
         return lookup;
     }
@@ -500,6 +502,15 @@ class NbIO implements InputOutput, Lookup.Provider {
                 out.print(text, listener, important, color, false, false);
             }
         }
+    }
+
+    private class IOSelectImpl extends IOSelect {
+
+	@Override
+	protected void select(Set<AdditionalOperation> extraOps) {
+	    if (Controller.LOG) Controller.log (this + ": IOSelect.select");
+	    NbIO.post (NbIO.this, IOEvent.CMD_FINE_SELECT, extraOps);
+	}
     }
 
     private class IOColorsImpl extends IOColors {

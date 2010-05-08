@@ -88,7 +88,8 @@ import org.openide.windows.TopComponent;
  */
 public class JSFConfigEditorSupport extends DataEditorSupport
         implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie  {
-    
+
+    private static final RequestProcessor requestProcessor = new RequestProcessor(JSFConfigEditorSupport.class);
     /** SaveCookie for this support instance. The cookie is adding/removing
      * data object's cookie set depending on if modification flag was set/unset. */
     private final SaveCookie saveCookie = new SaveCookie() {
@@ -342,9 +343,9 @@ public class JSFConfigEditorSupport extends DataEditorSupport
                 }
             };
             if (parsingDocumentTask != null)
-                parsingDocumentTask = RequestProcessor.getDefault().post(r, AUTO_PARSING_DELAY);
+                parsingDocumentTask = requestProcessor.post(r, AUTO_PARSING_DELAY);
             else
-                parsingDocumentTask = RequestProcessor.getDefault().post(r, 100);
+                parsingDocumentTask = requestProcessor.post(r, 100);
         }
     }
     
@@ -368,17 +369,24 @@ public class JSFConfigEditorSupport extends DataEditorSupport
     protected void notifyClosed() {
         mvtc = null;
         super.notifyClosed();
-        try {
-            // synchronize the model with the document. See issue #116315
-            JSFConfigModel configModel = ConfigurationUtils.getConfigModel(dataObject.getPrimaryFile(), true);
-            if (configModel != null) {
-                // the model can be null, if the file wasn't opened.
-                configModel.sync();
+        requestProcessor.post(new Runnable() {
+
+            @Override
+            public void run() {
+                long time = System.currentTimeMillis();
+                try {
+                    // synchronize the model with the document. See issue #116315
+                    JSFConfigModel configModel = ConfigurationUtils.getConfigModel(dataObject.getPrimaryFile(), true);
+                    if (configModel != null) {
+                        // the model can be null, if the file wasn't opened.
+                        configModel.sync();
+                    }
+                } catch (IOException ex) {
+                    // Logger.getLogger("global").log(Level.INFO, null, ex);
+                }
+                Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Sync Config Model took: "+ (System.currentTimeMillis() - time) + " ms");   //NOI18N
             }
-        } catch (IOException ex) {
-            // Logger.getLogger("global").log(Level.INFO, null, ex);
-        }
-        
+        });
     }
     
     /** Overrides superclass method. Adds removing of save cookie. */

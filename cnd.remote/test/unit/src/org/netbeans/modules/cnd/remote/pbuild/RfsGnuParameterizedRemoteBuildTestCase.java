@@ -48,7 +48,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
@@ -94,9 +94,9 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RemoteBuildTestBase 
         File projectDirFile = new File(projectPath);
         assertTrue(projectDirFile.exists());
         setupHost(sync);
-        changeProjectHost(projectDirFile);
         FileObject projectDirFO = FileUtil.toFileObject(projectDirFile);
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        changeProjectHost(makeProject, getTestExecutionEnvironment());
         long time = System.currentTimeMillis();
         addPropertyFromRcFile(SECTION, "cnd.remote.timestamps.clear");
         addPropertyFromRcFile(SECTION, "cnd.rfs.preload.sleep");
@@ -175,6 +175,6 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RemoteBuildTestBase 
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTestSuite(RfsGnuParameterizedRemoteBuildTestCase.class);
+        return new RemoteDevelopmentTest(RfsGnuParameterizedRemoteBuildTestCase.class);
     }
 }

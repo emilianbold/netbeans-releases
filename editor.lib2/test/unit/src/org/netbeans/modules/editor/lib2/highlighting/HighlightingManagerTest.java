@@ -52,10 +52,13 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
+import junit.framework.Test;
+import junit.framework.TestResult;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
@@ -72,6 +75,21 @@ import org.openide.util.Lookup;
  */
 public class HighlightingManagerTest extends NbTestCase {
     
+    public static Test suite() {
+        return new NbTestSuite(HighlightingManagerTest.class) {
+            public @Override void run(TestResult result) {
+// XXX: needs a way how to run each test case in a separate JVM or how to replace HighlightingManager.LINEWRAP_ENABLED
+//                System.out.println("Running tests for: org.netbeans.editor.linewrap=false");
+//                System.setProperty("org.netbeans.editor.linewrap", "false");
+//                super.run(result);
+
+                System.out.println("Running tests for: org.netbeans.editor.linewrap=true");
+                System.setProperty("org.netbeans.editor.linewrap", "true");
+                super.run(result);
+            }
+        };
+    }
+
     /** Creates a new instance of HighlightingManagerTest */
     public HighlightingManagerTest(String name) {
         super(name);

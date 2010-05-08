@@ -4,11 +4,9 @@
             <type name="boolean"/>
         </attr>
     </common_attributes>
-    <tag name="ajax">
-        <attr name="immediate">
-            <type name="boolean"/>
-        </attr>
-    </tag>
+
+    <tag name="actionListener"/>
+    <tag name="attribute"/>
     <tag name="convertDateTime">
         <attr name="dateStyle">
             <type name="enum">
@@ -42,6 +40,12 @@
             </type>
         </attr>
     </tag>
+    <tag name="converter"/>
+    <tag name="ajax">
+        <attr name="immediate">
+            <type name="boolean"/>
+        </attr>
+    </tag>
     <tag name="event">
         <attr name="name">
             <type name="enum">
@@ -52,11 +56,16 @@
             </type>
         </attr>
     </tag>
+    <tag name="facet"/>
+    <tag name="metadata"/>
+    <tag name="loadBundle"/>
     <tag name="param">
         <attr name="disable">
             <type name="boolean"/>
         </attr>
     </tag>
+    <tag name="viewParam"/>
+    <tag name="phaseListener"/>
     <tag name="selectItem">
         <attr name="noSelectionOption">
             <type name="boolean"/>
@@ -70,11 +79,20 @@
             <type name="boolean"/>
         </attr>
     </tag>
+    <tag name="setPropertyActionListener"/>
     <tag name="subview">
         <attr name="rendered">
             <type name="boolean"/>
         </attr>
     </tag>
-    <tag name="validateDoubleRange">
-    </tag>
+    <tag name="validateDoubleRange"/>
+    <tag name="validateLength"/>
+    <tag name="validateLongRange"/>
+    <tag name="validateBean"/>
+    <tag name="validateRegex"/>
+    <tag name="validateRequired"/>
+    <tag name="validator"/>
+    <tag name="valueChangeListener"/>
+    <tag name="verbatim"/>
+    <tag name="view"/>
 </library>

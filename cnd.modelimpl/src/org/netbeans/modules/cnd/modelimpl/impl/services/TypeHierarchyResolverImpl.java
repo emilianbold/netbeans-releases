@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
@@ -82,6 +84,14 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
 
     @Override
     public Collection<CsmReference> getSubTypes(CsmClass referencedClass, boolean directSubtypesOnly) {
+        if (true) {
+            return getSubTypes2(referencedClass, directSubtypesOnly);
+        } else {
+            return getSubTypes1(referencedClass, directSubtypesOnly);
+        }
+    }
+
+    public Collection<CsmReference> getSubTypes1(CsmClass referencedClass, boolean directSubtypesOnly) {
         CsmFile file = referencedClass.getContainingFile();
         long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
         CsmProject project = file.getProject();
@@ -100,6 +110,93 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
             return res;
         }
         return Collections.<CsmReference>emptyList();
+    }
+
+    private Collection<CsmReference> getSubTypes2(CsmClass referencedClass, boolean directSubtypesOnly) {
+        CsmFile file = referencedClass.getContainingFile();
+        long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
+        CsmProject project = file.getProject();
+        Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> fullMap = getOrCreateFullMap2(project, fileVersion);
+        Collection<CsmReference> res = new ArrayList<CsmReference>();
+        for(CsmUID<CsmClass> cls : getSubTypes2(referencedClass, fullMap, directSubtypesOnly)) {
+            res.add(CsmReferenceSupport.createObjectReference(cls.getObject()));
+        }
+        return res;
+    }
+
+    private  Set<CsmUID<CsmClass>> getSubTypes2(CsmClass referencedClass, Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> map, boolean directSubtypesOnly) {
+        if (directSubtypesOnly) {
+            return getSubTypes2(referencedClass, map);
+        }
+        Set<CsmUID<CsmClass>> antiLoop = new HashSet<CsmUID<CsmClass>>();
+        Set<CsmUID<CsmClass>> res = getSubTypes2(referencedClass, map);
+        antiLoop.add(UIDs.get(referencedClass));
+        while(true) {
+            int size = res.size();
+            Set<CsmUID<CsmClass>> step = new HashSet<CsmUID<CsmClass>>();
+            for(CsmUID<CsmClass> reference : res) {
+                if (!antiLoop.contains(reference)) {
+                    CsmClass cls = reference.getObject();
+                    for(CsmUID<CsmClass> increment : getSubTypes2(cls, map)) {
+                        if (!antiLoop.contains(increment)) {
+                            step.add(increment);
+                        }
+                    }
+                    antiLoop.add(reference);
+                }
+            }
+            res.addAll(step);
+            if (res.size() == size) {
+                break;
+            }
+        }
+        return res;
+    }
+
+    private Set<CsmUID<CsmClass>> getSubTypes2(CsmClass referencedClass, Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> map) {
+        CsmUID<CsmClass> referencedClassUID = UIDs.get(referencedClass);
+        Set<CsmUID<CsmClass>> res = map.get(referencedClassUID);
+        if (res != null) {
+            return res;
+        }
+        CsmFile file = referencedClass.getContainingFile();
+        CsmProject project = file.getProject();
+        res = new HashSet<CsmUID<CsmClass>>();
+        for (CsmInheritance inh : project.findInheritances(referencedClass.getName())){
+            CsmClassifier classifier = inh.getClassifier();
+            if (classifier != null) {
+                if (CsmKindUtilities.isInstantiation(classifier)) {
+                    CsmOffsetableDeclaration template = ((CsmInstantiation)classifier).getTemplateDeclaration();
+                    if (CsmKindUtilities.isClassifier(template)) {
+                        classifier = (CsmClassifier) template;
+                    }
+                }
+                CsmUID<CsmClassifier> classifierUID = UIDs.get(classifier);
+                if (referencedClassUID.equals(classifierUID)) {
+                    CsmScope scope = inh.getScope();
+                    if (CsmKindUtilities.isClass(scope)) {
+                        res.add(UIDs.get((CsmClass)scope));
+                    }
+                }
+            }
+        }
+        map.put(referencedClassUID, res);
+        return res;
+    }
+
+    private synchronized Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>> getOrCreateFullMap2(CsmProject project, long version) {
+        if (lastVersion != version) {
+            cache.clear();
+        }
+        lastVersion = version;
+        CsmUID<CsmProject> prjUID = UIDs.get(project);
+        Reference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>> outRef = cache.get(prjUID);
+        Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>> out = (outRef == null) ? null : outRef.get();
+        if (out == null) {
+            out = new HashMap<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>>();
+            cache.put(prjUID, new SoftReference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>>(out));
+        }
+        return out;
     }
 
     private static final class HierarchyModelImpl {
@@ -135,33 +232,6 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
                 if (!result.contains(c)) {
                     result.add(c);
                     gatherList(c, result, map);
-                }
-            }
-        }
-
-        private Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> buildSuperHierarchy(CsmClass cls){
-            HashMap<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> aMap = new HashMap<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>>();
-            buildSuperHierarchy(cls, aMap);
-            return aMap;
-        }
-    
-        private void buildSuperHierarchy(CsmClass cls, Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> map){
-            CsmUID<CsmClass> clsUID = UIDs.get(cls);
-            Set<CsmUID<CsmClass>> back = map.get(clsUID);
-            if (back != null) {
-                return;
-            }
-            back = new HashSet<CsmUID<CsmClass>>();
-            map.put(clsUID, back);
-            Collection<CsmInheritance> list = cls.getBaseClasses();
-            if (list != null && list.size() >0){
-                for(CsmInheritance inh : list){
-                    CsmClass c = getClassDeclaration(inh);
-                    if (c != null) {
-                        CsmUID<CsmClass> cUID = UIDs.get(c);
-                        back.add(cUID);
-                        buildSuperHierarchy(c, map);
-                    }
                 }
             }
         }
@@ -204,8 +274,8 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
     
     ///////// sub hierarchy ///////////
     private static void buildSubHierarchy(CsmNamespace ns, Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> map){
-        for(Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();){
-            buildSubHierarchy((CsmNamespace)it.next(), map);
+        for(CsmNamespace nns : ns.getNestedNamespaces()){
+            buildSubHierarchy(nns, map);
         }
         Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(ns, getClassFilter());
         while (declarations.hasNext()) {

@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -129,7 +129,7 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
     }
 
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
+        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -163,9 +163,9 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
     public CharSequence getQualifiedName() {
         CsmScope s = getScope();
         if (CsmKindUtilities.isFunction(s)) {
-            return CharSequenceKey.create(((CsmFunction)s).getQualifiedName()+"::"+name); // NOI18N
+            return CharSequences.create(((CsmFunction)s).getQualifiedName()+"::"+name); // NOI18N
         } else if (CsmKindUtilities.isClass(s)) {
-            return CharSequenceKey.create(((CsmClass)s).getQualifiedName()+"::"+name); // NOI18N
+            return CharSequences.create(((CsmClass)s).getQualifiedName()+"::"+name); // NOI18N
         }
         return name;
     }

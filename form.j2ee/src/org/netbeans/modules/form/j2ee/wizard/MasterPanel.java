@@ -362,6 +362,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
         Object item = model.remove(index);
         model.add(index+1, item);
         includeList.setSelectedIndex(index+1);
+        includeList.ensureIndexIsVisible(index+1);
     }//GEN-LAST:event_downButtonActionPerformed
 
     private void upButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upButtonActionPerformed
@@ -370,6 +371,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
         Object item = model.remove(index);
         model.add(index-1, item);
         includeList.setSelectedIndex(index-1);
+        includeList.ensureIndexIsVisible(index-1);
     }//GEN-LAST:event_upButtonActionPerformed
 
     private void removeAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAllButtonActionPerformed

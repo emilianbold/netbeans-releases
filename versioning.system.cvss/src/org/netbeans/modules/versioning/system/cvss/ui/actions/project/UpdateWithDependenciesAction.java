@@ -76,7 +76,7 @@ public final class UpdateWithDependenciesAction extends AbstractSystemAction {
     protected void performCvsAction(final Node[] nodes) {
         setEnabled(false);
         org.netbeans.modules.versioning.util.Utils.logVCSActionEvent("CVS");
-        RequestProcessor.getDefault().post(new Runnable() {
+        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 async(nodes);
             }
@@ -121,13 +121,17 @@ public final class UpdateWithDependenciesAction extends AbstractSystemAction {
     }
 
     protected boolean enable(Node[] nodes) {
-        for (int i = 0; i < nodes.length; i++) {
-            Node node = nodes[i];
-            if (Utils.isVersionedProject(node) == false) {
-                return false;
+        boolean enabled = nodes.length > 0;
+        if (enabled) {
+            for (int i = 0; i < nodes.length; i++) {
+                Node node = nodes[i];
+                if (!Utils.isVersionedProject(node, false)) {
+                    enabled = false;
+                    break;
+                }
             }
         }
-        return nodes.length > 0;
+        return enabled;
     }
 
     protected boolean asynchronous() {

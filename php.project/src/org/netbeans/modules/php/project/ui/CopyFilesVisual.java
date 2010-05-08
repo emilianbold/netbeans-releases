@@ -74,12 +74,14 @@ public class CopyFilesVisual extends JPanel {
         localServerController.setEnabled(false);
 
         copyFilesCheckBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 copyFilesCheckBoxChanged();
                 changeSupport.fireChange();
             }
         });
         localServerController.addChangeListener(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 changeSupport.fireChange();
             }
@@ -209,9 +211,11 @@ public class CopyFilesVisual extends JPanel {
 
 
     private static class BrowseCopyFiles implements LocalServerController.BrowseHandler {
+        @Override
         public File getCurrentDirectory() {
             return LastUsedFolders.getCopyFiles();
         }
+        @Override
         public void locationChanged(File location) {
             LastUsedFolders.setCopyFiles(location);
         }

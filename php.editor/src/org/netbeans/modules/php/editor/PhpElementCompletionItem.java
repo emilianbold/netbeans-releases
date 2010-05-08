@@ -73,7 +73,7 @@ public final class PhpElementCompletionItem {
         private final PhpVariable variable;
 
         public PhpVariableCompletionItem(PhpVariable variable, CompletionRequest request) {
-            super(new VariableElementImpl(variable.getName(), variable.getOffset(), getFileNameUrl(variable), null, Collections.<TypeResolver>emptySet()), request);
+            super(VariableElementImpl.create(variable.getName(), variable.getOffset(), getFileNameUrl(variable), null, Collections.<TypeResolver>emptySet()), request);
             this.variable = variable;
         }
 

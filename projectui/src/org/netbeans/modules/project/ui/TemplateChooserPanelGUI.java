@@ -136,7 +136,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private void initValues( Project p ) {
         // Populate the combo box with list of projects
         Project openProjects[] = OpenProjectList.getDefault().getOpenProjects();
-        Arrays.sort( openProjects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
+        Arrays.sort(openProjects, OpenProjectList.projectByDisplayName());
         DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
         projectsComboBox.setModel( projectsModel );
         this.selectProject (p);

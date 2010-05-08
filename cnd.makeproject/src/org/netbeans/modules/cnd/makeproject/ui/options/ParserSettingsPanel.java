@@ -47,9 +47,9 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
@@ -78,7 +78,7 @@ import org.openide.util.RequestProcessor;
 
 public class ParserSettingsPanel extends JPanel implements ChangeListener, ActionListener, IsChangedListener {
 
-    private Map<String, PredefinedPanel> predefinedPanels = new HashMap<String, PredefinedPanel>();
+    private Map<Tool, PredefinedPanel> predefinedPanels = new WeakHashMap<Tool, PredefinedPanel>();
     private boolean updating = false;
     private boolean modified = false;
 //    private boolean initialized = false;
@@ -235,11 +235,10 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             toolSet.add(cppCompiler);
         }
         for (Tool tool : toolSet) {
-            String key = ""+tool.getKind()+csp.displayName + tool.getPath(); // display name has collection name and hkey
-            PredefinedPanel predefinedPanel = predefinedPanels.get(key);
+            PredefinedPanel predefinedPanel = predefinedPanels.get(tool);
             if (predefinedPanel == null) {
                 predefinedPanel = new PredefinedPanel((AbstractCompiler) tool, this);
-                predefinedPanels.put(key, predefinedPanel);
+                predefinedPanels.put(tool, predefinedPanel);
             //modified = true; // See 126368
             } else {
                 predefinedPanel.updateCompiler((AbstractCompiler) tool);
@@ -397,6 +396,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         for (int i = 0; i < viewedPanels.length; i++) {
             viewedPanels[i].cancel();
         }
+        ToolsPanelSupport.getToolsCacheManager().discardChanges();
     }
 
     boolean isDataValid() {

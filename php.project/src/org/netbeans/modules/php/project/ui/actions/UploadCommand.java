@@ -81,6 +81,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
     @Override
     protected Runnable getContextRunnable(final Lookup context) {
         return new Runnable() {
+            @Override
             public void run() {
                 invokeActionImpl(context);
             }

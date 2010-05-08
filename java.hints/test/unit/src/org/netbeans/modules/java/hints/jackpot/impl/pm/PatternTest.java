@@ -70,10 +70,15 @@ public class PatternTest extends TestBase {
                              new Pair<String, String>("$1", "\"t\""));
     }
 
-    public void testTyped2() throws Exception {
-        performVariablesTest("package test; public class Test {public void test() {|String.valueOf(\"t\")|;}}", "$2{java.lang.String}.valueOf($1{String})",
-                             new Pair<String, String>("$1", "\"t\""),
-                             new Pair<String, String>("$2", "String"));
+//    public void testTyped2() throws Exception {
+//        performVariablesTest("package test; public class Test {public void test() {|String.valueOf(\"t\")|;}}", "$2{java.lang.String}.valueOf($1{String})",
+//                             new Pair<String, String>("$1", "\"t\""),
+//                             new Pair<String, String>("$2", "String"));
+//    }
+
+    public void testTyped3() throws Exception {
+        performVariablesTest("package test; public class Test {public void test(String str) {|str.valueOf(\"t\")|;}}", "String.valueOf($1{String})",
+                             new Pair<String, String>("$1", "\"t\""));
     }
 
     public void testTyped4() throws Exception {

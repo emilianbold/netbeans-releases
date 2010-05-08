@@ -639,6 +639,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
     }
 
     @SuppressWarnings("fallthrough")
+    @Override
     public boolean token(Token<CppTokenId> token, int tokenOffset) {
         if (inPP == null) { // not yet initialized
             inPP = (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE);
@@ -898,6 +899,12 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                         popExp();
                                         pushExp(createTokenExp(VARIABLE));
                                         break;
+                                    } else {
+                                        popExp(); // top
+                                        CsmCompletionExpression var = createTokenExp(VARIABLE);
+                                        var.addParameter(top);
+                                        pushExp(var);
+                                        break;
                                     }
                                 // no break;
                                 case VARIABLE:
@@ -1076,6 +1083,10 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                             case TYPE:
                             case TYPE_REFERENCE:
                                 if (tokenID == CppTokenId.STAR || tokenID == CppTokenId.AMP) {// '*' or '&' as type reference
+                                    pushExp(createTokenExp(OPERATOR));
+                                    break;
+                                }
+                                if (tokenID == CppTokenId.EQ) {// function param = value
                                     pushExp(createTokenExp(OPERATOR));
                                     break;
                                 }
@@ -1462,6 +1473,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                             case SCOPE:
                             case PARENTHESIS:
                             case UNARY_OPERATOR:
+                            case TERNARY_OPERATOR:
                             case MEMBER_POINTER:
                                 CsmCompletionExpression opExp = createTokenExp(OPERATOR);
                                 pushExp(opExp);
@@ -2059,7 +2071,6 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                     case INT_LITERAL:
 //                    case HEX_LITERAL:
 //                    case OCTAL_LITERAL:
-                    case UNSIGNED:
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType("int"); // NOI18N
                         break;
@@ -2223,11 +2234,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
         return lastSeparatorOffset;
     }
 
+    @Override
     public void start(int startOffset, int firstTokenOffset, int lastOffset) {
         inPP = null;
     }
 
     @SuppressWarnings("fallthrough")
+    @Override
     public void end(int offset, int lastTokenOffset) {
         if (lastValidTokenID != null) {
             // if space or comment occurs as last token
@@ -2254,6 +2267,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                 case STAR:
                 case AMP:
                 case GT:
+                    if (getValidExpID(peekExp()) == GENERIC_TYPE) {
+                        break;
+                    }
                 case LT:
                 case EQ:
                 case PLUSEQ:
@@ -2494,7 +2510,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
 //        if (stopped) {
 //            sb.append("Parsing STOPPED by request.\n"); // NOI18N
 //        }
-        sb.append("Stack size is " + cnt + "\n"); // NOI18N
+        sb.append("Stack size is ").append(cnt).append("\n"); // NOI18N
         if (cnt > 0) {
             sb.append("Stack expressions:\n"); // NOI18N
             for (int i = 0; i < cnt; i++) {
@@ -2509,6 +2525,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
         return sb.toString();
     }
 
+    @Override
     public boolean isStopped() {
         return false;
     }

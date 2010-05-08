@@ -43,8 +43,11 @@ import java.io.IOException;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
+import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 
 /**
@@ -61,6 +64,7 @@ public class ValidateCommand extends BugzillaCommand {
 
     @Override
     public void execute() throws CoreException {
+        log();
         try {
             BugzillaClient client = Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(taskRepository, new NullProgressMonitor());
             client.validate(new NullProgressMonitor());
@@ -68,5 +72,33 @@ public class ValidateCommand extends BugzillaCommand {
             Bugzilla.LOG.log(Level.SEVERE, null, ex); // XXX handle errors
         }
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ValidateCommand [repository=");                              // NOI18N
+        sb.append(taskRepository.getUrl());
+        sb.append("]");                                                         // NOI18N
+        return sb.toString();
+    }
+
+    private void log() {
+        Bugzilla.LOG.log(
+            Level.INFO,
+            "validating [{0},{1},{2},{3}]",                                     // NOI18N
+            new Object[]{
+                taskRepository.getUrl(),
+                getCredentialsString(taskRepository.getCredentials(AuthenticationType.REPOSITORY)),
+                getCredentialsString(taskRepository.getCredentials(AuthenticationType.HTTP)),
+                getCredentialsString(taskRepository.getCredentials(AuthenticationType.PROXY))});
+    }
+
+    private String getCredentialsString(AuthenticationCredentials c) {
+        if(c == null) {
+            return "null, null";                                                            // NOI18N
+        }
+        return c.getUserName() + "," + BugtrackingUtil.getPasswordLog(c.getPassword());     // NOI18N
+    }
+
 
 }

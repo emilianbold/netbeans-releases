@@ -41,6 +41,7 @@
 package org.netbeans.modules.html.editor;
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,12 +66,34 @@ public class NbReaderProvider implements ReaderProvider {
         initialize();
     }
 
-    public Collection getIdentifiers() {
+    @Override
+    public Collection<String> getIdentifiers() {
         return mapping.keySet();
     }
 
+    @Override
     public Reader getReaderForIdentifier(String identifier, String filename) {
-        String fileName = (String) mapping.get(identifier);
+        FileObject file = getSystemId(identifier);
+        if(file == null) {
+            return null;
+        }
+        
+        try {
+            return new InputStreamReader(file.getInputStream());
+        } catch (FileNotFoundException exc) {
+            return null;
+        }
+        
+    }
+
+    @Override
+    public boolean isXMLContent(String identifier) {
+        return HtmlVersion.findHtmlVersion(identifier).isXhtml();
+    }
+
+    @Override
+    public FileObject getSystemId(String publicId) {
+         String fileName = (String) mapping.get(publicId);
         if (fileName == null) {
             return null;
         }
@@ -79,19 +102,7 @@ public class NbReaderProvider implements ReaderProvider {
         }
 
         FileObject file = dtdSetFolder.getFileObject(fileName);
-        if (fileName == null) {
-            return null;
-        }
-
-        try {
-            return new InputStreamReader(file.getInputStream());
-        } catch (FileNotFoundException exc) {
-            return null;
-        }
-    }
-
-    public boolean isXMLContent(String identifier) {
-        return HtmlVersion.findHtmlVersion(identifier).isXhtml();
+        return file;
     }
 
     private void initialize() {
@@ -105,7 +116,7 @@ public class NbReaderProvider implements ReaderProvider {
         }
     }
 
-    private Map parseCatalog(Reader catalogReader) {
+    private Map<String, String> parseCatalog(Reader catalogReader) {
         HashMap hashmap = new HashMap();
         LineNumberReader reader = new LineNumberReader(catalogReader);
 

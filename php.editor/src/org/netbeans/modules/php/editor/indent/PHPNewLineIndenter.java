@@ -110,9 +110,12 @@ public class PHPNewLineIndenter {
                     ts.moveNext();
 
                     boolean indentStartComment = false;
-
+                    
 
                    boolean movePrevious = false;
+                   if (ts.token() == null) {
+                        return;
+                    }
                    if (ts.token().id() == PHPTokenId.WHITESPACE && ts.moveNext()) {
                         movePrevious = true;
                    }
@@ -180,8 +183,14 @@ public class PHPNewLineIndenter {
 
                         if (delimiter != null) {
                             if (delimiter.tokenId == PHPTokenId.PHP_SEMICOLON) {
-                                if (breakProceededByCase(ts)){
-                                    newIndent = Utilities.getRowIndent(doc, anchor) - indentSize;
+				int casePosition = breakProceededByCase(ts); // is after break in case statement?
+                                if (casePosition > -1){
+                                    newIndent = Utilities.getRowIndent(doc, anchor);
+				    if (Utilities.getRowStart(doc, casePosition) != caretLineStart) {
+					// check that case is not on the same line, where enter was pressed
+					newIndent -= indentSize;
+					System.out.println("odecitam");
+				    }
                                     break;
                                 }
 
@@ -266,8 +275,13 @@ public class PHPNewLineIndenter {
 
         if (token.id() == PHPTokenId.PHP_SEMICOLON && ts.movePrevious()) {
             retunValue.expressionStartOffset = findStartTokenOfExpression(ts);
-            retunValue.indentDelta = 0;
+	    ts.move(retunValue.expressionStartOffset);
+	    ts.moveNext();
+            retunValue.indentDelta = ts.token().id() == PHPTokenId.PHP_CASE || ts.token().id() == PHPTokenId.PHP_DEFAULT
+		    ? indentSize : 0;
             retunValue.processedByControlStmt = false;
+	    ts.move(origOffset);
+	    ts.moveNext();
             return retunValue;
         }
         while (ts.movePrevious()) {
@@ -435,8 +449,9 @@ public class PHPNewLineIndenter {
                     ts.move(offsetIf);
                     ts.movePrevious();
                 }
-            }
-            else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
+            } else if (token.id() == PHPTokenId.PHP_CASE || token.id() == PHPTokenId.PHP_DEFAULT) {
+		start = ts.offset();
+	    } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
                 curlyBalance --;
                 if (curlyBalance == -1 && ts.moveNext()) {
                     // we are after previous blog close
@@ -496,8 +511,13 @@ public class PHPNewLineIndenter {
     }
 
 
-    private boolean breakProceededByCase(TokenSequence ts){
-        boolean retunValue = false;
+    /**
+     *
+     * @param ts
+     * @return -1 if is not by case or offset of the case keyword
+     */
+    private int breakProceededByCase(TokenSequence ts){
+        int retunValue = -1;
         int origOffset = ts.offset();
 
         if (ts.movePrevious()) {
@@ -506,7 +526,7 @@ public class PHPNewLineIndenter {
                     TokenId tid = ts.token().id();
 
                     if (tid == PHPTokenId.PHP_CASE) {
-                        retunValue = true;
+                        retunValue = ts.offset();
                         break;
                     } else if (CONTROL_STATEMENT_TOKENS.contains(tid)) {
                         break;

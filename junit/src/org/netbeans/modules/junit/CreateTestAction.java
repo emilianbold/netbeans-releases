@@ -42,6 +42,7 @@
 package org.netbeans.modules.junit;
 
 import java.awt.EventQueue;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -60,9 +61,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.util.RequestProcessor;
 
@@ -79,11 +82,14 @@ public final class CreateTestAction extends TestAction {
     }
 
     /* public members */
+
+    @Override
     public String getName() {
         return NbBundle.getMessage(CreateTestAction.class,
                                    "LBL_Action_CreateTest");            //NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CreateTestAction.class);
     }
@@ -289,12 +295,17 @@ public final class CreateTestAction extends TestAction {
             return;
         }
 
+        final DataObject[] modified = DataObject.getRegistry().getModified();
+
         // show configuration dialog
         // when dialog is canceled, escape the action
-        JUnitCfgOfCreate cfg = new JUnitCfgOfCreate(nodes);
+        JUnitCfgOfCreate cfg = new JUnitCfgOfCreate(nodes, 
+                                            modified.length == 0 ? false: true);
         if (!cfg.configure()) {
             return;
         }
+
+        saveAll(modified); // #149048
 
         /* Store the configuration data: */
         final boolean singleClass = cfg.isSingleClass();
@@ -307,6 +318,7 @@ public final class CreateTestAction extends TestAction {
         cfg = null;
 
         RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     /* Now create the tests: */
                     final FileObject[] testFileObjects
@@ -323,6 +335,7 @@ public final class CreateTestAction extends TestAction {
                             final EditorCookie ec = dobj.getCookie(EditorCookie.class);
                             if (ec != null) {
                                 EventQueue.invokeLater(new Runnable() {
+                                        @Override
                                         public void run() {
                                             ec.open();
                                         }
@@ -422,6 +435,19 @@ public final class CreateTestAction extends TestAction {
             node = node.getParentNode();
         }
         return false;
+    }
+
+    private void saveAll(DataObject[] dataObjects) {
+        for(DataObject dataObject: dataObjects) {
+            SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
+            if(saveCookie != null) {
+                try {
+                    saveCookie.save();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     }
 
 }

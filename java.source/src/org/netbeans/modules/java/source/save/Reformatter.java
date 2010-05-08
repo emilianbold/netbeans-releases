@@ -2151,7 +2151,18 @@ public class Reformatter implements ReformatTask {
         public Boolean visitBinary(BinaryTree node, Void p) {
             int alignIndent = cs.alignMultilineBinaryOp() ? col : -1;
             scan(node.getLeftOperand(), p);
-            wrapOperatorAndTree(cs.wrapBinaryOps(), alignIndent, cs.spaceAroundBinaryOps() ? 1 : 0, node.getRightOperand());
+            if (cs.wrapAfterBinaryOps()) {
+                spaces(cs.spaceAroundBinaryOps() ? 1 : 0);
+                if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
+                    col += tokens.token().length();
+                    lastBlankLines = -1;
+                    lastBlankLinesTokenIndex = -1;
+                    tokens.moveNext();
+                }
+                wrapTree(cs.wrapBinaryOps(), alignIndent, cs.spaceAroundBinaryOps() ? 1 : 0, node.getRightOperand());
+            } else {
+                wrapOperatorAndTree(cs.wrapBinaryOps(), alignIndent, cs.spaceAroundBinaryOps() ? 1 : 0, node.getRightOperand());
+            }
             return true;
         }
 
@@ -2159,8 +2170,17 @@ public class Reformatter implements ReformatTask {
         public Boolean visitConditionalExpression(ConditionalExpressionTree node, Void p) {
             int alignIndent = cs.alignMultilineTernaryOp() ? col : -1;
             scan(node.getCondition(), p);
-            wrapOperatorAndTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getTrueExpression());
-            wrapOperatorAndTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getFalseExpression());
+            if (cs.wrapAfterTernaryOps()) {
+                spaces(cs.spaceAroundTernaryOps() ? 1 : 0);
+                accept(QUESTION);
+                wrapTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getTrueExpression());
+                spaces(cs.spaceAroundTernaryOps() ? 1 : 0);
+                accept(COLON);
+                wrapTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getFalseExpression());
+            } else {
+                wrapOperatorAndTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getTrueExpression());
+                wrapOperatorAndTree(cs.wrapTernaryOps(), alignIndent, cs.spaceAroundTernaryOps() ? 1 : 0, node.getFalseExpression());
+            }
             return true;
         }
 
@@ -2993,7 +3013,7 @@ public class Reformatter implements ReformatTask {
                         spaces(spacesCnt);
                     }
                     scan(tree, null);
-                    break;
+                break;
             }
             return ret;
         }

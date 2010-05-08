@@ -134,7 +134,7 @@ public class UIDManager {
 
         @SuppressWarnings("unchecked")
         public final <T> CsmUID<T> getSharedUID(CsmUID<T> uid) {
-            return (CsmUID<T>) getDelegate(uid).addOrGet(uid);
+            return (CsmUID<T>) getDelegate(uid).putIfAbsent(uid);
         }
 
         public final void dispose() {

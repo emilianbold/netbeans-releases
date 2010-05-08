@@ -58,14 +58,14 @@ public class DerbyActivator {
 
     private static final Logger LOGGER = Logger.getLogger(DerbyActivator.class.getName());
     private static final String FIRST_RUN = "first_run"; // NOI18N
-
+    
     public static synchronized void activate() {
         // activate only for 1st time
         boolean firstTime = NbPreferences.forModule(DerbyActivator.class).getBoolean(FIRST_RUN, Boolean.TRUE);
         Logger.getLogger(DerbyActivator.class.getName()).finest("Is DerbyActivator.activate() called for the 1st time? " + firstTime);
         if (firstTime) {
-            doActivate();
             NbPreferences.forModule(DerbyActivator.class).putBoolean(FIRST_RUN, Boolean.FALSE);
+            doActivate();
         }
     }
 
@@ -80,7 +80,7 @@ public class DerbyActivator {
         ProgressHandle handle = ProgressHandleFactory.createSystemHandle(NbBundle.getMessage(DerbyActivator.class, "MSG_RegisterJavaDB"));
         handle.start();
         try {
-            if (registerJDKDerby()) {
+            if (registerDerby()) {
                 registerSampleDatabase();
             }
         } finally {
@@ -88,10 +88,10 @@ public class DerbyActivator {
         }
     }
 
-    private static boolean registerJDKDerby() {
+    private static boolean registerDerby() {
         String derbyLocation = helper.findDerbyLocation();
         if (derbyLocation != null) {
-            LOGGER.log(Level.FINE, "Registering JDK Derby at {0}", derbyLocation); // NOI18N
+            LOGGER.log(Level.FINE, "Registering Derby at {0}", derbyLocation); // NOI18N
             return DerbyOptions.getDefault().trySetLocation(derbyLocation);
         }
         return false;

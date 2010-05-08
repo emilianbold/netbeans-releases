@@ -50,7 +50,7 @@ import java.io.PrintStream;
  * @author ak119685
  */
 public class DwarfMacinfoEntry {
-    public MACINFO type;
+    public final MACINFO type;
     public int lineNum;
     public String definition;
     public int fileIdx;

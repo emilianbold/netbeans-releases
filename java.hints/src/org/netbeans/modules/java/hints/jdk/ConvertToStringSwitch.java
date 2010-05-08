@@ -56,8 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.lang.model.SourceVersion;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -67,19 +66,18 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.MatcherUtilities;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Lahoda
  */
-@Hint(category="rules15")
+@Hint(category="rules15", suppressWarnings="ConvertToStringSwitch")
 public class ConvertToStringSwitch {
 
     private static final String[] PATTERNS = {
@@ -162,11 +160,11 @@ public class ConvertToStringSwitch {
             return null;
         }
 
-        Fix convert = new ConvertToSwitch(ctx.getInfo().getFileObject(),
-                                          TreePathHandle.create(ctx.getPath(), ctx.getInfo()),
-                                          TreePathHandle.create(variable, ctx.getInfo()),
-                                          literal2Statement,
-                                          defaultStatement);
+        Fix convert = JavaFix.toEditorFix(new ConvertToSwitch(ctx.getInfo(),
+                                                              ctx.getPath(),
+                                                              TreePathHandle.create(variable, ctx.getInfo()),
+                                                              literal2Statement,
+                                                              defaultStatement));
         ErrorDescription ed = ErrorDescriptionFactory.forName(ctx,
                                                               ctx.getPath(),
                                                               "Convert to switch",
@@ -195,17 +193,14 @@ public class ConvertToStringSwitch {
         return null;
     }
 
-    private static final class ConvertToSwitch implements Fix {
+    private static final class ConvertToSwitch extends JavaFix {
 
-        private final FileObject fileObject;
-        private final TreePathHandle create;
         private final TreePathHandle value;
         private final Map<TreePathHandle, TreePathHandle> literal2Statement;
         private final TreePathHandle defaultStatement;
 
-        public ConvertToSwitch(FileObject fileObject, TreePathHandle create, TreePathHandle value, Map<TreePathHandle, TreePathHandle> literal2Statement, TreePathHandle defaultStatement) {
-            this.fileObject = fileObject;
-            this.create = create;
+        public ConvertToSwitch(CompilationInfo info, TreePath create, TreePathHandle value, Map<TreePathHandle, TreePathHandle> literal2Statement, TreePathHandle defaultStatement) {
+            super(info, create);
             this.value = value;
             this.literal2Statement = literal2Statement;
             this.defaultStatement = defaultStatement;
@@ -215,74 +210,61 @@ public class ConvertToStringSwitch {
             return NbBundle.getMessage(ConvertToStringSwitch.class, "FIX_ConvertToStringSwitch");
         }
 
-        public ChangeInfo implement() throws Exception {
-            JavaSource.forFileObject(fileObject).runModificationTask(new Task<WorkingCopy>() {
-                public void run(WorkingCopy copy) throws Exception {
-                    copy.toPhase(JavaSource.Phase.UP_TO_DATE);
+        @Override
+        protected void performRewrite(WorkingCopy copy, TreePath it, UpgradeUICallback callback) {
+            TreeMaker make = copy.getTreeMaker();
+            List<CaseTree> cases = new LinkedList<CaseTree>();
 
-                    TreePath it = create.resolve(copy);
+            for (Entry<TreePathHandle, TreePathHandle> e : ConvertToSwitch.this.literal2Statement.entrySet()) {
+                TreePath l = e.getKey().resolve(copy);
+                TreePath s = e.getValue().resolve(copy);
 
-                    if (it == null) {
-                        return ;
-                    }
-                    
-                    TreeMaker make = copy.getTreeMaker();
-                    List<CaseTree> cases = new LinkedList<CaseTree>();
-
-                    for (Entry<TreePathHandle, TreePathHandle> e : ConvertToSwitch.this.literal2Statement.entrySet()) {
-                        TreePath l = e.getKey().resolve(copy);
-                        TreePath s = e.getValue().resolve(copy);
-
-                        if (l == null || s == null) {
-                            return ;
-                        }
-
-                        List<StatementTree> statements = new LinkedList<StatementTree>();
-                        Tree then = s.getLeaf();
-
-                        if (then.getKind() == Kind.BLOCK) {
-                            //XXX: should verify declarations inside the blocks
-                            statements.addAll(((BlockTree) then).getStatements());
-                        } else {
-                            statements.add((StatementTree) then);
-                        }
-
-                        statements.add(make.Break(null));
-
-                        cases.add(make.Case((ExpressionTree) l.getLeaf(), statements));
-                    }
-
-                    if (defaultStatement != null) {
-                        TreePath s = defaultStatement.resolve(copy);
-
-                        if (s == null) {
-                            return ;
-                        }
-
-                        List<StatementTree> statements = new LinkedList<StatementTree>();
-                        Tree then = s.getLeaf();
-
-                        if (then.getKind() == Kind.BLOCK) {
-                            //XXX: should verify declarations inside the blocks
-                            statements.addAll(((BlockTree) then).getStatements());
-                        } else {
-                            statements.add((StatementTree) then);
-                        }
-
-                        statements.add(make.Break(null));
-
-                        cases.add(make.Case(null, statements));
-                    }
-
-                    TreePath value = ConvertToSwitch.this.value.resolve(copy);
-
-                    SwitchTree s = make.Switch((ExpressionTree) value.getLeaf(), cases);
-
-                    copy.rewrite(it.getLeaf(), s); //XXX
+                if (l == null || s == null) {
+                    return ;
                 }
-            }).commit();
 
-            return null;
+                List<StatementTree> statements = new LinkedList<StatementTree>();
+                Tree then = s.getLeaf();
+
+                if (then.getKind() == Kind.BLOCK) {
+                    //XXX: should verify declarations inside the blocks
+                    statements.addAll(((BlockTree) then).getStatements());
+                } else {
+                    statements.add((StatementTree) then);
+                }
+
+                statements.add(make.Break(null));
+
+                cases.add(make.Case((ExpressionTree) l.getLeaf(), statements));
+            }
+
+            if (defaultStatement != null) {
+                TreePath s = defaultStatement.resolve(copy);
+
+                if (s == null) {
+                    return ;
+                }
+
+                List<StatementTree> statements = new LinkedList<StatementTree>();
+                Tree then = s.getLeaf();
+
+                if (then.getKind() == Kind.BLOCK) {
+                    //XXX: should verify declarations inside the blocks
+                    statements.addAll(((BlockTree) then).getStatements());
+                } else {
+                    statements.add((StatementTree) then);
+                }
+
+                statements.add(make.Break(null));
+
+                cases.add(make.Case(null, statements));
+            }
+
+            TreePath value = ConvertToSwitch.this.value.resolve(copy);
+
+            SwitchTree s = make.Switch((ExpressionTree) value.getLeaf(), cases);
+
+            copy.rewrite(it.getLeaf(), s); //XXX
         }
 
     }

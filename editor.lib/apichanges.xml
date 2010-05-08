@@ -104,6 +104,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Utilities.createSingleLineEditor">
+            <summary>Adding Utilities.createSingleLineEditor</summary>
+            <version major="2" minor="7"/>
+            <date day="29" month="3" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+                <p>
+                    Adding <code>o.n.editor.Utilities.createSingleLineEditor(String mimeType)</code> method
+                    in order to give modules a unified way of creating simple <code>TextField</code>-like
+                    controls.
+                </p>
+            </description>
+        </change>
+
         <change id="ToolTipSupport-api-cleanup">
             <summary>Hiding listener methods from public API</summary>
             <version major="2" minor="4"/>

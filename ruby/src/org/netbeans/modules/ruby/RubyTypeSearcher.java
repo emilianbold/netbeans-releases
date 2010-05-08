@@ -162,7 +162,7 @@ public class RubyTypeSearcher implements IndexSearcher {
         
         if (method != null) {
             // Query methods
-            Set<IndexedMethod> methods = index.getMethods(method, (String) null, kind);
+            Set<IndexedMethod> methods = index.getMethods(method, kind);
             for (IndexedMethod m : methods) {
                 if (textForQuery.length() > 0 && m.getClz() != null) {
                     String in = m.getClz();
@@ -210,7 +210,9 @@ public class RubyTypeSearcher implements IndexSearcher {
             }
         } else {
             for (IndexedClass cls : classes) {
-                result.add(new RubyTypeDescriptor(cls, helper));
+                if (!cls.isVirtual()) {
+                    result.add(new RubyTypeDescriptor(cls, helper));
+                }
             }
         }
         
@@ -241,7 +243,7 @@ public class RubyTypeSearcher implements IndexSearcher {
             Set<RubyTypeDescriptor> result = new HashSet<RubyTypeDescriptor>();
             Set<IndexedClass> classes = index.getClasses(textForQuery, kind, true, false, false, null);
 
-            Set<IndexedMethod> methods = index.getMethods(textForQuery, (String) null, kind);
+            Set<IndexedMethod> methods = index.getMethods(textForQuery, kind);
             for (IndexedClass cls : classes) {
                 result.add(new RubyTypeDescriptor(cls, helper));
             }

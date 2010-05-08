@@ -427,7 +427,12 @@ No.
         </question>
 -->
 <answer id="exec-component">
-No.
+    <api name="refreshSlow" category="private" type="export" group="property">
+        One can ask FileObject.getAttribute("refreshSlow") and obtain an instance
+        of <code>Runnable</code> with intricate behavior. This is a private contract
+        used from core.ui module to show refresh progress and tested
+        in <code>masterfs/test/unit/src/org/netbeans/modules/masterfs/SlowRefreshTest.java</code>.
+    </api>
 </answer>
 
 

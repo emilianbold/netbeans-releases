@@ -69,8 +69,7 @@ public class J2SEProject extends JConsoleTestCase {
         while (e.hasMoreElements()) {
             System.out.println(e.nextElement() + "=" + e2.nextElement());
         }
-        //java.io.tmpdir.default is defined on 4.2 ...
-        String tmpFile = System.getProperty("java.io.tmpdir.default");
+        String tmpFile = System.getProperty("java.io.tmpdir");
 
         if (tmpFile == null) {
             //This is for Windows platform, hoping it is set.
@@ -83,11 +82,11 @@ public class J2SEProject extends JConsoleTestCase {
                 //else
                 //We can't find the tmp dir. The test must fail
             }
-
-            ORIGINAL_TMP_FILE = tmpFile == null ? null : tmpFile + File.separator;
-
-            System.out.println("TMP FILE : " + ORIGINAL_TMP_FILE);
         }
+
+        ORIGINAL_TMP_FILE = tmpFile == null ? null : tmpFile + File.separator;
+
+        System.out.println("TMP FILE : " + ORIGINAL_TMP_FILE);
     }
 
     /** Creates a new instance of BundleKeys */

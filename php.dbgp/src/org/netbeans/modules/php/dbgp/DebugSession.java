@@ -112,19 +112,12 @@ public class DebugSession extends SingleThread {
     public void startProcessing(Socket socket) {
         synchronized (getSync()) {
             Status stat = getStatus();
-            if (stat != null && (stat.isRunning() || stat.isBreak())) {
-                try {
-                    socket.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } else {
-                if (stat != null) {
-                    waitFinished();
-                }
-                this.sessionSocket = socket;
-                invokeLater();
+            detachRequest.set(true);
+            if (stat != null) {
+                waitFinished();
             }
+            this.sessionSocket = socket;
+            invokeLater();
         }
     }
     /* (non-Javadoc)
@@ -188,7 +181,6 @@ public class DebugSession extends SingleThread {
                 engine.set(nextEngine);
             }
         }
-        assert engine.get() != null;
         IDESessionBridge bridge = getBridge();
         if (bridge != null) {
             bridge.init();
@@ -367,7 +359,8 @@ public class DebugSession extends SingleThread {
     }
 
     private void processStoppingStatus() {
-        sendStopCommand();
+        detachRequest.set(true);
+        processStoppedStatus();
     }
 
     private void processStoppedStatus() {
@@ -377,12 +370,15 @@ public class DebugSession extends SingleThread {
     }
 
     private void sendStopCommand() {
-        Thread currentThread = Thread.currentThread();
-        final StopCommand stopCommand = new StopCommand(getTransactionId());
-        if (currentThread == getSessionThread()) {
-            sendSynchronCommand(stopCommand);
-        } else {
-            sendCommandLater(stopCommand);
+        final boolean isDetached = detachRequest.get();
+        if (!isDetached) {
+            Thread currentThread = Thread.currentThread();
+            final StopCommand stopCommand = new StopCommand(getTransactionId());
+            if (currentThread == getSessionThread()) {
+                sendSynchronCommand(stopCommand);
+            } else {
+                sendCommandLater(stopCommand);
+            }
         }
     }
 

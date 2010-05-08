@@ -168,7 +168,7 @@ public class JavaClassCompletor extends Completor {
                 
                 ClassIndex ci = cc.getClasspathInfo().getClassIndex();
                 // add packages
-                addPackages(ci, typedPrefix, substitutionOffset, queryType);
+                addPackages(ci, typedPrefix, substitutionOffset, CompletionProvider.COMPLETION_ALL_QUERY_TYPE);
                 if(isCancelled()) {
                     return;
                 }

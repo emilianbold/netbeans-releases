@@ -27,7 +27,9 @@
  */
 package org.netbeans.modules.db.explorer.dlg;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 import org.netbeans.lib.ddl.impl.CreateIndex;
 import org.netbeans.lib.ddl.impl.CreateTable;
@@ -62,10 +64,10 @@ public class CreateTableDDL {
      * @param pkcols A Vector of ColumnItem representing the columns
      *      which are in the primary key for the table.  Can be null
      */
-    public boolean execute(Vector columns, Vector pkcols) throws Exception {
+    public boolean execute(List<ColumnItem> columns, List<ColumnItem> pkcols) throws Exception {
 
         CommandBuffer cbuff = new CommandBuffer();
-        Vector idxCommands = new Vector();
+        List<CreateIndex> idxCommands = new ArrayList<CreateIndex>();
 
           CreateTable cmd = spec.createCommandCreateTable(tablename);
 
@@ -115,7 +117,7 @@ public class CreateTableDDL {
           }
           if( hasPrimaryKeys(pkcols) ) {
               cmdcol = cmd.createPrimaryKeyConstraint(tablename);
-              cmdcol.setTableConstraintColumns(pkcols);
+              cmdcol.setTableConstraintColumns(new Vector(pkcols));
               cmdcol.setColumnType(0);
               cmdcol.setColumnSize(0);
               cmdcol.setDecimalSize(0);
@@ -124,7 +126,7 @@ public class CreateTableDDL {
           }
           cbuff.add(cmd);
           for(int i=0;i<idxCommands.size();i++)
-              cbuff.add((CreateIndex)idxCommands.elementAt(i));
+              cbuff.add(idxCommands.get(i));
           // index support removed!
           //if (icmd.getColumns().size()>0) cbuff.add(icmd);
 
@@ -134,7 +136,7 @@ public class CreateTableDDL {
           return cbuff.wasException();
     }
     
-    private boolean hasPrimaryKeys(Vector pkcols) {
+    private boolean hasPrimaryKeys(List<ColumnItem> pkcols) {
         return pkcols != null && pkcols.size() > 0;
     }
 

@@ -780,6 +780,11 @@ public class SvnClientExceptionHandler {
         return (msg.contains("has uuid") && msg.contains("but the wc has")); //NOI18N
     }
     
+    public static boolean isNotUnderVersionControl (String message) {
+        message = message.toLowerCase();
+        return message.contains("is not under version control"); //NOI18N
+    }
+    
     public static void notifyException(Exception ex, boolean annotate, boolean isUI) {
         if(isNoCliSvnClient(ex.getMessage())) {
             if(isUI) {

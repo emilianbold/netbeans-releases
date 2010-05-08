@@ -3011,14 +3011,14 @@ class JavaCodeGenerator extends CodeGenerator {
                         java.util.List<TypeElement> actualInterfaces = new ArrayList<TypeElement>();
                         TreeMaker maker = wcopy.getTreeMaker();
                         // first take the current interfaces and exclude the removed ones
-                        int infIndex = 0;
-                        for (TypeMirror infMirror: ((TypeElement) mainClassElm).getInterfaces()) {
+                        java.util.List<? extends TypeMirror> interfaces = ((TypeElement) mainClassElm).getInterfaces();
+                        for (int infIndex=interfaces.size()-1; infIndex>=0; infIndex--) {
+                            TypeMirror infMirror = interfaces.get(infIndex);
                             TypeElement infElm = (TypeElement) wcopy.getTypes().asElement(infMirror);
                             actualInterfaces.add(infElm);
                             if (toRemove.contains(infElm.getQualifiedName().toString())) {
                                 mainClassTree = maker.removeClassImplementsClause(mainClassTree, infIndex);
                             }
-                            ++infIndex;
                         }
 
                         // then ensure all required interfaces are present

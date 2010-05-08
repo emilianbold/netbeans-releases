@@ -130,7 +130,11 @@ public abstract class RestSupport {
     public static final String TOMCAT_SERVER_TYPE = "tomcat";       //NOI18N
     public static final String GFV3_SERVER_TYPE = "gfv3";          //NOI18N
     public static final String GFV2_SERVER_TYPE = "J2EE";          //NOI18N
-    
+
+    public static final int PROJECT_TYPE_DESKTOP = 0; //NOI18N
+    public static final int PROJECT_TYPE_WEB = 1; //NOI18N
+    public static final int PROJECT_TYPE_NB_MODULE = 2; //NOI18N
+
     private AntProjectHelper helper;
     protected RestServicesModel restServicesModel;
     protected RestApplicationModel restApplicationModel;
@@ -214,14 +218,21 @@ public abstract class RestSupport {
         FileObject sourceRoot = findSourceRoot();
         if (restServicesModel == null && sourceRoot != null) {
             ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
-            MetadataUnit metadataUnit = MetadataUnit.create(
-                    cpProvider.findClassPath(sourceRoot, ClassPath.BOOT),
-                    extendWithJsr311Api(cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE)),
-                    cpProvider.findClassPath(sourceRoot, ClassPath.SOURCE),
-                    null);
-            restServicesModel = RestServicesMetadataModelFactory.createMetadataModel(metadataUnit, project);
-            for (PropertyChangeListener pcl : modelListeners) {
-                restServicesModel.addPropertyChangeListener(pcl);
+            if (cpProvider != null) {
+                ClassPath compileCP = cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE);
+                ClassPath bootCP = cpProvider.findClassPath(sourceRoot, ClassPath.BOOT);
+                ClassPath sourceCP = cpProvider.findClassPath(sourceRoot, ClassPath.SOURCE);
+                if (compileCP != null && bootCP != null) {
+                    MetadataUnit metadataUnit = MetadataUnit.create(
+                            bootCP,
+                            extendWithJsr311Api(compileCP),
+                            sourceCP,
+                            null);
+                    restServicesModel = RestServicesMetadataModelFactory.createMetadataModel(metadataUnit, project);
+                    for (PropertyChangeListener pcl : modelListeners) {
+                        restServicesModel.addPropertyChangeListener(pcl);
+                    }
+                }
             }
         }
         return restServicesModel;
@@ -251,13 +262,17 @@ public abstract class RestSupport {
         }
 
         try {
-            getRestServicesModel().runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+            RestServicesModel model = getRestServicesModel();
+            if (model != null) {
+                model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
 
-                public Void run(RestServicesMetadata metadata) throws IOException {
-                    metadata.getRoot().sizeRestServiceDescription();
-                    return null;
-                }
+                    @Override
+                    public Void run(RestServicesMetadata metadata) throws IOException {
+                        metadata.getRoot().sizeRestServiceDescription();
+                        return null;
+                    }
                 });
+            }
         } catch (IOException ex) {
             Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
         }
@@ -712,5 +727,8 @@ public abstract class RestSupport {
             return pattern.matcher(pathname.getName()).matches();
         }
     }
+
+    public abstract int getProjectType();
+
 }
 

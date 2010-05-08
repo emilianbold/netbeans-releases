@@ -102,6 +102,8 @@ public class KenaiSearchPanel extends JPanel {
 
     private static Kenai kenai;
 
+    private RequestProcessor rp = new RequestProcessor("Kenai Search Panel", 3); //NOI18N
+
     /** Creates new form KenaiProjectsListPanel */
     public KenaiSearchPanel(PanelType type, boolean multiSel, Kenai k) {
 
@@ -220,6 +222,8 @@ public class KenaiSearchPanel extends JPanel {
             kenaiFeaturedProjectsList.setUI(new TreeListUI());
             kenaiFeaturedProjectsList.setSelectionMode(getListSelMode());
             kenaiFeaturedProjectsList.setCellRenderer(new KenaiProjectsListRenderer2());
+            kenaiFeaturedProjectsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsList.AccessibleContext.accessibleName")); // NOI18N
+            kenaiFeaturedProjectsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsList.AccessibleContext.accessibleDescription")); // NOI18N
             progressHandleFeatured = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.progressLabelFeatured")); // NOI18N
             presentSpecialProjects(featuredProjectPanel, scrollPaneFeatured, kenaiFeaturedProjectsList, "featured", progressHandleFeatured); //NOI18N
         }
@@ -229,6 +233,8 @@ public class KenaiSearchPanel extends JPanel {
             kenaiRecentProjectsList.setUI(new TreeListUI());
             kenaiRecentProjectsList.setSelectionMode(getListSelMode());
             kenaiRecentProjectsList.setCellRenderer(new KenaiProjectsListRenderer2());
+            kenaiRecentProjectsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsList.AccessibleContext.accessibleName")); // NOI18N
+            kenaiRecentProjectsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsList.AccessibleContext.accessibleDescription")); // NOI18N
             progressHandleRecent = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.progressLabelRecent")); // NOI18N
             presentSpecialProjects(recentProjectPanel, scrollPaneRecent, kenaiRecentProjectsList, "recent", progressHandleRecent); //NOI18N
         }
@@ -271,6 +277,9 @@ public class KenaiSearchPanel extends JPanel {
             kenaiFeaturedProjectsListWithRepos.setUI(new TreeListUI());
             kenaiFeaturedProjectsListWithRepos.setSelectionMode(getListSelMode());
             kenaiFeaturedProjectsListWithRepos.setCellRenderer(new KenaiProjectsListRenderer2());
+            kenaiFeaturedProjectsListWithRepos.getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsList.AccessibleContext.accessibleName")); // NOI18N
+            kenaiFeaturedProjectsListWithRepos.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsList.AccessibleContext.accessibleDescription")); // NOI18N
+
             progressHandleFeatured = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.progressLabelFeatured")); // NOI18N
             presentSpecialProjects(featuredProjectPanel, scrollPaneFeatured, kenaiFeaturedProjectsListWithRepos, "featured", progressHandleFeatured); //NOI18N
         }
@@ -280,6 +289,9 @@ public class KenaiSearchPanel extends JPanel {
             kenaiRecentProjectsListWithRepos.setUI(new TreeListUI());
             kenaiRecentProjectsListWithRepos.setSelectionMode(getListSelMode());
             kenaiRecentProjectsListWithRepos.setCellRenderer(new KenaiProjectsListRenderer2());
+            kenaiRecentProjectsListWithRepos.getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsList.AccessibleContext.accessibleName")); // NOI18N
+            kenaiRecentProjectsListWithRepos.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsList.AccessibleContext.accessibleDescription")); // NOI18N
+
             progressHandleRecent = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.progressLabelRecent")); // NOI18N
             presentSpecialProjects(recentProjectPanel, scrollPaneRecent, kenaiRecentProjectsListWithRepos, "recent", progressHandleRecent); //NOI18N
         }
@@ -442,8 +454,9 @@ public class KenaiSearchPanel extends JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         searchButtonPanel.add(searchInfoLabel, gridBagConstraints);
-
         searchInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
+        projectsLabel.setLabelFor(kenaiProjectsTabPane);
         projectsLabel.setText(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.projectsLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -492,13 +505,15 @@ public class KenaiSearchPanel extends JPanel {
         scrollPane.setViewportView(kenaiProjectsList);
 
 
+
         kenaiProjectsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsList.AccessibleContext.accessibleName")); // NOI18N
         kenaiProjectsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsList.AccessibleContext.accessibleDescription")); // NOI18N
         searchResultsPanel.add(scrollPane, BorderLayout.CENTER);
 
         kenaiProjectsTabPane.addTab(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchResultsPanel.TabConstraints.tabTitle"), searchResultsPanel); // NOI18N
         add(kenaiProjectsTabPane, BorderLayout.CENTER);
-
+        kenaiProjectsTabPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsTabPane.AccessibleContext.accessibleName")); // NOI18N
+        kenaiProjectsTabPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsTabPane.AccessibleContext.accessibleDescription")); // NOI18N
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -520,7 +535,7 @@ public class KenaiSearchPanel extends JPanel {
         revalidate();
         repaint();
         ph.start();
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
             public void run() {
                 Iterator<KenaiProject> projectsIterator = null;
                 String searchPattern = "&filter=" + type; //NOI18N
@@ -626,7 +641,7 @@ public class KenaiSearchPanel extends JPanel {
             repaint();
         }
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
             public void run() {
                 Iterator<KenaiProject> projectsIterator = null;
                 String searchPattern = searchTextField.getText();
@@ -743,7 +758,7 @@ public class KenaiSearchPanel extends JPanel {
             this.projects = projects;
             this.pattern = pattern;
             this.kpList = kpLst;
-            RequestProcessor.getDefault().post(this);
+            rp.post(this);
         }
 
         public void run() {

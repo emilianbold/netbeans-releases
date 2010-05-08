@@ -46,6 +46,7 @@ import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
  * @author Radek Matous
  */
 public final class ElementQueryFactory {
+    private ElementQueryFactory() {};
     public static ElementQuery.Index getIndexQuery(final QuerySupport querySupport)  {
         return IndexQueryImpl.get(querySupport);
     }

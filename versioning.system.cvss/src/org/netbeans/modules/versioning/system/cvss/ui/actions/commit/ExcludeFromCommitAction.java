@@ -82,7 +82,10 @@ public class ExcludeFromCommitAction extends AbstractAction implements Presenter
     public boolean isEnabled() {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         for (File file : files) {
-            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
+            if (CvsVersioningSystem.isManaged(file)) {
+                FileInformation fi = cache.getCachedStatus(file);
+                if (fi == null || (fi.getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
+            }
         }
         return false;
     }

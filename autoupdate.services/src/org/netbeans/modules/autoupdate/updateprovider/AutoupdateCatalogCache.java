@@ -65,7 +65,7 @@ public class AutoupdateCatalogCache {
     
     private Logger err = Logger.getLogger (this.getClass ().getName ());
     
-    public static AutoupdateCatalogCache getDefault () {
+    public static synchronized AutoupdateCatalogCache getDefault () {
         if (INSTANCE == null) {
             INSTANCE = new AutoupdateCatalogCache ();
             INSTANCE.initCacheDirectory ();

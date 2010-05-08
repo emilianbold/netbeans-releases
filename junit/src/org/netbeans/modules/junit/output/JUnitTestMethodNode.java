@@ -79,8 +79,7 @@ public class JUnitTestMethodNode extends TestMethodNode{
 //        FileObject suiteFile = ((JUnitTestcase)testcase).getTestSuite().getSuiteFile();
         FileObject testFO = ((JUnitTestcase)testcase).getClassFileObject();
         if (testFO != null){
-            Project suiteProject = FileOwnerQuery.getOwner(testFO);
-            ActionProvider actionProvider = suiteProject.getLookup().lookup(ActionProvider.class);
+            ActionProvider actionProvider = getActionProvider(testFO);
             if (actionProvider != null){
                 boolean runSupported = false;
                 boolean debugSupported = false;
@@ -131,5 +130,24 @@ public class JUnitTestMethodNode extends TestMethodNode{
 
     public JUnitTestcase getTestcase(){
         return (JUnitTestcase)testcase;
+    }
+
+    /**
+     * Returns {@code ActionProvider} that is associated with a project
+     * containing the specified {@code fileObject}.
+     *
+     * @param fileObject the file object.
+     * @return an {@code ActionProvider}, or {@code null} if there is no
+     *         known project containing the {@code fileObject}.
+     *
+     * @see ActionProvider
+     * @see FileOwnerQuery#getOwner(org.openide.filesystems.FileObject)
+     */
+    private static ActionProvider getActionProvider(FileObject fileObject) {
+        Project owner = FileOwnerQuery.getOwner(fileObject);
+        if(owner == null) { // #183586
+            return null;
+        }
+        return owner.getLookup().lookup(ActionProvider.class);
     }
 }

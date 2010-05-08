@@ -109,6 +109,34 @@ public class ${name} extends Authenticator {
             panel.add(passwordTF);
             panel.add(submitButton);
             panel.add(cancelButton);
+
+            userNameTF.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    passwordTF.grabFocus();
+                }
+
+            });
+
+            passwordTF.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    AuthenticationPanel.this.actionPerformed(new ActionEvent(passwordTF, 0, "Password"));
+                }
+
+            });
+            userNameTF.getInputMap().put(javax.swing.KeyStroke.getKeyStroke("ESCAPE"), "Cancel");
+            passwordTF.getInputMap().put(javax.swing.KeyStroke.getKeyStroke("ESCAPE"), "Cancel");
+            userNameTF.getActionMap().put("Cancel", new javax.swing.AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    AuthenticationPanel.this.actionPerformed(new ActionEvent(userNameTF, 0, "Cancel"));
+                }
+            });
+            passwordTF.getActionMap().put("Cancel", new javax.swing.AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    AuthenticationPanel.this.actionPerformed(new ActionEvent(passwordTF, 1, "Cancel"));
+                }
+            });
         }
 
         //method to call to show authentication...can be replaced by main() if required
@@ -138,7 +166,7 @@ public class ${name} extends Authenticator {
             String actionSource = evt.getActionCommand();
             if (actionSource.equals("Cancel")) {
                 frame.dispose();
-            } else if (actionSource.equals("Submit")) {
+            } else if (actionSource.equals("Submit") || actionSource.equals("Password")) {
                 username = userNameTF.getText();
                 password = new String(passwordTF.getPassword());
                 frame.dispose();

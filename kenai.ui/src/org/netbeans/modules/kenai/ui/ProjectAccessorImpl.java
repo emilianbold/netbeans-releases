@@ -254,14 +254,14 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
     private void unbookmark(KenaiProject prj) throws KenaiException {
         String fullName = prj.getKenai().getPasswordAuthentication().getUserName()
-         + "@" + prj.getKenai().getUrl().getHost();
+         + "@" + prj.getKenai().getUrl().getHost(); // NOI18N
         KenaiUser user = KenaiUser.forName(fullName);
         prj.deleteMember(user);
     }
 
     private void bookmark(KenaiProject prj) throws KenaiException {
         String fullName = prj.getKenai().getPasswordAuthentication().getUserName()
-         + "@" + prj.getKenai().getUrl().getHost();
+         + "@" + prj.getKenai().getUrl().getHost(); // NOI18N
         KenaiUser user = KenaiUser.forName(fullName);
         prj.addMember(user, Role.OBSERVER);
     }

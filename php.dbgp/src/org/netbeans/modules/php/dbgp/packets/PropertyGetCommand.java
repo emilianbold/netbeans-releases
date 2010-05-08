@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+
 
 /**
  * @author ads
@@ -48,15 +51,18 @@ package org.netbeans.modules.php.dbgp.packets;
 public class PropertyGetCommand extends PropertyCommand {
 
     private static final String KEY_ARG     = "-k ";                 // NOI18N
+    private final PropertyChangeSupport changeSupport;
     
     static final String PROPERTY_GET        = "property_get";        // NOI18N
 
     public PropertyGetCommand( String transactionId ) {
         this( PROPERTY_GET, transactionId);
+
     }
     
     protected PropertyGetCommand( String command , String transactionId ){
         super( command, transactionId);
+        changeSupport = new PropertyChangeSupport(this);
     }
 
     /* (non-Javadoc)
@@ -82,6 +88,19 @@ public class PropertyGetCommand extends PropertyCommand {
             builder.append( myKey );
         }
         return builder.toString();         
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+
+
+    public void removePropertyChangeListener( PropertyChangeListener listener ){
+        changeSupport.removePropertyChangeListener(listener);
+    }
+
+    void firePropertyChangeEvent(String propertyName, Object propertyValue ){
+        changeSupport.firePropertyChange(propertyName, null, propertyValue);
     }
 
     private String myKey;

@@ -218,7 +218,8 @@ made subject to such option by the copyright holder.
     <target name="generate-jnlp" depends="sign-jars,-test-generate-task-available,-unavailable-generate-task" if="generate.task.available">
         <taskdef name="generate-jnlp" classname="org.netbeans.modules.javawebstart.anttasks.GenerateJnlpFileTask" 
             classpath="${libs.JWSAntTasks.classpath}"/>
-        <generate-jnlp destfile="${jnlp.dest.dir}/${jnlp.file}_" template="master-${jnlp.descriptor}.jnlp" destdir="dist"/>
+        <property name="jnlp.lazy.jars" value=""/>
+        <generate-jnlp destfile="${jnlp.dest.dir}/${jnlp.file}_" template="master-${jnlp.descriptor}.jnlp" destdir="dist" lazyJars="${jnlp.lazy.jars}"/>
         <antcall target="-strip-empty-lines"/>
     </target>
     

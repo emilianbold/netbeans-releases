@@ -68,30 +68,30 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
  * @author Vladimir Kvashin
  */
 public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierProvider, SafeTemplateBasedProvider {
-    private static final byte FLAGS_TYPE_OF_TYPEDEF = 1 << 0;
+    private static final byte FLAGS_TYPE_OF_TYPEDEF = 1;
     private static final byte FLAGS_REFERENCE = 1 << 1;
     private static final byte FLAGS_CONST = 1 << 2;
     private static final byte FLAGS_TYPE_WITH_CLASSIFIER = 1 << 3;
     protected static final int LAST_USED_FLAG_INDEX = 4;
+    private static final CharSequence NON_INITIALIZED_CLASSIFIER_TEXT = CharSequences.empty();
 
     private final byte pointerDepth;
     private final byte arrayDepth;
     private byte flags;
-    CharSequence classifierText;
-    /*package*/ static final CharSequence NON_INITIALIZED_CLASSIFIER_TEXT = CharSequenceKey.empty();
+    private CharSequence classifierText;
     private int parseCount;
 
     final ArrayList<CsmSpecializationParameter> instantiationParams = new ArrayList<CsmSpecializationParameter>();
 
     // FIX for lazy resolver calls
-    CharSequence[] qname = null;
+    private CharSequence[] qname = null;
     private CsmUID<CsmClassifier> classifierUID;
 
     // package-local - for facory only
@@ -160,7 +160,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         return (flags & mask) == mask;
     }
 
-    protected void setFlags(byte mask, boolean value) {
+    private void setFlags(byte mask, boolean value) {
         if (value) {
             flags |= mask;
         } else {
@@ -257,10 +257,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         return null;
     }
 
+    @Override
     public boolean isReference() {
         return hasFlags(FLAGS_REFERENCE);
     }
 
+    @Override
     public boolean isPointer() {
         return pointerDepth > 0;
     }
@@ -273,10 +275,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         return hasFlags(FLAGS_TYPE_WITH_CLASSIFIER);
     }
 
+    @Override
     public List<CsmSpecializationParameter> getInstantiationParams() {
         return instantiationParams;
     }
 
+    @Override
     public boolean isInstantiation() {
         return !instantiationParams.isEmpty();
     }
@@ -286,10 +290,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         return !instantiationParams.isEmpty();
     }
 
+    @Override
     public boolean isTemplateBased() {
         return isTemplateBased(new HashSet<CsmType>());
     }
 
+    @Override
     public boolean isTemplateBased(Set<CsmType> visited) {
         CsmClassifier classifier = getClassifier();
         if (CsmKindUtilities.isTypedef(classifier)) {
@@ -323,10 +329,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         return false;
     }
 
+    @Override
     public boolean isConst() {
         return hasFlags(FLAGS_CONST);
     }
 
+    @Override
     public CharSequence getCanonicalText() {
         CharSequence text = getClassifierText();
         if (isInstantiationOrSpecialization()) {
@@ -352,7 +360,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
 
 
     // package
-    CharSequence getOwnText() {
+    public CharSequence getOwnText() {
         if (qname != null && qname.length>0) {
             return qname[qname.length-1];
         } else {
@@ -392,7 +400,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
 	return sb;
     }
 
-    CharSequence initClassifierText(AST node) {
+    final CharSequence initClassifierText(AST node) {
         if( node == null ) {
             CsmClassifier classifier = _getClassifier();
             return classifier == null ? "" : classifier.getName();
@@ -430,6 +438,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         }
     }
 
+    @Override
     public CsmClassifier getClassifier() {
         return getClassifier(null);
     }
@@ -452,10 +461,24 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
 	return sb;
     }
 
+    @Override
     public CharSequence getClassifierText() {
         return classifierText;
     }
 
+    boolean isInitedClassifierText() {
+        return classifierText != NON_INITIALIZED_CLASSIFIER_TEXT;
+    }
+
+    void setClassifierText(CharSequence classifierText) {
+        this.classifierText = classifierText;
+    }
+
+    void setQName(CharSequence[] qname) {
+        this.qname = qname;
+    }
+
+    @Override
     public CsmClassifier getClassifier(Resolver parent) {
         CsmClassifier classifier = _getClassifier();
         boolean needToRender = true;
@@ -633,10 +656,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         return null;
     }
 
+    @Override
     public int getArrayDepth() {
         return arrayDepth;
     }
 
+    @Override
     public int getPointerDepth() {
         return pointerDepth;
     }
@@ -647,11 +672,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         return classifier;
     }
 
-    void _setClassifier(CsmClassifier classifier) {
+    final void _setClassifier(CsmClassifier classifier) {
         this.classifierUID = UIDCsmConverter.declarationToUID(classifier);
         assert (classifierUID != null || classifier == null);
     }
 
+    @Override
     public boolean isBuiltInBased(boolean resolveTypeChain) {
         CsmClassifier classifier;
         if (resolveTypeChain) {

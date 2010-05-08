@@ -180,7 +180,7 @@ public final class ToolchainManagerImpl {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-        if (CREATE_SHADOW & !NbPreferences.forModule(ToolchainManagerImpl.class).getBoolean(SHADOW_KEY, false)) {
+        if (CREATE_SHADOW && !NbPreferences.forModule(ToolchainManagerImpl.class).getBoolean(SHADOW_KEY, false)) {
             try {
                 writeToolchains();
                 NbPreferences.forModule(ToolchainManagerImpl.class).putBoolean(SHADOW_KEY, true);
@@ -461,6 +461,7 @@ public final class ToolchainManagerImpl {
         DebuggerDescriptor debugger = descriptor.getDebugger();
         if (debugger != null) {
             element = doc.createElement("debugger"); // NOI18N
+            element.setAttribute("id", debugger.getID()); // NOI18N
             writeDebugger(doc, element, debugger);
             root.appendChild(element);
         }
@@ -868,6 +869,11 @@ public final class ToolchainManagerImpl {
             c.setAttribute("flags", linker.getStripFlag()); // NOI18N
             element.appendChild(c);
         }
+        if (linker.getPreferredCompiler() != null) {
+            c = doc.createElement("preferred_compiler"); // NOI18N
+            c.setAttribute("compiler", linker.getPreferredCompiler()); // NOI18N
+            element.appendChild(c);
+        }
     }
 
     private void writeMake(Document doc, Element element, MakeDescriptor make) {
@@ -1102,6 +1108,7 @@ public final class ToolchainManagerImpl {
         String dynamicLibraryBasicFlag;
         String outputFileFlag;
         String stripFlag;
+        String preferredCompiler;
     }
 
     /**
@@ -1116,6 +1123,7 @@ public final class ToolchainManagerImpl {
      * class package-local for testing only
      */
     static final class Debugger extends Tool {
+        String id;
     }
 
     /**
@@ -1468,6 +1476,9 @@ public final class ToolchainManagerImpl {
                 } else if (path.endsWith(".strip_flag")) { // NOI18N
                     l.stripFlag = getValue(attributes, "flags"); // NOI18N
                     return;
+                } else if (path.endsWith(".preferred_compiler")) { // NOI18N
+                    l.preferredCompiler = getValue(attributes, "compiler"); // NOI18N
+                    return;
                 }
                 return;
             }
@@ -1487,6 +1498,10 @@ public final class ToolchainManagerImpl {
                 }
                 return;
             }
+            if (path.endsWith(".debugger")) { // NOI18N
+                v.debugger.id = getValue(attributes, "id"); // NOI18N
+		return;
+	    }
             if (path.indexOf(".debugger.") > 0) { // NOI18N
                 Debugger d = v.debugger;
                 if (path.endsWith(".tool")) { // NOI18N
@@ -2403,6 +2418,11 @@ public final class ToolchainManagerImpl {
         public String getStripFlag() {
             return l.stripFlag;
         }
+
+        @Override
+        public String getPreferredCompiler() {
+            return l.preferredCompiler;
+        }
     }
 
     private static final class MakeDescriptorImpl
@@ -2420,9 +2440,16 @@ public final class ToolchainManagerImpl {
 
     private static final class DebuggerDescriptorImpl
             extends ToolDescriptorImpl<Debugger> implements DebuggerDescriptor {
+        private Debugger debugger;
 
         public DebuggerDescriptorImpl(Debugger debugger) {
             super(debugger);
+            this.debugger = debugger;
+        }
+
+        @Override
+        public String getID() {
+            return debugger.id;
         }
     }
 

@@ -41,6 +41,8 @@ package org.netbeans.modules.php.project.connections.ui.transfer.tree;
 
 import java.awt.BorderLayout;
 import java.awt.Image;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -48,10 +50,16 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JCheckBox;
+import javax.swing.JPanel;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser.TransferType;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooserPanel;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
@@ -63,11 +71,12 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 public final class TransferSelector extends TransferFilesChooserPanel implements ExplorerManager.Provider {
-    private static final long serialVersionUID = 8754314324676665313L;
+    private static final long serialVersionUID = 875487456455313L;
 
+    final TransferSelectorModel model;
     private final TransferType transferType;
-    private final TransferSelectorModel model;
     private final ExplorerManager explorerManager;
+    private final ItemListener checkAllItemListener;
 
 
     public TransferSelector(Set<TransferFile> transferFiles, TransferType transferType, long timestamp) {
@@ -84,7 +93,24 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
         CheckTreeView treeView = new CheckTreeView(model);
         treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TransferSelector.class, "ACSN_TransferFilesTree"));
         treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TransferSelector.class, "ACSD_TransferFilesTree"));
-        add(treeView, BorderLayout.CENTER);
+        treePanel.add(treeView, BorderLayout.CENTER);
+
+        checkAllCheckBox.setSelected(model.isAllSelected());
+        checkAllItemListener = new CheckAllItemListener(model, treeView);
+        checkAllCheckBox.addItemListener(checkAllItemListener);
+
+        model.addChangeListener(new TransferFilesChangeListener() {
+            @Override
+            public void selectedFilesChanged() {
+                checkAllCheckBox.removeItemListener(checkAllItemListener);
+                checkAllCheckBox.setSelected(model.isAllSelected());
+                checkAllCheckBox.addItemListener(checkAllItemListener);
+            }
+
+            @Override
+            public void filterChanged() {
+            }
+        });
     }
 
     @Override
@@ -124,7 +150,6 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
         return new FileNode(transferFile);
     }
 
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -134,12 +159,36 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+
+        treePanel = new JPanel();
+        checkAllCheckBox = new JCheckBox();
+
         setBorder(BorderFactory.createEtchedBorder());
-        setLayout(new BorderLayout());
+
+        treePanel.setLayout(new BorderLayout());
+        Mnemonics.setLocalizedText(checkAllCheckBox, NbBundle.getMessage(TransferSelector.class, "TransferSelector.checkAllCheckBox.text"));
+        GroupLayout layout = new GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(checkAllCheckBox)
+                .addContainerGap(212, Short.MAX_VALUE))
+            .addComponent(treePanel, GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(treePanel, GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(checkAllCheckBox))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JCheckBox checkAllCheckBox;
+    private JPanel treePanel;
     // End of variables declaration//GEN-END:variables
 
     private static class CheckTreeView extends BeanTreeView {
@@ -154,6 +203,10 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
             tree.setCellRenderer(renderer);
 
             tree.setEditable(false);
+        }
+
+        public void repaintTree() {
+            tree.repaint();
         }
     }
 
@@ -319,6 +372,27 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
                 return -1;
             }
             return 1;
+        }
+    }
+
+    private class CheckAllItemListener implements ItemListener {
+        private final TransferSelectorModel model;
+        private final CheckTreeView treeView;
+
+        public CheckAllItemListener(TransferSelectorModel model, CheckTreeView treeView) {
+            this.model = model;
+            this.treeView = treeView;
+        }
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                model.selectAll();
+                treeView.repaintTree();
+            } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+                model.unselectAll();
+                treeView.repaintTree();
+            }
         }
     }
 }

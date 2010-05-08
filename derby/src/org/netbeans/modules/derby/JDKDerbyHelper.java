@@ -75,6 +75,18 @@ public class JDKDerbyHelper {
         if (!canBundleDerby()) {
             return null;
         }
+        // find in registration by NBI
+        String derbyHome = DerbyRegistration.getRegisteredDerbyHome();
+        if (derbyHome != null) {
+            LOGGER.log(Level.FINE, "Registered JavaDB:  " + derbyHome);
+            File derbyHomeFile = new File(derbyHome);
+            String result = testDerbyInstallLocation(derbyHomeFile);
+            if (result != null) {
+                return result;
+            }
+        }
+
+        // find in JDK
         File locInJDK = getLocationInJDK(javaHome);
         if (locInJDK != null) {
             LOGGER.log(Level.FINE, "JavaDB in JDK(" + javaVersion + "):  " + locInJDK);

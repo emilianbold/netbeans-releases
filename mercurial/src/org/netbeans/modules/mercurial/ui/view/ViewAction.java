@@ -86,7 +86,7 @@ public class ViewAction extends ContextAction {
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
 
         String repository = root.getAbsolutePath();
-        RequestProcessor rp = RequestProcessor.getDefault();
+        RequestProcessor rp = Mercurial.getInstance().getParallelRequestProcessor();
         rp.post(new Runnable() {
             public void run() {
                 performView(root);
@@ -153,6 +153,8 @@ public class ViewAction extends ContextAction {
                     "MSG_VIEW_LAUNCH_INFO", root.getAbsolutePath())); // NOI18N
             logger.output(""); // NOI18N
             HgCommand.doView(root, logger);
+        } catch (HgException.HgCommandCanceledException ex) {
+            // canceled by user, do nothing
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);

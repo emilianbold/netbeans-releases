@@ -46,29 +46,28 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
+import org.netbeans.modules.java.hints.jackpot.spi.Hacks;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
@@ -90,8 +89,6 @@ public class Tiny {
                         constraints=@Constraint(variable="$cond", type="java.util.concurrent.locks.Condition"))
     })
     public static ErrorDescription notifyOnCondition(HintContext ctx) {
-        if (!isCondition(ctx, "$cond")) return null;
-        
         String method = methodName((MethodInvocationTree) ctx.getPath().getLeaf());
         String toName = method.endsWith("All") ? "signalAll" : "signal";
 
@@ -119,8 +116,6 @@ public class Tiny {
                         })
     })
     public static ErrorDescription waitOnCondition(HintContext ctx) {
-        if (!isCondition(ctx, "$cond")) return null;
-
         //TODO: =>await?
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_WaitOnCondition");
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
@@ -329,6 +324,10 @@ public class Tiny {
             syncedOn = (VariableElement) siteEl;
         } else {
             syncedOn = attributeThis(ctx.getInfo(), ctx.getPath());
+
+            if (syncedOn == null) {
+                return null;
+            }
         }
 
         TreePath inspect = ctx.getPath();
@@ -360,7 +359,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
     
-    @Hint(category="thread", suppressWarnings="")
+    @Hint(category="thread", suppressWarnings="CallToNativeMethodWhileLocked")
     @TriggerPatterns({
         @TriggerPattern(value="java.lang.Thread.sleep($to)",
                         constraints=@Constraint(variable="$to", type="long")),
@@ -378,7 +377,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="thread", suppressWarnings="")
+    @Hint(category="thread", suppressWarnings="SleepWhileHoldingLock")
     @TriggerPatterns({
         @TriggerPattern(value="java.lang.Thread.sleep($to)",
                         constraints=@Constraint(variable="$to", type="long")),
@@ -408,12 +407,14 @@ public class Tiny {
 
     private static VariableElement attributeThis(CompilationInfo info, TreePath tp) {
         //XXX:
-        Scope scope = info.getTrees().getScope(tp);
-        ExpressionTree thisTree = info.getTreeUtilities().parseExpression("this", new SourcePositions[1]);
+        VariableElement thisVE = Hacks.attributeThis(info, tp);
+        
+        if (thisVE == null) {
+            Logger.getLogger(Tiny.class.getName()).log(Level.WARNING, "m.localEnv == null");
+            return null;
+        }
 
-        info.getTreeUtilities().attributeTree(thisTree, scope);
-
-        return (VariableElement) info.getTrees().getElement(new TreePath(tp, thisTree));
+        return thisVE;
     }
 
     private static boolean isSynced(HintContext ctx, TreePath inspect) {
@@ -444,27 +445,5 @@ public class Tiny {
         }
 
         return LOOP_KINDS.contains(inspect.getLeaf().getKind()) ? inspect : null;
-    }
-
-    
-
-
-    //Workarounding #181580:
-    private static boolean isCondition(HintContext ctx, String variable) {
-        TypeElement condEl = ctx.getInfo().getElements().getTypeElement("java.util.concurrent.locks.Condition");
-        TreePath var = ctx.getVariables().get(variable);
-
-        if (condEl == null || var == null) {
-            return false;
-        }
-        
-        TypeMirror  varType = ctx.getInfo().getTrees().getTypeMirror(var);
-        TypeMirror  condType = condEl.asType();
-
-        if (condType == null || varType == null) {
-            return false;
-        }
-
-        return ctx.getInfo().getTypes().isSubtype(varType, condType);
     }
 }

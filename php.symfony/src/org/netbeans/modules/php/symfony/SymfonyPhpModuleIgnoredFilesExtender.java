@@ -53,11 +53,14 @@ import org.openide.filesystems.FileUtil;
 public class SymfonyPhpModuleIgnoredFilesExtender extends PhpModuleIgnoredFilesExtender {
     private static final String DIR_CACHE = "cache"; // NOI18N
 
-    // currently, only "cache" directory
+    private final PhpModule phpModule;
+    // currently, only "cache" directory can be hidden
     private final File cache;
 
     public SymfonyPhpModuleIgnoredFilesExtender(PhpModule phpModule) {
         assert phpModule != null;
+
+        this.phpModule = phpModule;
 
         FileObject cacheFO = SymfonyPhpFrameworkProvider.locate(phpModule, DIR_CACHE, true);
         if (cacheFO != null && cacheFO.isFolder()) {
@@ -70,6 +73,8 @@ public class SymfonyPhpModuleIgnoredFilesExtender extends PhpModuleIgnoredFilesE
 
     @Override
     public Set<File> getIgnoredFiles() {
-        return Collections.singleton(cache);
+        // XXX maybe cache? let's wait for report
+        boolean cacheIgnored = SymfonyPhpModuleCustomizerExtender.isCacheDirectoryIgnored(phpModule);
+        return cacheIgnored ? Collections.singleton(cache) : Collections.<File>emptySet();
     }
 }

@@ -40,6 +40,7 @@ package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.CancellationException;
@@ -116,9 +117,9 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
      */
     @org.junit.Test
     public void testMultipleGetInfo() {
-        System.setProperty("dlight.nativeexecution.SlowHostInfoProviderEnabled", "true"); // NOI18N
-
         final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
+
+        System.setProperty("dlight.nativeexecution.SlowHostInfoProviderEnabled", "true"); // NOI18N
 
         try {
             // Reset hosts data - it may be already collected in previous tests
@@ -317,7 +318,7 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
             result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath"), "ls", false); // NOI18N
             assertNull(result);
         } finally {
-            CommonTasksSupport.rmDir(env, testDir, true, null);
+            CommonTasksSupport.rmDir(env, testDir, true, new PrintWriter(System.err));
         }
 
     }

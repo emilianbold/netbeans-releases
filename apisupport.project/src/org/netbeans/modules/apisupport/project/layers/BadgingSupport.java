@@ -51,6 +51,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -88,9 +89,10 @@ import org.openide.util.actions.Presenter;
  * Also tries to provide display labels for {@link InstanceDataObject}s.
  * @author Jesse Glick
  */
-final class BadgingSupport implements FileSystem.Status, FileChangeListener {
+final class BadgingSupport implements SynchronousStatus, FileChangeListener {
 
     static final RequestProcessor RP = new RequestProcessor(BadgingSupport.class.getName());
+    private static final Logger LOG = Logger.getLogger(BadgingSupport.class.getName());
 
     /** for branding/localization like "_f4j_ce_ja"; never null, but may be "" */
     private String suffix = "";
@@ -143,20 +145,24 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         }
         RP.post(new Runnable() {
             public void run() {
-                String r = annotateNameGeneral(name, files, suffix, fileChangeListener, classpath);
+                Set<FileObject> toFire = new HashSet<FileObject>(files);
+                String r = annotateNameGeneral(name, files, suffix, fileChangeListener, classpath, toFire);
                 synchronized (names) {
                     for (FileObject f : files) {
                         names.put(f.getPath(), r);
                     }
                 }
-                fireFileStatusChanged(new FileStatusEvent(fs, files, false, true));
+                fireFileStatusChanged(new FileStatusEvent(fs, toFire, false, true));
             }
         });
         return name;
     }
-    
+    public @Override String annotateNameSynch(String name, Set<? extends FileObject> files) {
+        // XXX could participate in names cache
+        return annotateNameGeneral(name, files, suffix, null, classpath, null);
+    }
     private static String annotateNameGeneral(String name, Set<? extends FileObject> files,
-            String suffix, FileChangeListener fileChangeListener, ClassPath cp) {
+            String suffix, FileChangeListener fileChangeListener, ClassPath cp, Set<FileObject> toFire) {
         for (FileObject fo : files) {
             // #168446: try <attr name="displayName" bundlevalue="Bundle#key"/> first
             String bundleKey = (String) fo.getAttribute("literal:displayName"); // NOI18N
@@ -185,6 +191,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                         Properties p = new Properties();
                         p.load(is);
                         String val = p.getProperty(bundleKey);
+                        if (fileChangeListener != null) {
                         // Listen to changes in the origin file if any...
                         FileObject ufo = URLMapper.findFileObject(u[i]);
                         if (ufo != null) {
@@ -194,9 +201,10 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                             ufo.getParent().removeFileChangeListener(fileChangeListener);
                             ufo.getParent().addFileChangeListener(fileChangeListener);
                         }
+                        }
                         if (val != null) {
-                            if (fo.getPath().startsWith("Menu/")) { // NOI18N
-                                // Special-case menu folders to trim the mnemonics, since they are ugly.
+                            if (fo.getPath().matches("(Menu|Toolbars)/.+")) { // NOI18N
+                                // Special-case these folders to trim the mnemonics, since they are ugly.
                                 return Actions.cutAmpersand(val);
                             } else {
                                 return val;
@@ -226,7 +234,10 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                         orig = null;
                     }
                     if (orig != null && orig.hasExt("instance")) { // NOI18N
-                        return annotateNameGeneral((String) originalFile, Collections.singleton(orig), suffix, fileChangeListener, cp);
+                        if (toFire != null) {
+                            toFire.add(orig);
+                        }
+                        return annotateNameGeneral((String) originalFile, Collections.singleton(orig), suffix, fileChangeListener, cp, toFire);
                     }
                 }
             }
@@ -277,7 +288,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             }
         } catch (Exception e) {
             // ignore, OK
-            Logger.getLogger(BadgingSupport.class.getName()).log(Level.FINE, "Ignored exception: (" + e.getClass().getSimpleName() + ") " + e.getMessage());
+            LOG.log(Level.FINE, "Ignored exception: ({0}) {1}", new Object[] {e.getClass().getSimpleName(), e.getMessage()});
         }
         // OK, probably a developed module, so take a guess.
         String clazz = (String) fo.getAttribute("instanceClass"); // NOI18N
@@ -307,6 +318,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
     }
     
     public Image annotateIcon(final Image icon, int type, final Set<? extends FileObject> files) {
+        assert icon != null;
         final boolean big;
         if (type == BeanInfo.ICON_COLOR_16x16) {
             big = false;
@@ -327,6 +339,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         RP.post(new Runnable() {
             public void run() {
                 Image r = annotateIconGeneral(icon, big, files);
+                assert r != null : files;
                 synchronized (icons) {
                     for (FileObject f : files) {
                         icons.put(f.getPath(), r);
@@ -336,6 +349,18 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             }
         });
         return icon;
+    }
+    public @Override Image annotateIconSynch(Image icon, int type, Set<? extends FileObject> files) {
+        final boolean big;
+        if (type == BeanInfo.ICON_COLOR_16x16) {
+            big = false;
+        } else if (type == BeanInfo.ICON_COLOR_32x32) {
+            big = true;
+        } else {
+            return icon;
+        }
+        // XXX could participate in bigIcons/smallIcons cache
+        return annotateIconGeneral(icon, big, files);
     }
     private Image annotateIconGeneral(Image icon, boolean big, Set<? extends FileObject> files) {
         for (FileObject fo : files) {
@@ -364,8 +389,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                     }
                     return Toolkit.getDefaultToolkit().getImage(u[0]);
                 } catch (Exception e) {
-                    //e.printStackTrace(LayerDataNode.getErr());
-                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                    LOG.log(Level.INFO, "For " + value + " on " + fo.getPath(), e);
                 }
             }
         }
@@ -391,6 +415,9 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         someFileChange();
     }
     public void fileAttributeChanged(FileAttributeEvent fe) {
+        if ("DataEditorSupport.read-only.refresh".equals(fe.getName())) { // NOI18N
+            return;
+        }
         someFileChange();
     }
     public void fileRenamed(FileRenameEvent fe) {

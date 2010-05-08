@@ -44,20 +44,17 @@ made subject to such option by the copyright holder.
 
 <fontscolors>
     <fontcolor name="eol" default="default"/>
-    <fontcolor name="char-literal" foreColor="ff006f00" default="default"/>
-    <fontcolor name="errors" foreColor="red" default="default"/>
-    <fontcolor name="identifier" foreColor="black" default="default"/>
-    <fontcolor name="keywords" foreColor="ff000099" default="default">
+    <fontcolor name="whitespace" default="whitespace"/>
+    <fontcolor name="char-literal" default="string"/>
+    <fontcolor name="string" default="string"/>
+    <fontcolor name="errors" default="error"/>
+    <fontcolor name="identifier" default="identifier"/>
+    <fontcolor name="keywords" default="keyword">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="layer-method" default="default">
-        <font style="bold"/>
-    </fontcolor>
-    <fontcolor name="numeric-literals" foreColor="ff780000" default="default"/>
-    <fontcolor name="operators" foreColor="black" default="default"/>
-    <fontcolor name="string" foreColor="ff99006b" default="default"/>
+    <fontcolor name="numeric-literals" default="number"/>
+    <fontcolor name="operators" default="operator"/>
     <fontcolor name="tag-lib-prefix" foreColor="blue" default="default">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="whitespace" foreColor="black" default="default"/>
 </fontscolors>

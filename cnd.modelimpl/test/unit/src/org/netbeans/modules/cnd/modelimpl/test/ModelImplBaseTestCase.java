@@ -48,8 +48,6 @@ import java.io.PrintWriter;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * IMPORTANT NOTE:

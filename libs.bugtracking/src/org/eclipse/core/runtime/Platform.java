@@ -87,6 +87,7 @@ public final class Platform {
     public static IPath getStateLocation(Bundle bundle) {
         if(stateLocation == null) {
             File f = new File(BugtrackingRuntime.getInstance().getCacheStore(), "statelocation");
+            f.mkdirs();
             stateLocation = new StateLocation(f);
         }
         return stateLocation;

@@ -55,6 +55,12 @@ made subject to such option by the copyright holder.
         
         <folder name="Help">
             <file name="org-netbeans-core-actions-AboutAction.shadow_hidden"/>
+
+            <file name="shortcuts.xml" url="shortcuts_mac.xml">
+                <attr name="weight" intvalue="100"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+                <attr name="position" intvalue="400"/>
+            </file>
         </folder>
         
     </folder>

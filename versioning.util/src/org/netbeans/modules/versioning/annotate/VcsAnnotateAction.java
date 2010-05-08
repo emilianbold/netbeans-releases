@@ -44,12 +44,12 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.nodes.Node;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
 import java.io.File;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * Action to embed in your menus, provides Show/Hide Annotations functionality.
@@ -97,12 +97,12 @@ public class VcsAnnotateAction extends AbstractAction {
     }
 
     private void computeAnnotationsAsync(final AnnotationBar ab) {
-        RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
+        Utils.postParallel(new Runnable() {
+            @Override
             public void run() {
                 computeAnnotations(ab);
             }
-        });
-        task.schedule(0);
+        }, 0);
     }
     
     private void computeAnnotations(AnnotationBar ab) {

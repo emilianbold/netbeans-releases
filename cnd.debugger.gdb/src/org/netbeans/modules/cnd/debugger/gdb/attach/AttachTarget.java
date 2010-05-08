@@ -49,9 +49,9 @@ public abstract class AttachTarget {
     }
 
     public static class PidAttach extends AttachTarget {
-        public final long pid;
+        public final int pid;
 
-        public PidAttach(long pid) {
+        public PidAttach(int pid) {
             this.pid = pid;
         }
     }

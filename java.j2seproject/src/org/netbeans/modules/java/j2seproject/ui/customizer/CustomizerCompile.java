@@ -184,8 +184,10 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
                 processorOptionsListSelectionChanged(evt);
             }
         });
+        processorOptionsTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "TBL_ACSN_AnnotationProcesserOptions")); // NOI18N
+        processorOptionsTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "TBL_ACSD_AnnotationProcesserOptions")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(addOptionButton, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Add_Processor_Option")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addOptionButton, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Add_Annotation_ProcessorOption")); // NOI18N
         addOptionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addOptionButtonActionPerformed(evt);
@@ -229,8 +231,8 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
                             .add(processorOptionsLabel)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, processorOptionsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
-                                    .add(AnnotationProcessorsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE))
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, processorOptionsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)
+                                    .add(AnnotationProcessorsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(removeOptionButton)
@@ -244,7 +246,7 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(additionalJavacParamsExample)
-                    .add(additionalJavacParamsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE))
+                    .add(additionalJavacParamsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -297,8 +299,14 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
         enableAPTCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "AD_CustomizeCompile_Enable_Annotation_Processing")); // NOI18N
         enableAPTEditorCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "AD_CustomizeCompile_Enable_Editor_Annotation_Processing")); // NOI18N
         annotationProcessorsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "AD_CustomizeCompile_Annotation_Processors")); // NOI18N
-        addProcessorButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "AD_CustomizeCompile_Add_Annotation_Processor")); // NOI18N
-        removeProcessorButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "AD_CustomizeCompile_Remove_Annotation_Processors")); // NOI18N
+        addProcessorButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "BTN_ACSN_AddProcessor")); // NOI18N
+        addProcessorButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "BTN_ACSD_AddProcessor")); // NOI18N
+        removeProcessorButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "BTN_ACSN_RemoveProcessor")); // NOI18N
+        removeProcessorButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "BTN_ACSD_RemoveProcessor")); // NOI18N
+        addOptionButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "BTN_ACSN_AddProcessorOption")); // NOI18N
+        addOptionButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "BTN_ACSD_AddProcessorOption")); // NOI18N
+        removeOptionButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "BTN_ACSD_RemoveProcessorOption")); // NOI18N
+        removeOptionButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "BTN_ACSD_RemoveProcessorOption")); // NOI18N
         additionalJavacParamsField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"AD_AdditionalCompilerOptions"));
     }// </editor-fold>//GEN-END:initComponents
 

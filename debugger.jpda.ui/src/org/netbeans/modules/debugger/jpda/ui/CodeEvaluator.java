@@ -125,7 +125,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     private HistoryRecord lastEvaluationRecord = null;
     private Variable result;
-    private RequestProcessor rp = new RequestProcessor("Debugger Evaluator", 1);  // NOI18N
+    private static RequestProcessor rp = new RequestProcessor("Debugger Evaluator", 1);  // NOI18N
     private RequestProcessor.Task evalTask = rp.create(new EvaluateTask());
 
 
@@ -159,7 +159,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 .add(evaluateButton))
         );
         
-        setupContext();
+        //setupContext();
         editorScrollPane.setViewportView(codePane);
         codePane.addKeyListener(this);
         dbgManagerListener = new DbgManagerListener (this);
@@ -168,6 +168,10 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 dbgManagerListener
         );
         checkDebuggerState();
+    }
+
+    public static RequestProcessor getRequestProcessor() {
+        return rp;
     }
 
     public void pasteExpression(String expr) {
@@ -336,7 +340,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     }
 
     public static void addResultListener(final PropertyChangeListener listener) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
             public void run() {
                 CodeEvaluator defaultInstance = getDefaultInstance();
                 if (defaultInstance != null) {
@@ -349,7 +353,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     }
 
     public static void removeResultListener(final PropertyChangeListener listener) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
             public void run() {
                 CodeEvaluator defaultInstance = getDefaultInstance();
                 if (defaultInstance != null) {
@@ -362,7 +366,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     }
 
     private static void fireResultChange() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
             public void run() {
                 CodeEvaluator defaultInstance = getDefaultInstance();
                 if (defaultInstance != null) {
@@ -383,6 +387,9 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                     debugger = de.lookupFirst(null, JPDADebugger.class);
                 }
                 JPDADebugger lastDebugger = debuggerRef.get();
+                if (debugger != lastDebugger) {
+                    setupContext();
+                }
                 if (lastDebugger != null && debugger != lastDebugger) {
                     lastDebugger.removePropertyChangeListener(JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, CodeEvaluator.this);
                     lastDebugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, CodeEvaluator.this);
@@ -583,18 +590,20 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
             history.addItem(lastEvaluationRecord.expr, lastEvaluationRecord.type,
                     lastEvaluationRecord.value, lastEvaluationRecord.toString);
         }
-        String type = result.getType();
-        String value = result.getValue();
-        String toString = ""; // NOI18N
-        if (result instanceof ObjectVariable) {
-            try {
-                toString = ((ObjectVariable) result).getToStringValue ();
-            } catch (InvalidExpressionException ex) {
+        if (result != null) { // 'result' can be null if debugger finishes
+            String type = result.getType();
+            String value = result.getValue();
+            String toString = ""; // NOI18N
+            if (result instanceof ObjectVariable) {
+                try {
+                    toString = ((ObjectVariable) result).getToStringValue ();
+                } catch (InvalidExpressionException ex) {
+                }
+            } else {
+                toString = value;
             }
-        } else {
-            toString = value;
+            lastEvaluationRecord = new HistoryRecord(expr, type, value, toString);
         }
-        lastEvaluationRecord = new HistoryRecord(expr, type, value, toString);
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {

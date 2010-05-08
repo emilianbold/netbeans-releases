@@ -63,6 +63,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
@@ -200,6 +201,13 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     public Set<FileObject> extend(WebModule webModule) {
         CreateSpringConfig createSpringConfig = new CreateSpringConfig(webModule);
         FileObject webInf = webModule.getWebInf();
+        if (webInf == null) {
+            try {
+                webInf = FileUtil.createFolder(webModule.getDocumentBase(), "WEB-INF"); //NOI18N
+            } catch (IOException ex) {
+                   LOGGER.log(Level.WARNING, "Exception during creating WEB-INF directory", ex); //NOI18N
+            }
+        }
         if (webInf != null) {
             try {
                 FileSystem fs = webInf.getFileSystem();
@@ -228,6 +236,11 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         public void run() throws IOException {
             // MODIFY WEB.XML
             FileObject dd = webModule.getDeploymentDescriptor();
+            //we need deployment descriptor, create if null
+            if(dd==null)
+            {
+                dd = DDHelper.createWebXml(webModule.getJ2eeProfile(), webModule.getWebInf());
+            }
             if (dd != null) {
                 WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
                 addContextParam(ddRoot, "contextConfigLocation", "/WEB-INF/applicationContext.xml"); // NOI18N

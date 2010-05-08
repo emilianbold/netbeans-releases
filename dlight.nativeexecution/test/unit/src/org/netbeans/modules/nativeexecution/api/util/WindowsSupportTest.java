@@ -121,7 +121,7 @@ public class WindowsSupportTest {
         String cygwinPath = "/cygdrive/c/Documents and Settings";
         WindowsSupport instance = WindowsSupport.getInstance();
         String result = instance.convertToCygwinPath(winPath);
-        assertEquals(cygwinPath, result);
+        assertEquals(cygwinPath.toLowerCase(), result.toLowerCase());
     }
 
     /**

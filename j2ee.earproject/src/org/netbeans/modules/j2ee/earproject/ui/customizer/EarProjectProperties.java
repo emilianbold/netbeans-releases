@@ -360,8 +360,13 @@ public final class EarProjectProperties {
         
         // Set new server instance ID
         if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()), 
-                    project, projectProperties, privateProperties);
+            Profile profile = Profile.fromPropertiesString(project.evaluator().getProperty(J2EE_PLATFORM));
+            String serverInstance = J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+            J2EEProjectProperties.updateServerProperties(projectProperties, privateProperties,
+                    serverInstance,
+                    null, null, new CallbackImpl(project), project,
+                    profile, J2eeModule.Type.EAR);
+            updateEarServerProperties(serverInstance, projectProperties, privateProperties);
         }
         
         CLIENT_MODULE_MODEL.storeSelectedItem(projectProperties);
@@ -380,13 +385,18 @@ public final class EarProjectProperties {
         }        
     }
 
-    public static void setServerInstance(final Project project, final UpdateHelper helper, final String serverInstanceID) {
+    public static void setServerInstance(final EarProject project, final UpdateHelper helper, final String serverInstanceID) {
         ProjectManager.mutex().postWriteRequest(new Runnable() {
+            @Override
             public void run() {
                 try {
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    setNewServerInstanceValue(serverInstanceID, project, projectProps, privateProps);
+                    Profile profile = Profile.fromPropertiesString(project.evaluator().getProperty(J2EE_PLATFORM));
+                    J2EEProjectProperties.updateServerProperties(projectProps, privateProps, serverInstanceID,
+                            null, null, new CallbackImpl(project), project,
+                            profile, J2eeModule.Type.EAR);
+                    updateEarServerProperties(serverInstanceID, projectProps, privateProps);
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                     ProjectManager.getDefault().saveProject(project);
@@ -398,78 +408,25 @@ public final class EarProjectProperties {
     }
     
     
-    private static void setNewServerInstanceValue(String newServInstID, Project project, 
+    private static void updateEarServerProperties(String newServInstID,
             EditableProperties projectProps, EditableProperties privateProps) {
 
         assert newServInstID != null : "Server isntance id to set can't be null"; // NOI18N
 
-        String oldServInstID = privateProps.getProperty(J2EE_SERVER_INSTANCE);
-        if (oldServInstID != null) {
-            J2eePlatform oldJ2eePlatform = Deployment.getDefault().getJ2eePlatform(oldServInstID);
-            if (oldJ2eePlatform != null) {
-                ((EarProject)project).unregisterJ2eePlatformListener(oldJ2eePlatform);
-            }
-        }
-        
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newServInstID);
         if (j2eePlatform == null) {
-            // probably missing server error
-            Logger.getLogger("global").log(Level.INFO, "J2EE platform is null."); // NOI18N
-            
-            // update j2ee.server.instance
-            privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
-            
             // remove J2eePlatform.TOOL_APP_CLIENT_RUNTIME classpath
             privateProps.remove(APPCLIENT_TOOL_RUNTIME);
-            
-            privateProps.remove(DEPLOY_ANT_PROPS_FILE);
             return;
         }
-        
-        ((EarProject)project).registerJ2eePlatformListener(j2eePlatform);
-        
-        storeJ2EEServerProperties(newServInstID, project, projectProps, privateProps, null);
-        
-        // ui log for the server change
-        if(newServInstID != null && !newServInstID.equals(oldServInstID)) {
-            EarProjectUtil.logUI(NbBundle.getBundle(EarProjectProperties.class), "UI_EAR_PROJECT_SERVER_CHANGED", // NOI18N
-                    new Object[] { 
-                        Deployment.getDefault().getServerID(oldServInstID),
-                        oldServInstID,
-                        Deployment.getDefault().getServerID(newServInstID),
-                        newServInstID });
-        }
-    }
-    
-    public static void storeJ2EEServerProperties(String newServInstID, Project project, 
-            EditableProperties projectProps, EditableProperties privateProps, String serverLibraryName) {
-        
-        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newServInstID);
-        
-        if (J2EEProjectProperties.isUsingServerLibrary(projectProps, EarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
-            if (serverLibraryName != null) {
-                projectProps.setProperty(J2EE_PLATFORM_CLASSPATH,
-                    "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
-            }
-        } else {
-            String classpath = EarProjectGenerator.toClasspathString(j2eePlatform.getClasspathEntries());
-            privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
-        }
-        
+        String root = J2EEProjectProperties.extractPlatformLibrariesRoot(j2eePlatform);
         // update j2ee.appclient.tool.runtime
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_APP_CLIENT_RUNTIME)) {
             File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME);
-            privateProps.setProperty(APPCLIENT_TOOL_RUNTIME, EarProjectGenerator.toClasspathString(wsClasspath));
+            privateProps.setProperty(APPCLIENT_TOOL_RUNTIME, J2EEProjectProperties.toClasspathString(wsClasspath, root));
         } else {
             privateProps.remove(APPCLIENT_TOOL_RUNTIME);
         }
-        
-        // update j2ee.server.type
-        projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
-        
-        // update j2ee.server.instance
-        privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
-
         String mainClassArgs = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS_ARGS);
         if (mainClassArgs != null && !mainClassArgs.equals("")) {
             projectProps.setProperty(APPCLIENT_MAINCLASS_ARGS, mainClassArgs);
@@ -482,23 +439,8 @@ public final class EarProjectProperties {
             projectProps.remove(CLIENT_NAME);
         }
         setAppClientPrivateProperties(j2eePlatform, newServInstID, privateProps);
-        
-        // ant deployment support
-        File projectFolder = FileUtil.toFile(project.getProjectDirectory());
-        try {
-            AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, ANT_DEPLOY_BUILD_SCRIPT), J2eeModule.WAR, newServInstID); // NOI18N
-        } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
-        }
-        File antDeployPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(newServInstID);
-        if (antDeployPropsFile == null) {
-            privateProps.remove(DEPLOY_ANT_PROPS_FILE);
-        } else {
-            privateProps.setProperty(DEPLOY_ANT_PROPS_FILE, antDeployPropsFile.getAbsolutePath());
-        }
     }
-    
-    
+
     /** <strong>Package private for unit test only</strong>. */
     static void updateContentDependency(EarProject project, List<ClassPathSupport.Item> oldContent, List<ClassPathSupport.Item> newContent,
             EditableProperties props) {
@@ -921,25 +863,6 @@ public final class EarProjectProperties {
             Boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
                 public Boolean run() throws IOException {
                     saveLibrariesLocation();
-                    URL buildImplXSL = EarProject.class.getResource("resources/build-impl.xsl");
-                    int state = genFilesHelper.getBuildScriptState(
-                            GeneratedFilesHelper.BUILD_IMPL_XML_PATH, buildImplXSL);
-                    if ((state & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {
-                        if (showModifiedMessage(NbBundle.getMessage(EarProjectProperties.class,"TXT_ModifiedTitle"))) {
-                            //Delete user modified build-impl.xml
-                            FileObject fo = updateHelper.getAntProjectHelper().getProjectDirectory().
-                                    getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                            if (fo != null) {
-                                fo.delete();
-                                genFilesHelper.refreshBuildScript(
-                                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                        buildImplXSL,
-                                        false);
-                            }
-                        } else {
-                            return false;
-                        }
-                    }
                     storeProperties();
                     //Delete COS mark
                     if (!DEPLOY_ON_SAVE_MODEL.isSelected()) {
@@ -1113,6 +1036,26 @@ public final class EarProjectProperties {
 
     public EarProject getProject() {
         return project;
+    }
+
+    private static class CallbackImpl implements J2EEProjectProperties.Callback {
+
+        private EarProject project;
+
+        public CallbackImpl(EarProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public void registerJ2eePlatformListener(J2eePlatform platform) {
+            project.registerJ2eePlatformListener(platform);
+        }
+
+        @Override
+        public void unregisterJ2eePlatformListener(J2eePlatform platform) {
+            project.unregisterJ2eePlatformListener(platform);
+        }
+
     }
     
 }

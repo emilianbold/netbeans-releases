@@ -52,12 +52,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.CsmCompletionResult;
@@ -139,21 +140,27 @@ public class CompletionUtilities {
                 baseDoc = (BaseDocument) doc;
             }
             baseDoc = baseDoc != null ? baseDoc : (BaseDocument) target.getDocument();
-            int[] idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock(baseDoc, dotPos);
 
-            if (idFunBlk == null) {
-                idFunBlk = new int[]{dotPos, dotPos};
+            boolean searchFunctionsOnly = false;
+            boolean searchSpecializationsOnly = false;
+            int[] idBlk = NbEditorUtilities.getIdentifierAndMethodBlock(baseDoc, dotPos);
+            searchFunctionsOnly = (idBlk != null) ? (idBlk.length == 3) : false;
+            if (idBlk == null || idBlk.length == 2) {
+                idBlk = getIdentifierAndInstantiationBlock(baseDoc, dotPos);
+                searchSpecializationsOnly = (idBlk != null) ? (idBlk.length == 3) : false;
+            }            
+            if (idBlk == null) {
+                idBlk = new int[]{dotPos, dotPos};
             }
             CsmFile currentFile = CsmUtilities.getCsmFile(doc, false, false);
-            boolean searchFuncsOnly = (idFunBlk.length == 3);
-            for (int ind = idFunBlk.length - 1; ind >= 1; ind--) {
-                CsmCompletionResult result = query.query(target, baseDoc, idFunBlk[ind], true, false, false);
+            for (int ind = idBlk.length - 1; ind >= 1; ind--) {
+                CsmCompletionResult result = query.query(target, baseDoc, idBlk[ind], true, false, false);
                 if (result != null && !result.getItems().isEmpty()) {
-                    List<CsmObject> filtered = getAssociatedObjects(result.getItems(), searchFuncsOnly, currentFile);
+                    List<CsmObject> filtered = getAssociatedObjects(result.getItems(), searchFunctionsOnly, currentFile);
                     out = !filtered.isEmpty() ? filtered : getAssociatedObjects(result.getItems(), false, currentFile);
-                    if (filtered.size() > 1 && searchFuncsOnly) {
+                    if (filtered.size() > 1 && searchFunctionsOnly) {
                         // It is overloaded method, lets check for the right one
-                        int endOfMethod = findEndOfMethod(baseDoc, idFunBlk[ind] - 1);
+                        int endOfMethod = findEndOfMethod(baseDoc, idBlk[ind] - 1);
                         if (endOfMethod > -1) {
                             CsmCompletionResult resultx = query.query(target, baseDoc, endOfMethod, true, false, false);
                             if (resultx != null && !resultx.getItems().isEmpty()) {
@@ -161,6 +168,15 @@ public class CompletionUtilities {
                             }
                         }
                     }                    
+                    if (filtered.size() > 1 && searchSpecializationsOnly) {
+                        int endOfMethod = findEndOfInstantiation(baseDoc, idBlk[ind] - 1);
+                        if (endOfMethod > -1) {
+                            CsmCompletionResult resultx = query.query(target, baseDoc, endOfMethod, true, false, false);
+                            if (resultx != null && !resultx.getItems().isEmpty()) {
+                                out = getAssociatedObjects(resultx.getItems(), false, currentFile);
+                            }
+                        }
+                    }
                     break;
                 }
             }
@@ -168,6 +184,28 @@ public class CompletionUtilities {
         }
         return out;
     }
+
+    private static int[] getIdentifierAndInstantiationBlock(BaseDocument doc, int offset) throws BadLocationException {
+        int[] idBlk = Utilities.getIdentifierBlock(doc, offset);
+        if (idBlk != null) {
+            int[] instBlk = getInstantiationBlock(doc, idBlk);
+            if (instBlk != null) {
+                return new int[] { idBlk[0], idBlk[1], instBlk[1] };
+            }
+        }
+        return idBlk;
+    }
+
+    private static int[] getInstantiationBlock(BaseDocument doc, int[] identifierBlock) throws BadLocationException {
+        if (identifierBlock != null) {
+            int nwPos = Utilities.getFirstNonWhiteFwd(doc, identifierBlock[1]);
+            if ((nwPos >= 0) && (doc.getChars(nwPos, 1)[0] == '<')) {
+                return new int[] { identifierBlock[0], nwPos + 1 };
+            }
+        }
+        return null;
+    }
+
 
     private static List<CsmObject> getAssociatedObjects(List items, boolean wantFuncsOnly, CsmFile contextFile) {
         List<CsmObject> visible = new ArrayList<CsmObject>();
@@ -225,6 +263,27 @@ public class CompletionUtilities {
                 level++;
             }
             if (ch == ')') {
+                level--;
+                if (level == 0) {
+                    return i + 1;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public static int findEndOfInstantiation(Document doc, int startPos) {
+        int level = 0;
+        CharSequence text = DocumentUtilities.getText(doc);
+        for (int i = startPos; i < doc.getLength(); i++) {
+            char ch = text.charAt(i);
+            if (ch == ';') {
+                return -1;
+            }
+            if (ch == '<') {
+                level++;
+            }
+            if (ch == '>') {
                 level--;
                 if (level == 0) {
                     return i + 1;

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

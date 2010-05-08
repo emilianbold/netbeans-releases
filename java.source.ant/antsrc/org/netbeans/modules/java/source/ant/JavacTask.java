@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Arrays;
+import java.util.Iterator;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Javac;
@@ -105,8 +106,20 @@ public class JavacTask extends Javac {
             }
         } else {
             if (CheckForCleanBuilds.cleanBuild.get() && getSrcdir() != null) {
+		File apSources = null;
+		for (Iterator<String> it = Arrays.asList(getCurrentCompilerArgs()).iterator(); it.hasNext(); ) {
+		    if ("-s".equals(it.next()) && it.hasNext()) {
+			apSources = PropertyUtils.resolveFile(p.getBaseDir().getAbsoluteFile(), it.next());
+			break;
+		    }
+		}
                 for (String path : getSrcdir().list()) {
                     File f = PropertyUtils.resolveFile(p.getBaseDir().getAbsoluteFile(), path);
+
+		    if (f.equals(apSources)) {
+			p.log("Not forcing rescan for AP source output: " + f.getAbsolutePath(), Project.MSG_VERBOSE);
+			continue;
+		    }
 
                     try {
                         p.log("Forcing rescan of: " + f.getAbsolutePath(), Project.MSG_VERBOSE);

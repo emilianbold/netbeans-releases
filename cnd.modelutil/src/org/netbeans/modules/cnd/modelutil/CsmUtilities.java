@@ -156,6 +156,7 @@ public class CsmUtilities {
     public static final int FORWARD         = 0x00100000;
     public static final boolean DEBUG = Boolean.getBoolean("csm.utilities.trace.summary") ||
             Boolean.getBoolean("csm.utilities.trace");
+    private static final RequestProcessor RP = new RequestProcessor(CsmUtilities.class.getName(), 1);
 
     public static int getModifiers(CsmObject obj) {
         int mod = 0;
@@ -749,7 +750,7 @@ public class CsmUtilities {
 
                 @Override
                 public void focusGained(FocusEvent e) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
 
                         @Override
                         public void run() {
@@ -761,7 +762,7 @@ public class CsmUtilities {
             });
         } else {
             // immediate processing
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {

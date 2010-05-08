@@ -46,12 +46,12 @@ typedef enum {
 
 extern int msg_levels;
 
-#define PRINT(fmt, ...) printf(fmt, ##__VA_ARGS__);
-#define REF(fmt, ...) if (msg_levels & msg_ref) { printf(fmt, ##__VA_ARGS__); }
-#define TRACE(fmt, ...) if (msg_levels & msg_trace) { printf(fmt, ##__VA_ARGS__); }
-#define EXPLAIN(fmt, ...) if (msg_levels & msg_explain) { printf(fmt, ##__VA_ARGS__); }
-#define PAUSE(fmt, ...) if (msg_levels & msg_explain) { print_run_time(); printf(fmt, ##__VA_ARGS__); getchar(); }
-#define ERROR(fmt, ...) fprintf(stderr, fmt, ##__VA_ARGS__);
+#define PRINT(...) printf(__VA_ARGS__);
+#define REF(...) if (msg_levels & msg_ref) { printf(__VA_ARGS__); }
+#define TRACE(...) if (msg_levels & msg_trace) { printf(__VA_ARGS__); }
+#define EXPLAIN(...) if (msg_levels & msg_explain) { printf(__VA_ARGS__); }
+#define PAUSE(...) if (msg_levels & msg_explain) { print_run_time(); printf(__VA_ARGS__); getchar(); }
+#define ERROR(...) fprintf(stderr, __VA_ARGS__);
 
 // CPU usage types
 typedef enum {

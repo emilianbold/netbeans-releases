@@ -524,11 +524,13 @@ public final class ModuleActions implements ActionProvider {
 
     private String[] setupRunMain(Properties p, TestSources testSources, Lookup context, String mainClass) {
         p.setProperty("main.class", mainClass);    // NOI18N
+        p.setProperty("test.type", testSources.testType); // NOI18N
         return  new String[] {"run-test-main"};    // NOI18N
     }
 
     private String[] setupDebugMain(Properties p, TestSources testSources, Lookup context, String mainClass) {
         p.setProperty("main.class", mainClass);    // NOI18N
+        p.setProperty("test.type", testSources.testType); // NOI18N
         return  new String[] {"debug-test-main-nb"};    // NOI18N
     }
 

@@ -111,7 +111,7 @@ public class IOManager {
             buffer.addLast(new Text(text, line));
         }
         if (task == null) {
-            task = RequestProcessor.getDefault().post(new Runnable() {
+            task = new RequestProcessor("Debugger Output", 1).post(new Runnable() { //NOI18N
                 public void run() {
                     synchronized (buffer) {
                         int i, k = buffer.size();

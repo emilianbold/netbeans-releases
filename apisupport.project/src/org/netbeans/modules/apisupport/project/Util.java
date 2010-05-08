@@ -43,6 +43,8 @@ package org.netbeans.modules.apisupport.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,6 +64,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
@@ -87,7 +90,6 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager.CyclicDependencyException;
 import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -105,11 +107,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  * Utility methods for the module.
@@ -125,106 +122,9 @@ public final class Util {
     private static final String SFS_VALID_PATH_RE = "(\\p{Alnum}|\\/|_)+"; // NOI18N
     
     // COPIED FROM org.netbeans.modules.project.ant:
-    // (except for namespace == null support in findElement)
+    // (**EXCEPT** except for namespace == null support in findElement)
     // (and support for comments in findSubElements)
     
-    /**
-     * Search for an XML element in the direct children of a parent.
-     * DOM provides a similar method but it does a recursive search
-     * which we do not want. It also gives a node list and we want
-     * only one result.
-     * @param parent a parent element
-     * @param name the intended local name
-     * @param namespace the intended namespace (or null)
-     * @return the first child element with that name, or null if none
-     */
-    public static Element findElement(Element parent, String name, String namespace) {
-        NodeList l = parent.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                Element el = (Element)l.item(i);
-                if ((namespace == null && name.equals(el.getTagName())) ||
-                        (namespace != null && name.equals(el.getLocalName()) &&
-                        namespace.equals(el.getNamespaceURI()))) {
-                    return el;
-                }
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Extract nested text from an element.
-     * Currently does not handle coalescing text nodes, CDATA sections, etc.
-     * @param parent a parent element
-     * @return the nested text, or null if none was found
-     */
-    public static String findText(Element parent) {
-        NodeList l = parent.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getNodeType() == Node.TEXT_NODE) {
-                Text text = (Text)l.item(i);
-                return text.getNodeValue();
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Find all direct child elements of an element.
-     * More useful than {@link Element#getElementsByTagNameNS} because it does
-     * not recurse into recursive child elements.
-     * Children which are all-whitespace text nodes or comments are ignored; others cause
-     * an exception to be thrown.
-     * @param parent a parent element in a DOM tree
-     * @return a list of direct child elements (may be empty)
-     * @throws IllegalArgumentException if there are non-element children besides whitespace
-     */
-    public static List<Element> findSubElements(Element parent) throws IllegalArgumentException {
-        NodeList l = parent.getChildNodes();
-        List<Element> elements = new ArrayList<Element>(l.getLength());
-        for (int i = 0; i < l.getLength(); i++) {
-            Node n = l.item(i);
-            if (n.getNodeType() == Node.ELEMENT_NODE) {
-                elements.add((Element)n);
-            } else if (n.getNodeType() == Node.TEXT_NODE) {
-                String text = ((Text)n).getNodeValue();
-                if (text.trim().length() > 0) {
-                    throw new IllegalArgumentException("non-ws text encountered in " + parent + ": " + text); // NOI18N
-                }
-            } else if (n.getNodeType() == Node.COMMENT_NODE) {
-                // OK, ignore
-            } else {
-                throw new IllegalArgumentException("unexpected non-element child of " + parent + ": " + n); // NOI18N
-            }
-        }
-        return elements;
-    }
-
-    /**
-     * Convert an XML fragment from one namespace to another.
-     */
-    public static Element translateXML(Element from, String namespace) {
-        Element to = from.getOwnerDocument().createElementNS(namespace, from.getLocalName());
-        NodeList nl = from.getChildNodes();
-        int length = nl.getLength();
-        for (int i = 0; i < length; i++) {
-            Node node = nl.item(i);
-            Node newNode;
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                newNode = translateXML((Element) node, namespace);
-            } else {
-                newNode = node.cloneNode(true);
-            }
-            to.appendChild(newNode);
-        }
-        NamedNodeMap m = from.getAttributes();
-        for (int i = 0; i < m.getLength(); i++) {
-            Node attr = m.item(i);
-            to.setAttribute(attr.getNodeName(), attr.getNodeValue());
-        }
-        return to;
-    }
 
     /**
      * Pass to {@link XPath#setNamespaceContext} to bind {@code nbm:} to the /3 namespace.
@@ -397,7 +297,7 @@ public final class Util {
      */
     public static LocalizedBundleInfo findLocalizedBundleInfoFromJAR(File binaryProject) {
         try {
-            JarFile main = new JarFile(binaryProject);
+            JarFile main = new JarFile(binaryProject, false);
             try {
                 Manifest mf = main.getManifest();
                 String locBundleResource =
@@ -418,7 +318,7 @@ public final class Util {
                         for (String infix : NbCollections.iterable(NbBundle.getLocalizingSuffixes())) {
                             File variant = new File(binaryProject.getParentFile(), "locale" + File.separatorChar + base + infix + suffix); // NOI18N
                             if (variant.isFile()) {
-                                JarFile jf = new JarFile(variant);
+                                JarFile jf = new JarFile(variant, false);
                                 extraJarFiles.add(jf);
                                 addBundlesFromJar(jf, bundleISs, locBundleResource);
                             }
@@ -437,6 +337,21 @@ public final class Util {
                             jarFile.close();
                         }
                     }
+                }
+                if (mf.getMainAttributes().getValue(ManifestManager.BUNDLE_SYMBOLIC_NAME) != null) {
+                    Properties p = new Properties();
+                    String[] from = {"Bundle-Name", "Bundle-Category", "Bundle-Description", "Bundle-Description"};
+                    String[] to = {LocalizedBundleInfo.NAME, LocalizedBundleInfo.DISPLAY_CATEGORY,
+                                   LocalizedBundleInfo.SHORT_DESCRIPTION, LocalizedBundleInfo.LONG_DESCRIPTION};
+                    for (int i = 0; i < from.length; i++) {
+                        String v = mf.getMainAttributes().getValue(from[i]);
+                        if (v != null) {
+                            p.setProperty(to[i], v);
+                        }
+                    }
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    p.store(baos, null);
+                    return LocalizedBundleInfo.load(new InputStream[] {new ByteArrayInputStream(baos.toByteArray())});
                 }
             } finally {
                 main.close();

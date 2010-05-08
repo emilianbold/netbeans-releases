@@ -83,7 +83,8 @@ final class CustomFoldManager implements FoldManager, Runnable {
     private List removedFoldList;
     private HashMap customFoldId = new HashMap();
 
-    private final RequestProcessor.Task task = RequestProcessor.getDefault().create(this);
+    private static final RequestProcessor RP = new RequestProcessor(CustomFoldManager.class.getName());
+    private final RequestProcessor.Task task = RP.create(this);
 
     public void init(FoldOperation operation) {
         this.operation = operation;

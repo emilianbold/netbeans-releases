@@ -41,11 +41,14 @@
 
 package org.netbeans.modules.css.visual.api;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.css.visual.ui.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SingleSelectionModel;
 import javax.swing.border.EmptyBorder;
 
 /**
@@ -68,6 +71,18 @@ public final class StyleBuilderPanel extends JPanel {
     }
 
     private void initialize(){
+        //lazy panel initialization support
+        jTabbedPane1.getModel().addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if(e.getSource() instanceof SingleSelectionModel) {
+                    SingleSelectionModel model = (SingleSelectionModel)e.getSource();
+                    StyleEditor editor = styleEditorList.get(model.getSelectedIndex());
+                    editor.initializePanel();
+                }
+            }
+        });
+
         styleEditorList.add(new FontStyleEditor());
         styleEditorList.add(new BackgroundStyleEditor());
         styleEditorList.add(new TextBlockStyleEditor());
@@ -104,5 +119,5 @@ public final class StyleBuilderPanel extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
-    
+
 }

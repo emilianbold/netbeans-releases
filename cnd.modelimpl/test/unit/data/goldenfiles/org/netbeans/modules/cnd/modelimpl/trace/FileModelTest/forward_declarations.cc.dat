@@ -11,31 +11,31 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-TYPEDEF A  [2:1/1-2:21/21] TYPE: C1 TEXT=C1  [2:1/1-2:21/21] SCOPE: $Global$ 
+TYPEDEF A  [2:1/1-2:21/21] TYPE: C1 TEXT=C1  [2:16/16-2:18/18] SCOPE: $Global$ 
 CLASS_FORWARD_DECLARATION C1 [2:9/9-2:18/18]
 CLASS C (C ) [4:1/23-6:2/59] lcurly=31 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        TYPEDEF B  [5:5/37-5:25/57] TYPE: C::C2 TEXT=C2  [5:5/37-5:25/57] SCOPE: C 
+        TYPEDEF B  [5:5/37-5:25/57] TYPE: C::C2 TEXT=C2  [5:20/52-5:22/54] SCOPE: C 
         CLASS_FORWARD_DECLARATION PRIVATE C2 [5:13/45-5:22/54] ClassImpl$ClassMemberForwardDeclaration
 NAMESPACE DEFINITOIN N [8:1/62-10:2/102] SCOPE: forward_declarations.cc
-    TYPEDEF C  [9:5/80-9:25/100] TYPE: C3 TEXT=C3  [9:5/80-9:25/100] SCOPE: N 
+    TYPEDEF C  [9:5/80-9:25/100] TYPE: C3 TEXT=C3  [9:20/95-9:22/97] SCOPE: N 
     CLASS_FORWARD_DECLARATION C3 [9:13/88-9:22/97]
 
 ========== Dumping model of PROJECT DummyProject
-TYPEDEF A  [2:1/1-2:21/21] TYPE: C1 TEXT=C1  [2:1/1-2:21/21] SCOPE: $Global$ 
+TYPEDEF A  [2:1/1-2:21/21] TYPE: C1 TEXT=C1  [2:16/16-2:18/18] SCOPE: $Global$ 
 STRUCT C1 (C1 ) [2:1/1-2:21/21] lcurly=20 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
 CLASS C (C ) [4:1/23-6:2/59] lcurly=31 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        TYPEDEF B  [5:5/37-5:25/57] TYPE: C::C2 TEXT=C2  [5:5/37-5:25/57] SCOPE: C 
+        TYPEDEF B  [5:5/37-5:25/57] TYPE: C::C2 TEXT=C2  [5:20/52-5:22/54] SCOPE: C 
         CLASS_FORWARD_DECLARATION PRIVATE C2 [5:13/45-5:22/54] ClassImpl$ClassMemberForwardDeclaration
 NAMESPACE DEFINITIONS for N (N) 
     forward_declarations.cc  [8:1/62-10:2/102]
 NAMESPACE N (N) 
-    TYPEDEF C  [9:5/80-9:25/100] TYPE: C3 TEXT=C3  [9:5/80-9:25/100] SCOPE: N 
+    TYPEDEF C  [9:5/80-9:25/100] TYPE: C3 TEXT=C3  [9:20/95-9:22/97] SCOPE: N 
     STRUCT C3 (N::C3 ) [9:5/80-9:25/100] lcurly=99 SCOPE: N 
         BASE CLASSES:
         MEMBERS:
