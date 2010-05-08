@@ -241,7 +241,7 @@ import org.openide.util.CharSequences;
         }
         int i = CharSequenceUtils.lastIndexOf(id, "::"); //NOI18N
         if (i >= 0) {
-            id = id.subSequence(i+2, id.length()-1);
+            id = id.subSequence(i+2, id.length());
         }
         return NameCache.getManager().getString(id);
     }

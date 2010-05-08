@@ -36,12 +36,15 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.simpleunit.utils;
 
 import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
  *
@@ -84,4 +87,47 @@ public class CodeGenerationUtils {
         return paramDecl.toString();
     }
 
+    public static String generateFunctionCall(CsmFunction fun) {
+        StringBuilder functionCall = new StringBuilder(""); // NOI18N
+        String returnType = fun.getReturnType().getText().toString();
+        if (CsmKindUtilities.isMethod(fun)) {
+            CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(fun);
+            CsmClass cls = method.getContainingClass();
+            if (cls != null) {
+                String clsName = cls.getName().toString();
+                String clsVarName =
+                        Character.toLowerCase(clsName.charAt(0))
+                        + clsName.substring(1);
+                clsVarName = (clsVarName.equals(clsName)) ? '_' + clsVarName : clsVarName; // NOI18N
+                functionCall.append("    ") // NOI18N
+                        .append(cls.getQualifiedName()) // NOI18N
+                        .append(" ") // NOI18N
+                        .append(clsVarName); // NOI18N
+                if (!CsmKindUtilities.isConstructor(method)) {
+                    functionCall.append(";\n"); // NOI18N
+                    functionCall.append("    ") // NOI18N
+                            .append(((!"void".equals(returnType)) ? returnType + " result = " : "")) // NOI18N
+                            .append(clsVarName) // NOI18N
+                            .append(".") // NOI18N
+                            .append(method.getName()); // NOI18N
+                }
+            }
+        } else {
+            functionCall.append("    ").append(((!"void".equals(returnType)) ? returnType + " result = " : "")) // NOI18N
+                    .append(fun.getName()); // NOI18N
+        }
+        int i = 0;
+        functionCall.append("("); // NOI18N
+        Collection<CsmParameter> params = fun.getParameters();
+        for (CsmParameter param : params) {
+            if (i != 0) {
+                functionCall.append(", "); // NOI18N
+            }
+            String paramName = param.getName().toString();
+            functionCall.append(((paramName != null && !paramName.isEmpty()) ? paramName : "p" + i)); // NOI18N
+            i++;
+        }
+        functionCall.append(");\n"); // NOI18N
+        return functionCall.toString();
+    }
 }

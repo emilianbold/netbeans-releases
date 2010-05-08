@@ -395,6 +395,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 @Override
                 public void run() {
                     productParameter.setParameterValues(toParameterValues(bc.getProducts()));
+                    populateProductDetails();
                     if(isNetbeans) {
                         issueTypeParameter.setParameterValues(toParameterValues(bc.getIssueTypes()));
                     } else {

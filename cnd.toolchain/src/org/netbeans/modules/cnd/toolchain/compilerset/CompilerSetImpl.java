@@ -165,7 +165,11 @@ public final class CompilerSetImpl extends CompilerSet {
         copy.setEncoding(charset);
 
         for (Tool tool : getTools()) {
-            copy.addTool(tool.createCopy());
+            CompilerFlavor toolFlavor = tool.getFlavor();
+            if (toolFlavor == this.getCompilerFlavor()) {
+                toolFlavor = flavor;
+            }
+            copy.addTool(tool.createCopy(toolFlavor));
         }
 
         return copy;
@@ -475,6 +479,11 @@ public final class CompilerSetImpl extends CompilerSet {
 
                 @Override
                 public String getStripFlag() {
+                    return ""; // NOI18N
+                }
+
+                @Override
+                public String getPreferredCompiler() {
                     return ""; // NOI18N
                 }
             };
