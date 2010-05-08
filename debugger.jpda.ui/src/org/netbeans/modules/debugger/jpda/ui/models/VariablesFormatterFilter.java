@@ -45,6 +45,8 @@ import com.sun.jdi.InternalException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.VMDisconnectedException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,6 +58,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -73,6 +76,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -85,6 +89,11 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
 
     //private JPDADebugger debugger;
     private IOManager ioManager;
+    private VariablesFormatter[] formatters;
+    private VariablesFormatter[] formattersWithExpandTestCode;
+    private final Object formattersLock = new Object();
+    private Properties jpdaProperties;
+    private PropertyChangeListener formattersChangeListener;
     private boolean formattersLoopWarned = false;
     private final Map<ObjectVariable, Boolean> childrenExpandTest = new WeakHashMap<ObjectVariable, Boolean>();
     private final Set<ObjectVariable> childrenExpandTestProcessing = new HashSet<ObjectVariable>();
@@ -95,6 +104,12 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
     public VariablesFormatterFilter(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         //debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+    }
+
+    private IOManager getIOManager() {
+        if (ioManager != null) {
+            return ioManager;
+        }
         List lamls = lookupProvider.lookup
             (null, LazyActionsManagerListener.class);
         for (Iterator i = lamls.iterator (); i.hasNext ();) {
@@ -104,10 +119,51 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                 break;
             }
         }
+        return ioManager;
+    }
+
+    private VariablesFormatter[] getFormatters() {
+        synchronized (formattersLock) {
+            if (formatters == null) {
+                formattersChangeListener = new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if ("VariableFormatters".equals(evt.getPropertyName())) {
+                            synchronized (formattersLock) {
+                                formatters = null;
+                                formattersWithExpandTestCode = null;
+                                childrenExpandTest.clear();
+                            }
+                        }
+                    }
+                };
+                jpdaProperties = Properties.getDefault().getProperties("debugger.options.JPDA");
+                jpdaProperties.addPropertyChangeListener(WeakListeners.propertyChange(formattersChangeListener, jpdaProperties));
+                formatters = VariablesFormatter.loadFormatters();
+            }
+            return formatters;
+        }
+    }
+
+    private VariablesFormatter[] getFormattersWithExpandTestCode() {
+        synchronized (formattersLock) {
+            if (formattersWithExpandTestCode == null) {
+                VariablesFormatter[] formatters = getFormatters();
+                ArrayList<VariablesFormatter> formattersWithExpandTestCodeList = new ArrayList<VariablesFormatter>();
+                for (VariablesFormatter vf : formatters) {
+                    String expandTestCode = vf.getChildrenExpandTestCode();
+                    if (expandTestCode != null && expandTestCode.length() > 0) {
+                        formattersWithExpandTestCodeList.add(vf);
+                    }
+                }
+                formattersWithExpandTestCode = (VariablesFormatter[]) formattersWithExpandTestCodeList.toArray(new VariablesFormatter[]{});
+            }
+            return formattersWithExpandTestCode;
+        }
     }
     
     public String[] getSupportedTypes () {
-        VariablesFormatter[] formatters = VariablesFormatter.loadFormatters();
+        VariablesFormatter[] formatters = getFormatters();
         List<String> types = new ArrayList<String>();
         for (int i = 0; i < formatters.length; i++) {
             if (!formatters[i].isIncludeSubTypes()) {
@@ -121,7 +177,7 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
     }
     
     public String[] getSupportedAncestors () {
-        VariablesFormatter[] formatters = VariablesFormatter.loadFormatters();
+        VariablesFormatter[] formatters = getFormatters();
         List<String> types = new ArrayList<String>();
         for (int i = 0; i < formatters.length; i++) {
             if (formatters[i].isIncludeSubTypes()) {
@@ -301,16 +357,7 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
             public void run() {
                 boolean isLeaf = false;
                 try {
-                    VariablesFormatter[] formatters = new FormattersLoopControl().getFormatters();
-                    ArrayList<VariablesFormatter> formattersWithExpandTestCode = new ArrayList<VariablesFormatter>();
-                    for (VariablesFormatter vf : formatters) {
-                        String expandTestCode = vf.getChildrenExpandTestCode();
-                        if (expandTestCode != null && expandTestCode.length() > 0) {
-                            formattersWithExpandTestCode.add(vf);
-                        }
-                    }
-                    formatters = (VariablesFormatter[]) formattersWithExpandTestCode.toArray(new VariablesFormatter[]{});
-                    VariablesFormatter f = getFormatterForType(ct, formatters);
+                    VariablesFormatter f = getFormatterForType(ct, getFormattersWithExpandTestCode());
                     if (f != null) {
                         String expandTestCode = f.getChildrenExpandTestCode();
                         if ("false".equals(expandTestCode)) {   // Optimalization for constant
@@ -590,21 +637,19 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
 
     private final class FormattersLoopControl {
 
-        private VariablesFormatter[] formatters;
         private Map<String, VariablesFormatter> usedFormatters;
 
         public FormattersLoopControl() {
-            this.formatters = VariablesFormatter.loadFormatters();
             usedFormatters = new LinkedHashMap<String, VariablesFormatter>();
         }
 
         public VariablesFormatter[] getFormatters() {
-            return formatters;
+            return VariablesFormatterFilter.this.getFormatters();
         }
 
         public boolean canUse(VariablesFormatter f, String type) {
             boolean can = usedFormatters.put(type, f) == null;
-            if (!can && ioManager != null && !String.class.getName().equals(type)) {
+            if (!can && getIOManager() != null && !String.class.getName().equals(type)) {
                 if (!formattersLoopWarned) {
                     formattersLoopWarned = true;
                     ioManager.println(
