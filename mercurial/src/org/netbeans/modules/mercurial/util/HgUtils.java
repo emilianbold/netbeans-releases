@@ -98,6 +98,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.mercurial.HgException.HgCommandCanceledException;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
@@ -1405,6 +1406,14 @@ itor tabs #66700).
                 });
             }
         }
+    }
+
+    public static boolean isCanceled (Exception e) {
+        Throwable cause = e;
+        while (cause != null && !(cause instanceof HgCommandCanceledException)) {
+            cause = cause.getCause();
+        }
+        return cause instanceof HgCommandCanceledException;
     }
 
     /**

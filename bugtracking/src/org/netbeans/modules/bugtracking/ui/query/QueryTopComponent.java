@@ -633,18 +633,11 @@ public final class QueryTopComponent extends TopComponent
             return;
         }
         BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} start", new Object[] {repo.getDisplayName()} );
-        synchronized (LOCK) {
-            if(savedQueries != null) {
-                for (Query q : savedQueries) {
-                    q.removePropertyChangeListener(this);
-                }
-            }
-        }
         Query[] queries = repo.getQueries();
         final Query[] finQueries;
         synchronized (LOCK) {
+            Arrays.sort(queries);
             savedQueries = queries;
-            Arrays.sort(savedQueries);
             finQueries = savedQueries;
         }
 

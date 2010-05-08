@@ -59,8 +59,8 @@ import org.openide.ErrorManager;
     }
     
     @Override
-    public SunCCompiler createCopy() {
-        SunCCompiler copy = new SunCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
+    public SunCCompiler createCopy(CompilerFlavor flavor) {
+        SunCCompiler copy = new SunCCompiler(getExecutionEnvironment(), flavor, getKind(), getName(), getDisplayName(), getPath());
         if (isReady()) {
             copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
             copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());

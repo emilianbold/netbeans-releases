@@ -51,17 +51,17 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * @author Alexander Simon
  */
 /*package*/ final class GeneralTool extends Tool {
-    private GeneralTool(ExecutionEnvironment env, ToolKind kind, CompilerFlavor flavor, String name, String displayName, String path) {
+    private GeneralTool(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path); // NOI18N
     }
 
     @Override
-    public GeneralTool createCopy() {
-        return new GeneralTool(getExecutionEnvironment(), getKind(), getFlavor(),  getName(), getDisplayName(), getPath());
+    public GeneralTool createCopy(CompilerFlavor flavor) {
+        return new GeneralTool(getExecutionEnvironment(), flavor,  getKind(), getName(), getDisplayName(), getPath());
     }
 
-    public static GeneralTool create(ExecutionEnvironment env, ToolKind kind, CompilerFlavor flavor, String name, String displayName, String path) {
-        return new GeneralTool(env, kind, flavor, name, displayName, path);
+    public static GeneralTool create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+        return new GeneralTool(env, flavor, kind, name, displayName, path);
     }
 
     @Override

@@ -79,7 +79,7 @@ public class Tool {
         return null;
     }
 
-    public Tool createCopy() {
+    public Tool createCopy(CompilerFlavor flavor) {
         return new Tool(executionEnvironment, flavor, kind, name, displayName, path);
     }
 

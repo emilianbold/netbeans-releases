@@ -869,6 +869,11 @@ public final class ToolchainManagerImpl {
             c.setAttribute("flags", linker.getStripFlag()); // NOI18N
             element.appendChild(c);
         }
+        if (linker.getPreferredCompiler() != null) {
+            c = doc.createElement("preferred_compiler"); // NOI18N
+            c.setAttribute("compiler", linker.getPreferredCompiler()); // NOI18N
+            element.appendChild(c);
+        }
     }
 
     private void writeMake(Document doc, Element element, MakeDescriptor make) {
@@ -1103,6 +1108,7 @@ public final class ToolchainManagerImpl {
         String dynamicLibraryBasicFlag;
         String outputFileFlag;
         String stripFlag;
+        String preferredCompiler;
     }
 
     /**
@@ -1469,6 +1475,9 @@ public final class ToolchainManagerImpl {
                     return;
                 } else if (path.endsWith(".strip_flag")) { // NOI18N
                     l.stripFlag = getValue(attributes, "flags"); // NOI18N
+                    return;
+                } else if (path.endsWith(".preferred_compiler")) { // NOI18N
+                    l.preferredCompiler = getValue(attributes, "compiler"); // NOI18N
                     return;
                 }
                 return;
@@ -2408,6 +2417,11 @@ public final class ToolchainManagerImpl {
         @Override
         public String getStripFlag() {
             return l.stripFlag;
+        }
+
+        @Override
+        public String getPreferredCompiler() {
+            return l.preferredCompiler;
         }
     }
 

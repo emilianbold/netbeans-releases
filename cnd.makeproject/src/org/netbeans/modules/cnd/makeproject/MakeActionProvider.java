@@ -187,6 +187,7 @@ public final class MakeActionProvider implements ActionProvider {
     private static final String BUILD_TESTS_STEP = "build-tests"; // NOI18N
     private static final String TEST_STEP = "test"; // NOI18N
     private static final String TEST_SINGLE_STEP = "test-single"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Make Action RP", 1);// NOI18N
 
     public MakeActionProvider(MakeProject project) {
         this.project = project;
@@ -298,7 +299,7 @@ public final class MakeActionProvider implements ActionProvider {
                 }
                 // Execute actions
                 if (actionEvents.size() > 0 && !cancelled.get()) {
-                    RequestProcessor.getDefault().post(new NamedRunnable("Make Project Action Worker") { //NOI18N
+                    RP.post(new NamedRunnable("Make Project Action Worker") { //NOI18N
 
                         @Override
                         protected void runImpl() {

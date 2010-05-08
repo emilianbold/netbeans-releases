@@ -577,20 +577,8 @@ public class ConfigurationMakefileWriter {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String output = CppUtils.normalizeDriveLetter(compilerSet, getOutput(conf));
         LinkerConfiguration linkerConfiguration = conf.getLinkerConfiguration();
-        CompilerSet cs = conf.getCompilerSet().getCompilerSet();
-        output = CppUtils.normalizeDriveLetter(cs, output);
-        String command = ""; // NOI18N
-        if (linkerConfiguration.getTool().getModified()) {
-            command += linkerConfiguration.getTool().getValue() + " "; // NOI18N
-        }//	else if (conf.isDynamicLibraryConfiguration())
-        //	    command += "${CCC}" + " "; // NOI18N
-        else if (conf.hasCPPFiles(projectDescriptor)) {
-            command += "${LINK.cc}" + " "; // NOI18N
-        } else if (conf.hasFortranFiles(projectDescriptor)) {
-            command += "${LINK.f}" + " "; // NOI18N
-        } else {
-            command += "${LINK.c}" + " "; // NOI18N
-        }
+        output = CppUtils.normalizeDriveLetter(compilerSet, output);
+        String command = getLinkerTool(projectDescriptor, conf, conf.getLinkerConfiguration(), compilerSet);
         command += linkerConfiguration.getOptions() + " "; // NOI18N
         command += "${OBJECTFILES}" + " "; // NOI18N
         command += "${LDLIBSOPTIONS}" + " "; // NOI18N
@@ -601,7 +589,7 @@ public class ConfigurationMakefileWriter {
         for (LibraryItem lib : linkerConfiguration.getLibrariesConfiguration().getValue()) {
             String libPath = lib.getPath();
             if (libPath != null && libPath.length() > 0) {
-                bw.write(output + ": " + CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(cs, libPath)) + "\n\n"); // NOI18N
+                bw.write(output + ": " + CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, libPath)) + "\n\n"); // NOI18N
             }
         }
         bw.write(output + ": ${OBJECTFILES}\n"); // NOI18N
@@ -610,6 +598,28 @@ public class ConfigurationMakefileWriter {
             bw.write("\t${MKDIR} -p " + folders + "\n"); // NOI18N
         }
         bw.write("\t" + command + "\n"); // NOI18N
+    }
+
+    private static String getLinkerTool(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, LinkerConfiguration linkerConfiguration, CompilerSet compilerSet){
+        String getPreferredCompiler = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getPreferredCompiler();
+        if (linkerConfiguration.getTool().getModified()) {
+            return linkerConfiguration.getTool().getValue() + " "; // NOI18N
+        }
+        if (getPreferredCompiler != null) {
+            if ("c".equals(getPreferredCompiler)) { // NOI18N
+                return "${LINK.c}" + " "; // NOI18N
+            } else if ("cpp".equals(getPreferredCompiler)) { // NOI18N
+                return  "${LINK.cc}" + " "; // NOI18N
+            } else if ("fortran".equals(getPreferredCompiler)) { // NOI18N
+                return  "${LINK.f}" + " "; // NOI18N
+            }
+        }
+        if (conf.hasCPPFiles(projectDescriptor)) {
+            return  "${LINK.cc}" + " "; // NOI18N
+        } else if (conf.hasFortranFiles(projectDescriptor)) {
+            return  "${LINK.f}" + " "; // NOI18N
+        }
+        return "${LINK.c}" + " "; // NOI18N
     }
 
     public static void writeLinkTestTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
@@ -645,16 +655,7 @@ public class ConfigurationMakefileWriter {
 
                     CompilerSet cs = conf.getCompilerSet().getCompilerSet();
                     output = CppUtils.normalizeDriveLetter(cs, output);
-                    String command = ""; // NOI18N
-                    if (testLinkerConfiguration.getTool().getModified()) {
-                        command += testLinkerConfiguration.getTool().getValue() + " "; // NOI18N
-                    } else if (conf.hasCPPFiles(projectDescriptor)) {
-                        command += "${LINK.cc}" + " "; // NOI18N
-                    } else if (conf.hasFortranFiles(projectDescriptor)) {
-                        command += "${LINK.f}" + " "; // NOI18N
-                    } else {
-                        command += "${LINK.c}" + " "; // NOI18N
-                    }
+                    String command = getLinkerTool(projectDescriptor, conf, testLinkerConfiguration, compilerSet);
                     command += "-o " + output + " "; // NOI18N
                     command += "$^" + " "; // NOI18N
                     command += "${LDLIBSOPTIONS}" + " "; // NOI18N

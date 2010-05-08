@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.simpleunit.spi.wizard.AbstractUnitTestIterator;
+import org.netbeans.modules.cnd.simpleunit.utils.MakefileUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
@@ -120,7 +121,7 @@ public class TestCUnitIterator extends AbstractUnitTestIterator {
         Folder testsRoot = getTestsRootFolder(project);
         if(testsRoot == null) {
             testsRoot = createTestsRootFolder(project);
-            createTestTargets(project);
+            MakefileUtils.createTestTargets(project);
         }
         if(testsRoot != null) {
             Folder newFolder = testsRoot.addNewFolder(true, Folder.Kind.TEST);
