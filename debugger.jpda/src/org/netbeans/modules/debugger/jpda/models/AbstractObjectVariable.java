@@ -819,32 +819,18 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         ObjectReference or, 
         String parentID
     ) {
-        Value v;
-        try {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("STARTED : "+or+".getValue("+f+")");
-            }
-            v = ObjectReferenceWrapper.getValue (or, f);
-        } catch (ObjectCollectedExceptionWrapper ocex) {
-            v = null;
-        } catch (InternalExceptionWrapper ocex) {
-            v = null;
-        } catch (VMDisconnectedExceptionWrapper ocex) {
-            v = null;
-        }
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("FINISHED: "+or+".getValue("+f+") = "+v);
-        }
-        if ( (v == null) || (v instanceof ObjectReference))
+        if (f.signature().length() == 1) {
+            // Must be a primitive type or the void type
+            return new FieldVariable(getDebugger(), f, parentID, or);
+        } else {
             return new ObjectFieldVariable (
                 getDebugger(),
-                (ObjectReference) v,
                 f,
                 parentID,
                 JPDADebuggerImpl.getGenericSignature(f),
                 or
             );
-        return new FieldVariable (getDebugger(), (PrimitiveValue) v, f, parentID, or);
+        }
     }
     
     public List<ObjectVariable> getReferringObjects(long maxReferrers) {
