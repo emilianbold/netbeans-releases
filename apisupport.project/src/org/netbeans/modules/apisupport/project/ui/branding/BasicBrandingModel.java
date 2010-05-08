@@ -291,6 +291,10 @@ public class BasicBrandingModel {
         return null != suiteProps ? suiteProps.getProject() : project;
     }
 
+    public Set<File> getBrandableJars() {
+        return getBranding().getBrandableJars();
+    }
+
     private File getProjectDirectoryFile() {
         if( null == suiteProps ) {
             return FileUtil.toFile(project.getProjectDirectory());

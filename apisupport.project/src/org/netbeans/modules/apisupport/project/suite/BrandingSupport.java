@@ -291,6 +291,18 @@ public final class BrandingSupport {
             return NbPlatform.getDefaultPlatform();
         }
     }
+
+    public Set<File> getBrandableJars() {
+        NbPlatform platf = getActivePlatform();
+        Set<ModuleEntry> modules = platf.getModules();
+        Set<File> jars = new HashSet<File>(modules.size());
+        for (ModuleEntry m : modules) {
+            File j = m.getJarLocation();
+            if (null!=j)
+                jars.add(j);
+        }
+        return jars;
+    }
     
     public void brandFile(final BrandedFile bFile) throws IOException {
         if (!bFile.isModified()) return;
