@@ -460,9 +460,11 @@ import org.openide.windows.OutputListener;
     private final class ClearAction extends AbstractAction {
         public ClearAction() {
             super(Catalog.get("CTL_Clear"));	// NOI18N
+	    /* OLD
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_E,
                                                            InputEvent.ALT_MASK);
             putValue(ACCELERATOR_KEY, accelerator);
+	    */
         }
 
 	@Override
@@ -476,8 +478,8 @@ import org.openide.windows.OutputListener;
     private final class CloseAction extends AbstractAction {
         public CloseAction() {
             super(Catalog.get("CTL_Close"));	// NOI18N
-            KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_F4,
-                                                           InputEvent.ALT_MASK);
+            KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_W,
+                                                           InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK);
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
@@ -498,7 +500,7 @@ import org.openide.windows.OutputListener;
         public CopyAction() {
             super(Catalog.get("CTL_Copy"));	// NOI18N
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_C,
-                                                           InputEvent.ALT_MASK);
+                                                           InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK);
             // System.out.printf("Accelerator for Copy: %s\n", accelerator);
             putValue(ACCELERATOR_KEY, accelerator);
         }
@@ -515,7 +517,7 @@ import org.openide.windows.OutputListener;
         public PasteAction() {
             super(Catalog.get("CTL_Paste"));	// NOI18N
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_V,
-                                                           InputEvent.ALT_MASK);
+                                                           InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK);
             // System.out.printf("Accelerator for Paste: %s\n", accelerator);
             putValue(ACCELERATOR_KEY, accelerator);
         }
@@ -531,10 +533,11 @@ import org.openide.windows.OutputListener;
     private final class FindAction extends AbstractAction {
         public FindAction() {
             super(Catalog.get("CTL_Find"));	// NOI18N
+	    /* LATER
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_F,
                                                            InputEvent.ALT_MASK);
-            // System.out.printf("Accelerator for Find: %s\n", accelerator);
             putValue(ACCELERATOR_KEY, accelerator);
+	    */
         }
 
 	@Override
