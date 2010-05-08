@@ -478,7 +478,11 @@ implements FileNameMapper, URIResolver, EntityResolver {
                 final String prfx = "nbresloc:";
                 if (!url.startsWith(prfx)) {
                     if (localAllowed) {
-                        copy.add(".*/" + url);
+                        if (url.startsWith("/")) {
+                            copy.add(url.substring(1));
+                        } else {
+                            copy.add(".*/" + url);
+                        }
                         return;
                     } else {
                         throw new BuildException("Unknown urlvalue was: " + url);
