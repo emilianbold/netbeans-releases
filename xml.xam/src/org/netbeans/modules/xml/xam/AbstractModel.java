@@ -73,6 +73,8 @@ import org.openide.util.RequestProcessor;
 public abstract class AbstractModel<T extends Component<T>>
         implements Model<T>, UndoableEditListener {
     
+    private static Logger logger = Logger.getLogger(AbstractModel.class.getName());
+
     private PropertyChangeSupport pcs;
     protected ModelUndoableEditSupport ues;
     private State status;
@@ -690,12 +692,21 @@ public abstract class AbstractModel<T extends Component<T>>
     }
     
     void runAutoSync() {
+        if (logger.getLevel() == Level.FINEST) {
+            logger.finest("Initiate auto sync for XAM model: " + toString()); // NOI18N
+        }
+        //
         prepareSync();
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
                 try {
                     sync();
+                    //
+                    if (logger.getLevel() == Level.FINEST) {
+                        logger.finest("Auto sync is finished for XAM model: " + 
+                                AbstractModel.this.toString()); // NOI18N
+                    }
                 } catch(Exception ioe) {
                     // just have to be quiet during background autosync
                     // sync() should have handled all faults
@@ -703,6 +714,7 @@ public abstract class AbstractModel<T extends Component<T>>
             }
         });
     }
+
 }
 
 

@@ -42,21 +42,27 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.EventObject;
 import java.util.Set;
 import javax.swing.DefaultCellEditor;
+import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+
 
 /**
  * Cell Editor for shortcuts column
@@ -64,9 +70,24 @@ import org.openide.util.NbBundle;
  */
 public class ButtonCellEditor extends DefaultCellEditor {
 
-    private Object action;
-    private KeymapViewModel model;
-    private String orig;
+    private Object              action;
+    private KeymapViewModel     model;
+    private String              orig;
+    private FocusManager        focusManager;
+
+    private PropertyChangeListener
+                                focusListener = new PropertyChangeListener () {
+        @Override
+        public void propertyChange (PropertyChangeEvent evt) {
+            Component c = focusManager.getFocusOwner ();
+            if (c != null &&
+                !SwingUtilities.isDescendingFrom (c, cell)
+            ) {
+                cancelCellEditing();
+                return;
+            }
+        }
+    };
 
     private KeyAdapter escapeAdapter = new KeyAdapter() {
 
@@ -82,7 +103,8 @@ public class ButtonCellEditor extends DefaultCellEditor {
 
     private static ShortcutCellPanel cell = new ShortcutCellPanel();
 
-    public ButtonCellEditor(KeymapViewModel model) {
+
+    public ButtonCellEditor (KeymapViewModel model) {
         super(new ShortcutTextField());
         this.model = model;
     }
@@ -140,6 +162,10 @@ public class ButtonCellEditor extends DefaultCellEditor {
         fireEditingStopped();
         setBorderEmpty();
         model.update();
+        if (focusManager != null) {
+            focusManager.removePropertyChangeListener (focusListener);
+            focusManager = null;
+        }
         return true;
     }
 
@@ -148,6 +174,10 @@ public class ButtonCellEditor extends DefaultCellEditor {
         cell.getTextField().setText(orig);
         fireEditingCanceled();
         setBorderEmpty();
+        if (focusManager != null) {
+            focusManager.removePropertyChangeListener (focusListener);
+            focusManager = null;
+        }
     }
 
     @Override
@@ -163,6 +193,8 @@ public class ButtonCellEditor extends DefaultCellEditor {
         if(!Arrays.asList(textField.getKeyListeners()).contains(escapeAdapter)) {
             textField.addKeyListener(escapeAdapter);
         }
+        focusManager = FocusManager.getCurrentManager ();
+        focusManager.addPropertyChangeListener (focusListener);
         return cell;
     }
 
@@ -203,5 +235,4 @@ public class ButtonCellEditor extends DefaultCellEditor {
     private void setBorderEmpty() {
         ((JComponent) getComponent()).setBorder(new EmptyBorder(0, 0, 0, 0));
     }
-
 }

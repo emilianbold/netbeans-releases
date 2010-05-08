@@ -98,8 +98,12 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         annotationsCombo.addFocusListener(this);
         binaryOpsCombo.putClientProperty(OPTION_ID, wrapBinaryOps);
         binaryOpsCombo.addFocusListener(this);
+        afterBinaryOpsCheckBox.putClientProperty(OPTION_ID, wrapAfterBinaryOps);
+        afterBinaryOpsCheckBox.addFocusListener(this);
         ternaryOpsCombo.putClientProperty(OPTION_ID, wrapTernaryOps);
         ternaryOpsCombo.addFocusListener(this);
+        afterTernaryOpsCheckBox.putClientProperty(OPTION_ID, wrapAfterTernaryOps);
+        afterTernaryOpsCheckBox.addFocusListener(this);
         assignOpsCombo.putClientProperty(OPTION_ID, wrapAssignOps);
         assignOpsCombo.addFocusListener(this);
     }
@@ -171,8 +175,10 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         annotationsCombo = new javax.swing.JComboBox();
         binaryOpsLabel = new javax.swing.JLabel();
         binaryOpsCombo = new javax.swing.JComboBox();
+        afterBinaryOpsCheckBox = new javax.swing.JCheckBox();
         ternaryOpsLabel = new javax.swing.JLabel();
         ternaryOpsCombo = new javax.swing.JComboBox();
+        afterTernaryOpsCheckBox = new javax.swing.JCheckBox();
         assignOpsLabel = new javax.swing.JLabel();
         assignOpsCombo = new javax.swing.JComboBox();
         spacerPanel1 = new javax.swing.JPanel();
@@ -442,6 +448,16 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(binaryOpsCombo, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(afterBinaryOpsCheckBox, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_afeterBinaryOps")); // NOI18N
+        afterBinaryOpsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        afterBinaryOpsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        afterBinaryOpsCheckBox.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 8, 6, 0);
+        panel1.add(afterBinaryOpsCheckBox, gridBagConstraints);
+
         ternaryOpsLabel.setLabelFor(ternaryOpsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(ternaryOpsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_ternaryOps")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -455,6 +471,16 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(ternaryOpsCombo, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(afterTernaryOpsCheckBox, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_afterTernaryOps")); // NOI18N
+        afterTernaryOpsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        afterTernaryOpsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        afterTernaryOpsCheckBox.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 8, 6, 0);
+        panel1.add(afterTernaryOpsCheckBox, gridBagConstraints);
 
         assignOpsLabel.setLabelFor(assignOpsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(assignOpsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_assignOps")); // NOI18N
@@ -484,6 +510,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox afterBinaryOpsCheckBox;
+    private javax.swing.JCheckBox afterTernaryOpsCheckBox;
     private javax.swing.JComboBox annotationArgsCombo;
     private javax.swing.JLabel annotationArgsLabel;
     private javax.swing.JComboBox annotationsCombo;
