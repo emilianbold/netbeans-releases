@@ -49,13 +49,11 @@ import java.awt.event.MouseListener;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.AbstractButton;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -69,8 +67,8 @@ import javax.swing.table.TableColumn;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+
 
 /**
  *
@@ -91,6 +89,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
     private Popup searchPopup;
     private SpecialkeyPanel specialkeyList;
 
+
     /** Creates new form KeymapPanel */
     public KeymapPanel() {
         sorter = new TableSorter(getModel());
@@ -102,6 +101,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         actionsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         ActionListener al = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 getModel().setSearchText(searchField.getText());
                 getModel().update();
@@ -113,6 +113,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
 
         searchField.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 searchSCField.setText("");
                 ((ShortcutListener)searchSCField.getKeyListeners()[0]).clear();
@@ -122,12 +123,14 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
                 searchDelayTimer.restart();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 if (searchField.getText().length() > 3)
                     searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_LONG);
                 searchDelayTimer.restart();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 searchSCField.setText("");
                 getModel().setSearchText(searchField.getText());
@@ -138,6 +141,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         searchSCField.addKeyListener(new ShortcutListener(false));
 
         ActionListener al2 = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 narrowByShortcut();
             }
@@ -147,15 +151,18 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         searchDelayTimer2.setRepeats(false);
         searchSCField.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 searchField.setText("");
                 searchDelayTimer2.restart();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 searchDelayTimer2.restart();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 searchDelayTimer2.restart();
             }
@@ -471,6 +478,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
     // End of variables declaration//GEN-END:variables
 
 
+    @Override
     public Popup getPopup() {
         return searchPopup;
     }
@@ -483,19 +491,24 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
             this.table = table;
         }
 
+        @Override
         public void mouseClicked(MouseEvent e) {
             forwardEvent(e);
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
         }
 
@@ -527,24 +540,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         return NbBundle.getMessage (KeymapPanel.class, key);
     }
 
-    private static void loc (Component c, String key) {
-        if (!(c instanceof JLabel)) {
-            c.getAccessibleContext ().setAccessibleName (loc ("AN_" + key));
-            c.getAccessibleContext ().setAccessibleDescription (loc ("AD_" + key));
-        }
-        if (c instanceof AbstractButton) {
-            Mnemonics.setLocalizedText (
-                (AbstractButton) c,
-                loc ("CTL_" + key)
-            );
-        } else {
-            Mnemonics.setLocalizedText (
-                (JLabel) c,
-                loc ("CTL_" + key)
-            );
-        }
-    }
-
+    @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
 

@@ -57,6 +57,7 @@ import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.java.*;
@@ -585,9 +586,16 @@ public class JavaKit extends NbEditorKit {
             if (BraceCompletion.posWithinString(doc, dotPos)) {
                 try {
                     doc.insertString(dotPos, "\" + \"", null); //NOI18N
-                    dotPos += 3;
-                    caret.setDot(dotPos);
-                    return new Integer(dotPos);
+                    CodeStyle cs = CodeStyle.getDefault(doc);
+                    if (cs.wrapAfterBinaryOps()) {
+                        dotPos += 3;
+                        caret.setDot(dotPos);
+                        return new Integer(1);
+                    } else {
+                        dotPos += 1;
+                        caret.setDot(dotPos);
+                        return new Integer(3);
+                    }
                 } catch (BadLocationException ex) {
                 }
             } else {
@@ -614,7 +622,7 @@ public class JavaKit extends NbEditorKit {
                 if (cookie instanceof Integer) {
                     // integer
                     int nowDotPos = caret.getDot();
-                    caret.setDot(nowDotPos+1);
+                    caret.setDot(nowDotPos+((Integer)cookie).intValue());
                 }
             }
         }
