@@ -100,7 +100,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     protected FunctionScopeImpl(Scope inScope, final BaseFunctionElement element, PhpElementKind kind) {
         super(inScope, element, kind);
         this.paremeters = element.getParameters();
-        this.returnType =  element.asString(PrintAs.ReturnTypes);
+        this.returnType =  element.asString(PrintAs.ReturnSemiTypes);
     }
 
     public static FunctionScopeImpl createElement(Scope scope, LambdaFunctionDeclaration node) {

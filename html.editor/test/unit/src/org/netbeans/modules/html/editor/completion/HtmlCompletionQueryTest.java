@@ -68,7 +68,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
 
     public static Test xsuite() throws IOException, BadLocationException {
 	TestSuite suite = new TestSuite();
-        suite.addTest(new HtmlCompletionQueryTest("testEndTagsCompletionOfUndeclaredTags"));
+        suite.addTest(new HtmlCompletionQueryTest("testIssue177347"));
         return suite;
     }
 
@@ -353,11 +353,12 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         assertItems("<x:out><div><x:in></div></x:in></x|", arr("x:out"), Match.CONTAINS); //crossed
         assertItems("<div><x:out><div><x:in></x:in></div></x:| </div>", arr("x:out"), Match.CONTAINS);
         assertItems("<p><x:out><x:in></x:in></|", arr("x:in"), Match.DOES_NOT_CONTAIN);
-
-
-
-//        assertCompletedText("<x:out>| ", "div", "<div| ");
     }
+
+    public void testIssue177347 () throws BadLocationException, ParseException {
+//        assertItems("<td><a h|</td>  ", arr("href"), Match.CONTAINS);
+    }
+
 
     //helper methods ------------
 

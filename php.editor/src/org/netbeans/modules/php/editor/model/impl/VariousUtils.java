@@ -392,7 +392,7 @@ public class VariousUtils {
                     } else if (operation.startsWith(VariousUtils.METHOD_TYPE_PREFIX)) {
                         List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
                         for (TypeScope tScope : oldRecentTypes) {
-                            Collection<? extends MethodScope> inheritedMethods = CachingSupport.getInheritedMethods(tScope, frag, varScope, PhpModifiers.ALL_FLAGS);
+                            Collection<? extends MethodScope> inheritedMethods = CachingSupport.getMethods(tScope, frag, varScope, PhpModifiers.ALL_FLAGS);
                             for (MethodScope meth : inheritedMethods) {
                                 newRecentTypes.addAll(meth.getReturnTypes(true));
                             }
@@ -437,7 +437,7 @@ public class VariousUtils {
                                     cls = ModelUtils.getFirst(cls.getSuperClasses());
                                     if (cls == null) continue;
                                 }
-                                Collection<? extends MethodScope> inheritedMethods = CachingSupport.getInheritedMethods(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
+                                Collection<? extends MethodScope> inheritedMethods = CachingSupport.getMethods(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
                                 for (MethodScope meth : inheritedMethods) {
                                    newRecentTypes.addAll(meth.getReturnTypes(true));
                                 }
@@ -582,7 +582,7 @@ public class VariousUtils {
                         if (cls == null) {
                             return emptyStack;
                         }
-                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getInheritedMethods(cls, frag, topScope, PhpModifiers.ALL_FLAGS));
+                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getMethods(cls, frag, topScope, PhpModifiers.ALL_FLAGS));
                         if (meth == null) {
                             return emptyStack;
                         } else {
