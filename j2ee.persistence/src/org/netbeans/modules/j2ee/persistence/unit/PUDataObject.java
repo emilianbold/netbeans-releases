@@ -153,12 +153,13 @@ public class PUDataObject extends XmlMultiViewDataObject {
             }
         } else {
             try{
+                String oldVersion = persistence.getVersion();
                 java.io.InputStream is = getEditorSupport().getInputStream();
                 String version=Persistence.VERSION_1_0;
                 try {
                     version=JPAParseUtils.getVersion(is);
                 } catch (SAXException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOG.log(Level.INFO, null, ex);//persistence.xml may be corrupted, but no need to show exception dialog
                 }
                 finally
                 {
@@ -169,11 +170,11 @@ public class PUDataObject extends XmlMultiViewDataObject {
                 try {
                     if(Persistence.VERSION_2_0.equals(version))
                     {
-                        persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.Persistence.createGraph(is);
+                        newPersistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.Persistence.createGraph(is);
                     }
                     else//1.0 - default
                     {
-                        persistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence.createGraph(is);
+                        newPersistence = org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence.createGraph(is);
                     }
                 } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
                     LOG.log(Level.INFO, null, ex);
@@ -185,7 +186,12 @@ public class PUDataObject extends XmlMultiViewDataObject {
                     } catch (IllegalArgumentException iae) {
                         // see #104180
                         LOG.log(Level.FINE, "IAE thrown during merge, see #104180.", iae); //NOI18N
-                        return false;
+                        if(!persistence.getVersion().equals(newPersistence.getVersion())){//version may be changed, just replace instead of merge then, see #173233 also
+                            persistence = null;
+                            PersistenceMetadata.getDefault().refresh(getPrimaryFile());
+                            return true;
+                        }
+                        else return false;
                     }
                 }
             } catch (IOException ioe){

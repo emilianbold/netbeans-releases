@@ -65,10 +65,12 @@ public class FileBufferFile extends AbstractFileBuffer {
         super(absPath);
     }
     
+    @Override
     public String getText() throws IOException {
         return asString();
     }
     
+    @Override
     public String getText(int start, int end) {
         try {
             String b = asString();
@@ -99,16 +101,20 @@ public class FileBufferFile extends AbstractFileBuffer {
     
     private synchronized String asString() throws IOException {
         byte[] b;
+        long newLastModified = lastModified();
         if( cachedString != null  ) {
             Object o = cachedString.get();
-            if( o != null && (lastModifiedWhenCachedString == lastModified())) {
+            if( o != null && (lastModifiedWhenCachedString == newLastModified)) {
                 return (String) o;
             }
         }
         // either bytes == null or bytes.get() == null
         b = doGetBytes();
         String str = new String(b, getEncoding());
-        lastModifiedWhenCachedString = lastModified();
+        if (lastModifiedWhenCachedString != newLastModified) {
+            clearLineCache();
+        }
+        lastModifiedWhenCachedString = newLastModified;
         cachedString = new SoftReference<String>(str);
         return str;
     }
@@ -172,18 +178,22 @@ public class FileBufferFile extends AbstractFileBuffer {
         return tgtOffset;
     }
     
+    @Override
     public InputStream getInputStream() throws IOException {
         return new BufferedInputStream(CndFileUtils.getInputStream(getAbsolutePath()), TraceFlags.BUF_SIZE);
     }
     
+    @Override
     public int getLength() {
         return (int) getFile().length();
     }
     
+    @Override
     public boolean isFileBased() {
         return true;
     }
     
+    @Override
     public long lastModified() {
 	return getFile().lastModified();
     }

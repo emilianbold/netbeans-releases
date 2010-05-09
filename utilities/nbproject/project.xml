@@ -248,6 +248,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.cnd.utils</friend>
                 <friend>org.netbeans.modules.utilities.project</friend>
                 <friend>org.netbeans.modules.visualweb.gravy</friend>
                 <package>org.netbeans.modules.openfile</package>

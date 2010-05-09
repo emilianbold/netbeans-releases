@@ -182,9 +182,11 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             rbNewLibrary.setSelected(true);
             panel.setLibrary(null);
         } else if (items.size() != 0 &&  panel.getLibraryType() == JSFConfigurationPanel.LibraryType.USED){
-            rbRegisteredLibrary.setEnabled(true);
+            if (!customizer) {
+                rbRegisteredLibrary.setEnabled(true);
+                cbLibraries.setEnabled(true);
+            }
             rbRegisteredLibrary.setSelected(true);
-            cbLibraries.setEnabled(true);
             if (jsfLibraries.size() > 0){
                 panel.setLibrary(jsfLibraries.get(cbLibraries.getSelectedIndex()).getLibrary());
             }
@@ -642,6 +644,21 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
             return true;
         return false;
     }
+    private boolean isWebLogic(String serverInstanceID) {
+        if (serverInstanceID == null || "".equals(serverInstanceID)) {
+            return false;
+        }
+        String shortName;
+        try {
+            shortName = Deployment.getDefault().getServerInstance(serverInstanceID).getServerID();
+            if (shortName != null && shortName.toLowerCase().startsWith("weblogic")) {  //NOI18N
+                return true;
+            }
+        } catch (InstanceRemovedException ex) {
+            LOG.log(Level.WARNING, "Server Instance was removed", ex); //NOI18N
+        }
+        return false;
+    }
     
     void update() {
         Properties properties = panel.getController().getProperties();
@@ -679,6 +696,13 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                 boolean isJSF12 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
                 boolean isJSF20 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
 
+                //XXX: 182282: disable bundled lib in WebLogic.
+                if (isWebLogic(serverInstanceID)) {
+                    isJSF = false;
+                    isJSF12 = false;
+                    isJSF20 = false;
+                }
+
                 String libName = null; //NOI18N
                 if (isJSF20) {
                     libName = "JSF 2.0"; //NOI18N
@@ -688,17 +712,17 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                     libName = "JSF 1.1"; //NOI18N
                 } else {
                     rbNoneLibrary.setVisible(false);
-                    Library profferedLibrary = null;
+                    Library preferredLibrary = null;
                     if (profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB)) {
-                        profferedLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_2_0_NAME);
+                        preferredLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_2_0_NAME);
                     } else {
-                        profferedLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_1_2_NAME);
+                        preferredLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_1_2_NAME);
                     }
 
-                    if (profferedLibrary != null) {
+                    if (preferredLibrary != null) {
                         // if there is a proffered library, select
                         rbRegisteredLibrary.setSelected(true);
-                        cbLibraries.setSelectedItem(profferedLibrary.getDisplayName());
+                        cbLibraries.setSelectedItem(preferredLibrary.getDisplayName());
                         updateLibrary();
                     } else {
                         // there is not a proffered library -> select one or select creating new one
@@ -708,6 +732,9 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                     }
                 }
                 if (libName != null) {
+                    if (!rbNoneLibrary.isVisible()) {
+                        rbNoneLibrary.setVisible(true);
+                    }
                     rbNoneLibrary.setText(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Any_Library", libName)); //NOI18N
                     rbNoneLibrary.setSelected(true);
                     if (panel !=null)

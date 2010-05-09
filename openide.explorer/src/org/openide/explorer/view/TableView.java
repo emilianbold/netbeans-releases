@@ -40,6 +40,7 @@
  */
 package org.openide.explorer.view;
 
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -52,13 +53,16 @@ import java.util.Arrays;
 import java.util.EventObject;
 import java.util.Properties;
 import javax.swing.AbstractButton;
+import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import org.netbeans.swing.etable.ETable;
@@ -653,6 +657,7 @@ public class TableView extends JScrollPane {
         /**
          */
         private class TableViewETableColumn extends ETableColumn {
+            private String tooltip;
             public TableViewETableColumn(int index) {
                 super(index, TableViewETable.this);
             }
@@ -664,6 +669,51 @@ public class TableView extends JScrollPane {
                     return ntm.isComparableColumn(getModelIndex());
                 }
                 return true;
+            }
+
+            final String getShortDescription (String defaultValue) {
+                TableModel model = getModel();
+                if (model.getRowCount() <= 0) {
+                    return null;
+                }
+                if (0 == getModelIndex()) {
+                    // 1st column
+                    return defaultValue;
+                }
+
+                if (model instanceof NodeTableModel) {
+                    NodeTableModel ntm = (NodeTableModel)model;
+                    Node.Property propertyForColumn = ntm.propertyForColumn(getModelIndex());
+                    return propertyForColumn.getShortDescription();
+                }
+                return defaultValue;
+            }
+
+            @Override
+            protected TableCellRenderer createDefaultHeaderRenderer() {
+                TableCellRenderer orig = super.createDefaultHeaderRenderer();
+                TableViewHeaderRenderer ovohr = new TableViewHeaderRenderer(orig);
+                return ovohr;
+            }
+
+            /** This is here to compute and set the header tooltip. */
+            class TableViewHeaderRenderer implements TableCellRenderer {
+                private TableCellRenderer orig;
+                public TableViewHeaderRenderer(TableCellRenderer delegate) {
+                    orig = delegate;
+                }
+                @Override
+                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                    Component oc = orig.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                    if (tooltip == null) {
+                        tooltip = getShortDescription(value.toString());
+                    }
+                    if ((tooltip != null) && (oc instanceof JComponent)) {
+                        JComponent jc = (JComponent)oc;
+                        jc.setToolTipText(tooltip);
+                    }
+                    return oc;
+                }
             }
         }
     }

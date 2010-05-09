@@ -106,6 +106,7 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
         return true;
     }
 
+    @Override
     public Object getValueAt(int row, int col) {
         Object res = null;
 
@@ -125,6 +126,7 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
         return res;
     }
 
+    @Override
     public int getColumnCount() {
         return 2;
     }
@@ -206,6 +208,7 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
     public void setFilter(final String filter, final Runnable runAfterwards) {
         assert filter != null;
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 TransferFileTableModel.this.filter = filter.toLowerCase();
                 fireFilterChange();
@@ -253,6 +256,7 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
         return retval;
     }
 
+    @Override
     public int getRowCount() {
         return getVisibleFileUnits().size();
     }
@@ -327,6 +331,7 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
             this.sortAscending = sortAscending;
         }
 
+        @Override
         public int compare(TransferFileUnit o1, TransferFileUnit o2) {
             TransferFileUnit unit1 = sortAscending ? o1 : o2;
             TransferFileUnit unit2 = sortAscending ? o2 : o1;
@@ -348,6 +353,7 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
             this.sortAscending = sortAscending;
         }
 
+        @Override
         public int compare(TransferFileUnit o1, TransferFileUnit o2) {
             TransferFileUnit unit1 = sortAscending ? o1 : o2;
             TransferFileUnit unit2 = sortAscending ? o2 : o1;

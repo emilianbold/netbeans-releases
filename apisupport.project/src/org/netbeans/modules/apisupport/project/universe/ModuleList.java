@@ -201,8 +201,8 @@ public final class ModuleList {
         if (data == null) {
             throw new IOException("Not an NBM project in " + basedir); // NOI18N
         }
-        boolean suiteComponent = Util.findElement(data, "suite-component", NbModuleProject.NAMESPACE_SHARED) != null; // NOI18N
-        boolean standalone = Util.findElement(data, "standalone", NbModuleProject.NAMESPACE_SHARED) != null; // NOI18N
+        boolean suiteComponent = XMLUtil.findElement(data, "suite-component", NbModuleProject.NAMESPACE_SHARED) != null; // NOI18N
+        boolean standalone = XMLUtil.findElement(data, "standalone", NbModuleProject.NAMESPACE_SHARED) != null; // NOI18N
         assert !(suiteComponent && standalone) : basedir;
         if (suiteComponent) {
             PropertyEvaluator eval = parseProperties(basedir, null, NbModuleType.SUITE_COMPONENT, "irrelevant"); // NOI18N
@@ -435,6 +435,7 @@ public final class ModuleList {
         for (ModuleEntry known : entries.values()) {
             knownProjects.add(known.getSourceLocation());
         }
+        Map<String,ModuleEntry> _entries = new HashMap<String,ModuleEntry>(entries);
         StringTokenizer tok = new StringTokenizer(clusterList, ", "); // NOI18N
         while (tok.hasMoreTokens()) {
             String clusterName = tok.nextToken();
@@ -447,10 +448,11 @@ public final class ModuleList {
                 String module = tok2.nextToken();
                 File basedir = new File(home, module.replace('/', File.separatorChar));
                 if (!knownProjects.contains(basedir)) { // we may already have scanned some
-                    scanPossibleProject( basedir, entries, NbModuleType.NETBEANS_ORG, home, nbdestdir, module);
+                    scanPossibleProject(basedir, _entries, NbModuleType.NETBEANS_ORG, home, nbdestdir, module);
                 }
             }
         }
+        entries = _entries;
         LOG.log(Level.FINER, "scanning NetBeans.org stable sources finished");
         lazyNetBeansOrgList = 1;
     }
@@ -526,23 +528,23 @@ public final class ModuleList {
         }
         assert root != null ^ type != NbModuleType.NETBEANS_ORG;
         assert path != null ^ type != NbModuleType.NETBEANS_ORG;
-        String cnb = Util.findText(Util.findElement(data, "code-name-base", NbModuleProject.NAMESPACE_SHARED)); // NOI18N
+        String cnb = XMLUtil.findText(XMLUtil.findElement(data, "code-name-base", NbModuleProject.NAMESPACE_SHARED)); // NOI18N
         PropertyEvaluator eval = parseProperties(basedir, root, type, cnb);
         String module = eval.getProperty("module.jar"); // NOI18N
         // Cf. ParseProjectXml.computeClasspath:
         StringBuffer cpextra = new StringBuffer();
-        for (Element ext : Util.findSubElements(data)) {
+        for (Element ext : XMLUtil.findSubElements(data)) {
             if (!ext.getLocalName().equals("class-path-extension")) { // NOI18N
                 continue;
             }
-            Element binaryOrigin = Util.findElement(ext, "binary-origin", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+            Element binaryOrigin = XMLUtil.findElement(ext, "binary-origin", NbModuleProject.NAMESPACE_SHARED); // NOI18N
             String text;
             if (binaryOrigin != null) {
-                text = Util.findText(binaryOrigin);
+                text = XMLUtil.findText(binaryOrigin);
             } else {
-                Element runtimeRelativePath = Util.findElement(ext, "runtime-relative-path", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+                Element runtimeRelativePath = XMLUtil.findElement(ext, "runtime-relative-path", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                 assert runtimeRelativePath != null : "Malformed <class-path-extension> in " + basedir;
-                String reltext = Util.findText(runtimeRelativePath);
+                String reltext = XMLUtil.findText(runtimeRelativePath);
                 // XXX assumes that module.jar is not overridden independently of module.jar.dir:
                 text = "${cluster}/${module.jar.dir}/" + reltext; // NOI18N
             }
@@ -682,6 +684,7 @@ public final class ModuleList {
             List<ModuleList> lists = new ArrayList<ModuleList>();
             lists.add(findOrCreateModuleListFromSuiteWithoutBinaries(root, nbdestdir, eval));
             lists.addAll(findOrCreateModuleListsFromClusterPath(clup, nbdestdir));
+            // XXX should this also omit excluded modules? or should that be done only in e.g. LayerUtils.getPlatformJarsForSuiteComponentProject?
             return merge(lists.toArray(new ModuleList[lists.size()]), root);
         } else {
             return merge(new ModuleList[]{
@@ -909,12 +912,15 @@ public final class ModuleList {
             }
             scanJars(dir, ci, nbDestDir, cluster, entries, registerEntry, jars);
         }
-        File configs = new File(new File(cluster, "config"), "Modules");
+        File configs = new File(new File(cluster, "config"), "Modules"); // NOI18N
         File[] xmls = configs.listFiles();
         if (xmls != null) {
             XPathExpression xpe = null;
             for (File xml : xmls) {
                 String n = xml.getName();
+                if (!n.endsWith(".xml")) { // NOI18N
+                    continue;
+                }
                 n = n.substring(0, n.length() - 4).replace('-', '.');
                 if (entries.get(n) != null) {
                     continue;
@@ -962,9 +968,9 @@ public final class ModuleList {
             } catch (SAXException e) {
                 throw (IOException) new IOException(e.toString()).initCause(e);
             }
-            for (Element moduleVersion : Util.findSubElements(doc.getDocumentElement())) {
+            for (Element moduleVersion : XMLUtil.findSubElements(doc.getDocumentElement())) {
                 if (moduleVersion.getTagName().equals("module_version") && moduleVersion.getAttribute("last").equals("true")) { // NOI18N
-                    for (Element fileEl : Util.findSubElements(moduleVersion)) {
+                    for (Element fileEl : XMLUtil.findSubElements(moduleVersion)) {
                         if (fileEl.getTagName().equals("file")) { // NOI18N
                             String name = fileEl.getAttribute("name"); // NOI18N
                             File f = new File(cluster, name.replace('/', File.separatorChar));
@@ -1002,18 +1008,18 @@ public final class ModuleList {
             throw (IOException) new IOException(projectXml + ": " + e.toString()).initCause(e); // NOI18N
         }
         Element docel = doc.getDocumentElement();
-        Element type = Util.findElement(docel, "type", "http://www.netbeans.org/ns/project/1"); // NOI18N
-        if (!Util.findText(type).equals("org.netbeans.modules.apisupport.project")) { // NOI18N
+        Element type = XMLUtil.findElement(docel, "type", "http://www.netbeans.org/ns/project/1"); // NOI18N
+        if (!XMLUtil.findText(type).equals("org.netbeans.modules.apisupport.project")) { // NOI18N
             return null;
         }
-        Element cfg = Util.findElement(docel, "configuration", "http://www.netbeans.org/ns/project/1"); // NOI18N
-        Element data = Util.findElement(cfg, "data", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+        Element cfg = XMLUtil.findElement(docel, "configuration", "http://www.netbeans.org/ns/project/1"); // NOI18N
+        Element data = XMLUtil.findElement(cfg, "data", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         if (data != null) {
             return data;
         } else {
-            data = Util.findElement(cfg, "data", NbModuleProject.NAMESPACE_SHARED_2); // NOI18N
+            data = XMLUtil.findElement(cfg, "data", NbModuleProject.NAMESPACE_SHARED_2); // NOI18N
             if (data != null) {
-                return Util.translateXML(data, NbModuleProject.NAMESPACE_SHARED);
+                return XMLUtil.translateXML(data, NbModuleProject.NAMESPACE_SHARED);
             } else {
                 return null;
             }
@@ -1103,7 +1109,6 @@ public final class ModuleList {
         return PropertyUtils.fixedPropertyProvider(NbCollections.checkedMapByFilter(p, String.class, String.class, true));
     }
     
-    private static boolean PERMIT_CACHES = true;
     /**
      * Refresh any existing lists, e.g. in response to a new module being created.
      */
@@ -1112,7 +1117,6 @@ public final class ModuleList {
         synchronized (binaryLists) { binaryLists.clear(); }
         synchronized (clusterLists) { clusterLists.clear(); }
         synchronized (knownEntries) { knownEntries.clear(); }
-        PERMIT_CACHES = false; // #126524
     }
     
     /**
@@ -1325,7 +1329,7 @@ public final class ModuleList {
         if (e != null) {
             return e;
         }
-        if (!isNetBeansOrg(home)) {
+        if (home == null || !isNetBeansOrg(home)) {
             return null;
         }
             File nbdestdir = findNetBeansOrgDestDir(home);
@@ -1380,7 +1384,7 @@ public final class ModuleList {
      * @return all known module entries
      */
     public Set<ModuleEntry> getAllEntries() {
-        if (isNetBeansOrg(home)) {
+        if (home != null && isNetBeansOrg(home)) {
             try {
                 scanNetBeansOrgStableSources();
             } catch (IOException x) {

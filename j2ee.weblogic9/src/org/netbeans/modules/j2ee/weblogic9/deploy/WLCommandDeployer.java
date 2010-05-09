@@ -81,6 +81,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.URLWait;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.config.WLDatasource;
 import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicWebApp;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -362,6 +363,75 @@ public final class WLCommandDeployer {
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.STOP, StateType.COMPLETED,
                             NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Completed")));
+                }
+            }
+        });
+
+        return progress;
+    }
+
+    public ProgressObject deployDatasource(final Collection<WLDatasource> datasources) {
+        final WLProgressObject progress = new WLProgressObject(new TargetModuleID[0]);
+
+        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
+                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Started")));
+
+        factory.getExecutorService().submit(new Runnable() {
+
+            @Override
+            public void run() {
+                boolean failed = false;
+                for (WLDatasource datasource: datasources) {
+                    if (datasource.getOrigin() == null) {
+                        LOGGER.log(Level.INFO, "Could not deploy {0}", datasource.getName());
+                        continue;
+                    }
+                    ExecutionService service = createService("-deploy", null, "-name",
+                            datasource.getName(), "-upload", datasource.getOrigin().getAbsolutePath());
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
+                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Deploying", datasource.getName())));
+
+                    Future<Integer> result = service.run();
+                    try {
+                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                        if (value.intValue() != 0) {
+                            failed = true;
+                            progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                    ActionType.EXECUTE, CommandType.START, StateType.FAILED,
+                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Failed")));
+                            break;
+                        } else {
+                            continue;
+                        }
+                    } catch (InterruptedException ex) {
+                        failed = true;
+                        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.START, StateType.FAILED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Failed_Interrupted")));
+                        result.cancel(true);
+                        Thread.currentThread().interrupt();
+                        break;
+                    } catch (TimeoutException ex) {
+                        failed = true;
+                        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.START, StateType.FAILED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Failed_Timeout")));
+                        result.cancel(true);
+                        break;
+                    } catch (ExecutionException ex) {
+                        failed = true;
+                        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.START, StateType.FAILED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Failed_With_Message")));
+                        break;
+                    }
+                }
+                if (!failed) {
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
+                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Completed")));
                 }
             }
         });

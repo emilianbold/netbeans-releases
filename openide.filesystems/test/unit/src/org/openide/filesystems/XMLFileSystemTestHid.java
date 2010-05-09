@@ -56,6 +56,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openide.util.Enumerations;
 
 public class XMLFileSystemTestHid extends TestBaseHid {
     /** Factory for all filesystems that want to use TCK in this class.
@@ -385,6 +386,10 @@ public class XMLFileSystemTestHid extends TestBaseHid {
             }
 
             public Enumeration<String> attributes(String name) {
+                if (name.equals("")) {
+                    // say that we have no attributes for the root
+                    return Enumerations.empty();
+                }
                 fail("This method shall not be called: " + name);
                 return null;
             }

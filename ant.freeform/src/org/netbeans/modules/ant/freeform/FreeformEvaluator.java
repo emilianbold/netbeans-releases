@@ -52,7 +52,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -60,6 +59,7 @@ import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.util.Parameters;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -105,18 +105,18 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
         PropertyProvider preprovider = project.helper().getStockPropertyPreprovider();
         List<PropertyProvider> defs = new ArrayList<PropertyProvider>();
         Element genldata = project.getPrimaryConfigurationData();
-        Element properties = Util.findElement(genldata, "properties", FreeformProjectType.NS_GENERAL); // NOI18N
+        Element properties = XMLUtil.findElement(genldata, "properties", FreeformProjectType.NS_GENERAL); // NOI18N
         if (properties != null) {
-            for (Element e : Util.findSubElements(properties)) {
+            for (Element e : XMLUtil.findSubElements(properties)) {
                 if (e.getLocalName().equals("property")) { // NOI18N
-                    String val = Util.findText(e);
+                    String val = XMLUtil.findText(e);
                     if (val == null) {
                         val = "";
                     }
                     defs.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap(e.getAttribute("name"), val))); // NOI18N
                 } else {
                     assert e.getLocalName().equals("property-file") : e;
-                    String fname = Util.findText(e);
+                    String fname = XMLUtil.findText(e);
                     if (fname.contains("${")) { // NOI18N
                         // Tricky (#48230): need to listen to changes in the location of the file as well as its contents.
                         PropertyEvaluator intermediate = PropertyUtils.sequentialPropertyEvaluator(preprovider, defs.toArray(new PropertyProvider[defs.size()]));

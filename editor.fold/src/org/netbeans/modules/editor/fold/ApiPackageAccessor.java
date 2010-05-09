@@ -76,6 +76,7 @@ public abstract class ApiPackageAccessor {
             throw new IllegalStateException("Already registered"); // NOI18N
         }
         INSTANCE = accessor;
+        FoldViewFactory.register();
     }
     
     public abstract FoldHierarchy createFoldHierarchy(FoldHierarchyExecution execution);

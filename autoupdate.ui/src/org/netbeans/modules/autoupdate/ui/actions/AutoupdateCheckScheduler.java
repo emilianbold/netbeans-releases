@@ -327,8 +327,10 @@ public class AutoupdateCheckScheduler {
         Collection<String> problems = new HashSet<String> ();
         assert ! SwingUtilities.isEventDispatchThread () : "Cannot run refreshProviders in EQ!";
         Collection<RequestProcessor.Task> refreshTasks = new HashSet<RequestProcessor.Task> ();
-        for (UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true)) {
-            RequestProcessor.Task t = RequestProcessor.getDefault ().post (getRefresher (p, problems, progress));
+        List <UpdateUnitProvider> providers = UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true);
+        RequestProcessor rp = new RequestProcessor("autoupdate-refresh-providers", providers.size(), false);
+        for (UpdateUnitProvider p : providers) {
+            RequestProcessor.Task t = rp.post (getRefresher (p, problems, progress));
             refreshTasks.add (t);
         }
         err.log (Level.FINEST, "Waiting for all refreshTasks...");

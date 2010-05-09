@@ -40,8 +40,11 @@
 package org.netbeans.api.keyring;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.keyring.Utils;
 import org.netbeans.spi.keyring.KeyringProvider;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -61,7 +64,7 @@ public class Keyring {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.keyring");
 
     private static KeyringProvider PROVIDER;
-    private static KeyringProvider provider() {
+    private static synchronized KeyringProvider provider() {
         if (PROVIDER == null) {
             for (KeyringProvider p : Lookup.getDefault().lookupAll(KeyringProvider.class)) {
                 if (p.enabled()) {
@@ -117,14 +120,21 @@ public class Keyring {
     }
 
     private static class DummyKeyringProvider implements KeyringProvider {
-        public boolean enabled() {
+        public @Override boolean enabled() {
             return true;
         }
-        public char[] read(String key) {
-            return null;
+        // prefer byte[] to make passwords less readable in heap dumps:
+        private final Map<String,byte[]> passwords = new HashMap<String,byte[]>();
+        public @Override char[] read(String key) {
+            byte[] pwd = passwords.get(key);
+            return pwd != null ? Utils.bytes2Chars(pwd) : null;
         }
-        public void save(String key, char[] password, String description) {}
-        public void delete(String key) {}
+        public @Override void save(String key, char[] password, String description) {
+            passwords.put(key, Utils.chars2Bytes(password));
+        }
+        public @Override void delete(String key) {
+            passwords.remove(key);
+        }
     }
 
 }

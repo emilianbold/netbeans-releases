@@ -189,6 +189,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         commands.add("-cp");
         commands.add(StringUtils.asString(cp, File.pathSeparator));
         commands.add(mainClass);
+        commands.add("--add");
         commands.add(nbCluster.getAbsolutePath());
         commands.add(tomcatLocation.getAbsolutePath());
         

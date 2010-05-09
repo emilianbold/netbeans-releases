@@ -338,7 +338,7 @@ class JCLogicalViewProvider implements LogicalViewProvider {
 
         public void annotationChanged(FileStatusEvent event) {
             if (task == null) {
-                task = RequestProcessor.getDefault().create(this);
+                task = RP.create(this);
             }
 
             synchronized (privateLock) {
@@ -352,7 +352,7 @@ class JCLogicalViewProvider implements LogicalViewProvider {
                 }
             }
 
-            task.schedule(50); // batch by 50 ms
+            task.schedule(100); // batch by 50 ms
         }
 
         public void run() {

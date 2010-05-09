@@ -89,7 +89,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="FileSystemAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="200"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
                     <file name="OpenAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
@@ -109,7 +109,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="SaveAsTemplateAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
-                        <attr name="position" intvalue="1100"/>
+                        <attr name="position" intvalue="1350"/>
                     </file>
                     <file name="Separator0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

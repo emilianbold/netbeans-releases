@@ -64,7 +64,8 @@ import org.openide.util.lookup.Lookups;
  *
  * @author sherold
  */
-public class EarDeploymentConfiguration implements ModuleConfiguration, DeploymentPlanConfiguration {
+public class EarDeploymentConfiguration extends WLDeploymentConfiguration
+        implements ModuleConfiguration, DeploymentPlanConfiguration {
     
     private final File file;
     private final J2eeModule j2eeModule;
@@ -76,6 +77,7 @@ public class EarDeploymentConfiguration implements ModuleConfiguration, Deployme
      * Creates a new instance of EarDeploymentConfiguration 
      */
     public EarDeploymentConfiguration(J2eeModule j2eeModule) {
+        super(j2eeModule);
         this.j2eeModule = j2eeModule;
         file = j2eeModule.getDeploymentConfigurationFile("META-INF/weblogic-application.xml"); // NOI18N
         getWeblogicApplication();

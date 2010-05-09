@@ -97,7 +97,7 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
 
     @Override
     protected String actionsContext() {
-        return "Loaders/text/x-cnd-sourcefile/Actions/"; // NOI18N
+        return "Loaders/text/x-cnd+sourcefile/Actions/"; // NOI18N
     }
 
     @Override

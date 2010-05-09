@@ -37,9 +37,6 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-#include <string.h>
-#include <errno.h>
-#include <sys/errno.h>
 #include <sys/socket.h>
 
 #include "rfs_util.h"
@@ -49,6 +46,18 @@
 //  char kind;
 //  char[2] 2-bytes size representation (high byte first)
 //  char[] data 0-32K bytes null-terminated string
+
+__attribute__ ((visibility ("hidden")))
+const char* pkg_kind_to_string(enum kind kind) {
+    switch (kind) {
+        case pkg_null:          return "pkg_null";
+        case pkg_handshake:     return "pkg_handshake";
+        case pkg_request:       return "pkg_request";
+        case pkg_reply:         return "pkg_reply";
+        case pkg_written:       return "pkg_written";
+        default:                return "pkg_unknown";
+    }
+}
 
 static int do_send(int sd, const unsigned char* buffer, int size) {
     int sent = 0;

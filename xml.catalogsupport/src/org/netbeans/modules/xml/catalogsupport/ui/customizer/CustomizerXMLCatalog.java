@@ -269,7 +269,6 @@ public class CustomizerXMLCatalog extends javax.swing.JPanel implements HelpCtx.
         return new HelpCtx(CustomizerXMLCatalog.class);
     }
     
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel cacheLabel;
     private javax.swing.JTextField cacheTextField;
@@ -279,5 +278,4 @@ public class CustomizerXMLCatalog extends javax.swing.JPanel implements HelpCtx.
     private javax.swing.JButton removeButton;
     private javax.swing.JLabel topLabel;
     // End of variables declaration//GEN-END:variables
-    
 }

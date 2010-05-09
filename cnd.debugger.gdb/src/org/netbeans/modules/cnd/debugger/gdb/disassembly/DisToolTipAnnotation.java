@@ -47,6 +47,7 @@ import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.debugger.common.disassembly.RegisterValue;
 import org.netbeans.modules.cnd.debugger.gdb.GdbContext;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -55,7 +56,6 @@ import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.Line.Part;
 import org.openide.text.NbDocument;
-import org.openide.util.RequestProcessor;
 
 /**
  * Copied from CND ToolTipAnnotation
@@ -87,7 +87,7 @@ public class DisToolTipAnnotation extends Annotation implements Runnable {
         
         this.lp = lp;
         this.ec = ec;
-        RequestProcessor.getDefault ().post (this);
+        GdbUtils.getGdbRequestProcessor().post(this);
         return null;
     }
 

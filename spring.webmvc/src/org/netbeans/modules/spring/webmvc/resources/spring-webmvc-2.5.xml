@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.spring.webmvc.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.spring.beans/modules/ext/spring/spring-webmvc-2.5.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.spring.beans/modules/ext/spring/spring-webmvc-2.5.6.SEC01.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
@@ -58,6 +58,6 @@ made subject to such option by the copyright holder.
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-webmvc/2.5/spring-webmvc-2.5.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-webmvc/2.5.6.SEC01/spring-webmvc-2.5.6.SEC01.pom</resource>
     </volume>
 </library>

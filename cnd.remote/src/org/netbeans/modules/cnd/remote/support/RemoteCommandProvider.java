@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -54,21 +55,24 @@ public class RemoteCommandProvider implements CommandProvider {
     private RemoteCommandSupport support;
 
     public RemoteCommandProvider() {
-        RemoteUtil.LOGGER.finest(getClass().getSimpleName() + " .ctor");
+        RemoteUtil.LOGGER.log(Level.FINEST, "{0} .ctor", getClass().getSimpleName());
     }
 
+    @Override
     public int run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env) {
-        RemoteUtil.LOGGER.finest(getClass().getSimpleName() + " running " + cmd + " on " + execEnv);
+        RemoteUtil.LOGGER.log(Level.FINEST, "{0} running {1} on {2}", new Object[]{getClass().getSimpleName(), cmd, execEnv});
         support = new RemoteCommandSupport(execEnv, cmd, env);
         return support.run();
     }
 
+    @Override
     public int run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env, String... args) {
-        RemoteUtil.LOGGER.finest(getClass().getSimpleName() + " running " + cmd + " on " + execEnv);
+        RemoteUtil.LOGGER.log(Level.FINEST, "{0} running {1} on {2}", new Object[]{getClass().getSimpleName(), cmd, execEnv});
         support = new RemoteCommandSupport(execEnv, cmd, env, args);
         return support.run();
     }
 
+    @Override
     public String getOutput() {
         return support.getOutput();
     }

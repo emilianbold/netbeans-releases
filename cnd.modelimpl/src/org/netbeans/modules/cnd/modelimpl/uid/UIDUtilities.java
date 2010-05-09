@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -64,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -131,6 +133,10 @@ public class UIDUtilities {
 
     public static CsmUID<CsmInclude> createIncludeUID(CsmInclude incl) {
         return getCachedUID(new IncludeUID(incl), incl);
+    }
+
+    public static CsmUID<CsmInheritance> createInheritanceUID(CsmInheritance inh) {
+        return getCachedUID(new InheritanceUID(inh), inh);
     }
 
     public static <T extends CsmNamedElement> CsmUID<CsmParameterList<T>> createParamListUID(CsmParameterList<T> incl) {
@@ -219,6 +225,22 @@ public class UIDUtilities {
         return null;
     }
 
+    public static CsmVisibility getVisibility(CsmUID<CsmInheritance> uid) {
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
+            return KeyUtilities.getKeyVisibility(key);
+        }
+        return null;
+    }
+
+    public static char getKindChar(CsmUID<?> uid) {
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
+            return KeyUtilities.getKeyChar(key);
+        }
+        return 0;
+    }
+
     public static CharSequence getFileName(CsmUID<CsmFile> uid) {
         if (uid instanceof KeyBasedUID<?>) {
             Key key = ((KeyBasedUID<?>) uid).getKey();
@@ -300,7 +322,13 @@ public class UIDUtilities {
         if (name1 instanceof Comparable<?>) {
             @SuppressWarnings("unchecked")
             Comparable<CharSequence> o1 = (Comparable<CharSequence>) name1;
-            return o1.compareTo(name2);
+            int i = o1.compareTo(name2);
+            if (i == 0) {
+                int i1 = getKindChar(d1);
+                int i2 = getKindChar(d2);
+                return i1-i2;
+            }
+            return i;
         }
         if (name1 != null) {
             return (name2 == null) ? 1 : 0;
@@ -567,6 +595,20 @@ public class UIDUtilities {
         }
 
         /* package */ IncludeUID(DataInput aStream) throws IOException {
+            super(aStream);
+        }
+    }
+
+    /**
+     * UID for CsmInclude
+     */
+    /* package */ static final class InheritanceUID extends CachedUID<CsmInheritance> { //KeyBasedUID<CsmInclude> {
+
+        public InheritanceUID(CsmInheritance inh) {
+            super(KeyUtilities.createInheritanceKey(inh), inh);
+        }
+
+        /* package */ InheritanceUID(DataInput aStream) throws IOException {
             super(aStream);
         }
     }

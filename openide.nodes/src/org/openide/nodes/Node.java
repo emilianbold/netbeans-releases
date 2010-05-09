@@ -72,6 +72,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
@@ -334,7 +335,9 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
             if ((ch != null) && (ch != parent)) {
                 throw new IllegalStateException(
                     "Cannot initialize " + index + "th child of node " + parent.getNode() +
-                    "; it already belongs to node " + ch.getNode()
+                    "; it already belongs to node " + ch.getNode() + "\nChildren of new node: " +
+                    Arrays.toString(parent.getNodes()) + "\nChildren of old node: " +
+                    Arrays.toString(ch.getNodes())
                 ); // NOI18N
             }
 
@@ -719,13 +722,15 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         return getDefaultAction();
     }
 
-    /** Make a context menu for this node.
-    * The menu is constructed from the set of actions returned by {@link #getActions}.
-    *
-    * @return the context menu
+    /**
+     * Makes a context menu for this node.
+     * <p>Component action maps are not taken into consideration.
+     * {@link Utilities#actionsToPopup(Action[], Component)} is a better choice
+     * if you want to use actions such as "Paste" which look at action maps.
+    * @return the context menu as per {@link NodeOp#findContextMenu}
     */
     public final JPopupMenu getContextMenu() {
-        return NodeOp.findContextMenuImpl(new Node[] { this }, null);
+        return NodeOp.findContextMenu(new Node[] {this});
     }
 
     /** Test whether there is a customizer for this node. If true,

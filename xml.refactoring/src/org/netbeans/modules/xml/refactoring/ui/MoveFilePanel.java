@@ -124,8 +124,8 @@ public class MoveFilePanel extends JPanel implements ActionListener, DocumentLis
     }
     
     public void initValues(String preselectedFolder ) {
-        
-        Project openProjects[] = OpenProjects.getDefault().getOpenProjects();
+        Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+/* # 155199
         List<Project> op = Arrays.asList(openProjects);
         java.util.List projectRoots = new java.util.ArrayList();
         SubprojectProvider provider = (SubprojectProvider)project.getLookup().lookup(SubprojectProvider.class);
@@ -140,16 +140,16 @@ public class MoveFilePanel extends JPanel implements ActionListener, DocumentLis
                  projectRoots.add(refPrj);
         }
         Project[] roots = (Project[])projectRoots.toArray(new Project[projectRoots.size()]);
-        Arrays.sort( roots, new ProjectByDisplayNameComparator());
-        //DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( o );
-        DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( roots );
+*/
+        Arrays.sort( openProjects, new ProjectByDisplayNameComparator());
+        DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
         projectsComboBox.setModel( projectsModel );                
         projectsComboBox.setSelectedItem( project );
         
         updateRoots();
         updatePackages(); 
         if (preselectedFolder != null) {
-            packageComboBox.setSelectedItem(preselectedFolder);
+//          packageComboBox.setSelectedItem(preselectedFolder);
         }
         // Determine the extension
     }
@@ -450,7 +450,7 @@ public class MoveFilePanel extends JPanel implements ActionListener, DocumentLis
     }
     //Copy/pasted from OpenProjectList
     //remove this code as soon as #68827 is fixed.
-    private static class ProjectByDisplayNameComparator implements Comparator {
+    static class ProjectByDisplayNameComparator implements Comparator {
         
         private static Comparator COLLATOR = Collator.getInstance();
         

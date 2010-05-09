@@ -53,12 +53,12 @@ public class ActionButton extends LinkButton {
     private String urlString;
     private boolean visited = false;
 
-    public ActionButton( Action a, boolean showBullet, String urlString ) {
-        this( a, showBullet, urlString, Utils.getColor(LINK_COLOR) );
+    public ActionButton( Action a, String urlString, boolean showBorder ) {
+        this( a, urlString, Utils.getColor(LINK_COLOR), showBorder );
     }
 
-    public ActionButton( Action a, boolean showBullet, String urlString, Color foreground ) {
-        super( a.getValue( Action.NAME ).toString(), showBullet, foreground );
+    public ActionButton( Action a, String urlString, Color foreground, boolean showBorder ) {
+        super( a.getValue( Action.NAME ).toString(), foreground, showBorder );
         this.action = a;
         this.urlString = urlString;
         Object icon = a.getValue( Action.SMALL_ICON );
@@ -67,9 +67,16 @@ public class ActionButton extends LinkButton {
         Object tooltip = a.getValue( Action.SHORT_DESCRIPTION );
         if( null != tooltip )
             setToolTipText( tooltip.toString() );
+        if( null == urlString ) {
+            setUsageTrackingId(getText());
+        } else {
+            setUsageTrackingId(getText() + " (" + urlString + ")"); //NOI18N
+        }
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
+        logUsage();
         if( null != action ) {
             action.actionPerformed( e );
         }
@@ -77,18 +84,21 @@ public class ActionButton extends LinkButton {
             visited = true;
     }
 
+    @Override
     protected void onMouseExited(MouseEvent e) {
         if( null != urlString ) {
             StatusDisplayer.getDefault().setStatusText( "" ); //NOI18N
         }
     }
 
+    @Override
     protected void onMouseEntered(MouseEvent e) {
         if( null != urlString ) {
             StatusDisplayer.getDefault().setStatusText( urlString );
         }
     }
 
+    @Override
     protected boolean isVisited() {
         return visited;
     }

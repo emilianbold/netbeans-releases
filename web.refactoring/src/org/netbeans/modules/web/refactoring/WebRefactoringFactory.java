@@ -106,9 +106,9 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         }
         FileObject ddFile = wm.getDeploymentDescriptor();
         WebApp webApp = getWebApp(ddFile);
-        if (webApp == null){
-            return null;
-        }
+//        if (webApp == null){
+//            return null;
+//        }
         String clazz = resolveClass(handle);
         
         // if we have a java file, the class name should be resolvable
@@ -123,33 +123,45 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         if (refactoring instanceof RenameRefactoring){
             RenameRefactoring rename = (RenameRefactoring) refactoring;
             if (javaPackage || folder){
-                refactorings.add(new WebXmlPackageRename(ddFile, webApp, sourceFO, rename));
+                if (webApp != null) {
+                    refactorings.add(new WebXmlPackageRename(ddFile, webApp, sourceFO, rename));
+                }
                 refactorings.add(new TldPackageRename(rename, wm, sourceFO));
             } else if (javaFile) {
-                refactorings.add(new WebXmlRename(clazz, rename, webApp, ddFile));
+                if (webApp != null) {
+                    refactorings.add(new WebXmlRename(clazz, rename, webApp, ddFile));
+                }
                 refactorings.add(new TldRename(clazz, rename, wm));
             }
         } 
         
         if (refactoring instanceof WhereUsedQuery && javaFile){
             WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
-            refactorings.add(new WebXmlWhereUsed(ddFile, webApp, clazz, whereUsedQuery));
+            if (webApp != null) {
+                refactorings.add(new WebXmlWhereUsed(ddFile, webApp, clazz, whereUsedQuery));
+            }
             refactorings.add(new TldWhereUsed(clazz, wm, whereUsedQuery));
         } 
         
         if (refactoring instanceof SafeDeleteRefactoring && javaFile){
             SafeDeleteRefactoring safeDelete = (SafeDeleteRefactoring) refactoring;
-            refactorings.add(new WebXmlSafeDelete(ddFile, webApp, safeDelete));
+            if (webApp != null) {
+                refactorings.add(new WebXmlSafeDelete(ddFile, webApp, safeDelete));
+            }
             refactorings.add(new TldSafeDelete(safeDelete, wm));
         }
         
         if (refactoring instanceof MoveRefactoring){
             MoveRefactoring move = (MoveRefactoring) refactoring;
             if (javaFile){
-                refactorings.add(new WebXmlMove(ddFile, webApp, move));
+                if (webApp != null) {
+                    refactorings.add(new WebXmlMove(ddFile, webApp, move));
+                }
                 refactorings.add(new TldMove(move, wm));
             } else if (folder){
-                refactorings.add(new WebXmlFolderMove(ddFile, webApp, sourceFO, move));
+                if (webApp != null) {
+                    refactorings.add(new WebXmlFolderMove(ddFile, webApp, sourceFO, move));
+                }
                 refactorings.add(new TldFolderMove(wm, sourceFO, move));
             }
         }

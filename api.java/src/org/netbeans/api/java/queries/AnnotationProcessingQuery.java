@@ -41,7 +41,9 @@ package org.netbeans.api.java.queries;
 
 import java.net.URL;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -85,11 +87,12 @@ public class AnnotationProcessingQuery {
      */
     public static interface Result {
 
-        /**Whether the annotation processors should be run inside Java editor.
+        /**When the annotation processors should be run.
          *
-         * @return true if and only if the annotation processors should be run inside the Java editor
+         * @return returns a set of triggers on which the annotation processors should be run
+         * @since org.netbeans.api.java/1 1.27
          */
-        public boolean annotationProcessingEnabled();
+        public @NonNull Set<? extends Trigger> annotationProcessingEnabled();
 
         /**Which annotation processors should be run.
          *
@@ -128,9 +131,22 @@ public class AnnotationProcessingQuery {
         public void removeChangeListener(@NonNull ChangeListener l);
     }
 
+    /** Annotation processing triggers
+     */
+    public static enum Trigger {
+
+        /** Annotation processors should run on scanning
+         */
+        ON_SCAN,
+        /** Annotation processors should run on every modification of a file in editor
+         */
+        IN_EDITOR
+    }
+
     private static final Result EMPTY = new Result() {
-        public boolean annotationProcessingEnabled() {
-            return false;
+
+        public Set<? extends Trigger> annotationProcessingEnabled() {
+            return EnumSet.noneOf(Trigger.class);
         }
 
         public Iterable<? extends String> annotationProcessorsToRun() {

@@ -236,13 +236,14 @@ public final class MidpCustomCodePresenterSupport {
 
         @Override
         public void generateParameterCode(DesignComponent component, MultiGuardedSection section, int index) {
-            PropertyValue value = component.readProperty(SplashScreenCD.PROP_TIMEOUT);
-            if (value.getKind() == PropertyValue.Kind.VALUE) {
-                if (MidpTypes.getInteger(value) == 0) {
-                    section.getWriter().write("SplashScreen.TIMEOUT"); // NOI18N
-                    return;
-                }
-            }
+//            Bug Fix for  Bug 180586 -  Invalid timeout set for MIDlet SplashScreen
+//            PropertyValue value = component.readProperty(SplashScreenCD.PROP_TIMEOUT);
+//            if (value.getKind() == PropertyValue.Kind.VALUE) {
+//                if (MidpTypes.getInteger(value) == 0) {
+//                    section.getWriter().write("SplashScreen.TIMEOUT"); // NOI18N
+//                    return;
+//                }
+//            }
             super.generateParameterCode(component, section, index);
         }
     }

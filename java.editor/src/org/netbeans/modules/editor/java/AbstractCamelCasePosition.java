@@ -131,6 +131,6 @@ import org.openide.util.NbPreferences;
     
     private boolean isUsingCamelCase() {
         Preferences p = NbPreferences.forModule(AbstractCamelCasePosition.class);
-        return p.getBoolean("useCamelCaseStyleNavigation", true); // NOI18N
+        return NbPreferences.root ().getBoolean("useCamelCaseStyleNavigation", true); // NOI18N
     }
 }

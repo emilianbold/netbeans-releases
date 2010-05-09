@@ -54,9 +54,12 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 public class MacroExpandedToken implements APTToken, Serializable {
 
     private static final long serialVersionUID = -5975409234096997015L;
+    private static final int NOT_INITED_OFFSET = -5;
     transient private final APTToken from;
     transient private final APTToken to;
     transient private final APTToken endOffsetToken;
+    transient private int offset = NOT_INITED_OFFSET;
+
 
     /** constructor for serialization **/
     protected MacroExpandedToken() {
@@ -83,34 +86,45 @@ public class MacroExpandedToken implements APTToken, Serializable {
     ////////////////////////////////////////////////////////
     // delegate to original token (before expansion)
 
+    @Override
     public int getOffset() {
-        return from.getOffset();
+        if (offset == NOT_INITED_OFFSET) {
+            offset = from.getOffset();
+        }
+        return offset;
     }
 
+    @Override
     public void setOffset(int o) {
         throw new UnsupportedOperationException("setOffset must not be used"); // NOI18N
     }
 
+    @Override
     public int getColumn() {
         return from.getColumn();
     }
 
+    @Override
     public void setColumn(int c) {
         throw new UnsupportedOperationException("setColumn must not be used"); // NOI18N
     }
 
+    @Override
     public int getLine() {
         return from.getLine();
     }
 
+    @Override
     public void setLine(int l) {
         throw new UnsupportedOperationException("setLine must not be used"); // NOI18N
     }
 
+    @Override
     public String getFilename() {
         return from.getFilename();
     }
 
+    @Override
     public void setFilename(String name) {
         throw new UnsupportedOperationException("setFilename must not be used"); // NOI18N
     }
@@ -118,50 +132,62 @@ public class MacroExpandedToken implements APTToken, Serializable {
     ////////////////////////////////////////////////////////////////////////////
     // delegate to expanded result
 
+    @Override
     public String getText() {
         return to.getText();
     }
 
+    @Override
     public void setText(String t) {
         throw new UnsupportedOperationException("setText must not be used"); // NOI18N
     }
 
+    @Override
     public CharSequence getTextID() {
         return to.getTextID();
     }
 
+    @Override
     public void setTextID(CharSequence id) {
         throw new UnsupportedOperationException("setTextID must not be used"); // NOI18N
     }
 
+    @Override
     public int getType() {
         return to.getType();
     }
 
+    @Override
     public void setType(int t) {
         throw new UnsupportedOperationException("setType must not be used"); // NOI18N
     }
 
+    @Override
     public int getEndOffset() {
         return endOffsetToken.getEndOffset();
     }
 
+    @Override
     public void setEndOffset(int o) {
         throw new UnsupportedOperationException("setEndOffset must not be used"); // NOI18N
     }
 
+    @Override
     public int getEndColumn() {
         return endOffsetToken.getEndColumn();
     }
 
+    @Override
     public void setEndColumn(int c) {
         throw new UnsupportedOperationException("setEndColumn must not be used"); // NOI18N
     }
 
+    @Override
     public int getEndLine() {
         return endOffsetToken.getEndLine();
     }
 
+    @Override
     public void setEndLine(int l) {
         throw new UnsupportedOperationException("setEndLine must not be used"); // NOI18N
     }

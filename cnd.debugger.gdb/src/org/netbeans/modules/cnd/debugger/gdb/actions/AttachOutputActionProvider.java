@@ -45,12 +45,15 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -71,7 +74,7 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
 
         ProjectActionEvent[] events;
         private int step = -1;
-        private long pid = ExecutionListener.UNKNOWN_PID;
+        private int pid = ExecutionListener.UNKNOWN_PID;
 
         public AttachAction(ProjectActionEvent[] events) {
             this.events = events;
@@ -80,6 +83,7 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
             setEnabled(false);
         }
 
+        @Override
         public void executionStarted(int pid) {
             if (step == events.length - 1 && pid != ExecutionListener.UNKNOWN_PID) {
                 this.pid = pid;
@@ -87,14 +91,17 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
             }
         }
 
+        @Override
         public void executionFinished(int rc) {
             setEnabled(false);
         }
 
+        @Override
         public void setStep(int step) {
             this.step = step;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled()) {
                 return;
@@ -110,8 +117,15 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
                 return;
             }
 
+            //IZ 184743 we need winpid for MinGW gdb
+            int attachPid = pid;
+            final ExecutionEnvironment exEnv = (event.getConfiguration()).getDevelopmentHost().getExecutionEnvironment();
+            if (exEnv.isLocal() && Utilities.isWindows()) {
+                attachPid = WindowsSupport.getInstance().getWinPID(pid);
+            }
+
             try {
-                GdbDebugger.attach(pid, info, (event.getConfiguration()).getDevelopmentHost().getExecutionEnvironment());
+                GdbDebugger.attach(attachPid, info, exEnv);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

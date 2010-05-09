@@ -42,6 +42,7 @@ package org.netbeans.core.netigso;
 import java.util.logging.Level;
 import org.netbeans.core.startup.MainLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
@@ -74,15 +75,21 @@ implements ServiceListener, InstanceContent.Convertor<ServiceReference, Object> 
 
     @Override
     public Object convert(ServiceReference obj) {
-        return obj.getBundle().getBundleContext().getService(obj);
+        final Bundle bundle = obj.getBundle();
+        if (bundle != null) {
+            return bundle.getBundleContext().getService(obj);
+        } else {
+            return null;
+        }
     }
 
     @Override
     public Class<? extends Object> type(ServiceReference obj) {
         String[] arr = (String[])obj.getProperty(Constants.OBJECTCLASS);
         if (arr.length > 0) {
-            try {
-                return (Class<?>)obj.getBundle().loadClass(arr[0]);
+            final Bundle bundle = obj.getBundle();
+            if (bundle != null) try {
+                return (Class<?>)bundle.loadClass(arr[0]);
             } catch (ClassNotFoundException ex) {
                 Netigso.LOG.log(Level.INFO, "Cannot load service class", arr[0]); // NOI18N
             }

@@ -98,7 +98,6 @@ import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
-import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
@@ -107,7 +106,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -593,7 +592,7 @@ public final class ReferencesSupport {
             if (strFqn.endsWith("const")) { //NOI18N
                 int cutConstInd = strFqn.lastIndexOf("const"); //NOI18N
                 assert cutConstInd >= 0;
-                fqnCheck = CharSequenceKey.create(strFqn.substring(cutConstInd));
+                fqnCheck = CharSequences.create(strFqn.substring(cutConstInd));
             }
             return fqnCheck.equals(fqnTarget);
         }

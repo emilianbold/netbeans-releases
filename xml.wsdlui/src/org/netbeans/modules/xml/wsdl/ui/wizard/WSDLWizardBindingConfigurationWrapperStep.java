@@ -113,6 +113,7 @@ public class WSDLWizardBindingConfigurationWrapperStep implements WizardDescript
 //        logger.info("getComponent called..........");
         Component component = mWPanel.getComponent();
         component.setName(getName());
+        component.getAccessibleContext().setAccessibleDescription(getName());
         if (component instanceof JComponent) {
             JComponent jc = (JComponent) component;
             jc.putClientProperty("WizardPanel_contentData", context.getSteps());

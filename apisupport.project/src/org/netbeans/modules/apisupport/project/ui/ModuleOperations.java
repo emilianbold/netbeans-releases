@@ -60,7 +60,7 @@ import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
-import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
  * @author Martin Krauskopf
  */
 public final class ModuleOperations implements DeleteOperationImplementation,
-        MoveOperationImplementation, CopyOperationImplementation {
+        MoveOrRenameOperationImplementation, CopyOperationImplementation {
     
     private static final Map<String, SuiteProject> TEMPORARY_CACHE = new HashMap<String, SuiteProject>();
     
@@ -89,7 +89,9 @@ public final class ModuleOperations implements DeleteOperationImplementation,
     
     private void notifyDeleting(boolean temporary) throws IOException {
         FileObject buildXML = projectDir.getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-        ActionUtils.runTarget(buildXML, new String[] { ActionProvider.COMMAND_CLEAN }, null).waitFinished();
+        if (buildXML != null) {
+            ActionUtils.runTarget(buildXML, new String[] { ActionProvider.COMMAND_CLEAN }, null).waitFinished();
+        }
         
         SuiteProject suite = SuiteUtils.findSuite(project);
         if (suite != null) {
@@ -134,6 +136,13 @@ public final class ModuleOperations implements DeleteOperationImplementation,
         }
     }
     
+    public @Override void notifyRenaming() throws IOException {
+    }
+
+    public @Override void notifyRenamed(String nueName) throws IOException {
+        setDisplayName(nueName);
+    }
+
     public void notifyCopying() throws IOException {
         SuiteProject suite = SuiteUtils.findSuite(project);
         if (suite != null) {
@@ -219,5 +228,5 @@ public final class ModuleOperations implements DeleteOperationImplementation,
         }
         return result;
     }
-    
+
 }

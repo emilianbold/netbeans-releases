@@ -61,7 +61,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-//import org.openide.util.Utilities;
 
 /**
  *
@@ -251,7 +250,9 @@ public final class CallGraphTopComponent extends TopComponent {
             JTabbedPane pane = (JTabbedPane) comp;
             Component[] c =  pane.getComponents();
             for (int i = 0; i< c.length; i++) {
-                removePanel((CallGraphPanel) c[i]);
+                if (c[i] instanceof CallGraphPanel) {
+                    removePanel((CallGraphPanel) c[i]);
+                }
             }
         } else if (comp instanceof CallGraphPanel) {
             removePanel((CallGraphPanel) comp);
@@ -304,13 +305,15 @@ public final class CallGraphTopComponent extends TopComponent {
             Component[] c =  tabs.getComponents();
             for (int i = 0; i< c.length; i++) {
                 if (c[i]!=current) {
-                    removePanel((CallGraphPanel) c[i]);
+                    if (c[i] instanceof CallGraphPanel) {
+                       removePanel((CallGraphPanel) c[i]);
+                    }
                 }
             }
         }
     }
 
-    final static class ResolvableHelper implements Serializable {
+    private static class ResolvableHelper implements Serializable {
         private static final long serialVersionUID = 1L;
         public Object readResolve() {
             return CallGraphTopComponent.getDefault();
@@ -318,6 +321,7 @@ public final class CallGraphTopComponent extends TopComponent {
     }
 
     private class CloseListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
             if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
                 removePanel((JPanel) evt.getNewValue());
@@ -326,6 +330,7 @@ public final class CallGraphTopComponent extends TopComponent {
     }
 
     private class PopupListener extends MouseUtils.PopupMouseAdapter {        
+        @Override
         protected void showPopup (MouseEvent e) {
             pop.show(CallGraphTopComponent.this, e.getX(), e.getY());
         }
@@ -335,6 +340,7 @@ public final class CallGraphTopComponent extends TopComponent {
         public Close() {
             super(NbBundle.getMessage(CallGraphTopComponent.class, "LBL_CloseWindow"));
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             removePanel(null);
         }
@@ -344,6 +350,7 @@ public final class CallGraphTopComponent extends TopComponent {
         public CloseAll() {
             super(NbBundle.getMessage(CallGraphTopComponent.class, "LBL_CloseAll"));
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             close();
         }
@@ -353,6 +360,7 @@ public final class CallGraphTopComponent extends TopComponent {
         public CloseAllButCurrent() {
             super(NbBundle.getMessage(CallGraphTopComponent.class, "LBL_CloseAllButCurrent"));
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             closeAllButCurrent();
         }

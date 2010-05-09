@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
@@ -154,8 +155,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     synchronized Query getMyIssuesQuery() throws MissingResourceException {
         if(!providePredefinedQueries()) return null;
         if (myIssues == null) {
-            
-            String url = getQueryUrl();
+            String url = getMyIssuesQueryUrl();
             myIssues =
                 new KenaiQuery(
                     NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
@@ -168,8 +168,8 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return myIssues;
     }
 
-    private String getQueryUrl() {
-        StringBuffer url = new StringBuffer();
+    private String getMyIssuesQueryUrl() {
+        StringBuilder url = new StringBuilder();
         url.append(urlParam);
         String user = getKenaiUser(kenaiProject);
         if (user == null) {
@@ -179,7 +179,8 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         // XXX what if user already mail address?
         // XXX escape @?
         String userMail = user + "@" + host; // NOI18N
-        url.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, product, userMail));
+        String urlFormat = BugzillaUtil.isNbRepository(this) ? BugzillaConstants.NB_MY_ISSUES_PARAMETERS_FORMAT : BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT;
+        url.append(MessageFormat.format(urlFormat, product, userMail));
         return url.toString();
     }
 
@@ -198,7 +199,12 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     protected void setCredentials(String user, String password) {
-        super.setTaskRepository(getDisplayName(), getUrl(), user, password, null, null, isShortUsernamesEnabled());
+        super.setCredentials(user, password, null, null);
+    }
+
+    @Override
+    public void refreshAllQueries() {
+        super.refreshAllQueries(false);
     }
 
     @Override
@@ -282,6 +288,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return TextUtils.encodeURL(url) + ":" + name;                           // NOI18N
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(KenaiAccessor.PROP_LOGIN)) {
 
@@ -306,7 +313,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
                     if(myIssues != null) {
                         // XXX this is a mess - setting the controller and the query
                         KenaiQueryController c = (KenaiQueryController) myIssues.getController();
-                        String url = getQueryUrl();
+                        String url = getMyIssuesQueryUrl();
                         c.populate(url);
                         myIssues.setUrlParameters(url);
                     }
@@ -322,14 +329,13 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
             if(ownerInfo.getOwner().equals(product)) {
                 return ownerInfo;
             } else {
-                Bugzilla.LOG.warning(
-                        " returned owner [" +               // NOI18N
-                        ownerInfo.getOwner() +
-                        "] for " +                          // NOI18N
-                        nodes[0] +
-                        " is different then product [" +    // NOI18N
-                        product +
-                        "]");                               // NOI18N
+                Bugzilla.LOG.log(
+                        Level.WARNING,
+                        " returned owner [{0}] for {1} is different then product [{2}]",
+                        new Object[]{
+                            ownerInfo.getOwner(),
+                            nodes[0],
+                            product});                               // NOI18N
                 return null;
             }
         }

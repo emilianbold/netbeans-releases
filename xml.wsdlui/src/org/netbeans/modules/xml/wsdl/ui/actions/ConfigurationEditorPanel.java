@@ -10,8 +10,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementConfigurationEditorComponent;
-import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementConfigurationEditorProvider;
-import org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel;
+import org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel;
 import org.openide.DialogDescriptor;
 
 /**

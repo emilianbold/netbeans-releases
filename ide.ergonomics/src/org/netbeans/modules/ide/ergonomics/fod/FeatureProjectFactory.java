@@ -255,9 +255,11 @@ implements ProjectFactory, PropertyChangeListener, Runnable {
         return new FeatureNonProject(projectDirectory, lead, state, additional);
     }
 
+    @Override
     public void saveProject(Project project) throws IOException, ClassCastException {
     }
 
+    @Override
     public void run() {
         final List<FeatureInfo> additional = new ArrayList<FeatureInfo>();
         FeatureInfo f = null;
@@ -283,27 +285,17 @@ implements ProjectFactory, PropertyChangeListener, Runnable {
             final FeatureInfo finalF = f;
             final FeatureInfo[] addF = additional.toArray(new FeatureInfo[0]);
 
-            boolean success = false;
             FeatureManager.logUI("ERGO_PROJECT_OPEN", finalF.clusterName);
             FindComponentModules findModules = new FindComponentModules(finalF, addF);
-            Collection<UpdateElement> toInstall = findModules.getModulesForInstall();
             Collection<UpdateElement> toEnable = findModules.getModulesForEnable();
-            if (toInstall != null && !toInstall.isEmpty()) {
-                ModulesInstaller installer = new ModulesInstaller(toInstall, findModules);
-                installer.getInstallTask().waitFinished();
-                success = true;
-            } else if (toEnable != null && !toEnable.isEmpty()) {
+            if (toEnable != null && !toEnable.isEmpty()) {
                 ModulesActivator enabler = new ModulesActivator(toEnable, findModules);
                 enabler.getEnableTask().waitFinished();
-                success = true;
-            } else if (toEnable == null || toInstall == null) {
-                success = true;
-            } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
-                success = true;
             }
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
             RequestProcessor.Task t = FeatureManager.getInstance().create(this);

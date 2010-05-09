@@ -299,7 +299,6 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
         String[] result = Utils.shellSplit (evaluated(projectInfo,
                 JavacardDeviceKeyNames.DEVICE_DEBUG_PROXY_COMMAND_LINE,
                 DEFAULT_DEBUG_PROXY_COMMAND_LINE));
-        System.err.println("DEBUG PROXY LINE:\n" + Arrays.asList(result));
         return result;
     }
 
@@ -311,7 +310,6 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
         String defawlt = !resume ? NEW_RUN_COMMAND_LINE : DEFAULT_RESUME_COMMAND_LINE;
         String cmdline = evaluated (platform, key, defawlt);
         String[] result = Utils.shellSplit (cmdline);
-        System.err.println("RUN COMMAND LINE:\n" + Arrays.asList(result));
         return result;
     }
 

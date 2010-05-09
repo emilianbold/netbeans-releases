@@ -182,42 +182,40 @@ final class MultiPassCompileWorker extends CompileWorker {
                     continue;
                 }
                 Iterable<? extends TypeElement> types;
-                fileManager.handleOption(AptSourceFileManager.ORIGIN_FILE, Collections.singletonList(active.indexable.getURL().toString()).iterator()); //NOI18N
-                try {
-                    types = jt.enterTrees(trees);
-                    if (jfo2tuples.remove(active.jfo) != null) {
-                        final Types ts = Types.instance(jt.getContext());
-                        final Indexable activeIndexable = active.indexable;
-                        class ScanNested extends TreeScanner {
-                            Set<CompileTuple> dependencies = new LinkedHashSet<CompileTuple>();
-                            @Override
-                            public void visitClassDef(JCClassDecl node) {
-                                if (node.sym != null) {
-                                    Type st = ts.supertype(node.sym.type);
-                                    if (st.tag == TypeTags.CLASS) {
-                                        ClassSymbol c = st.tsym.outermostClass();
-                                        CompileTuple u = jfo2tuples.get(c.sourcefile);
-                                        if (u != null && !previous.finishedFiles.contains(u.indexable) && !u.indexable.equals(activeIndexable)) {
-                                            dependencies.add(u);
-                                        }
+                types = jt.enterTrees(trees);
+                if (jfo2tuples.remove(active.jfo) != null) {
+                    final Types ts = Types.instance(jt.getContext());
+                    final Indexable activeIndexable = active.indexable;
+                    class ScanNested extends TreeScanner {
+                        Set<CompileTuple> dependencies = new LinkedHashSet<CompileTuple>();
+                        @Override
+                        public void visitClassDef(JCClassDecl node) {
+                            if (node.sym != null) {
+                                Type st = ts.supertype(node.sym.type);
+                                if (st.tag == TypeTags.CLASS) {
+                                    ClassSymbol c = st.tsym.outermostClass();
+                                    CompileTuple u = jfo2tuples.get(c.sourcefile);
+                                    if (u != null && !previous.finishedFiles.contains(u.indexable) && !u.indexable.equals(activeIndexable)) {
+                                        dependencies.add(u);
                                     }
                                 }
-                                super.visitClassDef(node);
                             }
-                        }
-                        ScanNested scanner = new ScanNested();
-                        for (CompilationUnitTree cut : trees) {
-                            scanner.scan((JCCompilationUnit)cut);
-                        }
-                        if (!scanner.dependencies.isEmpty()) {
-                            toProcess.addFirst(active);
-                            for (CompileTuple tuple : scanner.dependencies) {
-                                toProcess.addFirst(tuple);
-                            }
-                            active = null;
-                            continue;
+                            super.visitClassDef(node);
                         }
                     }
+                    ScanNested scanner = new ScanNested();
+                    for (CompilationUnitTree cut : trees) {
+                        scanner.scan((JCCompilationUnit)cut);
+                    }
+                    if (!scanner.dependencies.isEmpty()) {
+                        toProcess.addFirst(active);
+                        for (CompileTuple tuple : scanner.dependencies) {
+                            toProcess.addFirst(tuple);
+                        }
+                        active = null;
+                        continue;
+                    }
+                }
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt);
                     mem.isLowMemory();
@@ -240,9 +238,6 @@ final class MultiPassCompileWorker extends CompileWorker {
                     continue;
                 }
                 jt.analyze(types);
-                } finally {
-                    fileManager.handleOption(AptSourceFileManager.ORIGIN_FILE, Collections.singletonList("").iterator()); //NOI18N
-                }
                 JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), previous.aptGenerated);
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt);

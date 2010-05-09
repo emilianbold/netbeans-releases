@@ -316,7 +316,7 @@ public class NbBasePanel extends DestinationPanel {
             super.saveInput();
             
             panel.getJdkLocationPanel().setLocation(
-                    new File(jdkLocationField.getText()));
+                    new File(jdkLocationField.getText().trim()));
         }
         
         @Override
@@ -324,7 +324,7 @@ public class NbBasePanel extends DestinationPanel {
             String errorMessage = super.validateInput();
             if (errorMessage == null) {
                 errorMessage = panel.getJdkLocationPanel().validateLocation(
-                        jdkLocationField.getText());
+                        jdkLocationField.getText().trim());
             }
             
             return errorMessage;
@@ -441,7 +441,7 @@ public class NbBasePanel extends DestinationPanel {
         }
         
         private void browseButtonPressed() {
-            fileChooser.setSelectedFile(new File(jdkLocationField.getText()));
+            fileChooser.setSelectedFile(new File(jdkLocationField.getText().trim()));
             
             if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 jdkLocationComboBox.getModel().setSelectedItem(

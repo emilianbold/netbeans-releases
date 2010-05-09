@@ -248,7 +248,9 @@ public final class DependenciesResolver {
         return val == null ? null : resolveFileObject(val);
     }
 
+    public static final Logger LOGGER = Logger.getLogger(DependenciesResolver.class.getName());
     public void save(JCProject project, ResolvedDependencies dependencies, Element cfgRoot) throws IOException {
+        LOGGER.log (Level.FINER, "Save project metadata {0}", project.getProjectDirectory()); //NOI18N
 //        assert !EventQueue.isDispatchThread() : "Saving project props on EQ not allowed"; //NOI18N
         if (!ProjectManager.mutex().isWriteAccess()) {
             throw new IllegalStateException("Not in ProjectManager.mutex().writeAccess()"); //NOI18N
@@ -298,6 +300,7 @@ public final class DependenciesResolver {
             el.setAttribute(DependenciesParser.ID, dep.getID());
             el.setAttribute(DependenciesParser.KIND, dep.getKind().name());
             el.setAttribute(DependenciesParser.DEPLOYMENT_STRATEGY, dep.getDeploymentStrategy().name());
+            LOGGER.log (Level.FINER, "Created element {0} for {1} ({2})", new Object[] { el, dep, r}); //NOI18N
             nue.appendChild(el);
         }
         cfgRoot.appendChild(nue);
@@ -349,6 +352,7 @@ public final class DependenciesResolver {
                 sb.append(f.getAbsolutePath());
             }
         }
+        LOGGER.log (Level.FINER, "Set deprecated class.path prop to {0}", sb); //NOI18N
         pubProps.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASS_PATH, sb.toString());
         project.getAntProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, pubProps);
         try {

@@ -72,13 +72,20 @@ public class UnbufferSupport {
             return;
         }
 
-        final MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
-        // Setup LD_PRELOAD to load unbuffer library...
-
         final HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);
 
-        boolean isWindows = hinfo.getOSFamily() == HostInfo.OSFamily.WINDOWS;
         boolean isMacOS = hinfo.getOSFamily() == HostInfo.OSFamily.MACOSX;
+
+        // Bug 179172 - unbuffer.dylib not found
+        // Will disable unbuffer on Mac as seems it is not required...
+        if (isMacOS) {
+            return;
+        }
+
+        boolean isWindows = hinfo.getOSFamily() == HostInfo.OSFamily.WINDOWS;
+
+        final MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
+        // Setup LD_PRELOAD to load unbuffer library...
 
         String unbufferPath = null; // NOI18N
         String unbufferLib = null; // NOI18N
@@ -121,14 +128,12 @@ public class UnbufferSupport {
                                 String remoteLib_32 = remotePath + "/" + unbufferLib; // NOI18N
                                 String remoteLib_64 = remotePath + "_64/" + unbufferLib; // NOI18N
 
-                                if (!HostInfoUtils.fileExists(execEnv, remoteLib_32)) { // NOI18N
-                                    String fullLocalPath = file.getParentFile().getAbsolutePath(); // NOI18N
-                                    Future<Integer> copyTask;
-                                    copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "/" + unbufferLib, execEnv, remoteLib_32, 0755, null); // NOI18N
-                                    copyTask.get();
-                                    copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "_64/" + unbufferLib, execEnv, remoteLib_64, 0755, null); // NOI18N
-                                    copyTask.get();
-                                }
+                                String fullLocalPath = file.getParentFile().getAbsolutePath(); // NOI18N
+                                Future<Integer> copyTask;
+                                copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "/" + unbufferLib, execEnv, remoteLib_32, 0755, null, true); // NOI18N
+                                copyTask.get();
+                                copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "_64/" + unbufferLib, execEnv, remoteLib_64, 0755, null, true); // NOI18N
+                                copyTask.get();
                             } catch (InterruptedException ex) {
                                 Exceptions.printStackTrace(ex);
                             } catch (ExecutionException ex) {

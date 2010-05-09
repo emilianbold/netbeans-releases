@@ -7,6 +7,6 @@
         <li><a href="flightinfo.php">Check Flight Info.</a></li>
         <li><a href="scheduleinfo.php">View Schedule</a></li>
         <li><a href="confirmreservation.php">Confirm Reservation</a></li>
-        
+
     </ul>
 </li>

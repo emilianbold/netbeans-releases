@@ -75,6 +75,7 @@ public abstract class BaseAction extends AbstractAction implements HelpCtx.Provi
         return NbBundle.getMessage(BaseAction.class, "LBL_ZendAction", getPureName());
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

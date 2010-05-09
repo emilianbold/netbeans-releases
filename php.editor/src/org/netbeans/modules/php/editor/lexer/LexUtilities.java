@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
@@ -177,7 +178,43 @@ public class LexUtilities {
 //        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
 //        return getJsTokenSequence(th, offset);
 //    }
-//    
+//
+
+    /**
+     * 
+     *
+     * @param doc
+     * @param offset
+     * @param runUnderLock Runs under it's own document readlock if true
+     * @return Most embedded TokenSequence on the given offset. If there is no
+     * embedding, returns the top level sequence. The TokenSequence is not positioned!
+     */
+    public static TokenSequence<? extends TokenId> getMostEmbeddedTokenSequence(final Document doc, final int offset, boolean runUnderLock) {
+        final AtomicReference<TokenSequence<? extends TokenId>> ref = new AtomicReference<TokenSequence<? extends TokenId>>();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                TokenHierarchy th = TokenHierarchy.get(doc);
+                List<TokenSequence<? extends TokenId>> sequences = th.embeddedTokenSequences(offset, false);
+                if(sequences.isEmpty()) {
+                    //no embedding, return top level sequence;
+                    ref.set(th.tokenSequence());
+                } else {
+                    ref.set(sequences.get(sequences.size() - 1)); //return the most embedded one
+                }
+            }
+        };
+
+        if(runUnderLock) {
+            doc.render(r);
+        } else {
+            r.run();
+        }
+        
+        return ref.get();
+    }
+
+
     @SuppressWarnings("unchecked")
     @CheckForNull
     public static TokenSequence<PHPTokenId> getPHPTokenSequence(Document doc, int offset) {
@@ -308,15 +345,15 @@ public class LexUtilities {
 //    }
     
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
-    public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, char up, char down) {
+    public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, PHPTokenId tokenUpId, char up, PHPTokenId tokenDownId, char down) {
         int balance = 0;
 
         while (ts.moveNext()) {
             Token<?extends PHPTokenId> token = ts.token();
             
-            if (textEquals(token.text(), up)) {
+            if (token.id() == tokenUpId && textEquals(token.text(), up)) {
                 balance++;
-            } else if (textEquals(token.text(), down)) {
+            } else if (token.id() == tokenDownId && textEquals(token.text(), down)) {
                 if (balance == 0) {
                     return new OffsetRange(ts.offset(), ts.offset() + token.length());
                 }
@@ -329,20 +366,20 @@ public class LexUtilities {
     }
 
     /** Search backwards in the token sequence until a token of type <code>up</code> is found */
-    public static OffsetRange findBwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, char up, char down) {
+    public static OffsetRange findBwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, PHPTokenId tokenUpId, char up, PHPTokenId tokenDownId, char down) {
         int balance = 0;
 
         while (ts.movePrevious()) {
             Token<?extends PHPTokenId> token = ts.token();
             TokenId id = token.id();
 
-            if (textEquals(token.text(), up)) {
+            if (token.id() == tokenUpId && textEquals(token.text(), up)) {
                 if (balance == 0) {
                     return new OffsetRange(ts.offset(), ts.offset() + token.length());
                 }
 
                 balance++;
-            } else if (textEquals(token.text(), down)) {
+            } else if (token.id() == tokenDownId && textEquals(token.text(), down)) {
                 balance--;
             }
         }

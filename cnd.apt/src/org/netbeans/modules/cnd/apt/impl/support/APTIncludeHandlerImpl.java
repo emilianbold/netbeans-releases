@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.openide.util.CharSequences;
 
 /**
  * implementation of include handler responsible for preventing recursive inclusion
@@ -95,19 +95,23 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         this.userIncludeFilePaths = userIncludeFilePaths;
     }
 
+    @Override
     public boolean pushInclude(CharSequence path, APTInclude aptInclude, int resolvedDirIndex) {
         return pushIncludeImpl(path, aptInclude.getToken().getLine(), aptInclude.getToken().getOffset(), resolvedDirIndex);
     }
 
+    @Override
     public CharSequence popInclude() {
         return popIncludeImpl();
     }
     
+    @Override
     public APTIncludeResolver getResolver(CharSequence path) {
         return new APTIncludeResolverImpl(path, getCurDirIndex(),
                 systemIncludePaths, userIncludePaths);
     }
     
+    @Override
     public StartEntry getStartEntry() {
         return startFile;
     }
@@ -129,10 +133,12 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     ////////////////////////////////////////////////////////////////////////////
     // manage state (save/restore)
     
+    @Override
     public State getState() {
         return createStateImpl();
     }
     
+    @Override
     public void setState(State state) {
         if (state instanceof StateImpl) {
 	    StateImpl stateImpl = ((StateImpl)state);
@@ -232,6 +238,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return APTIncludeHandlerImpl.toString(startFile.getStartFile(), systemIncludePaths, userIncludePaths, userIncludeFilePaths, recurseIncludes, inclStack);
         }
         
+        @Override
         public void write(DataOutput output) throws IOException {
             assert output != null;
             startFile.write(output);
@@ -324,7 +331,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             userIncludeFilePaths = new ArrayList<IncludeDirEntry>(size);
             for (int i = 0; i < size; i++) {
                 IncludeDirEntry path = IncludeDirEntry.get(input.readUTF());
-                userIncludePaths.add(i, path);
+                userIncludeFilePaths.add(i, path);
             }
 
             size = input.readInt();
@@ -434,7 +441,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             inclStack = new LinkedList<IncludeInfo>();
             recurseIncludes = new HashMap<CharSequence, Integer>();
         }
-        assert path instanceof TinyCharSequence : "must be char sequence key " + path; // NOI18N
+        assert CharSequences.isCompact(path) : "must be char sequence key " + path; // NOI18N
         Integer counter = recurseIncludes.get(path);
         counter = (counter == null) ? Integer.valueOf(1) : Integer.valueOf(counter.intValue()+1);
         if (counter.intValue() < MAX_INCLUDE_DEEP) {
@@ -471,14 +478,17 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             resolvedDirIndex = input.readInt();
         }
 
+        @Override
         public CharSequence getIncludedPath() {
             return path;
         }
 
+        @Override
         public int getIncludeDirectiveLine() {
             return directiveLine;
         }
 
+        @Override
         public int getIncludeDirectiveOffset() {
             return directiveOffset;
         }
@@ -512,6 +522,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return hash;
         }
 
+        @Override
         public void write(final DataOutput output) throws IOException {
             assert output != null;
             
@@ -521,6 +532,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             output.writeInt(resolvedDirIndex);
         }
 
+        @Override
         public int getIncludedDirIndex() {
             return this.resolvedDirIndex;
         }

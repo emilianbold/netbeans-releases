@@ -179,8 +179,9 @@ public class ConfigurationUtils {
             FileObject file;
             for (int i = 0; i < sFiles.length; i++){
                 file = documentBase.getFileObject(sFiles[i]);
-                if (file != null)
+                if (file != null) {
                     files.add(file);
+                }
             }
             return (FileObject[])files.toArray(new FileObject[files.size()]);
         }

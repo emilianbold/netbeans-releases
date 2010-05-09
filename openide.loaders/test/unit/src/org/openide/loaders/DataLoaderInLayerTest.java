@@ -45,6 +45,7 @@ package org.openide.loaders;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.image.ImageObserver;
+import java.util.logging.Level;
 import org.openide.filesystems.*;
 import java.io.IOException;
 import java.util.*;
@@ -58,7 +59,6 @@ import junit.framework.Test;
 import org.openide.actions.EditAction;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /** Check what can be done when registering loaders in layer.
@@ -69,6 +69,16 @@ public class DataLoaderInLayerTest extends NbTestCase {
 
     public DataLoaderInLayerTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected int timeOut() {
+        return 30000;
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
     
     public static Test suite() {

@@ -119,7 +119,7 @@ public class TestUtil extends ProxyLookup {
             return null;
         }
         
-        public org.openide.WizardDescriptor.Panel createSimpleTargetChooser(Project project, org.netbeans.api.project.SourceGroup[] folders, org.openide.WizardDescriptor.Panel bottomPanel) {
+        public org.openide.WizardDescriptor.Panel createSimpleTargetChooser(Project project, org.netbeans.api.project.SourceGroup[] folders, org.openide.WizardDescriptor.Panel bottomPanel, boolean freeFileExtension) {
             return null;
         }
         

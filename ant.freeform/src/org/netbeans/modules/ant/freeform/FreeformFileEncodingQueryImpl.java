@@ -60,6 +60,7 @@ import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.xml.XMLUtil;
 
 /**
  * Implementation of FileEncodingQuery for Freeform project, its instance can be 
@@ -114,23 +115,23 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
     private void computeEncodingsCache() {
         Map<FileObject,Charset> cache = new HashMap<FileObject,Charset>(3);
         Element data = Util.getPrimaryConfigurationData(helper);
-        Element foldersEl = Util.findElement(data, "folders", Util.NAMESPACE); // NOI18N
+        Element foldersEl = XMLUtil.findElement(data, "folders", Util.NAMESPACE); // NOI18N
         if (foldersEl != null) {
-            for (Element sourceFolderEl : Util.findSubElements(foldersEl)) {
+            for (Element sourceFolderEl : XMLUtil.findSubElements(foldersEl)) {
                 if (!sourceFolderEl.getLocalName().equals("source-folder")) { // NOI18N
                     continue;
                 }
                 FileObject srcRoot = null;
-                Element locationEl = Util.findElement(sourceFolderEl, "location", Util.NAMESPACE); // NOI18N
+                Element locationEl = XMLUtil.findElement(sourceFolderEl, "location", Util.NAMESPACE); // NOI18N
                 if (locationEl != null) {
-                    String location = evaluator.evaluate(Util.findText(locationEl));
+                    String location = evaluator.evaluate(XMLUtil.findText(locationEl));
                     if (location != null) {
                         srcRoot = helper.resolveFileObject(location);
                     }
                 }
-                Element encodingEl = Util.findElement(sourceFolderEl, "encoding", Util.NAMESPACE); // NOI18N
+                Element encodingEl = XMLUtil.findElement(sourceFolderEl, "encoding", Util.NAMESPACE); // NOI18N
                 if (encodingEl != null && srcRoot != null) {
-                    String encoding = evaluator.evaluate(Util.findText(encodingEl));
+                    String encoding = evaluator.evaluate(XMLUtil.findText(encodingEl));
                     Charset charset = null;
                     if (encoding != null) {
                         try {

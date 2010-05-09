@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.j2ee.api.ejbjar;
 
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.openide.filesystems.FileObject;
+
 /**
  *
  * @author Martin Adamek
@@ -69,6 +73,7 @@ public final class EjbReference {
     private final String remote;
     private final String remoteHome;
     private final EjbJar ejbModule;
+    private final ClasspathInfo cpInfo;
     
     private EjbReference(String ejbClass, String ejbRefType, String local, String localHome, String remote, String remoteHome, EjbJar ejbModule) {
         this.ejbClass = ejbClass;
@@ -78,6 +83,13 @@ public final class EjbReference {
         this.remote = remote;
         this.remoteHome = remoteHome;
         this.ejbModule = ejbModule;
+        
+        FileObject[] javaSources = getEjbModule().getJavaSources();
+        cpInfo = javaSources.length > 0 ? ClasspathInfo.create(
+                    ClassPath.getClassPath(javaSources[0], ClassPath.BOOT),
+                    ClassPath.getClassPath(javaSources[0], ClassPath.COMPILE),
+                    ClassPath.getClassPath(javaSources[0], ClassPath.SOURCE)
+                ) : null;
     }
 
     public static EjbReference create(String ejbClass, String ejbRefType, String local, String localHome, String remote, String remoteHome, EjbJar ejbModule) {
@@ -128,5 +140,9 @@ public final class EjbReference {
             case NO_INTERFACE: return getEjbClass();
             default: return null;
         }
+    }
+
+    public ClasspathInfo getClasspathInfo(){
+        return cpInfo;
     }
 }

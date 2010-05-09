@@ -257,6 +257,11 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
         
         private void paintMatcher(Graphics2D g, Color fillClr, 
                 int leftX, int rightX, int upL, int upR, int doR, int doL) {
+            int topY = Math.min(upL, upR), bottomY = Math.max(doL, doR);
+            // try rendering only curves in viewable area
+            if (!g.hitClip(leftX, topY, rightX - leftX, bottomY - topY)) {
+                return;
+            }
             CubicCurve2D upper = new CubicCurve2D.Float(leftX, upL,
                     (rightX -leftX)*.3f, upL,
                     (rightX -leftX)*.7f, upR,

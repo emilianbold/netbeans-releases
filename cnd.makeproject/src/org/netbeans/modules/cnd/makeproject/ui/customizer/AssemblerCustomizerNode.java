@@ -60,7 +60,10 @@ class AssemblerCustomizerNode extends CustomizerNode {
         SharedItemConfiguration sharedItemConfiguration = getContext().getItem();
         if (sharedItemConfiguration != null) {
             ItemConfiguration itemConfiguration = sharedItemConfiguration.getItemConfiguration(configuration);
-            return itemConfiguration.getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
+            if (itemConfiguration != null) {
+                return itemConfiguration.getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
+            }
+            return null;
         } else {
             return ((MakeConfiguration) configuration).getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
         }

@@ -112,6 +112,9 @@ public class FSCompletion implements CompletionProvider {
                             @Override
                             public void run(ResultIterator resultIterator) throws Exception {
                                 ParserResult parameter = (ParserResult) resultIterator.getParserResult();
+                                if (parameter == null) {
+                                    return;
+                                }
                                 List<ASTNode> path = NavUtils.underCaret(parameter, caretOffset);
                                 if (path.size() < 2) {
                                     return;

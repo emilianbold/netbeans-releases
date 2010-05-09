@@ -42,11 +42,8 @@
 package org.netbeans.modules.cnd.modelimpl.fsm;
 
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
-import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import java.util.*;
-import java.util.List;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmFunction.OperatorKind;
@@ -55,20 +52,12 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.services.CsmSelect;
-import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.util.Exceptions;
 
 /**
@@ -350,7 +339,7 @@ public class ProgramImpl<T> extends OffsetableDeclarationBase<T>
 //    }
 //
 //    protected CharSequence getScopeSuffix() {
-//        return CharSequenceKey.empty();
+//        return CharSequences.empty();
 //    }
 //
 //    protected String initName(AST node) {
@@ -455,7 +444,7 @@ public class ProgramImpl<T> extends OffsetableDeclarationBase<T>
 //        if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) || (scope instanceof CsmNamespaceDefinition) ) {
 //            CharSequence scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
 //            if( scopeQName != null && scopeQName.length() > 0 ) {
-//                return CharSequenceKey.create(scopeQName.toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix()); // NOI18N
+//                return CharSequences.create(scopeQName.toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix()); // NOI18N
 //            }
 //        }
 //        return getName();

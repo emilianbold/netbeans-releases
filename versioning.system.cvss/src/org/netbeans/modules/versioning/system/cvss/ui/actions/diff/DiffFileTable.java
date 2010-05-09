@@ -362,8 +362,10 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 // invoke later so the selection on the table will be set first
-                JPopupMenu menu = getPopup();
-                menu.show(table, e.getX(), e.getY());
+                if (table.isShowing()) {
+                    JPopupMenu menu = getPopup();
+                    menu.show(table, e.getX(), e.getY());
+                }
             }
         });
     }
@@ -431,7 +433,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         Mnemonics.setLocalizedText(item, item.getText());
 
         Action ignoreAction = new SystemActionBridge(SystemAction.get(IgnoreAction.class),
-           ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(files) == IgnoreAction.UNIGNORING ?
+           ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(files, false) == IgnoreAction.UNIGNORING ?
            actionString("CTL_PopupMenuItem_Unignore") : // NOI18N
            actionString("CTL_PopupMenuItem_Ignore")); // NOI18N
         item = menu.add(ignoreAction);

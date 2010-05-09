@@ -168,6 +168,11 @@ public class FileStatusCache {
      * @return File [] array of interesting files
      */
     public File [] listFiles(Context context, int includeStatus) {
+        if (context.getRootFiles().length == 0) {
+            // do not load call cacheProvider.getAllModifiedValues() unless really necessary
+            // an empty context means also an empty return array, see the loginc bellow
+            return new File[0];
+        }
         Set<File> set = new HashSet<File>();
         Map allFiles = cacheProvider.getAllModifiedValues();
         for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
@@ -723,9 +728,9 @@ public class FileStatusCache {
     }
 
     public FileInformation getCachedStatus(File file) {
-        file = file.getParentFile();
-        if (file == null) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
-        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(file, FILE_STATUS_MAP);
+        File parent = file.getParentFile();
+        if (parent == null) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
+        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(parent, FILE_STATUS_MAP);
         return files != null ? files.get(file) : null;
     }
 

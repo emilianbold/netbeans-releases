@@ -56,6 +56,7 @@ import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.RunLevel;
 import org.netbeans.core.startup.Splash;
 import org.netbeans.core.startup.StartLog;
+import org.netbeans.swing.plaf.Startup;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -125,6 +126,8 @@ public class GuiRunLevel implements RunLevel {
     /** Method to initialize the main window.
     */
     private void initializeMainWindow() {
+        Startup.setClassLoader(Lookup.getDefault().lookup(ClassLoader.class)); // #182507
+        
         StartLog.logStart ("Main window initialization"); //NOI18N
 
         TimableEventQueue.initialize();

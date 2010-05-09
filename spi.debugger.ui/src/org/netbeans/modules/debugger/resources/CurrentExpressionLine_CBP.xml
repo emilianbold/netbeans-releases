@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 <!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
 <type
     name='CurrentExpressionLine_CBP'
-    description_key='HINT_CURRENT_EXP_LINE'
+    description_key='HINT_CURRENT_EXP_LINE_CBP'
     localizing_bundle='org.netbeans.modules.debugger.resources.Bundle'
     visible='true'
     glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/ConditionalBreakpoint+PC.png'

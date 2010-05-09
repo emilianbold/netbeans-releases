@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.java.hints.encapsulation;
 
+import java.util.prefs.Preferences;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
+import org.netbeans.modules.java.hints.options.HintsSettings;
 
 /**
  *
@@ -136,6 +139,18 @@ public class ClassEncapsulationTest extends TestBase {
                             "    public void foo() {\n"+
                             "        class Local {};\n"+
                             "    }\n"+
+                            "}");
+    }
+
+    public void testEnumIgnore() throws Exception {
+        Preferences p = RulesManager.getPreferences(ClassEncapsulation.class.getName() + ".publicCls", HintsSettings.getCurrentProfileId());
+
+        p.putBoolean(ClassEncapsulation.ALLOW_ENUMS_KEY, true);
+
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public enum E {A}\n" +
                             "}");
     }
 }

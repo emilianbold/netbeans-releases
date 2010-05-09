@@ -42,6 +42,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -57,10 +61,42 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.openide.util.Exceptions;
 
 public final class ProcessUtils {
 
     private ProcessUtils() {
+    }
+    
+    private final static String remoteCharSet = System.getProperty("cnd.remote.charset", "UTF-8"); // NOI18N
+    public static String getRemoteCharSet() {
+        return remoteCharSet;
+    }
+
+    public static BufferedReader getReader(final InputStream is, boolean remote) {
+        if (remote) {
+            // set charset
+            try {
+                return new BufferedReader(new InputStreamReader(is, getRemoteCharSet()));
+            } catch (UnsupportedEncodingException ex) {
+                String msg = getRemoteCharSet() + " encoding is not supported, try to override it with cnd.remote.charset"; //NOI18N
+                Exceptions.printStackTrace(new IllegalStateException(msg, ex));
+            }
+        }
+        return new BufferedReader(new InputStreamReader(is));
+    }
+
+    public static PrintWriter getWriter(final OutputStream os, boolean remote) {
+        if (remote) {
+            // set charset
+            try {
+                return new PrintWriter(new OutputStreamWriter(os, getRemoteCharSet()));
+            } catch (UnsupportedEncodingException ex) {
+                String msg = getRemoteCharSet() + " encoding is not supported, try to override it with cnd.remote.charset"; //NOI18N
+                Exceptions.printStackTrace(new IllegalStateException(msg, ex));
+            }
+        }
+        return new PrintWriter(os);
     }
 
     public static List<String> readProcessError(final Process p) throws IOException {
@@ -68,7 +104,7 @@ public final class ProcessUtils {
             return Collections.<String>emptyList();
         }
 
-        return readProcessStream(p.getErrorStream());
+        return readProcessStream(p.getErrorStream(), isRemote(p));
     }
 
     public static String readProcessErrorLine(final Process p) throws IOException {
@@ -76,7 +112,7 @@ public final class ProcessUtils {
             return ""; // NOI18N
         }
 
-        return readProcessStreamLine(p.getErrorStream());
+        return readProcessStreamLine(p.getErrorStream(), isRemote(p));
     }
 
     public static List<String> readProcessOutput(final Process p) throws IOException {
@@ -84,7 +120,7 @@ public final class ProcessUtils {
             return Collections.<String>emptyList();
         }
 
-        return readProcessStream(p.getInputStream());
+        return readProcessStream(p.getInputStream(), isRemote(p));
     }
 
     public static String readProcessOutputLine(final Process p) throws IOException {
@@ -92,7 +128,14 @@ public final class ProcessUtils {
             return ""; // NOI18N
         }
 
-        return readProcessStreamLine(p.getInputStream());
+        return readProcessStreamLine(p.getInputStream(), isRemote(p));
+    }
+
+    private static boolean isRemote(Process process) {
+        if (process instanceof NativeProcess) {
+            return ((NativeProcess)process).getExecutionEnvironment().isRemote();
+        }
+        return false;
     }
 
     public static void logError(final Level logLevel, final Logger log, final Process p) throws IOException {
@@ -105,13 +148,13 @@ public final class ProcessUtils {
         }
     }
 
-    private static List<String> readProcessStream(final InputStream stream) throws IOException {
+    private static List<String> readProcessStream(final InputStream stream, boolean remoteStream) throws IOException {
         if (stream == null) {
             return Collections.<String>emptyList();
         }
 
         final List<String> result = new LinkedList<String>();
-        final BufferedReader br = new BufferedReader(new InputStreamReader(stream));
+        final BufferedReader br = getReader(stream, remoteStream);
 
         try {
             String line;
@@ -127,13 +170,13 @@ public final class ProcessUtils {
         return result;
     }
 
-    private static String readProcessStreamLine(final InputStream stream) throws IOException {
+    private static String readProcessStreamLine(final InputStream stream, boolean remoteStream) throws IOException {
         if (stream == null) {
             return ""; // NOI18N
         }
 
         final StringBuilder result = new StringBuilder();
-        final BufferedReader br = new BufferedReader(new InputStreamReader(stream));
+        final BufferedReader br = getReader(stream, remoteStream);
 
         try {
             String line;

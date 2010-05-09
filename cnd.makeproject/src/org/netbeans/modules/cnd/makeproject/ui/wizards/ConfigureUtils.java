@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -163,12 +164,14 @@ public final class ConfigureUtils {
         return null;
     }
 
-    public static String getConfigureArguments(String configure, String flags) {
-        String cCompiler = ConfigureUtils.getDefaultC();
-        String cppCompiler = ConfigureUtils.getDefaultCpp();
+    public static String getConfigureArguments(ExecutionEnvironment ee, CompilerSet def, String configure, String flags) {
+        ee = (ee != null) ? ee : ServerList.getDefaultRecord().getExecutionEnvironment();
+        def = (def != null) ? def : CompilerSetManager.get(ee).getDefaultCompilerSet();
+        String cCompiler = ConfigureUtils.getDefaultC(def);
+        String cppCompiler = ConfigureUtils.getDefaultCpp(def);
         StringBuilder buf = new StringBuilder(flags);
-        String cCompilerFlags = getCompilerFlags();
-        String cppCompilerFlags = getCompilerFlags();
+        String cCompilerFlags = getCompilerFlags(def);
+        String cppCompilerFlags = getCompilerFlags(def);
         if (configure.endsWith("CMakeLists.txt")){ // NOI18N
             appendIfNeed("-G ", flags, buf, "\"Unix Makefiles\""); // NOI18N
             appendIfNeed("-DCMAKE_BUILD_TYPE=", flags, buf, "Debug"); // NOI18N
@@ -177,8 +180,8 @@ public final class ConfigureUtils {
             appendIfNeed("-DCMAKE_C_FLAGS_DEBUG=", flags, buf, cCompilerFlags); // NOI18N
             appendIfNeed("-DCMAKE_CXX_FLAGS_DEBUG=", flags, buf, cppCompilerFlags); // NOI18N
         } else if (configure.endsWith(".pro")){ // NOI18N
-            int platform = getPlatform();
-            if (isSunStodio() && (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC)) { // NOI18N
+            int platform = getPlatform(ee);
+            if (isSunStudio(def) && (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC)) { // NOI18N
                 appendIfNeed("-spec ", flags, buf, "solaris-cc"); // NOI18N
             }
             if (platform == PlatformTypes.PLATFORM_MACOSX) {
@@ -206,12 +209,11 @@ public final class ConfigureUtils {
         }
     }
 
-    private static int getPlatform(){
-        return CompilerSetManager.get(ServerList.getDefaultRecord().getExecutionEnvironment()).getPlatform();
+    private static int getPlatform(ExecutionEnvironment ee){
+        return CompilerSetManager.get(ee).getPlatform();
     }
 
-    private static boolean isSunStodio(){
-        CompilerSet def = CompilerSetManager.get(ServerList.getDefaultRecord().getExecutionEnvironment()).getDefaultCompilerSet();
+    private static boolean isSunStudio(CompilerSet def){
         if (def != null) {
             CompilerFlavor flavor = def.getCompilerFlavor();
             if (flavor.isSunStudioCompiler()) {
@@ -221,8 +223,7 @@ public final class ConfigureUtils {
         return false;
     }
 
-    private static String getDefaultC(){
-        CompilerSet def = CompilerSetManager.get(ServerList.getDefaultRecord().getExecutionEnvironment()).getDefaultCompilerSet();
+    private static String getDefaultC(CompilerSet def){
         String cCompiler = getToolPath(def, PredefinedToolKind.CCompiler);
         if (cCompiler != null) {
             return cCompiler;
@@ -237,8 +238,7 @@ public final class ConfigureUtils {
         return cCompiler;
     }
 
-    private static String getDefaultCpp(){
-        CompilerSet def = CompilerSetManager.get(ServerList.getDefaultRecord().getExecutionEnvironment()).getDefaultCompilerSet();
+    private static String getDefaultCpp(CompilerSet def){
         String cppCompiler = getToolPath(def, PredefinedToolKind.CCCompiler);
         if (cppCompiler != null) {
             return cppCompiler;
@@ -271,8 +271,7 @@ public final class ConfigureUtils {
         return flags;
     }
 
-    private static String getCompilerFlags(){
-        CompilerSet def = CompilerSetManager.get(ServerList.getDefaultRecord().getExecutionEnvironment()).getDefaultCompilerSet();
+    private static String getCompilerFlags(CompilerSet def){
         if (def != null) {
             CompilerFlavor flavor = def.getCompilerFlavor();
             if (flavor.isSunStudioCompiler()) {

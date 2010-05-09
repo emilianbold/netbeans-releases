@@ -70,22 +70,27 @@ public interface CsmProject extends CsmNamedElement, CsmValidable {
     CsmNamespace findNamespace( CharSequence qualifiedName );
     
     /**
-     * Finds compound classifier (clas or enum) by its qualified name
+     * Finds compound classifier (class or enum) by its qualified name
      */
     CsmClassifier findClassifier(CharSequence qualifiedName);
 
     /**
-     * Finds all compound classifier (clas, struct, union, enum, typedef, classforward) by its qualified name
+     * Finds all compound classifier (class, struct, union, enum, typedef, classforward) by its qualified name
      */
     Collection<CsmClassifier> findClassifiers(CharSequence qualifiedName);
+
+    /**
+     * Finds all inheritances by its name
+     */
+    Collection<CsmInheritance> findInheritances(CharSequence name);
     
     /**
-     * Finds declaration by its nuique name
+     * Finds declaration by its unique name
      */
     CsmDeclaration findDeclaration(CharSequence uniqueName);
     
     /**
-     * Finds declarations by its nuique name
+     * Finds declarations by its unique name
      */
     Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName);
 
@@ -100,12 +105,12 @@ public interface CsmProject extends CsmNamedElement, CsmValidable {
     Collection<CsmFile> getSourceFiles();
     
     /**
-     * Gets the collection of heaher project files.
+     * Gets the collection of header project files.
      */
     Collection<CsmFile> getHeaderFiles();
     
     /**
-     * Gets the collection of all (source and heaher) project files.
+     * Gets the collection of all (source and header) project files.
      */
     Collection<CsmFile> getAllFiles();
     

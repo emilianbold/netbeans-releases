@@ -42,7 +42,12 @@
 package org.netbeans.lib.editor.util.random;
 
 import java.util.Random;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.random.RandomTestContainer.Context;
@@ -96,7 +101,12 @@ public class DocumentTesting {
     public static RandomTestContainer initContainer(RandomTestContainer container) {
         if (container == null)
             container = new RandomTestContainer();
-        container.putProperty(Document.class, new TestDocument());
+        Document doc = getDocument(container);
+        if (doc == null) {
+            doc = new TestDocument();
+            container.putProperty(Document.class, doc);
+        }
+        
         container.addOp(new InsertOp(INSERT_CHAR));
         container.addOp(new InsertOp(INSERT_TEXT));
         container.addOp(new InsertOp(INSERT_PHRASE));
@@ -107,16 +117,49 @@ public class DocumentTesting {
         return container;
     }
 
-    public static void insert(Context context, int offset, String text) throws Exception {
-        Document doc = context.getInstance(Document.class);
+    public static void initUndoManager(RandomTestContainer container) {
+        Document doc = DocumentTesting.getDocument(container);
+        UndoManager undoManager = (UndoManager) doc.getProperty(UndoManager.class);
+        if (undoManager == null) {
+            undoManager = new UndoManager();
+            doc.addUndoableEditListener(undoManager);
+            doc.putProperty(UndoManager.class, undoManager);
+        }
+    }
+
+    /**
+     * Get document from test container by consulting either an editor pane's document
+     * or a document property.
+     *
+     * @param provider non-null property provider
+     * @return document instance or null.
+     */
+    public static Document getDocument(PropertyProvider provider) {
+        JEditorPane pane = provider.getInstanceOrNull(JEditorPane.class);
+        if (pane != null) {
+            return pane.getDocument();
+        } else {
+            return provider.getInstanceOrNull(Document.class);
+        }
+    }
+
+    public static boolean isLogDoc(PropertyProvider provider) {
+        return Boolean.TRUE.equals(provider.getPropertyOrNull(LOG_DOC));
+    }
+
+    public static void setLogDoc(PropertyProvider provider, boolean logDoc) {
+        provider.putProperty(LOG_DOC, logDoc);
+    }
+
+    public static void insert(Context context, final int offset, final String text) throws Exception {
+        final Document doc = getDocument(context);
         // Possibly do logging
-        if (Boolean.TRUE.equals(context.getPropertyOrNull(RandomTestContainer.LOG_OP))) {
+        if (context.isLogOp()) {
             int beforeTextStartOffset = Math.max(offset - 5, 0);
             String beforeText = doc.getText(beforeTextStartOffset, offset - beforeTextStartOffset);
             int afterTextEndOffset = Math.min(offset + 5, doc.getLength());
             String afterText = doc.getText(offset, afterTextEndOffset - offset);
-            StringBuilder sb = new StringBuilder(100);
-            sb.append('[').append(context.opCount()).append("]: ");
+            StringBuilder sb = context.logOpBuilder();
             sb.append(" INSERT(").append(offset);
             sb.append(", ").append(text.length()).append("): \"");
             CharSequenceUtilities.debugText(sb, text);
@@ -125,9 +168,9 @@ public class DocumentTesting {
             sb.append('|');
             CharSequenceUtilities.debugText(sb, afterText);
             sb.append("\"\n");
-            context.container().logger().info(sb.toString());
+            context.logOp(sb);
         }
-        if (Boolean.TRUE.equals(context.getPropertyOrNull(LOG_DOC))) {
+        if (isLogDoc(context)) {
             StringBuilder sb = new StringBuilder(doc.getLength() + offset + 100);
             String beforeOffsetText = CharSequenceUtilities.debugText(doc.getText(0, offset));
             for (int i = 0; i < beforeOffsetText.length(); i++) {
@@ -140,24 +183,32 @@ public class DocumentTesting {
             CharSequenceUtilities.debugText(sb,
                     doc.getText(offset, doc.getLength() - offset));
             sb.append("\"\n");
-            context.container().logger().info(sb.toString());
+            context.logOp(sb);
         }
 
-        doc.insertString(offset, text, null);
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    doc.insertString(offset, text, null);
+                } catch (BadLocationException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        });
     }
 
-    public static void remove(Context context, int offset, int length) throws Exception {
-        Document doc = context.getInstance(Document.class);
+    public static void remove(Context context, final int offset, final int length) throws Exception {
+        final Document doc = getDocument(context);
         // Possibly do logging
-        if (Boolean.TRUE.equals(context.getPropertyOrNull(RandomTestContainer.LOG_OP))) {
-            StringBuilder sb = new StringBuilder(100);
-            sb.append('[').append(context.opCount()).append("]: ");
+        if (context.isLogOp()) {
+            StringBuilder sb = context.logOpBuilder();
             sb.append(" REMOVE(").append(offset).append(", ").append(length).append("): \"");
             CharSequenceUtilities.debugText(sb, doc.getText(offset, length));
             sb.append("\"\n");
-            context.container().logger().info(sb.toString());
+            context.logOp(sb);
         }
-        if (Boolean.TRUE.equals(context.getPropertyOrNull(LOG_DOC))) {
+        if (isLogDoc(context)) {
             StringBuilder sb = new StringBuilder(doc.getLength() + offset + 100);
             String beforeOffsetText = CharSequenceUtilities.debugText(doc.getText(0, offset));
             for (int i = 0; i <= beforeOffsetText.length(); i++) {
@@ -171,49 +222,77 @@ public class DocumentTesting {
             CharSequenceUtilities.debugText(sb,
                     doc.getText(offset, doc.getLength() - offset));
             sb.append("\"\n");
-            context.container().logger().info(sb.toString());
+            context.logOp(sb);
         }
 
-        doc.remove(offset, length);
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    doc.remove(offset, length);
+                } catch (BadLocationException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        });
     }
 
-    public static void undo(Context context, int count) {
-        Document doc = context.getInstance(Document.class);
-        UndoManager undoManager = (UndoManager) doc.getProperty(UndoManager.class);
+    public static void undo(Context context, final int count) throws Exception {
+        final Document doc = getDocument(context);
+        final UndoManager undoManager = (UndoManager) doc.getProperty(UndoManager.class);
         logUndoRedoOp(context, "UNDO", count);
-        while (undoManager.canUndo() && --count >= 0) {
-            undoManager.undo();
-        }
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int cnt = count;
+                    while (undoManager.canUndo() && --cnt >= 0) {
+                        undoManager.undo();
+                    }
+                } catch (CannotUndoException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        });
         logPostUndoRedoOp(context, count);
     }
 
-    public static void redo(Context context, int count) {
-        Document doc = context.getInstance(Document.class);
-        UndoManager undoManager = (UndoManager) doc.getProperty(UndoManager.class);
+    public static void redo(Context context, final int count) throws Exception {
+        final Document doc = getDocument(context);
+        final UndoManager undoManager = (UndoManager) doc.getProperty(UndoManager.class);
         logUndoRedoOp(context, "REDO", count);
-        if (undoManager.canRedo() && --count >= 0) {
-            undoManager.redo();
-        }
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int cnt = count;
+                    while (undoManager.canRedo() && --cnt >= 0) {
+                        undoManager.redo();
+                    }
+                } catch (CannotRedoException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        });
         logPostUndoRedoOp(context, count);
     }
 
     private static void logUndoRedoOp(Context context, String opType, int count) {
-        if (Boolean.TRUE.equals(context.getPropertyOrNull(RandomTestContainer.LOG_OP))) {
-            StringBuilder sb = new StringBuilder(100);
-            sb.append('[').append(context.opCount()).append("]: ");
+        if (context.isLogOp()) {
+            StringBuilder sb = context.logOpBuilder();
             sb.append(opType);
             sb.append(' ').append(count).append(" times");
             sb.append('\n');
-            context.container().logger().info(sb.toString());
+            context.logOp(sb);
         }
     }
 
     private static void logPostUndoRedoOp(Context context, int remainingCount) {
-        if (remainingCount > 0 && Boolean.TRUE.equals(context.getPropertyOrNull(RandomTestContainer.LOG_OP))) {
+        if (remainingCount > 0 && context.isLogOp()) {
             StringBuilder sb = new StringBuilder(100);
             sb.append(remainingCount).append(" unfinished");
             sb.append('\n');
-            context.container().logger().info(sb.toString());
+            context.logOp(sb);
         }
     }
 
@@ -225,7 +304,7 @@ public class DocumentTesting {
 
         @Override
         protected void run(Context context) throws Exception {
-            Document doc = context.getInstance(Document.class);
+            Document doc = getDocument(context);
             Random random = context.container().random();
             int offset = random.nextInt(doc.getLength() + 1);
             RandomText randomText = context.getInstance(RandomText.class);
@@ -256,7 +335,7 @@ public class DocumentTesting {
 
         @Override
         protected void run(Context context) throws Exception {
-            Document doc = context.getInstance(Document.class);
+            Document doc = getDocument(context);
             int docLen = doc.getLength();
             if (docLen == 0)
                 return; // Nothing to possibly remove

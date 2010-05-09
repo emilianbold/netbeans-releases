@@ -60,6 +60,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -102,7 +103,7 @@ public class HighlightsView extends EditorView implements TextLayoutView {
         float span = (axis == View.X_AXIS)
             ? textLayout.getAdvance()
             : textLayout.getAscent() + textLayout.getDescent() + textLayout.getLeading();
-        return span;
+        return ViewUtils.cutFractions(span);
     }
 
     @Override
@@ -123,13 +124,12 @@ public class HighlightsView extends EditorView implements TextLayoutView {
     @Override
     public boolean setLength(int length) {
         this.length = length;
-        releaseTextLayout(); // Ensure that text layout gets recreated
-        return true;
+        return true; // Possibly cached text layout gets released automatically
     }
 
     @Override
     public int getStartOffset() {
-        ParagraphView parent = (ParagraphView) getParent();
+        EditorView.Parent parent = (EditorView.Parent) getParent();
         return (parent != null) ? parent.getViewOffset(rawOffset) : rawOffset;
     }
 
@@ -178,16 +178,6 @@ public class HighlightsView extends EditorView implements TextLayoutView {
         return textLayout;
     }
 
-    void releaseTextLayout() {
-        ParagraphView paragraphView = getParagraphView();
-        if (paragraphView != null) {
-            DocumentView documentView = paragraphView.getDocumentView();
-            if (documentView != null) {
-                getTextLayoutCache().put(paragraphView, this, null);
-            }
-        }
-    }
-
     ParagraphView getParagraphView() {
         return (ParagraphView) getParent();
     }
@@ -197,20 +187,9 @@ public class HighlightsView extends EditorView implements TextLayoutView {
         return (paragraphView != null) ? paragraphView.getDocumentView() : null;
     }
 
-    TextLayoutCache getTextLayoutCache() {
-        DocumentView documentView = getDocumentView();
-        return (documentView != null) ? documentView.getTextLayoutCache() : null;
-    }
-
-    TextLayout getTextLayout() {
-        ParagraphView paragraphView = getParagraphView();
-        if (paragraphView != null) {
-            DocumentView documentView = paragraphView.getDocumentView();
-            if (documentView != null) {
-                return getTextLayoutCache().get(paragraphView, this);
-            }
-        }
-        return null;
+    private TextLayout getTextLayout() {
+        EditorView.Parent parent = (EditorView.Parent) getParent();
+        return (parent != null) ? parent.getTextLayout(this) : null;
     }
 
     @Override
@@ -232,11 +211,22 @@ public class HighlightsView extends EditorView implements TextLayoutView {
                 ? TextHitInfo.afterOffset(charIndex)
                 : TextHitInfo.beforeOffset(charIndex);
 	float[] locs = textLayout.getCaretInfo(hit);
+        float width;
+        if (charIndex < textLength) {
+            TextHitInfo endHit = (bias == Position.Bias.Forward)
+                    ? TextHitInfo.afterOffset(charIndex + 1)
+                    : TextHitInfo.beforeOffset(charIndex + 1);
+            float endLocs[] = textLayout.getCaretInfo(endHit);
+            width = endLocs[0] - locs[0];
+        } else {
+            width = 1;
+        }
+
         Rectangle2D.Double bounds = ViewUtils.shape2Bounds(alloc);
 	bounds.setRect(
                 bounds.getX() + locs[0],
                 bounds.getY(),
-                1, // ?? glyphpainter2 uses 1 but shouldn't be a char width ??
+                width,
                 bounds.getHeight()
         );
         return bounds;
@@ -359,7 +349,7 @@ public class HighlightsView extends EditorView implements TextLayoutView {
                             LOG.finest(view.getDumpId() + ":paint-txt: \"" + CharSequenceUtilities.debugText(text) + // NOI18N
                                     "\", XY["+ ViewUtils.toStringPrec1(allocBounds.getX()) + ";" +
                                     ViewUtils.toStringPrec1(allocBounds.getY()) + "(B" + // NOI18N
-                                    ViewUtils.toStringPrec1(docView.getDefaultBaselineOffset()) + // NOI18N
+                                    ViewUtils.toStringPrec1(docView.getDefaultAscent()) + // NOI18N
                                     ")], color=" + ViewUtils.toString(g.getColor()) + '\n'); // NOI18N
                         }
                     }
@@ -374,7 +364,7 @@ public class HighlightsView extends EditorView implements TextLayoutView {
         // Paint background
         JTextComponent textComponent = docView.getTextComponent();
         Color componentBackground = textComponent.getBackground();
-        float baselineOffset = docView.getDefaultBaselineOffset();
+        float ascent = docView.getDefaultAscent();
         ViewUtils.applyBackgroundAttributes(attrs, componentBackground, g);
         if (!componentBackground.equals(g.getColor())) { // Not yet cleared by BasicTextUI.paintBackground()
             // clearRect() uses g.getBackground() color
@@ -383,26 +373,82 @@ public class HighlightsView extends EditorView implements TextLayoutView {
 
         // Paint possible underlines
         if (attrs != null) {
-            Color bottomBorderLineColor = null;
+            int xInt = (int) allocBounds.getX();
+            int yInt = (int) allocBounds.getY();
+            int endXInt = (int) (allocBounds.getX() + allocBounds.getWidth() - 1);
+            int endYInt = (int) (allocBounds.getY() + allocBounds.getHeight() - 1);
+            Color leftBorderLineColor = (Color) attrs.getAttribute(EditorStyleConstants.LeftBorderLineColor);
+            Color rightBorderLineColor = (Color) attrs.getAttribute(EditorStyleConstants.RightBorderLineColor);
+            Color topBorderLineColor = (Color) attrs.getAttribute(EditorStyleConstants.TopBorderLineColor);
+            Color bottomBorderLineColor = (Color) attrs.getAttribute(EditorStyleConstants.BottomBorderLineColor);
+            Color textLimitLineColor = docView.getTextLimitLineColor();
+            boolean drawTextLimitLine = docView.isTextLimitLineDrawn();
+            int textLimitWidth = docView.getTextLimitWidth();
+            float defaultCharWidth = docView.getDefaultCharWidth();
+
+            if (drawTextLimitLine && textLimitWidth > 0) { // draw limit line
+                int lineX = (int)(textLimitWidth * defaultCharWidth);
+                if (lineX >= xInt && lineX <= endXInt){
+                    g.setColor(textLimitLineColor);
+                    g.drawLine(lineX, yInt, lineX, endYInt);
+                }
+            }
+            if (leftBorderLineColor != null) {
+                g.setColor(leftBorderLineColor);
+                g.drawLine(xInt, yInt, xInt, endYInt);
+            }
+            if (rightBorderLineColor != null) {
+                g.setColor(rightBorderLineColor);
+                g.drawLine(endXInt, yInt, endXInt, endYInt);
+            }
+            if (topBorderLineColor != null) {
+                g.setColor(topBorderLineColor);
+                g.drawLine(xInt, yInt, endXInt, yInt);
+            }
+            if (bottomBorderLineColor != null) {
+                g.setColor(bottomBorderLineColor);
+                g.drawLine(xInt, endYInt, endXInt, endYInt);
+            }
+
             Color waveUnderlineColor = (Color) attrs.getAttribute(EditorStyleConstants.WaveUnderlineColor);
             if (waveUnderlineColor != null && bottomBorderLineColor == null) { // draw wave underline
                 g.setColor(waveUnderlineColor);
-                float underlineOffset = docView.getDefaultUnderlineOffset() + baselineOffset;
+                float underlineOffset = docView.getDefaultUnderlineOffset() + ascent;
+                int y = (int)(allocBounds.getY() + underlineOffset + 0.5);
                 int wavePixelCount = (int) allocBounds.getWidth() + 1;
                 if (wavePixelCount > 0) {
                     int[] waveForm = {0, 0, -1, -1};
                     int[] xArray = new int[wavePixelCount];
                     int[] yArray = new int[wavePixelCount];
 
-                    int intX = (int) allocBounds.x;
-                    int intY = (int) (allocBounds.y + underlineOffset + 0.5);
-                    int waveFormIndex = intX % 4;
+                    int waveFormIndex = xInt % 4;
                     for (int i = 0; i < wavePixelCount; i++) {
-                        xArray[i] = intX + i;
-                        yArray[i] = intY + waveForm[waveFormIndex];
+                        xArray[i] = xInt + i;
+                        yArray[i] = y + waveForm[waveFormIndex];
                         waveFormIndex = (++waveFormIndex) & 3;
                     }
                     g.drawPolyline(xArray, yArray, wavePixelCount - 1);
+                }
+            }
+
+            Object underlineValue = attrs.getAttribute(StyleConstants.Underline);
+            if (underlineValue != null) {
+                Color underlineColor;
+                if (underlineValue instanceof Boolean) { // Correct swing-way
+                    underlineColor = Boolean.TRUE.equals(underlineValue) ? textComponent.getForeground() : null;
+                } else { // NB bug - it's Color instance
+                    underlineColor = (Color) underlineValue;
+                }
+                if (underlineColor != null) {
+                    g.setColor(underlineColor);
+                    float underlineOffset = docView.getDefaultUnderlineOffset();
+                    float underlineThickness = docView.getDefaultUnderlineThickness();
+                    g.fillRect(
+                            (int) allocBounds.getX(),
+                            (int) (allocBounds.getY() + docView.getDefaultAscent() + underlineOffset),
+                            (int) allocBounds.getWidth(),
+                            (int) Math.max(1, Math.round(underlineThickness))
+                    );
                 }
             }
         }
@@ -417,12 +463,34 @@ public class HighlightsView extends EditorView implements TextLayoutView {
                 textComponent.getForeground(), g);
         paintTextLayout(g, allocBounds, docView, textLayout);
 
+        if (attrs != null) {
+            Object strikeThroughValue = attrs.getAttribute(StyleConstants.StrikeThrough);
+            if (strikeThroughValue != null) {
+                Color strikeThroughColor;
+                if (strikeThroughValue instanceof Boolean) { // Correct swing-way
+                    strikeThroughColor = Boolean.TRUE.equals(strikeThroughValue) ? textComponent.getForeground() : null;
+                } else { // NB bug - it's Color instance
+                    strikeThroughColor = (Color) strikeThroughValue;
+                }
+                if (strikeThroughColor != null) {
+                    g.setColor(strikeThroughColor);
+                    float strikeOffset = docView.getDefaultStrikethroughOffset();
+                    float strikeThickness = docView.getDefaultStrikethroughThickness();
+                    g.fillRect(
+                            (int) allocBounds.getX(),
+                            (int) (allocBounds.getY() + docView.getDefaultAscent() + strikeOffset),
+                            (int) allocBounds.getWidth(),
+                            (int) Math.max(1, Math.round(strikeThickness))
+                    );
+                }
+            }
+        }
     }
 
     static void paintTextLayout(Graphics2D g, Rectangle2D.Double bounds,
             DocumentView docView, TextLayout textLayout)
     {
-        float baselineOffset = docView.getDefaultBaselineOffset();
+        float baselineOffset = docView.getDefaultAscent();
         float x = (float) bounds.getX();
         float y = (float) bounds.getY();
         // TextLayout is unable to do a partial render

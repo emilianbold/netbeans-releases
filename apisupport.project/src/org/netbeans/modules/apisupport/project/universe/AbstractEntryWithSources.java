@@ -54,6 +54,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 abstract class AbstractEntryWithSources extends AbstractEntry {
@@ -136,17 +137,17 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
             return new String[0];
         }
         Element data = project.getPrimaryConfigurationData();
-        Element moduleDependencies = Util.findElement(data,
+        Element moduleDependencies = XMLUtil.findElement(data,
             "module-dependencies", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         assert moduleDependencies != null : "Malformed metadata in " + project;
-        for (Element dep : Util.findSubElements(moduleDependencies)) {
-            if (Util.findElement(dep, "run-dependency", // NOI18N
+        for (Element dep : XMLUtil.findSubElements(moduleDependencies)) {
+            if (XMLUtil.findElement(dep, "run-dependency", // NOI18N
                     NbModuleProject.NAMESPACE_SHARED) == null) {
                 continue;
             }
-            Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
+            Element cnbEl = XMLUtil.findElement(dep, "code-name-base", // NOI18N
                 NbModuleProject.NAMESPACE_SHARED);
-            String cnb = Util.findText(cnbEl);
+            String cnb = XMLUtil.findText(cnbEl);
             deps.add(cnb);
         }
         return deps.toArray(new String[deps.size()]);

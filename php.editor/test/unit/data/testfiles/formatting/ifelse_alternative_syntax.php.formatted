@@ -1,4 +1,5 @@
 <?
+
 if ($a > $b):
   echo $a . " is greater than " . $b;
   echo $a . " equals " . $b;

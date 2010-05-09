@@ -37,24 +37,18 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-/*
- * MissingClientPanel.java
- *
- * Created on Jul 9, 2008, 4:55:42 PM
- */
-
 package org.netbeans.modules.subversion.client;
 
 import java.awt.Color;
 import java.awt.Font;
-import javax.swing.JLabel;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.StyleSheet;
+import javax.swing.UIManager;
+import javax.swing.text.Document;
+import javax.swing.text.html.HTMLDocument;
 import org.openide.util.Utilities;
 
 /**
- *
  * @author Tomas Stupka
+ * @author Jan Stola
  */
 public class MissingClientPanel extends javax.swing.JPanel {
 
@@ -62,25 +56,22 @@ public class MissingClientPanel extends javax.swing.JPanel {
     public MissingClientPanel() {
         initComponents();
         if(Utilities.isWindows()) {
-            tipLabel.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel1.windows.text"));
+            tipLabel.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel1.windows.text")); // NOI18N
         } else {
-            tipLabel.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel1.unix.text"));
+            tipLabel.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel1.unix.text")); // NOI18N
         }
-        String text = org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.textPane.text");
+        String text = org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.textPane.text"); // NOI18N
         textPane.setText(text);
-        HTMLEditorKit kit = (HTMLEditorKit) textPane.getEditorKit();
-        StyleSheet css = kit.getStyleSheet();
-        if (css.getStyleSheets() == null) {
-            StyleSheet css2 = new StyleSheet();
-            Font f = new JLabel().getFont();
-            int size = f.getSize();
-            css2.addRule(new StringBuffer("body { font-size: ").append(size) // NOI18N
-                    .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
-            css2.addStyleSheet(css);
-            kit.setStyleSheet(css2);
+        Document doc = textPane.getDocument();
+        if (doc instanceof HTMLDocument) { // Issue 185505
+            HTMLDocument htmlDoc = (HTMLDocument)doc;
+            Font font = UIManager.getFont("Label.font"); // NOI18N
+            String bodyRule = "body { font-family: " + font.getFamily() + "; " // NOI18N
+                + "font-size: " + font.getSize() + "pt; }"; // NOI18N
+            htmlDoc.getStyleSheet().addRule(bodyRule);
         }
         textPane.setOpaque(false);
-        textPane.setBackground(new java.awt.Color(0,0,0,0)); // windows and nimbus workaround see issue 145826
+        textPane.setBackground(new Color(0,0,0,0)); // windows and nimbus workaround see issue 145826
     }
 
     /** This method is called from within the constructor to
@@ -104,11 +95,6 @@ public class MissingClientPanel extends javax.swing.JPanel {
 
         buttonGroup1.add(cliRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(cliRadioButton, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.cliRadioButton.text")); // NOI18N
-        cliRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cliRadioButtonActionPerformed(evt);
-            }
-        });
 
         textPane.setBackground(jLabel1.getBackground());
         textPane.setBorder(null);
@@ -128,50 +114,49 @@ public class MissingClientPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 740, Short.MAX_VALUE)
+            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(cliRadioButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(34, 34, 34)
+                        .add(21, 21, 21)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(tipLabel)
+                            .add(forceGlobalCheckBox)
+                            .add(lblBinariesAvailableTip)))
+                    .add(downloadRadioButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(21, 21, 21)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(textPane)
                             .add(layout.createSequentialGroup()
-                                .add(executablePathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 542, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(executablePathTextField)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(browseButton))
-                            .add(textPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(cliRadioButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 728, Short.MAX_VALUE)
-                    .add(downloadRadioButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 728, Short.MAX_VALUE))
+                            .add(tipLabel))))
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(40, 40, 40)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblBinariesAvailableTip)
-                    .add(forceGlobalCheckBox))
-                .addContainerGap(507, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(jLabel1)
-                .add(10, 10, 10)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(downloadRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lblBinariesAvailableTip)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(forceGlobalCheckBox)
-                .add(7, 7, 7)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(cliRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(textPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(browseButton)
-                    .add(executablePathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(executablePathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(browseButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(tipLabel)
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         downloadRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.downloadRadioButton.AccessibleContext.accessibleName")); // NOI18N
@@ -185,10 +170,6 @@ public class MissingClientPanel extends javax.swing.JPanel {
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-    private void cliRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cliRadioButtonActionPerformed
-        // TODO add your handling code here://GEN-LAST:event_cliRadioButtonActionPerformed
-    }                                              
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton browseButton = new javax.swing.JButton();

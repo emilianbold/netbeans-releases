@@ -1,0 +1,14 @@
+<?php
+
+class Test {
+    private 
+    function __construct() {
+
+    }
+
+    function method1($param) {
+
+    }
+
+}
+?>

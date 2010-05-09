@@ -104,7 +104,11 @@ public class RemoteFileSystem extends FileSystem {
 
     @Override
     public FileObject findResource(String name) {
-        return getRoot().getFileObject(name);
+        if (name.isEmpty() || name.equals("/")) {  // NOI18N
+            return getRoot();
+        } else {
+            return getRoot().getFileObject(name);
+        }
     }
 
     @Override
@@ -129,7 +133,7 @@ public class RemoteFileSystem extends FileSystem {
 
         @Override
         public boolean isRoot() {
-            return false;
+            return true;
         }
 
         @Override

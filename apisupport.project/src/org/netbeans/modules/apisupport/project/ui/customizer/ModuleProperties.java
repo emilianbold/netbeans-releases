@@ -102,7 +102,7 @@ public abstract class ModuleProperties {
         reloadProperties();
     }
     
-    protected void reloadProperties() {
+    public void reloadProperties() {
         this.projectProperties = helper.getProperties(
                 AntProjectHelper.PROJECT_PROPERTIES_PATH);
         this.privateProperties = helper.getProperties(
@@ -131,7 +131,7 @@ public abstract class ModuleProperties {
         return privateProperties;
     }
     
-    final String getProperty(String key) {
+    public final String getProperty(String key) {
         String value = getProjectProperties().getProperty(key);
         return value != null ? value : getDefaultValues().get(key);
     }
@@ -142,7 +142,7 @@ public abstract class ModuleProperties {
                 bValue.equalsIgnoreCase("yes")); // NOI18N
     }
     
-    final String removeProperty(String key) {
+    public final String removeProperty(String key) {
         return getProjectProperties().remove(key);
     }
     
@@ -155,7 +155,7 @@ public abstract class ModuleProperties {
      * given value is equals to the default value it will be removed from the
      * properties.
      */
-    final void setProperty(String key, String value) {
+    public final void setProperty(String key, String value) {
         String def = getDefaultValues().get(key);
         if (def == null) {
             def = ""; // NOI18N
@@ -195,11 +195,11 @@ public abstract class ModuleProperties {
         setProperty(key, Boolean.toString(bProp));
     }
     
-    String getProjectDisplayName() {
+    public String getProjectDisplayName() {
         return Util.getDisplayName(getHelper().getProjectDirectory());
     }
     
-    final File getProjectDirectoryFile() {
+    public final File getProjectDirectoryFile() {
         return FileUtil.toFile(getHelper().getProjectDirectory());
     }
     

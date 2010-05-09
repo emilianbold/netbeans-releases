@@ -821,9 +821,12 @@ public class PropertiesOpen extends CloneableOpenSupport
             BundleStructure structure = bundleStructure;
             SaveCookie save;
             for (int i=0; i<structure.getEntryCount();i++) {
-                save = structure.getNthEntry(i).getCookie(SaveCookie.class);
-                if (save != null) {
-                    save.save();
+                PropertiesFileEntry pfe = structure.getNthEntry(i);
+                if(pfe != null) { // #184927
+                    save = pfe.getCookie(SaveCookie.class);
+                    if (save != null) {
+                        save.save();
+                    }
                 }
             }
         }
@@ -1113,7 +1116,8 @@ public class PropertiesOpen extends CloneableOpenSupport
                 
                 boolean thisChanged = false;
                 for (int i=0;i<bundleStructure.getEntryCount();i++) {
-                    if(ev.hasChanged(bundleStructure.getNthEntry(i).getFile())) {
+                    PropertiesFileEntry pfe = bundleStructure.getNthEntry(i);
+                    if(pfe != null && ev.hasChanged(pfe.getFile())) { // #172691
                         thisChanged = true;
                         break;
                     }

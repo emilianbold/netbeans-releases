@@ -123,18 +123,10 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
     @Override
     public void open() {
         FileObject file = getFileObject();
-        if (file != null) {                
-            JavaSource js = JavaSource.forFileObject(file);
-            try {
-                js.runUserActionTask(new Task<CompilationController>() {
-                    public void run(CompilationController controller) throws Exception {
-                        controller.toPhase(JavaSource.Phase.RESOLVED);                        
-                        ElementOpen.open(controller.getClasspathInfo(), me);
-                    }
-                }, true);
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
+        if (file != null) {
+	    ClasspathInfo cpInfo = ClasspathInfo.create(file);
+	    
+	    ElementOpen.open(cpInfo, me);
         }
     }
    

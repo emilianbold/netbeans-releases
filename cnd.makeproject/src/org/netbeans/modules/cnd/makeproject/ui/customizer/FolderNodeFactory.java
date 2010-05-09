@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import java.util.ArrayList;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -54,13 +55,14 @@ public class FolderNodeFactory {
     }
 
     public static  Node createRootNodeFolder(Lookup lookup) {
-        MakeContext context = lookup.lookup(MakeContext.class);
-        int compilerSet = context.selectedCompilerSet();
         ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>(); //new CustomizerNode[2];
         descriptions.add(createGeneralFolderDescription(lookup));
-        if (compilerSet >= 0) {
-            descriptions.add(ItemNodeFactory.createCCompilerDescription(lookup));
-            descriptions.add(ItemNodeFactory.createCCCompilerDescription(lookup));
+        descriptions.add(ItemNodeFactory.createCCompilerDescription(lookup));
+        descriptions.add(ItemNodeFactory.createCCCompilerDescription(lookup));
+
+        Folder folder = lookup.lookup(Folder.class);
+        if(folder != null && (folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder())) {
+            descriptions.add(createLinkerDescription(lookup));
         }
 
         CustomizerNode rootDescription = new CustomizerNode(
@@ -72,6 +74,11 @@ public class FolderNodeFactory {
     private static CustomizerNode createGeneralFolderDescription(Lookup lookup) {
         return new GeneralFolderCustomizerNode(
                 "GeneralItem", getString("LBL_Config_General"), null, lookup); // NOI18N
+    }
+
+    // Linker
+    private static CustomizerNode createLinkerDescription(Lookup lookup) {
+        return new LinkerGeneralCustomizerNode("Linker", getString("LBL_LINKER_NODE"), null, lookup); // NOI18N
     }
 
     private static String getString(String s) {

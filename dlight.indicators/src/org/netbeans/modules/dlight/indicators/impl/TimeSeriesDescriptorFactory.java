@@ -39,11 +39,14 @@
 package org.netbeans.modules.dlight.indicators.impl;
 
 import java.awt.Color;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
-import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -53,14 +56,17 @@ import org.openide.filesystems.FileUtil;
  */
 public final class TimeSeriesDescriptorFactory {
 
-    static Collection<TimeSeriesDescriptor> createList(Map<?,?> map) {
+    private TimeSeriesDescriptorFactory() {
+    }
+
+    /*package*/ static Collection<TimeSeriesDescriptor> createList(Map<?, ?> map) {
         Collection<TimeSeriesDescriptor> result = new ArrayList<TimeSeriesDescriptor>();
         FileObject rootFolder = FileUtil.getConfigRoot();
         String itemsPath = (String) map.get("items");//NOI18N
         FileObject itemsFolder = rootFolder.getFileObject(itemsPath);
         FileObject[] descriptors = itemsFolder.getChildren();
         for (FileObject fo : descriptors) {
-            TimeSeriesDescriptor descr = (TimeSeriesDescriptor) fo.getAttribute("instanceCreate");//NOI18N
+            TimeSeriesDescriptor descr = TimeSeriesIndicatorConfigurationFactory.createInstance(fo, TimeSeriesDescriptor.class);
             if (descr != null) {
                 result.add(descr);
             }
@@ -68,34 +74,42 @@ public final class TimeSeriesDescriptorFactory {
         return result;
     }
 
-    private static int getColor(String c) {
-        if (c.startsWith("0x")) { //NOI18N
-            return Integer.parseInt(c.substring(2),16);
-        } else {
-            return Integer.parseInt(c);
+    /*package*/ static TimeSeriesDescriptor createTimeSeriesDescriptor(Map<?, ?> map) {
+        String name = getString(map, "name"); // NOI18N
+        String displayName = getString(map, "displayName"); // NOI18N
+        Color color = decodeColor(getString(map, "color")); // NOI18N
+        TimeSeriesDescriptor.Kind kind = TimeSeriesDescriptor.Kind.valueOf(getString(map, "kind")); // NOI18N
+        TimeSeriesDescriptor descriptor = new TimeSeriesDescriptor(name, displayName, color, kind);
+
+        Column column = TimeSeriesIndicatorConfigurationFactory.createInstance(getString(map, "column"), Column.class); // NOI18N
+        if (column != null) {
+            descriptor.setSourceColumns(Collections.singleton(column));
         }
+
+        return descriptor;
     }
 
-    static TimeSeriesDescriptor create(Map<?,?> map) {
-        String colorString = getStringValue(map, "color");//NOI18N
-        String[] rgb = colorString.split(":");//NOI18N
-        Color color = Color.BLACK;
-        if (rgb != null && rgb.length == 3){
-            try{
-                color = new Color( getColor(rgb[0]), getColor(rgb[1]), getColor(rgb[2]));
-            }catch(Throwable e){
-                e.printStackTrace();
-            }
-        }
-        String displayName = getStringValue(map, "displayName");//NOI18N
-        Kind kind = Kind.valueOf(getStringValue(map, "kind"));//NOI18N
-        return  new TimeSeriesDescriptor(color, displayName, kind);
-    }
-
-    private static String getStringValue(Map<?,?> map, String key) {
+    private static String getString(Map<?, ?> map, String key) {
         return (String) map.get(key);
     }
 
-    private TimeSeriesDescriptorFactory() {
+    private static Color decodeColor(String color) {
+        if (color == null) {
+            return null;
+        }
+        try {
+            return Color.decode(color);
+        } catch (NumberFormatException ex) {
+        } catch (SecurityException ex) {
+        }
+        try {
+            Field field = Color.class.getDeclaredField(color);
+            if ((field.getModifiers() & Modifier.STATIC) != 0 && field.getType() == Color.class) {
+                return (Color) field.get(null);
+            }
+        } catch (NoSuchFieldException ex) {
+        } catch (IllegalAccessException ex) {
+        }
+        return Color.BLACK;
     }
 }

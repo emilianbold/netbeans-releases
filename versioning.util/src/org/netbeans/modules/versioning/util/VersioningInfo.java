@@ -44,6 +44,8 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertySheet;
@@ -99,7 +101,12 @@ public class VersioningInfo {
                 Property[] props = new Property[fileProps.size()];
                 int i = 0;
                 for (Map.Entry<String, String> prop : fileProps.entrySet()) {
-                    props[i++] = new VersioningInfoProperty(prop.getKey().toString(), prop.getValue().toString());
+                    String value = prop.getValue();
+                    if (value == null) {
+                        Logger.getLogger(VersioningInfo.class.getName()).log(Level.INFO, "null value for property {0}", prop.getKey()); //NOI18N
+                        value = NbBundle.getMessage(VersioningInfo.class, "MSG_VersioningInfoNode_unknownvalue"); //NOI18N
+                    }
+                    props[i++] = new VersioningInfoProperty(prop.getKey(), value);
                 }
                 ps.put(props);
                 sheet.put(ps);

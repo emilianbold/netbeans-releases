@@ -87,6 +87,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -233,6 +235,8 @@ public abstract class TreeView extends JScrollPane {
 
     /** Holds VisualizerChildren for all visible nodes */
     private final VisualizerHolder visHolder = new VisualizerHolder();
+    /** reference to the last visible search field */
+    private static Reference<TreeView> lastSearchField = new WeakReference<TreeView>(null);
 
     /** Constructor.
     */
@@ -938,8 +942,9 @@ public abstract class TreeView extends JScrollPane {
         }
 
         showWaitCursor(true);
-        RequestProcessor.getDefault().post(new Runnable() {
-
+        // not sure whenter throughput 1 is OK...
+        ViewUtil.uiProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     node.getChildren().getNodesCount(true);
@@ -1229,6 +1234,7 @@ public abstract class TreeView extends JScrollPane {
             });
         }
 
+        @Override
         public synchronized void treeExpanded(TreeExpansionEvent ev) {
             VisualizerNode vn = (VisualizerNode) ev.getPath().getLastPathComponent();
             visHolder.add(vn.getChildren());
@@ -1305,9 +1311,10 @@ public abstract class TreeView extends JScrollPane {
 
             // It is OK to use multithreaded shared RP as the requests
             // will be serialized in event queue later
-            scheduled = RequestProcessor.getDefault().post(new Request(ev.getPath()), 250); // hope that all children are there after this time
+            scheduled = ViewUtil.uiProcessor().post(new Request(ev.getPath()), 250); // hope that all children are there after this time
         }
 
+        @Override
         public synchronized void treeCollapsed(final TreeExpansionEvent ev) {
             class Request implements Runnable {
                 private TreePath path;
@@ -1369,7 +1376,7 @@ public abstract class TreeView extends JScrollPane {
             // It is OK to use multithreaded shared RP as the requests
             // will be serialized in event queue later
             // bugfix #37420, children of all collapsed folders will be throw out
-            RequestProcessor.getDefault().post(new Request(ev.getPath()), TIME_TO_COLLAPSE);
+            ViewUtil.uiProcessor().post(new Request(ev.getPath()), TIME_TO_COLLAPSE);
         }
 
         /* Called whenever the value of the selection changes.
@@ -1699,6 +1706,11 @@ public abstract class TreeView extends JScrollPane {
         if( null != searchpanel )
             return;
 
+        TreeView previousSearchField = lastSearchField.get();
+        if (previousSearchField != null && previousSearchField != this) {
+            previousSearchField.removeSearchField();
+        }
+
         JViewport vp = getViewport();
         originalScrollMode = vp.getScrollMode();
         vp.setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
@@ -1709,6 +1721,8 @@ public abstract class TreeView extends JScrollPane {
         revalidate();
         repaint();
         searchTextField.requestFocus();
+
+        lastSearchField = new WeakReference<TreeView>(this);
     }
 
     /**
@@ -1834,6 +1848,16 @@ public abstract class TreeView extends JScrollPane {
                 revalidate();
                 repaint();
             }
+        }
+
+        @Override
+        public Rectangle getRowBounds(int row) {
+            Rectangle r = super.getRowBounds(row);
+            if (r == null) {
+                LOG.log(Level.WARNING, "No bounds for row {0} in three view: {1}", new Object[]{row, this});
+                return new Rectangle();
+            }
+            return r;
         }
 
         //

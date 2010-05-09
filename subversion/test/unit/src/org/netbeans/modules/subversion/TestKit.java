@@ -133,7 +133,8 @@ public class TestKit {
                 }                
             }
             client.commit(new File[] {wc}, "commit", true);                    
-        }        
+        }
+        Subversion.getInstance().versionedFilesChanged();
     }        
 
     public static void mkdirs(File repoDir, String folder) throws SVNClientException, MalformedURLException {

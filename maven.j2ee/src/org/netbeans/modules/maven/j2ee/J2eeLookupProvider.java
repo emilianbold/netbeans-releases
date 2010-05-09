@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.maven.j2ee.ejb.EjbEntRefContainerImpl;
 import org.netbeans.modules.maven.j2ee.web.EntRefContainerImpl;
+import org.netbeans.modules.maven.j2ee.web.MavenWebProjectWebRootProvider;
 import org.netbeans.modules.maven.j2ee.web.WebEjbJarImpl;
 import org.netbeans.modules.maven.j2ee.web.WebReplaceTokenProvider;
 import org.netbeans.spi.project.LookupProvider;
@@ -104,6 +105,7 @@ public class J2eeLookupProvider implements LookupProvider {
         private final MavenPersistenceProviderSupplier supplier;
         private EjbJarProvider webEjbJarProvider;
         private EjbJarsInProject ejbJarsInProject;
+        private MavenWebProjectWebRootProvider webRootProvider;
 
         public Provider(Project proj, InstanceContent cont) {
             super(cont);
@@ -115,6 +117,7 @@ public class J2eeLookupProvider implements LookupProvider {
             jpa = new JPAStuffImpl(proj);
             resolver = new EMGSResolverImpl();
             supplier = new MavenPersistenceProviderSupplier(proj);
+            webRootProvider = new MavenWebProjectWebRootProvider(project);
 
             checkJ2ee();
             NbMavenProject.addPropertyChangeListener(project, this);
@@ -161,6 +164,7 @@ public class J2eeLookupProvider implements LookupProvider {
                 content.add(jpa);
                 content.add(resolver);
                 content.add(supplier);
+                content.add(webRootProvider);
                 //j2ee 6 stuff..
                 Profile prf = prov.getWebModuleImplementation().getJ2eeProfile();
                 if (Profile.JAVA_EE_6_WEB.equals(prf) || Profile.JAVA_EE_6_FULL.equals(prf)) {
@@ -216,6 +220,7 @@ public class J2eeLookupProvider implements LookupProvider {
             content.remove(jpa);
             content.remove(resolver);
             content.remove(supplier);
+            content.remove(webRootProvider);
             if (webEjbJarProvider != null) {
                 content.remove(webEjbJarProvider);
                 webEjbJarProvider = null;

@@ -64,8 +64,8 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.xml.search.api.SearchManager;
-import org.netbeans.modules.xml.validation.ShowCookie;
-import org.netbeans.modules.xml.validation.ValidateAction;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
+import org.netbeans.modules.xml.validation.action.ValidateAction;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.cookies.RefreshExtensibilityElementNodeCookie;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLSettings.ViewMode;
@@ -425,9 +425,17 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
                     mToolbar.addSeparator();
                     categoryPane.populateToolbar(mToolbar);
                 }
-                // vlv: search
                 mToolbar.addSeparator();
-                mToolbar.add(SearchManager.getDefault().getSearchAction());
+                // vlv: search
+                //Fix 166881 NPE
+                SearchManager searchManager = SearchManager.getDefault();
+                if (searchManager != null) {
+                    Action searchAction = searchManager.getSearchAction();
+                    if (searchAction != null) {
+                        mToolbar.addSeparator();
+                        mToolbar.add(searchAction);
+                    }
+                }
 
                 mToolbar.addSeparator();
                 mToolbar.add(new ValidateAction(model));

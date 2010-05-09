@@ -42,6 +42,7 @@
 package org.netbeans.lib.html.lexer;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
@@ -141,9 +142,19 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         
     }
 
+    private final HashMap<CompoundState, CompoundState> STATES_CACHE = new HashMap<CompoundState, CompoundState>();
+
     @Override
     public Object state() {
-        return new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, attribute, tag);
+        //cache the states so lexing of large files do not eat too much memory
+        CompoundState currentState = new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, attribute, tag);
+        CompoundState cached = STATES_CACHE.get(currentState);
+        if(cached == null) {
+            STATES_CACHE.put(currentState, currentState);
+            return currentState;
+        } else {
+            return cached;
+        }
     }
 
     //script and style tag names
@@ -223,6 +234,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
     private static final int ISI_SGML_DECL_WS = 41; //after whitespace in SGML declaration
 
+    private static final int ISI_VAL_QUOT_ESC = 42;
+    private static final int ISI_VAL_DQUOT_ESC = 43;
+
     static final Set<String> EVENT_HANDLER_NAMES = new HashSet<String>();
     static {
         // See http://www.w3.org/TR/html401/interact/scripts.html
@@ -248,6 +262,16 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         // IMPORTANT - if you add any that DON'T start with "o" here,
         // make sure you update the optimized firstchar look in isJavaScriptArgument
     }
+
+    private static final String SUPPORTED_SCRIPT_TYPE = "text/javascript"; //NOI18N
+
+    //flyweight token images
+    private static final String IMG_EQUAL_SIGN = "="; //NOI18N
+    private static final String IMG_CLOSE_TAG_SYMBOL = ">"; //NOI18N
+    private static final String IMG_CLOSE_TAG_SYMBOL2 = "/>"; //NOI18N
+    private static final String IMG_OPEN_TAG_SYMBOL = "<"; //NOI18N
+    private static final String IMG_OPEN_TAG_SYMBOL2 = "</"; //NOI18N
+
 
     public HtmlLexer(LexerRestartInfo<HTMLTokenId> info) {
         this.input = info.input();
@@ -343,6 +367,13 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             }
         }
         return false;
+    }
+
+    private boolean isJavascriptType(CharSequence attributeValue, boolean quoted) {
+        //TODO create a list of included/excluded script types
+        //now "all minus vbscript" implies javascript
+        CharSequence clean = quoted ? attributeValue.subSequence(1, attributeValue.length() - 1) : attributeValue;
+        return equals(SUPPORTED_SCRIPT_TYPE, clean, true, true);
     }
 
     private boolean followsCloseTag(CharSequence closeTagName) {
@@ -745,7 +776,20 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
                 case ISI_VAL_QUOT:
                     switch (actChar) {
+                        case '\\':
+                            //may be escaped quote
+                            lexerState = ISI_VAL_QUOT_ESC;
+                            break;
+
                         case '\'':
+                            //reset the 'script embedding will follow state' if the value represents a
+                            //type attribute value of a script tag
+                            if(equals(SCRIPT, tag, true, true) && equals("type", attribute, true, true)) { //NOI18N
+                                if(!isJavascriptType(input.readText(), true)) {
+                                    lexerEmbeddingState = INIT;
+                                }
+                            }
+
                             lexerState = ISP_TAG_X;
                             return resolveValueToken();
                     }
@@ -753,13 +797,38 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
                 case ISI_VAL_DQUOT:
                     switch (actChar) {
+                        case '\\':
+                            //may be escaped quote
+                            lexerState = ISI_VAL_DQUOT_ESC;
+                            break;
+
                         case '"':
+                            //reset the 'script embedding will follow state' if the value represents a
+                            //type attribute value of a script tag
+                            if(equals(SCRIPT, tag, true, true) && equals("type", attribute, true, true)) { //NOI18N
+                                if(!isJavascriptType(input.readText(), true)) {
+                                    lexerEmbeddingState = INIT;
+                                }
+                            }
+
                             lexerState = ISP_TAG_X;
                             return resolveValueToken();
                     }
                     break;  // else simply consume next char of VALUE
 
+                case ISI_VAL_QUOT_ESC:
+                    //Just consume the escaped char.
+                    //The state prevents the quoted value
+                    //to be finished by an escaped quote.
+                    lexerState = ISI_VAL_QUOT;
+                    break;
 
+                case ISI_VAL_DQUOT_ESC:
+                    //Just consume the escaped char.
+                    //The state prevents the quoted value
+                    //to be finished by an escaped quote.
+                    lexerState = ISI_VAL_DQUOT;
+                    break;
 
                 case ISA_SGML_ESCAPE:       // DONE
                     if( isAZ(actChar) ) {
@@ -1038,6 +1107,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             case ISI_VAL:
             case ISI_VAL_QUOT:
             case ISI_VAL_DQUOT:
+            case ISI_VAL_QUOT_ESC:
+            case ISI_VAL_DQUOT_ESC:
                 return resolveValueToken();
 
             case ISI_SGML_DECL:
@@ -1127,10 +1198,62 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             }
             LOGGER.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + tokenId + "; state=" + state() + ")\n"); //NOI18N
         }
-        Token token = propertyKey == null || propertyValue == null ?
-            tokenFactory.createToken(tokenId) :
-            tokenFactory.createPropertyToken(tokenId, input.readLength(), new HtmlTokenPropertyProvider(propertyKey, propertyValue));
-        return token;
+         if(propertyKey != null && propertyValue != null) {
+            return tokenFactory.createPropertyToken(tokenId, input.readLength(), new HtmlTokenPropertyProvider(propertyKey, propertyValue));
+        } else {
+            CharSequence image = input.readText();
+            switch(tokenId) {
+                case OPERATOR:
+                    return tokenFactory.getFlyweightToken(tokenId, IMG_EQUAL_SIGN);
+
+                case TAG_CLOSE_SYMBOL:
+                    switch(image.charAt(0)) {
+                        case '/':
+                            if(input.readLength() > 1) {
+                                if(image.charAt(1) == '>') {
+                                    return tokenFactory.getFlyweightToken(tokenId, IMG_CLOSE_TAG_SYMBOL2);
+                                }
+                            }
+                            break;
+                        case '>':
+                            return tokenFactory.getFlyweightToken(tokenId, IMG_CLOSE_TAG_SYMBOL);
+                    }
+
+                case TAG_OPEN_SYMBOL:
+                    switch(image.charAt(0)) {
+                        case '<':
+                            if(input.readLength() > 1) {
+                                if(image.charAt(1) == '/') {
+                                    return tokenFactory.getFlyweightToken(tokenId, IMG_OPEN_TAG_SYMBOL2);
+                                }
+                                break;
+                            } else  {
+                                return tokenFactory.getFlyweightToken(tokenId, IMG_OPEN_TAG_SYMBOL);
+                            }
+
+                    }
+
+                case TAG_OPEN:
+                case TAG_CLOSE:
+                    String cachedTagName = HtmlElements.getCachedTagName(image);
+                    if(cachedTagName != null) {
+                        assert (cachedTagName.length() <= input.readLength()) : "readlength == " + input.readLength() + "; text=" + cachedTagName + "; image=" + image;
+                        return tokenFactory.getFlyweightToken(tokenId, cachedTagName);
+                    }
+                    break;
+                case ARGUMENT:
+                    String cachedAttrName = HtmlElements.getCachedAttrName(image);
+                    if(cachedAttrName != null) {
+                        assert (cachedAttrName.length() <= input.readLength()) : "readlength == " + input.readLength() + "; text=" + cachedAttrName + "; image=" + image;
+                        return tokenFactory.getFlyweightToken(tokenId, cachedAttrName);
+                    }
+                    break;
+            }
+            
+            return tokenFactory.createToken(tokenId);
+
+        }
+
     }
 
     @Override

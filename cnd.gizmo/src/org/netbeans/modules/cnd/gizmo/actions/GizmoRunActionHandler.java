@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.gizmo.actions;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -78,7 +79,6 @@ import org.netbeans.modules.cnd.gizmo.CppSymbolDemanglerFactoryImpl;
 import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
 import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
 import org.netbeans.modules.dlight.api.execution.DLightSessionConfiguration;
-import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -136,6 +136,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             } else {
                 RemoteBinaryService.RemoteBinaryID executableID = RemoteBinaryService.getRemoteBinary(execEnv, executable);
                 targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executableID.toIDString());
+                targetConf.putInfo(GizmoServiceInfo.GIZMO_REMOTE_EXECUTABLE, executable);
             }
         } else {
             targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
@@ -165,6 +166,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
         targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER, compilerSet.getCompilerFlavor().isGnuCompiler() ? CppSymbolDemanglerFactoryImpl.CPPCompiler.GNU.toString() : CppSymbolDemanglerFactoryImpl.CPPCompiler.SS.toString());
         targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER_BIN_PATH, binDir);
+        targetConf.putInfo(Charset.class.getName(), compilerSet.getEncoding().name());
         targetConf.setWorkingDirectory(runDirectory);
         int consoleType = pae.getProfile().getConsoleType().getValue();
         if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
@@ -285,17 +287,12 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     private void targetFinished(Integer status) {
         int exitCode = -1;
 
-        boolean outStatus = !IOTerm.isSupported(io);
-        
-        if (outStatus) {
-            io.getOut().println();
-        }
+        // use \r\n to correctly move cursor in terminals as well
+        io.getOut().printf("\r\n"); // NOI18N
 
         if (status == null) {
             StatusDisplayer.getDefault().setStatusText(getMessage("Status.RunTerminated")); // NOI18N
-            if (outStatus) {
-                io.getErr().println(getMessage("Output.RunTerminated")); // NOI18N
-            }
+            io.getErr().println(getMessage("Output.RunTerminated")); // NOI18N
         } else {
             exitCode = status.intValue();
             boolean success = exitCode == 0;
@@ -305,12 +302,12 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
 
             String time = formatTime(System.currentTimeMillis() - startTimeMillis);
             
-            if (outStatus) {
-                if (success) {
-                    io.getOut().println(getMessage("Output.RunSuccessful", time)); // NOI18N);
-                } else {
-                    io.getErr().println(getMessage("Output.RunFailed", exitCode, time)); // NOI18N
-                }
+            if (success) {
+                // use \r\n to correctly move cursor in terminals as well
+                io.getOut().printf("%s\r\n", getMessage("Output.RunSuccessful", time)); // NOI18N);
+            } else {
+                // use \r\n to correctly move cursor in terminals as well
+                io.getErr().printf("%s\r\n", getMessage("Output.RunFailed", exitCode, time)); // NOI18N
             }
         }
 

@@ -65,8 +65,6 @@ import org.openide.xml.XMLUtil;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -142,7 +140,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
         if (shared) {
             //first check the document schedule for persistence
             if (scheduledDocument != null) {
-                Element el = findElement(scheduledDocument.getDocumentElement(), elementName, namespace);
+                Element el = XMLUtil.findElement(scheduledDocument.getDocumentElement(), elementName, namespace);
                 if (el != null) {
                     el = (Element) el.cloneNode(true);
                 }
@@ -159,7 +157,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                         //TODO shall be have some kind of caching here to prevent frequent IO?
                         doc = XMLUtil.parse(new InputSource(in), false, true, null, null);
                         cachedDoc = doc;
-                        return findElement(doc.getDocumentElement(), elementName, namespace);
+                        return XMLUtil.findElement(doc.getDocumentElement(), elementName, namespace);
                     } catch (SAXException ex) {
                         ProblemReporterImpl impl = project.getProblemReporter();
                         if (!impl.hasReportWithId(BROKEN_NBCONFIG)) {
@@ -189,7 +187,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 } else {
                     //reuse cached value if available;
                     if (cachedDoc != null) {
-                        return findElement(cachedDoc.getDocumentElement(), elementName, namespace);
+                        return XMLUtil.findElement(cachedDoc.getDocumentElement(), elementName, namespace);
                     }
                 }
             } else {
@@ -203,7 +201,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 Document doc;
                 try {
                     doc = XMLUtil.parse(new InputSource(new StringReader(str)), false, true, null, null);
-                    return findElement(doc.getDocumentElement(), elementName, namespace);
+                    return XMLUtil.findElement(doc.getDocumentElement(), elementName, namespace);
                 } catch (SAXException ex) {
                     ex.printStackTrace();
                 } catch (IOException ex) {
@@ -254,7 +252,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             }
         }
         if (doc != null) {
-            Element el = findElement(doc.getDocumentElement(), fragment.getNodeName(), fragment.getNamespaceURI());
+            Element el = XMLUtil.findElement(doc.getDocumentElement(), fragment.getNodeName(), fragment.getNamespaceURI());
             if (el != null) {
                 doc.getDocumentElement().removeChild(el);
             }
@@ -319,7 +317,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             }
         }
         if (doc != null) {
-            Element el = findElement(doc.getDocumentElement(), elementName, namespace);
+            Element el = XMLUtil.findElement(doc.getDocumentElement(), elementName, namespace);
             if (el != null) {
                 doc.getDocumentElement().removeChild(el);
             }
@@ -339,25 +337,6 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             }
         }
         return true;
-    }
-
-    private static Element findElement(Element parent, String name, String namespace) {
-        Element result = null;
-        NodeList l = parent.getChildNodes();
-        int len = l.getLength();
-        for (int i = 0; i < len; i++) {
-            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                Element el = (Element) l.item(i);
-                if (name.equals(el.getLocalName()) && ((namespace == el.getNamespaceURI()) /*check both namespaces are null*/ || (namespace != null && namespace.equals(el.getNamespaceURI())))) {
-                    if (result == null) {
-                        result = el;
-                    } else {
-                        return null;
-                    }
-                }
-            }
-        }
-        return result;
     }
 
     static class OpenConfigAction extends AbstractAction {

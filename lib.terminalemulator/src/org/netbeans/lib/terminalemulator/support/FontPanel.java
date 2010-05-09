@@ -3,6 +3,7 @@ package org.netbeans.lib.terminalemulator.support;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -16,10 +17,22 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import java.util.Arrays;
 import java.util.Vector;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -27,6 +40,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
@@ -40,6 +56,10 @@ class FontPanel extends JPanel {
 
     private final TermOptionsPanel fontPanel;
 
+    private static final boolean simulateSlowness = false;
+
+    private JDialog containingJDialog;
+
     private JCheckBox showFixedCheckBox;
     private JTextField tfFont;
     private JTextField tfStyle;
@@ -49,17 +69,20 @@ class FontPanel extends JPanel {
     private JList lSize;
     private boolean dontSetValue = false;
 
-    private boolean showFixed = true;
+    private static boolean showFixed = true;
+
+    // List of fonts the user can choose from.
+    private static Fonts fonts;
 
     private String fontFamily;
     private int size = 12;
     private int style;
+
+    // font is a derived value (from new Font(fontFamily, style, size))
     private Font font = null;
 
     private String errorMsg = null;
 
-    // List of fonts the user can choose from.
-    private Vector<FontDescr> fonts;
 
     private static class FontDescr {
         private String name;
@@ -86,44 +109,96 @@ class FontPanel extends JPanel {
      * @return true if this font is fixed width.
      */
     private static boolean isFixedWidth(Component context, Font font) {
-        FontMetrics metrics = context.getFontMetrics(font);
-        int[] widths = metrics.getWidths();
-        int Swidth = widths[0];
-        for (int cx = 1; cx < widths.length; cx++) {
-            int width = widths[cx];
-            if (width == 0) {
-                continue;
-            } else if (Swidth != width) {
-                return false;
-            }
-        }
-        return true;
+	FontMetrics metrics = context.getFontMetrics(font);
+	int[] widths = metrics.getWidths();
+	int Swidth = widths[0];
+	for (int cx = 1; cx < widths.length; cx++) {
+	    int width = widths[cx];
+	    if (width == 0) {
+		continue;
+	    } else if (Swidth != width) {
+		return false;
+	    }
+	}
+	return true;
     }
 
-    private FontDescr descrByName(String fontName) {
-        for (FontDescr fontDescr : fonts) {
-            if (fontDescr.name().equals(fontName))
-                return fontDescr;
-        }
-        return null;
+
+    /**
+     * Encapsulates the list of fonts the user can choose from.
+     */
+    private class Fonts {
+	private final Vector<FontDescr> fonts = new Vector<FontDescr>();
+
+	public Fonts() {
+	    add(new FontDescr("Monospaced", true));	// NOI18N
+	}
+
+	public Vector<FontDescr> asVector() {
+	    return fonts;
+	}
+
+	public FontDescr descrByName(String fontName) {
+	    for (FontDescr fontDescr : fonts) {
+		if (fontDescr.name().equals(fontName))
+		    return fontDescr;
+	    }
+	    return null;
+	}
+
+	public void add(FontDescr fontDescr) {
+	    fonts.add(fontDescr);
+	}
+
+	public FontDescr get(int x) {
+	    return fonts.get(x);
+	}
+
+	public int size() {
+	    return fonts.size();
+	}
+
+
     }
 
-    private Vector<FontDescr> getFonts(int size, int style) {
-        if (fonts == null) {
+
+    private class GetFontsWorker extends SwingWorker<Fonts, Object> {
+
+	public static final String PROP_NFONTS = "nfonts";	// NOI18N
+
+	private final Component comp;
+	private final boolean showFixed;
+	private final int size;
+	private final int style;
+
+	private Fonts result;
+
+	/**
+	 *
+	 * @param comp Component in which we calculate font metrics
+	 * @param showFixed
+	 * @param size size for which we calculate font metrics
+	 * @param style style for which we calculate font metrics
+	 */
+	public GetFontsWorker(Component comp, boolean showFixed, int size, int style) {
+	    this.comp = comp;
+	    this.showFixed = showFixed;
+	    this.size = size;
+	    this.style = style;
+	}
+
+	@Override
+	protected Fonts doInBackground() throws Exception {
             String[] fontNames;
             try {
                 fontNames = GraphicsEnvironment.getLocalGraphicsEnvironment ().getAvailableFontFamilyNames();
+		if (simulateSlowness)
+		    Thread.sleep(2500);	// millis
             } catch (RuntimeException e) {
-                /* OLD
-                if (org.openide.util.Utilities.isMac()) {
-                    String msg = "MSG_AppleBug"; //NOI18N
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-                } else {
-                    throw e;
-                }
-                 */
                 throw e;
             }
+
+	    firePropertyChange(PROP_NFONTS, null, fontNames.length);
 
             // It turns out that "Monospaced" is actually not fixed width
             // in bold style. So if we honor style then under certain
@@ -134,21 +209,107 @@ class FontPanel extends JPanel {
             // Perhaps SHOULD special-case "Monospaced"?
             // TMP style = Font.PLAIN;
 
-            fonts = new Vector<FontDescr>();
-            for (int fx = 0; fx < fontNames.length; fx++) {
-                Font f = new Font (fontNames[fx], style, size);
-                boolean isFixedWidth = isFixedWidth(this, f);
-                if (showFixed) {
-                    if (isFixedWidth)
-                        fonts.add(new FontDescr(fontNames[fx], isFixedWidth));
-                } else {
-                    fonts.add(new FontDescr(fontNames[fx], isFixedWidth));
-                }
-            }
-        }
-        return fonts;
+	    result = new Fonts();
+	    for (int fx = 0; fx < fontNames.length; fx++) {
+		if (isCancelled())
+		    break;
+		Font f = new Font (fontNames[fx], style, size);
+		boolean isFixedWidth = isFixedWidth(comp, f);
+		if (showFixed) {
+		    if (isFixedWidth)
+			result.add(new FontDescr(fontNames[fx], isFixedWidth));
+		} else {
+		    result.add(new FontDescr(fontNames[fx], isFixedWidth));
+		}
+		if (simulateSlowness)
+		    Thread.sleep(100);	// millis
+		setProgress(fx);
+	    }
+
+	    return result;
+	}
+
+	@Override
+	protected void done() {
+	    Fonts fonts = null;
+	    try {
+		fonts = get();
+	    } catch (InterruptedException ex) {
+		Logger.getLogger(FontPanel.class.getName()).log(Level.SEVERE, null, ex);
+	    } catch (ExecutionException ex) {
+		Logger.getLogger(FontPanel.class.getName()).log(Level.SEVERE, null, ex);
+	    } catch (CancellationException ex) {
+		// Logger.getLogger(FontPanel.class.getName()).log(Level.WARNING, null, ex);
+	    }
+	    gotFonts(fonts);
+	}
     }
 
+    /**
+     * Effectively control whether font chooser dialog (the one containing us)
+     * is modal.
+     */
+    private void setModal(boolean modal) {
+	assert containingJDialog() != null;
+	if (modal) {
+	    originalCursor = containingJDialog().getCursor();
+	    containingJDialog().setCursor(waitCursor);
+	    containingJDialog().getGlassPane().setVisible(true);
+	    containingJDialog().getGlassPane().addMouseListener(new MouseAdapter() {
+		@Override
+		public void mousePressed(MouseEvent e) {
+		    e.consume();
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+		    e.consume();
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+		    e.consume();
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+		    e.consume();
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+		    e.consume();
+		}
+	    });
+
+	} else {
+	    containingJDialog().setCursor(originalCursor);
+	    containingJDialog().getGlassPane().setVisible(false);
+	}
+    }
+
+    // State to help us restore stuff after Worker is done.
+    // HACK ... should use a trampoline runnable.
+    private Runnable continuation;
+    private ProgressMonitor progressMonitor;
+    private Cursor originalCursor;
+    private Cursor waitCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+
+    private void gotFonts(Fonts fonts) {
+	assert SwingUtilities.isEventDispatchThread();
+
+	// If 'fonts' is null it means worker was cancelled 
+	// or some other trouble so don't switch.
+	if (fonts != null)
+	    this.fonts = fonts;
+
+	progressMonitor.close();
+	progressMonitor = null;
+	setModal(false);
+
+	if (continuation != null)
+	    continuation.run();
+    }
 
     static final Integer[] sizes = new Integer [] {
                                        Integer.valueOf (3),
@@ -206,13 +367,13 @@ class FontPanel extends JPanel {
 	@Override
         public void valueChanged(ListSelectionEvent e) {
             if (!lFont.isSelectionEmpty()) {
-                if (getFonts(size, style).size() > 0) {
+                if (fonts.size() > 0) {
                     //Mac bug workaround
                     int i = lFont.getSelectedIndex();
-                    String newFontName = getFonts(size, style).get(i).name();
+                    String newFontName = fonts.get(i).name();
                     if (! newFontName.equals(fontFamily)) {
                         tfFont.setText(newFontName);
-                        setValue();
+                        setValue(null);
                     }
                 }
             }
@@ -234,15 +395,41 @@ class FontPanel extends JPanel {
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(12, 12, 0, 11));
         if (font == null) {
-            if (getFonts(size, style).size() > 0) {
+            if (fonts != null && fonts.size() > 0) {
                 font = new Font(fonts.get(0).name(), Font.PLAIN, 10);
             } else {
                 font = UIManager.getFont("Label.font");		// NOI18N
             }
         }
 
+	this.size = font.getSize();
+	this.style = font.getStyle();
+	this.fontFamily = font.getFamily();
 
-        lFont = new JList(getFonts(size, style));
+	if  (fonts == null || fonts.size() == 1) {
+	    // First time ever or if called again after a worker canellation
+
+	    // Initial list made up of just the passed-in font
+	    fonts = new Fonts();
+	    if (! font.getFamily().equals("Monospaced"))	// NOI18N
+		fonts.add(new FontDescr(font.getFamily(), isFixedWidth(parent, font)));
+
+	    SwingUtilities.invokeLater(new Runnable() {
+		@Override
+		public void run() {
+		    updateFontList();
+		}
+	    });
+	} else {
+	    SwingUtilities.invokeLater(new Runnable() {
+		@Override
+		public void run() {
+		    trackFont();
+		}
+	    });
+	}
+
+        lFont = new JList(fonts.asVector());
         lFont.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         lFont.getAccessibleContext().setAccessibleDescription("ACSD_CTL_Font");	// NOI18N
         lFont.setCellRenderer(new MyListCellRenderer(lFont.getCellRenderer()));
@@ -278,7 +465,7 @@ class FontPanel extends JPanel {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 // showFixedActionPerformed(evt);
                 showFixed = showFixedCheckBox.isSelected();
-                setFontList();
+                updateFontList();
             }
         });
         add(showFixedCheckBox, c);
@@ -332,7 +519,7 @@ class FontPanel extends JPanel {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    setValue();
+                    setValue(null);
                 }
             }
         });
@@ -349,10 +536,10 @@ class FontPanel extends JPanel {
                 if (c != null) {
                     if (c instanceof JButton) {
                         if (((JButton) c).getText().equals("CTL_OK")) {	// NOI18N
-                            setValue();
+                            setValue(null);
                         }
                     } else {
-                        setValue();
+                        setValue(null);
                     }
                 }
             }
@@ -371,16 +558,6 @@ class FontPanel extends JPanel {
         c.weightx = 1.0;
         c.weighty = 1.0;
         lFont.setVisibleRowCount(5);
-        fontFamily = font.getFamily();
-        lFont.setSelectedValue(descrByName(fontFamily), true);
-        int is = lFont.getSelectedIndex();
-        if (is ==-1) {
-            errorMsg = Catalog.format("FMT_FontUnavailable", fontFamily);	// NOI18N
-            fontFamily = fonts.get(0).name();
-            lFont.setSelectedValue(fonts.get(0), true);
-        } else {
-            errorMsg = null;
-        }
 
         lFontListen(true);
         JScrollPane sp = new JScrollPane(lFont);
@@ -399,7 +576,7 @@ class FontPanel extends JPanel {
                     String newStyleName = styles[i];
                     if (! newStyleName.equals(tfStyle.getText())) {
                         tfStyle.setText(styles[i]);
-                        setValue();
+                        setValue(null);
                     }
                 }
             }
@@ -421,7 +598,7 @@ class FontPanel extends JPanel {
                 if (!lSize.isSelectionEmpty()) {
                     int i = lSize.getSelectedIndex();
                     tfSize.setText(String.valueOf(sizes[i]));
-                    setValue();
+                    setValue(null);
                 }
             }
         });
@@ -457,32 +634,120 @@ class FontPanel extends JPanel {
         add(p);
     }
 
-    private boolean settingList;
+    private JDialog containingJDialog() {
+	if (containingJDialog == null) {
+	    Component dialogCandidate = this;
+	    while (dialogCandidate != null && !(dialogCandidate instanceof JDialog))
+		dialogCandidate = dialogCandidate.getParent();
+	    if (dialogCandidate == null)
+		containingJDialog = null;
+	    else
+		containingJDialog = (JDialog) dialogCandidate;
+	}
+	return containingJDialog;
+    }
 
-    private void setFontList() {
-        if (settingList)
-            return;
-        settingList = true;
-        lFontListen(false);
+
+    /*
+     * Called from constructor or when showFixed, style or size changes.
+     */
+    private void updateFontList() {
+	Runnable whenDone = new Runnable() {
+	    @Override
+	    public void run() {
+		fontListUpdated();
+	    }
+	};
+	this.continuation = whenDone;
+
+	setModal(true);
+
+	final GetFontsWorker worker = new GetFontsWorker(this, showFixed, size, style);
+	progressMonitor = new ProgressMonitor(this,
+				  Catalog.get("MSG_TakingInventory"),// NOI18N
+				  " ",				// NOI18N
+				  0, 2);
+	// TMP progressMonitor.setMillisToDecideToPopup(0);
+	// TMP progressMonitor.setMillisToPopup(0);
+	// kick-start it so the progress dialog becomes visible.
+	progressMonitor.setProgress(1);
+
+	// Track notifications from worker and update pogressMonitor
+
+	worker.addPropertyChangeListener(new PropertyChangeListener() {
+
+	    private boolean ckCancel() {
+		// SwingWorker queues up "progress" notificatons so
+		// it's possible that we receive some after SwingWorker.done()
+		// is called! If we then call setProgress() it "resurrects"
+		// a closed ProgresMonitor.
+		if (worker.isCancelled()) {
+		    return true;
+		} else if (progressMonitor.isCanceled()) {
+		    boolean withInterrupts = true;
+		    worker.cancel(withInterrupts);
+		    return true;
+		} else {
+		    return false;
+		}
+	    }
+	    @Override
+	    public void propertyChange(PropertyChangeEvent evt) {
+
+		if ("progress".equals(evt.getPropertyName())) {	// NOI18N
+		    if (ckCancel())
+			return;
+		    progressMonitor.setProgress((Integer) evt.getNewValue());
+
+		} else if (GetFontsWorker.PROP_NFONTS.equals(evt.getPropertyName())) {
+		    if (ckCancel())
+			return;
+		    progressMonitor.setNote(Catalog.get("MSG_CheckingFixedWidth")); // NOI18N
+		    progressMonitor.setMaximum((Integer) evt.getNewValue());
+		}
+	    }
+	});
+
+	worker.execute();
+    }
+
+    /**
+     * Called when we're done with updateFontList.
+     */
+    private void fontListUpdated() {
+	assert SwingUtilities.isEventDispatchThread();
         try {
-            fonts = null;
-            lFont.setListData(getFonts(size, style));
-
-            // As a result of this the current selected fontName might vanish from
-            // the list. In this case we will fall back on the first item in
-            // the list.
-            lFont.setSelectedValue(descrByName(fontFamily), true);
-            int i = lFont.getSelectedIndex();
-            if (i ==-1) {
-		errorMsg = Catalog.format("FMT_FontUnavailable", fontFamily);	// NOI18N
-                fontFamily = fonts.get(0).name();
-                lFont.setSelectedValue(fonts.get(0), true);
-                tfFont.setText(fontFamily);
-            }
+	    lFontListen(false);
+            lFont.setListData(fonts.asVector());
+	    trackFont();
         } finally {
             lFontListen(true);
-            settingList = false;
         }
+    }
+
+    /**
+     * Ensure that the current 'font' is selected in the font list.
+     * If current font is not in the font list post an error message
+     * and fall back on the first font in the list.
+     */
+    private void trackFont() {
+	// Now done in fontListUpdated()
+	fontFamily = font.getFamily();
+	lFont.setSelectedValue(fonts.descrByName(fontFamily), true);
+	int is = lFont.getSelectedIndex();
+	String err = null;
+	if (is == -1) {
+	    String fallbackFontFamily = fonts.get(0).name();
+	    err = Catalog.format("FMT_FontUnavailable", fontFamily, fallbackFontFamily);	// NOI18N
+
+	    fontFamily = fallbackFontFamily;
+	    lFont.setSelectedValue(fonts.get(0), true);
+	    tfFont.setText(fontFamily);
+	    font = new Font(fontFamily, style, size);
+	} else {
+	    err = null;
+	}
+	setValue(err);
     }
 
     public Font font() {
@@ -540,7 +805,7 @@ class FontPanel extends JPanel {
     /**
      * Called whenever any of the controls on the panel gets an event
      */
-    private void setValue() {
+    private void setValue(String errorMsg) {
 
         boolean sizeChanged = false;
         boolean styleChanged = false;
@@ -594,10 +859,10 @@ class FontPanel extends JPanel {
 
         fontFamily = tfFont.getText();
         if (sizeChanged || styleChanged) {
-            errorMsg = null;
-            setFontList();
+            this.errorMsg = errorMsg;
+            updateFontList();
         } else {
-            errorMsg = null;
+            this.errorMsg = errorMsg;
         }
         // TMP FontEditor.this.setValue (new Font (tfFont.getText (), ii, size));
         font = new Font(fontFamily, style, size);

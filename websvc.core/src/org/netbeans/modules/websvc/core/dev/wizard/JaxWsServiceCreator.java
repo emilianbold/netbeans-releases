@@ -42,6 +42,7 @@ package org.netbeans.modules.websvc.core.dev.wizard;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.support.ServiceCreator;
 import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
@@ -73,6 +74,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -557,18 +559,35 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
         GeneratorUtilities utils = GeneratorUtilities.get(workingCopy);
 
-        List<? extends Element> interfaceElements = beanInterface.getEnclosedElements();
         TypeElement webMethodEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
         assert (webMethodEl != null);
         if (webMethodEl == null) {
             return modifiedClass;
         }
 
+        // found if bean interface extends another class
+        TypeMirror superclass = beanInterface.getSuperclass();
+        boolean hasSuperclass = (TypeKind.NONE != superclass.getKind() && !isObjectClass((DeclaredType)superclass)); //NOI18N
+        List<? extends Element> allBeanInterfaceElements = null;
+        if (hasSuperclass) {
+            allBeanInterfaceElements = workingCopy.getElements().getAllMembers(beanInterface);
+        } else {
+            allBeanInterfaceElements = beanInterface.getEnclosedElements();
+        }
+
         Set<String> operationNames = new HashSet<String>();
-        for (Element el : interfaceElements) {
+        for (Element el : allBeanInterfaceElements) {
             if (el.getKind() == ElementKind.METHOD && el.getModifiers().contains(Modifier.PUBLIC)) {
                 ExecutableElement methodEl = (ExecutableElement) el;
-                MethodTree method = utils.createAbstractMethodImplementation(classElement, methodEl);
+                if (hasSuperclass) {
+                    Element classEl = el.getEnclosingElement();
+                    if (classEl.getKind() == ElementKind.CLASS && isObjectClass((TypeElement)classEl)) { //NOI18N
+                        // don't consider Object methods
+                        continue;
+                    }
+                }
+
+                MethodTree method = utils.createMethod((DeclaredType)beanInterface.asType(), methodEl);
 
                 Name methodName = methodEl.getSimpleName();
                 boolean isVoid = workingCopy.getTypes().getNoType(TypeKind.VOID) == methodEl.getReturnType();
@@ -680,5 +699,17 @@ public class JaxWsServiceCreator implements ServiceCreator {
             }
         }
         return null;
+    }
+
+    private boolean isObjectClass(DeclaredType classMirror) {
+        return isObjectClass((TypeElement)classMirror.asElement());
+    }
+
+    private boolean isObjectClass(TypeElement classElement) {
+        if (TypeKind.NONE == classElement.getSuperclass().getKind()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

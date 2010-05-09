@@ -18,7 +18,7 @@ Ape:CLASS:[]:ESCAPED{Ape}:
   header:METHOD:[PUBLIC]:ESCAPED{header}(PARAMETERS{ESCAPED{uri}})<font color='#777777'> : ESCAPED{String}</font>:
   header:FIELD:[PRIVATE]:ESCAPED{header}<font color='#777777'> : ESCAPED{String, Unknown}</font>:
   info:METHOD:[PUBLIC]:ESCAPED{info}(PARAMETERS{ESCAPED{message}})<font color='#777777'> : ESCAPED{Array}</font>:
-  initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{args}})<font color='#777777'> : ESCAPED{Fixnum, Unknown}</font>:
+  initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{args}})<font color='#777777'> : ESCAPED{Fixnum}</font>:
   line:METHOD:[PUBLIC]:ESCAPED{line}<font color='#777777'> : ESCAPED{Fixnum}</font>:
   list_item:METHOD:[PUBLIC]:ESCAPED{list_item}(PARAMETERS{ESCAPED{message}}):
   lnum:FIELD:[PRIVATE]:ESCAPED{lnum}<font color='#777777'> : ESCAPED{Fixnum}</font>:

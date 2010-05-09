@@ -62,6 +62,7 @@ import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 
 import org.netbeans.modules.xml.retriever.Retriever;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
@@ -212,11 +213,14 @@ public final class WebServiceManager {
 
         WsdlModelProvider wsdlModelProvider = null;
         Collection<? extends WsdlModelProvider> providers = Lookup.getDefault().lookupAll(WsdlModelProvider.class);
+        boolean notAccepted = false;
         if (providers != null) {
             for (WsdlModelProvider provider : providers) {
                 if (provider.canAccept(wsdlUrl)) {
                     wsdlModelProvider = provider;
                     break;
+                } else {
+                    notAccepted = true;
                 }
             }
         }
@@ -233,22 +237,32 @@ public final class WebServiceManager {
             try {
                 wsdlModel = wsdlModelProvider.getWsdlModel(wsdlUrl, packageName, catalogUrl);
             } catch (Exception ex) {
-                exc = ex.getCause();
+                Throwable e = ex.getCause();
+                exc = (e == null ? ex : e);
             }
         }
        
         if (wsdlModel == null) {
             wsData.setResolved(false);
             removeWebService(wsData, true, false);
-            
-            String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR");
-            if (exc != null) {
-                String cause = exc.getLocalizedMessage();
-                String excString = exc.getClass().getName() + " - " + cause;
-                message += "\n\n" + excString; // NOI18N
-
-                Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(exc, message));
+            if (wsdlModelProvider == null && notAccepted) {
+                DialogDisplayer.getDefault().notify(
+                    new DialogDescriptor.Message(NbBundle.getMessage(WebServiceManager.class, "JAX_RPC_MODELER_ERROR")));
+            } else if (wsdlModelProvider != null) {
+                Throwable ex = wsdlModelProvider.getCreationException();
+                if (ex != null) {
+                    DialogDisplayer.getDefault().notify(
+                        new DialogDescriptor.Message(NbBundle.getMessage(WebServiceManager.class, "JAX_WS_MODEL_CREATION_ERROR", ex.getLocalizedMessage())));
+                } else if (exc != null) {
+                    Logger.getLogger(WebServiceManager.class.getName()).log(Level.WARNING,
+                        NbBundle.getMessage(WebServiceManager.class, "JAX_WS_MODELER_ERROR"), exc);
+                } else {
+                    String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR");
+                    exc = new IllegalStateException(message);
+                    Exceptions.printStackTrace(exc);
+                }
             } else {
+                String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR");
                 exc = new IllegalStateException(message);
                 Exceptions.printStackTrace(exc);
             }

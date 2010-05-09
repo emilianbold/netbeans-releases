@@ -132,6 +132,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         return steps;
     }
 
+    @Override
     public Component getComponent() {
         if (runConfigurationPanelVisual == null) {
             configProvider = new WizardConfigProvider();
@@ -181,6 +182,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
             // listen to the changes in php interpreter
             phpInterpreterListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (PhpOptions.PROP_PHP_INTERPRETER.equals(evt.getPropertyName())) {
                         runAsScript.loadPhpInterpreter();
@@ -195,10 +197,12 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         return runConfigurationPanelVisual;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(RunConfigurationPanel.class);
     }
 
+    @Override
     public void readSettings(WizardDescriptor settings) {
         getComponent();
         descriptor = settings;
@@ -222,8 +226,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             runAsLocalWeb.setCopyFilesState(false);
             canceled = false;
             PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
+                @Override
                 public void finished(final List<DocumentRoot> documentRoots) {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             initLocalServerModel(documentRoots);
                         }
@@ -236,6 +242,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         runAsRemoteWeb.setUploadDirectory(getUploadDirectory());
     }
 
+    @Override
     public void storeSettings(WizardDescriptor settings) {
         getComponent();
         // first remove all the properties
@@ -345,6 +352,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         settings.putProperty(INDEX_FILE, runAsScript.getIndexFile());
     }
 
+    @Override
     public boolean isValid() {
         getComponent();
         descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); // NOI18N
@@ -389,14 +397,17 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         return true;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
 
+    @Override
     public boolean isFinishPanel() {
         switch (wizardType) {
             case REMOTE:
@@ -672,6 +683,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         switch (getRunAsType()) {
             case LOCAL:
@@ -685,6 +697,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         fireChangeEvent();
     }
 
+    @Override
     public void cancel() {
         canceled = true;
     }
@@ -705,18 +718,22 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             configs.put(null, new HashMap<String, String>());
         }
 
+        @Override
         public String[] getConfigProperties() {
             return CFG_PROPS;
         }
 
+        @Override
         public Map<String, Map<String, String>> getConfigs() {
             return configs;
         }
 
+        @Override
         public String getActiveConfig() {
             return null;
         }
 
+        @Override
         public void setActiveConfig(String configName) {
         }
     }

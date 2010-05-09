@@ -61,6 +61,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -114,7 +115,6 @@ import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.ui.ModuleActions;
 import org.netbeans.modules.apisupport.project.ui.ModuleLogicalView;
 import org.netbeans.modules.apisupport.project.ui.ModuleOperations;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -131,6 +131,7 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.xml.XMLUtil;
 
 /**
  * A NetBeans module project.
@@ -221,8 +222,8 @@ public final class NbModuleProject implements Project {
                     .displayName(NbBundle.getMessage(NbModuleProject.class, "LBL_javahelp_packages")).add();
         }
         for (Map.Entry<FileObject,Element> entry : getExtraCompilationUnits().entrySet()) {
-            Element pkgrootEl = Util.findElement(entry.getValue(), "package-root", NbModuleProject.NAMESPACE_SHARED); // NOI18N
-            String pkgrootS = Util.findText(pkgrootEl);
+            Element pkgrootEl = XMLUtil.findElement(entry.getValue(), "package-root", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+            String pkgrootS = XMLUtil.findText(pkgrootEl);
             sourcesHelper.sourceRoot(pkgrootS).type(JavaProjectConstants.SOURCES_TYPE_JAVA)
                     .displayName(/* XXX should schema incl. display name? */entry.getKey().getNameExt()).add();
         }
@@ -340,7 +341,7 @@ public final class NbModuleProject implements Project {
                 AuxiliaryConfiguration ac = helper.createAuxiliaryConfiguration();
                 Element data = ac.getConfigurationFragment(NbModuleProject.NAME_SHARED, NbModuleProject.NAMESPACE_SHARED_2, true);
                 if (data != null) {
-                    return Util.translateXML(data, NbModuleProject.NAMESPACE_SHARED);
+                    return XMLUtil.translateXML(data, NbModuleProject.NAMESPACE_SHARED);
                 } else {
                     return helper.getPrimaryConfigurationData(true);
                 }
@@ -357,7 +358,7 @@ public final class NbModuleProject implements Project {
             public Void run() {
                 AuxiliaryConfiguration ac = helper.createAuxiliaryConfiguration();
                 if (ac.getConfigurationFragment(NbModuleProject.NAME_SHARED, NbModuleProject.NAMESPACE_SHARED_2, true) != null) {
-                    ac.putConfigurationFragment(Util.translateXML(data, NbModuleProject.NAMESPACE_SHARED_2), true);
+                    ac.putConfigurationFragment(XMLUtil.translateXML(data, NbModuleProject.NAMESPACE_SHARED_2), true);
                 } else {
                     helper.putPrimaryConfigurationData(data, true);
                 }
@@ -373,9 +374,9 @@ public final class NbModuleProject implements Project {
 
     private NbModuleProvider.NbModuleType getModuleType() {
         Element data = getPrimaryConfigurationData();
-        if (Util.findElement(data, "suite-component", NbModuleProject.NAMESPACE_SHARED) != null) { // NOI18N
+        if (XMLUtil.findElement(data, "suite-component", NbModuleProject.NAMESPACE_SHARED) != null) { // NOI18N
             return NbModuleProvider.SUITE_COMPONENT;
-        } else if (Util.findElement(data, "standalone", NbModuleProject.NAMESPACE_SHARED) != null) { // NOI18N
+        } else if (XMLUtil.findElement(data, "standalone", NbModuleProject.NAMESPACE_SHARED) != null) { // NOI18N
             return NbModuleProvider.STANDALONE;
         } else {
             return NbModuleProvider.NETBEANS_ORG;
@@ -471,27 +472,28 @@ public final class NbModuleProject implements Project {
 
     public String getCodeNameBase() {
         Element config = getPrimaryConfigurationData();
-        Element cnb = Util.findElement(config, "code-name-base", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+        Element cnb = XMLUtil.findElement(config, "code-name-base", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         if (cnb != null) {
-            return Util.findText(cnb);
+            return XMLUtil.findText(cnb);
         } else {
             return null;
         }
     }
     
-    public String getSpecVersion() {
+    public @CheckForNull String getSpecVersion() {
         //TODO shall we check for illegal cases like "none-defined" or "both-defined" here?
         Manifest m = getManifest();
         if (m != null) {
-            String manVersion = m.getMainAttributes().getValue("OpenIDE-Module-Specification-Version"); //NOI18N
+            String manVersion = ManifestManager.getInstance(m, false).getSpecificationVersion();
             if (manVersion != null) {
-                return stripExcessZeros(manVersion);
+                return manVersion;
             }
         }
-        return stripExcessZeros(evaluator().getProperty(SingleModuleProperties.SPEC_VERSION_BASE));
-    }
-    private static String stripExcessZeros(String spec) { // #72826
-        return spec != null ? spec.replaceAll("(\\.[0-9]+)\\.0$", "$1") : null; // NOI18N
+        String svb = evaluator().getProperty(SingleModuleProperties.SPEC_VERSION_BASE);
+        if (svb != null) {
+            return svb/* #72826 */.replaceAll("(\\.[0-9]+)\\.0$", "$1"); // NOI18N
+        }
+        return null;
     }
     
     /**
@@ -623,12 +625,12 @@ public final class NbModuleProject implements Project {
             return true;
         }
         Element config = getPrimaryConfigurationData();
-        Element pubPkgs = Util.findElement(config, "public-packages", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+        Element pubPkgs = XMLUtil.findElement(config, "public-packages", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         if (pubPkgs == null) {
             // Try <friend-packages> too.
-            pubPkgs = Util.findElement(config, "friend-packages", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+            pubPkgs = XMLUtil.findElement(config, "friend-packages", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         }
-        return pubPkgs != null && !Util.findSubElements(pubPkgs).isEmpty();
+        return pubPkgs != null && !XMLUtil.findSubElements(pubPkgs).isEmpty();
     }
     
     public List<String> supportedTestTypes() {
@@ -655,10 +657,10 @@ public final class NbModuleProject implements Project {
     public Map<FileObject,Element> getExtraCompilationUnits() {
         if (extraCompilationUnits == null) {
             extraCompilationUnits = new HashMap<FileObject,Element>();
-            for (Element ecu : Util.findSubElements(getPrimaryConfigurationData())) {
+            for (Element ecu : XMLUtil.findSubElements(getPrimaryConfigurationData())) {
                 if (ecu.getLocalName().equals("extra-compilation-unit")) { // NOI18N
-                    Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProject.NAMESPACE_SHARED); // NOI18N
-                    String pkgrootS = Util.findText(pkgrootEl);
+                    Element pkgrootEl = XMLUtil.findElement(ecu, "package-root", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+                    String pkgrootS = XMLUtil.findText(pkgrootEl);
                     String pkgrootEval = evaluator().evaluate(pkgrootS);
                     FileObject pkgroot = getHelper().resolveFileObject(pkgrootEval);
                     if (pkgroot == null) {
@@ -1004,6 +1006,7 @@ public final class NbModuleProject implements Project {
             "java-forms",           // NOI18N
             "java-beans",           // NOI18N
             "oasis-XML-catalogs",   // NOI18N
+            "REST-clients",         // NOI18N
             "XML",                  // NOI18N
             "ant-script",           // NOI18N
             "ant-task",             // NOI18N
@@ -1081,6 +1084,8 @@ public final class NbModuleProject implements Project {
         }
     }
 
+    /** Matches ExtraProjectSourceForBinaryQueryImpl*/
+    public static final String SOURCE_START = "source.reference."; //NOI18N
     /**
      * <tt>&lt;class-path-extension&gt;</tt> to <tt>file/source/javadoc.reference....</tt> properties adapter
      * for {@link ExtraSourceJavadocSupport} query implementations.
@@ -1088,7 +1093,6 @@ public final class NbModuleProject implements Project {
     private final class ExtraSJQEvaluator implements PropertyEvaluator {
 
         private static final String REF_START = "file.reference."; //NOI18N
-        private static final String SOURCE_START = "source.reference."; //NOI18N
         private static final String JAVADOC_START = "javadoc.reference."; //NOI18N
 
         public ExtraSJQEvaluator() {

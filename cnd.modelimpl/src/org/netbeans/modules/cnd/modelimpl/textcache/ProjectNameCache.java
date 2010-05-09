@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.textcache;
 
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * help class to share deserialized project names
@@ -60,7 +60,7 @@ public final class ProjectNameCache extends APTStringManager {
         if (text == null){
             return text;
         }
-        text = CharSequenceKey.create(text);
+        text = CharSequences.create(text);
         return instance.getString(text);
     }
     

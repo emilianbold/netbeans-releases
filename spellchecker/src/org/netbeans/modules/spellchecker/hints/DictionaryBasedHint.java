@@ -48,6 +48,7 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.openide.ErrorManager;
 import org.openide.text.NbDocument;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -70,7 +71,7 @@ public final class DictionaryBasedHint implements EnhancedFix {
     }
 
     public String getText() {
-        return "Change \"" + original + "\" to \"" + proposal + "\"";
+        return NbBundle.getMessage(DictionaryBasedHint.class, "FIX_ChangeWord", original, proposal);
     }
 
     public ChangeInfo implement() {

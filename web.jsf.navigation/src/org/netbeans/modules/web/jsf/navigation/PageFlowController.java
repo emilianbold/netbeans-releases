@@ -511,9 +511,11 @@ public class PageFlowController {
                     FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(webModule);
                     for (FileObject aConfigFile : configFiles) {
                         JSFConfigModel aConfigModel = ConfigurationUtils.getConfigModel(aConfigFile, true);
-                        allRules.addAll(aConfigModel.getRootComponent().getNavigationRules());
-                        if (!configModel.equals(aConfigModel)) {
-                            aConfigModel.addPropertyChangeListener(getOtherFacesConfigListener());
+                        if (aConfigModel != null) {
+                            allRules.addAll(aConfigModel.getRootComponent().getNavigationRules());
+                            if (!configModel.equals(aConfigModel)) {
+                                aConfigModel.addPropertyChangeListener(getOtherFacesConfigListener());
+                            }
                         }
                     }
                     for (NavigationRule navRule : allRules) {

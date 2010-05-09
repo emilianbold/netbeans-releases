@@ -127,6 +127,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         return prj;
     }
 
+    @Override
     public CsmProject getProject(Object id) {
         if (id instanceof Project) {
             NativeProject prj = ((Project) id).getLookup().lookup(NativeProject.class);
@@ -245,6 +246,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         if (SwingUtilities.isEventDispatchThread()) {
             Runnable task = new Runnable() {
 
+                @Override
                 public void run() {
                     _closeProject2(csmProject, platformProjectKey, cleanRepository);
                 }
@@ -271,7 +273,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                 prj = (prj == null) ? (ProjectBase) UIDCsmConverter.UIDtoProject(uid) : prj;
                 assert prj != null : "null object for UID " + uid;
             }
-            cleanModel = (platf2csm.size() == 0);
+            cleanModel = (platf2csm.isEmpty());
         }
 
         if (prj != null) {
@@ -308,6 +310,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         }
     }
 
+    @Override
     public Collection<CsmProject> projects() {
         Collection<CsmUID<CsmProject>> vals;
         synchronized (lock) {
@@ -327,6 +330,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     private final String clientTaskPrefix = "Code Model Client Request"; // NOI18N
     private static final String modelTaskPrefix = "Code Model Request Processor"; // NOI18N
 
+    @Override
     public Cancellable enqueue(Runnable task, CharSequence name) {
         return enqueue(userTasksProcessor, task, clientTaskPrefix + " :" + name); // NOI18N
     }
@@ -340,8 +344,12 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     private Cancellable enqueue(RequestProcessor processor, final Runnable task, final String taskName) {
+        if (TraceFlags.TRACE_182342_BUG) {
+            new Exception(taskName).printStackTrace(System.err);
+        }
         return processor.post(new Runnable() {
 
+            @Override
             public void run() {
                 String oldName = Thread.currentThread().getName();
                 Thread.currentThread().setName(taskName); // NOI18N
@@ -356,6 +364,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         });
     }
 
+    @Override
     public CsmFile findFile(CharSequence absPath, boolean snapShot) {
         Collection<CsmProject> projects = projects();
         for (CsmProject curPrj : projects) {
@@ -382,11 +391,12 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         return null;
     }
 
+    @Override
     public CsmModelState getState() {
         return state;
     }
 
-    public void startup() {
+    public final void startup() {
 
         if (TraceFlags.TRACE_MODEL_STATE) {
             System.err.println("ModelImpl.startup");
@@ -454,6 +464,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         ModelSupport.instance().setModel(null);
     }
 
+    @Override
     public void memoryLow(final LowMemoryEvent event) {
 
         double percentage = ((double) event.getUsedMemory() / (double) event.getMaxMemory());
@@ -471,6 +482,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
         Runnable runner = new Runnable() {
 
+            @Override
             public void run() {
                 Thread.currentThread().setName("Code model low memory handler"); // NOI18N
 //		if( fatal ) {
@@ -657,8 +669,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         APTSystemStorage.getDefault().dispose();
     }
 
+    @Override
     public void scheduleReparse(Collection<CsmProject> projects) {
         CndFileUtils.clearFileExistenceCache();
+        ParserQueue.instance().clearParseWatch();
         Collection<LibProjectImpl> libs = new HashSet<LibProjectImpl>();
         Collection<ProjectBase> toReparse = new HashSet<ProjectBase>();
         for (CsmProject csmProject : projects) {
@@ -687,8 +701,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         }
         LibraryManager.getInstance().cleanLibrariesData(libs);
         for (Object platformProject : platformProjects) {
-            CsmProject newPrj = _getProject(platformProject);
-            ((ProjectBase)newPrj).scheduleReparse();
+            ProjectBase newPrj = (ProjectBase) _getProject(platformProject);
+            newPrj.scheduleReparse();
+            ListenersImpl.getImpl().fireProjectOpened(newPrj);
         }
     }
 

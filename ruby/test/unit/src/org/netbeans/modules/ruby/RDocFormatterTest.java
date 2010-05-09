@@ -300,6 +300,38 @@ public class RDocFormatterTest extends RubyTestBase {
         assertEquals("This should not be a link <a href=\"This#should\">This#should</a> be a link <br><br>", html);
 
     }
+
+    public void testStopDoc() throws Exception {
+        RDocFormatter instance = new RDocFormatter();
+
+        instance.appendLine("# This should be displayed");
+        instance.appendLine("# :stopdoc:");
+        instance.appendLine("# THIS SHOULD BE FILTERED OUT");
+        instance.appendLine("# :startdoc:");
+        instance.appendLine("# This should also be displayed");
+        String html = instance.toHtml();
+        assertEquals("This should be displayed  This should also be displayed ", html);
+
+    }
+
+    public void testCallSeq() {
+        RDocFormatter instance = new RDocFormatter();
+        instance.appendLine("# Here comes a call-seq");
+        instance.appendLine("# :call-seq:");
+        instance.appendLine("#   my_method(arg1, arg2) -> self");
+        instance.appendLine("#");
+        instance.appendLine("# and now it's over");
+
+        String html = instance.toHtml();
+
+        assertEquals("Here comes a call-seq \n" +
+                "<hr>\n" +
+                "<pre>\n" +
+                "my_method(arg1, arg2) -> self<br></pre>\n" +
+                "<hr>\n" +
+                "and now it's over ", html);
+
+    }
     
     // TODO test bullets, labels, preformat
 }

@@ -8,7 +8,7 @@ Not Searchable Keys:
 
 Document 1
 Searchable Keys:
-  base : af;af;71;$pClass:ParameterClass:1:,$pIface:ParameterIface:1:,$pDefault::0:"test";;;
+  base : af;af;71;$pClass:ParameterClass:1::1:0,$pIface:ParameterIface:1::1:0,$pDefault::0:"test":0:0;;;
   base : bf;bf;156;;;;
   base : cf;cf;175;;;;
   top : af

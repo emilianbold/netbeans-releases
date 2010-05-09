@@ -71,14 +71,15 @@ public class formatting_0001 extends formatting {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(formatting_0001.class).addTest(
-                          "CreateApplication",
-                          "Create_a_PHP_web_page",
-                          "Format_default_code_of_PHP_web_page",
-                          "Undo_Formatting_of_PHP_web_page",
-                          "Create_a_PHP_file",
-                          "Format_default_code_of_PHP_file",
-                          "Undo_Formatting_of_PHP_file",
-                "Check_formatting_options").enableModules(".*").clusters(".*") //.gui( true )
+                "CreateApplication",
+                "Create_a_PHP_web_page",
+                "Format_default_code_of_PHP_web_page",
+                "Undo_Formatting_of_PHP_web_page",
+                "Create_a_PHP_file",
+                "Format_default_code_of_PHP_file",
+                "Undo_Formatting_of_PHP_file",
+                "Check_formatting_options_count",
+                "bug181787").enableModules(".*").clusters(".*") //.gui( true )
                 );
     }
 
@@ -90,32 +91,119 @@ public class formatting_0001 extends formatting {
         endTest();
     }
 
-    public void Check_formatting_options() throws InterruptedException {
+    /**
+     * TODO finish
+     */
+    public void bug177251() {
+        startTest();
+        //check default
+        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+        DeleteFileContent(eoPHP);
+        eoPHP.insert("<?php \n"
+                + "class G_Check {\n"
+                + "private static $sizeUnits = array(\n"
+                + "\"item\" => array(\n"
+                + "\"item\" => array(\n"
+                + ")\n"
+                + "));\n"
+                + "}\n"
+                + "?>");
+
+        String sTextOriginal = eoPHP.getText();
+        eoPHP.clickForPopup();
+        JPopupMenuOperator menu = new JPopupMenuOperator();
+        menu.pushMenu("Format");
+        String sTextFormatted = eoPHP.getText();
+        String sTextIdeal = "<?php\n\n"
+                + "class G_Check {\n\n"
+                + "    private static $sizeUnits = array(\n"
+                + "    \"item\" => array(\n"
+                + "        \"item\" => array(\n"
+                + "            \"blbblas\"\n"
+                + "       )\n"
+                + "    ));\n"
+                + "}\n"
+                + "?>";
+        setPHPIndentation(0, 8, 4);
+
+        endTest();
+    }
+
+    public void bug181787() {
+        startTest();
+        //test for always
+        setMethodParametersWrappingOptions(1);
+
+        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+        DeleteFileContent(eoPHP);
+        eoPHP.insert("<?php\n "
+                + "function testFunction($a, $b, $c) {}"
+                + "\n?>");
+        String sTextOriginal = eoPHP.getText();
+        eoPHP.clickForPopup();
+        JPopupMenuOperator menu = new JPopupMenuOperator();
+        menu.pushMenu("Format");
+        String sTextFormatted = eoPHP.getText();
+
+        String sTextIdeal = "<?php\n\n"
+                + "function testFunction($a,\n        $b,\n        $c) {\n    \n}"
+                + "\n?>";
+        assertEquals(sTextIdeal, sTextFormatted);
+
+        //tests for If Long
+        setMethodParametersWrappingOptions(2);
+        DeleteFileContent(eoPHP);
+        eoPHP.insert("<?php\n "
+                + "function testFunction($firstLongParameter = \"bdlkfjdsa fhjjkdshafjd a\" , $secondLongParameter, $thirdLongParameter) { }"
+                + "\n ?>");
+        sTextOriginal = eoPHP.getText();
+        eoPHP.clickForPopup();
+        menu = new JPopupMenuOperator();
+        menu.pushMenu("Format");
+        sTextFormatted = eoPHP.getText();
+
+        sTextIdeal = "<?php\n\n"
+                + "function testFunction($firstLongParameter = \"bdlkfjdsa fhjjkdshafjd a\",\n        $secondLongParameter, $thirdLongParameter) {\n    \n}"
+                + "\n?>";
+
+        assertEquals(sTextIdeal, sTextFormatted);
+
+        //test for never
+        setMethodParametersWrappingOptions(0);
+        DeleteFileContent(eoPHP);
+        eoPHP.insert("<?php \n "
+                + "function testFunction($firstLongParameter, $secondLongParameter, $thirdLongParameter) { }"
+                + "\n ?>");
+        sTextOriginal = eoPHP.getText();
+        eoPHP.clickForPopup();
+        menu = new JPopupMenuOperator();
+        menu.pushMenu("Format");
+        sTextFormatted = eoPHP.getText();
+
+        sTextIdeal = "<?php\n\n"
+                + "function testFunction($firstLongParameter, $secondLongParameter, $thirdLongParameter) {\n    \n}"
+                + "\n?>";
+
+        assertEquals(sTextIdeal, sTextFormatted);
+
+        endTest();
+    }
+
+    public void Check_formatting_options_count() throws InterruptedException {
         startTest();
 
-        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Tools|Options");
-        JDialogOperator window = new JDialogOperator("Options");
-        window.pressKey(KeyEvent.VK_RIGHT);
-        Sleep(1000);
-        for (int i = 0; i <= 4; i++) {
-            window.pressKey(KeyEvent.VK_TAB);
-            Sleep(1000);
-        }
-        window.pressKey(KeyEvent.VK_RIGHT);
-        Sleep(1000);
-        window.pressKey(KeyEvent.VK_SPACE);
-        Sleep(1000);
-
-        //we are in formatting tab right now
-        //there must be php to choose from Languages options
-        JComboBoxOperator languages = new JComboBoxOperator(window, 0);
-        Sleep(1000);
-        languages.selectItem("PHP");
+        JDialogOperator window = selectPHPFromEditorOptions(0);
 
         //categories - check if they are all present
-        JComboBoxOperator category = new JComboBoxOperator(window, 1);
+        JComboBoxOperator category = new JComboBoxOperator(window, 2);
+        Sleep(1000);
+
+
+
         int count = category.getItemCount();
-        assertEquals(7, count);
+        window.close();
+        assertEquals(6, count);
+        endTest();
 
     }
 
@@ -189,7 +277,7 @@ public class formatting_0001 extends formatting {
         String sTextFormatted = eoPHP.getText();
 
         if (!sTextOriginal.equals(sTextFormatted)) {
-            fail("Default formatting is not valid.");
+            fail("Default formatting is not valid. BUG 181339 may be still valid.");
         }
 
         endTest();

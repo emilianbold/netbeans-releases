@@ -41,20 +41,19 @@
 
 package org.netbeans.modules.welcome.content;
 
+import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -63,55 +62,55 @@ import org.openide.util.ImageUtilities;
 public class ContentSection extends JPanel implements Constants {
 
     private static final int PANEL_MAX_WIDTH = 800;
-    private int location;
     private boolean maxSize;
-    
-    private JLabel lblTitle;
-    
-    public ContentSection( String title, String imgLabelKey, int location, JComponent content, boolean maxSize ) {
+    private boolean showSeparator;
+    private final static Stroke SEPARATOR_STROKE = new BasicStroke(1,
+            BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1, new float[] {1.0f, 1.0f}, 0.0f);
+
+    public ContentSection( String title, JComponent content, boolean showSeparator, boolean maxSize ) {
+        this( content, showSeparator, maxSize, 0 );
+        JLabel lblTitle = new JLabel( title );
+        lblTitle.setFont( SECTION_HEADER_FONT );
+
+        lblTitle.setBorder( BorderFactory.createEmptyBorder(0, 0, 20, 0) );
+        lblTitle.setForeground( Utils.getColor( COLOR_SECTION_HEADER ) );
+        add( lblTitle, new GridBagConstraints(0,0,1,1,0.0,0.0,
+                GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(6,0,0,0),0,0) );
+    }
+
+    public ContentSection( JComponent titleComponent, JComponent content, boolean showSeparator, boolean maxSize ) {
+        this( content, showSeparator, maxSize, 8 );
+        if( null != titleComponent ) {
+            add( titleComponent, new GridBagConstraints(0,0,1,1,1.0,0.0,
+                    GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,new Insets(0,0,15,0),0,0) );
+        }
+    }
+
+    public ContentSection( JComponent content, boolean showSeparator, boolean maxSize ) {
+        this( content, showSeparator, maxSize, 0 );
+    }
+
+    private ContentSection( JComponent content, boolean showSeparator, boolean maxSize, int leftInsets ) {
         super( new GridBagLayout() );
         setOpaque(false);
-        this.location = location;
         this.maxSize = maxSize;
-
-        if( title.length() > 0 ) {
-            lblTitle = new JLabel( title );
-            lblTitle.setFont( SECTION_HEADER_FONT );
-        } else {
-            Image img = ImageUtilities.loadImage(imgLabelKey);
-            lblTitle = new JLabel( new ImageIcon(img) );
-        }
+        this.showSeparator = showSeparator;
+        add( content, new GridBagConstraints(0,1,2,1,1.0,1.0,
+                GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,leftInsets,0,0),0,0) );
         
-        lblTitle.setBorder( BorderFactory.createEmptyBorder(0, 0, 8, 0) );
-        lblTitle.setForeground( Utils.getColor( COLOR_SECTION_HEADER ) );
-        add( lblTitle, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.EAST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
-//        add( new JLabel(), new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.EAST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
-        
-        add( content, new GridBagConstraints(0,1,2,1,1.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
-        
-        setBorder( BorderFactory.createEmptyBorder(8,12,6,12) );
+        setBorder( BorderFactory.createEmptyBorder(35,35,15,35) );
     }
 
     @Override
     protected void paintComponent(Graphics g) {
-        int width = getWidth();
-        int height = getHeight();
-        g.setColor( Utils.getColor( COLOR_SECTION_HEADER ) );
-        switch( location ) {
-        case SwingConstants.NORTH_EAST:
-            g.drawLine( 0, height-1, width-25, height-1 );
-            g.drawLine( 0, 25, 0, height );
-            break;
-        case SwingConstants.NORTH_WEST:
-            g.drawLine( 25, height, width, height );
-            g.drawLine( 25, height-1, width, height-1 );
-            break;
-        case SwingConstants.SOUTH_EAST:
-            g.drawLine( 0, 0, 0, height-25 );
-            break;
-        case SwingConstants.EAST:
-            g.drawLine( 0, 25, 0, height );
-            break;
+        if( showSeparator ) {
+            int height = getHeight();
+            Graphics2D g2d = (Graphics2D) g;
+            Stroke oldStroke = g2d.getStroke();
+            g2d.setStroke(SEPARATOR_STROKE);
+            g.setColor( Utils.getColor( COLOR_SECTION_SEPARATOR ) );
+            g.drawLine( 0, 50, 0, height-35 );
+            g2d.setStroke(oldStroke);
         }
     }
 
@@ -149,11 +148,5 @@ public class ContentSection extends JPanel implements Constants {
             d.width = PANEL_MAX_WIDTH;
         }
         return d;
-    }
-    
-    public Rectangle getTitleBounds() {
-        Rectangle res = lblTitle.getBounds();
-        res.height -= lblTitle.getInsets().bottom + 7;
-        return res;
     }
 }

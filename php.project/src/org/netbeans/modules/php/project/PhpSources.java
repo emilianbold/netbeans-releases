@@ -88,8 +88,10 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         delegate = initSources(); // have to register external build roots eagerly
     }
 
+    @Override
     public SourceGroup[] getSourceGroups(final String type) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
+            @Override
             public SourceGroup[] run() {
                 Sources delegateCopy;
                 synchronized (PhpSources.this) {
@@ -106,10 +108,12 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         });
     }
 
+    @Override
     public void addChangeListener(ChangeListener changeListener) {
         changeSupport.addChangeListener(changeListener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener changeListener) {
         changeSupport.removeChangeListener(changeListener);
     }
@@ -143,6 +147,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         changeSupport.fireChange();
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
         if (SourceRoots.PROP_ROOTS.equals(propName)) {
@@ -150,6 +155,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent event) {
         fireChange();
     }

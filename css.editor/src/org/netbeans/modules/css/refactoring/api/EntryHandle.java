@@ -69,6 +69,12 @@ public final class EntryHandle {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return "EntryHandle[isRelated=" + isRelatedEntry() +
+                ", entry=" + entry() +
+                "]"; //NOI18N
+    }
 
 
 }

@@ -50,7 +50,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import org.netbeans.api.keyring.Keyring;
 
-import org.netbeans.modules.glassfish.eecommon.api.RegisterDatabase;
+import org.netbeans.modules.glassfish.spi.RegisterDatabase;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.Asenv;
@@ -167,7 +167,7 @@ public class PluginProperties  {
         boolean needToRegisterDefaultServer = false;
 
         if (!NbPreferences.forModule(PluginProperties.class).getBoolean(PROP_FIRST_RUN, false)) {
-            if ((version==null)||(version!=PLUGIN_CURRENT_VERSION)){ //we are currently on a 5.5
+            if (!PLUGIN_CURRENT_VERSION.equals(version)) { //we are currently on a 5.5
                 needToRegisterDefaultServer = true;
             }
             NbPreferences.forModule(PluginProperties.class).putBoolean(PROP_FIRST_RUN, true);

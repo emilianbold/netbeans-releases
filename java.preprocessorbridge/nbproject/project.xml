@@ -6,6 +6,14 @@
             <code-name-base>org.netbeans.modules.java.preprocessorbridge</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.javacapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>0.12</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -33,6 +41,7 @@
             <friend-packages>
                 <friend>com.ptc.rbinfohandler</friend>
                 <friend>org.netbeans.modules.debugger.jpda.projects</friend>
+                <friend>org.netbeans.modules.debugger.jpda.ui</friend>
                 <friend>org.netbeans.modules.groovy.editor</friend>
                 <friend>org.netbeans.modules.java.editor</friend>
                 <friend>org.netbeans.modules.java.hints</friend>

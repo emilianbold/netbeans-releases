@@ -49,6 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.api.BrandingUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -68,6 +69,7 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
 
     private OpenBrandingEditorAction( Lookup context ) {
         super( NbBundle.getMessage(OpenBrandingEditorAction.class, "LBL_OpenBrandingEditor") ); //NOI18N
+        putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         this.context = context;
         enable( context );
     }

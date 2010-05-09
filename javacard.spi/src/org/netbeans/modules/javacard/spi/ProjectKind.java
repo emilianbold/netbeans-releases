@@ -51,14 +51,19 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.NbCollections;
 
 /**
  * Enum of project subtypes.  Use toString() to get the value expected in
@@ -409,6 +414,7 @@ public enum ProjectKind {
             case WEB :
                 return "war";
             case EXTENSION_LIBRARY:
+                return "jar";
             case EXTENDED_APPLET :
                 return "eap";
             case CLASSIC_APPLET:
@@ -416,6 +422,37 @@ public enum ProjectKind {
                 return "cap";
             default :
                 throw new AssertionError();
+        }
+    }
+
+    public static ProjectKind forJarFile (File jarFile) throws IOException {
+        JarFile jf = new JarFile(jarFile);
+        try {
+            Manifest m = jf.getManifest();
+            String appType = m.getMainAttributes().getValue("Application-Type"); //NOI18N
+            Logger log = Logger.getLogger(ProjectKind.class.getName());
+            ProjectKind result = null;
+            if (appType == null) {
+                //Classic library can only be identified by the presence of
+                //$PACKAGE/javacard/ConstantPool.cap and friends
+                log.log (Level.FINER, "Could not detect JAR type from " + //NOI18N
+                        "manifest attributes: {0}.  Scanning contents", jarFile); //NOI18N
+                for (JarEntry je : NbCollections.iterable(jf.entries())) {
+                    String name = je.getName();
+                    if (name.endsWith("javacard/ConstantPool.cap")) { //NOI18N
+                        result = CLASSIC_LIBRARY;
+                        log.log (Level.FINEST, "Detected as classic library due to {0}: {1}",  //NOI18N
+                                new Object[] { name, jarFile}); //NOI18N
+                        break;
+                    }
+                }
+            }
+            result = result == null ? appType == null ? null : forManifestType(appType) : result;
+            log.log (Level.FINE, "Detected jar type {0} for {1}", //NOI18N
+                    new Object[] { result, jarFile });
+            return result;
+        } finally {
+            jf.close();
         }
     }
 }

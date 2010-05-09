@@ -41,6 +41,7 @@
 package org.netbeans.modules.apisupport.osgidemo;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,15 +67,19 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
-public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class SampleAppWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
     
@@ -136,8 +141,12 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
 
         Project p = ProjectManager.getDefault().findProject(dir);
         if (netbinox && p != null) {
+            OpenProjects.getDefault().open(new Project[] { p }, true);
             ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
-            ap.invokeAction(ActionProvider.COMMAND_CLEAN, p.getLookup());
+            ExecutorTask[] arr = new ExecutorTask[1];
+            ActionEvent ev = new ActionEvent(arr, 0, "waitFinished"); // NOI18N
+            ProxyLookup lkp = new ProxyLookup(p.getLookup(), Lookups.singleton(ev));
+            ap.invokeAction(ActionProvider.COMMAND_CLEAN, lkp);
         }
         
         File parent = dirF.getParentFile();

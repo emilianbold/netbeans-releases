@@ -112,6 +112,15 @@ public class RepairPanel extends JPanel {
 
         @Override
         public void mousePressed(MouseEvent e) {
+            maybePopup(e);
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            maybePopup(e);
+        }
+
+        private void maybePopup(MouseEvent e){
             if (e.isPopupTrigger()) {
                 JPopupMenu pm = createPopupMenu();
                 if (pm != null) {
@@ -119,6 +128,8 @@ public class RepairPanel extends JPanel {
                 }
             }
         }
+
+
     }
 
     public void setPopupActions(List<Action> actions) {

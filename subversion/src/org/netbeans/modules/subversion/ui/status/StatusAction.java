@@ -128,7 +128,17 @@ public class StatusAction  extends ContextAction {
         if (support != null && support.isCanceled()) {
             return;
         }
-        ISVNStatus[] statuses = client.getStatus(root, true, false, true); // cache refires events
+        ISVNStatus[] statuses;
+        try {
+            statuses = client.getStatus(root, true, false, true); // cache refires events
+        } catch (SVNClientException ex) {
+            if (SvnClientExceptionHandler.isNotUnderVersionControl(ex.getMessage())) {
+                Subversion.LOG.log(Level.INFO, "StatusAction.executeStatus: file under {0} not under version control, trying offline", root.getAbsolutePath()); //NOI8N
+                statuses = client.getStatus(root, true, false, false); // cache refires events
+            } else {
+                throw ex;
+            }
+        }
         if (support != null && support.isCanceled()) {
             return;
         }
@@ -144,7 +154,7 @@ public class StatusAction  extends ContextAction {
                 // a newly created folders children.
                 // As this is the place were such files should be recognized,
                 // we will force the refresh recursivelly.
-                cache.refreshRecursively(file);
+                cache.refreshRecursively(file, false);
             } else {
                 cache.refresh(file, status);
             }

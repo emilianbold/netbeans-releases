@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
@@ -67,6 +68,11 @@ public class RemoveHostAction extends SingleHostAction {
     }
 
     @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    @Override
     protected void performAction(final ExecutionEnvironment env, Node node) {
         ServerRecord record = ServerList.get(env);
         String title = NbBundle.getMessage(HostNode.class, "RemoveHostCaption");
@@ -77,6 +83,7 @@ public class RemoveHostAction extends SingleHostAction {
             ToolsCacheManager cacheManager = ToolsCacheManager.createInstance(true);
             List<ServerRecord> hosts = new ArrayList<ServerRecord>(ServerList.getRecords());
             hosts.remove(record);
+            ConnectionManager.getInstance().forget(env);
             cacheManager.setHosts(hosts);
             ServerRecord defaultRecord = ServerList.getDefaultRecord();
             if (defaultRecord.getExecutionEnvironment().equals(env)) {
@@ -84,6 +91,7 @@ public class RemoveHostAction extends SingleHostAction {
             }
             cacheManager.setDefaultRecord(defaultRecord);
             cacheManager.applyChanges();
+            ConnectionManager.getInstance().disconnect(env);
         }
     }
 }

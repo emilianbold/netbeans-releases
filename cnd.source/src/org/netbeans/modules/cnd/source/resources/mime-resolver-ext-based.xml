@@ -77,7 +77,6 @@ made subject to such option by the copyright holder.
         <ext name="f03"/>
         <ext name="F03"/>
         <ext name="for"/>
-        <ext name="il"/>
         <ext name="mod"/>
         <resolver mime="text/x-fortran"/>
     </file>

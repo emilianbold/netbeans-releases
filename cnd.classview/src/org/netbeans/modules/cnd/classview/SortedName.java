@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.classview;
 
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -64,7 +64,7 @@ public class SortedName implements Comparable<SortedName> {
     public int compareTo(SortedName o) {
         int i = prefix - o.prefix;
         if (i == 0){
-            i = CharSequenceKey.Comparator.compare(name, o.name);
+            i = CharSequences.comparator().compare(name, o.name);
             if (i == 0){
                 i = suffix - o.suffix;
             }

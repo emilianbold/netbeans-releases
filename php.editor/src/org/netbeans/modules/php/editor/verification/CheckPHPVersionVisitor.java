@@ -84,7 +84,12 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(NamespaceDeclaration declaration) {
-        createError(declaration.getStartOffset(), declaration.getName().getEndOffset());
+        final NamespaceName name = declaration.getName();
+        if (name != null) {
+            createError(declaration.getStartOffset(), name.getEndOffset());
+        } else {
+            createError(declaration);
+        }
     }
 
     @Override

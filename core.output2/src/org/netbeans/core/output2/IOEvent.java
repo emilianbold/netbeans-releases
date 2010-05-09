@@ -135,8 +135,13 @@ final class IOEvent extends AWTEvent implements ActiveEvent {
 
     /** set default colors */
     static final int CMD_DEF_COLORS = 14;
+
+    /**
+     * Command to support IOSelect.select() (with "fine" control.
+     */
+    static final int CMD_FINE_SELECT = 15;
     
-    private static final int CMD_LAST = 15;
+    private static final int CMD_LAST = 16;
 
     /**
      * Strings representing the event.
@@ -156,6 +161,8 @@ final class IOEvent extends AWTEvent implements ActiveEvent {
         "CMD_SET_ICON", //NOI18N
         "CMD_SET_TOOLTIP", //NOI18N
         "CMD_SCROLL", //NOI18N
+        "CMD_DEF_COLORS", //NOI18N
+        "CMD_FINE_SELECT", //NOI18N
     };
 
     /**

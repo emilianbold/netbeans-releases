@@ -50,6 +50,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -61,8 +63,9 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 
 /**
  * Common ancestor for ClassImpl and EnumImpl
@@ -78,12 +81,13 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     private boolean isValid = true;
     private boolean _static = false;
     private CsmVisibility visibility = CsmVisibility.PRIVATE;
-    private final List<CsmUID<CsmTypedef>> enclosingTypdefs;
+    // keep enclosing typeds and enclosing variables in one collection
+    private final List<CsmUID<CsmOffsetableDeclaration>> enclosingElements;
 
     protected ClassEnumBase(String name, CsmFile file, AST ast) {
         super(file, getStartOffset(ast), getEndOffset(ast));
-        enclosingTypdefs = Collections.synchronizedList(new ArrayList<CsmUID<CsmTypedef>>());
-        this.name = (name == null) ? CharSequenceKey.empty() : NameCache.getManager().getString(name);
+        enclosingElements = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(0));
+        this.name = (name == null) ? CharSequences.empty() : NameCache.getManager().getString(name);
     }
 
     public static int getEndOffset(AST node) {
@@ -109,7 +113,8 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         return 0;
     }
 
-    public CharSequence getName() {
+    @Override
+    public final CharSequence getName() {
         return name;
     }
 
@@ -173,13 +178,14 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         // so registering is a descendant class' responsibility
     }
 
+    @Override
     abstract public Kind getKind();
 
     protected final void register(CsmScope scope, boolean registerUnnamedInNamespace) {
 
         RepositoryUtils.put(this);
         boolean registerInNamespace = registerUnnamedInNamespace;
-        if (ProjectBase.canRegisterDeclaration(this)) {
+        if (Utils.canRegisterDeclaration(this)) {
             registerInNamespace = registerInProject();
         }
         if (registerInNamespace) {
@@ -227,10 +233,12 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         return (scope instanceof NamespaceImpl) ? (NamespaceImpl) scope : null;
     }
 
+    @Override
     public CharSequence getQualifiedName() {
         return qualifiedName;
     }
 
+    @Override
     public CsmScope getScope() {
         return _getScope();
     }
@@ -268,11 +276,13 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         return isValid && getContainingFile().isValid();
     }
 
+    @Override
     public CsmClass getContainingClass() {
         CsmScope scope = getScope();
         return CsmKindUtilities.isClass(scope) ? (CsmClass) scope : null;
     }
 
+    @Override
     public CsmVisibility getVisibility() {
         return visibility;
     }
@@ -281,6 +291,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         this.visibility = visibility;
     }
 
+    @Override
     public boolean isStatic() {
         return _static;
     }
@@ -313,7 +324,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         if (getName().length() == 0) {
             super.writeUID(output);
         }
-        UIDObjectFactory.getDefaultFactory().writeUIDCollection(enclosingTypdefs, output, true);
+        UIDObjectFactory.getDefaultFactory().writeUIDCollection(enclosingElements, output, true);
     }
 
     protected ClassEnumBase(DataInput input) throws IOException {
@@ -340,19 +351,52 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         }
         int collSize = input.readInt();
         if (collSize < 0) {
-            enclosingTypdefs = Collections.synchronizedList(new ArrayList<CsmUID<CsmTypedef>>(0));
+            enclosingElements = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(0));
         } else {
-            enclosingTypdefs = Collections.synchronizedList(new ArrayList<CsmUID<CsmTypedef>>(collSize));
+            enclosingElements = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(collSize));
         }
-        UIDObjectFactory.getDefaultFactory().readUIDCollection(enclosingTypdefs, input, collSize);
+        UIDObjectFactory.getDefaultFactory().readUIDCollection(enclosingElements, input, collSize);
     }
 
+    @Override
     public Collection<CsmTypedef> getEnclosingTypedefs() {
-        return UIDCsmConverter.UIDsToDeclarations(enclosingTypdefs);
+        Collection<CsmTypedef> out = new ArrayList<CsmTypedef>(0);
+        for (CsmUID<? extends CsmDeclaration> uid : enclosingElements) {
+            CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);
+            if (kind == CsmDeclaration.Kind.TYPEDEF) {
+                CsmDeclaration obj = UIDCsmConverter.UIDtoCsmObject(uid);
+                if (obj != null) {
+                    out.add((CsmTypedef) obj);
+                }
+            }
+        }
+        return out;
     }
 
+    @Override
+    public Collection<CsmVariable> getEnclosingVariables() {
+        Collection<CsmVariable> out = new ArrayList<CsmVariable>(0);
+        for (CsmUID<? extends CsmDeclaration> uid : enclosingElements) {
+            CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);
+            if (kind == CsmDeclaration.Kind.VARIABLE) {
+                CsmDeclaration obj = UIDCsmConverter.UIDtoCsmObject(uid);
+                if (obj != null) {
+                    out.add((CsmVariable) obj);
+                }
+            }
+        }
+        return out;
+    }
+
+    @SuppressWarnings("unchecked")
     public void addEnclosingTypedef(CsmTypedef typedef) {
-        final CsmUID<CsmTypedef> uid = UIDs.get(typedef);
-        enclosingTypdefs.add(uid);
+        final CsmUID<? extends CsmOffsetableDeclaration> uid = UIDs.get(typedef);
+        enclosingElements.add((CsmUID<CsmOffsetableDeclaration>)uid);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void addEnclosingVariable(CsmVariable var) {
+        final CsmUID<? extends CsmOffsetableDeclaration> uid = UIDs.get(var);
+        enclosingElements.add((CsmUID<CsmOffsetableDeclaration>)uid);
     }
 }

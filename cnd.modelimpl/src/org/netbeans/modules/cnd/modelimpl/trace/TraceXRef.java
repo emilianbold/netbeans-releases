@@ -95,7 +95,7 @@ import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.DeclarationScope;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.IncludeLevel;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -345,7 +345,7 @@ public class TraceXRef extends TraceModel {
             }
             CharSequence path1 = i1.getContainingFile().getAbsolutePath();
             CharSequence path2 = i2.getContainingFile().getAbsolutePath();
-            int res = CharSequenceKey.Comparator.compare(path1, path2);
+            int res = CharSequences.comparator().compare(path1, path2);
             if (res == 0) {
                 int ofs1 = i1.getStartOffset();
                 int ofs2 = i2.getStartOffset();

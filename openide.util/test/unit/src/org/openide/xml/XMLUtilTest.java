@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.List;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.stream.StreamSource;
@@ -495,6 +496,212 @@ public class XMLUtilTest extends NbTestCase {
         resolver = null;
         assertGC("can collect handler", handlerRef);
         assertGC("can collect resolver", resolverRef);
+    }
+
+    public void testAppendChildElement() throws Exception {
+        Document doc = XMLUtil.parse(new InputSource(new StringReader("<root></root>")), false, true, null, null);
+        Element parent = doc.createElementNS("unittest", "parent");
+        Element newElement1 = doc.createElementNS("unittest", "new_element1");
+        Element newElement2 = doc.createElementNS("unittest", "new_element2");
+        Element newElement3 = doc.createElementNS("unittest", "new_element3");
+
+        // append to the default root node (no match in order)
+        XMLUtil.appendChildElement(parent, newElement1, new String[] { "new_element2", "new_element1" });
+        NodeList children = parent.getChildNodes();
+        assertEquals(1, children.getLength());
+
+        // append after the child we just appended
+        XMLUtil.appendChildElement(parent, newElement2, new String[] { "new_element2", "new_element1" });
+
+        children = parent.getChildNodes();
+        assertEquals(2, children.getLength());
+        Node firstChild = parent.getChildNodes().item(0);
+        Node secondChild = parent.getChildNodes().item(1);
+        assertEquals("new_element2", firstChild.getNodeName());
+        assertEquals("new_element1", secondChild.getNodeName());
+
+        // failures
+
+        try {
+            // new child is not in the order list
+            XMLUtil.appendChildElement(parent, newElement3, new String[] { "new_element2", "new_element1"});
+            fail("Expecting IAE");
+        } catch (IllegalArgumentException e) {
+            assertEquals("new child element 'new_element3' not specified in order [new_element2, new_element1]", e.getMessage());
+        }
+        try {
+            // existing child not in the order list
+            XMLUtil.appendChildElement(parent, newElement3, new String[] { "new_element3"});
+            fail("Expecting IAE");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Existing child element 'new_element2' not specified in order [new_element3]", e.getMessage());
+        }
+    }
+
+    public void testFindSubElements() throws Exception {
+        Document doc = XMLUtil.parse(new InputSource(new StringReader("<root> <child1></child1><child2/><!-- comment --><child3/></root>")),
+                false, true, null, null);
+
+        Element parent = doc.getDocumentElement();
+        assertEquals(5, parent.getChildNodes().getLength());
+        List<Element> subElements = XMLUtil.findSubElements(parent);
+        assertEquals(3, subElements.size());
+        Element firstChild = subElements.get(0);
+        Element secondChild = subElements.get(1);
+        Element thirdChild = subElements.get(2);
+
+        assertEquals("child1", firstChild.getNodeName());
+        assertEquals("child2", secondChild.getNodeName());
+        assertEquals("child3", thirdChild.getNodeName());
+
+        Document failureDoc = XMLUtil.parse(new InputSource(new StringReader("<root>Non whitespace<!-- comment --></root>")),
+            false, true, null, null);
+        Element failedParent = failureDoc.getDocumentElement();
+        try {
+            XMLUtil.findSubElements(failedParent);
+            fail("expected IAE");
+        } catch (IllegalArgumentException e) { }
+    }
+
+    public void testFindElement() throws Exception {
+        String xmlDoc = "<root> " +
+                        " <h:table xmlns:h=\"http://www.w3.org/TR/html4/\">" +
+                        " </h:table>" +
+                        " <f:table xmlns:f=\"http://www.w3schools.com/furniture\">" +
+                        " </f:table>" +
+                        " <dup/><dup/>" +
+                        " <h:form xmlns:h=\"http://www.w3.org/TR/html4/\">" +
+                        " </h:form>" +
+                        "</root>";
+        
+        Document doc = XMLUtil.parse(new InputSource(new StringReader(xmlDoc)), false, true, null, null);
+        Element parent = doc.getDocumentElement();
+
+        Element doesNotExist1 = XMLUtil.findElement(parent, "doesNotExist", "h");
+        assertNull(doesNotExist1);
+
+        Element doesNotExist2 = XMLUtil.findElement(parent, "doesNotExist", null);
+        assertNull(doesNotExist2);
+
+        Element noTable2 = XMLUtil.findElement(parent, "table", "h");
+        assertNull(noTable2);
+
+        Element noTable3 = XMLUtil.findElement(parent, "table", "f");
+        assertNull(noTable3);
+
+        Element table1 = XMLUtil.findElement(parent, "table", "http://www.w3.org/TR/html4/");
+        assertNotNull(table1);
+
+        Element table2 = XMLUtil.findElement(parent, "table", "http://www.w3schools.com/furniture");
+        assertNotNull(table2);
+
+        Element form1 = XMLUtil.findElement(parent, "form", "http://www.w3.org/TR/html4/");
+        assertNotNull(form1);
+
+        Element form2 = XMLUtil.findElement(parent, "form", null);
+        assertNotNull(form2);
+
+        assertEquals(form1, form2);
+
+        try {
+            XMLUtil.findElement(parent, "dup", null);
+            fail("Expected IAE");
+        } catch (IllegalArgumentException e) { }
+
+        try {
+            XMLUtil.findElement(parent, "table", null);
+            fail("Expected IAE");
+        } catch (IllegalArgumentException e) { }
+    }
+
+    public void testFindText() throws Exception {
+        Document doc = XMLUtil.parse(new InputSource(new StringReader("<root>Text To Find<child></child></root>")),
+                false, true, null, null);
+
+        Element parent = doc.getDocumentElement();
+        String foundText = XMLUtil.findText(parent);
+
+        assertEquals("Text To Find", foundText);
+
+        String notFoundText = XMLUtil.findText(parent.getFirstChild());
+
+        assertNull(notFoundText);
+    }
+
+    public void testTranslateXML() throws Exception {
+        // don't add any whitespace to the first 3 nodes
+        String xmlDoc = "<root><table bgcolor='red'><tr>" +
+                        "   <td>Apples</td>" +
+                        "   <td>Bananas</td>" +
+                        "  </tr>" +
+                        " </table>" +
+                        " <!-- comment -->" +
+                        "<![CDATA[free form data]]>" +
+                        "</root>";
+
+        Document doc = XMLUtil.parse(new InputSource(new StringReader(xmlDoc)), false, true, null, null);
+        Element parent = doc.getDocumentElement();
+
+        Element translated = XMLUtil.translateXML((Element) parent.getFirstChild(), "http://www.w3.org/TR/html4/");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        XMLUtil.write(doc, baos, "UTF-8");
+
+        Document destDoc = XMLUtil.parse(new InputSource(new StringReader("<root/>")), false, true, null, null);
+
+        destDoc.importNode(translated, true);
+        baos = new ByteArrayOutputStream();
+        XMLUtil.write(destDoc, baos, "UTF-8");
+
+        assertEquals("http://www.w3.org/TR/html4/", translated.getNamespaceURI());
+        assertEquals(1, translated.getAttributes().getLength());
+
+        assertEquals("http://www.w3.org/TR/html4/", translated.getFirstChild().getNamespaceURI());
+        assertEquals(0, translated.getFirstChild().getAttributes().getLength());
+    }
+
+    public void testCopyDocument() throws Exception {
+        String srcXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                        "<root>" +
+                        "   <table bgcolor='red'>" +
+                        "    <tr>" +
+                        "           <td>Apples</td>" +
+                        "           <td>Bananas</td>" +
+                        "       </tr>" +
+                        "   </table>" +
+                        " <!-- comment -->" +
+                        "</root>";
+
+        String resultXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                        "<root>\n" +
+                        "    <table xmlns=\"http://www.w3.org/TR/html4/\" bgcolor=\"red\">\n" +
+                        "        <tr>\n" +
+                        "            <td>Apples</td>\n" +
+                        "            <td>Bananas</td>\n" +
+                        "        </tr>\n" +
+                        "    </table>\n" +
+                        "    <!-- comment -->\n" +
+                        "</root>\n";
+
+        Document srcDoc = XMLUtil.parse(new InputSource(new StringReader(srcXml)), false, true, null, null);
+        Element srcRoot = srcDoc.getDocumentElement();
+
+        Document dstDoc = XMLUtil.parse(new InputSource(new StringReader("<root/>")), false, true, null, null);
+
+        Element dstRoot = dstDoc.getDocumentElement();
+        XMLUtil.copyDocument(srcRoot, dstRoot, "http://www.w3.org/TR/html4/");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        XMLUtil.write(dstDoc, baos, "UTF-8");
+        assertEquals(resultXml, baos.toString());
+
+        assertEquals(1, dstDoc.getChildNodes().getLength());
+        Element root = dstDoc.getDocumentElement();
+        Element tableNode = (Element) root.getFirstChild().getNextSibling();
+
+        assertEquals("table", tableNode.getNodeName());
+        assertEquals("http://www.w3.org/TR/html4/", tableNode.getNamespaceURI());
+        assertEquals(1, tableNode.getAttributes().getLength());
     }
 
 }

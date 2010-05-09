@@ -320,7 +320,7 @@ public class Subversion {
         if(notVersionedYet) {
             getSubversion().versionedFilesChanged();
             SvnUtils.refreshParents(localFolder);
-            getSubversion().getStatusCache().refreshRecursively(localFolder);
+            getSubversion().getStatusCache().refreshRecursively(localFolder, false);
         }
 
         VCSBugtrackingAccessor bugtrackingSupport = Lookup.getDefault().lookup(VCSBugtrackingAccessor.class);

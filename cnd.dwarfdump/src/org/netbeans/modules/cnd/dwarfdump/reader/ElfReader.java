@@ -104,7 +104,7 @@ public class ElfReader extends ByteStreamReader {
         }
     }
     
-    public String getSectionName(int sectionIdx) {
+    public final String getSectionName(int sectionIdx) {
         if (!isCoffFormat && !isMachoFormat) {
             if (stringTableSection == null) {
                 return ".shstrtab"; // NOI18N
@@ -117,7 +117,7 @@ public class ElfReader extends ByteStreamReader {
         }
     }
     
-    public boolean readHeader(Magic magic) throws WrongFileFormatException, IOException {
+    public final boolean readHeader(Magic magic) throws WrongFileFormatException, IOException {
         elfHeader = new ElfHeader();
         seek(shiftIvArchive);
         byte[] bytes = new byte[16];
@@ -283,7 +283,7 @@ public class ElfReader extends ByteStreamReader {
         if (TraceDwarf.TRACED && stringTableSection!=null ) {
             stringTableSection.dump(System.out);
         }
-        if (headers.size()==0 || stringTableSection == null){
+        if (headers.isEmpty() || stringTableSection == null){
             if (isThereAnyLinkedObjectFiles(stringTableSection)) {
                 // we got situation when Mac's linker put dwarf information not in the executable file
                 // but just put links to object files instead

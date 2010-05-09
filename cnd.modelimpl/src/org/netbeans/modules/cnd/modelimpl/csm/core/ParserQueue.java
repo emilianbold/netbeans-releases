@@ -330,6 +330,7 @@ public final class ParserQueue {
     private final Object lock = new Lock();
     private final boolean addAlways;
     private final Diagnostic.StopWatch stopWatch = TraceFlags.TIMING ? new Diagnostic.StopWatch(false) : null;
+    private final Diagnostic.ProjectStat parseWatch = TraceFlags.TIMING ? new Diagnostic.ProjectStat() : null;
     private final Map<ProjectBase, AtomicInteger> onStartLevel = new HashMap<ProjectBase, AtomicInteger>();
 
     private ParserQueue(boolean addAlways) {
@@ -374,7 +375,13 @@ public final class ParserQueue {
      */
     public boolean add(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position,
             boolean clearPrevState, FileAction fileAction) {
-
+        if (TraceFlags.TRACE_182342_BUG) {
+            new Exception("ParserQueue: add for " + file).printStackTrace(System.err);  // NOI18N
+            int i = 0;
+            for (APTPreprocHandler.State aState : ppStates) {
+                System.err.printf("ParserQueue: State %d from original %s\n", i++, aState);
+            }
+        }
         if (ppStates.isEmpty()) {
             Utils.LOG.severe("Adding a file with an emty preprocessor state set"); //NOI18N
         }
@@ -615,10 +622,23 @@ public final class ParserQueue {
         for (ProjectBase prj : copiedProjects) {
             ProgressSupport.instance().fireProjectParsingFinished(prj);
         }
+        clearParseWatch();
     }
 
     public void startup() {
         state = State.ON;
+    }
+
+    void clearParseWatch() {
+        if (parseWatch != null) {
+            parseWatch.clear();
+        }
+    }
+
+    void addParseStatistics(ProjectBase project, FileImpl file, long parseTime) {
+        if (parseWatch != null) {
+            parseWatch.addParseFileStatistics(project, file, parseTime);
+        }
     }
 
     public void removeAll(ProjectBase project) {
@@ -772,6 +792,9 @@ public final class ParserQueue {
                 // since project files might be shuffled in queue
                 if (TraceFlags.TIMING && stopWatch != null && stopWatch.isRunning()) {
                     stopWatch.stopAndReport("=== Stopping parser queue stopwatch " + project.getName() + ": \t"); // NOI18N
+                    if (parseWatch != null) {
+                        parseWatch.traceProjectData(project);
+                    }
                 }
             }
             lock.notifyAll();

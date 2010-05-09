@@ -69,8 +69,8 @@ public final class MacroExpanderFactory {
     public static synchronized MacroExpander getExpander(
             ExecutionEnvironment execEnv, ExpanderStyle style) {
 
-        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            throw new IllegalStateException("Host " + execEnv + " must be connected at this point"); // NOI18N
+        if (!HostInfoUtils.isHostInfoAvailable(execEnv)) {
+            throw new IllegalStateException("Host info " + execEnv + " must be available at this point"); // NOI18N
         }
 
         String key = ExecutionEnvironmentFactory.toUniqueID(execEnv) + '_' + style;

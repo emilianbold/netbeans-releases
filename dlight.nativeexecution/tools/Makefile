@@ -52,15 +52,15 @@ BUILD=./build
 
 APP_PATH=${DIST}/${PLATFORM_DIR}
 
-all: check init privp process_start pty_open
+all: init privp process_start pty_open
 
-privp:
+privp: init
 	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
 
-process_start:
+process_start: init
 	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
 
-pty_open:
+pty_open: init
 	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
 
 clean:
@@ -69,7 +69,7 @@ clean:
 cleanall:
 	rm -rf ${BUILD} ${DIST}
 
-init:
+init: check
 	@mkdir -p ${APP_PATH} ${DIST}/${PLATFORM_DIR}
 
 check:

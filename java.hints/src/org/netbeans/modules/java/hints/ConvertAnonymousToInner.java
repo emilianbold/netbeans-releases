@@ -78,6 +78,8 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.modules.java.editor.rename.InstantRenamePerformer;
+import org.netbeans.modules.java.hints.errors.Utilities;
+import org.netbeans.modules.java.hints.infrastructure.Pair;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -379,6 +381,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
         TreePath superConstructorCall = findSuperConstructorCall(newClassToConvert);
         
         Element currentElement = copy.getTrees().getElement(newClassToConvert);
+	boolean errorConstructor = currentElement == null || currentElement.asType() == null || currentElement.asType().getKind() == TypeKind.ERROR;
         boolean isEnclosedByStaticElem = false;
         while (currentElement != null && currentElement.getEnclosingElement() != null && currentElement.getKind() != ElementKind.METHOD) {
             if (currentElement.getModifiers().contains(Modifier.STATIC)) {
@@ -409,8 +412,10 @@ public class ConvertAnonymousToInner extends AbstractHint {
         List<VariableTree> constrArguments = new ArrayList<VariableTree>();
         List<StatementTree> constrBodyStatements = new ArrayList<StatementTree>();
         List<ExpressionTree> constrRealArguments = new ArrayList<ExpressionTree>();
-        
-        if (superConstructorCall != null) {
+	ModifiersTree emptyMods = make.Modifiers(EnumSet.noneOf(Modifier.class));
+	List<ExpressionTree> nueSuperConstructorCallRealArguments = null;
+
+        if (superConstructorCall != null && !errorConstructor) {
             Element superConstructor = copy.getTrees().getElement(superConstructorCall);
             
             if (superConstructor != null && superConstructor.getKind() == ElementKind.CONSTRUCTOR) {
@@ -422,22 +427,40 @@ public class ConvertAnonymousToInner extends AbstractHint {
                 ExecutableType et = (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) nctTypes, ee);
                 
                 if (!ee.getParameters().isEmpty()) {
-                    List<ExpressionTree> nueSuperConstructorCallRealArguments = new LinkedList<ExpressionTree>();
+                    nueSuperConstructorCallRealArguments = new LinkedList<ExpressionTree>();
                     Iterator<? extends VariableElement> names = ee.getParameters().iterator();
                     Iterator<? extends TypeMirror> types = et.getParameterTypes().iterator();
 
                     while (names.hasNext() && types.hasNext()) {
-                        ModifiersTree mt = make.Modifiers(EnumSet.noneOf(Modifier.class));
                         CharSequence name = names.next().getSimpleName();
 
-                        constrArguments.add(make.Variable(mt, name, make.Type(types.next()), null));
+                        constrArguments.add(make.Variable(emptyMods, name, make.Type(types.next()), null));
                         nueSuperConstructorCallRealArguments.add(make.Identifier(name));
                     }
-
-                    constrBodyStatements.add(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), nueSuperConstructorCallRealArguments)));
                 }
             }
-        }
+        } else if (errorConstructor) {
+	    Pair<List<? extends TypeMirror>, List<String>> resolvedArguments = Utilities.resolveArguments(copy, newClassToConvert, nct.getArguments());
+
+	    if (resolvedArguments != null) {
+		nueSuperConstructorCallRealArguments = new LinkedList<ExpressionTree>();
+
+		Iterator<? extends TypeMirror> typeIt   = resolvedArguments.getA().iterator();
+		Iterator<String>               nameIt   = resolvedArguments.getB().iterator();
+
+		while (typeIt.hasNext() && nameIt.hasNext()) {
+		    TypeMirror tm = typeIt.next();
+		    String     argName = nameIt.next();
+
+		    constrArguments.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), argName, make.Type(tm), null));
+		    nueSuperConstructorCallRealArguments.add(make.Identifier(argName));
+		}
+	    }
+	}
+
+	if (nueSuperConstructorCallRealArguments != null) {
+	    constrBodyStatements.add(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), nueSuperConstructorCallRealArguments)));
+	}
         
         constrRealArguments.addAll(nct.getArguments());
         

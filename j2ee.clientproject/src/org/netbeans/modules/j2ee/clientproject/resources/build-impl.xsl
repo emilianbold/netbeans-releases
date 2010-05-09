@@ -305,6 +305,20 @@ made subject to such option by the copyright holder.
                 <fail unless="build.test.results.dir">Must set build.test.results.dir</fail>
                 <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
                 <fail unless="dist.jar">Must set dist.jar</fail>
+                <condition property="missing.j2ee.server.home">
+                    <and>
+                        <matches pattern="j2ee.server.home" string="${{j2ee.platform.classpath}}"/>
+                        <not>
+                            <isset property="j2ee.server.home"/>
+                        </not>
+                    </and>
+                </condition>
+                <fail if="missing.j2ee.server.home">
+The Java EE server classpath is not correctly set up - server home directory is missing.
+Either open the project in the IDE and assign the server or setup the server classpath manually.
+For example like this:
+   ant -Dj2ee.server.home=&lt;app_server_installation_directory&gt;
+                </fail>
                 <fail unless="j2ee.platform.classpath">
 The Java EE server classpath is not correctly set up. Your active server type is ${j2ee.server.type}.
 Either open the project in the IDE and assign the server or setup the server classpath manually.

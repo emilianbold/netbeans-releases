@@ -221,7 +221,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
                 return true;
             }
             public void perform (Object[] nodes) {
-                String groupName = (String) nodes [0];
+                String groupName = ((BreakpointGroup)nodes[0]).getName();
                 DebuggerManager dm = DebuggerManager.getDebuggerManager ();
                 Breakpoint[] bs = dm.getBreakpoints ();
                 int i, k = bs.length;
@@ -237,7 +237,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
             ("CTL_BreakpointAction_EnableAll_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                String groupName = (String) node;
+                String groupName = ((BreakpointGroup)node).getName();
                 DebuggerManager dm = DebuggerManager.getDebuggerManager ();
                 Breakpoint[] bs = dm.getBreakpoints ();
                 int i, k = bs.length;
@@ -251,7 +251,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
                 return false;
             }
             public void perform (Object[] nodes) {
-                String groupName = (String) nodes [0];
+                String groupName = ((BreakpointGroup)nodes[0]).getName();
                 Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
                     getBreakpoints ();
                 int i, k = bs.length;
@@ -267,7 +267,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
             ("CTL_BreakpointAction_DisableAll_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                String groupName = (String) node;
+                String groupName = ((BreakpointGroup)node).getName();
                 DebuggerManager dm = DebuggerManager.getDebuggerManager ();
                 Breakpoint[] bs = dm.getBreakpoints ();
                 int i, k = bs.length;
@@ -281,7 +281,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
                 return false;
             }
             public void perform (Object[] nodes) {
-                String groupName = (String) nodes [0];
+                String groupName = ((BreakpointGroup)nodes[0]).getName();
                 Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
                     getBreakpoints ();
                 int i, k = bs.length;

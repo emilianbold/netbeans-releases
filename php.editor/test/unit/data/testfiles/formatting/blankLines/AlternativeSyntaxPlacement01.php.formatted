@@ -14,7 +14,7 @@ while ($i <= 10):
     $i++;
 endwhile;
 
-for ($i = 1; ; $i++):
+for ($i = 1;; $i++):
     if ($i > 10) {
         break;
     }
@@ -40,5 +40,4 @@ switch ($i):
     default:
         echo "i is not equal to 0, 1 or 2";
 endswitch;
-
 ?>

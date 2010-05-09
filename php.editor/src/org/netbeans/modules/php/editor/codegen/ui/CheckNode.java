@@ -7,6 +7,7 @@ package org.netbeans.modules.php.editor.codegen.ui;
 import java.awt.Image;
 import java.util.Enumeration;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.codegen.Property;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.openide.util.ImageUtilities;
@@ -78,10 +79,10 @@ public abstract class CheckNode extends DefaultMutableTreeNode {
 
     public static class CGSPropertyNode extends CheckNode {
 
-        private final Property property;
+        protected final Property property;
 
         public CGSPropertyNode(Property property) {
-            super(property.getName(), false, false);
+            super(property.getName(), false, property.isSelected());
             this.property = property;
         }
 
@@ -93,13 +94,37 @@ public abstract class CheckNode extends DefaultMutableTreeNode {
 
         @Override
         public Image getIcon() {
-            String name = "fieldPrivate";           //NOI18N
-            if (BodyDeclaration.Modifier.isPublic(property.getModifier())) {
-                name = "fieldPublic";               //NOI18N
-            } else if (BodyDeclaration.Modifier.isProtected(property.getModifier())) {
-                name = "fieldProtected";               //NOI18N
+            final int modifier = property.getModifier();
+            final boolean isPublic = BodyDeclaration.Modifier.isPublic(modifier);
+            final boolean isProtected = isPublic ? false : BodyDeclaration.Modifier.isProtected(modifier);
+            final boolean isStatic = BodyDeclaration.Modifier.isStatic(modifier);
+            return ImageUtilities.loadImage(ICON_BASE + getName(isPublic, isProtected, isStatic) + ICON_EXTENSION);
+        }
+
+        protected String getName(boolean isPublic, boolean isProtected, boolean isStatic) {
+            String name = "fieldPrivate"; // NOI18N
+            if (isPublic) {
+                name = "fieldPublic"; // NOI18N
+            } else if (isProtected) {
+                name = "fieldProtected"; // NOI18N
             }
-            return ImageUtilities.loadImage(ICON_BASE + name + ICON_EXTENSION);
+            return name;
+        }
+    }
+
+    public static class MethodPropertyNode extends CGSPropertyNode {
+
+        public MethodPropertyNode(Property property) {
+            super(property);
+            assert PhpElementKind.METHOD.equals(property.getKind()) : property.getKind();
+        }
+
+        @Override
+        protected String getName(boolean isPublic, boolean isProtected, boolean isStatic) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(isStatic ? "methodStatic" : "method"); // NOI18N
+            sb.append(isPublic ? "Public" : "Protected"); // NOI18N
+            return sb.toString();
         }
     }
 }

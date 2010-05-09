@@ -237,6 +237,8 @@ public class CloneAction extends ContextAction {
                         Mercurial.LOG.log(Level.WARNING, this.getClass().getName() + ": Cannot set default push and pull path"); // NOI18N
                         Mercurial.LOG.log(Level.INFO, null, hgConfigFiles.getException());
                     }
+                } catch (HgException.HgCommandCanceledException ex) {
+                    // canceled by user, do nothing
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);

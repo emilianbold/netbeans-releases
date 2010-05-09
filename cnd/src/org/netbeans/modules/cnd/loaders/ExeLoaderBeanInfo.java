@@ -42,20 +42,20 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.awt.Image;
-import java.beans.*;
-import java.text.MessageFormat;
-import java.util.ResourceBundle;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.SimpleBeanInfo;
 
 import org.openide.ErrorManager;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *  Description of {@link ExeLoader}.
  */
 public class ExeLoaderBeanInfo extends SimpleBeanInfo {
 
+    @Override
     public BeanInfo[] getAdditionalBeanInfo() {
 	try {
 	    // I.e. MultiDataLoader.class or UniFileLoader.class.
@@ -67,6 +67,7 @@ public class ExeLoaderBeanInfo extends SimpleBeanInfo {
 	}
     }
 
+    @Override
     public Image getIcon(int type) {
 	return ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/ExeIcon.gif");   // NOI18N
     }

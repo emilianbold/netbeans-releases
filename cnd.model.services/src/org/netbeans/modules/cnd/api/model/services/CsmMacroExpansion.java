@@ -55,6 +55,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionViewProvider;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -245,6 +246,7 @@ public final class CsmMacroExpansion {
      * @param offset - offset in document
      */
     public static void showMacroExpansionView(Document doc, int offset) {
+        UIGesturesSupport.submit("USG_CND_SHOW_MACRO_EXPANSION"); //NOI18N
         getMacroExpansionViewProvider().showMacroExpansionView(doc, offset);
     }
 

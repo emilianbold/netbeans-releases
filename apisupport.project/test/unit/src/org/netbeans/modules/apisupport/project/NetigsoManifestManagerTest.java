@@ -43,6 +43,10 @@ package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.TreeSet;
+import java.util.jar.Manifest;
+import org.openide.util.test.TestFileUtils;
 
 /**
  * Test functionality of ManifestManager when it sees OSGi bundles.
@@ -90,10 +94,12 @@ public class NetigsoManifestManagerTest extends TestBase {
         String mfContent = "Manifest-Version: 1.0\n" +
                 "Ant-Version: Apache Ant 1.6.5\n" +
                 "Created-By: 1.4.2_10-b03 (Sun Microsystems Inc.)\n" +
-                "Bundle-SymbolicName: org.netbeans.send-opts; singleton:=true\n";
+                "Bundle-SymbolicName: org.netbeans.send-opts; singleton:=true\n" +
+                "Require-Bundle: org.netbeans.some-lib;version=\"[1.0,2)\"\n";
         dump(manifest, mfContent);
         ManifestManager mm = ManifestManager.getInstance(manifest, true);
         assertEquals("cnb", "org.netbeans.send_opts", mm.getCodeNameBase());
+        assertEquals(Collections.singletonList("org.netbeans.some_lib"), Arrays.asList(mm.getRequiredTokens()));
     }
 
     public void testSingletonBundle() throws Exception {
@@ -171,4 +177,28 @@ public class NetigsoManifestManagerTest extends TestBase {
         assertEquals("admin.cli", mm.getRequiredTokens()[1]);
     }
     
+    public void testProvidedTokensOfOSGiContainer() throws Exception {
+        File wrapperJar = new File(getWorkDir(), "wrapper.jar");
+        TestFileUtils.writeZipFile(wrapperJar, "META-INF/MANIFEST.MF:" +
+                "OpenIDE-Module: wrapper\n" +
+                "OpenIDE-Module-Provides: org.osgi.framework.launch.FrameworkFactory\n" +
+                "Class-Path: ext/container.jar\n");
+        File ext = new File(getWorkDir(), "ext");
+        ext.mkdir();
+        TestFileUtils.writeZipFile(new File(ext, "container.jar"), "META-INF/MANIFEST.MF:" +
+                "Bundle-SymbolicName: super.container; singleton:=true\n" +
+                "Export-Package: super.container.features;version=\"1.0\"\n");
+        assertEquals("[org.osgi.framework.launch.FrameworkFactory, super.container, super.container.features]",
+                new TreeSet<String>(Arrays.asList(ManifestManager.getInstanceFromJAR(wrapperJar).getProvidedTokens())).toString());
+    }
+
+    public void testImportJREPackage() throws Exception {
+        Manifest m = new Manifest();
+        m.getMainAttributes().putValue("Bundle-SymbolicName", "my.bundle");
+        m.getMainAttributes().putValue("Require-Bundle", "whatever");
+        m.getMainAttributes().putValue("Import-Package", "actual.api, javax.swing");
+        assertEquals("[actual.api, whatever]",
+                new TreeSet<String>(Arrays.asList(ManifestManager.getInstance(m, true).getRequiredTokens())).toString());
+    }
+
 }

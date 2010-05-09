@@ -407,6 +407,7 @@ public class RulesManager implements FileChangeListener {
             Collection<ErrorDescription> wrapped = new LinkedList<ErrorDescription>();
 
             for (ErrorDescription ed : result) {
+                if (ed == null) continue;
                 List<Fix> fixesForED = ErrorDescriptionFactory.resolveDefaultFixes(ctx, ed.getFixes().getFixes().toArray(new Fix[0]));
 
                 ErrorDescription nue = createErrorDescription(ed.getSeverity(),

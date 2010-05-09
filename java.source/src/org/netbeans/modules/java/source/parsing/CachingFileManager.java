@@ -255,7 +255,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
     public boolean isSameFile(FileObject fileObject, FileObject fileObject0) {        
         return fileObject instanceof FileObjects.FileBase 
                && fileObject0 instanceof FileObjects.FileBase 
-               && ((FileObjects.FileBase)fileObject).getFile().equals(((FileObjects.FileBase)fileObject).getFile());
+               && ((FileObjects.FileBase)fileObject).getFile().equals(((FileObjects.FileBase)fileObject0).getFile());
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

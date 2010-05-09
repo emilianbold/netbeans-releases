@@ -112,6 +112,8 @@ public class SyntaxHighlightingTest extends NbTestCase {
     public void testEvents() throws BadLocationException {
         final String text = "Hello !";
         Document doc = createDocument(TestTokenId.language(), text);
+        assertTrue("TokenHierarchy should be active", TokenHierarchy.get(doc).isActive());
+
         SyntaxHighlighting layer = new SyntaxHighlighting(doc);
         L listener = new L();
         layer.addHighlightsChangeListener(listener);

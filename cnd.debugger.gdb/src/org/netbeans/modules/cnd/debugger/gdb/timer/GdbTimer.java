@@ -54,11 +54,7 @@ public abstract class GdbTimer {
     
     public enum TimerType {Dummy, Default, Custom};
     
-    private static boolean enabled = Boolean.getBoolean("org.netbeans.modules.cnd.gdb.timer.GdbTimer");
-    
     private static GdbTimer dummy = new GdbDummyTimer();
-    
-    private static GdbTimer default_instance;
     
     private static Map<String, GdbTimer> map = new HashMap<String, GdbTimer>();
     

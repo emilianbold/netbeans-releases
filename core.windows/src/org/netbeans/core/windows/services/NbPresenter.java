@@ -121,6 +121,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     /** variable holding current modal dialog in the system */
     public static NbPresenter currentModalDialog;
     private static final ChangeSupport cs = new ChangeSupport(NbPresenter.class);
+    private static Boolean isJava17 = null;
     
     protected NotifyDescriptor descriptor;
     
@@ -252,6 +253,10 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         initializePresenter();
 
         pack();
+        // a workaround jdkbug#6925473
+        if (isJava17()) {
+            pack();
+        }
         setBounds(Utilities.findCenterBounds(getSize()));
     }
 
@@ -365,6 +370,16 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
 
             getContentPane ().add (toAdd, BorderLayout.CENTER);
         }
+    }
+
+    private static boolean isJava17() {
+        if (isJava17 != null) {
+            return isJava17;
+        }
+        String javaVersion = System.getProperty("java.version", "unknown"); // NOI18N
+        String javaRuntimeName = System.getProperty("java.runtime.name", "unknown"); // NOI18N
+        isJava17 = javaVersion.startsWith("1.7") || javaRuntimeName.startsWith("OpenJDK"); // NOI18N
+        return isJava17;
     }
     
     private static final class FixedHeightLabel extends JLabel {

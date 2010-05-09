@@ -393,8 +393,17 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     /** Fired when the node is deleted.
     * @param ev event describing the node
     */
+    @Override
     public void nodeDestroyed(NodeEvent ev) {
-        // ignore for now
+        node = Node.EMPTY;
+        parent = null;
+        Enumeration<VisualizerNode> ch = getChildren(false).children(false);
+        while (ch.hasMoreElements()) {
+            final VisualizerNode v = ch.nextElement();
+            if (v != null) {
+                v.nodeDestroyed(ev);
+            }
+        }
     }
 
     /** Change in the node properties (icon, etc.)

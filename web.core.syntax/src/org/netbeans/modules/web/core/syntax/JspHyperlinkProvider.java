@@ -185,22 +185,15 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
             TokenSequence<ELTokenId> elTokenSequence = 
                 tokenSequence.embedded(ELTokenId.language());
             if (elTokenSequence != null){
-                JspELExpression exp = new JspELExpression(jspSup);
-                elTokenSequence.move(offset);
-                if(!elTokenSequence.moveNext()) {
-                    return false; //no token
+                //check expression language
+ 		elTokenSequence.move(offset);
+		if (!elTokenSequence.moveNext()) {
+		    return false;
+		}
+
+		if(elTokenSequence.token().id() == ELTokenId.IDENTIFIER) {
+                    return true;
                 }
-                
-                if (elTokenSequence.token().id() == ELTokenId.DOT){
-                    return false;
-                }
-                
-                int endOfEL = elTokenSequence.offset() + elTokenSequence.token().length();
-                int res = exp.parse(endOfEL);
-                if (res == ELExpression.EL_START) {
-                    res = exp.parse(endOfEL + 1);
-                }
-                return res == ELExpression.EL_BEAN;
             }
             // is the a reachable tag file?
             return (canBeTagFile(tokenSequence, jspSup));

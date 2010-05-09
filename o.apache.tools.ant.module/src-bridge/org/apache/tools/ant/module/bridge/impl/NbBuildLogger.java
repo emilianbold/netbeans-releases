@@ -596,6 +596,9 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         Pattern.compile(" \\+Target: (.+)"); // NOI18N
     
     public void messageLogged(BuildEvent ev) {
+        if (!running) { // #145722
+            return;
+        }
         AntBridge.suspendDelegation();
         try {
             checkForStop();
@@ -765,7 +768,6 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     }
 
     public InputOutput getIO() {
-        interestingOutputCallback.run();
         return io;
     }
     

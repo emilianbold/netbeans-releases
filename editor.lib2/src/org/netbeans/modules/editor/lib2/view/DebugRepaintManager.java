@@ -81,7 +81,7 @@ final class DebugRepaintManager extends RepaintManager {
     @Override
     public void addDirtyRegion(JComponent c, int x, int y, int w, int h) {
         if (debugComponents.contains(c)) {
-            LOG.fine("REPAINT: " + ViewUtils.toString(new Rectangle(x, y, w, h)) + // NOI18N
+            LOG.fine("cREPAINT: " + ViewUtils.toString(new Rectangle(x, y, w, h)) + // NOI18N
                     " c:" + ViewUtils.toString(c) + '\n'); // NOI18N
         }
         super.addDirtyRegion(c, x, y, w, h);

@@ -115,6 +115,9 @@ PARSER_END(CssParser)
   < CDO: "<!--" >
 | < CDC: "-->" >
 | < INCLUDES: "~=" >
+| < CSS3_BEGINS: "^=" >
+| < CSS3_ENDS: "$=" >
+| < CSS3_CONTAINS: "*=" >
 | < DASHMATCH: "|=" >
 | < IMPORT_SYM: "@import" >
 | < PAGE_SYM: "@page" >
@@ -144,7 +147,7 @@ PARSER_END(CssParser)
 | < NUMBER: <NUM> >
 | < RGB: "rgb(" >
 | < FUNCTION: <IDENT> "(" >
-| < IDENT: ( "-" )?( (<GENERATED>)? | <NMSTART>) ( <GENERATED> | <NMCHAR> )* >
+| < IDENT: (<GENERATED>)+ | (( "-" )? <NMSTART> ( <NMCHAR> )*) >
 | < #NAME: ( <NMCHAR> )+ >
 | < NUM: ( ["0"-"9"] )+ | ( ["0"-"9"] )* "." ( ["0"-"9"] )+ >
 
@@ -220,11 +223,16 @@ void importRule() : {} {
 }
 
 void mediaRule() : {} {
+    try {
         <MEDIA_SYM> ( ( <S> | <COMMENT> ) )*
         mediaList()
         <LBRACE> ( ( <S> | <COMMENT> ) )*
         ( mediaRuleList() )?
         <RBRACE>
+    } catch(ParseException e) {
+        reportError(e);
+        error_skipblock();
+    }
 }
 
 void mediaList() :{} {
@@ -347,7 +355,7 @@ void property() :
 {
 }
 {
-    (<IDENT> | <GENERATED>) ( ( <S> | <COMMENT> ) )*
+    (<HASH> | <IDENT> | <GENERATED>) ( ( <S> | <COMMENT> ) )*
 }
 
 //
@@ -371,7 +379,7 @@ void styleRule() :
     } catch(ParseException e) {
         reportError(e);
         error_skipblock();
-}
+    }
 }
 
 void selectorList() :
@@ -477,6 +485,12 @@ void attrib() :
             <INCLUDES>
             |
             <DASHMATCH>
+            |
+            <CSS3_BEGINS>
+            |
+            <CSS3_ENDS>
+            |
+            <CSS3_CONTAINS>
         )
         ( ( <S> | <COMMENT> ) )*
         (
@@ -505,7 +519,7 @@ void pseudo() :
         |
         (
             <FUNCTION> ( ( <S> | <COMMENT> ) )*
-            ( <IDENT> | <GENERATED> ) ( ( <S> | <COMMENT> ) )*
+            ( ((<DOT>)? <IDENT>) | <GENERATED> ) ( ( <S> | <COMMENT> ) )*
             <RROUND>
         )
     )
@@ -539,10 +553,17 @@ void declaration() :
 }
 {
     try {
-        property()
-        <COLON> ( ( <S> | <COMMENT> ) )*
-        expr()
-        ( prio() )?
+        (
+        LOOKAHEAD( <GENERATED> ( <S> | <COMMENT> )* (<SEMICOLON> | <RBRACE>))
+            <GENERATED> ( <S> | <COMMENT> )*
+            |
+            (
+                property()
+                <COLON> ( ( <S> | <COMMENT> ) )*
+                expr()
+                ( prio() )?
+            )
+        )
     } catch (ParseException e) {
         reportError(e);
         error_skipdecl(); //recovery
@@ -573,7 +594,7 @@ void expr() :
 }
 {
    term()
-    ( (  operator() )? term() )*
+   ( (  operator() | <EQUALS> )? (term() | <DOT> | <COLON> ) )*
 }
 
 //
@@ -717,7 +738,7 @@ void error_skipblock() {
     else if( t.kind == EOF )
       break;
   }
-}
+  }
 
 JAVACODE
 void error_skipdecl() {

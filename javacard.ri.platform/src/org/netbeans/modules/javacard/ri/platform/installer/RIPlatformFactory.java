@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.javacard.common.CommonSystemFilesystemPaths;
@@ -69,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -124,7 +126,7 @@ public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject
      * platform wizard, or null if not
      * @param displayName The display name for this platform.  May not be null.
      */
-    RIPlatformFactory(EditableProperties platformProps, EditableProperties deviceSettings, FileObject baseDir, ProgressHandle h, String displayName) {
+    public RIPlatformFactory(EditableProperties platformProps, EditableProperties deviceSettings, FileObject baseDir, ProgressHandle h, String displayName) { //public for unit tests
         Parameters.notNull("platformProps", platformProps); //NOI18N
         Parameters.notNull("baseDir", baseDir); //NOI18N
         Parameters.notNull("displayName", displayName); //NOI18N
@@ -210,6 +212,7 @@ public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject
         //Translate UNIX-style relative paths into platform-specific absolute
         //paths usable by Ant
         translatePaths(FileUtil.toFile(baseDir), platformProps);
+        hackAntTasksJarFor302();
         //Get the file name.  The first one installed is always called
         //javacard_default
         String filename = getPlatformFileName();
@@ -319,6 +322,80 @@ public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject
         if (!platformProps.containsKey(JavacardPlatformKeyNames.PLATFORM_DEBUG_PROXY_CLASSPATH)) {
             platformProps.put(JavacardPlatformKeyNames.PLATFORM_DEBUG_PROXY_CLASSPATH, JC_302_DEBUG_PROXY_CP);
         }
+    }
+
+    public static final String ANT_TASKS_302_JAR_PATH = "javacard302/anttasks.jar"; //NOI18N
+    public boolean antTasksUpdated; //unit tests
+    private final void hackAntTasksJarFor302() {
+        //DELETE THIS METHOD ONCE 3.0.2 NO LONGER SUPPORTED
+
+        //For JavaCard 3.0.2 only, we bundle our own copy of the Java Card Ant tasks.
+        //This method will find all path-like properties and replace any references
+        //to lib/nbtasks.jar with references to the copy of the file we are bundling
+
+        //Note that this method must be called *after* translatePaths() - it expects
+        //platform-specific, not platform-independent path properties
+        String ver = platformProps.getProperty(JavacardPlatformKeyNames.PLATFORM_RI_VERSION);
+        boolean upgrade = ver != null && "3.0.2".equals(ver.trim()) && !platformProps.containsKey(JavacardPlatformKeyNames.PLATFORM_302_ANT_TASKS_UPDATED);
+        Logger log = Logger.getLogger(RIPlatformFactory.class.getName());
+        if (upgrade) {
+            File antTasksJar = InstalledFileLocator.getDefault().locate(ANT_TASKS_302_JAR_PATH, "org.netbeans.modules.javacard.ri.platform", false); //NOI18N
+            if (antTasksJar != null) {
+                antTasksUpdated = true;
+                platformProps.setProperty(JavacardPlatformKeyNames.PLATFORM_302_ANT_TASKS_UPDATED, "" + Boolean.TRUE);
+                for (String key : JavacardPlatformKeyNames.getPathPropertyNames(platformProps)) {
+                    String path = platformProps.getProperty(key);
+                    if (path != null) {
+                        String nue = upgradePath (path, antTasksJar, log);
+                        if (nue != null && !nue.equals(path)) {
+                            log.log (Level.INFO, "Upgrade {0} from {1} to {2}", new Object[]{key, path, nue});
+                            platformProps.setProperty (key, nue);
+                        }
+                    }
+                }
+            } else {
+                log.log(Level.WARNING,
+                        "Could not upgrade Ant tasks for {0} because " + //NOI18N
+                        "Ant tasks JAR is missing",  //NOI18N
+                        new Object[] { this.baseDir.getPath() });
+            }
+        }
+    }
+
+    final String upgradePath (String path, File antTasksJar, Logger log) {
+        if (path != null && path.length() > 0) {
+            FileObject origTasksJar = baseDir.getFileObject("lib/nbtasks.jar");  //NOI18N
+            if (origTasksJar != null) {
+                File f = FileUtil.toFile (origTasksJar);
+                if (f != null) {
+                    String abs = f.getAbsolutePath();
+                    if (path.indexOf(abs) < 0) {
+                        return path;
+                    }
+                    String antTasksPath = antTasksJar.getAbsolutePath();
+                    Pattern p = Pattern.compile (File.pathSeparator, Pattern.LITERAL);
+                    String[] components = p.split(path);
+                    StringBuilder nue = new StringBuilder();
+                    for (String pth : components) {
+                        boolean match = abs.equals(pth);
+                        if (match) {
+                            pth = antTasksPath;
+                        }
+                        if (nue.length() > 0) {
+                            nue.append (File.pathSeparator);
+                        }
+                        nue.append(pth);
+                    }
+                    return nue.toString();
+                } else {
+                    log.log (Level.WARNING, "lib/nbtasks.jar exists but not a " + //NOI18N
+                            "regular file: {0}", origTasksJar.getPath()); //NOI18N
+                }
+            } else {
+                log.log(Level.WARNING, "lib/nbtasks.jar missing under {0}", new Object[] { baseDir.getPath() });
+            }
+        }
+        return path;
     }
 
     private void progress() {

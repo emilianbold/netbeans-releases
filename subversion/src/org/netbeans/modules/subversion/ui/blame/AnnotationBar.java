@@ -172,7 +172,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Request processor to create threads that may be cancelled.
      */
-    RequestProcessor requestProcessor = null;
+    static RequestProcessor requestProcessor = null;
     
     /**
      * Latest annotation comment fetching task launched.
@@ -328,6 +328,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
 
         doc.runAtomic(new Runnable() {
+            @Override
             public void run() {
                 boolean isKenaiRepository = false;
                 SVNUrl url = null;
@@ -425,15 +426,18 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * Registers "close" popup menu, tooltip manager
      * and repaint on documet change manager.
      */
+    @Override
     public void addNotify() {
         super.addNotify();
 
 
         this.addMouseListener(new MouseAdapter() {
+            @Override
             public void mousePressed(MouseEvent e) {
                 maybeShowPopup(e);
             }
 
+            @Override
             public void mouseReleased(MouseEvent e) {
                 maybeShowPopup(e);
             }
@@ -506,6 +510,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final boolean revisionCanBeRolledBack = al == null || referencedFile != null ? false : al.canBeRolledBack();
         
         diffMenu.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (revisionPerLine != null) {
                     if (getPreviousRevision(revisionPerLine) != null) {
@@ -518,6 +523,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         JMenuItem rollbackMenu = new JMenuItem(loc.getString("CTL_MenuItem_Revert"));
         rollbackMenu.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 revert(file, revisionPerLine);
             }
@@ -528,8 +534,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         // an action showing annotation for previous revisions
         final JMenuItem previousAnnotationsMenu = new JMenuItem();
         previousAnnotationsMenu.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Subversion.getInstance().getRequestProcessor().post(new Runnable() {
+                    @Override
                     public void run() {
                         showPreviousAnnotations(file, revisionPerLine);
                     }
@@ -547,6 +555,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 popupMenu.addSeparator();
                 JMenuItem chatMenu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_Chat", author));
                 chatMenu.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         ku.startChat(KenaiUser.getChatLink(getCurrentFileObject(), lineNr));
                     }
@@ -558,6 +567,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         JMenuItem menu;
         menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations"));
         menu.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 hideBar();
             }
@@ -601,6 +611,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
         SvnProgressSupport support = new SvnProgressSupport() {
+            @Override
             public void perform() {
                 RevertModificationsAction.performRevert(revertModifications.getRevisionInterval(), revertModifications.revertNewFiles(), ctx, this);
             }
@@ -628,6 +639,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryRoot);
         SvnProgressSupport support = new SvnProgressSupport() {
+            @Override
             public void perform() {
                 try {
                     SvnClient client = Subversion.getInstance().getClient(repositoryRoot);
@@ -682,6 +694,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     // latestAnnotationTask business logic
+    @Override
     public void run() {
         // get resource bundle
         ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
@@ -783,6 +796,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * {@link #revalidate} that triggers new layouting
      * that consults prefered size.
      */
+    @Override
     public Dimension getPreferredSize() {
         Dimension dim = textComponent.getSize();
         int width = annotated ? getBarWidth() : 0;
@@ -906,12 +920,13 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Presents commit message as tooltips.
      */
+    @Override
     public String getToolTipText (MouseEvent e) {
         if (editorUI == null)
             return null;
         int line = getLineFromMouseEvent(e);
 
-        StringBuffer annotation = new StringBuffer();
+        StringBuilder annotation = new StringBuilder();
         if (elementAnnotations != null) {
             AnnotateLine al = getAnnotateLine(line);
 
@@ -924,9 +939,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 }
 
                 // always return unique string to avoid tooltip sharing on mouse move over same revisions -->
-                annotation.append("<html><!-- line=" + line++ + " -->" + al.getRevision()  + " - <b>" + escapedAuthor + "</b>"); // NOI18N
+                annotation.append("<html><!-- line=").append(line++).append(" -->").append(al.getRevision()).append(" - <b>").append(escapedAuthor).append("</b>"); // NOI18N
                 if (al.getDate() != null) {
-                    annotation.append(" " + DateFormat.getDateInstance().format(al.getDate())); // NOI18N                    
+                    annotation.append(" ").append(DateFormat.getDateInstance().format(al.getDate())); // NOI18N
                 }
                 if (al.getCommitMessage() != null) {
                     String escaped = null;
@@ -937,7 +952,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     }
                     if (escaped != null) {
                         String lined = escaped.replaceAll(System.getProperty("line.separator"), "<br>");  // NOI18N
-                        annotation.append("<p>" + lined); // NOI18N
+                        annotation.append("<p>").append(lined); // NOI18N
                     }
                 }
             }
@@ -989,6 +1004,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * It invokes {@link #paintView} that contains
      * actual business logic.
      */
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -1018,15 +1034,15 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 int rootViewCount = rootView.getViewCount();
 
                 if (startViewIndex >= 0 && startViewIndex < rootViewCount) {
-                    // find the nearest visible line with an annotation
-                    Rectangle rec = textUI.modelToView(component, rootView.getView(startViewIndex).getStartOffset());
-                    int y = (rec == null) ? 0 : rec.y;
-
                     int clipEndY = clip.y + clip.height;
                     for (int i = startViewIndex; i < rootViewCount; i++){
                         View view = rootView.getView(i);
+                        Rectangle rec = component.modelToView(view.getStartOffset());
+                        if (rec == null) {
+                            break;
+                        }
+                        int y = rec.y;
                         paintView(view, g, y);
-                        y += editorUI.getLineHeight();
                         if (y >= clipEndY) {
                             break;
                         }
@@ -1085,6 +1101,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     /** Implementation */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt == null) return;
         String id = evt.getPropertyName();
@@ -1098,10 +1115,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     /** Implementation */
+    @Override
     public void changedUpdate(DocumentEvent e) {
     }
 
     /** Implementation */
+    @Override
     public void insertUpdate(DocumentEvent e) {
         // handle new lines,  Enter hit at end of line changes
         // the line element instance
@@ -1141,6 +1160,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     /** Implementation */
+    @Override
     public void removeUpdate(DocumentEvent e) {
         if (e.getDocument().getLength() == 0) { // external reload
             hideBar();
@@ -1149,31 +1169,37 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     /** Caret */
+    @Override
     public void stateChanged(ChangeEvent e) {
         assert e.getSource() == caret;
         caretTimer.restart();
     }
 
     /** Timer */
+    @Override
     public void actionPerformed(ActionEvent e) {
         assert e.getSource() == caretTimer;
         onCurrentLine();
     }
 
     /** on JTextPane */
+    @Override
     public void componentHidden(ComponentEvent e) {
     }
 
     /** on JTextPane */
+    @Override
     public void componentMoved(ComponentEvent e) {
     }
 
     /** on JTextPane */
+    @Override
     public void componentResized(ComponentEvent e) {
         revalidate();
     }
 
     /** on JTextPane */
+    @Override
     public void componentShown(ComponentEvent e) {
     }
 

@@ -49,7 +49,7 @@ import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
-public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Provider {
+/*package*/ final class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
     private SourceFoldersDescriptorPanel sourceFoldersDescriptorPanel;
     private SourceFilesPanel sourceFilesPanel;
@@ -58,7 +58,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
     public SourceFoldersPanel(SourceFoldersDescriptorPanel sourceFoldersDescriptorPanel) {
         initComponents();
         this.sourceFoldersDescriptorPanel = sourceFoldersDescriptorPanel;
-        sourceFilesPanel = new SourceFilesPanel(sourceFoldersDescriptorPanel);
+        sourceFilesPanel = new SourceFilesPanel(sourceFoldersDescriptorPanel, true);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -80,9 +80,9 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
             //sourceFilesPanel.setSeed(workingdir, workingdir);
             File wd = new File(workingdir);
             sourceFilesPanel.getSourceListData().add(new FolderEntry(wd, wd.getPath()));
-            if (new File(wd.getPath(), "tests").exists()) { // FIXUP:  NOI18N
-                sourceFilesPanel.getTestListData().add(new FolderEntry(wd, wd.getPath() + "/tests")); // NOI18N // FIXUP: scan for actual 'test' or 'tests' folders...
-            }
+//            if (new File(wd.getPath(), "tests").exists()) { // FIXUP:  NOI18N
+//                sourceFilesPanel.getTestListData().add(new FolderEntry(wd, wd.getPath() + "/tests")); // NOI18N // FIXUP: scan for actual 'test' or 'tests' folders...
+//            }
             sourceFilesPanel.setFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN);
             firstTime = false;
         }

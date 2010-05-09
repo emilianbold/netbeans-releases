@@ -150,8 +150,8 @@ public final class RubyType {
      * Returns real Ruby types for this abstraction. Note that this set does not
      * include {@link #hasUnknownMember() unknown} member.
      */
-    public Iterable<? extends String> getRealTypes() {
-        return realTypes;
+    public Set<String> getRealTypes() {
+        return Collections.unmodifiableSet(realTypes);
     }
 
     public String first() {

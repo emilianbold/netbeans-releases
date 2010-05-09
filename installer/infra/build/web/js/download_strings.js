@@ -41,11 +41,11 @@ var NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG = "NetBeans IDE Download Bundles in 
 var NETBEANS_PACKS_MSG 		  = "Supported&nbsp;technologies";
 
 var JDK_DOWNLOAD_LINK    = "http://java.sun.com/javase/downloads/index.jsp";
-var NBJDK_DOWNLOAD_LINK  = "http://java.sun.com/javase/downloads/netbeans.html";
+var NBJDK_DOWNLOAD_LINK  = "http://java.sun.com/javase/downloads/widget/jdk_netbeans.jsp";
 
 var JAVA_COM_LINK        = "http://java.com/";
 
-var JDK_NOTE_ALL      = "Java 6 or Java 5 is required for installing and running the PHP, Ruby and C/C++ NetBeans Bundles. You can download the <a href=\"{0}\">latest Java at java.com</a>.<br><br>JDK 6 or JDK 5 is required for installing and running the Java SE, JavaFX, Java and All NetBeans Bundles. You can download <a href=\"{1}\">standalone JDK</a> or download the latest <a href=\"{2}\">JDK with NetBeans IDE Java SE bundle</a>.<br><br>";
+var JDK_NOTE_ALL      = "Java 6 is required for installing and running the PHP, Ruby and C/C++ NetBeans Bundles. You can download the <a href=\"{0}\">latest Java at java.com</a>.<br><br>JDK 6 is required for installing and running the Java SE, JavaFX, Java and All NetBeans Bundles. You can download <a href=\"{1}\">standalone JDK</a> or download the latest <a href=\"{2}\">JDK with NetBeans IDE Java SE bundle</a>.<br><br>";
 //var JDK_NOTE_MACOSX   = "JDK 5.0 is required for installing and running the NetBeans IDE.";
 var JDK_NOTE_MACOSX   = "";
 

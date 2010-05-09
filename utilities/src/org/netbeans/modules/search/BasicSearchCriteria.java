@@ -256,6 +256,18 @@ final class BasicSearchCriteria {
      * Tries to compile the regular expression pattern, thus checking its
      * validity. In case of success, the compiled pattern is stored
      * to {@link #textPattern}, otherwise the field is set to {@code null}.
+     *
+     * <p>Actually, this method defines a pattern used in searching, i.e. it
+     * defines behaviour of the searching. It should be the same as behavior of
+     * the Find action (Ctrl+F) in the Editor to avoid any confusions
+     * (see Bug #175101).
+     * Hence, this implementation should specify default flags in
+     * the call of the method {@link Pattern#compile(java.lang.String, int)
+     * java.util.regex.Pattern.compile(String regex, int flags)} that are the
+     * same as in the implementation of the Find action
+     * (i.e in the method {@code getFinder} of the class
+     * {@code org.netbeans.modules.editor.lib2.search.DocumentFinder}).
+     * </p>
      * 
      * @return  {@code true} if the regexp pattern expression was valid;
      *          {@code false} otherwise
@@ -277,6 +289,7 @@ final class BasicSearchCriteria {
                 flags |= Pattern.CASE_INSENSITIVE;
                 flags |= Pattern.UNICODE_CASE;
             }
+            flags |= Pattern.MULTILINE; // #175101
             textPattern = Pattern.compile(textPatternExpr, flags);
             return true;
         } catch (PatternSyntaxException ex) {

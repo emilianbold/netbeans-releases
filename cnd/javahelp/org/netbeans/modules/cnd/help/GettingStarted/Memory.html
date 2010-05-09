@@ -8,54 +8,81 @@ Use is subject to license terms.
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" 
 type="text/css">
-<title>Memory Requirements</title>
+<title>Memory Requirements for Large Projects</title>
 </head>
 <body>
-<h2>Memory Requirements</h2>
-<p>﻿
-The IDE automatically determines the default limit for memory heap size for the JVM in
-which it is running, based on the amount of memory available on the system. The heap size
-should be adequate if you are developing C/C++ applications
-with up to 100 source files. If you are 
-developing applications 
-with more than 100 source files,
-you need to increase the heap size or  
-you might get out of memory exceptions from the built-in parser.
+<h2>Memory Requirements for Large Projects</h2>
+
+<p>The 32-bit version of Java SE 6 is recommended for use on both 32-bit and 64-bit systems to avoid
+large memory use by the 64-bit JVM.</p>
+
+<p>﻿The IDE automatically determines the default limit for memory heap size for the JVM in
+which it is running, based on the amount of memory available on the system. The default heap size
+should be adequate if you are developing C/C++ applications with up to 5000 source files
+on a system with 2GB of RAM and a dual-core processor. If you are developing applications
+with more than 5000 source files, you need to increase the heap size or
+you might get out of memory exceptions from the IDE parser.
 </p>
 <p>
-You can set the heap size for the JVM 
-on which the  IDE runs in the <tt>netbeans.conf</tt> 
-file. 
+The recommended heap sizes for working with
+large C/C++ applications are as follows:</p>
+<table  WIDTH=50% BORDER=0  CELLPADDING=4 CELLSPACING=0>
+    <thead>
+        <tr>         
+            <th align="left">Size of project</th>
+            <th align="left">Heap size</th>
+        </tr>
+    </thead>
+    <tbody>
+                <tr>              
+                    <td>
+                       1 to 5000 files</td>
+                    <td>
+                       Default</td></tr>
+                <tr>
+                   
+                    <td>
+                        5000 to 10000 files
+                    </td>
+                    <td>1.0 GB
+                    </td></tr>
+                <tr>
+                    
+                    <td>10000 or more files
+                    </td>
+                    <td>1.5 GB</td>
+                </tr>
+               
+    </tbody>
+</table>
+
+<p>
+You can set the heap size for the JVM on which the IDE runs in the <tt>netbeans.conf</tt> 
+file.
 <p><b>To change the heap size:</b></p>
 <ol>
 <li>Copy the <tt>netbeans.conf</tt> from the <tt>etc</tt> 
 folder in the NetBeans 
 installation directory
-into the <tt>etc</tt> directory in your NetBeans user directory (<tt>$HOME/.netbeans/6.8/etc</tt>).
+into the <tt>etc</tt> directory in your NetBeans user directory (<tt>$HOME/.netbeans/6.9/etc</tt>).
 You might need to create the <tt>etc</tt> directory.
-</li>
+</li><br>
 <li>In the <tt>netbeans.conf</tt> file in your user
 directory, add the <tt>-J-Xmx</tt>
-command line Java startup switch (bolded below) in the <tt>netbeans.conf</tt> file, 
-and then restart the IDE.  In this example, the heap is set to 512 MB.
+command line Java startup switch (bolded below) in the <tt>netbeans.conf</tt> file.
+In this example, the heap is set to 2 Gb.
 <pre>
 # command line switches
-netbeans_default_options="-J-Xms32m <b>-J-Xmx512m</b> -J-XX:PermSize=32m
+netbeans_default_options="-J-Xms32m <b>-J-Xmx2g</b> -J-XX:PermSize=32m
 -J-XX:MaxPermSize=96m -J-Xverify:none -J-Dapple.laf.useScreenMenuBar=true"
 </pre></li>
-</ol><p>
-The recommended heap sizes for working with
-medium-sized and large C/C++ applications are:
-<ul>
-<li>For developing medium-sized applications (100-2000 
-source files) on a system with one CPU and 1 GB of RAM: 512 MB</li>
-<li>For developing large applications (more than 2000 source files) on a system with 
-one or multiple CPUS and 2 GB of RAM): 1.5 GB</li>
-</ul>
-<p>To insure that you do not run out of memory while the built-in parser is 
+<li>Restart the IDE.</li>
+</ol>
+
+<ul class="note">To insure that you do not run out of memory while the built-in parser is
 running, you can also add the garbage collector switches <tt>-J-XX:+UseConcMarkSweepGC</tt>
 (concurrent collector) and <tt>-J-XX:+UseParNewGC</tt> (parallel collector) to the 
-<tt>netbeans.conf</tt> file.
+<tt>netbeans.conf</tt> file.</ul>
 <hr>
 <small>
 <a href="../credits.html">Legal Notices</a></small>

@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.xml.search.spi;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
@@ -56,104 +56,100 @@ import org.netbeans.modules.xml.search.api.SearchPattern;
  */
 public interface SearchEngine {
 
-  /**
-   * Performs search for given option.
-   * @throws SearchException if the search resulted in an unexpected error
-   * @param option for search
-   */
-  void search(SearchOption option) throws SearchException;
-  
-  /**
-   * Returns true if search is applicable for root.
-   * @param root where search will be perfromed
-   * @return true if search is applicable for root
-   */
-  boolean isApplicable(Object root);
+    /**
+     * Performs search for the given option.
+     * @throws SearchException if the search resulted in an unexpected error
+     * @param option the given option for search
+     */
+    void search(SearchOption option) throws SearchException;
 
-  /**
-   * Addes search listener.
-   * @param listener to be added
-   */
-  void addSearchListener(SearchListener listener);
+    /**
+     * Returns true if search is applicable for root.
+     * @param root where search will be perfromed
+     * @return true if search is applicable for root
+     */
+    boolean isApplicable(Object root);
 
-  /**
-   * Removes all search listeners.
-   */
-  void removeSearchListeners();
+    /**
+     * Addes search listener.
+     * @param listener the given listener to be added
+     */
+    void addSearchListener(SearchListener listener);
 
-  /**
-   * Returns display name of engine.
-   * @return display name of engine
-   */
-  String getDisplayName();
+    /**
+     * Removes all search listeners.
+     */
+    void removeSearchListeners();
 
-  /**
-   * Returns short description of engine.
-   * @return short description of engine
-   */
-  String getShortDescription();
+    /**
+     * Returns the display name of engine.
+     * @return the display name of engine
+     */
+    String getDisplayName();
 
-  // ----------------------------------------------------
-  public abstract class Adapter implements SearchEngine {
+    /**
+     * Returns the short description of engine.
+     * @return the short description of engine
+     */
+    String getShortDescription();
 
-    public Adapter() {
-      removeSearchListeners();
+    // ----------------------------------------------------
+    public abstract class Adapter implements SearchEngine {
+
+        public Adapter() {
+            removeSearchListeners();
+        }
+
+        public Object[] getTargets() {
+            return new Object[]{};
+        }
+
+        public synchronized void addSearchListener(SearchListener listener) {
+            mySearchListeners.add(listener);
+        }
+
+        public synchronized void removeSearchListeners() {
+            mySearchListeners = new ArrayList<SearchListener>();
+        }
+
+        protected final synchronized void fireSearchStarted(SearchOption option) throws SearchException {
+            try {
+                createSearchPattern(option);
+            } catch (PatternSyntaxException e) {
+                throw new SearchException(e.getMessage());
+            }
+            SearchEvent event = new SearchEvent.Adapter(option, null);
+
+            for (SearchListener listener : mySearchListeners) {
+                listener.searchStarted(event);
+            }
+        }
+
+        protected final synchronized void fireSearchFound(SearchElement element) {
+            SearchEvent event = new SearchEvent.Adapter(null, element);
+
+            for (SearchListener listener : mySearchListeners) {
+                listener.searchFound(event);
+            }
+        }
+
+        protected final synchronized void fireSearchFinished(SearchOption option) {
+            SearchEvent event = new SearchEvent.Adapter(option, null);
+
+            for (SearchListener listener : mySearchListeners) {
+                listener.searchFinished(event);
+            }
+        }
+
+        protected final boolean accepts(String text) {
+            return mySearchPattern.accepts(text);
+        }
+
+        private void createSearchPattern(SearchOption option) {
+            mySearchPattern = new SearchPattern(option.getText(), option.getSearchMatch(), option.isCaseSensitive());
+        }
+
+        private SearchPattern mySearchPattern;
+        private List<SearchListener> mySearchListeners;
     }
-
-    public Object [] getTargets() {
-      return new Object [] {};
-    }
-
-    public synchronized void addSearchListener(SearchListener listener) {
-      mySearchListeners.add(listener);
-    }
-
-    public synchronized void removeSearchListeners() {
-      mySearchListeners = new LinkedList<SearchListener>();
-    }
-
-    protected final synchronized void fireSearchStarted(SearchOption option) throws SearchException{
-      try {
-        createSearchPattern(option);
-      }
-      catch (PatternSyntaxException e) {
-        throw new SearchException(e.getMessage());
-      }
-      SearchEvent event = new SearchEvent.Adapter(option, null);
-
-      for (SearchListener listener : mySearchListeners) {
-        listener.searchStarted(event);
-      }
-    }
-
-    protected final synchronized void fireSearchFound(SearchElement element) {
-      SearchEvent event = new SearchEvent.Adapter(null, element);
-
-      for (SearchListener listener : mySearchListeners) {
-        listener.searchFound(event);
-      }
-    }
-
-    protected final synchronized void fireSearchFinished(SearchOption option) {
-      SearchEvent event = new SearchEvent.Adapter(option, null);
-
-      for (SearchListener listener : mySearchListeners) {
-        listener.searchFinished(event);
-      }
-    }
-
-    protected final boolean accepts(String text) {
-      return mySearchPattern.accepts(text);
-    }
-
-    private void createSearchPattern(SearchOption option) {
-      mySearchPattern = new SearchPattern(
-        option.getText(),
-        option.getSearchMatch(),
-        option.isCaseSensitive());
-    }
-
-    private SearchPattern mySearchPattern;
-    private List<SearchListener> mySearchListeners;
-  }
 }

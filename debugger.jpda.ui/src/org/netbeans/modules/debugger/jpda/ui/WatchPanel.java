@@ -40,6 +40,15 @@
  */
 package org.netbeans.modules.debugger.jpda.ui;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Scope;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.awt.AWTKeyStroke;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
@@ -47,6 +56,7 @@ import java.awt.event.ActionEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import javax.tools.Diagnostic.Kind;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -73,9 +83,29 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
+import java.util.concurrent.Future;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.editor.EditorUI;
+import org.netbeans.modules.java.preprocessorbridge.spi.WrapperFactory;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.ErrorManager;
@@ -111,7 +141,7 @@ public class WatchPanel {
                     public void run() {
                         final Context c = retrieveContext(den);
                         if (c != null) {
-                            setupContext(editorPane, c.url, c.line);
+                            setupContext(editorPane, c.url, c.line, c.debugger);
                             if (contextSetUp != null) {
                                 SwingUtilities.invokeLater(new Runnable() {
                                     public void run() {
@@ -123,7 +153,7 @@ public class WatchPanel {
                     }
                 });
                 Context c = retrieveContext(null);
-                if (c != null) setupContext(editorPane, c.url, c.line);
+                if (c != null) setupContext(editorPane, c.url, c.line, c.debugger);
                 else setupUI(editorPane);
                 return ;
             } else {
@@ -132,7 +162,7 @@ public class WatchPanel {
         }
         Context c = retrieveContext(en);
         if (c != null) {
-            setupContext(editorPane, c.url, c.line);
+            setupContext(editorPane, c.url, c.line, c.debugger);
         } else {
             setupUI(editorPane);
         }
@@ -147,8 +177,9 @@ public class WatchPanel {
 
     private static Context retrieveContext(DebuggerEngine en) {
         CallStackFrame csf = null;
+        JPDADebugger d = null;
         if (en != null) {
-            JPDADebugger d = en.lookupFirst(null, JPDADebugger.class);
+            d = en.lookupFirst(null, JPDADebugger.class);
             if (d != null) {
                 csf = d.getCurrentCallStackFrame();
             }
@@ -163,6 +194,7 @@ public class WatchPanel {
             if (c.line == -1) {
                 c.line = 1;
             }
+            c.debugger = d;
             return c;
         } else {
             EditorContext context = EditorContextBridge.getContext();
@@ -174,6 +206,7 @@ public class WatchPanel {
                 if (c.line == -1) {
                     c.line = 1;
                 }
+                c.debugger = d;
                 return c;
             } else {
                 url = EditorContextDispatcher.getDefault().getMostRecentURLAsString();
@@ -184,6 +217,7 @@ public class WatchPanel {
                     if (c.line == -1) {
                         c.line = 1;
                     }
+                    c.debugger = d;
                     return c;
                 } else {
                     return null;
@@ -193,7 +227,11 @@ public class WatchPanel {
     }
     
     public static void setupContext(final JEditorPane editorPane, String url, int line) {
-        FileObject file;
+        setupContext(editorPane, url, line, null);
+    }
+
+    public static void setupContext(final JEditorPane editorPane, String url, int line, final JPDADebugger debugger) {
+        final FileObject file;
         final StyledDocument doc;
         try {
             file = URLMapper.findFileObject (new URL (url));
@@ -228,6 +266,10 @@ public class WatchPanel {
                 public void run() {
                     String origText = editorPane.getText();
                     DialogBinding.bindComponentToDocument(doc, offset, 0, editorPane);
+                    Document editPaneDoc = editorPane.getDocument();
+                    editPaneDoc.putProperty("org.netbeans.modules.editor.java.JavaCompletionProvider.skipAccessibilityCheck", "true");
+                    editPaneDoc.putProperty(WrapperFactory.class,
+                            debugger != null ? new MyWrapperFactory(debugger, file, doc) : null);
                     editorPane.setText(origText);
                 }
             };
@@ -444,7 +486,181 @@ public class WatchPanel {
     private static final class Context {
         public String url;
         public int line;
+        public JPDADebugger debugger;
     }
-    
+
+    private static class MyWrapperFactory implements WrapperFactory {
+
+        private WeakReference<JPDADebugger> debuggerRef;
+        private FileObject fileObject;
+
+        public MyWrapperFactory(JPDADebugger debugger, FileObject file, StyledDocument doc) {
+            debuggerRef = new WeakReference(debugger);
+            this.fileObject = file;
+        }
+
+        private CompilationController findController(FileObject fileObj) {
+            JavaSource javaSource = JavaSource.forFileObject(fileObj);
+            if (javaSource == null) return null;
+            final CompilationController[] result = new CompilationController[1];
+            result[0] = null;
+            final Future<Void> parsingTask;
+            try {
+                parsingTask = javaSource.runWhenScanFinished(new CancellableTask<CompilationController>() {
+                    @Override
+                    public void cancel() {
+                    }
+                    @Override
+                    public void run(CompilationController ci) throws Exception {
+                        if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                    "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                    "\nDiagnostics = "+ci.getDiagnostics()+
+                                    "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                            return;
+                        }
+                        result[0] = ci;
+                    }
+                }, true);
+                if (!parsingTask.isDone()) {
+                    parsingTask.cancel(true);
+                    return null;
+                }
+            } catch (IOException ioex) {
+                ErrorManager.getDefault().notify(ioex);
+                return null;
+            }
+            return result[0];
+        }
+
+        @Override
+        public Trees wrapTrees(Trees trees) {
+            JPDADebugger debugger = debuggerRef.get();
+            if (debugger == null) return trees;
+            return new MyTrees(trees, findController(fileObject), debugger);
+        }
+
+    }
+
+    private static class MyTrees extends Trees {
+
+        Trees trees;
+        private CompilationController controller;
+        private JPDADebugger debugger;
+
+        MyTrees(Trees trees, CompilationController controller, JPDADebugger debugger) {
+            this.trees = trees;
+            this.controller = controller;
+            this.debugger = debugger;
+        }
+
+        @Override
+        public SourcePositions getSourcePositions() {
+            return trees.getSourcePositions();
+        }
+
+        @Override
+        public Tree getTree(Element arg0) {
+            return trees.getTree(arg0);
+        }
+
+        @Override
+        public ClassTree getTree(TypeElement arg0) {
+            return trees.getTree(arg0);
+        }
+
+        @Override
+        public MethodTree getTree(ExecutableElement arg0) {
+            return trees.getTree(arg0);
+        }
+
+        @Override
+        public Tree getTree(Element arg0, AnnotationMirror arg1) {
+            return trees.getTree(arg0, arg1);
+        }
+
+        @Override
+        public Tree getTree(Element arg0, AnnotationMirror arg1, AnnotationValue arg2) {
+            return trees.getTree(arg0, arg1, arg2);
+        }
+
+        @Override
+        public TreePath getPath(CompilationUnitTree arg0, Tree arg1) {
+            return trees.getPath(arg0, arg1);
+        }
+
+        @Override
+        public TreePath getPath(Element arg0) {
+            return trees.getPath(arg0);
+        }
+
+        @Override
+        public TreePath getPath(Element arg0, AnnotationMirror arg1) {
+            return trees.getPath(arg0, arg1);
+        }
+
+        @Override
+        public TreePath getPath(Element arg0, AnnotationMirror arg1, AnnotationValue arg2) {
+            return trees.getPath(arg0, arg1, arg2);
+        }
+
+        @Override
+        public Element getElement(TreePath arg0) {
+            return trees.getElement(arg0);
+        }
+
+        @Override
+        public TypeMirror getTypeMirror(TreePath arg0) {
+            Tree tree = arg0.getLeaf();
+            if (tree.getKind() == Tree.Kind.IDENTIFIER) {
+                Map<String, ObjectVariable> map = null;
+                try {
+                    // [TODO] add JPDADebuggerImpl.getAllLabels() to API
+                    Method method = debugger.getClass().getMethod("getAllLabels"); // NOI18N
+                    map = (Map<String, ObjectVariable>) method.invoke(debugger);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (map != null) {
+                    String name = ((IdentifierTree)tree).getName().toString();
+                    ObjectVariable var = map.get(name);
+                    if (var != null) {
+                        Elements elements = controller.getElements();
+                        TypeElement typeElem = elements.getTypeElement(var.getClassType().getName());
+                        if (typeElem != null)
+                            return typeElem.asType();
+                    }
+                }
+            }
+            return trees.getTypeMirror(arg0);
+        }
+
+        @Override
+        public Scope getScope(TreePath arg0) {
+            return trees.getScope(arg0);
+        }
+
+        @Override
+        public boolean isAccessible(Scope arg0, TypeElement arg1) {
+            return trees.isAccessible(arg0, arg1);
+        }
+
+        @Override
+        public boolean isAccessible(Scope arg0, Element arg1, DeclaredType arg2) {
+            return trees.isAccessible(arg0, arg1, arg2);
+        }
+
+        @Override
+        public TypeMirror getOriginalType(ErrorType arg0) {
+            return trees.getOriginalType(arg0);
+        }
+
+        @Override
+        public void printMessage(Kind arg0, CharSequence arg1, Tree arg2, CompilationUnitTree arg3) {
+            trees.printMessage(arg0, arg1, arg2, arg3);
+        }
+
+    }
+
 }
 

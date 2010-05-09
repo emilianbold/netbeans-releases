@@ -212,6 +212,46 @@ public class AssignmentIssuesTest extends TestBase {
                 + "}").replaceAll("[ \t\n]+", " "));
     }
 
+    public void testReplaceAssignWithOpAssign185372a() throws Exception {
+        performFixTest("test/Test.java",
+                "package test;\n"
+                + "public class Test {"
+                + "    private int i;\n"
+                + "    public static void main(String... args) {\n"
+                + "        i = this.i - 10;\n"
+                + "    }\n"
+                + "}",
+                "3:8-3:23:verifier:Assignment 'i = this.i - 10' is replacable with operator-assignment",
+                "Replace assignment 'i = this.i - 10' with operator-assignment",
+                ("package test;\n"
+                + "public class Test {\n"
+                + "    private int i;\n"
+                + "    public static void main(String... args) {\n"
+                + "        i -= 10;\n"
+                + "    }\n"
+                + "}").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void testReplaceAssignWithOpAssign185372b() throws Exception {
+        performFixTest("test/Test.java",
+                "package test;\n"
+                + "public class Test {"
+                + "    private int i;\n"
+                + "    public static void main(String... args) {\n"
+                + "        this.i = i - 10;\n"
+                + "    }\n"
+                + "}",
+                "3:8-3:23:verifier:Assignment 'this.i = i - 10' is replacable with operator-assignment",
+                "Replace assignment 'this.i = i - 10' with operator-assignment",
+                ("package test;\n"
+                + "public class Test {\n"
+                + "    private int i;\n"
+                + "    public static void main(String... args) {\n"
+                + "        this.i -= 10;\n"
+                + "    }\n"
+                + "}").replaceAll("[ \t\n]+", " "));
+    }
+
     @Test
     public void testReplaceAssignWithOpAssignSuppressed() throws Exception {
         performAnalysisTest("test/Test.java",
@@ -221,6 +261,28 @@ public class AssignmentIssuesTest extends TestBase {
                 + "    public static void main(String... args) {\n"
                 + "        int i = 0;\n"
                 + "        i = i - 10;\n"
+                + "    }\n"
+                + "}");
+    }
+    
+    public void testReplaceAssignWithOpAssign185372c() throws Exception {
+        performAnalysisTest("test/Test.java",
+                "package test;\n"
+                + "public class Test {\n"
+                + "    private int i;\n"
+                + "    public void main(Test t) {\n"
+                + "        i = t.i - 10;\n"
+                + "    }\n"
+                + "}");
+    }
+
+    public void testReplaceAssignWithOpAssign185372d() throws Exception {
+        performAnalysisTest("test/Test.java",
+                "package test;\n"
+                + "public class Test {\n"
+                + "    private int i;\n"
+                + "    public static void main(Test t) {\n"
+                + "        i = t.i - 10;\n"
                 + "    }\n"
                 + "}");
     }

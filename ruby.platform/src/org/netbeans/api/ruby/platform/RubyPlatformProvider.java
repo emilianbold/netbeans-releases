@@ -40,6 +40,11 @@
  */
 package org.netbeans.api.ruby.platform;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -62,7 +67,19 @@ public final class RubyPlatformProvider {
             Executors.newSingleThreadExecutor(ExecutionUtils.namedThreadFactory("Ruby Platform AutoDetection"));//NOI18N
     private final PropertyEvaluator evaluator;
 
+    /** Keeps track of platforms that don't exist and for which a warning was already logged */
+    private static final Map<String, Boolean> LOGGED_WARNINGS = new HashMap<String, Boolean>();
+
     static {
+        RubyPlatformManager.addVetoableChangeListener(new VetoableChangeListener() {
+
+            @Override
+            public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+                if ("platforms".equals(evt.getPropertyName())) {
+                    LOGGED_WARNINGS.clear();
+                }
+            }
+        });
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
@@ -85,11 +102,13 @@ public final class RubyPlatformProvider {
         ensurePlatformsReady();
         RubyPlatform platform = id == null ? RubyPlatformManager.getDefaultPlatform() : RubyPlatformManager.getPlatformByID(id);
         if (platform == null) {
-            LOGGER.info("Platform with id '" + id + "' does not exist. Using default platform.");
             platform = RubyPlatformManager.getDefaultPlatform();
+            if (LOGGED_WARNINGS.get(id) == null) {
+                LOGGER.info("Platform with id '" + id + "' does not exist. Using default platform.");
+                LOGGED_WARNINGS.put(id, Boolean.TRUE);
+            }
         }
         return platform;
-
     }
 
     /**

@@ -474,8 +474,11 @@ public class VariousUtils {
                             if (varScope instanceof MethodScope) {//NOI18N
                                 MethodScope mScope = (MethodScope) varScope;
                                 if ((frag.equals("this") || frag.equals("$this"))) {//NOI18N
-                                    String clsName = ((ClassScope) mScope.getInScope()).getName();
-                                    newRecentTypes.addAll(CachingSupport.getClasses(clsName, varScope));
+                                    final Scope inScope = mScope.getInScope();
+                                    if (inScope instanceof ClassScope) {
+                                        String clsName = ((ClassScope) inScope).getName();
+                                        newRecentTypes.addAll(CachingSupport.getClasses(clsName, varScope));
+                                    }
                                 }
                             }
                         }
@@ -548,21 +551,22 @@ public class VariousUtils {
                 if (frag.trim().length() == 0) {
                     continue;
                 }
-                if (VariousUtils.METHOD_TYPE_PREFIX.startsWith(frag)) {
+                String operationPrefix = (frag.endsWith(":")) ? frag : String.format("%s:", frag);
+                if (VariousUtils.METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.METHOD_TYPE_PREFIX;
-                } else if (VariousUtils.FUNCTION_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.FUNCTION_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     assert operation == null;
                     operation = VariousUtils.FUNCTION_TYPE_PREFIX;
-                } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     assert operation == null;
                     operation = VariousUtils.STATIC_METHOD_TYPE_PREFIX;
-                } else if (VariousUtils.VAR_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.VAR_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     assert operation == null;
                     operation = VariousUtils.VAR_TYPE_PREFIX;
-                } else if (VariousUtils.FIELD_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.FIELD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     assert operation == null;
                     operation = VariousUtils.FIELD_TYPE_PREFIX;
-                } else if (VariousUtils.CONSTRUCTOR_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.CONSTRUCTOR_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     assert operation == null;
                     operation = VariousUtils.CONSTRUCTOR_TYPE_PREFIX;
                 } else {
@@ -893,6 +897,7 @@ public class VariousUtils {
                             metaAll.insert(0, token.text().toString());
                             state = State.CLASSNAME;
                         } else if (isSelf(token) || isParent(token)) {
+                            metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
                             metaAll.insert(0, translateSpecialClassName(varScope, token.text().toString()));
                             //TODO: maybe rather introduce its own State
                             state = State.CLASSNAME;
@@ -1014,13 +1019,18 @@ public class VariousUtils {
     }
 
     private static String translateSpecialClassName(Scope scp, String clsName) {
-        if (scp instanceof MethodScope) {
+        ClassScope classScope = null;
+        if (scp instanceof ClassScope) {
+            classScope = (ClassScope)scp;
+        } else if (scp instanceof MethodScope) {
             MethodScope msi = (MethodScope) scp;
-            ClassScope csi = (ClassScope) msi.getInScope();
+            classScope = (ClassScope) msi.getInScope();
+        }
+        if (classScope != null) {
             if ("self".equals(clsName) || "this".equals(clsName)) {//NOI18N
-                clsName = csi.getName();
+                clsName = classScope.getName();
             } else if ("parent".equals(clsName)) {
-                ClassScope clzScope = ModelUtils.getFirst(csi.getSuperClasses());
+                ClassScope clzScope = ModelUtils.getFirst(classScope.getSuperClasses());
                 if (clzScope != null) {
                     clsName = clzScope.getName();
                 }

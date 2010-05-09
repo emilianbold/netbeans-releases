@@ -39,6 +39,7 @@
 package org.netbeans.modules.html.editor.api.gsf;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +66,7 @@ import org.openide.filesystems.FileObject;
  */
 public class HtmlParserResult extends ParserResult {
 
-    /** 
+    /**
      * Used as a key of a swing document to find a default fallback dtd.
      */
     public static final String FALLBACK_DTD_PROPERTY_NAME = "fallbackDTD";
@@ -93,7 +94,7 @@ public class HtmlParserResult extends ParserResult {
      * 1) doctype declaration content
      * 2) if not present, xhtml file extension
      * 3) if not xhtml extension, present of default XHTML namespace declaration
-     * 
+     *
      */
     public HtmlVersion getHtmlVersion() {
         String publicId = result.getPublicID();
@@ -147,7 +148,7 @@ public class HtmlParserResult extends ParserResult {
         String fallbackPublicID = version == HtmlVersion.UNKNOWN ?
             HtmlVersion.HTML41.getFallbackPublicId() :
             version.getFallbackPublicId();
-        
+
         return org.netbeans.editor.ext.html.dtd.Registry.getDTD(fallbackPublicID, null);
     }
 
@@ -157,7 +158,7 @@ public class HtmlParserResult extends ParserResult {
         for(String uri : getNamespaces().keySet()) {
             roots.put(uri, root(uri));
         }
-        
+
         //non xhtml workaround, add the default namespaces if missing
         if(!roots.containsValue(root())) {
             roots.put(null, root());
@@ -265,8 +266,8 @@ public class HtmlParserResult extends ParserResult {
                                         desc.getText(),
                                         desc.getText(),
                                         getSnapshot().getSource().getFileObject(),
-                                        getSnapshot().getOriginalOffset(desc.getFrom()),
-                                        getSnapshot().getOriginalOffset(desc.getTo()),
+                                        desc.getFrom(),
+                                        desc.getTo(),
                                         false /* not line error */,
                                         desc.getType() == Description.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
 
@@ -289,7 +290,7 @@ public class HtmlParserResult extends ParserResult {
                 return (AstNode)e.getParameters()[0];
             }
         }
-        
+
         return null;
     }
 

@@ -41,6 +41,8 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project name="web.core.syntax" default="netbeans" basedir=".">
+
+    <import file="../j2ee.kit/register_server.xml"/> 
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="test" depends="test-unit"/>

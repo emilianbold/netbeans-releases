@@ -210,7 +210,7 @@ public final class RakeSupport {
                 public void run() throws IOException {
                     FileObject rakeD = project.getProjectDirectory().getFileObject(RAKE_D_OUTPUT);
                     // clean old content
-                    if (rakeD != null && rakeD.isData()) {
+                    if (rakeD != null && rakeD.isValid() && rakeD.isData()) {
                         rakeD.delete();
                     }
                 }

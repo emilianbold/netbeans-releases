@@ -104,14 +104,17 @@ class HostsListTableModel extends AbstractTableModel {
         }
     }
 
+    @Override
     public int getRowCount() {
         return rows.size();
     }
 
+    @Override
     public int getColumnCount() {
         return 2; //3; no platform yet
     }
 
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         HostRecord record = rows.get(rowIndex);
         switch (columnIndex) {
@@ -131,6 +134,7 @@ class HostsListTableModel extends AbstractTableModel {
     }
 
     private final static Comparator<HostRecord> hrc = new Comparator<HostRecord>() {
+        @Override
         public int compare(HostRecord o1, HostRecord o2) {
             if (o1.ssh && !o2.ssh) {
                 return -1;
@@ -178,6 +182,7 @@ class HostsListTableModel extends AbstractTableModel {
 
     private class HostsLoader implements Runnable {
 
+        @Override
         public void run() {
             RemoteUtil.LOGGER.fine("Hosts Lookup thread started");
             try {
@@ -222,9 +227,9 @@ class HostsListTableModel extends AbstractTableModel {
                     if (runOnFinish != null) {
                         SwingUtilities.invokeLater(runOnFinish); //SwingUtilities is a bit cheat here, but otherwise one have to introduce ugly double Runnable in caller
                     }
-                    RemoteUtil.LOGGER.fine("Hosts Lookup thread done " + HostsListTableModel.this.getRowCount() + " host(s) found");
+                    RemoteUtil.LOGGER.log(Level.FINE, "Hosts Lookup thread done {0} host(s) found", HostsListTableModel.this.getRowCount());
                 } else {
-                    RemoteUtil.LOGGER.fine("Hosts Lookup thread interrupted; " + HostsListTableModel.this.getRowCount() + " host(s) found so far");
+                    RemoteUtil.LOGGER.log(Level.FINE, "Hosts Lookup thread interrupted; {0} host(s) found so far", HostsListTableModel.this.getRowCount());
                 }
             }            
         }

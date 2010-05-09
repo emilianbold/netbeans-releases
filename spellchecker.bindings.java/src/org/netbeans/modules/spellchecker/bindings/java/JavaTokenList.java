@@ -47,12 +47,10 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenProcessor;
-import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.spellchecker.spi.language.TokenList;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -61,6 +59,7 @@ import org.openide.ErrorManager;
 public class JavaTokenList implements TokenList {
 
     private Document doc;
+    private boolean hidden = false;
 
     /** Creates a new instance of JavaTokenList */
     public JavaTokenList(Document doc) {
@@ -71,6 +70,9 @@ public class JavaTokenList implements TokenList {
         currentBlockText = null;
         currentOffsetInComment = (-1);
         this.startOffset = this.nextBlockStart = offset;
+        FileObject fileObject = FileUtil.getConfigFile ("Spellcheckers/Javadoc");
+        Boolean b = (Boolean) fileObject.getAttribute ("Hidden");
+        hidden = Boolean.TRUE.equals (b);
     }
 
     public int getCurrentWordStartOffset() {
@@ -82,6 +84,7 @@ public class JavaTokenList implements TokenList {
     }
 
     public boolean nextWord() {
+        if (hidden) return false;
         boolean hasNext = nextWordImpl();
 
         while (hasNext && (currentWordOffset + currentWord.length()) < startOffset) {

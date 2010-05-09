@@ -44,6 +44,8 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ComboBoxModel;
@@ -60,6 +62,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
 
 /**
  *
@@ -98,6 +101,12 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             }
         });
 
+        inProjectCombo.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                listener.stateChanged(null);
+            }
+        });
         remoteCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 listener.stateChanged(null);
@@ -127,6 +136,7 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             });
             inProjectCombo.setModel(projectsList);
             inProjectCombo.setSelectedIndex(0);
+            listener.stateChanged(null);
         }
     }
 
@@ -137,9 +147,12 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             if (p.equals(project)) {
                 continue;
             }
-            // list only projects which produce jars so that they can be added to classpath
-            if (AntArtifactQuery.findArtifactsByType(p, JavaProjectConstants.ARTIFACT_TYPE_JAR).length == 0) {
-                continue;
+            // if this is an Ant-based project and not e.g. a Maven project
+            if (p.getLookup().lookup(AntArtifactProvider.class) != null) {
+                // list only projects which produce jars so that they can be added to classpath
+                if (AntArtifactQuery.findArtifactsByType(p, JavaProjectConstants.ARTIFACT_TYPE_JAR).length == 0) {
+                    continue;
+                }
             }
             // list only projects which have java source root
             if (ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length == 0) {
@@ -285,6 +298,9 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
     }
 
     public Project getRemoteInterfaceProject() {
+        if (projectsList == null) {
+            return null;
+        }
         return (Project)projectsList.getSelectedItem();
     }
 }

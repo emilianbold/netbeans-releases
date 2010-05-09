@@ -58,11 +58,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * @author  David Konecny
  */
 public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx.Provider{
+
+    private static final String SET_AS_MAIN_PREF = "setAsMain"; // NOI18N
     
     private DocumentListener documentListener;
     private ChangeListener listener;
@@ -78,6 +81,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
     public BasicProjectInfoPanel(String projectLocation, String antScript, String projectName, String projectFolder,
             ChangeListener listener) {
         initComponents();
+        mainProject.setSelected(NbPreferences.forModule(BasicProjectInfoPanel.class).getBoolean(SET_AS_MAIN_PREF, true));
         this.projectLocation.setText(projectLocation);
         this.antScript.setText(antScript);
         this.projectName.setText(projectName);
@@ -122,8 +126,10 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         return getAsFile(projectFolder.getText());
     }
 
-    public Boolean getMainProject() {
-        return Boolean.valueOf(mainProject.isSelected());
+    public boolean getMainProject() {
+        boolean b = mainProject.isSelected();
+        NbPreferences.forModule(BasicProjectInfoPanel.class).putBoolean(SET_AS_MAIN_PREF, b);
+        return b;
     }
 
     public String[] getError() {
@@ -443,7 +449,6 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 10, 0);
         add(jSeparator1, gridBagConstraints);
 
-        mainProject.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(mainProject, org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_mainProject")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

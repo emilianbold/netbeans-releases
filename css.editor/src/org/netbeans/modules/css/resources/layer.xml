@@ -88,7 +88,7 @@
                     </file>
                     <file name="org-openide-actions-FileSystemAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="200"/>
+                        <attr name="position" intvalue="1050"/>
                     </file>
                     <file name="org-openide-actions-OpenAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>

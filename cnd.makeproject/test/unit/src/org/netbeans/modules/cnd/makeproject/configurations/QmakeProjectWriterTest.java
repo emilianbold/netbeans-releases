@@ -74,7 +74,7 @@ public class QmakeProjectWriterTest extends CndBaseTestCase {
         projectCreator.initialize(wiz);
         wiz.putProperty("name", destdir.getName());
         wiz.putProperty("projdir", destdir);
-        projectCreator.instantiate(wiz);
+        projectCreator.instantiate();
     }
 
     @Test
@@ -89,6 +89,8 @@ public class QmakeProjectWriterTest extends CndBaseTestCase {
 
         File qtDebug = new File(projectDir, "nbproject/qt-Debug.pro");
         assertFile(qtDebug, new Object[]{
+                    "# This file is generated automatically. Do not edit.",
+                    "# Use project properties -> Build -> Qt -> Expert -> Custom Definitions.",
                     "TEMPLATE = app",
                     Pattern.compile("DESTDIR = dist/Debug/.+"),
                     "TARGET = HelloQtWorld_1",
@@ -114,6 +116,8 @@ public class QmakeProjectWriterTest extends CndBaseTestCase {
 
         File qtRelease = new File(projectDir, "nbproject/qt-Release.pro");
         assertFile(qtRelease, new Object[]{
+                    "# This file is generated automatically. Do not edit.",
+                    "# Use project properties -> Build -> Qt -> Expert -> Custom Definitions.",
                     "TEMPLATE = app",
                     Pattern.compile("DESTDIR = dist/Release/.+"),
                     "TARGET = HelloQtWorld_1",

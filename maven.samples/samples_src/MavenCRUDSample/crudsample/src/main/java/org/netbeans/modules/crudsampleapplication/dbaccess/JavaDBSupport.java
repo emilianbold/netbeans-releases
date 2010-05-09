@@ -42,11 +42,13 @@ package org.netbeans.modules.crudsampleapplication.dbaccess;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class JavaDBSupport {
     public static final String JAVADB_HOME = "javadb.home";
@@ -61,7 +63,7 @@ public class JavaDBSupport {
 
     private static void startDB() throws IOException {
             String java = null;
-            File javaExecuble = new File(System.getProperty("java.home"), "/bin/java");
+            File javaExecuble = new File(System.getProperty("java.home"), "/bin/java" + (Utilities.isWindows() ? ".exe" : "")); // NOI18N
             if (javaExecuble != null && javaExecuble.exists()) {
                 if (javaExecuble.canExecute()) {
                     java = javaExecuble.getAbsolutePath();
@@ -76,11 +78,6 @@ public class JavaDBSupport {
                 // XXX: MessageBox
                 Exceptions.printStackTrace(new RuntimeException("No Derby installation!"));
             }
-
-//
-//
-//            // create the derby.properties file
-//            createDerbyPropertiesFile();
 
             // java -Dderby.system.home="<userdir/derby>" -classpath
             //     "<DERBY_INSTALL>/lib/derby.jar:<DERBY_INSTALL>/lib/derbytools.jar:<DERBY_INSTALL>/lib/derbynet.jar"
@@ -125,7 +122,12 @@ public class JavaDBSupport {
         File f = null;
         String javaDBHome = System.getProperty(JAVADB_HOME);
         if (javaDBHome == null) {
-            javaDBHome = NbBundle.getMessage(JavaDBSupport.class, JAVADB_HOME);
+            javaDBHome = null;
+            try {
+                javaDBHome = NbBundle.getMessage(JavaDBSupport.class, JAVADB_HOME);
+            } catch (MissingResourceException mre) {
+                Logger.getLogger(JavaDBSupport.class.getName()).log(Level.INFO, mre.getLocalizedMessage(), mre);
+            }
             if (javaDBHome != null) {
                 f = new File(javaDBHome);
             } else {

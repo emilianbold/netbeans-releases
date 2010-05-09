@@ -45,6 +45,9 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.html.editor.api.HtmlKit;
+import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring;
+import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring.Mode;
+import org.netbeans.modules.html.editor.refactoring.api.SelectorType;
 import org.openide.util.WeakListeners;
 
 /**
@@ -57,6 +60,16 @@ public class HtmlPreferences {
     private static boolean autocompleQuotes;
     private static boolean completionOffersEndTagAfterLt;
 
+    //extract inlined style panel preferences
+    private static SelectorType selectorType;
+    private static final String SELECTOR_TYPE_PROPERTY_NAME = "extractInlinedStylePanelSelectorType"; //NOI18N
+    private static SelectorType SELECTOR_TYPE_DEFAULT = SelectorType.ID;
+
+    private static Mode sectionMode;
+    private static final String SECTION_MODE_PROPERTY_NAME = "extractInlinedStylePanelSectionMode"; //NOI18N
+    private static Mode SECTION_MODE_DEFAULT = Mode.refactorToExistingEmbeddedSection;
+
+    
     private static AtomicBoolean initialized = new AtomicBoolean(false);
     private static Preferences preferences;
     private static final PreferenceChangeListener preferencesTracker = new PreferenceChangeListener() {
@@ -71,6 +84,12 @@ public class HtmlPreferences {
             }
             if (settingName == null || HtmlCompletionOptionsPanel.HTML_COMPLETION_END_TAG_ADTER_LT.equals(settingName)) {
                 completionOffersEndTagAfterLt = preferences.getBoolean(HtmlCompletionOptionsPanel.HTML_COMPLETION_END_TAG_ADTER_LT, HtmlCompletionOptionsPanel.HTML_COMPLETION_END_TAG_ADTER_LT_DEFAULT);
+            }
+            if (settingName == null || SELECTOR_TYPE_PROPERTY_NAME.equals(settingName)) {
+                selectorType = SelectorType.valueOf(preferences.get(SELECTOR_TYPE_PROPERTY_NAME, SELECTOR_TYPE_DEFAULT.name()));
+            }
+            if (settingName == null || SECTION_MODE_PROPERTY_NAME.equals(settingName)) {
+                sectionMode = Mode.valueOf(preferences.get(SECTION_MODE_PROPERTY_NAME, SECTION_MODE_DEFAULT.name()));
             }
         }
     };
@@ -116,5 +135,25 @@ public class HtmlPreferences {
         lazyIntialize();
         return completionOffersEndTagAfterLt;
     }
-    
+
+    public static SelectorType extractInlinedStylePanelSelectorType() {
+        lazyIntialize();
+        return selectorType;
+    }
+
+    public static void setExtractInlinedStylePanelSelectorType(SelectorType type) {
+        lazyIntialize();
+        preferences.put(SELECTOR_TYPE_PROPERTY_NAME, type.name());
+    }
+
+    public static ExtractInlinedStyleRefactoring.Mode extractInlinedStylePanelSectionMode() {
+        lazyIntialize();
+        return sectionMode;
+    }
+
+    public static void setExtractInlinedStylePanelSectionMode(Mode mode) {
+        lazyIntialize();
+        preferences.put(SECTION_MODE_PROPERTY_NAME, mode.name());
+    }
+
 }

@@ -44,8 +44,10 @@ import java.awt.Color;
 import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -108,10 +110,19 @@ class RDocFormatter {
     private boolean inBulletedList;
     private boolean inLabelledList;
     private boolean inNumberedList;
+    private boolean inStopDoc;
+    /**
+     * Indicates whether we're within an explicit <code>:call-seq:</code> section.
+     */
+    private boolean inCallSeq;
     private List<String> code;
     private boolean firstVerbatim = true;
     private String seqName;
     private boolean wroteSignature = false;
+    /**
+     * Lines within explicit <code>:call-seq:</code> sections.
+     */
+    private final Set<String> callSeqLines = new HashSet<String>();
 
     /**  State during rdoc generation: in suppressed comments (#--) section */
     private boolean noComment;
@@ -164,11 +175,33 @@ class RDocFormatter {
         } else if (text.startsWith("#") && Character.isLetter(text.charAt(1))) {
             text = text.substring(1);
         }
+        // should be :call-seq: as per rdoc rules, but call-seq: seems to be used as well
+        if (text.trim().endsWith("call-seq:")) {
+            inCallSeq = true;
+            sb.append("\n<hr>\n");
+            return;
+        } else if (text.trim().length() == 0 && inCallSeq) {
+            // an empty line after :call-seq: ends it
+            inCallSeq = false;
+        }
 
         process(text);
     }
     
     private void process(String text) {
+        if (text.indexOf(":stopdoc") != -1) {
+            inStopDoc = true;
+            return;
+        } else if (text.indexOf(":startdoc") != -1) {
+            inStopDoc = false;
+        }
+        if (inStopDoc) {
+            return;
+        }
+        if (inCallSeq) {
+            callSeqLines.add(text);
+        }
+
         // Use the lexer! The following is naive since it will
         // do something about URLs, multiplication (*), etc.
         if (text.length() == 0) {
@@ -905,9 +938,13 @@ class RDocFormatter {
     }
     
     private boolean isCallSeq(List<String> source) {
+        // in an explicit :call-seq:
+        if (callSeqLines.containsAll(source)) {
+            return true;
+        }
+        // See if it looks like a call seq - check the first line
+        // TODO: MAke the code be a List<String> instead!!
         if (firstVerbatim) {
-            // See if it looks like a call seq - check the first line
-            // TODO: MAke the code be a List<String> instead!!
             String first = source.get(0);
             if (first.indexOf("=>") != -1 || first.indexOf("->") != -1) { // NOI18N
                 return true;

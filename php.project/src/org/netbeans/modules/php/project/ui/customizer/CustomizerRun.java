@@ -118,6 +118,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             return new Comparator<String>() {
                 Collator coll = Collator.getInstance();
 
+                @Override
                 public int compare(String s1, String s2) {
                     String lbl1 = configurationFor(s1).getDisplayName();
                     String lbl2 = configurationFor(s2).getDisplayName();
@@ -134,6 +135,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             setOpaque(true);
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             // #93658: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
@@ -305,6 +307,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private JSeparator separator;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerRun.class);
     }

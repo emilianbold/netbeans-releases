@@ -105,12 +105,15 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
     private void addListeners() {
         interpreterTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 processUpdate();
             }
@@ -119,6 +122,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
             }
         });
         runAsCombo.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 changeSupport.fireChange();
             }
@@ -150,10 +154,12 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         return runAsCombo;
     }
 
+    @Override
     protected void loadFields() {
         loadPhpInterpreter();
     }
 
+    @Override
     protected void validateFields() {
         // validation is done in RunConfigurationPanel
         changeSupport.fireChange();
@@ -173,6 +179,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
             super(propName, label, field);
         }
 
+        @Override
         protected final String getDefaultValue() {
             return RunAsScript.this.getDefaultValue(getPropName());
         }

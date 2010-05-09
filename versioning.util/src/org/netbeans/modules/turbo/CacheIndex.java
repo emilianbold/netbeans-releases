@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -236,8 +235,8 @@ public abstract class CacheIndex {
                 }
 
                 if(set.size() == 1) {
-                    Iterator<File> it = set.iterator();
-                    if(index.get(it.next()) == null) {
+                    File lastLonelyFile = set.iterator().next();
+                    if(file.equals(lastLonelyFile) && index.get(lastLonelyFile) == null) { // remove the last node only when it indeed equals the removing file
                         // file under parent point to nowhere -> remove whole parent node
                         LOG.log(Level.FINE, "  cleanUpParents({0}) - parent {1} size 1 - remove", new Object[]{pFile, parent});
                         index.remove(parent);
@@ -249,8 +248,6 @@ public abstract class CacheIndex {
                     // more then one file under parent node -> remove only file from parents children if it's pointing to nowhere
                     if(index.get(file) == null) {
                         set.remove(file);
-                    } else {
-                        break;
                     }
                     break;
                 }

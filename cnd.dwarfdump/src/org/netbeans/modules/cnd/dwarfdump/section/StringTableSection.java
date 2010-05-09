@@ -58,7 +58,7 @@ import java.io.PrintStream;
  * @author ak119685
  */
 public class StringTableSection extends ElfSection {
-    byte[] stringtable = null;
+    private byte[] stringtable = null;
     
     public StringTableSection(ElfReader reader, int sectionIdx) {
         super(reader, sectionIdx);
@@ -71,7 +71,7 @@ public class StringTableSection extends ElfSection {
     }
     
     @Override
-    public StringTableSection read() {
+    public final StringTableSection read() {
         try {
             long filePos = reader.getFilePointer();
             reader.seek(header.getSectionOffset());

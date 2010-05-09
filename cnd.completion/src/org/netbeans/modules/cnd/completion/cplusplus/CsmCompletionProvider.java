@@ -55,21 +55,26 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
+import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
+import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.MethodParamsTipPaintComponent;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  * this is the modified copy of JavaCompletionProvider
- * @author Vladimir Voskresensky 
+ * @author Vladimir Voskresensky
  */
 public class CsmCompletionProvider implements CompletionProvider {
 
@@ -110,7 +115,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             if ((queryType & COMPLETION_QUERY_TYPE) == COMPLETION_QUERY_TYPE) {
                 return new AsyncCompletionTask(new Query(dot, queryType), component);
             } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
-                return null;
+                return new AsyncCompletionTask(new DocumentationQuery(), component);
             } else if (queryType == TOOLTIP_QUERY_TYPE) {
                 return new AsyncCompletionTask(new ToolTipQuery(), component);
             }
@@ -219,7 +224,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             if (items.size() > MAX_ITEMS_TO_DISPLAY && queryResult.isSimpleVariableExpression()) {
                 limit = true;
             }
-//            ((queryScope == CsmCompletionQuery.QueryScope.GLOBAL_QUERY) && queryResult.isSimpleVariableExpression()) 
+//            ((queryScope == CsmCompletionQuery.QueryScope.GLOBAL_QUERY) && queryResult.isSimpleVariableExpression())
 //                             || (items.size() > MAX_ITEMS_TO_DISPLAY);
             resultSet.setHasAdditionalItems(queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY);
             if (!limit) {
@@ -520,6 +525,30 @@ public class CsmCompletionProvider implements CompletionProvider {
             resultSet.finish();
         }
     }
+
+    private static final class DocumentationQuery extends AsyncCompletionQuery {
+
+        @Override
+        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+
+            CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
+            if (csmFile != null) {
+                CsmObject csmObject = ReferencesSupport.findDeclaration(csmFile, doc, null, caretOffset);
+                if (csmObject != null) {
+                    CompletionDocumentationProvider docProvider = Lookup.getDefault().lookup(CompletionDocumentationProvider.class);
+                    if (docProvider != null) {
+                        CompletionDocumentation documentation = docProvider.createDocumentation(csmObject, csmFile);
+                        if (documentation != null) {
+                            resultSet.setDocumentation(documentation);
+                        }
+                    }
+                }
+            }
+
+            resultSet.finish();
+        }
+    }
+
     private static final CompletionItem lastItem = new LastResultItem();
 
     private final static class LastResultItem extends CsmResultItem {

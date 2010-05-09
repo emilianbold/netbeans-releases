@@ -86,7 +86,7 @@ import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.lib.editor.view.GapBoxView;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
@@ -1191,14 +1191,17 @@ public class ActionFactory {
         }
     }
 
-    @EditorActionRegistration(name = BaseKit.toggleHighlightSearchAction,
-            iconResource = "org/netbeans/modules/editor/resources/toggle_highlight.png")
+// suspending the use of EditorActionRegistration due to #167063
+//    @EditorActionRegistration(name = BaseKit.toggleHighlightSearchAction,
+//            iconResource = "org/netbeans/modules/editor/resources/toggle_highlight.png")
     public static class ToggleHighlightSearchAction extends LocalBaseAction implements Presenter.Toolbar {
 
         static final long serialVersionUID =4603809175771743200L;
 
         public ToggleHighlightSearchAction() {
-            super(CLEAR_STATUS_TEXT);
+            super(BaseKit.toggleHighlightSearchAction, CLEAR_STATUS_TEXT);
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/toggle_highlight.png", false)); //NOI18N
+            putValue("noIconInMenu", Boolean.TRUE); // NOI18N
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {

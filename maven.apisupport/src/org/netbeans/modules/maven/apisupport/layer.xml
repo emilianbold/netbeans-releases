@@ -44,6 +44,14 @@ made subject to such option by the copyright holder.
 
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="Project">
+                <file name="org-netbeans-modules-maven-apisupport-NBMReload.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.maven.apisupport.NbmActionGoalProvider.createReloadAction"/>
+                </file>
+                <file name="org-netbeans-modules-maven-apisupport-OpenBrandingEditorAction.instance"/>
+        </folder>
+    </folder>
     <folder name="Projects">
         <folder name="org-netbeans-modules-maven">
             <folder name="Repositories">
@@ -55,17 +63,14 @@ made subject to such option by the copyright holder.
                     <attr name="repoIndexUrl" stringvalue="http://bits.netbeans.org/maven2/.index/"/>
                 </file>
             </folder>
-            <folder name="ProjectActions">
-                <file name="NBMReload.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.maven.apisupport.NbmActionGoalProvider.createReloadAction"/>
-                    <attr name="position" intvalue="1000"/>
-                    <attr name="misplaced.action.allowed" boolvalue="true"/>
+            <folder name="Actions">
+                <file name="org-netbeans-modules-maven-apisupport-NBMReload.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-maven-apisupport-NBMReload.instance"/>
+                    <attr name="position" intvalue="1250"/>
                 </file>
-            </folder>
-            <folder name="CustomizeProjectActions">
-                <file name="org.netbeans.modules.maven.apisupport.OpenBrandingEditorAction.instance">
-                    <attr name="position" intvalue="1100"/>
-                    <attr name="misplaced.action.allowed" boolvalue="true"/>
+                <file name="org-netbeans-modules-maven-apisupport-OpenBrandingEditorAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-maven-apisupport-OpenBrandingEditorAction.instance"/>
+                    <attr name="position" intvalue="3150"/>
                 </file>
             </folder>
         </folder>

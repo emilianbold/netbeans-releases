@@ -39,17 +39,22 @@
 
 package org.netbeans.modules.java.hints;
 
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import java.util.EnumSet;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import org.netbeans.api.java.source.CompilationInfo;
+import static com.sun.source.tree.Tree.Kind.*;
 
 /**XXX: should be tested (currently tested only indirectly)
  *
@@ -62,7 +67,13 @@ public class ArithmeticUtilities {
     }
 
     private static final class VisitorImpl extends TreePathScanner<Number, Void> {
-        
+
+	private static final Set<Kind> ACCEPTED_KINDS = EnumSet.of(
+		MULTIPLY, DIVIDE, REMAINDER, PLUS, MINUS,
+		LEFT_SHIFT, RIGHT_SHIFT, UNSIGNED_RIGHT_SHIFT, AND, XOR,
+		OR, UNARY_MINUS, UNARY_PLUS, PARENTHESIZED, IDENTIFIER,
+		MEMBER_SELECT, INT_LITERAL, LONG_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL);
+
         private final CompilationInfo info;
         private final boolean resolveCompileTimeConstants;
 
@@ -70,6 +81,13 @@ public class ArithmeticUtilities {
             this.info = info;
             this.resolveCompileTimeConstants = resolveCompileTimeConstants;
         }
+
+	@Override
+	public Number scan(Tree tree, Void p) {
+	    if (tree == null) return null;
+	    if (!ACCEPTED_KINDS.contains(tree.getKind())) return null;
+	    return super.scan(tree, p);
+	}
 
         @Override
         public Number visitLiteral(LiteralTree node, Void p) {

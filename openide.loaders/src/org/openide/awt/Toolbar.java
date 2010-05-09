@@ -97,6 +97,9 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             MetalLookAndFeel.class.isAssignableFrom(UIManager.getLookAndFeel().getClass());
     
     static final long serialVersionUID = 5011742660516204764L;
+    static {
+        AcceleratorBinding.init();
+    }
 
     /** Create a new Toolbar with empty name. */
     public Toolbar () {

@@ -56,16 +56,20 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author Jirka Rechtacek
  */
-@ServiceProvider(service=FileSystem.class)
-public class FoDFileSystem extends MultiFileSystem 
+@ServiceProviders({
+    @ServiceProvider(service=FileSystem.class),
+    @ServiceProvider(service=FoDFileSystem.class)
+})
+public final class FoDFileSystem extends MultiFileSystem
 implements Runnable, ChangeListener, LookupListener {
-    private static FoDFileSystem INSTANCE;
     private static final LayerCacheManager manager = LayerCacheManager.create("all-ergonomics.dat"); // NOI18N
     final static Logger LOG = Logger.getLogger (FoDFileSystem.class.getPackage().getName());
     private static RequestProcessor RP = new RequestProcessor("Ergonomics"); // NOI18N
@@ -73,12 +77,12 @@ implements Runnable, ChangeListener, LookupListener {
     private Lookup.Result<ProjectFactory> factories;
     private Lookup.Result<?> ants;
     private boolean forcedRefresh;
+    private final ChangeListener weakL;
 
     public FoDFileSystem() {
-        assert INSTANCE == null;
-        INSTANCE = this;
         setPropagateMasks(true);
-        FeatureManager.getInstance().addChangeListener(this);
+        weakL = WeakListeners.change(this, FeatureManager.getInstance());
+        FeatureManager.getInstance().addChangeListener(weakL);
         FileSystem fs;
         try {
             fs = manager.loadCache();
@@ -93,13 +97,8 @@ implements Runnable, ChangeListener, LookupListener {
         refresh();
     }
 
-    public static synchronized FoDFileSystem getInstance() {
-        if (INSTANCE == null) {
-            while (INSTANCE == null) {
-                INSTANCE = Lookup.getDefault().lookup(FoDFileSystem.class);
-            }
-        }
-        return INSTANCE;
+    public static FoDFileSystem getInstance() {
+        return Lookup.getDefault().lookup(FoDFileSystem.class);
     }
 
     public void refresh() {
@@ -125,7 +124,7 @@ implements Runnable, ChangeListener, LookupListener {
             if (!info.isPresent()) {
                 continue;
             }
-            LOG.finest("adding feature " + info.clusterName); // NOI18N
+            LOG.log(Level.FINEST, "adding feature {0}", info.clusterName); // NOI18N
             if (info.getLayerURL() != null) {
                 urls.add(info.getLayerURL());
             }
@@ -181,10 +180,12 @@ implements Runnable, ChangeListener, LookupListener {
         return null;
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         refresh.schedule(500);
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         refresh.schedule(0);
     }

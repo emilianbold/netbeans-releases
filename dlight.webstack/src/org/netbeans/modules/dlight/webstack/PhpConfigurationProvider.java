@@ -129,7 +129,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
         return null;
       }
 
-      return new DataRow(colnames, Arrays.asList(new Double[]{utime, stime, wtime}));
+      return new DataRow(colnames, Arrays.asList(utime, stime, wtime));
     }
   }
 

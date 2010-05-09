@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugzilla.repository;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
 import java.io.IOException;
@@ -73,6 +74,7 @@ import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.util.MylynUtils;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
@@ -186,8 +188,8 @@ public class BugzillaRepository extends Repository {
         for (Query q : qs) {
             removeQuery((BugzillaQuery) q);
         }
-        resetRepository();
         Bugzilla.getInstance().removeRepository(this);
+        resetRepository(true);
     }
 
     public Lookup getLookup() {
@@ -201,8 +203,10 @@ public class BugzillaRepository extends Repository {
         return new Object[] { getIssueCache() };
     }
 
-    synchronized void resetRepository() {
-        bc = null;
+    synchronized void resetRepository(boolean keepConfiguration) {
+        if(!keepConfiguration) {
+            bc = null;
+        }
         if(getTaskRepository() != null) {
             Bugzilla.getInstance()
                     .getRepositoryConnector()
@@ -406,44 +410,35 @@ public class BugzillaRepository extends Repository {
         return queries;
     }
 
-    public void setAuthentication(String user, String password, String httpUser, String httpPassword) {
-        String shortLoginEnabled = taskRepository.getProperty(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN);
-        setTaskRepository(
-                name,
-                taskRepository.getUrl(),
-                user != null ? user : "",                                       // NOI18N
-                password != null ? password : "",                               // NOI18N
-                httpUser != null ? httpUser : "",                               // NOI18N
-                httpPassword != null ? httpPassword : "",                       // NOI18N
-                "true".equals(shortLoginEnabled));                              // NOI18N
+    public void setCredentials(String user, String password, String httpUser, String httpPassword) {
+        MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
+        resetRepository(false);
     }
 
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
         HashMap<String, Object> oldAttributes = createAttributesMap();
+
+        String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
+        AuthenticationCredentials c = taskRepository != null ? taskRepository.getCredentials(AuthenticationType.REPOSITORY) : null;
+        String oldUser = c != null ? c.getUserName() : "";
+        String oldPassword = c != null ? c.getPassword() : "";
+
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
         Bugzilla.getInstance().addRepository(this);
-        resetRepository(); // XXX only on url, user or passwd change
-                           // XXX reset the configuration only if the host changed
-                           //     on psswd and user change reset only taskrepository
+        resetRepository(oldUrl.equals(url) && oldUser.equals(user) && oldPassword.equals(password)); // XXX reset the configuration only if the host changed
+                                                                                                     //     on psswd and user change reset only taskrepository
         HashMap<String, Object> newAttributes = createAttributesMap();
         fireAttributesChanged(oldAttributes, newAttributes);
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
-        TaskRepository repository = new TaskRepository(Bugzilla.getInstance().getRepositoryConnector().getConnectorKind(), url);
-        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
-        repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
-        
-        if(httpUser != null || httpPassword != null) {
-            httpUser = httpUser != null ? httpUser : "";                        // NOI18N
-            httpPassword = httpPassword != null ? httpPassword : "";            // NOI18N
-            authenticationCredentials = new AuthenticationCredentials(httpUser, httpPassword);
-            repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
-        }
+        TaskRepository repository = MylynUtils.createTaskRepository(
+                Bugzilla.getInstance().getRepositoryConnector().getConnectorKind(),
+                name,
+                url,
+                user, password,
+                httpUser, httpPassword);
         repository.setProperty(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN, shortLoginEnabled ? "true" : "false"); //NOI18N
-
-        // XXX need proxy settings from the IDE
-        
         return repository;
     }
 
@@ -623,12 +618,24 @@ public class BugzillaRepository extends Repository {
     }
 
     public void refreshAllQueries() {
-        Query[] qs = getQueries();
-        for (Query q : qs) {
-            Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
-            QueryController qc = ((BugzillaQuery) q).getController();
-            qc.onRefresh();
-        }
+        refreshAllQueries(true);
+    }
+
+    protected void refreshAllQueries(final boolean onlyOpened) {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Query[] qs = getQueries();
+                for (Query q : qs) {
+                    if(!onlyOpened || !BugtrackingUtil.isOpened(q)) {
+                        continue;
+                    }
+                    Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
+                    QueryController qc = ((BugzillaQuery) q).getController();
+                    qc.onRefresh();
+                }
+            }
+        });
     }
 
     private class IssuesCollector extends TaskDataCollector {

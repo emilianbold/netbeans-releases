@@ -98,12 +98,13 @@ public final class CssPreviewTopComponent extends TopComponent {
                     final File baseFile = content.base();
                     final String title = getTitle(content);
                     final CharSequence htmlCode = CssPreviewGenerator.getPreviewCode(content);
+                    final SAXParser parser = getParser();
 
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
                             //and preview in AWT
-                            preview(baseFile, title, htmlCode);
+                            preview(baseFile, title, htmlCode, parser);
                         }
 
                     });
@@ -126,7 +127,7 @@ public final class CssPreviewTopComponent extends TopComponent {
     private JPanel NO_PREVIEW_PANEL, PREVIEW_ERROR_PANEL;
     private boolean previewing, error;
     
-    private SAXParser parser = null;
+    private SAXParser parserInstance;
     
     private CssPreviewTopComponent() {
         initComponents();
@@ -165,18 +166,6 @@ public final class CssPreviewTopComponent extends TopComponent {
                 NbBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("Preview_Error")); //NOI18N
 
         setName(DEFAULT_TC_NAME); //set default TC name
-        
-        //init SAX parser
-        try {
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setValidating(false);
-            parser = factory.newSAXParser();
-        } catch (ParserConfigurationException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SAXException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
     }
     
     private JPanel makeMsgPanel(String message) {
@@ -289,8 +278,25 @@ public final class CssPreviewTopComponent extends TopComponent {
         }
         return DEFAULT_TC_NAME;
     }
-    
-    private void preview(File source, String title, CharSequence htmlCode) {
+
+    private synchronized SAXParser getParser() {
+        if(parserInstance == null) {
+            //init SAX parser
+            try {
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                factory.setValidating(false);
+                parserInstance = factory.newSAXParser();
+            } catch (ParserConfigurationException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SAXException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        return parserInstance;
+    }
+
+    private void preview(File source, String title, CharSequence htmlCode, SAXParser parser) {
         assert SwingUtilities.isEventDispatchThread();
 
         //parse it first to find potential errors in the code

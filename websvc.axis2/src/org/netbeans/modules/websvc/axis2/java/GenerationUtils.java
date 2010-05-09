@@ -703,7 +703,7 @@ public final class GenerationUtils {
         Parameters.notNull("classTree", classTree); // NOI18N
         Parameters.notNull("interfaceType", interfaceType); // NOI18N
 
-        ExpressionTree interfaceTree = createQualIdent(interfaceType);
+        ExpressionTree interfaceTree = createTypeTree(interfaceType);
         return getTreeMaker().addClassImplementsClause(classTree, interfaceTree);
     }
 
@@ -725,6 +725,16 @@ public final class GenerationUtils {
             return getTreeMaker().QualIdent(typeElement);
         }
         return null;
+
+    }
+
+    private ExpressionTree createTypeTree(String typeName) {
+        TypeElement typeElement = copy.getElements().getTypeElement(typeName);
+        if (typeElement != null) {
+            return getTreeMaker().QualIdent(typeElement);
+        } else {
+            return getTreeMaker().Identifier(typeName);
+        }
 
     }
 

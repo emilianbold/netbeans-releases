@@ -57,6 +57,7 @@ import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.project.config.ServiceAlreadyExistsExeption;
@@ -106,23 +107,31 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
 
                     }
                 }
-                final JAXWSClientSupport jaxWsClientSupport = JAXWSClientSupport.getJaxWsClientSupport(prj.getProjectDirectory());
-                if ( jaxWsClientSupport != null && jaxWsClientSupport.getServiceClients().size() > 0) {
-                    FileObject wsdlFolder = null;
-                    try {
-                        wsdlFolder = jaxWsClientSupport.getWsdlFolder(false);
-                    } catch (IOException ex) {}
-                    if (wsdlFolder == null || wsdlFolder.getParent().getFileObject("jax-ws-catalog.xml") == null) { //NOI18N
-                        RequestProcessor.getDefault().post(new Runnable() {
-                            public void run() {
-                                try {
-                                    JaxWsCatalogPanel.generateJaxWsCatalog(prj, jaxWsClientSupport);
-                                } catch (IOException ex) {
-                                    Logger.getLogger(JaxWsCatalogPanel.class.getName()).log(Level.WARNING, "Cannot create jax-ws-catalog.xml", ex);
-                                }
+                FileObject jaxWsFo = WSUtils.findJaxWsFileObject(prj);
+                try {
+                    if (jaxWsFo != null && WSUtils.hasClients(jaxWsFo)) {
+                        final JAXWSClientSupport jaxWsClientSupport = prj.getLookup().lookup(JAXWSClientSupport.class);
+                        if (jaxWsClientSupport != null) {
+                            FileObject wsdlFolder = null;
+                            try {
+                                wsdlFolder = jaxWsClientSupport.getWsdlFolder(false);
+                            } catch (IOException ex) {}
+                            if (wsdlFolder == null || wsdlFolder.getParent().getFileObject("jax-ws-catalog.xml") == null) { //NOI18N
+                                RequestProcessor.getDefault().post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            JaxWsCatalogPanel.generateJaxWsCatalog(prj, jaxWsClientSupport);
+                                        } catch (IOException ex) {
+                                            Logger.getLogger(JaxWsCatalogPanel.class.getName()).log(Level.WARNING, "Cannot create jax-ws-catalog.xml", ex);
+                                        }
+                                    }
+                                });
                             }
-                        });
+                        }
                     }
+                } catch (IOException ex) {
+                     Logger.getLogger(JavaEEWSOpenHook.class.getName()).log(Level.WARNING, "Cannot read nbproject/jax-ws.xml file", ex);
                 }
             }
 

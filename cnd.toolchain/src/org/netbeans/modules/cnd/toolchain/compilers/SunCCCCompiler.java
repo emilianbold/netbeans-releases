@@ -42,6 +42,9 @@
 package org.netbeans.modules.cnd.toolchain.compilers;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
@@ -80,7 +83,7 @@ import org.openide.util.NbBundle;
             if (getCompilerStderrCommand2() != null) {
                 getSystemIncludesAndDefines(getCompilerStderrCommand2(), false, res);
             }
-            res.systemIncludeDirectoriesList.addUnique(applyPathPrefix("/usr/include")); // NOI18N
+            addUnique(res.systemIncludeDirectoriesList, applyPathPrefix("/usr/include")); // NOI18N
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
             String errormsg;
@@ -90,6 +93,38 @@ import org.openide.util.NbBundle;
                 errormsg = NbBundle.getMessage(getClass(), "CANT_FIND_REMOTE_COMPILER", getPath(), getExecutionEnvironment().getDisplayName()); // NOI18N
             }
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+        }
+        return res;
+    }
+
+    protected Collection<String> getSystemPaths(String line) {
+        List<String> res =getIncludePaths(line, "-include"); // NOI18N
+        res.addAll(getIncludePaths(line, "-I")); // NOI18N
+        return res;
+    }
+
+    private List<String> getIncludePaths(String line, String prefix) {
+        List<String> res = new ArrayList<String>();
+        int includeIndex = line.indexOf(prefix); // NOI18N
+        while (includeIndex > 0) {
+            String token;
+            int rest = includeIndex+prefix.length();
+            if (line.charAt(includeIndex+prefix.length()) == ' ') {
+                rest++;
+            }
+            int spaceIndex = line.indexOf(' ', rest); // NOI18N
+            if (spaceIndex > 0) {
+                token = line.substring(rest, spaceIndex);
+            } else {
+                token = line.substring(rest);
+            }
+            if (!token.equals("-xbuiltin")) { //NOI18N
+                res.add(token);
+            }
+            if (spaceIndex < 0) {
+                break;
+            }
+            includeIndex = line.indexOf(prefix, spaceIndex); // NOI18N
         }
         return res;
     }

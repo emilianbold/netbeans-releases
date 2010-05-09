@@ -41,26 +41,35 @@
 package org.netbeans.modules.cnd.makeproject;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.util.Mutex;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  * SharabilityQueryImplementation for j2seproject with multiple sources
  */
 public class MakeSharabilityQuery implements SharabilityQueryImplementation {
 
-    private File baseDirFile;
-    private String baseDir;
-    private int baseDirLength;
+    private final File baseDirFile;
+    private final String baseDir;
+    private final int baseDirLength;
     private boolean privateShared;
-    private ConfigurationDescriptorProvider projectDescriptorProvider;
+    private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private static final boolean IGNORE_BINARIES = CndUtils.getBoolean("cnd.vcs.ignore.binaries", true);
+    private boolean inited = false;
+    private Set<String> skippedFiles = new HashSet<String>();
 
     MakeSharabilityQuery(ConfigurationDescriptorProvider projectDescriptorProvider, File baseDirFile) {
         this.projectDescriptorProvider = projectDescriptorProvider;
@@ -80,18 +89,24 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
      */
     @Override
     public int getSharability(final File file) {
-        //ConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-        //if (configurationDescriptor != null && configurationDescriptor.getModified()) {
-        //    // Make sure all sharable files are saved on disk
-        //    // See IZ http://www.netbeans.org/issues/show_bug.cgi?id=153504
-        //    configurationDescriptor.save();
-        //}
+        init();
+        if (projectDescriptorProvider.gotDescriptor()) {
+            ConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+            if (configurationDescriptor != null && configurationDescriptor.getModified()) {
+                // Make sure all sharable files are saved on disk
+                // See IZ http://www.netbeans.org/issues/show_bug.cgi?id=153504
+                configurationDescriptor.save();
+            }
+        }
         Integer ret = ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
 
             @Override
             public Integer run() {
                 synchronized (MakeSharabilityQuery.this) {
                     if (IGNORE_BINARIES && CndFileVisibilityQuery.getDefault().isIgnored(file))  {
+                        return SharabilityQuery.NOT_SHARABLE;
+                    }
+                    if (skippedFiles.contains(file.getAbsolutePath())) {
                         return SharabilityQuery.NOT_SHARABLE;
                     }
                     boolean sub = file.getPath().startsWith(baseDir);
@@ -152,5 +167,30 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
 
     public boolean getPrivateShared() {
         return privateShared;
+    }
+
+    public void update() {
+        inited = false;
+        init();
+    }
+    private void init() {
+        if (!inited) {
+            synchronized (this) {
+                if (!inited && this.projectDescriptorProvider.gotDescriptor()) {
+                    MakeConfigurationDescriptor cd = this.projectDescriptorProvider.getConfigurationDescriptor();
+                    if (cd != null) {
+                        Configurations confs = cd.getConfs();
+                        Set<String> newSet = new HashSet<String>();
+                        for (Configuration conf : confs.getConfigurations()) {
+                            if (conf instanceof MakeConfiguration) {
+                                newSet.add(CndFileUtils.normalizeAbsolutePath(((MakeConfiguration) conf).getAbsoluteOutputValue()));
+                            }
+                        }
+                        skippedFiles = newSet;
+                        inited = true;
+                    }
+                }
+            }
+        }
     }
 }

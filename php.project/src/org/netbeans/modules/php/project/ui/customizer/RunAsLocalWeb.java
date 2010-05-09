@@ -131,12 +131,14 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         return runAsCombo;
     }
 
+    @Override
     protected void loadFields() {
         for (int i = 0; i < textFields.length; i++) {
             textFields[i].setText(getValue(propertyNames[i]));
         }
     }
 
+    @Override
     protected void validateFields() {
         String url = urlTextField.getText();
         String indexFile = indexFileTextField.getText();
@@ -162,6 +164,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
             super(propName, label, field);
         }
 
+        @Override
         protected final String getDefaultValue() {
             return RunAsLocalWeb.this.getDefaultValue(getPropName());
         }

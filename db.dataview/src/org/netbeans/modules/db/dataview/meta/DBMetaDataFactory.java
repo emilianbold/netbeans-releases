@@ -179,7 +179,15 @@ public final class DBMetaDataFactory {
                 tableName = noTableName;
             }
             String schemaName = rsMeta.getSchemaName(i);
+            // although Javadoc admit of returning null, SQLite returns null
+            if (schemaName == null) {
+                schemaName = "";
+            }
             String catalogName = rsMeta.getCatalogName(i);
+            // although Javadoc admit of returning null, SQLite returns null
+            if (catalogName == null) {
+                catalogName = "";
+            }
             if (schemaName.trim().length() == 0 && catalogName.equals(tableName)) {
                 // a workaround for SQLite
                 // suppose the catalog shouldn't be same if schema is not supported
@@ -374,7 +382,7 @@ public final class DBMetaDataFactory {
     private void checkForeignKeys(DBTable newTable) {
         // get the foreing keys
         Map<String, DBForeignKey> foreignKeys = getForeignKeys(newTable);
-        if (foreignKeys != null && foreignKeys.size() != 0) {
+        if (foreignKeys != null && !foreignKeys.isEmpty()) {
             newTable.setForeignKeyMap(foreignKeys);
 
             // create a hash set of the keys

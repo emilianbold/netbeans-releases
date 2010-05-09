@@ -48,12 +48,11 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.*;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.awt.*;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 
 /**
  * Open the Versioning status view for all projects.
@@ -83,7 +82,7 @@ public class StatusProjectsAction extends SystemAction {
             Project projects[] = OpenProjects.getDefault().getOpenProjects();
             for (int i = 0; i < projects.length; i++) {
                 Project project = projects[i];
-                if (Utils.isVersionedProject(project)) {
+                if (Utils.isVersionedProject(project, false)) {
                     return true;
                 }
             }
@@ -92,7 +91,7 @@ public class StatusProjectsAction extends SystemAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 async();
             }

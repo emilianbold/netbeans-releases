@@ -1,5 +1,10 @@
 package org.netbeans.modules.cnd.antlr;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+
 /* ANTLR Translator Generator
  * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
@@ -11,8 +16,6 @@ package org.netbeans.modules.cnd.antlr;
 //      subclass will define the input stream
 //      There are two subclasses to this: CharBuffer and ByteBuffer
 
-import java.io.*;
-
 /**A Stream of characters fed to the lexer from a InputStream that can
  * be rewound via mark()/rewind() methods.
  * <p>
@@ -20,7 +23,7 @@ import java.io.*;
  * "k" characters are stored in the buffer.  More characters may be stored during
  * guess mode (testing syntactic predicate), or when LT(i>k) is referenced.
  * Consumption of characters is deferred.  In other words, reading the next
- * character is not done by conume(), but deferred until needed by LA or LT.
+ * character is not done by consume(), but deferred until needed by LA or LT.
  * <p>
  *
  * @see org.netbeans.modules.cnd.antlr.CharQueue
@@ -29,18 +32,15 @@ public class InputBuffer {
     // Number of active markers
     private int nMarkers = 0;
 
-    // Additional offset used when markers are active
-    private int markerOffset = 0;
-
     private int size = 0;
     
     // current position in the buffer
-    private int p = 0;
+    private int position = 0;
     
     // buffer data
     public static final int INITIAL_BUFFER_SIZE = 8192*Integer.getInteger("antlr.input.buffer", 1).intValue(); // NOI18N
     public static final int READ_BUFFER_SIZE = INITIAL_BUFFER_SIZE;
-    private char[] data = new char[INITIAL_BUFFER_SIZE];
+    private char[] data;
 
     public InputBuffer(char[] data) {
         this.data = data;
@@ -48,8 +48,9 @@ public class InputBuffer {
     }
 
     public InputBuffer(Reader input) { // SAS: for proper text i/o
+        data = new char[INITIAL_BUFFER_SIZE+READ_BUFFER_SIZE/2];
         try{
-            int numRead=0;
+            int numRead = 0;
             int p = 0;
             do {
                 if ( p + READ_BUFFER_SIZE > data.length ) { // overflow?
@@ -82,7 +83,7 @@ public class InputBuffer {
 
     /** Mark another character for deferred consumption */
     public final void consume() {
-        p++;
+        position++;
     }
 
     /** Ensure that the input buffer is sufficiently full */
@@ -110,11 +111,11 @@ public class InputBuffer {
 
     /** Get a lookahead character */
     public final char LA(int i) {
-        if ( (p+i-1) >= size ) {
+        if ( (position+i-1) >= size ) {
             return CharScanner.EOF_CHAR;
         }
         
-        return data[p+i-1];
+        return data[position+i-1];
     }
 
     /**Return an integer marker that can be used to rewind the buffer to
@@ -122,14 +123,14 @@ public class InputBuffer {
      */
     public final int mark() {
         nMarkers++;
-        return p;
+        return position;
     }
 
     /**Rewind the character buffer to a marker.
      * @param mark Marker returned previously from mark()
      */
     public final void rewind(int mark) {
-        p = mark;
+        position = mark;
         nMarkers--;
     }
 

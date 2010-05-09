@@ -171,6 +171,11 @@ made subject to such option by the copyright holder.
             <classpath path="${antlr3.jar}"/>
         </java>
 
+        <replaceregexp file="${antlr3.evaluator.output.dir}/EvaluatorParser.java"
+            match='^public class EvaluatorParser (.*)'
+            replace='@SuppressWarnings({"unchecked", "cast", "fallthrough"}) public class EvaluatorParser \1'
+            flags="mg" />
+
         <delete file="${antlr3.evaluator.output.dir}/EvaluatorLexer.java" />
 
     </target>

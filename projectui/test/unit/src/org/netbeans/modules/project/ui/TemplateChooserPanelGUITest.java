@@ -62,6 +62,10 @@ public class TemplateChooserPanelGUITest extends NbTestCase {
         return true;
     }
 
+    protected @Override int timeOut() {
+        return 300000;
+    }
+
     /**
      * Test of readValues method, of class TemplateChooserPanelGUI.
      */

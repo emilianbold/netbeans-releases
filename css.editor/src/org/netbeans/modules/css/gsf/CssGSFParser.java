@@ -50,8 +50,11 @@ import java.util.List;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.css.editor.LexerUtils;
 import org.netbeans.modules.css.parser.CssParser;
+import org.netbeans.modules.css.parser.CssParserConstants;
+import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.ParseException;
 import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.css.parser.Token;
 import org.netbeans.modules.css.parser.TokenMgrError;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -95,7 +98,7 @@ public class CssGSFParser extends Parser {
         }
 
         List<Error> errors = new ArrayList<Error>();
-        errors.addAll(errors(parseExceptions, snapshot)); //parser errors
+        errors.addAll(errors(parseExceptions, snapshot, root)); //parser errors
         errors.addAll(CssAnalyser.checkForErrors(snapshot, root));
         
         this.lastResult = new CssParserResult(this, snapshot, root, errors);
@@ -121,10 +124,10 @@ public class CssGSFParser extends Parser {
         //no-op, no state changes supported
     }
 
-    public List<Error> errors(List<ParseException> parseExceptions, Snapshot snapshot) {
+    public List<Error> errors(List<ParseException> parseExceptions, Snapshot snapshot, SimpleNode root) {
         List<Error> errors = new ArrayList<Error>(parseExceptions.size());
         for (ParseException pe : parseExceptions) {
-            Error e = createError(pe, snapshot);
+            Error e = createError(pe, snapshot, root);
             if (e != null) {
                 errors.add(e);
             }
@@ -136,7 +139,7 @@ public class CssGSFParser extends Parser {
         return CharSequenceUtilities.indexOf(text, GENERATED_CODE) != -1;
     }
 
-    private Error createError(ParseException pe, Snapshot snapshot) {
+    private Error createError(ParseException pe, Snapshot snapshot, SimpleNode root) {
         FileObject fo = snapshot.getSource().getFileObject();
         Token lastSuccessToken = pe.currentToken;
         if (lastSuccessToken == null) {
@@ -148,25 +151,61 @@ public class CssGSFParser extends Parser {
         int from = errorToken.offset;
 
         if (!(containsGeneratedCode(lastSuccessToken.image) || containsGeneratedCode(errorToken.image))) {
-            String errorMessage = buildErrorMessage(pe);
-            int documentStartOffset = LexerUtils.findNearestMappableSourcePosition(snapshot, from, false, SEARCH_LIMIT);
-            int documentEndOffset = LexerUtils.findNearestMappableSourcePosition(snapshot, from + errorToken.image.length(), true, SEARCH_LIMIT);
+            if(!filterError(pe, snapshot, errorToken)) {
+                String errorMessage = buildErrorMessage(pe);
+                int documentStartOffset = LexerUtils.findNearestMappableSourcePosition(snapshot, from, false, SEARCH_LIMIT);
+                int documentEndOffset = LexerUtils.findNearestMappableSourcePosition(snapshot, from + errorToken.image.length(), true, SEARCH_LIMIT);
 
-            if(documentStartOffset == -1 && documentEndOffset == -1) {
-                //the error is completely out of the mappable area, map it to the beginning of the document
-                documentStartOffset = documentEndOffset = 0;
-            } else if(documentStartOffset == -1) {
-                documentStartOffset = documentEndOffset;
-            } else if(documentEndOffset == -1) {
-                documentEndOffset = documentStartOffset;
+                //lets try to filter out some of the unwanted errors on generated virtual code
+                if(root != null) { //the root can become null in case of completely unparseable file
+                    SimpleNode errorNode = SimpleNodeUtil.findDescendant(root, errorToken.offset);
+                    assert errorNode != null;
+                    SimpleNode parent = (SimpleNode)errorNode.jjtGetParent();
+                    //[Bug 183631] generated inline style is marked as an error
+                    //The code <h1 style="#{x.style}"></h1> is translated to
+                    // SELECTOR { @@@; } which is unparseable
+                    //
+                    //check if the declaration node contains generated code (@@@)
+                    //if so, just ignore the error
+                    if(parent != null) {
+                        if(parent.kind() == CssParserTreeConstants.JJTDECLARATION) {
+                            if(containsGeneratedCode(parent.image())) {
+                                return null;
+                            }
+                        }
+                    }
+                }
+
+
+                if (documentStartOffset == -1 && documentEndOffset == -1) {
+                    //the error is completely out of the mappable area, map it to the beginning of the document
+                    documentStartOffset = documentEndOffset = 0;
+                } else if (documentStartOffset == -1) {
+                    documentStartOffset = documentEndOffset;
+                } else if (documentEndOffset == -1) {
+                    documentEndOffset = documentStartOffset;
+                }
+
+                assert documentStartOffset <= documentEndOffset;
+
+                return new DefaultError(PARSE_ERROR_KEY, errorMessage, errorMessage, fo,
+                        documentStartOffset, documentEndOffset, Severity.ERROR);
             }
-
-            assert documentStartOffset <= documentEndOffset;
-
-            return new DefaultError(PARSE_ERROR_KEY, errorMessage, errorMessage, fo,
-                    documentStartOffset, documentEndOffset, Severity.ERROR);
         }
         return null;
+    }
+
+    private boolean filterError(ParseException pe, Snapshot snapshot, Token errorToken) {
+        //#182133 - filter error in css virtual source code for empty html tag class attribute
+        //<div class=""/> generates .|{} for the empty value so the css completion can work there
+        //and offer all classes
+        if (pe.currentToken.kind == CssParserConstants.DOT
+                && errorToken.kind == CssParserConstants.LBRACE
+                && snapshot.getOriginalOffset(pe.currentToken.offset) == -1) {
+            return true;
+        }
+
+        return false;
     }
 
     private String buildErrorMessage(ParseException pe) {

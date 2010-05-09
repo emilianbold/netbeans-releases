@@ -132,7 +132,7 @@ public class KeyManager {
         }
 
         public final Key getSharedUID(Key key) {
-            return getDelegate(key).addOrGet(key);
+            return getDelegate(key).putIfAbsent(key);
         }
 
         public final void dispose() {

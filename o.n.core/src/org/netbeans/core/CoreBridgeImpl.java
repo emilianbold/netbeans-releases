@@ -49,11 +49,13 @@ import org.netbeans.core.startup.CoreBridge;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.ManifestSection;
 import org.netbeans.core.startup.StartLog;
+import org.netbeans.swing.plaf.Startup;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /** Implements necessary callbacks from module system.
@@ -116,7 +118,7 @@ public final class CoreBridgeImpl extends CoreBridge {
     }
 
     public void initializePlaf (Class uiClass, int uiFontSize, java.net.URL themeURL) {
-          org.netbeans.swing.plaf.Startup.run(uiClass, uiFontSize, themeURL);
+          Startup.run(uiClass, uiFontSize, themeURL, NbBundle.getBundle(Startup.class));
     }
 
     @SuppressWarnings("deprecation")

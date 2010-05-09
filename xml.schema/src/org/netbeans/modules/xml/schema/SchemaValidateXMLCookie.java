@@ -42,7 +42,9 @@
 package org.netbeans.modules.xml.schema;
 
 import java.io.IOException;
-import org.netbeans.modules.xml.validation.ValidateXMLCookieImpl;
+import org.netbeans.api.xml.cookies.CookieObserver;
+import org.netbeans.api.xml.cookies.ValidateXMLCookie;
+import org.netbeans.modules.xml.validation.ui.Output;
 import org.netbeans.modules.xml.xam.Model;
 import org.openide.ErrorManager;
 
@@ -51,7 +53,7 @@ import org.openide.ErrorManager;
  *
  * @author  Nathan Fiedler
  */
-public class SchemaValidateXMLCookie extends ValidateXMLCookieImpl {
+public class SchemaValidateXMLCookie implements ValidateXMLCookie {
     private SchemaDataObject dataObject;
 
     /**
@@ -59,6 +61,11 @@ public class SchemaValidateXMLCookie extends ValidateXMLCookieImpl {
      */
     public SchemaValidateXMLCookie(SchemaDataObject dobj) {
         dataObject = dobj;
+    }
+
+    public boolean validateXML(CookieObserver cookieObserver) {
+        new Output().validate(getModel());
+        return true;
     }
 
     protected Model getModel() {

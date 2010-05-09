@@ -73,7 +73,7 @@ import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.openide.filesystems.FileUtil;
 
 
-/** XXX <code>UpdateProvider</code> providers items for Autoupdate infrastructure. The items
+/** <code>UpdateProvider</code> providers items for Autoupdate infrastructure. The items
  * are available on e.g. Update Center. Items can represents NetBeans Module,
  * its Localization, Feature as group of NetBeans Modules or special
  * components which needs own native installer to make them accessible in NetBeans product.
@@ -142,7 +142,7 @@ public final class UpdateUnitProviderImpl {
      * 
      * @param force if true then forces to reread the content from server
      * @return true if refresh succeed
-     * @throws java.io.IOException when any network problem appreared
+     * @throws java.io.IOException when any network problem is encountered
      */
     public boolean refresh (ProgressHandle handle, boolean force) throws IOException {
         boolean res = false;
@@ -223,30 +223,26 @@ public final class UpdateUnitProviderImpl {
         // try to load Update Center from old autoupdate for backward compatibility
         FileObject auTypeFolder = FileUtil.getConfigFile("Services/AutoupdateType");
         if (auTypeFolder != null) {
-            FileObject [] auTypes = auTypeFolder.getChildren ();
-            for (int i = 0; i < auTypes.length; i++) {
+            for (FileObject auType : auTypeFolder.getChildren()) {
                 // check first if already exist
                 try {
-                    if (! getPreferences ().nodeExists (auTypes [i].getName ())) {
+                    if (!getPreferences().nodeExists(auType.getName()) &&
+                            !getPreferences().nodeExists(auType.getName() + REMOVED_MASK)) {
                         try {
-                            String bundle = (String) auTypes [i].getAttribute ("SystemFileSystem.localizingBundle");
-                            if (bundle != null) {
-                                UpdateProvider p = AutoupdateCatalogFactory.createUpdateProvider (auTypes [i]);
-                                assert p != null : "UpdateProvider found for " + auTypes [i];
-                                getPreferences ().node (auTypes [i].getName ()).putBoolean ("loaded", Boolean.TRUE);
-                                err.log (Level.FINEST,
-                                        auTypes [i] + " loaded.");
+                            UpdateProvider p = AutoupdateCatalogFactory.createUpdateProvider(auType);
+                            if (p != null) {
+                                getPreferences().node(auType.getName()).putBoolean("loaded", true);
+                                err.log(Level.FINEST, "{0} loaded", auType);
                             } else {
-                                err.log (Level.INFO,
-                                        auTypes [i] + " cannot be loaded because doesn't contain SystemFileSystem.localizingBundle.");
-                                getPreferences ().node (auTypes [i].getName ()).putBoolean ("loaded", Boolean.FALSE);
+                                err.log(Level.INFO, "{0} cannot be loaded (missing url or url_key)", auType);
+                                getPreferences().node(auType.getName()).putBoolean("loaded", false);
                             }
                         } catch (Exception x) {
                             Exceptions.printStackTrace (x);
                         }
                     }
                 } catch (BackingStoreException bse) {
-                    err.log (Level.INFO, bse.getMessage() + " while loading " + auTypes [i], bse);
+                    err.log(Level.INFO, bse.getMessage() + " while loading " + auType, bse);
                 }
             }
         }
@@ -326,6 +322,13 @@ public final class UpdateUnitProviderImpl {
     }    
     
     /*private because tests*/ static UpdateProvider loadProvider (String codeName) {
+        try {
+            if(getPreferences ().nodeExists(codeName + REMOVED_MASK)) {
+                return null;
+            }
+        } catch (BackingStoreException e) {
+            err.log(Level.INFO, e.getMessage(), e);
+        }
         Preferences providerPreferences = getPreferences ().node (codeName);
         assert providerPreferences != null : "Preferences node " + codeName + " found.";
         
@@ -362,6 +365,13 @@ public final class UpdateUnitProviderImpl {
         assert providerPreferences != null : "Preferences node " + p.getName () + " found.";
         
         providerPreferences.put (ENABLED, Boolean.valueOf (isEnabled).toString ());
+        try {
+        if(getPreferences().nodeExists(p.getName() + REMOVED_MASK)) {
+            getPreferences().node(p.getName() + REMOVED_MASK).removeNode();
+        }
+        } catch (BackingStoreException x) {
+            err.log (Level.INFO, x.getMessage(), x);
+        }
     }
     
     private static String loadDisplayName (UpdateProvider p) {
