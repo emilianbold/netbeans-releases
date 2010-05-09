@@ -53,10 +53,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
@@ -490,9 +492,11 @@ public class TreeModelNode extends AbstractNode {
         return object;
     }
 
-    private final Map<Models.CompoundModel, Task> tasksByModels = new HashMap<Models.CompoundModel, Task>();
+    private Task refreshTask;
+    private final Object refreshTaskLock = new Object();
+    private final Set<Models.CompoundModel> childrenRefreshModels = new HashSet<Models.CompoundModel>();
     
-    void refresh (final Models.CompoundModel model) {
+    void refresh (Models.CompoundModel model) {
         //System.err.println("TreeModelNode.refresh("+model+") on "+object);
         //Thread.dumpStack();
         // 1) empty cache
@@ -502,10 +506,12 @@ public class TreeModelNode extends AbstractNode {
         
         
         // 2) refresh name, displayName and iconBase
-        synchronized (tasksByModels) {
-            Task task = tasksByModels.get(model);
-            if (task == null) {
-                task = getRequestProcessor ().create (new Runnable () {
+        synchronized (childrenRefreshModels) {
+            childrenRefreshModels.add(model);
+        }
+        synchronized (refreshTaskLock) {
+            if (refreshTask == null) {
+                refreshTask = getRequestProcessor ().create (new Runnable () {
                     public void run () {
                         if (!SwingUtilities.isEventDispatchThread()) {
                             try {
@@ -520,12 +526,18 @@ public class TreeModelNode extends AbstractNode {
                         doFireShortDescriptionChange();
 
                         // 3) refresh children
-                        refreshTheChildren(model, new TreeModelChildren.RefreshingInfo(true));
+                        Set<Models.CompoundModel> modelsToRefresh;
+                        synchronized (childrenRefreshModels) {
+                            modelsToRefresh = new HashSet<Models.CompoundModel>(childrenRefreshModels);
+                            childrenRefreshModels.clear();
+                        }
+                        if (modelsToRefresh.size() > 0) {
+                            refreshTheChildren(modelsToRefresh, new TreeModelChildren.RefreshingInfo(true));
+                        }
                     }
                 });
-                tasksByModels.put(model, task);
             }
-            task.schedule(0);
+            refreshTask.schedule(10);
         }
     }
     
@@ -559,11 +571,20 @@ public class TreeModelNode extends AbstractNode {
             refreshed = true;
         }
         if ((ModelEvent.NodeChanged.CHILDREN_MASK & changeMask) != 0) {
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                    refreshTheChildren(model, new TreeModelChildren.RefreshingInfo(false));
-                }
-            });
+            boolean doRefresh;
+            synchronized (childrenRefreshModels) {
+                doRefresh = childrenRefreshModels.add(model);
+            }
+            if (doRefresh) {
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        synchronized (childrenRefreshModels) {
+                            childrenRefreshModels.remove(model);
+                        }
+                        refreshTheChildren(model, new TreeModelChildren.RefreshingInfo(false));
+                    }
+                });
+            }
             refreshed = true;
         }
         if ((ModelEvent.NodeChanged.EXPANSION_MASK & changeMask) != 0) {
@@ -751,7 +772,16 @@ public class TreeModelNode extends AbstractNode {
      * @param model The associated model - necessary for hyper node.
      * @param refreshSubNodes If recursively refresh subnodes.
      */
-    protected void refreshTheChildren(Models.CompoundModel model, TreeModelChildren.RefreshingInfo refreshInfo) {
+    protected void refreshTheChildren(Set<Models.CompoundModel> models, TreeModelChildren.RefreshingInfo refreshInfo) {
+        for (Models.CompoundModel model: models) {
+            refreshTheChildren(model, refreshInfo);
+        }
+    }
+    /**
+     * @param model The associated model - necessary for hyper node.
+     * @param refreshSubNodes If recursively refresh subnodes.
+     */
+    private void refreshTheChildren(Models.CompoundModel model, TreeModelChildren.RefreshingInfo refreshInfo) {
         Children ch = getChildren();
         if (ch instanceof UnknownChildren) {
             return ;
@@ -1131,6 +1161,10 @@ public class TreeModelNode extends AbstractNode {
         
         @Override
         protected void addNotify () {
+            if (initialezed) {
+                //System.err.println("\n\nTreeModelChildren.addNotify() called more that once! Parent = "+getNode()+"\n\n");
+                return ;
+            }
             initialezed = true;
             refreshChildren (new RefreshingInfo(true));
         }
@@ -1303,7 +1337,7 @@ public class TreeModelNode extends AbstractNode {
         
         private void applyChildren(final Object[] ch, RefreshingInfo refreshInfo, boolean doSetObject) {
             //System.err.println(this.hashCode()+" applyChildren("+refreshSubNodes+")");
-            //System.err.println("applyChildren("+Arrays.toString(ch)+")");
+            //System.err.println("applyChildren("+Arrays.toString(ch)+", "+doSetObject+")");
             int i, k = ch.length; 
             WeakHashMap<Object, WeakReference<TreeModelNode>> newObjectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
             for (i = 0; i < k; i++) {
@@ -1403,6 +1437,7 @@ public class TreeModelNode extends AbstractNode {
                 treeModelRoot, 
                 object
             );
+            //System.err.println("created node for ("+object+") = "+tmn);
             objectToNode.put (object, new WeakReference<TreeModelNode>(tmn));
             return new Node[] {tmn};
         }
