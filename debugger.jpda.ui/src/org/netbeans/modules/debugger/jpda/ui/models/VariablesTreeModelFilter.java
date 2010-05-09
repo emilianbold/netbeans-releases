@@ -264,12 +264,28 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
      * @return  true if node is leaf
      */
     public boolean isLeaf (
-        TreeModel original, 
-        Object node
+        final TreeModel original,
+        final Object node
     ) throws UnknownTypeException {
-        VariablesFilter vf = getFilter (node, true, null);
-        if (vf == null) 
-            return original.isLeaf (node);
+        final boolean[] unfilteredIsLeaf = new boolean[] { false };
+        VariablesFilter vf = getFilter (node, true, new Runnable() {
+            public void run() {
+                VariablesFilter vf = getFilter (node, false, null);
+                if (vf == null) return ;
+                try {
+                    boolean filteredIsLeaf = vf.isLeaf (original, (Variable) node);
+                    if (filteredIsLeaf != unfilteredIsLeaf[0]) {
+                        fireChildrenChange(node);
+                    }
+                } catch (UnknownTypeException utex) {
+                }
+            }
+        });
+        if (vf == null) {
+            boolean isLeaf = original.isLeaf (node);
+            unfilteredIsLeaf[0] = isLeaf;
+            return isLeaf;
+        }
         return vf.isLeaf (original, (Variable) node);
     }
 
@@ -432,7 +448,6 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
             value = original.getValueAt (row, columnID);
         } else {
             value = vf.getValueAt (original, (Variable) row, columnID);
-            fireChildrenChange(row);
         }
         return value;
     }
