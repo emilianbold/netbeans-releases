@@ -53,10 +53,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
@@ -156,7 +158,9 @@ public class TreeModelNode extends AbstractNode {
         this(
             model,
             columns,
-            createChildren (model, columns, treeModelRoot, object),
+            object != model.getRoot() ?
+                new UnknownChildren() :
+                createChildren (model, columns, treeModelRoot, object),
             treeModelRoot,
             object
         );
@@ -294,6 +298,10 @@ public class TreeModelNode extends AbstractNode {
             }
             return Children.LEAF;
         }
+    }
+
+    private void updateChildren() {
+        setChildren(createChildren(model, columns, treeModelRoot, object));
     }
 
     @Override
@@ -484,9 +492,11 @@ public class TreeModelNode extends AbstractNode {
         return object;
     }
 
-    private final Map<Models.CompoundModel, Task> tasksByModels = new HashMap<Models.CompoundModel, Task>();
+    private Task refreshTask;
+    private final Object refreshTaskLock = new Object();
+    private final Set<Models.CompoundModel> childrenRefreshModels = new HashSet<Models.CompoundModel>();
     
-    void refresh (final Models.CompoundModel model) {
+    void refresh (Models.CompoundModel model) {
         //System.err.println("TreeModelNode.refresh("+model+") on "+object);
         //Thread.dumpStack();
         // 1) empty cache
@@ -496,10 +506,12 @@ public class TreeModelNode extends AbstractNode {
         
         
         // 2) refresh name, displayName and iconBase
-        synchronized (tasksByModels) {
-            Task task = tasksByModels.get(model);
-            if (task == null) {
-                task = getRequestProcessor ().create (new Runnable () {
+        synchronized (childrenRefreshModels) {
+            childrenRefreshModels.add(model);
+        }
+        synchronized (refreshTaskLock) {
+            if (refreshTask == null) {
+                refreshTask = getRequestProcessor ().create (new Runnable () {
                     public void run () {
                         if (!SwingUtilities.isEventDispatchThread()) {
                             try {
@@ -514,12 +526,18 @@ public class TreeModelNode extends AbstractNode {
                         doFireShortDescriptionChange();
 
                         // 3) refresh children
-                        refreshTheChildren(model, new TreeModelChildren.RefreshingInfo(true));
+                        Set<Models.CompoundModel> modelsToRefresh;
+                        synchronized (childrenRefreshModels) {
+                            modelsToRefresh = new HashSet<Models.CompoundModel>(childrenRefreshModels);
+                            childrenRefreshModels.clear();
+                        }
+                        if (modelsToRefresh.size() > 0) {
+                            refreshTheChildren(modelsToRefresh, new TreeModelChildren.RefreshingInfo(true));
+                        }
                     }
                 });
-                tasksByModels.put(model, task);
             }
-            task.schedule(0);
+            refreshTask.schedule(10);
         }
     }
     
@@ -553,11 +571,20 @@ public class TreeModelNode extends AbstractNode {
             refreshed = true;
         }
         if ((ModelEvent.NodeChanged.CHILDREN_MASK & changeMask) != 0) {
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                    refreshTheChildren(model, new TreeModelChildren.RefreshingInfo(false));
-                }
-            });
+            boolean doRefresh;
+            synchronized (childrenRefreshModels) {
+                doRefresh = childrenRefreshModels.add(model);
+            }
+            if (doRefresh) {
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        synchronized (childrenRefreshModels) {
+                            childrenRefreshModels.remove(model);
+                        }
+                        refreshTheChildren(model, new TreeModelChildren.RefreshingInfo(false));
+                    }
+                });
+            }
             refreshed = true;
         }
         if ((ModelEvent.NodeChanged.EXPANSION_MASK & changeMask) != 0) {
@@ -691,6 +718,10 @@ public class TreeModelNode extends AbstractNode {
                 Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
             }
             iconLoaded = true;
+            if (getChildren() instanceof UnknownChildren) {
+                // We do not set the children until an icon is needed, for performance reason
+                updateChildren();
+            }
         }
         return super.getIcon(type);
     }
@@ -704,6 +735,10 @@ public class TreeModelNode extends AbstractNode {
                 Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
             }
             iconLoaded = true;
+            if (getChildren() instanceof UnknownChildren) {
+                // We do not set the children until an icon is needed, for performance reason
+                updateChildren();
+            }
         }
         return super.getOpenedIcon(type);
     }
@@ -737,8 +772,20 @@ public class TreeModelNode extends AbstractNode {
      * @param model The associated model - necessary for hyper node.
      * @param refreshSubNodes If recursively refresh subnodes.
      */
-    protected void refreshTheChildren(Models.CompoundModel model, TreeModelChildren.RefreshingInfo refreshInfo) {
+    protected void refreshTheChildren(Set<Models.CompoundModel> models, TreeModelChildren.RefreshingInfo refreshInfo) {
+        for (Models.CompoundModel model: models) {
+            refreshTheChildren(model, refreshInfo);
+        }
+    }
+    /**
+     * @param model The associated model - necessary for hyper node.
+     * @param refreshSubNodes If recursively refresh subnodes.
+     */
+    private void refreshTheChildren(Models.CompoundModel model, TreeModelChildren.RefreshingInfo refreshInfo) {
         Children ch = getChildren();
+        if (ch instanceof UnknownChildren) {
+            return ;
+        }
         try {
             if (ch instanceof TreeModelChildren) {
                 if (model.isLeaf(object)) {
@@ -1114,6 +1161,10 @@ public class TreeModelNode extends AbstractNode {
         
         @Override
         protected void addNotify () {
+            if (initialezed) {
+                //System.err.println("\n\nTreeModelChildren.addNotify() called more that once! Parent = "+getNode()+"\n\n");
+                return ;
+            }
             initialezed = true;
             refreshChildren (new RefreshingInfo(true));
         }
@@ -1179,11 +1230,12 @@ public class TreeModelNode extends AbstractNode {
                 //System.err.println(this.hashCode()+" evaluateLazily() ready, evaluated[0] = "+eval+" => fire = "+fire+", refreshingStarted = "+refreshingStarted+", children_evaluated = "+(children_evaluated != null));
             }
             if (fire) {
-                applyChildren(ch, rinfo);
+                applyChildren(ch, rinfo, false);
             }
         }
 
         protected Object[] getModelChildren(RefreshingInfo refreshInfo) throws UnknownTypeException {
+            //System.err.println("! getModelChildren("+object+", "+getNode()+")");
             int count = model.getChildrenCount (object);
             return model.getChildren (
                 object,
@@ -1197,6 +1249,9 @@ public class TreeModelNode extends AbstractNode {
         }
         
         private void refreshLazyChildren (RefreshingInfo refreshInfo) {
+            //System.err.println("\n!! refreshLazyChildren("+getNode()+") from:");
+            //Thread.dumpStack();
+            //System.err.println("");
             Executor exec = getModelAsynchronous();
             if (exec == AsynchronousModelFilter.CURRENT_THREAD) {
                 Object[] ch;
@@ -1208,7 +1263,7 @@ public class TreeModelNode extends AbstractNode {
                         Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
                     }
                 }
-                applyChildren(ch, refreshInfo);
+                applyChildren(ch, refreshInfo, true);
                 return ;
             }
             synchronized (evaluated) {
@@ -1263,7 +1318,7 @@ public class TreeModelNode extends AbstractNode {
             if (ch == null) {
                 applyWaitChildren();
             } else {
-                applyChildren(ch, refreshInfo);
+                applyChildren(ch, refreshInfo, true);
             }
         }
 
@@ -1280,27 +1335,31 @@ public class TreeModelNode extends AbstractNode {
             }
         }
         
-        private void applyChildren(final Object[] ch, RefreshingInfo refreshInfo) {
+        private void applyChildren(final Object[] ch, RefreshingInfo refreshInfo, boolean doSetObject) {
             //System.err.println(this.hashCode()+" applyChildren("+refreshSubNodes+")");
-            //System.err.println("applyChildren("+Arrays.toString(ch)+")");
+            //System.err.println("applyChildren("+Arrays.toString(ch)+", "+doSetObject+")");
             int i, k = ch.length; 
             WeakHashMap<Object, WeakReference<TreeModelNode>> newObjectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
             for (i = 0; i < k; i++) {
                 if (ch [i] == null) {
                     throw new NullPointerException("Null child at index "+i+", parent: "+object+", model: "+model);
                 }
-                WeakReference<TreeModelNode> wr = objectToNode.get(ch [i]);
-                if (wr == null) continue;
-                TreeModelNode tmn = wr.get ();
-                if (tmn == null) continue;
-                if (refreshInfo == null || refreshInfo.isRefreshSubNodes(ch[i])) {
-                    tmn.setObject (ch [i]);
-                } else {
-                    tmn.setObjectNoRefresh(ch[i]);
+                if (doSetObject) {
+                    WeakReference<TreeModelNode> wr = objectToNode.get(ch [i]);
+                    if (wr == null) continue;
+                    TreeModelNode tmn = wr.get ();
+                    if (tmn == null) continue;
+                    if (refreshInfo == null || refreshInfo.isRefreshSubNodes(ch[i])) {
+                        tmn.setObject (ch [i]);
+                    } else {
+                        tmn.setObjectNoRefresh(ch[i]);
+                    }
+                    newObjectToNode.put (ch [i], wr);
                 }
-                newObjectToNode.put (ch [i], wr);
             }
-            objectToNode = newObjectToNode;
+            if (doSetObject) {
+                objectToNode = newObjectToNode;
+            }
             setKeys (ch);
 
             SwingUtilities.invokeLater (new Runnable () {
@@ -1378,6 +1437,7 @@ public class TreeModelNode extends AbstractNode {
                 treeModelRoot, 
                 object
             );
+            //System.err.println("created node for ("+object+") = "+tmn);
             objectToNode.put (object, new WeakReference<TreeModelNode>(tmn));
             return new Node[] {tmn};
         }
@@ -1440,6 +1500,20 @@ public class TreeModelNode extends AbstractNode {
 
         void fireChange() {
             fireChangeEvent(new ChangeEvent(this));
+        }
+
+    }
+
+    private static class UnknownChildren extends Children {
+
+        @Override
+        public boolean add(Node[] nodes) {
+            return false;
+        }
+
+        @Override
+        public boolean remove(Node[] nodes) {
+            return false;
         }
 
     }
@@ -1762,7 +1836,7 @@ public class TreeModelNode extends AbstractNode {
             }
         }
     }
-    
+
     /** The single-threaded evaluator of lazy models. *//*
     static class LazyEvaluator implements Runnable {
         
