@@ -124,6 +124,10 @@ public class Annotations implements DocumentListener {
     /** Sorts the subMenu items */
     public static final Comparator<JMenu> MENU_COMPARATOR = new MenuComparator();
 
+    private int lastGetLineAnnotationsIdx = -1;
+    private int lastGetLineAnnotationsLine = -1;
+    private LineAnnotations lastGetLineAnnotationsResult = null;
+
     public Annotations(BaseDocument doc) {
         lineAnnotationsByMark = new HashMap<Mark, LineAnnotations>(30);
         lineAnnotationsArray = new ArrayList<LineAnnotations>(20);
@@ -262,13 +266,20 @@ public class Annotations implements DocumentListener {
                     boolean inserted = false;
                     for (int i=0; i < lineAnnotationsArray.size(); i++) {
                         if (((LineAnnotations)lineAnnotationsArray.get(i)).getLine() > lineAnnos.getLine()) {
+                            lastGetLineAnnotationsIdx = -1;
+                            lastGetLineAnnotationsLine = -1;
+                            lastGetLineAnnotationsResult = null;
                             lineAnnotationsArray.add(i, lineAnnos);
                             inserted = true;
                             break;
                         }
                     }
-                    if (!inserted)
-                            lineAnnotationsArray.add(lineAnnos);
+                    if (!inserted) {
+                        lastGetLineAnnotationsIdx = -1;
+                        lastGetLineAnnotationsLine = -1;
+                        lastGetLineAnnotationsResult = null;
+                        lineAnnotationsArray.add(lineAnnos);
+                    }
 
                 }
                 else {
@@ -345,6 +356,9 @@ public class Annotations implements DocumentListener {
                 // #90220 - Sometimes there seems to be an inconsistency that the lineAnnos
                 // is not present in the array.
                 if (index != -1) {
+                    lastGetLineAnnotationsIdx = -1;
+                    lastGetLineAnnotationsLine = -1;
+                    lastGetLineAnnotationsResult = null;
                     lineAnnotationsArray.remove(index);
                 }
             }
@@ -397,6 +411,19 @@ public class Annotations implements DocumentListener {
     protected LineAnnotations getLineAnnotations(int line) {
         synchronized (lineAnnotationsArray) {
             LineAnnotations annos;
+
+            if (lastGetLineAnnotationsIdx != -1 && lastGetLineAnnotationsLine != -1 && lastGetLineAnnotationsResult != null) {
+                if (lastGetLineAnnotationsLine == line) {
+                    return lastGetLineAnnotationsResult;
+                } else if (lastGetLineAnnotationsLine + 1 == line && lastGetLineAnnotationsIdx + 1 < lineAnnotationsArray.size()) {
+                    annos = (LineAnnotations)lineAnnotationsArray.get(lastGetLineAnnotationsIdx + 1);
+                    lastGetLineAnnotationsIdx++;
+                    lastGetLineAnnotationsLine = annos.getLine();
+                    lastGetLineAnnotationsResult = annos;
+                    return annos;
+                }
+            }
+
             // since fix of #33165 it is possible to use binary search here
             int low = 0;
             int high = lineAnnotationsArray.size() - 1;
@@ -409,9 +436,16 @@ public class Annotations implements DocumentListener {
                 } else if (line > annosLine) {
                     low = mid + 1;
                 } else {
+                    lastGetLineAnnotationsIdx = mid;
+                    lastGetLineAnnotationsLine = annosLine;
+                    lastGetLineAnnotationsResult = annos;
                     return annos;
                 }
             }
+
+            lastGetLineAnnotationsIdx = -1;
+            lastGetLineAnnotationsLine = -1;
+            lastGetLineAnnotationsResult = null;
             return null;
         }
     }
@@ -452,6 +486,19 @@ public class Annotations implements DocumentListener {
         synchronized (lineAnnotationsArray) {
             LineAnnotations annos;
 
+            if (lastGetLineAnnotationsIdx != -1 && lastGetLineAnnotationsLine != -1 && lastGetLineAnnotationsResult != null) {
+                if (lastGetLineAnnotationsLine == line) {
+                    return lastGetLineAnnotationsLine;
+                } else if (lastGetLineAnnotationsLine + 1 == line && lastGetLineAnnotationsIdx + 1 < lineAnnotationsArray.size()) {
+                    annos = (LineAnnotations)lineAnnotationsArray.get(lastGetLineAnnotationsIdx + 1);
+                    lastGetLineAnnotationsIdx++;
+                    lastGetLineAnnotationsLine = annos.getLine();
+                    lastGetLineAnnotationsResult = annos;
+                    return lastGetLineAnnotationsLine;
+                }
+            }
+
+
             // since fix of #33165 it is possible to use binary search here
             int low = 0;
             int high = lineAnnotationsArray.size() - 1;
@@ -464,6 +511,9 @@ public class Annotations implements DocumentListener {
                 } else if (line > annosLine) {
                     low = mid + 1;
                 } else {
+                    lastGetLineAnnotationsIdx = mid;
+                    lastGetLineAnnotationsLine = annosLine;
+                    lastGetLineAnnotationsResult = annos;
                     return annosLine;
                 }
             }
@@ -473,10 +523,16 @@ public class Annotations implements DocumentListener {
                 annos = (LineAnnotations)lineAnnotationsArray.get(i);
                 int annosLine = annos.getLine();
                 if (annosLine >= line){
+                    lastGetLineAnnotationsIdx = i;
+                    lastGetLineAnnotationsLine = annosLine;
+                    lastGetLineAnnotationsResult = annos;
                     return annosLine;
                 }
             }
 
+            lastGetLineAnnotationsIdx = -1;
+            lastGetLineAnnotationsLine = -1;
+            lastGetLineAnnotationsResult = null;
             return -1;
         }
     }

@@ -55,11 +55,13 @@ public abstract class ColoringAccessor {
     }
 
     public static synchronized ColoringAccessor get() {
-        // Trying to wake up EditorUI ...
-        try {
-            Class clazz = Class.forName(Coloring.class.getName());
-        } catch (ClassNotFoundException e) {
-            // ignore
+        if (ACCESSOR == null) {
+            // Trying to wake up EditorUI ...
+            try {
+                Class clazz = Class.forName(Coloring.class.getName());
+            } catch (ClassNotFoundException e) {
+                // ignore
+            }
         }
 
         assert ACCESSOR != null : "There is no package accessor available!"; //NOI18N
