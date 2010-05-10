@@ -43,6 +43,6 @@ made subject to such option by the copyright holder.
 <!DOCTYPE editor-preferences PUBLIC "-//NetBeans//DTD Editor Preferences 1.0//EN" "http://www.netbeans.org/dtds/EditorPreferences-1_0.dtd">
 
 <editor-preferences>
-    <entry name="hyperlink-activation-modifiers" value="4" javaType="java.lang.Integer" /> <!-- InputEvent.META_MASK -->
+    <entry name="hyperlink-activation-modifiers" value="256" javaType="java.lang.Integer" /> <!-- InputEvent.META_DOWN_MASK -->
     <entry name="alt-hyperlink-activation-modifiers" value="768" javaType="java.lang.Integer" /> <!-- InputEvent.META_DONW_MASK | InputEvent.ALT_DOWN_MASK -->
 </editor-preferences>

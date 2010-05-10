@@ -36,66 +36,58 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.ui;
 
-import java.io.IOException;
-import java.util.concurrent.CancellationException;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+package org.netbeans.modules.cnd.api.remote;
+
+import org.netbeans.modules.cnd.spi.remote.ConnectionNotifierImplementation;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.openide.awt.StatusDisplayer;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.Lookup;
 
 /**
+ * Sometimes connection to host is needed for performing some action.
+ * This class serves such cases.
+ * One or several tasks can be added for each execution environment.
+ *
+ * If a task (or several tasks) are added for an execution environment, then
+ * a balloon "IDE needs to connect to host ..." is shown in the lower-left IDE window corner;
+ * if user clicks it, a connection request dialog appears.
+ *
+ * The dialog shows list of tasks, using NamedRunnable.getName() to represent each task.
+ *
+ * As soon as the connection is established (via confirming this dialog or other way),
+ * the runnable is called.
  *
  * @author Vladimir Kvashin
  */
-public class ConnectAction extends SingleHostAction {
+public class ConnectionNotifier {
 
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(HostListRootNode.class, "ConnectMenuItem");
+    private static ConnectionNotifierImplementation impl;
+
+    private ConnectionNotifier() {
     }
 
-    protected boolean enable(ExecutionEnvironment env) {
-        return !ConnectionManager.getInstance().isConnectedTo(env);
+    public static void addTask(ExecutionEnvironment executionEnvironment, NamedRunnable task) {
+        getImpl().addTask(executionEnvironment, task);
+    }
+    
+    public static void removeTask(ExecutionEnvironment executionEnvironment, NamedRunnable task) {
+        getImpl().removeTask(executionEnvironment, task);
     }
 
-    @Override
-    public boolean isVisible(Node node) {
-        ExecutionEnvironment env = node.getLookup().lookup(ExecutionEnvironment.class);
-        return env != null && env.isRemote();
-    }
-
-
-    @Override
-    protected void performAction(final ExecutionEnvironment env, Node node) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                connect(env);
-            }
-        });
-    }
-
-    private void connect(ExecutionEnvironment env) {
-        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-            try {
-                ConnectionManager.getInstance().connectTo(env);
-                RemoteUtil.checkSetupAfterConnection(env);
-            } catch (IOException ex) {
-                conectionFailed(env, ex);
-            } catch (CancellationException ex) {
-                conectionFailed(env, ex);
+    private static ConnectionNotifierImplementation getImpl() {
+        synchronized (ClassNotFoundException.class) {
+            if (impl == null) {
+                impl = Lookup.getDefault().lookup(ConnectionNotifierImplementation.class);
             }
         }
+        return impl == null ? new Dummy() : impl;
     }
 
-    private void conectionFailed(ExecutionEnvironment env, Exception e) {
-        StatusDisplayer.getDefault().setStatusText(
-                NbBundle.getMessage(HostNode.class, "UnableToConnectMessage", RemoteUtil.getDisplayName(env), e.getMessage()));
-
+    private static class Dummy implements ConnectionNotifierImplementation {
+        @Override
+        public void addTask(ExecutionEnvironment executionEnvironment, NamedRunnable task) {}
+        @Override
+        public void removeTask(ExecutionEnvironment executionEnvironment, NamedRunnable task) {}
     }
 }

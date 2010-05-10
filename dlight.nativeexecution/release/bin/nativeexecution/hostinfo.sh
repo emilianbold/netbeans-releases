@@ -1,14 +1,12 @@
 #!/bin/sh
 
-USERPATH=$PATH
-PATH=/usr/bin:/bin
+PATH=/usr/bin:/bin:$PATH
 HOSTNAME=`uname -n`
 OS=`uname -s`
 CPUTYPE=`uname -p`
 BITNESS=32
 
 LS=/bin/ls
-SH=`$LS /bin/bash 2>/dev/null || $LS /usr/bin/bash 2>/dev/null || $LS /bin/sh 2>/dev/null || $LS /usr/bin/sh 2>/dev/null`
 OSFAMILY=
 DATETIME=`date -u +'%Y-%m-%d %H:%M:%S'`
 
@@ -78,6 +76,7 @@ USER=${USER:-${USERNAME}}
 TMPBASE=${TMPBASE:-/var/tmp}
 TMPDIRBASE=${TMPBASE}/dlight_${USER}/${NB_KEY}
 mkdir -p "${TMPDIRBASE}"
+ENVFILE="${TMPDIRBASE}/env"
 
 echo BITNESS=${BITNESS}
 echo CPUFAMILY=${CPUFAMILY}
@@ -88,20 +87,9 @@ echo OSNAME=${OSNAME}
 echo OSBUILD=${OSBUILD}
 echo OSFAMILY=${OSFAMILY}
 echo USER=${USER}
-echo SH=${SH}
+echo SH=${SHELL}
 echo USERDIRBASE=${USERDIRBASE}
 echo TMPDIRBASE=${TMPDIRBASE}
 echo DATETIME=${DATETIME}
-
-if [ "$OSFAMILY" != "MACOSX" -a "$OSFAMILY" != "WINDOWS" ]; then
-   TMPFILE=`mktemp -q env.XXXXXX`
-   if [ ! -z "$TMPFILE" ]; then
-      /bin/bash -l -c "echo \$PATH>$TMPFILE" > /dev/null 2>&1
-      USERPATH=`cat $TMPFILE`
-   fi
-   rm -f $TMPFILE
-fi
-
-echo PATH=${USERPATH}
-
+echo ENVFILE=${ENVFILE}
 exit 0

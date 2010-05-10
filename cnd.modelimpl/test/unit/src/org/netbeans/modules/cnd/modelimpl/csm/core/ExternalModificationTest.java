@@ -39,8 +39,12 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
+import java.util.List;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider.NativeProjectImpl;
@@ -151,6 +155,52 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         assertNotNull(csmFile.getIncludes().iterator().next().getIncludeFile());
     }
 
+    public void testDeadCodeBlocks() throws Exception {
+        File workDir = getWorkDir();
+        File sourceFile = new File(workDir, "test1.cc");
+        String visibleFunction = "visibleFunction";
+        String hiddenFunction = "hiddenFunction";
+        String oldText =
+                "\n" +
+                "void " + visibleFunction + "() {\n" +
+                "   int a;\n" +
+                "#ifdef MACRO\n" +
+                "   int hiddenVar = 0;\n" +
+                "#endif\n" +
+                "   int b;\n" +
+                "}\n" +
+                "\n" +
+                "" +
+                "#ifdef MACRO\n" +
+                "void " + hiddenFunction + "() {\n" +
+                "}\n" +
+                "#endif\n";
+        String newText =
+                "#define MACRO\n" +
+                "\n" +
+                oldText;
+
+        writeFile(sourceFile, oldText);
+
+        final TraceModelBase traceModel = new TraceModelBase(true);
+        traceModel.processArguments(sourceFile.getAbsolutePath());
+        final CsmProject project = traceModel.getProject();
+
+        project.waitParse();
+        assertNotNull(visibleFunction + " should be found", findDeclaration(visibleFunction, project));
+        assertNull(hiddenFunction + " should not be found", findDeclaration(hiddenFunction, project));
+        CsmFile fileImpl = getCsmFile(sourceFile);
+        checkDeadBlocks(project, fileImpl, "File must have one dead code block ", new int[][] {{4, 13, 5, 22}, {10, 13, 12, 2}});
+        writeFile(sourceFile, newText);
+        fireFileChanged(project, sourceFile);
+
+        project.waitParse();
+        assertNotNull(visibleFunction + " should be found", findDeclaration(visibleFunction, project));
+        assertNotNull(hiddenFunction + " should be found", findDeclaration(hiddenFunction, project));
+        checkDeadBlocks(project, fileImpl, "File must have one dead code block ", new int[][]{});
+
+    }
+    
     private void fireFileChanged(final CsmProject project, File sourceFile) {
         Object platform = project.getPlatformProject();
         if (platform instanceof NativeProjectProvider.NativeProjectImpl) {
@@ -165,5 +215,27 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
             NativeProjectProvider.NativeProjectImpl nativeProject = (NativeProjectImpl) platform;
             nativeProject.fireFileAdded(sourceFile);
         }
+    }
+
+    private void checkDeadBlocks(final CsmProject project, final CsmFile csmFile, String msg, int[][] expectedDeadBlocks) throws BadLocationException {
+        // test for #185712: external modifications breaks dead blocks information in editor
+        project.waitParse();
+        List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(csmFile);
+        if (unusedCodeBlocks.isEmpty()) {
+            System.err.println("NO DEAD BLOCKS");
+        } else {
+            for (int i = 0; i < unusedCodeBlocks.size(); i++) {
+                CsmOffsetable csmOffsetable = unusedCodeBlocks.get(i);
+                System.err.printf("DEAD BLOCK %d: [%d:%d-%d:%d]\n", i, csmOffsetable.getStartPosition().getLine(), csmOffsetable.getStartPosition().getColumn(),
+                                                                        csmOffsetable.getEndPosition().getLine(), csmOffsetable.getEndPosition().getColumn());
+                if (i < expectedDeadBlocks.length) {
+                    assertEquals("different dead blocks start line ", expectedDeadBlocks[i][0], csmOffsetable.getStartPosition().getLine());
+                    assertEquals("different dead blocks start column ", expectedDeadBlocks[i][1], csmOffsetable.getStartPosition().getColumn());
+                    assertEquals("different dead blocks end line ", expectedDeadBlocks[i][2], csmOffsetable.getEndPosition().getLine());
+                    assertEquals("different dead blocks end column ", expectedDeadBlocks[i][3], csmOffsetable.getEndPosition().getColumn());
+                }
+            }
+        }
+        assertEquals(msg + csmFile.getAbsolutePath(), expectedDeadBlocks.length, unusedCodeBlocks.size());
     }
 }

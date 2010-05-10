@@ -76,6 +76,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V69 - NB 6.9
+ *   Also writing source roots and configurations in project.xml
  * V68 - NB 6.9
  *   Assembler: ASMTOOL_ELEMENT
  * V67 - NB 6.9
@@ -193,7 +195,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 68;
+    public final static int CURRENT_VERSION = 69;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
