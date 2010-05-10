@@ -39,11 +39,10 @@
 
 package org.netbeans.modules.editor.impl.highlighting;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
@@ -111,25 +110,12 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
 
     @Override
     public void changedLine(final int line) {
-        changedAll();
+        scheduleRefresh(343); //ms
     }
 
     @Override
     public void changedAll() {
-        synchronized (this) {
-            if (refreshAllLinesTask == null) {
-                refreshAllLinesTask = RP.post(new Runnable() {
-                    public @Override void run() {
-                        refreshAllLines();
-                        synchronized (AnnotationsHighlighting.this) {
-                            refreshAllLinesTask = null;
-                        }
-                    }
-                });
-            } else {
-                refreshAllLinesTask.schedule(DELAY);
-            }
-        }
+        scheduleRefresh(43); //ms
     }
 
     // ----------------------------------------------------------------------
@@ -138,131 +124,132 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
 
     private static final Logger LOG = Logger.getLogger(AnnotationsHighlighting.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(LAYER_TYPE_ID);
-    private static final int DELAY = 43; //ms
 
     private final BaseDocument document;
     private final Annotations annotations;
     private final OffsetsBag bag;
     private final Map<AnnotationType, AttributeSet> cache = new WeakHashMap<AnnotationType, AttributeSet>();
-    
+
+    private R refreshAllLines = null;
     private RequestProcessor.Task refreshAllLinesTask = null;
 
-    private void refreshAllLines() {
-        final OffsetsBag b = new OffsetsBag(document, true);
-        
-        try {
-            for(int line = annotations.getNextLineWithAnnotation(0); line != -1; line = annotations.getNextLineWithAnnotation(line + 1)) {
-                refreshLine(line, b, -1, -1);
+    private void scheduleRefresh(int delay) {
+        synchronized (this) {
+            if (refreshAllLines == null) {
+                refreshAllLines = new R();
+                refreshAllLinesTask = RP.post(refreshAllLines, delay);
+            } else {
+                refreshAllLines.cancelled.set(true);
+                refreshAllLinesTask.schedule(delay);
             }
-        } catch (Exception e) {
-            // ignore, refreshLine is intentionally called outside of the document lock
-            // in order not to block editing
-            return;
         }
-
-        document.render(new Runnable() {
-            public @Override void run() {
-                bag.setHighlights(new FilteringHighlightsSequence(b.getHighlights(0, document.getLength())));
-            }
-        });
     }
 
-    private void refreshLine(int line, OffsetsBag b, int lineStartOffset, int lineEndOffset) {
-        LOG.log(Level.FINE, "Refreshing line {0}", line); //NOI18N
+    private final class R implements Runnable {
 
-        AnnotationDesc [] allPassive = annotations.getPasiveAnnotations(line);
-        if (allPassive != null) {
-            for(AnnotationDesc passive : allPassive) {
-                AttributeSet attribs = getAttributes(passive.getAnnotationTypeInstance());
-                if (passive.isVisible()) {
-                    if (passive.isWholeLine()) {
-                        if (lineStartOffset == -1 || lineEndOffset == -1) {
-                            Element lineElement = document.getDefaultRootElement().getElement(line);
-                            lineStartOffset = lineElement.getStartOffset();
-                            lineEndOffset = lineElement.getEndOffset();
+        public final AtomicBoolean cancelled = new AtomicBoolean(false);
+        
+        public @Override void run() {
+            cancelled.set(false);
+            refreshAllLines();
+            synchronized (AnnotationsHighlighting.this) {
+                refreshAllLines = null;
+                refreshAllLinesTask = null;
+            }
+        }
+
+        private void refreshAllLines() {
+            final OffsetsBag b = new OffsetsBag(document, true);
+
+            try {
+                for(int line = annotations.getNextLineWithAnnotation(0); line != -1; line = annotations.getNextLineWithAnnotation(line + 1)) {
+                    if (cancelled.get()) {
+                        return;
+                    }
+                    refreshLine(line, b, -1, -1);
+                }
+            } catch (Exception e) {
+                // ignore, refreshLine is intentionally called outside of the document lock
+                // in order not to block editing
+                return;
+            }
+
+            if (!cancelled.get()) {
+                document.render(new Runnable() {
+                    public @Override void run() {
+                        bag.setHighlights(b);
+                    }
+                });
+            }
+        }
+
+        private void refreshLine(int line, OffsetsBag b, int lineStartOffset, int lineEndOffset) {
+            LOG.log(Level.FINE, "Refreshing line {0}", line); //NOI18N
+
+           AnnotationDesc [] allPassive = annotations.getPasiveAnnotations(line);
+            if (allPassive != null) {
+                for(AnnotationDesc passive : allPassive) {
+                    AttributeSet attribs = getAttributes(passive.getAnnotationTypeInstance());
+                    if (passive.isVisible()) {
+                        if (passive.isWholeLine()) {
+                            if (lineStartOffset == -1 || lineEndOffset == -1) {
+                                Element lineElement = document.getDefaultRootElement().getElement(line);
+                                lineStartOffset = lineElement.getStartOffset();
+                                lineEndOffset = lineElement.getEndOffset();
+                            }
+                            b.addHighlight(lineStartOffset, lineEndOffset, attribs);
+                        } else {
+                            b.addHighlight(passive.getOffset(), passive.getOffset() + passive.getLength(), attribs);
                         }
-                        b.addHighlight(lineStartOffset, lineEndOffset, attribs);
-                    } else {
-                        b.addHighlight(passive.getOffset(), passive.getOffset() + passive.getLength(), attribs);
                     }
                 }
             }
-        }
 
-        AnnotationDesc active = annotations.getActiveAnnotation(line);
-        if (active != null && active.isVisible()) {
-            AttributeSet attribs = getAttributes(active.getAnnotationTypeInstance());
-            if (active.isWholeLine()) {
-                if (lineStartOffset == -1 || lineEndOffset == -1) {
-                    Element lineElement = document.getDefaultRootElement().getElement(line);
-                    lineStartOffset = lineElement.getStartOffset();
-                    lineEndOffset = lineElement.getEndOffset();
-                }
-                b.addHighlight(lineStartOffset, lineEndOffset, attribs);
-            } else {
-                b.addHighlight(active.getOffset(), active.getOffset() + active.getLength(), attribs);
-            }
-        }
-    }
-
-    private AttributeSet getAttributes(AnnotationType annotationType) {
-        synchronized (cache) {
-            AttributeSet attrs = cache.get(annotationType);
-            if (attrs == null) {
-                attrs = AttributesUtilities.createImmutable(
-                    StyleConstants.Foreground, !annotationType.isInheritForegroundColor() ? annotationType.getForegroundColor() : null,
-                    StyleConstants.Background, annotationType.isUseHighlightColor() ? annotationType.getHighlight() : null,
-                    EditorStyleConstants.WaveUnderlineColor, annotationType.isUseWaveUnderlineColor() ? annotationType.getWaveUnderlineColor() : null,
-                    HighlightsContainer.ATTR_EXTENDS_EMPTY_LINE, Boolean.valueOf(annotationType.isWholeLine()),
-                    HighlightsContainer.ATTR_EXTENDS_EOL, Boolean.valueOf(annotationType.isWholeLine())
-                );
-                cache.put(annotationType, attrs);
-            }
-            return attrs;
-        }
-    }
-
-    private static final class FilteringHighlightsSequence implements HighlightsSequence {
-        private final HighlightsSequence delegate;
-
-        public FilteringHighlightsSequence(HighlightsSequence delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public boolean moveNext() {
-            return delegate.moveNext();
-        }
-
-        @Override
-        public int getStartOffset() {
-            return delegate.getStartOffset();
-        }
-
-        @Override
-        public int getEndOffset() {
-            return delegate.getEndOffset();
-        }
-
-        @Override
-        public AttributeSet getAttributes() {
-            AttributeSet attrs = delegate.getAttributes();
-            List<Object> attrsList = new ArrayList<Object>();
-
-            for (Enumeration<?> en = attrs.getAttributeNames(); en.hasMoreElements(); ) {
-                Object key = en.nextElement();
-                Object v = attrs.getAttribute(key);
-
-                if (v != null) {
-                    attrsList.add(key);
-                    attrsList.add(v);
+            AnnotationDesc active = annotations.getActiveAnnotation(line);
+            if (active != null && active.isVisible()) {
+                AttributeSet attribs = getAttributes(active.getAnnotationTypeInstance());
+                if (active.isWholeLine()) {
+                    if (lineStartOffset == -1 || lineEndOffset == -1) {
+                        Element lineElement = document.getDefaultRootElement().getElement(line);
+                        lineStartOffset = lineElement.getStartOffset();
+                        lineEndOffset = lineElement.getEndOffset();
+                    }
+                    b.addHighlight(lineStartOffset, lineEndOffset, attribs);
+                } else {
+                    b.addHighlight(active.getOffset(), active.getOffset() + active.getLength(), attribs);
                 }
             }
-
-            AttributeSet filtered = AttributesUtilities.createImmutable(attrsList.toArray(new Object[attrsList.size()]));
-
-            return filtered;
         }
 
+        private AttributeSet getAttributes(AnnotationType annotationType) {
+            synchronized (cache) {
+                AttributeSet attrs = cache.get(annotationType);
+                if (attrs == null) {
+                    LinkedList<Object> l = new LinkedList<Object>();
+                    if (!annotationType.isInheritForegroundColor()) {
+                        l.add(StyleConstants.Foreground);
+                        l.add(annotationType.getForegroundColor());
+                    }
+                    if (annotationType.isUseHighlightColor()) {
+                        l.add(StyleConstants.Background);
+                        l.add(annotationType.getHighlight());
+                    }
+                    if (annotationType.isUseWaveUnderlineColor()) {
+                        l.add(EditorStyleConstants.WaveUnderlineColor);
+                        l.add(annotationType.getWaveUnderlineColor());
+                    }
+                    if (annotationType.isWholeLine()) {
+                        l.add(HighlightsContainer.ATTR_EXTENDS_EMPTY_LINE);
+                        l.add(Boolean.valueOf(annotationType.isWholeLine()));
+                        l.add(HighlightsContainer.ATTR_EXTENDS_EOL);
+                        l.add(Boolean.valueOf(annotationType.isWholeLine()));
+                    }
+
+                    attrs = AttributesUtilities.createImmutable(l.toArray());
+                    cache.put(annotationType, attrs);
+                }
+                return attrs;
+            }
+        }
     }
 }
