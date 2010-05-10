@@ -36,38 +36,53 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.api.makefile;
 
-package org.netbeans.modules.cnd.makefile.parser;
-
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.cnd.api.makefile.MakefileElement;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
  * @author Alexey Vladykin
  */
-public class MakefileParseResult extends ParserResult {
+public abstract class MakefileElement {
 
-    private final List<MakefileElement> elements;
+    private final Kind kind;
+    private final FileObject fileObject;
+    private final int startOffset;
+    private final int endOffset;
 
-    public MakefileParseResult(Snapshot snapshot, List<MakefileElement> elements) {
-        super(snapshot);
-        this.elements = Collections.unmodifiableList(elements);
+    /*package*/ MakefileElement(Kind kind, FileObject fileObject, int startOffset, int endOffset) {
+        Parameters.notNull("kind", kind); // NOI18N
+        Parameters.notNull("fileObject", fileObject); // NOI18N
+        if (endOffset < startOffset) {
+            throw new IllegalArgumentException(String.format(
+                    "endOffset:%d < startOffset:%d", endOffset, startOffset)); // NOI18N
+        }
+        this.kind = kind;
+        this.fileObject = fileObject;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
     }
 
-    public List<MakefileElement> getElements() {
-        return elements;
+    public final Kind getKind() {
+        return kind;
     }
 
-    @Override
-    public List<? extends Error> getDiagnostics() {
-        return Collections.emptyList();
+    public final FileObject getContainingFile() {
+        return fileObject;
     }
 
-    @Override
-    protected void invalidate() {
+    public final int getStartOffset() {
+        return startOffset;
+    }
+
+    public final int getEndOffset() {
+        return endOffset;
+    }
+
+    public static enum Kind {
+        MACRO,
+        RULE,
+        INCLUDE
     }
 }

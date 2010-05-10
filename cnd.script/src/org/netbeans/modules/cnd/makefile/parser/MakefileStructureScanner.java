@@ -46,9 +46,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
-import org.netbeans.modules.cnd.makefile.model.AbstractMakefileElement;
-import org.netbeans.modules.cnd.makefile.model.MakefileRule;
-import org.netbeans.modules.cnd.makefile.model.MakefileUtils;
+import org.netbeans.modules.cnd.api.makefile.MakefileElement;
+import org.netbeans.modules.cnd.api.makefile.MakefileRule;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -69,11 +68,13 @@ public final class MakefileStructureScanner implements StructureScanner {
     public List<? extends StructureItem> scan(ParserResult parseResult) {
         if (parseResult instanceof MakefileParseResult) {
             MakefileParseResult makefileParseResult = (MakefileParseResult) parseResult;
-            List<MakefileRuleItem> list = new ArrayList<MakefileRuleItem>();
-            for (AbstractMakefileElement element : makefileParseResult.getElements()) {
-                if (element.getKind() == ElementKind.RULE) {
+            List<MakefileTargetItem> list = new ArrayList<MakefileTargetItem>();
+            for (MakefileElement element : makefileParseResult.getElements()) {
+                if (element.getKind() == MakefileElement.Kind.RULE) {
                     MakefileRule rule = (MakefileRule) element;
-                    list.add(new MakefileRuleItem(rule, makefileParseResult));
+                    for (String target : rule.getTargets()) {
+                        list.add(new MakefileTargetItem(target, rule));
+                    }
                 }
             }
             return list;
@@ -93,32 +94,31 @@ public final class MakefileStructureScanner implements StructureScanner {
     }
 
 
-    private static class MakefileRuleItem implements StructureItem {
+    private static class MakefileTargetItem implements StructureItem {
 
-        private static ImageIcon ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/script/resources/TargetIcon.gif", false); // NOI18N
+        private static final ImageIcon ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/script/resources/TargetIcon.gif", false); // NOI18N
+        private final String target;
         private final MakefileRule rule;
-        private final MakefileParseResult parseResult;
 
-        public MakefileRuleItem(MakefileRule rule, MakefileParseResult parseResult) {
+        public MakefileTargetItem(String target, MakefileRule rule) {
+            this.target = target;
             this.rule = rule;
-            this.parseResult = parseResult;
         }
 
         @Override
         public String getName() {
-            return rule.getName();
+            return target;
         }
 
         @Override
         public String getSortText() {
-            return rule.getName();
+            return target;
         }
 
         @Override
         public String getHtml(HtmlFormatter formatter) {
-            final String name = getName();
-            final boolean bold = MakefileUtils.isPreferredTarget(name);
-            final boolean shaded = !MakefileUtils.isRunnableTarget(name);
+            final boolean bold = MakefileUtils.isPreferredTarget(target);
+            final boolean shaded = !MakefileUtils.isRunnableTarget(target);
             if (bold) {
                 formatter.emphasis(true);
             }
@@ -127,7 +127,7 @@ public final class MakefileStructureScanner implements StructureScanner {
                 formatter.appendHtml(getShadedColor());
                 formatter.appendHtml("\">"); // NOI18N
             }
-            formatter.appendText(getName());
+            formatter.appendText(target);
             if (shaded) {
                 formatter.appendHtml("</font>"); // NOI18N
             }
@@ -139,17 +139,17 @@ public final class MakefileStructureScanner implements StructureScanner {
 
         @Override
         public ElementHandle getElementHandle() {
-            return rule;
+            return null;
         }
 
         @Override
         public ElementKind getKind() {
-            return rule.getKind();
+            return ElementKind.RULE;
         }
 
         @Override
         public Set<Modifier> getModifiers() {
-            return rule.getModifiers();
+            return Collections.emptySet();
         }
 
         @Override
@@ -164,12 +164,12 @@ public final class MakefileStructureScanner implements StructureScanner {
 
         @Override
         public long getPosition() {
-            return rule.getOffsetRange(parseResult).getStart();
+            return rule.getStartOffset();
         }
 
         @Override
         public long getEndPosition() {
-            return rule.getOffsetRange(parseResult).getEnd();
+            return rule.getEndOffset();
         }
 
         @Override
