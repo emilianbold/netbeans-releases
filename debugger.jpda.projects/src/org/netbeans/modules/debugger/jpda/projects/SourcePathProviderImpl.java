@@ -394,7 +394,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             List<FileObject> additionalSourcePath = new ArrayList<FileObject>(additionalSourceRoots.size());
             for (String ar : additionalSourceRoots) {
                 FileObject fo = getFileObject(ar);
-                if (fo != null) {
+                if (fo != null && fo.canRead()) {
                     additionalSourcePath.add(fo);
                 }
             }
@@ -418,7 +418,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         List<FileObject> additionalSourcePath = new ArrayList<FileObject>(additionalSourceRoots.size());
         for (String ar : additionalSourceRoots) {
             FileObject fo = getFileObject(ar);
-            if (fo != null) {
+            if (fo != null && fo.canRead()) {
                 additionalSourcePath.add(fo);
             }
         }
@@ -704,7 +704,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             fo = null;
         }
         FileObject[] roots = null;
-        if (fo != null) {
+        if (fo != null && fo.canRead()) {
             ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
             if (cp != null) {
                 roots = cp.getRoots();
@@ -901,7 +901,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             // smartSteppingSourcePath, sourcePathPermutation and additionalSourceRoots
             for (String root : newOriginalRoots) {
                 FileObject fo = getFileObject(root);
-                if (fo != null) {
+                if (fo != null && fo.canRead()) {
                     sourcePathOriginal.add(fo);
                     unorderedSourcePathOriginal.add(fo);
                 }
@@ -969,7 +969,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         if (newSteppingRoots.size() > 0 || removedSteppingRoots.size() > 0) {
             for (String root : newSteppingRoots) {
                 FileObject fo = getFileObject(root);
-                if (fo != null) {
+                if (fo != null && fo.canRead()) {
                     sourcePath.add(fo);
                 }
             }
@@ -1212,7 +1212,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         List<FileObject> froots = new ArrayList<FileObject>(roots.length);
         for (String r : roots) {
             FileObject fo = getFileObject(r);
-            if (fo != null) {
+            if (fo != null && fo.canRead()) {
                 froots.add(fo);
             }
         }
@@ -1223,7 +1223,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         List<FileObject> froots = new ArrayList<FileObject>(roots.length);
         for (String r : roots) {
             FileObject fo = getFileObject(r);
-            if (fo != null) {
+            if (fo != null && fo.canRead()) {
                 froots.add(fo);
             }
         }
