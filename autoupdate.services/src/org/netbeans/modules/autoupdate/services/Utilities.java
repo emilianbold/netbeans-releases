@@ -400,9 +400,11 @@ public class Utilities {
     }
     
     static void writeUpdateOfUpdaterJar (JarEntry updaterJarEntry, JarFile updaterJar, File targetCluster) {
+        String entryPath = updaterJarEntry.getName();
+        String entryName = entryPath.contains("/") ? entryPath.substring(entryPath.lastIndexOf("/") + 1) : entryPath;
         File dest = new File (targetCluster, UpdaterDispatcher.UPDATE_DIR + // updater
                                 UpdateTracking.FILE_SEPARATOR + UpdaterDispatcher.NEW_UPDATER_DIR + // new_updater
-                                UpdateTracking.FILE_SEPARATOR + ModuleUpdater.UPDATER_JAR
+                                UpdateTracking.FILE_SEPARATOR + entryName
                                 );
         
         dest.getParentFile ().mkdirs ();
