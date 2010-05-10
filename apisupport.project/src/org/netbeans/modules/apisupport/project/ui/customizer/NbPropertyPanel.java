@@ -53,7 +53,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Martin Krauskopf
  */
-abstract class NbPropertyPanel extends JPanel implements
+public abstract class NbPropertyPanel extends JPanel implements
         ModuleProperties.LazyStorage, PropertyChangeListener, HelpCtx.Provider {
 
     private Class helpCtxClass;
@@ -80,7 +80,7 @@ abstract class NbPropertyPanel extends JPanel implements
     /**
      * This method is called whenever {@link ModuleProperties} are refreshed.
      */
-    abstract void refresh();
+    protected abstract void refresh();
     
     String getProperty(String key) {
         return props.getProperty(key);
@@ -155,11 +155,11 @@ abstract class NbPropertyPanel extends JPanel implements
         }
     }
     
-    abstract static class Suite extends NbPropertyPanel {
-        Suite(final SuiteProperties props, final Class helpCtxClass, ProjectCustomizer.Category cat) {
+    public abstract static class Suite extends NbPropertyPanel {
+        public Suite(final SuiteProperties props, final Class helpCtxClass, ProjectCustomizer.Category cat) {
             super(props, helpCtxClass, cat);
         }
-        SuiteProperties getProperties() {
+        protected SuiteProperties getProperties() {
             return (SuiteProperties) props;
         }
     }

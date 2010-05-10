@@ -45,13 +45,10 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.swing.ImageIcon;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CompletionProposal;
@@ -147,7 +144,7 @@ public class PHPDOCCodeCompletion {
         return false;
     }
 
-    public static void complete(List<CompletionProposal> proposals,
+    public static void complete(final PHPCompletionResult completionResult,
             PHPCompletionItem.CompletionRequest request) {
         
         
@@ -161,7 +158,7 @@ public class PHPDOCCodeCompletion {
         for (String tag : TAGS){
             if (tag.startsWith(prefix)){
                 PHPDOCCodeCompletionItem item = new PHPDOCCodeCompletionItem(request, tag);
-                proposals.add(item);
+                completionResult.add(item);
             }
         }
     }

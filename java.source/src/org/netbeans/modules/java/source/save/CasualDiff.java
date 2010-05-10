@@ -1227,7 +1227,7 @@ public class CasualDiff {
         }
         if (!listsMatch(oldT.args, newT.args)) {
             if (oldT.args.nonEmpty()) {
-                copyTo(localPointer, localPointer = getOldPos(oldT.args.head));
+                copyTo(localPointer, localPointer = getCommentCorrectedOldPos(oldT.args.head));
             } else {
                 copyTo(localPointer, localPointer = methBounds[1]);
                 tokenSequence.move(localPointer);
@@ -1627,9 +1627,11 @@ public class CasualDiff {
             printer.print(newT.kind.toString());
             localPointer = oldT.pos + oldT.kind.toString().length();
         }
-        int[] innerBounds = getBounds(oldT.inner);
+        JCTree oldBound = oldT.kind.kind != BoundKind.UNBOUND ? oldT.inner : null;
+        JCTree newBound = newT.kind.kind != BoundKind.UNBOUND ? newT.inner : null;
+        int[] innerBounds = getBounds(oldBound);
         copyTo(localPointer, innerBounds[0]);
-        localPointer = diffTree(oldT.inner, newT.inner, innerBounds);
+        localPointer = diffTree(oldBound, newBound, innerBounds);
         copyTo(localPointer, bounds[1]);
 
         return bounds[1];
@@ -1755,7 +1757,7 @@ public class CasualDiff {
         if (!listsMatch(oldT.getVariables(), newT.getVariables())) {
             copyTo(bounds[0], oldT.getStartPosition());
             if (oldT.isEnum()) {
-                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT);
+                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT, true);
                 copyTo(pos, bounds[1]);
                 return bounds[1];
             } else {
@@ -2118,6 +2120,16 @@ public class CasualDiff {
             int pos,
             Comparator<JCTree> measure)
     {
+        return diffParameterList(oldList, newList, makeAround, pos, measure, false);
+    }
+    private int diffParameterList(
+            List<? extends JCTree> oldList,
+            List<? extends JCTree> newList,
+            JavaTokenId[] makeAround,
+            int pos,
+            Comparator<JCTree> measure,
+            boolean isEnum)
+    {
         assert oldList != null && newList != null;
         if (oldList == newList || oldList.equals(newList))
             return pos; // they match perfectly or no need to do anything
@@ -2145,6 +2157,7 @@ public class CasualDiff {
             printer.print(makeAround[0].fixedText());
         }
         int oldIndex = 0;
+        boolean wasLeadingDelete = false;
         boolean wasComma = false;
         for (int j = 0; j < result.length; j++) {
             ResultItem<JCTree> item = result[j];
@@ -2163,12 +2176,12 @@ public class CasualDiff {
                     tokenSequence.move(bounds[1]);
                     moveToSrcRelevant(tokenSequence, Direction.FORWARD);
                     if (!commaNeeded(result, item) &&
-                        tree.getKind() == Kind.VARIABLE &&
-                        (((JCModifiers)((VariableTree) tree).getModifiers()).flags & Flags.ENUM) != 0 &&
-                        tokenSequence.token().id() != JavaTokenId.SEMICOLON) {
+                        isEnum &&
+                        tokenSequence.token().id() == JavaTokenId.RBRACKET) {
                         printer.print(";");
                     }
                     copyTo(bounds[1], pos = tokenSequence.offset(), printer);
+                    wasLeadingDelete = false;
                     break;
                 }
                 // insert new element
@@ -2179,10 +2192,11 @@ public class CasualDiff {
                         }
                     }
                     printer.print(item.element);
+                    wasLeadingDelete = false;
                     break;
                 }
                 case DELETE:
-                    oldIndex++;
+                    wasLeadingDelete |= oldIndex++ == 0;
                     tokenSequence.move(getBounds(item.element)[1]);
                     moveToSrcRelevant(tokenSequence, Direction.FORWARD);
                     pos = tokenSequence.offset();
@@ -2190,17 +2204,22 @@ public class CasualDiff {
                 // just copy existing element
                 case NOCHANGE:
                     oldIndex++;
-                    int[] bounds = getBounds(item.element);
+                    int[] bounds = getCommentCorrectedBounds(item.element);
                     tokenSequence.move(bounds[0]);
-                    if (oldIndex != 1) {
+                    if (oldIndex != 1 && !wasLeadingDelete) {
                         moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
                     }
                     tokenSequence.moveNext();
                     int start = tokenSequence.offset();
                     tokenSequence.move(bounds[1]);
                     moveToSrcRelevant(tokenSequence, Direction.FORWARD);
-                    int end = tokenSequence.offset();
+                    int end = bounds[1];
+                    if (isEnum &&
+                        (tokenSequence.token().id() == JavaTokenId.SEMICOLON || tokenSequence.token().id() == JavaTokenId.COMMA)) {
+                        end = tokenSequence.offset();
+                    }
                     copyTo(start, pos = end, printer);
+                    wasLeadingDelete = false;
                     break;
                 default:
                     break;
@@ -2224,7 +2243,11 @@ public class CasualDiff {
             int endPos2 = endPos(oldList);
             tokenSequence.move(endPos2);
             moveToSrcRelevant(tokenSequence, Direction.FORWARD);
-            return tokenSequence.offset();
+            if (isEnum &&
+                (tokenSequence.token().id() == JavaTokenId.SEMICOLON || tokenSequence.token().id() == JavaTokenId.COMMA)) {
+                return tokenSequence.offset();
+            }
+            return pos;
         }
     }
 
@@ -2375,17 +2398,16 @@ public class CasualDiff {
     }
 
     private List<JCTree> filterHidden(List<? extends JCTree> list) {
-        List<JCTree> result = new ArrayList<JCTree>(); // todo (#pf): capacity?
+        LinkedList<JCTree> result = new LinkedList<JCTree>(); // todo (#pf): capacity?
         List<JCVariableDecl> fieldGroup = new ArrayList<JCVariableDecl>();
-        boolean enumConstants = false;
+        List<JCVariableDecl> enumConstants = new ArrayList<JCVariableDecl>();
         for (JCTree tree : list) {
             if (Kind.VARIABLE == tree.getKind()) {
                 JCVariableDecl var = (JCVariableDecl) tree;
                 if ((var.mods.flags & Flags.ENUM) != 0) {
                     // collect enum constants, make a field group from them
                     // and set the flag.
-                    fieldGroup.add(var);
-                    enumConstants = true;
+                    enumConstants.add(var);
                 } else {
                     if (!fieldGroup.isEmpty()) {
                         int oldPos = getOldPos(fieldGroup.get(0));
@@ -2395,12 +2417,11 @@ public class CasualDiff {
                             fieldGroup.add(var);
                         } else {
                             if (fieldGroup.size() > 1) {
-                                result.add(new FieldGroupTree(fieldGroup, enumConstants));
+                                result.add(new FieldGroupTree(fieldGroup, false));
                             } else {
                                 result.add(fieldGroup.get(0));
                             }
                             fieldGroup = new ArrayList<JCVariableDecl>();
-                            enumConstants = false;
 
                             fieldGroup.add(var);
                         }
@@ -2413,12 +2434,11 @@ public class CasualDiff {
 
             if (!fieldGroup.isEmpty()) {
                 if (fieldGroup.size() > 1) {
-                    result.add(new FieldGroupTree(fieldGroup, enumConstants));
+                    result.add(new FieldGroupTree(fieldGroup, false));
                 } else {
                     result.add(fieldGroup.get(0));
                 }
                 fieldGroup = new ArrayList<JCVariableDecl>();
-                enumConstants = false;
             }
 
             if (Kind.METHOD == tree.getKind()) {
@@ -2437,10 +2457,13 @@ public class CasualDiff {
         }
         if (!fieldGroup.isEmpty()) {
             if (fieldGroup.size() > 1) {
-                result.add(new FieldGroupTree(fieldGroup, enumConstants));
+                result.add(new FieldGroupTree(fieldGroup, false));
             } else {
                 result.add(fieldGroup.get(0));
             }
+        }
+        if (!enumConstants.isEmpty()) {
+            result.addFirst(new FieldGroupTree(enumConstants, true));
         }
         return result;
     }
@@ -3365,6 +3388,19 @@ public class CasualDiff {
             return true;
         }
         return false;
+    }
+
+    private int getCommentCorrectedOldPos(JCTree tree) {
+        CommentSet ch = comments.getComments(tree);
+        return Math.min(getOldPos(tree), commentStart(ch, CommentSet.RelativePosition.PRECEDING));
+    }
+
+    private int[] getCommentCorrectedBounds(JCTree tree) {
+        CommentSet ch = comments.getComments(tree);
+        return new int[] {
+            getCommentCorrectedOldPos(tree),
+            Math.max(endPos(tree), Math.max(commentEnd(ch, CommentSet.RelativePosition.INLINE), commentEnd(ch, CommentSet.RelativePosition.TRAILING)))
+        };
     }
 
     private int[] getBounds(JCTree tree) {

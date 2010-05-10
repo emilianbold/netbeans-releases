@@ -100,6 +100,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
             this.displayName = displayName;
         }
 
+        @Override
         public String getDisplayName() {
             return displayName;
         }
@@ -189,6 +190,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
         }
         project.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PROP_CONFIG.equals(evt.getPropertyName())) {
                     LOGGER.log(Level.FINER, "Refiring " + PROP_CONFIG + " -> " + ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE);
@@ -225,6 +227,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
         LOGGER.log(Level.FINEST, "Calculated configurations: {0}", configs);
     }
 
+    @Override
     public Collection<Config> getConfigurations() {
         calculateConfigs();
         List<Config> l = new ArrayList<Config>();
@@ -233,6 +236,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
 
             Collator c = Collator.getInstance();
 
+            @Override
             public int compare(Config c1, Config c2) {
                 return c.compare(c1.getDisplayName(), c2.getDisplayName());
             }
@@ -241,6 +245,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
         return l;
     }
 
+    @Override
     public Config getActiveConfiguration() {
         calculateConfigs();
         String config = project.getEvaluator().getProperty(PROP_CONFIG);
@@ -251,6 +256,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
         }
     }
 
+    @Override
     public void setActiveConfiguration(Config c) throws IOException {
         if (c != DEFAULT && !configs.values().contains(c)) {
             throw new IllegalArgumentException();
@@ -271,23 +277,28 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
         assert project.getProjectDirectory().getFileObject(CONFIG_PROPS_PATH) != null;
     }
 
+    @Override
     public boolean hasCustomizer() {
         return true;
     }
 
+    @Override
     public void customize() {
         project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
     }
 
+    @Override
     public boolean configurationsAffectAction(String command) {
         return command.equals(ActionProvider.COMMAND_RUN)
                 || command.equals(ActionProvider.COMMAND_DEBUG);
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener lst) {
         pcs.addPropertyChangeListener(lst);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener lst) {
         pcs.removePropertyChangeListener(lst);
     }

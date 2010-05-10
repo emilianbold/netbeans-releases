@@ -45,25 +45,22 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
-import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class FreeformProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
+public class FreeformProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOrRenameOperationImplementation {
     
     private FreeformProject project;
     
@@ -90,8 +87,8 @@ public class FreeformProjectOperations implements DeleteOperationImplementation,
     
     public List<FileObject> getDataFiles() {
         Element genldata = project.getPrimaryConfigurationData();
-        Element foldersEl = Util.findElement(genldata, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
-        List<Element> folders = foldersEl != null ? Util.findSubElements(foldersEl) : Collections.<Element>emptyList();
+        Element foldersEl = XMLUtil.findElement(genldata, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
+        List<Element> folders = foldersEl != null ? XMLUtil.findSubElements(foldersEl) : Collections.<Element>emptyList();
         List<FileObject> result = new ArrayList<FileObject>();
 
         for (Element el : folders) {
@@ -106,14 +103,14 @@ public class FreeformProjectOperations implements DeleteOperationImplementation,
     }
     
     private void addFile(Element folder, List<FileObject> result) {
-        Element location = Util.findElement(folder, "location", FreeformProjectType.NS_GENERAL); // NOI18N
+        Element location = XMLUtil.findElement(folder, "location", FreeformProjectType.NS_GENERAL); // NOI18N
         
         if (location == null) {
             return ;
         }
         
         PropertyEvaluator evaluator = project.evaluator();
-        String val = evaluator.evaluate(Util.findText(location));
+        String val = evaluator.evaluate(XMLUtil.findText(location));
         
         if (val == null) {
             return ;
@@ -158,6 +155,13 @@ public class FreeformProjectOperations implements DeleteOperationImplementation,
         } else {
             project.helper().notifyDeleted();
         }
+    }
+
+    public @Override void notifyRenaming() throws IOException {
+    }
+
+    public @Override void notifyRenamed(String nueName) throws IOException {
+        project.setName(nueName);
     }
     
 }

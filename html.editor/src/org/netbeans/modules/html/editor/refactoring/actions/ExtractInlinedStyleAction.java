@@ -43,7 +43,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- * TODO use the refactoring preview!!!
  *
  * @author marekfukala
  */
@@ -56,7 +55,7 @@ public class ExtractInlinedStyleAction extends HtmlRefactoringGlobalAction {
 
     @Override
     public void performAction(Lookup context) {
-        HtmlSpecificActionsImplementationFactory.doChangeParameters(context);
+        HtmlSpecificActionsImplementationFactory.doExtractInlineStyle(context);
     }
 
     @Override
@@ -66,11 +65,7 @@ public class ExtractInlinedStyleAction extends HtmlRefactoringGlobalAction {
 
     @Override
     protected boolean asynchronous() {
-        return false;
+        return false; //run in AWT
     }
-
-
-
-
    
 }

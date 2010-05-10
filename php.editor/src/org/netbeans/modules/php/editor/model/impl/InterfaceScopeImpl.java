@@ -78,6 +78,31 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         }
         return sb.toString();
     }
+
+    @Override
+    public String asString(PrintAs as) {
+        StringBuilder retval = new StringBuilder();
+        switch (as) {
+            case NameAndSuperTypes:
+                retval.append(getName()); //NOI18N
+            case SuperTypes:
+                Set<QualifiedName> superIfaces = getSuperInterfaces();
+                if (!superIfaces.isEmpty()) {
+                    retval.append(" extends ");//NOI18N
+                }
+                StringBuilder ifacesBuffer = new StringBuilder();
+                for (QualifiedName qualifiedName : superIfaces) {
+                    if (ifacesBuffer.length() > 0) {
+                        ifacesBuffer.append(", ");//NOI18N
+                    }
+                    ifacesBuffer.append(qualifiedName.getName());
+                }
+                retval.append(ifacesBuffer);
+                break;
+        }
+        return retval.toString();
+    }
+
     @Override
     public Collection<? extends MethodScope> getInheritedMethods() {
         Set<MethodScope> allMethods = new HashSet<MethodScope>();

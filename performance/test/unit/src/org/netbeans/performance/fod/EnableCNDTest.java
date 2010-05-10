@@ -40,8 +40,6 @@
 package org.netbeans.performance.fod;
 
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestCase;
 
 
 /** Checks how quick it is to enable a feature.

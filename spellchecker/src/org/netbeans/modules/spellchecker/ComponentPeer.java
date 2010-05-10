@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -123,19 +124,19 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     }
 
     public synchronized void propertyChange(PropertyChangeEvent evt) {
-        if (doc != pane.getDocument()) {
-            if (doc != null) {
-                doc.removeDocumentListener(this);
+        if (document != pane.getDocument()) {
+            if (document != null) {
+                document.removeDocumentListener(this);
             }
-            doc = pane.getDocument();
-            doc.addDocumentListener(this);
-            doc = pane.getDocument();
+            document = pane.getDocument();
+            document.addDocumentListener(this);
+            document = pane.getDocument();
             doUpdateCurrentVisibleSpan();
         }
     }
 
     private JTextComponent pane;
-    private Document doc;
+    private Document document;
 
     private RequestProcessor WORKER = new RequestProcessor("Spellchecker");
     
@@ -161,7 +162,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     }
     
     private synchronized Document getDocument() {
-        return doc;
+        return document;
     }
 
     /** Creates a new instance of ComponentPeer */
@@ -170,8 +171,8 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
 //        reschedule();
         pane.addPropertyChangeListener(this);
         pane.addCaretListener(this);
-        doc = pane.getDocument();
-        doc.addDocumentListener(this);
+        document = pane.getDocument();
+        document.addDocumentListener(this);
     }
     
     private Component parentWithListener;
@@ -217,23 +218,26 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         return currentVisibleRange;
     }
 
-    private TokenList l;
+    private final Object tokenListLock = new Object();
+    private TokenList tokenList;
     
-    private synchronized TokenList getTokenList() {
-        if (l == null) {
-            l = ACCESSOR.lookupTokenList(getDocument());
-            
-            if (l != null)
-                l.addChangeListener(this);
+    private TokenList getTokenList() {
+        synchronized(tokenListLock) {
+            if (tokenList == null) {
+                tokenList = ACCESSOR.lookupTokenList(getDocument());
+
+                if (tokenList != null)
+                    tokenList.addChangeListener(this);
+            }
+
+            return tokenList;
         }
-        
-        return l;
     }
     
     private void process() throws BadLocationException {
-        final Document doc = getDocument();
+        final Document _document = getDocument();
         
-        if (doc.getLength() == 0)
+        if (_document.getLength() == 0)
             return ;
         
         final List<int[]> localHighlights = new LinkedList<int[]>();
@@ -243,14 +247,14 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         try {
             resume();
             
-            final TokenList l = getTokenList();
+            final TokenList _tokenList = getTokenList();
             
-            if (l == null) {
+            if (_tokenList == null) {
                 //nothing to do:
                 return ;
             }
 
-            Dictionary d = getDictionary(doc);
+            Dictionary d = getDictionary(_document);
 
             if (d == null)
                 return ;
@@ -265,13 +269,13 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
 
             final boolean[] cont = new boolean [1];
             
-            doc.render(new Runnable() {
+            _document.render(new Runnable() {
                 public void run() {
                     if (isCanceled()) {
                         cont[0] = false;
                         return;
                     } else {
-                        l.setStartOffset(span[0]);
+                        _tokenList.setStartOffset(span[0]);
                         cont[0] = true;
                     }
                 }
@@ -284,20 +288,20 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             final CharSequence[] word = new CharSequence[1];
             
             while (!isCanceled()) {
-                doc.render(new Runnable() {
+                _document.render(new Runnable() {
                     public void run() {
                         if (isCanceled()) {
                             cont[0] = false;
                             return ;
                         }
                         
-                        if (cont[0] = l.nextWord()) {
-                            if (l.getCurrentWordStartOffset() > span[1]) {
+                        if (cont[0] = _tokenList.nextWord()) {
+                            if (_tokenList.getCurrentWordStartOffset() > span[1]) {
                                 cont[0] = false;
                                 return ;
                             }
                             
-                            word[0] = l.getCurrentWordText();
+                            word[0] = _tokenList.getCurrentWordText();
                         }
                     }
                 });
@@ -321,10 +325,10 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                     case PREFIX_OF_VALID:
                     case BLACKLISTED:
                     case INVALID:
-                        doc.render(new Runnable() {
+                        _document.render(new Runnable() {
                             public void run() {
                                 if (!isCanceled()) {
-                                    localHighlights.add(new int[] {l.getCurrentWordStartOffset(), l.getCurrentWordStartOffset() + word[0].length()});
+                                    localHighlights.add(new int[] {_tokenList.getCurrentWordStartOffset(), _tokenList.getCurrentWordStartOffset() + word[0].length()});
                                 }
                             }
                         });
@@ -332,36 +336,57 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             }
         } finally {
             if (!isCanceled()) {
-                doc.render(new Runnable() {
-                    public void run() {
-                        if (isCanceled()) {
-                            return;
-                        }
-                        try {
-                            if (!(pane instanceof JEditorPane)) {
-                                Highlighter h = pane.getHighlighter();
+                if (!(pane instanceof JEditorPane)) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            _document.render(new Runnable() {
+                                public void run() {
+                                    if (isCanceled()) {
+                                        return;
+                                    }
+                                    try {
+                                        Highlighter h = pane.getHighlighter();
 
-                                if (h != null) {
-                                    h.removeAllHighlights();
-                                    for (int[] current : localHighlights) {
-                                        h.addHighlight(current[0], current[1], new ErrorHighlightPainter());
+                                        if (h != null) {
+                                            List<Object> oldTags = (List<Object>) pane.getClientProperty(ErrorHighlightPainter.class);
+
+                                            if (oldTags != null) {
+                                                for (Object tag : oldTags) {
+                                                    h.removeHighlight(tag);
+                                                }
+                                            }
+
+                                            List<Object> newTags = new LinkedList<Object>();
+                                            for (int[] current : localHighlights) {
+                                                newTags.add(h.addHighlight(current[0], current[1], new ErrorHighlightPainter()));
+                                            }
+
+                                            pane.putClientProperty(ErrorHighlightPainter.class, newTags);
+                                        }
+                                    } catch (BadLocationException e) {
+                                        Exceptions.printStackTrace(e);
                                     }
                                 }
-                            } else {
-                                OffsetsBag localHighlightsBag = new OffsetsBag(doc);
-
-                                for (int[] current : localHighlights) {
-                                    localHighlightsBag.addHighlight(current[0], current[1], ERROR);
-                                }
-                                SpellcheckerHighlightLayerFactory.getBag(pane).setHighlights(localHighlightsBag);
-                            }
-                        } catch (BadLocationException e) {
-                            Exceptions.printStackTrace(e);
+                            });
                         }
-                    }
-                });
+                    });
+                } else {
+                    _document.render(new Runnable() {
+                        public void run() {
+                            if (isCanceled()) {
+                                return;
+                            }
+                            OffsetsBag localHighlightsBag = new OffsetsBag(_document);
+
+                            for (int[] current : localHighlights) {
+                                localHighlightsBag.addHighlight(current[0], current[1], ERROR);
+                            }
+                            SpellcheckerHighlightLayerFactory.getBag(pane).setHighlights(localHighlightsBag);
+                        }
+                    });
+                }
                 
-                FileObject file = getFile(doc);
+                FileObject file = getFile(_document);
 
                 Logger.getLogger("TIMER").log(Level.FINE, "Spellchecker",
                         new Object[] {file, System.currentTimeMillis() - startTime});
@@ -382,18 +407,18 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         String userdir = System.getProperty("netbeans.user");
         File cache = new File(userdir, "private-dictionary-" + locale.toString());
         
-        locale2UsersLocalDictionary.put(locale, d = new DictionaryImpl(cache));
+        locale2UsersLocalDictionary.put(locale, d = new DictionaryImpl(cache, locale));
         
         return d;
     }
     
-    public static synchronized DictionaryImpl getProjectDictionary(Project p) {
+    public static synchronized DictionaryImpl getProjectDictionary(Project p, Locale locale) {
         Reference<DictionaryImpl> r = project2Reference.get(p);
         DictionaryImpl d = r != null ? r.get() : null;
         
         if (d == null) {
             AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(p);
-            project2Reference.put(p, new WeakReference<DictionaryImpl>(d = new DictionaryImpl(p, ac)));
+            project2Reference.put(p, new WeakReference<DictionaryImpl>(d = new DictionaryImpl(p, ac, locale)));
         }
         
         return d;
@@ -429,7 +454,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             Project p = FileOwnerQuery.getOwner(file);
 
             if (p != null) {
-                Dictionary projectDictionary = getProjectDictionary(p);
+                Dictionary projectDictionary = getProjectDictionary(p, locale);
 
                 if (projectDictionary != null) {
                     dictionaries.add(projectDictionary);
@@ -446,29 +471,29 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         return result;
     }
 
-    private synchronized boolean isCanceled() {
-        return cancel;
+    private boolean isCanceled() {
+        return cancel.get();
     }
 
-    private synchronized void cancel() {
-        cancel = true;
+    private void cancel() {
+        cancel.set(true);
     }
 
-    private synchronized void resume() {
-        cancel = false;
+    private void resume() {
+        cancel.set(false);
     }
 
-    private boolean cancel = false;
+    private final AtomicBoolean cancel = new AtomicBoolean();
 
     private static final AttributeSet ERROR = AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, Color.RED, EditorStyleConstants.Tooltip, NbBundle.getMessage(ComponentPeer.class, "TP_MisspelledWord"));
 
     private static FileObject getFile(Document doc) {
-        DataObject file = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+        DataObject dataObject = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
 
-        if (file == null)
+        if (dataObject == null)
             return null;
 
-        return file.getPrimaryFile();
+        return dataObject.getPrimaryFile();
     }
 
     public void insertUpdate(DocumentEvent e) {
@@ -488,21 +513,19 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     }
     
     private void doUpdateCurrentVisibleSpan() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            updateCurrentVisibleSpan();
-            reschedule();
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    updateCurrentVisibleSpan();
-                    reschedule();
-                }
-            });
-        }
+        //#156490: updateCurrentVisibleSpan invokes viewToModel, which may throw StateInvariantError
+        //if the starting position of view disappeared from the document in the current change (before the views are adjusted)
+        //reschedule to later, when the views are adjusted to the new state
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                updateCurrentVisibleSpan();
+                reschedule();
+            }
+        });
     }
 
     public void stateChanged(ChangeEvent e) {
-        if (e.getSource() == l) {
+        if (e.getSource() == tokenList) {
             reschedule();
         } else {
             updateCurrentVisibleSpan();
@@ -524,7 +547,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     private void computeHint() {
         LOG.entering(ComponentPeer.class.getName(), "computeHint");
         
-        final Dictionary d = ComponentPeer.getDictionary(doc);
+        final Dictionary d = ComponentPeer.getDictionary(document);
         
         if (d == null) {
             LOG.fine("dictionary == null");
@@ -549,7 +572,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             lastCaretPositionCopy[0] = lastCaretPosition;
         }
         
-        doc.render(new Runnable() {
+        document.render(new Runnable() {
             public void run() {
                 LOG.log(Level.FINE, "lastCaretPosition={0}", lastCaretPositionCopy[0]);
                 l.setStartOffset(lastCaretPositionCopy[0]);
@@ -570,8 +593,8 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                     
                     if (validity != ValidityType.VALID) {
                         try {
-                            span[0] = doc.createPosition(currentWSO);
-                            span[1] = doc.createPosition(currentWSO + length);
+                            span[0] = document.createPosition(currentWSO);
+                            span[1] = document.createPosition(currentWSO + length);
                             word[0] = w;
                         } catch (BadLocationException e) {
                             LOG.log(Level.INFO, null, e);
@@ -589,34 +612,37 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             String currentWord = word[0].toString();
             
             for (String proposal : d.findProposals(currentWord)) {
-                result.add(new DictionaryBasedHint(currentWord, proposal, doc, span, "0" + currentWord));
+                result.add(new DictionaryBasedHint(currentWord, proposal, document, span, "0" + currentWord));
             }
             
-            FileObject file = getFile(doc);
+            FileObject file = getFile(document);
 
             if (file != null) {
                 Project p = FileOwnerQuery.getOwner(file);
+                Locale locale = LocaleQuery.findLocale(file);
                 
                 if (p != null) {
-                    DictionaryImpl projectDictionary = getProjectDictionary(p);
+                    DictionaryImpl projectDictionary = getProjectDictionary(p, locale);
                     
                     if (projectDictionary != null) {
-                        result.add(new AddToDictionaryHint(this, projectDictionary, currentWord, "Add \"%s\" to the project's dictionary.", "1" + currentWord));
+                        String displayName = NbBundle.getMessage(ComponentPeer.class, "FIX_ToProjectDictionary");
+                        result.add(new AddToDictionaryHint(this, projectDictionary, currentWord, displayName, "1" + currentWord));
                     }
                 }
             
-                Locale locale = LocaleQuery.findLocale(file);
+                String displayName = NbBundle.getMessage(ComponentPeer.class, "FIX_ToPrivateDictionary");
 
-                result.add(new AddToDictionaryHint(this, getUsersLocalDictionary(locale), currentWord, "Add \"%s\" to your private dictionary.", "2" + currentWord));
+                result.add(new AddToDictionaryHint(this, getUsersLocalDictionary(locale), currentWord, displayName, "2" + currentWord));
             }
             
             if (!result.isEmpty()) {
-                HintsController.setErrors(doc, ComponentPeer.class.getName(), Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.HINT, "Misspelled word", result, doc, span[0], span[1])));
+                String displayName = NbBundle.getMessage(ComponentPeer.class, "ERR_MisspelledWord");
+                HintsController.setErrors(document, ComponentPeer.class.getName(), Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.HINT, displayName, result, document, span[0], span[1])));
             } else {
-                HintsController.setErrors(doc, ComponentPeer.class.getName(), Collections.<ErrorDescription>emptyList());
+                HintsController.setErrors(document, ComponentPeer.class.getName(), Collections.<ErrorDescription>emptyList());
             }
         } else {
-            HintsController.setErrors(doc, ComponentPeer.class.getName(), Collections.<ErrorDescription>emptyList());
+            HintsController.setErrors(document, ComponentPeer.class.getName(), Collections.<ErrorDescription>emptyList());
         }
     }
     
@@ -661,6 +687,11 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             try {
                 Rectangle start = pane.modelToView(p0);
                 Rectangle end = pane.modelToView(p1);
+
+                if (start.x < 0) {
+                    LOG.log(Level.INFO, "#182545: negative view position: {0} for: {1}", new Object[] {start, p0});
+                    return;
+                }
 
                 int waveLength = end.x + end.width - start.x;
                 if (waveLength > 0) {

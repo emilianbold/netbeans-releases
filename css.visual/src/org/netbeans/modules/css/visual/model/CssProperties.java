@@ -246,6 +246,7 @@ public final class CssProperties {
         backgroundRepeatValues.add("repeat"); //NOI18N
         backgroundRepeatValues.add("repeat-x"); //NOI18N
         backgroundRepeatValues.add("repeat-y"); //NOI18N
+        backgroundRepeatValues.add("no-repeat"); //NOI18N
         backgroundRepeatValues.add("inherit"); //NOI18N
     }
     

@@ -44,24 +44,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.IllegalCharsetNameException;
-import java.util.AbstractList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
-import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -111,6 +101,7 @@ public final class Utils {
      * @param url URL, can be <code>null</code>.
      * @return <code>true</code> if the URL is valid, <code>false</code> otherwise.
      */
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public static boolean isValidUrl(String url) {
         if (url == null) {
             return false;
@@ -255,18 +246,6 @@ public final class Utils {
         return null;
     }
 
-    public static List getAllItems(final JComboBox comboBox) {
-        return new AbstractList() {
-            public Object get(int i) {
-                return comboBox.getItemAt(i);
-            }
-
-            public int size() {
-                return comboBox.getItemCount();
-            }
-        };
-    }
-
     public static File getCanonicalFile(File file) {
         try {
             return file.getCanonicalFile();
@@ -303,7 +282,7 @@ public final class Utils {
      * <p>
      * File is not {@link FileUtil#normalizeFile(java.io.File) normalized}, caller should do it if needed.
      * @param file File to check.
-     * @return <code>true</true> if the provided File has valid file name.
+     * @return <code>true</code> if the provided File has valid file name.
      * @see #isValidFileName(java.lang.String)
      */
     public static boolean isValidFileName(File file) {
@@ -430,7 +409,7 @@ public final class Utils {
      * Validate that the text contains only ASCII characters. If not, return an error message.
      * @param text the text to validate, can be <code>null</code>.
      * @param propertyName property name of the given text, e.g. "Project folder name".
-     * @return an error message in case that the text contains non-ASCII characters, <code>null</null> otherwise.
+     * @return an error message in case that the text contains non-ASCII characters, <code>null</code> otherwise.
      * @see #isAsciiPrintable(char)
      */
     public static String validateAsciiText(String text, String propertyName) {
@@ -608,99 +587,13 @@ public final class Utils {
             secure = unifyPath(preselected);
             if (removeExtension) {
                 // e.g. searching in nodes => no file extension can be there
-                int idx = secure.lastIndexOf("."); // NOI18N
+                int idx = secure.lastIndexOf('.'); // NOI18N
                 if (idx != -1) {
                     secure = secure.substring(0, idx);
                 }
             }
         }
         return secure;
-    }
-
-    public static class EncodingModel extends DefaultComboBoxModel {
-        private static final long serialVersionUID = -3139920099217726436L;
-
-        public EncodingModel() {
-            this(null);
-        }
-
-        public EncodingModel(String originalEncoding) {
-            Charset defEnc = null;
-            for (Charset c : Charset.availableCharsets().values()) {
-                if (c.name().equals(originalEncoding)) {
-                    defEnc = c;
-                }
-                addElement(c);
-            }
-            if (defEnc == null && originalEncoding != null) {
-                //Create artificial Charset to keep the original value
-                //May happen when the project was set up on the platform
-                //which supports more encodings
-                try {
-                    defEnc = new UnknownCharset(originalEncoding);
-                    addElement(defEnc);
-                } catch (IllegalCharsetNameException e) {
-                    //The source.encoding property is completely broken
-                    Logger.getLogger(EncodingModel.class.getName()).info("IllegalCharsetName: " + originalEncoding);
-                }
-            }
-            if (defEnc == null) {
-                defEnc = Charset.defaultCharset();
-            }
-            setSelectedItem(defEnc);
-        }
-    }
-
-    public static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
-        private static final long serialVersionUID = 3196531352192214602L;
-
-        public EncodingRenderer() {
-            setOpaque(true);
-        }
-
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                boolean cellHasFocus) {
-            setName("ComboBox.listRenderer"); // NOI18N
-            // #175238
-            if (value != null) {
-                assert value instanceof Charset;
-                setText(((Charset) value).displayName());
-            }
-            setIcon(null);
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-            return this;
-        }
-
-        @Override
-        public String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name; // NOI18N
-        }
-    }
-
-    private static class UnknownCharset extends Charset {
-
-        UnknownCharset(String name) {
-            super(name, new String[0]);
-        }
-
-        public boolean contains(Charset c) {
-            throw new UnsupportedOperationException();
-        }
-
-        public CharsetDecoder newDecoder() {
-            throw new UnsupportedOperationException();
-        }
-
-        public CharsetEncoder newEncoder() {
-            throw new UnsupportedOperationException();
-        }
     }
 
     /**

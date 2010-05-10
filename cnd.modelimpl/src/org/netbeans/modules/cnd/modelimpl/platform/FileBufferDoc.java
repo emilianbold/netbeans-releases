@@ -82,6 +82,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
     
     private void resetLastModified() {
         lastModified = System.currentTimeMillis();
+        clearLineCache();
     }
     
     private void fireDocumentChanged() {
@@ -102,14 +103,17 @@ public class FileBufferDoc extends AbstractFileBuffer {
     public void addChangeListener(ChangeListener listener) {
         if (listeners.getListenerCount() == 0) {
             docListener = new DocumentListener() {
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     changedSegment.addSegment(e.getOffset(), e.getLength());
                     fireDocumentChanged();
                 }
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     changedSegment.removeSegment(e.getOffset(), e.getLength());
                     fireDocumentChanged();
                 }
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     // Add/remove annotation shouldn't result in reparse.
                     //fireDocumentChanged();
@@ -138,9 +142,11 @@ public class FileBufferDoc extends AbstractFileBuffer {
         return ioe;
     }
 
+    @Override
     public InputStream getInputStream() throws IOException {
         final Object[] res = new Object[]{null, null};
         doc.render(new Runnable() {
+            @Override
             public void run() {
                 try {
                     res[0] = doc.getText(0, doc.getLength());
@@ -164,10 +170,12 @@ public class FileBufferDoc extends AbstractFileBuffer {
         return new ByteArrayInputStream(((String)res[0]).getBytes());
     }
     
+    @Override
     public String getText() throws IOException {
         final String out[] = new String[] { null };
         final BadLocationException exc[] = new BadLocationException[] { null };
         doc.render(new Runnable() {
+            @Override
             public void run() {
                 try {
                     out[0] = doc.getText(0, doc.getLength());
@@ -182,6 +190,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
         return out[0];
     }
     
+    @Override
     public String getText(int start, int end) throws IOException {
         try {
             return doc.getText(start, end - start);
@@ -191,14 +200,17 @@ public class FileBufferDoc extends AbstractFileBuffer {
         }
     }
     
+    @Override
     public int getLength() {
         return doc.getLength();
     }
 
+    @Override
     public boolean isFileBased() {
         return false;
     }
 
+    @Override
     public long lastModified() {
         return lastModified;
     }

@@ -1194,6 +1194,7 @@ public final class NbMavenProjectImpl implements Project {
             "oasis-XML-catalogs", // NOI18N
             "XML", // NOI18N
             "web-service-clients",  // NOI18N
+            "REST-clients",  // NOI18N
             "wsdl", // NOI18N
             // "servlet-types",     // NOI18N
             // "web-types",         // NOI18N
@@ -1235,6 +1236,7 @@ public final class NbMavenProjectImpl implements Project {
             "ant-task", // NOI18N
             //            "web-services",         // NOI18N
             "web-service-clients",  // NOI18N
+            "REST-clients",  // NOI18N
             "wsdl", // NOI18N
             "servlet-types", // NOI18N
             "web-types", // NOI18N

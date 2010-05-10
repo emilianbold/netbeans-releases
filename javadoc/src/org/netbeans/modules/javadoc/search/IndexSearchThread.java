@@ -52,6 +52,7 @@ import org.openide.filesystems.FileObject;
  */
 
 public abstract class IndexSearchThread implements Runnable  {
+    private static final RequestProcessor RP = new RequestProcessor(IndexSearchThread.class.getName(), 1, false, false);
 
     // PENDING: Add some abstract methods
 
@@ -75,11 +76,12 @@ public abstract class IndexSearchThread implements Runnable  {
     /** This method must terminate the process of searching */
     abstract void stopSearch();
 
+    @SuppressWarnings("LeakingThisInConstructor")
     public IndexSearchThread( String toFind, FileObject fo, DocIndexItemConsumer ddiConsumer, boolean caseSensitive ) {
         this.ddiConsumer = ddiConsumer;
         this.indexRoot = fo;
         this.caseSensitive = caseSensitive;
-        this.rpTask = RequestProcessor.getDefault().create(this);
+        this.rpTask = RP.create(this);
         
         //this.toFind = toFind;
         //rpTask = RequestProcessor.createRequest( this );
@@ -96,8 +98,9 @@ public abstract class IndexSearchThread implements Runnable  {
             else{
                 for( int i = 0; i < tokens-2; i++){
                     reminder += st.nextToken();
-                    if( i+1 < tokens-2 )
+                    if (i + 1 < tokens - 2) {
                         reminder += '.';
+                    }
                 }            
                 middleField = st.nextToken();
                 lastField   = st.nextToken();
@@ -197,8 +200,9 @@ public abstract class IndexSearchThread implements Runnable  {
     }
 
     public void finish() {
-        if ( !rpTask.isFinished() && !rpTask.cancel() )
+        if (!rpTask.isFinished() && !rpTask.cancel()) {
             stopSearch();
+        }
         taskFinished();
     }
 
@@ -213,14 +217,13 @@ public abstract class IndexSearchThread implements Runnable  {
      * index items;
      */
 
-    public static interface DocIndexItemConsumer {
+    public interface DocIndexItemConsumer {
 
         /** Called when an item is found */
-        public void addDocIndexItem ( DocIndexItem dii );
+        void addDocIndexItem(DocIndexItem dii);
 
         /** Called when a task finished. May be called more than once */
-        public void indexSearchThreadFinished( IndexSearchThread ist );
-
+        void indexSearchThreadFinished(IndexSearchThread ist);
 
     }
 

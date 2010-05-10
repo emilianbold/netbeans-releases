@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
+import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.util.*;
@@ -54,6 +55,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
+import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.html.editor.HtmlPreferences;
@@ -232,10 +234,25 @@ public class HtmlCompletionQuery extends UserTask {
 
         //get text before cursor
         Token<HTMLTokenId> item = ts.token();
-        int itemOffset = item.offset(hi);
+        int itemOffset = ts.offset();
         int documentItemOffset = snapshot.getOriginalOffset(itemOffset);
         String preText = item.text().toString();
         String itemText = preText;
+
+        // Bug 182267 -  StringIndexOutOfBoundsException: String index out of range: -1
+        // debug>>>
+        if((astOffset - itemOffset) < 0) {
+            StringBuilder b = new StringBuilder();
+            b.append("just happened Bug 182267 -  StringIndexOutOfBoundsException: String index out of range: -1\n"); //NOI18N
+            b.append("current's snapshot token sequence:\n"); //NOI18N
+            b.append(ts.toString()); //dump token seuquence
+            b.append(String.format("astOffset = %1$s, itemOffset = %2$s\n", astOffset, itemOffset)); //NOI18N
+            Logger.getAnonymousLogger().warning(b.toString());
+
+            //and let the original exception to be thrown so the item is properly bound to the original report
+        }
+        //<<<debug
+
         if (diff < preText.length()) {
             preText = preText.substring(0, astOffset - itemOffset);
         }
@@ -248,10 +265,17 @@ public class HtmlCompletionQuery extends UserTask {
         //adjust the astOffset if at the end of the file
         int searchAstOffset = astOffset == snapshot.getText().length() ? astOffset - 1 : astOffset;
 
+        //finds a leaf node for all the declared namespaces content including the default html content
         AstNode node = parserResult.findLeaf(searchAstOffset, backward);
         if (node == null) {
             return null;
         }
+
+        //find a leaf node for undeclared tags
+        AstNode undeclaredTagsParseTreeRoot = parserResult.root(SyntaxParserResult.UNDECLARED_TAGS_NAMESPACE);
+        assert undeclaredTagsParseTreeRoot != null;
+        AstNode undeclaredTagsLeafNode = AstNodeUtils.findDescendant(undeclaredTagsParseTreeRoot, searchAstOffset, backward);
+
         AstNode root = node.getRootNode();
 
         //namespace is null for html content
@@ -306,7 +330,7 @@ public class HtmlCompletionQuery extends UserTask {
                 Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
                 result.addAll(translateTags(offset - 1, openTags, dtd.getElementList(null)));
                 if(HtmlPreferences.completionOffersEndTagAfterLt()) {
-                    result.addAll(getPossibleEndTags(node, offset, ""));
+                    result.addAll(getPossibleEndTags(node, undeclaredTagsLeafNode, offset, ""));
                 }
             }
 
@@ -322,16 +346,16 @@ public class HtmlCompletionQuery extends UserTask {
                 (id == HTMLTokenId.TAG_OPEN_SYMBOL && preText.endsWith("</"))) { // NOI18N
             //complete end tags without prefix
             anchor = offset;
-            result = getPossibleEndTags(node, offset, "");
+            result = getPossibleEndTags(node, undeclaredTagsLeafNode, offset, "");
 
         } else if (id == HTMLTokenId.TAG_CLOSE) { // NOI18N
             //complete end tags with prefix
             anchor = documentItemOffset;
-            result = getPossibleEndTags(node, offset, preText);
+            result = getPossibleEndTags(node, undeclaredTagsLeafNode, offset, preText);
 
         } else if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
             anchor = offset;
-            result = getAutocompletedEndTag(node, astOffset, offset);
+            result = getAutocompletedEndTag(node, undeclaredTagsLeafNode, astOffset, offset);
         } else if (id == HTMLTokenId.WS || id == HTMLTokenId.ARGUMENT) {
             /*Argument finder */
             String prefix = (id == HTMLTokenId.ARGUMENT) ? preText : "";
@@ -390,7 +414,7 @@ public class HtmlCompletionQuery extends UserTask {
             /* Value finder */
             if (id == HTMLTokenId.WS) {
                 //is the token before an operator? '<div color= |red>'
-                ts.move(item.offset(hi));
+                ts.move(itemOffset);
                 ts.movePrevious();
                 Token t = ts.token();
                 if (t.id() != HTMLTokenId.OPERATOR) {
@@ -400,7 +424,7 @@ public class HtmlCompletionQuery extends UserTask {
 
             if (node.type() == AstNode.NodeType.OPEN_TAG) {
 
-                ts.move(item.offset(hi));
+                ts.move(itemOffset);
                 ts.moveNext();
                 Token argItem = ts.token();
                 while (argItem.id() != HTMLTokenId.ARGUMENT && ts.movePrevious()) {
@@ -476,6 +500,13 @@ public class HtmlCompletionQuery extends UserTask {
         return node != null ? Character.isLowerCase(node.name().charAt(0)) : true;
     }
 
+    public List<CompletionItem> getAutocompletedEndTag(AstNode node, AstNode undeclaredTagsLeafNode, int astOffset, int documentOffset) {
+        List<CompletionItem> result = getAutocompletedEndTag(node, astOffset, documentOffset);
+        if(result == null) {
+            result = getAutocompletedEndTag(undeclaredTagsLeafNode, astOffset, documentOffset);
+        }
+        return result == null ? Collections.<CompletionItem>emptyList() : result;
+    }
     public List<CompletionItem> getAutocompletedEndTag(AstNode node, int astOffset, int documentOffset) {
         //check for open tags only
         //the test node.endOffset() == astOffset is required since the given node
@@ -493,7 +524,7 @@ public class HtmlCompletionQuery extends UserTask {
                 return Collections.singletonList((CompletionItem) HtmlCompletionItem.createAutocompleteEndTag(node.name(), documentOffset));
             }
         }
-        return Collections.emptyList();
+        return null;
     }
 
     private List<CompletionItem> translateCharRefs(int offset, List refs) {
@@ -507,10 +538,17 @@ public class HtmlCompletionQuery extends UserTask {
         return result;
     }
 
-    private List<CompletionItem> getPossibleEndTags(AstNode leaf, int offset, String prefix) {
+    private List<CompletionItem> getPossibleEndTags(AstNode leaf, AstNode undeclaredTagsLeafNode, int offset, String prefix) {
+        List<CompletionItem> items = new ArrayList<CompletionItem>();
+        items.addAll(getPossibleHtmlEndTags(leaf, offset, prefix));
+        items.addAll(getPossibleHtmlEndTags(undeclaredTagsLeafNode, offset, prefix));
+
+        return items;
+    }
+
+    private List<CompletionItem> getPossibleHtmlEndTags(AstNode leaf, int offset, String prefix) {
         List<CompletionItem> items = new ArrayList<CompletionItem>();
 
-        int order = 0;
         for (;;) {
             if (leaf.type() == AstNode.NodeType.ROOT) {
                 break;
@@ -523,6 +561,10 @@ public class HtmlCompletionQuery extends UserTask {
                 if (tagName.startsWith(prefix.toLowerCase(Locale.ENGLISH))) {
                     //TODO - distinguish unmatched and matched tags in the completion!!!
                     //TODO - mark required and optional end tags somehow
+
+                    //distance from the caret position - lower number, higher precedence
+                    //this will ensure the two end tags list from html and undeclared content being properly ordered
+                    int order = offset - leaf.startOffset();
                     items.add(HtmlCompletionItem.createEndTag(tagName, offset - 2 - prefix.length(), tagName, order++, getEndTagType(leaf)));
                 }
 

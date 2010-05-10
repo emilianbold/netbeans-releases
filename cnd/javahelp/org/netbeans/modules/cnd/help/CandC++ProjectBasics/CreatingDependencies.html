@@ -24,28 +24,32 @@ causes the editor to jump to the function definition if the
 definition is located in an open dependent project. If the dependent 
 project that contains the definition is 
 closed, the editor jumps to the function declaration.
-</p> 
-<p><b>To add a project dependency to an application or dynamic library project:</b></p>
+</p>
+<p>The procedure for adding project dependencies is a little different for managed
+projects created in the IDE, and unmanaged projects created
+from existing sources.</p>
+<p><b>To add a project dependency to an application or dynamic library managed project:</b></p>
 <ol>
 <li>In the Projects window, right-click the project and choose Properties.
 </li>
-<li>In the Project Properties dialog box, expand the Linker node and select 
-Libraries.
+<li>In the Project Properties dialog box, select the Linker node.
 </li>
 <li>In the Libraries panel, click the browse button.
 </li>
 <li>In the Libraries dialog box, click Add Project.
 </li>
 <li>In the Add Project dialog box, select the library project on which your 
-Application project depends. Click Add Project.
+Application project depends, and then select a Configuration if the project
+has multiple configurations.
 </li>
+<li>Click Add.</li>
 <li>If you do not want 
-the project to be built every time the dependent project is built, select 
+the project to be built every time the dependent project is built, deselect
 the Build checkbox to remove the check mark.</li> 
 <li>Click OK in the Libraries dialog box and the Project Properties dialog box.
 </li>
 </ol>
-<p><b>To add a project dependency to a project from existing code:</b></p>
+<p><b>To add a project dependency to an umanaged project from existing sources:</b></p>
 <ol>
 <li>In the Projects window, right-click the project and choose Properties.
 </li>
@@ -57,11 +61,13 @@ Required Projects.
 <li>In the Projects dialog box, click Add.
 </li>
 <li>In the Add Project dialog box, select the project on which your 
-project from existing code depends. Click Add Project.
+project from existing sources depends, and then select a Configuration if the project
+has multiple configurations.
 </li>
+<li>Click Add Project.</li>
 <li>If you want 
-the project to be built every time the dependent project is built, select 
-the Build checkbox to add a check mark.</li> 
+the project to be built every time the dependent project is built, deselect
+the Build checkbox to add a check mark.</li>
 <li>Click OK in the Projects dialog box and the Project Properties dialog box.
 </li>
 </ol>

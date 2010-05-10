@@ -146,6 +146,9 @@ public class SpringBinaryIndexer extends BinaryIndexer {
 
     private String findVersion(FileObject classpathRoot) {
         ClassPath cp = ClassPath.getClassPath(classpathRoot, ClassPath.COMPILE);
+        if (cp == null) {
+            return null;
+        }
         String classRelativePath = SpringUtilities.SPRING_CLASS_NAME.replace('.', '/') + ".class"; //NOI18N
         try {
             FileObject resource = cp.findResource(classRelativePath);  //NOI18N

@@ -84,14 +84,17 @@ public class PhpUnitOptionsPanel extends JPanel {
 
         phpUnitTextField.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 processUpdate();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 processUpdate();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 processUpdate();
             }
@@ -258,22 +261,27 @@ public class PhpUnitOptionsPanel extends JPanel {
     private void phpUnitSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_phpUnitSearchButtonActionPerformed
         String phpUnit = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
 
+            @Override
             public List<String> detect() {
                 return PhpEnvironment.get().getAllPhpUnits();
             }
 
+            @Override
             public String getWindowTitle() {
                 return NbBundle.getMessage(PhpUnitOptionsPanel.class, "LBL_PhpUnitsTitle");
             }
 
+            @Override
             public String getListTitle() {
                 return NbBundle.getMessage(PhpUnitOptionsPanel.class, "LBL_PhpUnits");
             }
 
+            @Override
             public String getPleaseWaitPart() {
                 return NbBundle.getMessage(PhpUnitOptionsPanel.class, "LBL_PhpUnitsPleaseWaitPart");
             }
 
+            @Override
             public String getNoItemsFound() {
                 return NbBundle.getMessage(PhpUnitOptionsPanel.class, "LBL_NoPhpUnitsFound");
             }

@@ -41,17 +41,22 @@
 
 package org.openide.util;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
@@ -66,6 +71,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -82,7 +88,7 @@ import java.util.logging.Logger;
  * In case you want something to be done later in some background thread,
  * create an instance of <code>RequestProcessor</code> and post tasks to it.
  * <pre>
- * private static final RequestProcessor RP = new RequestProcessor("My tasks");
+ * private static final RequestProcessor RP = new {@link RequestProcessor#RequestProcessor(java.lang.Class) RequestProcessor(MyClass.class)};
  * // later
  * RP.{@link #post(java.lang.Runnable,int) post(runnable,&nbsp;delay)}
  * </pre>
@@ -115,7 +121,7 @@ import java.util.logging.Logger;
  * It is also possible to do something periodically. Use the {@link RequestProcessor.Task#schedule schedule} method:
  * <pre>
  * class Periodic implements Runnable {
- *   private static final RequestProcessor RP = new RequestProcessor("My tasks");
+ *   private static final RequestProcessor RP = new {@link RequestProcessor#RequestProcessor(java.lang.Class) RequestProcessor(Periodic.class)};
  *   private final RequestProcessor.Task CLEANER = RP.{@link #create(java.lang.Runnable) create(this)};
  *   public void run() {
  *     doTheWork();
@@ -136,7 +142,7 @@ import java.util.logging.Logger;
  * reported by the model. This can be achieved with a sliding task:
  * <pre>
  * class Updater implements PropertyChangeListener, Runnable {
- *   private static final RequestProcessor RP = new RequestProcessor("My tasks");
+ *   private static final RequestProcessor RP = new {@link RequestProcessor#RequestProcessor(java.lang.Class) RequestProcessor(Updater.class)};
  *   private final RequestProcessor.Task UPDATE = RP.{@link #create(java.lang.Runnable) create(this)};
  *
  *   public void propertyChange(PropertyChangeEvent ev) {
@@ -186,17 +192,15 @@ public final class RequestProcessor implements ScheduledExecutorService {
     /** the static instance for users that do not want to have own processor */
     private static final RequestProcessor DEFAULT = new RequestProcessor();
 
-    // 50: a conservative value, just for case of misuse
-
-    /** the static instance for users that do not want to have own processor */
-    private static final RequestProcessor UNLIMITED = new RequestProcessor("Default RequestProcessor", 50); // NOI18N
 
     /** A shared timer used to pass timed-out tasks to pending queue */
     private static Timer starterThread = new Timer(true);
 
     /** logger */
-    private static Logger logger;
+    private static final Logger logger = Logger.getLogger("org.openide.util.RequestProcessor"); // NOI18N
 
+    /** the static instance for users that do not want to have own processor */
+    private static final RequestProcessor UNLIMITED;
     /** The counter for automatic naming of unnamed RequestProcessors */
     private static int counter = 0;
     private static final boolean SLOW;
@@ -204,6 +208,8 @@ public final class RequestProcessor implements ScheduledExecutorService {
         boolean slow = false;
         assert slow = true;
         SLOW = slow;
+        // 50: a conservative value, just for case of misuse
+        UNLIMITED = new RequestProcessor("Default RequestProcessor", 50, false, SLOW, SLOW ? 3 : 0); // NOI18N
     }
 
     /** The name of the RequestProcessor instance */
@@ -213,7 +219,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
      * will throw an exception and no task will be processed any further */
     volatile boolean stopped = false;
 
-    /** The lock covering following four fields. They should be accessed
+    /** The lock covering following five fields. They should be accessed
      * only while having this lock held. */
     private final Object processorLock = new Object();
 
@@ -233,6 +239,10 @@ public final class RequestProcessor implements ScheduledExecutorService {
     /** The maximal number of processors that can perform the requests sent
      * to this RequestProcessors. If 1, all the requests are serialized. */
     private int throughput;
+    /** mapping of classes executed in parallel */
+    private Map<Class<? extends Runnable>,AtomicInteger> inParallel;
+    /** Warn if there is parallel execution */
+    private final int warnParallel;
     
     /** support for interrupts or not? */
     private boolean interruptThread;
@@ -248,6 +258,23 @@ public final class RequestProcessor implements ScheduledExecutorService {
      * @param name the name to use for the request processor thread */
     public RequestProcessor(String name) {
         this(name, 1);
+    }
+
+    /** Convenience constructor for a new RequestProcessor with throughput 1.
+     * Typical usage is:
+     * <pre>
+     * class MyClass {
+     *   private static final RequestProcessor RP = new RequestProcessor(MyClass.class);
+     * 
+     * }
+     * </pre>
+     * Behaves as <code>new RequestProcessor(MyClass.class.getName())</code>.
+     *
+     * @param forClass name of this class gives name for the processor threads
+     * @since 8.6
+     */
+    public RequestProcessor(Class<?> forClass) {
+        this(forClass.getName());
     }
 
     /** Creates a new named RequestProcessor with defined throughput.
@@ -308,16 +335,52 @@ public final class RequestProcessor implements ScheduledExecutorService {
      * @since 7.24
      */
     public RequestProcessor(String name, int throughput, boolean interruptThread, boolean enableStackTraces) {
+        this(name, throughput, interruptThread, enableStackTraces, 0);
+    }
+
+    private RequestProcessor(String name, int throughput, boolean interruptThread, boolean enableStackTraces, int warnParallel) {
         this.throughput = throughput;
         this.name = (name != null) ? name : ("OpenIDE-request-processor-" + (counter++));
         this.interruptThread = interruptThread;
         this.enableStackTraces = enableStackTraces;
+        this.warnParallel = warnParallel;
     }
 
     
-    /** The getter for the shared instance of the <CODE>RequestProcessor</CODE>.
+    /** <b>Warning:</b> The instance of <code>RequestProcessor</code> returned
+     * by this method has very bad performance side effects, don't use unless
+     * you understand all implications!
+     * <p>
+     * This is the getter for the shared instance of the <CODE>RequestProcessor</CODE>.
      * This instance is shared by anybody who
-     * needs a way of performing sporadic or repeated asynchronous work.
+     * needs a way of performing <em>sporadic</em> asynchronous work.
+     * <p>
+     * The problem of this method lays exactly in the definition of <em>sporadic</em>.
+     * Often one needs to process something at some <em>sporadic</em> moment,
+     * but, for examle
+     * due to <em>storm of events</em>, one needs to execute more than one tasks
+     * at the same <em>sporadic</em> moment. In this situation
+     * using {@link #getDefault()} is horribly inefficient. All such tasks
+     * would be processed in parallel, allocating their own execution threads
+     * (up to 50). As the price per one thread is estimated to 1MB on common
+     * systems, you shall think twice whether you want to increase the memory
+     * consumption of your application so much at these <em>sporadic</em> moments.
+     * <p>
+     * There is a runtime detection of the <em>parallel misuse</em> of this
+     * method since version 8.3. It is activated only in development mode
+     * (when executed with assertions on) and prints warning into log
+     * whenever there are more than three same tasks running in parallel.
+     * In case you see such warning, or in case you are in doubts consider
+     * creation of your own, private, single throughput processor:
+     * <pre>
+     * class YourClass {
+     *   private static final RequestProcessor RP = new {@link RequestProcessor#RequestProcessor(java.lang.Class) RequestProcessor(YourClass.class)};
+     * }
+     * </pre>
+     * Such private field is lightweight and guarantees that all your tasks
+     * will be processed sequentially, one by one. Just don't forget to make
+     * the field static!
+     * <p>
      * Tasks posted to this instance may be canceled until they start their
      * execution. If a there is a need to cancel a task while it is running
      * a seperate request processor needs to be created via 
@@ -341,6 +404,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
      * @param command the runnable to execute
      * @since 7.16
      */
+    @Override
     public void execute(Runnable command) {
         post(command);
     }
@@ -518,13 +582,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
     /** Logger for the error manager.
      */
     static Logger logger() {
-        synchronized (UNLIMITED) {
-            if (logger == null) {
-                logger = Logger.getLogger("org.openide.util.RequestProcessor"); // NOI18N
-            }
-
-            return logger;
-        }
+        return logger;
     }
 
     //------------------------------------------------------------------------------
@@ -557,9 +615,9 @@ public final class RequestProcessor implements ScheduledExecutorService {
         }
         if (loggable) {
             if (wasNull) {
-                em.fine("Null task for item " + item); // NOI18N
+                em.log(Level.FINE, "Null task for item {0}", item); // NOI18N
             } else {
-                em.fine("Item enqueued: " + item.action + " status: " + item.enqueued); // NOI18N
+                em.log(Level.FINE, "Item enqueued: {0} status: {1}", new Object[]{item.action, item.enqueued}); // NOI18N
             }
         }
     }
@@ -1306,6 +1364,7 @@ outer:  do {
             this.itm = itm;
         }
         
+        @Override
         public void run() {
             try {
                 enqueue(itm);
@@ -1445,6 +1504,7 @@ outer:  do {
         * @return true if the task has been removed from the queue,
         *   false it the task has already been processed
         */
+        @Override
         public boolean cancel() {
             synchronized (processorLock) {
                 boolean success;
@@ -1564,7 +1624,7 @@ outer:  do {
                 boolean loggable = em.isLoggable(Level.FINE);
                 
                 if (loggable) {
-                    em.fine("Task.waitFinished on " + this + " from other task in RP: " + Thread.currentThread().getName()); // NOI18N
+                    em.log(Level.FINE, "Task.waitFinished on {0} from other task in RP: {1}", new Object[]{this, Thread.currentThread().getName()}); // NOI18N
                 }
                 
 
@@ -1574,8 +1634,8 @@ outer:  do {
                     runAtAll = !isFinished();
                     toRun = runAtAll && ((item == null) || item.clear(null));
                     if (loggable) {
-                        em.fine("    ## finished: " + isFinished()); // NOI18N
-                        em.fine("    ## item: " + item); // NOI18N
+                        em.log(Level.FINE, "    ## finished: {0}", isFinished()); // NOI18N
+                        em.log(Level.FINE, "    ## item: {0}", item); // NOI18N
                     }
                 }
 
@@ -1592,7 +1652,7 @@ outer:  do {
 
                     if (runAtAll && lastThread != Thread.currentThread()) {
                         if (loggable) {
-                            em.fine("    ## waiting for it to be finished: " + lastThread + " now: " + Thread.currentThread()); // NOI18N
+                            em.log(Level.FINE, "    ## waiting for it to be finished: {0} now: {1}", new Object[]{lastThread, Thread.currentThread()}); // NOI18N
                         }
                         super.waitFinished();
                     }
@@ -1874,7 +1934,7 @@ outer:  do {
                 boolean loggable = em.isLoggable(Level.FINE);
 
                 if (loggable) {
-                    em.fine("Begining work " + getName()); // NOI18N
+                    em.log(Level.FINE, "Begining work {0}", getName()); // NOI18N
                 }
 
                 // while we have something to do
@@ -1888,13 +1948,13 @@ outer:  do {
 
                     try {
                         if (loggable) {
-                            em.fine("  Executing " + todo); // NOI18N
+                            em.log(Level.FINE, "  Executing {0}", todo); // NOI18N
                         }
-
+                        registerParallel(todo, current);
                         todo.run();
 
                         if (loggable) {
-                            em.fine("  Execution finished in" + getName()); // NOI18N
+                            em.log(Level.FINE, "  Execution finished in {0}", getName()); // NOI18N
                         }
 
                         debug = todo.debug();
@@ -1908,6 +1968,8 @@ outer:  do {
                         doNotify(todo, e);
                     } catch (Throwable t) {
                         doNotify(todo, t);
+                    } finally {
+                        unregisterParallel(todo, current);
                     }
 
                     // need the same sync as interruptTask
@@ -1921,7 +1983,7 @@ outer:  do {
                 }
 
                 if (loggable) {
-                    em.fine("Work finished " + getName()); // NOI18N
+                    em.log(Level.FINE, "Work finished {0}", getName()); // NOI18N
                 }
             }
         }
@@ -1971,7 +2033,7 @@ outer:  do {
 
         /** @see "#20467" */
         private static void doNotify(RequestProcessor.Task todo, Throwable ex) {
-            if (SLOW && todo.item.message == null) {
+            if (SLOW && todo.item != null && todo.item.message == null) {
                 todo.item.message = "task failed due to: " + ex;
                 todo.item.initCause(ex);
                 ex = todo.item;
@@ -1986,6 +2048,7 @@ outer:  do {
          */
         static ThreadGroup getTopLevelThreadGroup() {
             java.security.PrivilegedAction<ThreadGroup> run = new java.security.PrivilegedAction<ThreadGroup>() {
+                    @Override
                     public ThreadGroup run() {
                         ThreadGroup current = Thread.currentThread().getThreadGroup();
 
@@ -1996,8 +2059,64 @@ outer:  do {
                         return current;
                     }
                 };
+            ThreadGroup orig = java.security.AccessController.doPrivileged(run);
+            ThreadGroup nuova = null;
 
-            return java.security.AccessController.doPrivileged(run);
+            try {
+                Class<?> appContext = Class.forName("sun.awt.AppContext");
+                Method instance = appContext.getMethod("getAppContext");
+                Method getTG = appContext.getMethod("getThreadGroup");
+                nuova = (ThreadGroup) getTG.invoke(instance.invoke(null));
+            } catch (Exception exception) {
+                logger().log(Level.FINE, "Cannot access sun.awt.AppContext", exception);
+                return orig;
+            }
+
+            assert nuova != null;
+
+            if (nuova != orig) {
+                logger().log(Level.WARNING, "AppContext group {0} differs from originally used {1}", new Object[]{nuova, orig});
+            }
+            return nuova;
+        }
+
+        private static final Set<Class<? extends Runnable>> warnedClasses = Collections.synchronizedSet(new WeakSet<Class<? extends Runnable>>());
+        private void registerParallel(Task todo, RequestProcessor rp) {
+            if (rp.warnParallel == 0 || todo.run == null) {
+                return;
+            }
+            final Class<? extends Runnable> c = todo.run.getClass();
+            AtomicInteger number;
+            synchronized (rp.processorLock) {
+                if (rp.inParallel == null) {
+                    rp.inParallel = new WeakHashMap<Class<? extends Runnable>,AtomicInteger>();
+                }
+                number = rp.inParallel.get(c);
+                if (number == null) {
+                    rp.inParallel.put(c, number = new AtomicInteger(1));
+                } else {
+                    number.incrementAndGet();
+                }
+            }
+            if (number.get() >= rp.warnParallel && warnedClasses.add(c)) {
+                final String msg = "Too many " + c.getName() + " (" + number + ") in shared RequestProcessor; create your own"; // NOI18N
+                Exception ex = null;
+                if (todo.item != null) {
+                    ex = new IllegalStateException(msg);
+                    ex.setStackTrace(todo.item.getStackTrace());
+                }
+                logger().log(Level.WARNING, msg, ex);
+            }
+        }
+
+        private void unregisterParallel(Task todo, RequestProcessor rp) {
+            if (rp.warnParallel == 0 || todo.run == null) {
+                return;
+            }
+            synchronized (rp.processorLock) {
+                Class<? extends Runnable> c = todo.run.getClass();
+                rp.inParallel.get(c).decrementAndGet();
+            }
         }
     }
 }

@@ -53,8 +53,10 @@ import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.openide.filesystems.FileObject;
@@ -67,6 +69,13 @@ import org.openide.util.Union2;
 class FieldElementImpl extends ScopeImpl implements FieldElement {
     String defaultType;
     private String className;
+
+    FieldElementImpl(Scope inScope, String defaultType, ASTNodeInfo<FieldAccess> nodeInfo) {
+        super(inScope, nodeInfo, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), null);
+        this.defaultType = defaultType;
+        assert inScope instanceof TypeScope;
+        className = inScope.getName();
+    }
 
     FieldElementImpl(Scope inScope, String defaultType, SingleFieldDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null);

@@ -7,109 +7,83 @@ Use is subject to license terms.
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link href="/org/netbeans/modules/usersguide/ide.css" type="text/css" rel="StyleSheet">
-    <meta content="Helen" name="generator">
-    <title>Doing Remote Development</title>
-  </head>
-  <body>
-    <h2>
-       Doing Remote Development
-    </h2>
+        <title>Overview of C/C++ Remote Development</title>
+    </head>
+    <body>
+        <h2>Overview of C/C++ Remote Development
+        </h2>
     <p>
        <small><a href="#seealso">See Also</a>&nbsp;</small>
-    </p>
-    <p>
-       You can build, run, and debug projects on the local host (the system from which you started
-      the IDE) or on a remote host running a Linux or Solaris operating system.
-    </p>
-    <p>
-       When you create a project, the current development host is selected as the development host
-      for the project. You can change the development host for the project on the Build panel of
-      the Project Properties dialog box. You can also right-click a project node and select Set
-      Remote Development Host.
-    </p>
-    <p>
-       You can define remote development hosts in the Build Tools tab of the <a href=
-      "../CandC++ProjectBasics/CandC++Options.html">Options window</a>.
-    </p>
-    <p>
-       To develop a project on a remote host, both the remote host and local host must have access
-      to the project files. File access can be accomplished in several ways:
-    </p>
-    <ul>
-      <li>
-        Keep the project on a shared folder or filesystem that is visible on both the local host
-        and the remote host. Typically such a filesystem is shared using NFS or Samba. You can
-        define the mapping between local and remote paths to project source files when you define
-        the remote host.
-      </li>
-      <li>
-        Use the Smart Secure Copy option to copy files to the remote host.
-      </li>
-    </ul>
-    <p>
-       You can select the file synchronization strategy when you define the remote host, after you
-      connect to the host in the New Remote Development Host wizard. You can change the
-      synchronization any time by going to the Manage Hosts dialog (right-click project node, and
-      select Set Remote Development Host &gt; Manage Hosts. Select the hostname and click
-      Properties.
-    </p>
-    <p>
-       After you have set up a remote development host, you can use it as your build machine simply
-      by selecting the remote development host in your project properties. Then you can use the IDE
-      to build your project in the same way you do locally. The advantage of remote development is
-      that you can gain access to compilers and tools that you might not have on your local host.
-      The remote server may also have more robust hardware, such as multicore processors to enable
-      parallel processing of your builds.
-    </p>
-    <p>
-       If you have a remote machine running the Solaris 10 OS or OpenSolaris OS, you can take
-      advantage of the IDE's <a href=
-      "../ProfilingCandC++Projects/OverviewOfCandC++Profiling.html">C/C++ profiling tools</a> that
-      are supported on Solaris operating systems.
-    </p>
-    <table>
-      <tr>
+        </p>
+        <p>Remote development enables you to run the IDE locally in your familiar desktop
+            environment, while using the compute power and developer tools of a remote server
+            to build your applications.</p>
+        <p>Once the remote host is configured and connected, you can build, run, and debug projects
+            as you normally do on your local system.  The IDE runs the remote host's tools
+            on your project files, enabling you to build binaries for the remote server platform
+            and use advanced tools such as those used for
+            <a href="../ProfilingCandC++Projects/OverviewOfCandC++Profiling.html">
+                profiling C and C++ projects</a>. The remote host might also
+            have more advanced hardware, such as multicore processors to enable
+            fast parallel processing of your builds.</p>
+
+        <p>When you use a remote development host, the project files
+            must be accessible from both systems. You can set up the remote host
+            to obtain access to project files though a shared file system, or by
+            copying the project files to the remote system. When you use the secure copy
+            option, the IDE manages the project files in both locations, so you do not
+            need to transfer any files yourself. If a remotely
+            built project generates files that are dependencies for the project, the IDE
+            prompts you to download the generated files to the local system.</p>
+
+        <p>To use remote hosts for developing C, C++, or Fortran projects, you
+            should perform the following tasks.</p>
+        <ol>
+            <li><a href="RemoteDevelopmentConfigureHost.html">Configure a remote host.</a></li>
+            <li><a href="RemoteDevelopmentProjects.html">Set up a local project to use the remote host.</a></li>
+            <li><a href="../CandC++ProjectBasics/BuildingCorC++Project.html">Build and run your code as you normally do.</a></li>
+            <li><a href="RemoteDevelopmentManageHosts.html">Optionally change remote host properties.</a></li>
+        </ol>
+
+       
+        <table cellpadding=2 cellspacing=2>
+            <tr>
         <th colspan="2" align="left">
-          <a name="seealso">See also</a> 
-        </th>
-      </tr>
-      <tr>
+          <a name="seealso">See also</a>
+                </th>
+            </tr>
+            <tr>
         <td width="23">
           &nbsp;
-        </td>
-        <td>
-          <a href="ConfiguringBuildTools.html">Configuring Build Tools</a><br>
-           <a href="ProjectPropsBuild.html">C/C++ Project Properties Dialog Box: Build</a><br>
-               <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                    <param name="content" value="http://www.netbeans.org/kb/docs/cnd/remotedev-tutorial.html">
-                    <param name="text" value="<html><u>C/C++ Remote
-          Development tutorial (Web document)</u></html>">
-                    <param name="textFontSize" value="medium">
-                    <param name="textColor" value="blue">
-                </object>
-        </td>
-      </tr>
-    </table>
-    <hr>
+                </td>
+                <td>
+                    <a href="RemoteDevelopmentConfigureHost.html">Configuring a Remote Development Host</a><br>
+                    <a href="ConfiguringBuildTools.html">Configuring Build Tools for C/C++/Fortran Projects</a><br>
+                    <a href="ProjectPropsBuild.html">C/C++ Project Properties Dialog Box: Build</a><br>
+                    <a href="RemoteDevelopmentFileSharing.html">File Sharing with Remote Development Hosts</a>
+                </td>
+            </tr>
+        </table>
+        <hr>
     <p>
        <small><a href="../credits.html">Legal Notices</a></small>
-    </p>
+        </p>
     <table border="0" cellpadding="20">
-      <tr>
-        <td>
+            <tr>
+                <td>
           &nbsp;
-        </td>
-      </tr>
-      <tr>
-        <td>
+                </td>
+            </tr>
+            <tr>
+                <td>
           &nbsp;
-        </td>
-      </tr>
-      <tr>
-        <td>
+                </td>
+            </tr>
+            <tr>
+                <td>
           &nbsp;
-        </td>
-      </tr>
-    </table>
-  </body>
+                </td>
+            </tr>
+        </table>
+    </body>
 </html>

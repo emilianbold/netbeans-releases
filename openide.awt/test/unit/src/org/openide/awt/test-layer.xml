@@ -130,6 +130,12 @@ made subject to such option by the copyright holder.
                     <attr name='noIconInMenu' boolvalue="true"/>
                     <attr name='key' stringvalue='somekey'/>
                 </file>
+                <file name="testCopyLike.instance">
+                    <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.callback"/>
+                    <attr name="key" stringvalue="copy-to-clipboard"/>
+                    <attr name='iconBase' methodvalue='org.openide.awt.CallbackActionTest.myIconResource'/>
+                    <attr name="displayName" stringvalue="Copy"/>
+                </file>
                 <file name="testContext.instance">
                     <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.context'/>
                     <attr name='delegate' newvalue='org.openide.awt.ContextActionTest$SimpleCookieAction'/>

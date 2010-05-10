@@ -69,7 +69,6 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -141,6 +140,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
         return FileUtil.normalizeFile(new File(execPath));
     }    
 
+    @Override
     public void actionPerformed(ActionEvent evt) {
         if(evt.getSource() == panel.browseButton) {
             onBrowseClick();
@@ -149,6 +149,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
         }
     }
 
+    @Override
     public void hyperlinkUpdate(HyperlinkEvent e) {
         if(e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) return;
         URL url = e.getURL();
@@ -172,7 +173,8 @@ public class MissingClient implements ActionListener, HyperlinkListener {
     }
 
     private void install(final UpdateElement updateElement) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     InstallCancellable ic = new InstallCancellable();
@@ -189,9 +191,9 @@ public class MissingClient implements ActionListener, HyperlinkListener {
                         if (oc.canBeAdded(updateElement.getUpdateUnit(), updateElement)) {
                             oc.add(updateElement);
                         } else {
-                            Subversion.LOG.warning("MissingClient: cannot install " + updateElement.toString());
+                            Subversion.LOG.log(Level.WARNING, "MissingClient: cannot install {0}", updateElement.toString());
                             if (updateElement.getUpdateUnit().getInstalled() != null) {
-                                Subversion.LOG.warning("MissingClient: already installed " + updateElement.getUpdateUnit().getInstalled().toString());
+                                Subversion.LOG.log(Level.WARNING, "MissingClient: already installed {0}", updateElement.getUpdateUnit().getInstalled().toString());
                             }
                             notifyInDialog(NbBundle.getMessage(MissingClient.class, "MSG_MissingClient_InvalidOperation"), //NOI18N
                                     NbBundle.getMessage(MissingClient.class, "LBL_MissingClient_InvalidOperation"), //NOI18N
@@ -248,6 +250,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
 
     private class InstallCancellable implements Cancellable {
         private boolean cancelled;
+        @Override
         public boolean cancel() {
             cancelled = true;
             return true;

@@ -1,4 +1,4 @@
 Code completion result for source line:
 /**/add|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     add157534($a, $b) - generate    [PUBLIC]   SuperClass157534
+METHOD     add157534(&$a, &$b) - generate  [PUBLIC]   SuperClass157534

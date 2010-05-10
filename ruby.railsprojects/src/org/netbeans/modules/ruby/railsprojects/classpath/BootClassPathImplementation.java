@@ -226,19 +226,18 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         }
 
         // See if we've picked the right version
-        String ACTIVERECORD = "activerecord"; // NOI18N
-        URL activerecord = gemUrls.get(ACTIVERECORD);
+        URL activerecord = gemUrls.get(Gems.ACTIVERECORD);
         if (activerecord == null) {
             // Activerecord not found at all - not good for a Rails projects, but at least no point adjusting versions
             return gemUrls;
         }
         String activerecordUrl = activerecord.toExternalForm();
-        if (activerecordUrl.indexOf(ACTIVERECORD+"-" + railsVersion) != -1) { // NOI18N
+        if (activerecordUrl.indexOf(Gems.ACTIVERECORD + "-" + railsVersion) != -1) { // NOI18N
             // Already have the right version - we're done
             return gemUrls;
         }
 
-        Pattern VERSION_PATTERN = Pattern.compile(".*activerecord-(\\d+\\.\\d+\\.\\d+).*"); // NOI18N
+        Pattern VERSION_PATTERN = Pattern.compile(".*" + Gems.ACTIVERECORD + "-" + GemFilesParser.VERSION_REGEX + ".*"); // NOI18N
         Matcher m = VERSION_PATTERN.matcher(activerecordUrl);
         if (!m.matches()) {
             // Couldn't determine current version - don't attempt adjustments
@@ -248,8 +247,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         String defaultVersion = m.group(1);
 
         // Now attempt to fix the urls
-        gemUrls.get("actionwebservice");
-
         boolean first = true;
         for (String gemName : Gems.getRailsGems()) { // NOI18N
             URL url = gemUrls.get(gemName);

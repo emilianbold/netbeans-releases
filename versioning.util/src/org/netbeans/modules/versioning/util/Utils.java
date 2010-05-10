@@ -87,6 +87,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 
 /**
  * Utilities class.
@@ -104,6 +105,11 @@ public final class Utils {
      * Request processor for long running tasks.
      */
     private static final RequestProcessor vcsBlockingRequestProcessor = new RequestProcessor("Versioning long tasks", 1);
+
+    /**
+     * Request processor for parallel tasks.
+     */
+    private static final RequestProcessor vcsParallelRequestProcessor = new RequestProcessor("Versioning parallel tasks", 5, true);
 
     private static /*final*/ File [] unversionedFolders;
 
@@ -161,7 +167,28 @@ public final class Utils {
      * @param runnable Runnable to run
      */
     public static void post(Runnable runnable) {
-        vcsRequestProcessor.post(runnable);
+        post(runnable, 0);
+    }
+
+    /**
+     * Runs the runnable in the Versioning RequestProcessor (which has throughput of 1). The runnable must not take long
+     * to execute (connect through network, etc).
+     *
+     * @param runnable Runnable to run
+     * @param timeToWait delay before starting the task
+     */
+    public static void post (Runnable runnable, int timeToWait) {
+        vcsRequestProcessor.post(runnable, timeToWait);
+    }
+
+    /**
+     * Runs the runnable in the Versioning RequestProcessor (which has throughput of 5).
+     *
+     * @param runnable Runnable to run
+     * @param timeToWait delay before starting the task
+     */
+    public static void postParallel (Runnable runnable, int timeToWait) {
+        vcsParallelRequestProcessor.post(runnable, timeToWait);
     }
 
     /**
@@ -1180,7 +1207,7 @@ public final class Utils {
                 foldersToCheck.add(folder);
                 if (loggingTask == null) {
                     loggingTask = new LogTask();
-                    RequestProcessor.getDefault().post(loggingTask, 2000);
+                    Utils.postParallel(loggingTask, 2000);
                 }
             }
         }
@@ -1260,5 +1287,33 @@ public final class Utils {
             ret += hex + (i < md5digest.length - 1 ? ":" : ""); // NOI18N
         }
         return ret;
+    }
+
+    /**
+     * Returns files from all opened top components
+     * @return set of opened files
+     */
+    public static Set<File> getOpenFiles() {
+        TopComponent[] comps = TopComponent.getRegistry().getOpened().toArray(new TopComponent[0]);
+        Set<File> openFiles = new HashSet<File>(comps.length);
+        for (TopComponent tc : comps) {
+            Node[] nodes = tc.getActivatedNodes();
+            if (nodes == null) {
+                continue;
+            }
+            for (Node node : nodes) {
+                File file = node.getLookup().lookup(File.class);
+                if (file == null) {
+                    FileObject fo = node.getLookup().lookup(FileObject.class);
+                    if (fo != null) {
+                        file = FileUtil.toFile(fo);
+                    }
+                }
+                if (file != null) {
+                    openFiles.add(file);
+                }
+            }
+        }
+        return openFiles;
     }
 }

@@ -9,6 +9,11 @@
         <title>Standard Java SE Project Properties Dialog Box: Web Start</title>
         
         <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <style type="text/css">
+<!--
+.style2 {color: #000000}
+-->
+        </style>
 </head>
     <body>
         <h2>Standard Java SE Project Properties Dialog Box: Web Start</h2>
@@ -52,12 +57,26 @@
             application. </p></li>
             <li><b>Allow Offline</b>. If selected, the user does not need a network 
             connection to run the application.</li>
-            <li><strong>Extension Resources</strong>. </li>
+            <li class="style2"><strong>Extension Resources</strong>. Click the Extension Resources button to specify dependencies on the JNLP files of additional resources (APIs, libraries, or system properties) that should be used as part of your application when it loads through Java Web Start. To specify an extension resource, enter the following attributes:
+              
+              <ul>
+                <li><strong>Href</strong> - a URL to a JNLP file of the resource you want to add. For example, <tt>http://somesite.org/mylib.jnlp</tt></li>
+                <li><strong>Name</strong> (Optional). An arbitrary name of the extension resource. </li>
+                <li><strong>Version</strong> (Optional). A version of the extension resource. </li>
+              </ul>
+            </li>
             <li><b>Self-signed</b>. If selected, the application is signed using 
                 a certificate that is generated when the project is built. This 
                 certificate is not certified by any Certification Authority. 
                 Self-signing an application enables the application to do things such as 
-            write files to disk and access the network.</li>
+            write files to disk and access the network.<br>
+            <span class="style2">If you select the Self-signed option, choose one of the following options that determine how to handle  the signed and unsigned components in your Java Web Start applications and applets:            </span>
+            <ul>
+              <li class="style2"><strong>Enable Software Protections</strong>. If selected, a warning dialog box will be displayed during loading your Java Web Start application with mixed components (signed and unsigned). </li>
+              <li class="style2"><strong>Trusted Only</strong>. Use this attribute for applications and applets that do not require unsigned components. All classes and resources in the application or applet must be signed. A warning dialog will not be displayed and an application or applet that  loads a jar file containing this attribute will not load any untrusted  classes or resources. This measure prevents a signed application or applet from being re-purposed with unsigned components.</li>
+              <li class="style2"><strong>Trusted Library</strong>.   Use this attribute to allow unsigned components to  be mixed with signed components (for example, signed libraries)  without a warning dialog being displayed.  All classes and resources in a jar file containing this manifest attribute  must be signed.  Trusted library code is loaded into a separate dedicated class loader  which is unique to the application or applet. This ensures that the  trusted library code cannot be replaced.</li>
+            </ul>
+            </li>
             <li><b>Application Descriptor</b>. If selected, the JNLP file is
               generated with the <tt>application-desc</tt> element. The <tt>application-desc</tt>
             element will point to the project's main class.</li>
@@ -85,7 +104,7 @@
             <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_common-app.html">Application</a></dd>
             <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_desktop-app.html">Desktop App</a></dd>
             <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_formatting.html">Formatting</a></dd>
-            </dl>
+    </dl>
         
         <hr><small><a href="../../credits.html">Legal Notices</a></small>
         

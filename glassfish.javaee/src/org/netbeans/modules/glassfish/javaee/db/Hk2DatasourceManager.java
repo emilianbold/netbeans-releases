@@ -39,15 +39,12 @@
 
 package org.netbeans.modules.glassfish.javaee.db;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedWriter;
+import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.glassfish.javaee.*;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
+import java.io.OutputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -59,21 +56,30 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
-import org.netbeans.modules.xml.api.EncodingUtil;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 import org.netbeans.modules.glassfish.eecommon.api.UrlData;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
  *
@@ -84,7 +90,8 @@ public class Hk2DatasourceManager implements DatasourceManager {
     private static final String DOMAIN_XML_PATH = "config/domain.xml";
     
     private Hk2DeploymentManager dm;
-    
+
+   
     public Hk2DatasourceManager(Hk2DeploymentManager dm) {
         this.dm = dm;
     }
@@ -102,9 +109,13 @@ public class Hk2DatasourceManager implements DatasourceManager {
         String domainsDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
         String domainName = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
         // XXX Fix to work with current server domain, not just default domain.
-        File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
-        // TODO -- need to account for remote domain here?
-        return readDatasources(domainXml, "/domain/", null);
+        if (null != domainsDir) {
+            File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
+            // TODO -- need to account for remote domain here?
+            return readDatasources(domainXml, "/domain/", null);
+        } else {
+            return Collections.EMPTY_SET;
+        }
     }
 
     /**
@@ -535,35 +546,54 @@ public class Hk2DatasourceManager implements DatasourceManager {
 //    <property name="URL" value="jdbc:postgresql://localhost:5432/cookbook2_development"/>
 //    <property name="driverClass" value="org.postgresql.Driver"/>
 //  </jdbc-connection-pool>
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = null;
+        try {
+            docBuilder = docFactory.newDocumentBuilder();
+        } catch (ParserConfigurationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        Document doc = readResourceFile(docBuilder, sunResourcesXml);
+
+
+        if (doc == null) return;
+        NodeList resourcesNodes = doc.getElementsByTagName("resources");//NOI18N
+        Node resourcesNode = null;
+        if(resourcesNodes.getLength()<1){
+            resourcesNode = doc.createElement("resources");//NOI18N
+            doc.getDocumentElement().appendChild(resourcesNode);
+        } else {
+            resourcesNode = resourcesNodes.item(0);
+        }
+        Node newPool = null;
+        try {
+            newPool = resourcesNode.appendChild(doc.importNode(docBuilder.parse(new InputSource(new StringReader(CP_TAG_1+CP_TAG_2+CP_TAG_3+CP_TAG_4+CP_TAG_5))).getDocumentElement(), true));
+        } catch (SAXException ex) {
+            Exceptions.printStackTrace(ex);
+        }
 
         UrlData urlData = new UrlData(url);
 
         // Maybe move this logic into UrlData?
         String dsClassName = computeDataSourceClassName(url, driver);
         
-        StringBuilder xmlBuilder = new StringBuilder(2000);
-        xmlBuilder.append(CP_TAG_1);
-        appendAttr(xmlBuilder, ATTR_DATASOURCE_CLASSNAME, dsClassName, false);
-        xmlBuilder.append(CP_TAG_2);
-        appendAttr(xmlBuilder, ATTR_POOL_NAME, poolName, true);
-        xmlBuilder.append(CP_TAG_3);
-        appendAttr(xmlBuilder, ATTR_RES_TYPE, RESTYPE_DATASOURCE, true);
-        xmlBuilder.append(CP_TAG_4);
-        appendProperty(xmlBuilder, PROP_SERVER_NAME, urlData.getHostName(), true);
-        appendProperty(xmlBuilder, PROP_PORT_NUMBER, urlData.getPort(), false);
-        appendProperty(xmlBuilder, PROP_DATABASE_NAME, urlData.getDatabaseName(), false);
-        appendProperty(xmlBuilder, PROP_USER, username, true);
+        appendAttr(doc, newPool, ATTR_DATASOURCE_CLASSNAME, dsClassName, false);
+        appendAttr(doc, newPool, ATTR_POOL_NAME, poolName, true);
+        appendAttr(doc, newPool, ATTR_RES_TYPE, RESTYPE_DATASOURCE, true);
+        appendProperty(doc, newPool, PROP_SERVER_NAME, urlData.getHostName(), true);
+        appendProperty(doc, newPool, PROP_PORT_NUMBER, urlData.getPort(), false);
+        appendProperty(doc, newPool, PROP_DATABASE_NAME, urlData.getDatabaseName(), false);
+        appendProperty(doc, newPool, PROP_USER, username, true);
         // blank password is ok so check just null here and pass force=true.
         if(password != null) {
-            appendProperty(xmlBuilder, PROP_PASSWORD, password, true);
+            appendProperty(doc, newPool, PROP_PASSWORD, password, true);
         }
-        appendProperty(xmlBuilder, PROP_URL, url, true);
-        appendProperty(xmlBuilder, PROP_DRIVER_CLASS, driver, true);
-        xmlBuilder.append(CP_TAG_5);
+        appendProperty(doc, newPool, PROP_URL, url, true);
+        appendProperty(doc, newPool, PROP_DRIVER_CLASS, driver, true);
         
-        String xmlFragment = xmlBuilder.toString();
-        Logger.getLogger("glassfish-javaee").log(Level.FINER, "New connection pool resource:\n" + xmlFragment);
-        appendResource(sunResourcesXml, xmlFragment);
+        Logger.getLogger("glassfish-javaee").log(Level.FINER, "New connection pool resource:\n" + newPool.getTextContent());
+
+        writeXmlResourceToFile(sunResourcesXml, doc);
     }
     
     private static String computeDataSourceClassName(String url, String driver) {
@@ -621,149 +651,108 @@ public class Hk2DatasourceManager implements DatasourceManager {
         //      jndi-name="jdbc/__default" 
         //      object-type="user" />
         
-        StringBuilder xmlBuilder = new StringBuilder(500);
-        xmlBuilder.append(JDBC_TAG_1);
-        appendAttr(xmlBuilder, ATTR_POOLNAME, poolName, true);
-        appendAttr(xmlBuilder, ATTR_JNDINAME, jndiName, true);
-        xmlBuilder.append(JDBC_TAG_2);
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = null;
+        try {
+            docBuilder = docFactory.newDocumentBuilder();
+        } catch (ParserConfigurationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        Document doc = readResourceFile(docBuilder, sunResourcesXml);
+
+        NodeList resourcesNodes = doc.getElementsByTagName("resources");//NOI18N
+        Node resourcesNode = null;
+        if(resourcesNodes.getLength()<1){
+            throw new IOException("Malformed XML");
+        } else {
+            resourcesNode = resourcesNodes.item(0);
+        }
+        Node newJdbcRes = null;
+        try {
+            newJdbcRes = resourcesNode.appendChild(doc.importNode(docBuilder.parse(new InputSource(new StringReader(JDBC_TAG_1+JDBC_TAG_2))).getDocumentElement(), true));
+        } catch (SAXException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        appendAttr(doc, newJdbcRes, ATTR_POOLNAME, poolName, true);
+        appendAttr(doc, newJdbcRes, ATTR_JNDINAME, jndiName, true);
         
-        String xmlFragment = xmlBuilder.toString();
-        Logger.getLogger("glassfish-javaee").log(Level.FINER, "New JDBC resource:\n" + xmlFragment);
-        appendResource(sunResourcesXml, xmlFragment);
+        Logger.getLogger("glassfish-javaee").log(Level.FINER, "New JDBC resource:\n" + newJdbcRes.getTextContent());
+        writeXmlResourceToFile(sunResourcesXml, doc);
     }
     
-    private static void appendAttr(StringBuilder builder, String name, String value, boolean force) {
+    private static void appendAttr(Document doc, Node node, String name, String value, boolean force) {
         if(force || (name != null && name.length() > 0)) {
-            builder.append(name);
-            builder.append("=\"");
-            builder.append(value);
-            builder.append("\" ");
+            Attr attr = doc.createAttribute(name);
+            attr.setValue(value);
+            NamedNodeMap attrs = node.getAttributes();
+            attrs.setNamedItem(attr);
         }
     }
     
-    private static void appendProperty(StringBuilder builder, String name, String value, boolean force) {
+    private static void appendProperty(Document doc, Node node, String name, String value, boolean force) {
         if(force || (value != null && value.length() > 0)) {
-            builder.append("        <property name=\"");
-            builder.append(name);
-            builder.append("\" value=\"");
-            builder.append(value);
-            builder.append("\"/>\n");
+            Node newProperty = doc.createElement("property");//NOI18N
+            Attr nameAttr = doc.createAttribute("name");//NOI18N
+            nameAttr.setValue(name);
+            Attr valueAttr = doc.createAttribute("value");//NOI18N
+            valueAttr.setValue(value);
+            NamedNodeMap attrs = newProperty.getAttributes();
+            attrs.setNamedItem(nameAttr);
+            attrs.setNamedItem(valueAttr);
+            node.appendChild(newProperty);
         }
-    }
-    
-    private static void appendResource(File sunResourcesXml, String fragment) throws IOException {
-        String sunResourcesBuf = readResourceFile(sunResourcesXml);
-        sunResourcesBuf = insertFragment(sunResourcesBuf, fragment);
-        writeResourceFile(sunResourcesXml, sunResourcesBuf);
     }
     
     private static final String SUN_RESOURCES_XML_HEADER =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<!DOCTYPE resources PUBLIC " + 
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+        "<!DOCTYPE resources PUBLIC " +
             "\"-//Sun Microsystems, Inc.//DTD Application Server 9.0 Resource Definitions //EN\" " + 
             "\"http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd\">\n" +
-        "<resources>\n";
-    private static final String SUN_RESOURCES_XML_FOOTER =
-        "</resources>\n";
+        "<resources/>";
     
-    private static String insertFragment(String sunResourcesBuf, String fragment) throws IOException {
-        String header = SUN_RESOURCES_XML_HEADER;
-        String footer = SUN_RESOURCES_XML_FOOTER;
-        boolean insertNewLine = false;
-        
-        if(sunResourcesBuf != null) {
-            int closeIndex = sunResourcesBuf.indexOf("</resources>");
-            if(closeIndex == -1) {
-                throw new IOException("Malformed XML");
+
+    private static Document readResourceFile(DocumentBuilder docBuilder, File sunResourcesXml) throws IOException{
+        boolean newOne = false;
+        if(!sunResourcesXml.exists()){
+            FileUtil.createData(sunResourcesXml);//ensure file exist
+            newOne = true;
+        }
+        Document doc = null;
+        try {
+            if(newOne) {
+                doc = docBuilder.parse(new InputSource(new StringReader(SUN_RESOURCES_XML_HEADER)));
             }
-            header = sunResourcesBuf.substring(0, closeIndex);
-            footer = sunResourcesBuf.substring(closeIndex);
-            
-            if(closeIndex > 0 && sunResourcesBuf.charAt(closeIndex-1) != '\n') {
-                insertNewLine = true;
+            else   {
+                doc = docBuilder.parse(sunResourcesXml);
             }
+        } catch (SAXException ex) {
+            throw new IOException("Malformed XML: " +ex.getMessage());
         }
-        
-        int length = header.length() + footer.length() + 2;
-        if(fragment != null) {
-            length += fragment.length();
-        }
-        
-        StringBuilder builder = new StringBuilder(length);
-        builder.append(header);
-        
-        if(insertNewLine) {
-            String lineSeparator = System.getProperty("line.separator");
-            builder.append(lineSeparator != null ? lineSeparator : "\n");
-        }
-        
-        if(fragment != null) {
-            builder.append(fragment);
-        }
-        
-        builder.append(footer);
-        return builder.toString();
+
+        return doc;
     }
 
-    private static String readResourceFile(File sunResourcesXml) throws IOException {
-        String content = null;
-        if(sunResourcesXml.exists()) {
-            sunResourcesXml = FileUtil.normalizeFile(sunResourcesXml);
-            FileObject sunResourcesFO = FileUtil.toFileObject(sunResourcesXml);
-            
-            if(sunResourcesFO != null) {
-                InputStream is = null;
-                Reader reader = null;
-                try {
-                    long flen = sunResourcesFO.getSize();
-                    if(flen > 1000000) {
-                        throw new IOException(sunResourcesXml.getAbsolutePath() + " is too long to update.");
-                    }
 
-                    int length = (int) (2 * flen + 32);
-                    char [] buf = new char[length];
-                    is = new BufferedInputStream(sunResourcesFO.getInputStream());
-                    String encoding = EncodingUtil.detectEncoding(is);
-                    reader = new InputStreamReader(is, encoding);
-                    int max = reader.read(buf);
-                    if(max > 0) {
-                        content = new String(buf, 0, max);
-                    }
-                } finally {
-                    if(is != null) {
-                        try { is.close(); } catch(IOException ex) { }
-                    }
-                    if(reader != null) {
-                        try { reader.close(); } catch(IOException ex) { }
-                    }
-                }
-            } else {
-                throw new IOException("Unable to get FileObject for " + sunResourcesXml.getAbsolutePath());
-            }
-        }
-        return content;
-    }
-    
-    private static void writeResourceFile(final File sunResourcesXml, final String content) throws IOException {
+    private static void writeXmlResourceToFile(final File sunResourcesXml, final Document doc) throws IOException {
+
         FileObject parentFolder = FileUtil.createFolder(sunResourcesXml.getParentFile());
         FileSystem fs = parentFolder.getFileSystem();
-        writeResourceFile(fs, sunResourcesXml, content);
-    }
-    
-    private static void writeResourceFile(FileSystem fs, final File sunResourcesXml, final String content) throws IOException {
-        fs.runAtomicAction(new FileSystem.AtomicAction() {
+
+         fs.runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
                 FileLock lock = null;
-                BufferedWriter writer = null;
+                OutputStream os = null;
                 try {
                     FileObject sunResourcesFO = FileUtil.createData(sunResourcesXml);
                     lock = sunResourcesFO.lock();
-                    writer = new BufferedWriter(new OutputStreamWriter(sunResourcesFO.getOutputStream(lock)));
-                    writer.write(content);
+                    os = sunResourcesFO.getOutputStream(lock);
+
+                    XMLUtil.write(doc, os, doc.getXmlEncoding());
                 } finally {
-                    if(writer != null) {
-                        try { writer.close(); } catch(IOException ex) { }
+                    if(os !=null ){
+                        os.close();
                     }
                     if(lock != null) {
                         lock.releaseLock();

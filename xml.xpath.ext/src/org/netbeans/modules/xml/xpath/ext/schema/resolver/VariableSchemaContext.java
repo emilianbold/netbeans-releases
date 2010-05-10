@@ -22,8 +22,11 @@ package org.netbeans.modules.xml.xpath.ext.schema.resolver;
 import org.netbeans.modules.xml.xpath.ext.spi.*;
 import java.util.Collections;
 import java.util.Set;
+import javax.xml.namespace.NamespaceContext;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
+import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
 
 /**
  *
@@ -34,7 +37,7 @@ public class VariableSchemaContext implements XPathSchemaContext {
     private Set<SchemaCompPair> mCompPairSet;
     private XPathVariable mXPathVar;
     private boolean lastInChain = false;
-
+    
     public VariableSchemaContext(XPathVariable var) {
         assert var != null;
         mXPathVar = var;
@@ -84,6 +87,10 @@ public class VariableSchemaContext implements XPathSchemaContext {
         return mXPathVar.toString();
     }
 
+    public String getExpressionString(NamespaceContext nsContext, SchemaModelsStack sms) {
+        return mXPathVar.getExpressionString();
+    }
+
     @Override
     public boolean equals(Object obj)  {
         if (obj instanceof VariableSchemaContext) {
@@ -96,12 +103,17 @@ public class VariableSchemaContext implements XPathSchemaContext {
             XPathVariable var1 = this.getVariable();
             XPathVariable var2 = other.getVariable();
             //
-            if (var1.equals(var2)) {
-                return true;
-            }
+            return XPathUtils.equal(var1, var2);
         }
         //
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 43 * hash + (this.mXPathVar != null ? this.mXPathVar.getName().hashCode() : 0);
+        return hash;
     }
 
     public boolean equalsChain(XPathSchemaContext obj) {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="53">
+<configurationDescriptor version="62">
   <logicalFolder name="root" displayName="root" projectFiles="true">
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
@@ -38,59 +38,29 @@
         <platform>3</platform>
       </toolsSet>
       <compileType>
-        <cCompilerTool>
+        <cTool>
           <developmentMode>5</developmentMode>
           <architecture>1</architecture>
           <warningLevel>2</warningLevel>
-        </cCompilerTool>
-        <ccCompilerTool>
+        </cTool>
+        <ccTool>
           <developmentMode>5</developmentMode>
           <stripSymbols>true</stripSymbols>
           <architecture>1</architecture>
-          <includeDirectories>
-            <directoryPath>c:/cygwin/usr/include/mingw</directoryPath>
-            <directoryPath>C:/Program Files/Java/jdk1.6.0_10/include</directoryPath>
-            <directoryPath>C:/Program Files/Java/jdk1.6.0_10/include/win32</directoryPath>
-          </includeDirectories>
+          <incDir>
+            <pElem>c:/cygwin/usr/include/mingw</pElem>
+            <pElem>C:/Program Files/Java/jdk1.6.0_18/include</pElem>
+            <pElem>C:/Program Files/Java/jdk1.6.0_18/include/win32</pElem>
+          </incDir>
           <commandLine>-s -mno-cygwin</commandLine>
           <warningLevel>2</warningLevel>
-        </ccCompilerTool>
+        </ccTool>
         <linkerTool>
           <output>nbexec.dll</output>
           <linkerLibItems>
           </linkerLibItems>
         </linkerTool>
       </compileType>
-      <item path="argnames.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="jvmlauncher.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="jvmlauncher.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="nbexec.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="nbexecexe.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="nbexecloader.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="platformlauncher.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="platformlauncher.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="utilsfuncs.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="utilsfuncs.h">
-        <itemTool>3</itemTool>
-      </item>
     </conf>
   </confs>
 </configurationDescriptor>

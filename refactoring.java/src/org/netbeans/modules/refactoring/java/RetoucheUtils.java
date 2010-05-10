@@ -60,6 +60,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -97,6 +98,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -139,6 +141,7 @@ public class RetoucheUtils {
     private static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
     public static volatile boolean cancel = false;
     private static final Logger LOG = Logger.getLogger(RetoucheUtils.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(RetoucheUtils.class.getName(), 1, false, false);
     
     public static String htmlize(String input) {
         String temp = input.replace("<", "&lt;"); // NOI18N
@@ -615,8 +618,12 @@ public class RetoucheUtils {
                 } else {
                     dependentRoots.add(sourceRoot);
                 }
-                for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                    dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
+                final Set<URL> toExclude = new HashSet<URL>(Arrays.asList(UnitTestForSourceQuery.findSources(ownerRoot)));
+                for (SourceGroup root : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                    final URL rootURL = URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL);
+                    if (!toExclude.contains(rootURL)) {
+                        dependentRoots.add(rootURL);
+                    }
                 }
             } else {
                 for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
@@ -943,7 +950,7 @@ public class RetoucheUtils {
             waitDialog = DialogDisplayer.getDefault().createDialog(dd);
             waitDialog.pack();
             //100ms is workaround for 127536
-            waitTask = RequestProcessor.getDefault().post(ap, 100);
+            waitTask = RP.post(ap, 100);
             waitDialog.setVisible(true);
             waitTask = null;
             waitDialog = null;

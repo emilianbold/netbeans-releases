@@ -54,8 +54,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     }
 
     @Override
-    public SunMaketool createCopy() {
-        return new SunMaketool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
+    public SunMaketool createCopy(CompilerFlavor flavor) {
+        return new SunMaketool(getExecutionEnvironment(), flavor, getName(), getDisplayName(), getPath());
     }
 
     public static SunMaketool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {

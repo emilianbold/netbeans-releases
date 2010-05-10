@@ -99,25 +99,14 @@ class DemoPanel extends RSSFeedReaderPanel {
         res.setOpaque(false);
         
         DemoRSSFeed feed = new DemoRSSFeed( url );
-        res.add( feed, new GridBagConstraints(0,0,1,1,1.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
-        res.add( buildBottomContent(), new GridBagConstraints(0,1,1,1,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
-        res.add( new JLabel(), new GridBagConstraints(0,2,1,1,0.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
+        res.add( feed, new GridBagConstraints(0,0,1,1,0.0,0.0
+                ,GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
+        res.add( new JLabel(), new GridBagConstraints(1,1,1,1,1.0,1.0,
+                GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
         
         return res;
     }
 
-    protected JComponent buildBottomContent() {
-        WebLink allBlogs = new WebLink( "AllDemos", false ); // NOI18N
-        BundleSupport.setAccessibilityProperties( allBlogs, "AllDemos" ); //NOI18N
-
-        JPanel panel = new JPanel( new GridBagLayout() );
-        panel.setOpaque(false);
-        panel.add( allBlogs, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.SOUTHEAST,GridBagConstraints.HORIZONTAL,new Insets(5,5,0,5),0,0) );
-        panel.add( new JLabel(), new GridBagConstraints(0,0,1,1,1.0,0.0,GridBagConstraints.CENTER,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
-
-        return panel;
-    }
-    
     class DemoRSSFeed extends RSSFeed {
         public DemoRSSFeed( String url ) {
             super( url, false );
@@ -130,29 +119,29 @@ class DemoPanel extends RSSFeedReaderPanel {
             int row = 0;
 
             if( item.isValid() ) {
-                WebLink linkButton = new WebLink( item.title, item.link, false );
-                linkButton.getAccessibleContext().setAccessibleName( 
-                        BundleSupport.getAccessibilityName( "WebLink", item.title ) ); //NOI18N
-                linkButton.getAccessibleContext().setAccessibleDescription( 
-                        BundleSupport.getAccessibilityDescription( "WebLink", item.link ) ); //NOI18N
-                linkButton.setFont( BUTTON_FONT );
-                panel.add( linkButton, new GridBagConstraints(0,row++,1,1,0.0,0.0,
-                        GridBagConstraints.WEST,GridBagConstraints.NONE,
-                        new Insets(0,5,2,TEXT_INSETS_RIGHT),0,0 ) );
-
-
                 if( item.enclosureUrl != null ) {
-                    panel.add( new ImageLabel( item.link, getImage( item.enclosureUrl ), item.description ), new GridBagConstraints(0,row++,1,1,0.0,0.0,
+                    panel.add( new ImageLabel( item.link, getImage( item.enclosureUrl ), item.description ),
+                            new GridBagConstraints(0,row++,1,1,0.0,0.0,
                             GridBagConstraints.CENTER,GridBagConstraints.NONE,
-                            new Insets(10,5,5,5),0,0 ) );
+                            new Insets(0,0,5,5),0,0 ) );
                 } else {
                     JLabel label = new JLabel( BundleSupport.getLabel("NoScreenShot") ); //NOI18N
                     label.setHorizontalAlignment( JLabel.CENTER );
                     label.setVerticalAlignment( JLabel.CENTER );
                     panel.add( label, new GridBagConstraints(0,row++,1,1,0.0,0.0,
                             GridBagConstraints.CENTER,GridBagConstraints.NONE,
-                            new Insets(0,TEXT_INSETS_LEFT+5,0,TEXT_INSETS_RIGHT),0,0 ) );
+                            new Insets(0,0,5,5),0,0 ) );
                 }
+
+                WebLink linkButton = new WebLink( item.title, item.link, false );
+                linkButton.getAccessibleContext().setAccessibleName(
+                        BundleSupport.getAccessibilityName( "WebLink", item.title ) ); //NOI18N
+                linkButton.getAccessibleContext().setAccessibleDescription(
+                        BundleSupport.getAccessibilityDescription( "WebLink", item.link ) ); //NOI18N
+                linkButton.setFont( BUTTON_FONT );
+                panel.add( linkButton, new GridBagConstraints(0,row++,1,1,0.0,0.0,
+                        GridBagConstraints.WEST,GridBagConstraints.NONE,
+                        new Insets(0,0,5,5),0,0 ) );
             } else {
                 panel.add( new JLabel(BundleSupport.getLabel("ErrLoadingFeed")),  // NOI18N
                         new GridBagConstraints(0,row++,1,1,0.0,0.0,
@@ -161,6 +150,7 @@ class DemoPanel extends RSSFeedReaderPanel {
                 Mnemonics.setLocalizedText( button, BundleSupport.getLabel( "Reload" ) );  // NOI18N
                 button.setOpaque( false );
                 button.addActionListener( new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         lastReload = 0;
                         reload();
@@ -250,6 +240,7 @@ class DemoPanel extends RSSFeedReaderPanel {
             setCursor( Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) );
         }
 
+        @Override
         public void mouseClicked(MouseEvent e) {
             if( !e.isPopupTrigger() ) {
                 visited = true;
@@ -258,18 +249,22 @@ class DemoPanel extends RSSFeedReaderPanel {
             }
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
             Color borderColor = Utils.getColor( visited ? VISITED_LINK_COLOR : MOUSE_OVER_LINK_COLOR  );
             setBorder( BorderFactory.createLineBorder(borderColor, 1) );
             StatusDisplayer.getDefault().setStatusText( url );
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
             setBorder( BorderFactory.createEmptyBorder(1,1,1,1) );
             StatusDisplayer.getDefault().setStatusText( "" );
@@ -292,6 +287,7 @@ class DemoPanel extends RSSFeedReaderPanel {
             frame = ImageUtilities.loadImage( IMAGE_PICTURE_FRAME );
         }
 
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             try {
                 int imgX = x;
@@ -314,10 +310,12 @@ class DemoPanel extends RSSFeedReaderPanel {
             }
         }
 
+        @Override
         public int getIconWidth() {
             return MAX_IMAGE_WIDTH;
         }
 
+        @Override
         public int getIconHeight() {
             return MAX_IMAGE_HEIGHT;
         }

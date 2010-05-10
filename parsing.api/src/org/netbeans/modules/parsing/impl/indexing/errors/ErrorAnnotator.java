@@ -61,7 +61,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
-import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
@@ -289,6 +288,14 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
             }
             
             for (FileObject f : toProcess) {
+                synchronized (ErrorAnnotator.this) {
+                    Integer currentState = knownFiles2Error.get(f);
+
+                    if (currentState != null && (currentState & INVALID) == 0) {
+                        continue;
+                    }
+                }
+
                 boolean recError = false;
                 boolean nonRecError = false;
                 if (f.isData()) {
@@ -312,12 +319,25 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                 }
 
                 Integer value = (recError ? IN_ERROR_REC : 0) | (nonRecError ? IN_ERROR_NONREC : 0);
-
+                boolean stateChanged;
+                
                 synchronized (ErrorAnnotator.this) {
+                    Integer origInteger = knownFiles2Error.get(f);
+                    int orig;
+
+                    if (origInteger != null) {
+                        orig = origInteger & ~INVALID;
+                    } else {
+                        orig = 0;
+                    }
+
+                    stateChanged = orig != value;
                     knownFiles2Error.put(f, value);
                 }
 
-                fireFileStatusChanged(Collections.singleton(f));
+                if (stateChanged) {
+                    fireFileStatusChanged(Collections.singleton(f));
+                }
             }
             
             long endTime = System.currentTimeMillis();

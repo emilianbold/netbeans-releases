@@ -52,26 +52,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.spi.autoupdate.AutoupdateClusterCreator;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /** Modifies the etc/netbeans.conf if necessary.
  * 
  * @author  Jaroslav Tulach
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.autoupdate.AutoupdateClusterCreator.class)
+@ServiceProvider(service=AutoupdateClusterCreator.class)
 public final class NetBeansClusterCreator extends AutoupdateClusterCreator {
-    protected File findCluster(String clusterName) {
-        File[] parent = new File[1];
+    protected @Override File findCluster(String clusterName) {
+        AtomicReference<File> parent = new AtomicReference<File>();
         File conf = findConf(parent, new ArrayList<File>());
-        return conf != null && conf.isFile() && canWrite (conf) ? new File(parent[0], clusterName) : null;
+        return conf != null && conf.isFile() && canWrite (conf) ? new File(parent.get(), clusterName) : null;
     }
     
-    private static File findConf(File[] parent, List<? super File> clusters) {
-        StringTokenizer tok = new StringTokenizer(System.getProperty("netbeans.dirs"), File.pathSeparator); // NOI18N
+    private static File findConf(AtomicReference<File> parent, List<? super File> clusters) {
+        String nbdirs = System.getProperty("netbeans.dirs");
+        if (nbdirs != null) {
+        StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator); // NOI18N
         while (tok.hasMoreElements()) {
             File cluster = new File(tok.nextToken());
             clusters.add(cluster);
@@ -81,22 +85,23 @@ public final class NetBeansClusterCreator extends AutoupdateClusterCreator {
             
             
             
-            if (parent[0] == null) {
-                parent[0] = cluster.getParentFile();
+            if (parent.get() == null) {
+                parent.set(cluster.getParentFile());
             }
             
-            if (!parent[0].equals(cluster.getParentFile())) {
+            if (!parent.get().equals(cluster.getParentFile())) {
                 // we can handle only case when all clusters are in
                 // the same directory these days
                 return null;
             }
         }
+        }
         
-        return new File(new File(parent[0], "etc"), "netbeans.clusters");
+        return new File(new File(parent.get(), "etc"), "netbeans.clusters");
     }
     
-    protected File[] registerCluster(String clusterName, File cluster) throws IOException {
-        File[] parent = new File[1];
+    protected @Override File[] registerCluster(String clusterName, File cluster) throws IOException {
+        AtomicReference<File> parent = new AtomicReference<File>();
         List<File> clusters = new ArrayList<File>();
         File conf = findConf(parent, clusters);
         assert conf != null;
@@ -110,10 +115,13 @@ public final class NetBeansClusterCreator extends AutoupdateClusterCreator {
         }
         if (!p.keySet().contains(clusterName)) {         
             OutputStream os = new FileOutputStream(conf, true);
-            os.write('\n');
-            os.write(clusterName.getBytes());
-            os.write('\n');
-            os.close();
+            try {
+                os.write('\n');
+                os.write(clusterName.getBytes());
+                os.write('\n');
+            } finally {
+                os.close();
+            }
         }
         return clusters.toArray(new File[0]);
     }
@@ -124,7 +132,7 @@ public final class NetBeansClusterCreator extends AutoupdateClusterCreator {
             FileWriter fw = null;
             try {
                 fw = new FileWriter (f, true);
-                Logger.getLogger (NetBeansClusterCreator.class.getName ()).log (Level.FINE, f + " has write permission");
+                Logger.getLogger(NetBeansClusterCreator.class.getName()).log(Level.FINE, "{0} has write permission", f);
             } catch (IOException ioe) {
                 // just check of write permission
                 Logger.getLogger (NetBeansClusterCreator.class.getName ()).log (Level.FINE, f + " has no write permission", ioe);

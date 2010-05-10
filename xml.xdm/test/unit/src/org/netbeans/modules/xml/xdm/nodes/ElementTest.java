@@ -48,13 +48,12 @@
 
 package org.netbeans.modules.xml.xdm.nodes;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import junit.framework.*;
-import org.netbeans.modules.xml.xam.TestComponent;
+import org.netbeans.modules.xml.xam.TestComponent3;
 import org.netbeans.modules.xml.xdm.Util;
 import org.netbeans.modules.xml.xdm.XDMModel;
 import org.w3c.dom.NamedNodeMap;
@@ -70,6 +69,7 @@ public class ElementTest extends TestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         xmlModel = Util.loadXDMModel("nodes/xdm.xml");
         xmlModel.sync();
@@ -417,10 +417,10 @@ public class ElementTest extends TestCase {
         XDMModel model = Util.loadXDMModel(doc);
         model.setQNameValuedAttributes(new HashMap<QName,List<QName>>());
         Element root = (Element) model.getDocument().getDocumentElement();
-        Element a1 = (Element) model.getDocument().createElementNS(TestComponent.NS_URI, "a1");
-        assertEquals(TestComponent.NS_URI, a1.getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
+        Element a1 = (Element) model.getDocument().createElementNS(TestComponent3.NS_URI, "a1");
+        assertEquals(TestComponent3.NS_URI, a1.getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
 
-        Element a2 = (Element) model.getDocument().createElementNS(TestComponent.NS_URI, "a2");
+        Element a2 = (Element) model.getDocument().createElementNS(TestComponent3.NS_URI, "a2");
         a1.appendChild(a2);
         assertNull(a2.getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE));
         

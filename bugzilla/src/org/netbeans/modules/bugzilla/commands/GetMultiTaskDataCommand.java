@@ -67,7 +67,7 @@ public class GetMultiTaskDataCommand extends BugzillaCommand {
     @Override
     public void execute() throws CoreException {
         if(Bugzilla.LOG.isLoggable(Level.FINER)) {
-            Bugzilla.LOG.finer("will retrieve data for issues: " + print(ids));    // NOI18N
+            Bugzilla.LOG.log(Level.FINER, "will retrieve data for issues: {0}", print(ids));    // NOI18N
         }
         Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().getMultiTaskData(
                 repository.getTaskRepository(),
@@ -77,14 +77,23 @@ public class GetMultiTaskDataCommand extends BugzillaCommand {
     }
 
     private String print(Set<String> ids) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int i = 0;
         for (String string : ids) {
             sb.append(string);
             if(++i < ids.size()) {
-                sb.append(", ");                                                // NOI18N
+                sb.append(",");                                                 // NOI18N
             }
         }
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("GetMultiTaskDataCommand [repository=");                      // NOI18N
+        sb.append(repository.getUrl());
+        sb.append(",...]");                                                     // NOI18N
         return sb.toString();
     }
 

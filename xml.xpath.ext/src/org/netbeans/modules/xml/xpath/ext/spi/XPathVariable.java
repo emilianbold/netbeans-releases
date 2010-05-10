@@ -24,9 +24,17 @@ import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 
 /**
  * General interface for variable which is provided by the Variable Resolver
- * @author nk160297
+ *
+ * Implementation classes should have equals() method! 
+ *
+ * @author Nikita Krjukov
  */
 public interface XPathVariable {
     QName getName();
     ReferenceableSchemaComponent getType();
+
+    /**
+     * @return the text in form like the variable should be visible in XPath
+     */
+    String getExpressionString();
 }

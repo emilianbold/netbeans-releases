@@ -84,6 +84,9 @@ class ListenerList<T> {
      * Passes back the event listener list
      */
     public synchronized List<T> getAllListeners() {
+        if (listenerList.isEmpty()) {
+            return Collections.emptyList();
+        }
         if (copy == null) {
             copy = new ArrayList<T>(listenerList);
         }
@@ -93,5 +96,11 @@ class ListenerList<T> {
     public synchronized boolean hasListeners() {
         return !listenerList.isEmpty();
     }
-    
+
+    static <T> List<T> allListeners(ListenerList<T> list) {
+        if (list == null) {
+            return Collections.emptyList();
+        }
+        return list.getAllListeners();
+    }
 }

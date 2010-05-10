@@ -53,7 +53,7 @@ public class InvalidStatesTest extends NbTestCase {
     private static final String VERSION="3.0";
     private static final String[] expectedEvents = {
         "PCE:STATUS[0]:SessionTimeout:30:60",
-        "PCE:STATUS[0]:WelcomeFile.7:null:index.txt"
+        "PCE:STATUS[0]:WelcomeFile:null:index.txt"
     };
     private static java.util.List evtList = new java.util.ArrayList();
     
@@ -106,7 +106,7 @@ public class InvalidStatesTest extends NbTestCase {
         }
         // Parsing was probably changed, the file with wrong structure is not partially parsed,
         // this may be because of preparsing.
-        assertEquals("Incorrect dd status :",WebApp.STATE_INVALID_UNPARSABLE,webApp.getStatus());
+        assertEquals("Incorrect dd status :",WebApp.STATE_INVALID_PARSABLE,webApp.getStatus());
         assertNotNull("Error mustn't be null :", webApp.getError());
         System.out.println("Expected Exception :"+webApp.getError());
         //assertNotNull("Session Config mustn't be null :", webApp.getSingleSessionConfig());
@@ -241,6 +241,8 @@ public class InvalidStatesTest extends NbTestCase {
     
     private static String getDDProperty(String fullName) {
         int index = fullName.lastIndexOf('/');
-        return (index>0?fullName.substring(index+1):fullName);
+        fullName = index>0?fullName.substring(index+1):fullName;
+        index = fullName.lastIndexOf('.');
+        return (index>0?fullName.substring(0, index):fullName);
     }
 }

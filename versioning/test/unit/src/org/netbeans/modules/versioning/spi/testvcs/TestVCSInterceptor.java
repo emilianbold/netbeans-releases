@@ -63,6 +63,7 @@ public class TestVCSInterceptor extends VCSInterceptor {
     private final List<File>    beforeChangeFiles = new ArrayList<File>();
     private final List<File>    afterChangeFiles = new ArrayList<File>();
     private final List<File>    isMutableFiles = new ArrayList<File>();
+    private final List<File>    refreshRecursivelyFiles = new ArrayList<File>();
 
     public TestVCSInterceptor() {
     }
@@ -189,6 +190,19 @@ public class TestVCSInterceptor extends VCSInterceptor {
 
     public List<File> getAfterChangeFiles() {
         return afterChangeFiles;
+    }
+
+    public List<File> getRefreshRecursivelyFiles() {
+        return refreshRecursivelyFiles;
+    }
+
+    @Override
+    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        refreshRecursivelyFiles.add(dir);
+        if(dir.getName().equals("administrative")) {
+            return 0;
+        }
+        return -1;
     }
 
     public void clearTestData() {

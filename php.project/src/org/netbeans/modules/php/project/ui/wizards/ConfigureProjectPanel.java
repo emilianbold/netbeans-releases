@@ -98,6 +98,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         this.wizardType = wizardType;
     }
 
+    @Override
     public Component getComponent() {
         if (configureProjectPanelVisual == null) {
             switch (wizardType) {
@@ -117,10 +118,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return configureProjectPanelVisual;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(ConfigureProjectPanel.class.getName() + "." + wizardType);
     }
 
+    @Override
     public void readSettings(WizardDescriptor settings) {
         getComponent();
         descriptor = settings;
@@ -138,8 +141,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                     configureProjectPanelVisual.setState(false);
                     canceled = false;
                     PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
+                        @Override
                         public void finished(final List<DocumentRoot> documentRoots) {
                             SwingUtilities.invokeLater(new Runnable() {
+                                @Override
                                 public void run() {
                                     initLocalServers(documentRoots);
                                 }
@@ -176,6 +181,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         configureProjectPanelVisual.removeConfigureProjectListener(this);
     }
 
+    @Override
     public void storeSettings(WizardDescriptor settings) {
         // project - we have to save it as it is because one can navigate back and forward
         //  => the project folder equals to sources
@@ -212,6 +218,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return new File(projectFolder);
     }
 
+    @Override
     public boolean isFinishPanel() {
         if (wizardType == NewPhpProjectWizardIterator.WizardType.REMOTE) {
             return false;
@@ -219,6 +226,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return areOtherStepsValid();
     }
 
+    @Override
     public boolean isValid() {
         getComponent();
         if (!configureProjectPanelVisual.getState()) {
@@ -281,19 +289,23 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return true;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
 
+    @Override
     public File getSourcesFolder() {
         getComponent();
         return FileUtil.normalizeFile(new File(configureProjectPanelVisual.getSourcesLocation().getSrcRoot()));
     }
 
+    @Override
     public String getSourcesFolderName() {
         getComponent();
         return configureProjectPanelVisual.getProjectName();
@@ -678,6 +690,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         configureProjectPanelVisual.setProjectName(newProjectName);
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         // because JTextField.setText() calls document.remove() and then document.insert() (= 2 events!), just remove and readd the listener
         removeListeners();
@@ -697,6 +710,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         fireChangeEvent();
     }
 
+    @Override
     public void cancel() {
         canceled = true;
     }

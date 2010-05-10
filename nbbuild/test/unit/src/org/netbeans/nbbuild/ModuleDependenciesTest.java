@@ -331,34 +331,19 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</project>"
         );
 
-        // this will succeed, limit of 5 is ok
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=5" });
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=1" });
         
         String res = readFile (friendPkg);
 
-        if (!res.equals(
+        assertEquals(
             "MODULE my.another.module (base)\n" +
             "  FRIEND my.module (extra)\n" +
             "  FRIEND my.very.public.module (extra)\n" +
+            "  WARNING: excessive number of intercluster friends (2)\n" +
             "  PACKAGE friend.recursive\n" +
             "  PACKAGE friend.recursive.sub\n" +
             "  PACKAGE friend.there\n" +
-            ""
-        )) {
-            fail("Unexpected res:\n" + res);
-        }
-        
-        
-        friendPkg.delete();
-        
-        try {
-            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=1" });
-            fail("This should fail");
-        } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
-            if (PublicPackagesInProjectizedXMLTest.getStdErr().indexOf("Too many intercluster friends") == -1) {
-                fail("There should be a message about too many friends:\n" + PublicPackagesInProjectizedXMLTest.getStdErr());
-            }
-        }
+            "", res);
     }
     
     public void testThereExternalsAreCountedAsWell() throws Exception {
@@ -408,34 +393,19 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</project>"
         );
 
-        // this will succeed, limit of 5 is ok
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=5" });
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=1" });
         
         String res = readFile (friendPkg);
 
-        if (!res.equals(
+        assertEquals(
             "MODULE my.another.module (base)\n" +
             "  EXTERNAL my.module\n" +
             "  EXTERNAL my.very.public.module\n" +
+            "  WARNING: excessive number of intercluster friends (2)\n" +
             "  PACKAGE friend.recursive\n" +
             "  PACKAGE friend.recursive.sub\n" +
             "  PACKAGE friend.there\n" +
-            ""
-        )) {
-            fail("Unexpected res:\n" + res);
-        }
-        
-        
-        friendPkg.delete();
-        
-        try {
-            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=1" });
-            fail("This should fail");
-        } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
-            if (PublicPackagesInProjectizedXMLTest.getStdErr().indexOf("Too many intercluster friends") == -1) {
-                fail("There should be a message about too many friends:\n" + PublicPackagesInProjectizedXMLTest.getStdErr());
-            }
-        }
+            "", res);
     }
     
     public void testPublicPackagesOfAModuleThatDoesNotDefineThemButTheyAreProvidedByModuleTheModuleDependsOn () throws Exception {

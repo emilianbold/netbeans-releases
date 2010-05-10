@@ -39,17 +39,13 @@
 package org.netbeans.modules.nativeexecution.api.pty;
 
 import java.io.IOException;
-import java.util.Collection;
 import org.netbeans.modules.nativeexecution.PtyNativeProcess;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.spi.pty.IOConnector;
-import org.netbeans.modules.nativeexecution.spi.pty.PtyAllocator;
-import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
-import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
+import org.netbeans.modules.nativeexecution.pty.IOConnector;
+import org.netbeans.modules.nativeexecution.pty.PtyAllocator;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.windows.InputOutput;
 
 /**
@@ -59,9 +55,7 @@ import org.openide.windows.InputOutput;
  */
 public final class PtySupport {
 
-    static {
-        PtyImplAccessor.setDefault(new Accessor());
-    }
+    private static final java.util.logging.Logger log = Logger.getInstance();
 
     private PtySupport() {
     }
@@ -74,12 +68,12 @@ public final class PtySupport {
      * @return Pty that is currently associated with the process or <tt>null</tt>
      * if ptocess was started in non-pty mode.
      */
-    public static Pty getPty(NativeProcess process) {
+    public static String getTTY(NativeProcess process) {
         if (!(process instanceof PtyNativeProcess)) {
             return null;
         }
 
-        return ((PtyNativeProcess) process).getPty();
+        return ((PtyNativeProcess) process).getTTY();
     }
 
     /**
@@ -91,16 +85,7 @@ public final class PtySupport {
      * @return <tt>true</tt> if operation was successfull. <tt>false</tt> otherwise.
      */
     public static boolean connect(InputOutput io, NativeProcess process) {
-        Collection<? extends IOConnector> connectors =
-                Lookup.getDefault().lookupAll(IOConnector.class);
-
-        for (IOConnector connector : connectors) {
-            if (connector.connect(io, process)) {
-                return true;
-            }
-        }
-
-        return false;
+        return IOConnector.getInstance().connect(io, process);
     }
 
     /**
@@ -114,16 +99,7 @@ public final class PtySupport {
      * @return <tt>true</tt> if operation was successfull. <tt>false</tt> otherwise.
      */
     public static boolean connect(InputOutput io, Pty pty) {
-        Collection<? extends IOConnector> connectors =
-                Lookup.getDefault().lookupAll(IOConnector.class);
-
-        for (IOConnector connector : connectors) {
-            if (connector.connect(io, pty)) {
-                return true;
-            }
-        }
-
-        return false;
+        return IOConnector.getInstance().connect(io, pty);
     }
 
     /**
@@ -131,74 +107,15 @@ public final class PtySupport {
      * @param env - environmant in which a pty should be allocated
      * @return newly allocated pty or <tt>null</tt> if allocation failed
      */
-    public static Pty allocate(ExecutionEnvironment env) {
+    public static Pty allocate(ExecutionEnvironment env) throws IOException {
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
             throw new IllegalStateException();
         }
 
-        Collection<? extends PtyAllocator> creators =
-                Lookup.getDefault().lookupAll(PtyAllocator.class);
-
-        for (PtyAllocator creator : creators) {
-            if (creator.isApplicable(env)) {
-                PtyImpl pty = null;
-
-                try {
-                    pty = creator.allocate(env);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-
-                if (pty != null) {
-                    return new Pty(pty);
-                }
-            }
-        }
-
-        return null;
+        return PtyAllocator.getInstance().allocate(env);
     }
 
-    /**
-     * A class that represents a pty
-     * @see PtySupport.allocate(ExecutionEnvironment)
-     * @see PtySupport.getPty(NativeProcess)
-     */
-    public final static class Pty {
-
-        private final PtyImpl impl;
-
-        private Pty(PtyImpl impl) {
-            this.impl = impl;
-        }
-
-        /**
-         * Returns the name that can be used to connect to the slave side of
-         * the pseudo-terminal (as tty(1))
-         *
-         * @return user's terminal name
-         */
-        public String getSlaveName() {
-            return impl.getSlaveName();
-        }
-
-        /**
-         * Closes the pty. It is responsibility of user to close the pty if
-         * it was allocated directly. If a pty was allocated indirectly (while
-         * starting a process in a pty mode, closure of the pty is done
-         * automatically).
-         *
-         * @throws IOException in case close failed.
-         */
-        public void close() throws IOException {
-            impl.close();
-        }
-    }
-
-    private final static class Accessor extends PtyImplAccessor {
-
-        @Override
-        public PtyImpl getImpl(Pty pty) {
-            return pty == null ? null : pty.impl;
-        }
+    public static void deallocate(Pty pty) throws IOException {
+        pty.close();
     }
 }

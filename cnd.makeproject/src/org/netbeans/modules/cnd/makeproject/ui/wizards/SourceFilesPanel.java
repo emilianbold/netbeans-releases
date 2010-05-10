@@ -40,9 +40,13 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import java.awt.Color;
 import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -55,12 +59,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.openide.util.NbBundle;
 
 public class SourceFilesPanel extends javax.swing.JPanel {
 
+    private final Color defaultTextFieldFg;
     private List<FolderEntry> sourceData = new ArrayList<FolderEntry>();
     private List<FolderEntry> testData = new ArrayList<FolderEntry>();
     private SourceFileTable sourceFileTable = null;
@@ -70,8 +74,19 @@ public class SourceFilesPanel extends javax.swing.JPanel {
     private ChangeListener listener;
 
     /** Creates new form SourceFilesPanel */
-    public SourceFilesPanel(ChangeListener listener) {
+    public SourceFilesPanel(ChangeListener listener, boolean showTestFolders) {
         initComponents();
+
+        defaultTextFieldFg = excludePatternTextField.getForeground();
+
+//        if (!showTestFolders) {
+//            addButton1.setVisible(false);
+//            deleteButton1.setVisible(false);
+//            jSeparator1.setVisible(false);
+//            scrollPane1.setVisible(false);
+//            sourceFilesLabel1.setVisible(false);
+//        }
+
         scrollPane.getViewport().setBackground(java.awt.Color.WHITE);
 
         getAccessibleContext().setAccessibleDescription(getString("SourceFilesPanelAD"));
@@ -80,7 +95,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         refresh();
         initFocus();
         this.listener = listener;
-        ignoreFoldersTextField.getDocument().addDocumentListener(new DocumentListener() {
+        excludePatternTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 update();
@@ -96,7 +111,14 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         });
     }
 
-    private void update(){
+    private void update() {
+        String excludeStr = excludePatternTextField.getText();
+        try {
+            Pattern.compile(excludeStr);
+            excludePatternTextField.setForeground(defaultTextFieldFg);
+        } catch (PatternSyntaxException ex) {
+            excludePatternTextField.setForeground(Color.RED);
+        }
         if (listener != null) {
             listener.stateChanged(null);
         }
@@ -108,11 +130,31 @@ public class SourceFilesPanel extends javax.swing.JPanel {
     }
 
     public void setFoldersFilter(String regex) {
-        ignoreFoldersTextField.setText(regex);
+        excludePatternTextField.setText(regex);
     }
 
     public String getFoldersFilter() {
-        return ignoreFoldersTextField.getText();
+        return excludePatternTextField.getText();
+    }
+
+    public FileFilter getFileFilter() {
+        Pattern excludePattern = null;
+
+        String excludeStr = excludePatternTextField.getText().trim();
+        if (!excludeStr.isEmpty()) {
+            try {
+                excludePattern = Pattern.compile(excludeStr.trim());
+            } catch (PatternSyntaxException ex) {
+                // ignore
+            }
+        }
+
+        if (excludePattern == null) {
+            // by default exclude nothing
+            excludePattern = Pattern.compile("^$"); // NOI18N
+        }
+
+        return new RegexpExcludeFileFilter(excludePattern);
     }
 
     public final void initFocus() {
@@ -146,20 +188,34 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             deleteButton.setEnabled(true);
         }
 
-        addButton1.setEnabled(true);
-        if (testData.isEmpty() || testFileTable.getSelectedRow() < 0) {
-            deleteButton1.setEnabled(false);
-        } else {
-            deleteButton1.setEnabled(true);
-        }
+//        addButton1.setEnabled(true);
+//        if (testData.isEmpty() || testFileTable.getSelectedRow() < 0) {
+//            deleteButton1.setEnabled(false);
+//        } else {
+//            deleteButton1.setEnabled(true);
+//        }
     }
 
     private void refresh() {
         scrollPane.setViewportView(sourceFileTable = new SourceFileTable(sourceData, getString("TABLE_COLUMN_SOURCE_TXT")));
         sourceFilesLabel.setLabelFor(sourceFileTable);
-        scrollPane1.setViewportView(testFileTable = new SourceFileTable(testData, getString("TABLE_COLUMN_TEST_TXT")));
-        sourceFilesLabel1.setLabelFor(testFileTable);
+//        scrollPane1.setViewportView(testFileTable = new SourceFileTable(testData, getString("TABLE_COLUMN_TEST_TXT")));
+//        sourceFilesLabel1.setLabelFor(testFileTable);
         validateSelection();
+    }
+
+    private static final class RegexpExcludeFileFilter implements FileFilter {
+
+        private final Pattern excludePattern;
+
+        public RegexpExcludeFileFilter(Pattern excludeFilter) {
+            this.excludePattern = excludeFilter;
+        }
+
+        @Override
+        public boolean accept(File pathname) {
+            return !excludePattern.matcher(pathname.getName()).find();
+        }
     }
 
     private final class SourceFileTable extends JTable {
@@ -218,7 +274,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             if (data == null) {
                 return null;
             }
-            return data.get(col).getFolderName();
+            return data.get(row).getFolderName();
         }
 
         @Override
@@ -234,51 +290,22 @@ public class SourceFilesPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         sourceFilesLabel = new javax.swing.JLabel();
         scrollPane = new javax.swing.JScrollPane();
         list = new javax.swing.JList();
-        buttonPanel = new javax.swing.JPanel();
         addButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
-        ignoreFolderPanel = new javax.swing.JPanel();
-        ignoreFoldersLabel = new javax.swing.JLabel();
-        ignoreFoldersTextField = new javax.swing.JTextField();
-        ignoreFoldersDefaultButton = new javax.swing.JButton();
+        excludePatternLabel = new javax.swing.JLabel();
+        excludePatternTextField = new javax.swing.JTextField();
         seeAlsoLabel = new javax.swing.JLabel();
-        sourceFilesLabel1 = new javax.swing.JLabel();
-        scrollPane1 = new javax.swing.JScrollPane();
-        list1 = new javax.swing.JList();
-        buttonPanel1 = new javax.swing.JPanel();
-        addButton1 = new javax.swing.JButton();
-        deleteButton1 = new javax.swing.JButton();
-
-        setLayout(new java.awt.GridBagLayout());
 
         sourceFilesLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("SourceFileFoldersMN").charAt(0));
         sourceFilesLabel.setLabelFor(list);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle"); // NOI18N
         sourceFilesLabel.setText(bundle.getString("SourceFileFoldersLbl")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(sourceFilesLabel, gridBagConstraints);
 
         scrollPane.setViewportView(list);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(scrollPane, gridBagConstraints);
-
-        buttonPanel.setLayout(new java.awt.GridBagLayout());
 
         addButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("AddButtonMN").charAt(0));
         addButton.setText(bundle.getString("AddButtonTxt")); // NOI18N
@@ -287,12 +314,6 @@ public class SourceFilesPanel extends javax.swing.JPanel {
                 addButtonActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 0, 0);
-        buttonPanel.add(addButton, gridBagConstraints);
 
         deleteButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("DeleteButtonMn").charAt(0));
         deleteButton.setText(bundle.getString("DeleteButtonTxt")); // NOI18N
@@ -301,122 +322,54 @@ public class SourceFilesPanel extends javax.swing.JPanel {
                 deleteButtonActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        buttonPanel.add(deleteButton, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        add(buttonPanel, gridBagConstraints);
-
-        ignoreFolderPanel.setLayout(new java.awt.GridBagLayout());
-
-        ignoreFoldersLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("SourceFilesPanel.ignoreFoldersLabel.mn").charAt(0));
-        ignoreFoldersLabel.setLabelFor(ignoreFoldersTextField);
-        ignoreFoldersLabel.setText(org.openide.util.NbBundle.getMessage(SourceFilesPanel.class, "SourceFilesPanel.ignoreFoldersLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        ignoreFolderPanel.add(ignoreFoldersLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        ignoreFolderPanel.add(ignoreFoldersTextField, gridBagConstraints);
-
-        ignoreFoldersDefaultButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("SourceFilesPanel.ignoreFoldersDefaultButton.mn").charAt(0));
-        ignoreFoldersDefaultButton.setText(org.openide.util.NbBundle.getMessage(SourceFilesPanel.class, "SourceFilesPanel.ignoreFoldersDefaultButton.text")); // NOI18N
-        ignoreFoldersDefaultButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ignoreFoldersDefaultButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        ignoreFolderPanel.add(ignoreFoldersDefaultButton, gridBagConstraints);
+        excludePatternLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("SourceFilesPanel.excludePatternLabel.mn").charAt(0));
+        excludePatternLabel.setLabelFor(excludePatternTextField);
+        excludePatternLabel.setText(org.openide.util.NbBundle.getMessage(SourceFilesPanel.class, "SourceFilesPanel.excludePatternLabel.text")); // NOI18N
 
         seeAlsoLabel.setText(org.openide.util.NbBundle.getMessage(SourceFilesPanel.class, "SourceFilesPanel.seeAlsoLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        ignoreFolderPanel.add(seeAlsoLabel, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(ignoreFolderPanel, gridBagConstraints);
-
-        sourceFilesLabel1.setLabelFor(list);
-        sourceFilesLabel1.setText(bundle.getString("SourceFileFoldersLbl")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        add(sourceFilesLabel1, gridBagConstraints);
-
-        scrollPane1.setViewportView(list1);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(scrollPane1, gridBagConstraints);
-
-        buttonPanel1.setLayout(new java.awt.GridBagLayout());
-
-        addButton1.setText(bundle.getString("AddButtonTxt")); // NOI18N
-        addButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addButton1ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 0, 0);
-        buttonPanel1.add(addButton1, gridBagConstraints);
-
-        deleteButton1.setText(bundle.getString("DeleteButtonTxt")); // NOI18N
-        deleteButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteButton1ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        buttonPanel1.add(deleteButton1, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        add(buttonPanel1, gridBagConstraints);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(excludePatternLabel)
+                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
+                    .addComponent(excludePatternTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(deleteButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(addButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(seeAlsoLabel)
+                .addContainerGap(130, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(sourceFilesLabel)
+                .addContainerGap(133, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(sourceFilesLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(addButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(deleteButton))
+                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(excludePatternLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(excludePatternTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(seeAlsoLabel)
+                .addContainerGap())
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     private void deleteFile(List<FolderEntry> data, SourceFileTable table) {
@@ -470,37 +423,15 @@ public class SourceFilesPanel extends javax.swing.JPanel {
        addFile(sourceData);
     }//GEN-LAST:event_addButtonActionPerformed
 
-    private void ignoreFoldersDefaultButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreFoldersDefaultButtonActionPerformed
-        // TODO add your handling code here:
-        ignoreFoldersTextField.setText(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN);
-}//GEN-LAST:event_ignoreFoldersDefaultButtonActionPerformed
-
-    private void addButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButton1ActionPerformed
-        addFile(testData);
-    }//GEN-LAST:event_addButton1ActionPerformed
-
-    private void deleteButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButton1ActionPerformed
-        deleteFile(testData, testFileTable);
-    }//GEN-LAST:event_deleteButton1ActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
-    private javax.swing.JButton addButton1;
-    private javax.swing.JPanel buttonPanel;
-    private javax.swing.JPanel buttonPanel1;
     private javax.swing.JButton deleteButton;
-    private javax.swing.JButton deleteButton1;
-    private javax.swing.JPanel ignoreFolderPanel;
-    private javax.swing.JButton ignoreFoldersDefaultButton;
-    private javax.swing.JLabel ignoreFoldersLabel;
-    private javax.swing.JTextField ignoreFoldersTextField;
+    private javax.swing.JLabel excludePatternLabel;
+    private javax.swing.JTextField excludePatternTextField;
     private javax.swing.JList list;
-    private javax.swing.JList list1;
     private javax.swing.JScrollPane scrollPane;
-    private javax.swing.JScrollPane scrollPane1;
     private javax.swing.JLabel seeAlsoLabel;
     private javax.swing.JLabel sourceFilesLabel;
-    private javax.swing.JLabel sourceFilesLabel1;
     // End of variables declaration//GEN-END:variables
 
     private static String getString(String s) {

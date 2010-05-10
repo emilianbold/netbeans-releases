@@ -42,10 +42,12 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
@@ -105,6 +107,11 @@ public class KeyUtilities {
         return KeyManager.instance().getSharedUID(new IncludeKey(incl));
     }
 
+    public static Key createInheritanceKey(CsmInheritance inh) {
+        assert inh != null;
+        return KeyManager.instance().getSharedUID(new InheritanceKey(inh));
+    }
+
     public static <T extends CsmNamedElement> Key createParamListKey(CsmParameterList<T> paramList) {
         assert paramList != null;
         return new ParamListKey(paramList);
@@ -136,6 +143,20 @@ public class KeyUtilities {
             return Utils.getCsmDeclarationKind(((OffsetableDeclarationKey) key).getKind());
         }
         return null;
+    }
+
+    public static CsmVisibility getKeyVisibility(Key key) {
+        if (key instanceof InheritanceKey) {
+            Utils.getCsmVisibility(((InheritanceKey) key).getKind());
+        }
+        return null;
+    }
+
+    public static char getKeyChar(Key key) {
+        if (key instanceof OffsetableKey) {
+            return ((OffsetableKey) key).getKind();
+        }
+        return 0;
     }
 
     public static CharSequence getKeyName(Key key) {

@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.dlight.procfs.reader.api;
 
-import java.io.File;
-import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.modules.dlight.procfs.api.PStatus;
 import org.netbeans.modules.dlight.procfs.api.PStatus.ThreadsInfo;
@@ -51,9 +49,9 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -69,60 +67,52 @@ public class ProcReaderTest extends NativeExecutionBaseTestCase {
         super(name, execEnv);
     }
 
+    @SuppressWarnings("unchecked")
     public static Test suite() {
-        NativeExecutionBaseTestSuite suite = new NativeExecutionBaseTestSuite();
-        suite.addTestSuite(ProcReaderTest.class);
-        return suite;
+        return new NativeExecutionBaseTestSuite(ProcReaderTest.class);
     }
 
-    /**
-     * Test of getProcessStatus method, of class ProcReader.
-     */
-    @org.junit.Test
+    public void testGetProcessStatusLocal() throws Exception {
+        doTestGetProcessStatus(ExecutionEnvironmentFactory.getLocal());
+    }
+
+    @ForAllEnvironments(section = "remote.platforms")
     public void testGetProcessStatus() throws Exception {
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
+        doTestGetProcessStatus(getTestExecutionEnvironment());
+    }
+
+    private void doTestGetProcessStatus(ExecutionEnvironment execEnv) throws Exception {
         HostInfo hostinfo = HostInfoUtils.getHostInfo(execEnv);
         if (hostinfo.getOSFamily() != HostInfo.OSFamily.SUNOS) {
             // this test is valid only on Solaris
             return;
         }
 
-        NativeProcess p = null;
+        String pwait = HostInfoUtils.fileExists(execEnv, "/usr/bin/amd64/pwait")
+                ? "/usr/bin/amd64/pwait" : "/usr/bin/pwait";
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        NativeProcess p = npb.setExecutable(pwait).setArguments("1").call();
         try {
-            System.out.println("getProcessInfo");
-            NativeProcessBuilder npb = NativeProcessBuilder.newLocalProcessBuilder();
-            if (new File("/usr/bin/amd64/pwait").exists()) {
-                npb.setExecutable("/usr/bin/amd64/pwait");
-            } else {
-                npb.setExecutable("/usr/bin/pwait");
-            }
-            npb.setArguments("1");
-            p = npb.call();
-
-            System.out.println("Process with PID " + p.getPID() + " started");
-
             ProcReader preader = ProcReaderFactory.getReader(execEnv, p.getPID());
 
             PStatus pstatus = preader.getProcessStatus();
             assertNotNull(pstatus);
-            ThreadsInfo threadInfo = pstatus.getThreadInfo();
-            assertNotNull(threadInfo);
-
-            assertEquals("pwait is a single-thread appl", 1, threadInfo.pr_nlwp);
             assertEquals("actual pid should be the same as provider returns", p.getPID(), pstatus.getPIDInfo().pr_pid);
 
-            PUsage usage = preader.getProcessUsage();
-            assertNotNull(usage);
+            ThreadsInfo threadInfo = pstatus.getThreadInfo();
+            assertNotNull(threadInfo);
+            assertEquals("pwait is a single-thread appl", 1, threadInfo.pr_nlwp);
 
-            long sysNanoTime = System.nanoTime();
-            assertTrue("Time of process creation is not more than 2 seconds ago", sysNanoTime - usage.getUsageInfo().pr_create < 2 * 1000 * 1000 * 1000);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            fail(ex.getMessage());
+            PUsage pusage1 = preader.getProcessUsage();
+            assertNotNull(pusage1);
+            assertTrue(0 < pusage1.getUsageInfo().pr_tstamp - pusage1.getUsageInfo().pr_create);
+
+            PUsage pusage2 = preader.getProcessUsage();
+            assertNotNull(pusage2);
+            assertTrue(0 < pusage2.getUsageInfo().pr_tstamp - pusage2.getUsageInfo().pr_create);
+            assertTrue(0 < pusage2.getUsageInfo().pr_tstamp - pusage1.getUsageInfo().pr_tstamp);
         } finally {
-            if (p != null) {
-                p.destroy();
-            }
+            p.destroy();
         }
     }
 }

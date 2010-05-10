@@ -38,7 +38,6 @@ public class FortranEditorUnitTest extends NbTestSuite {
 
     public FortranEditorUnitTest() {
         super("C/C++ Formatter");
-        //addTestSuite(FortranBracketCompletionTestCase.class);
         addTestSuite(FortranIndentTestCase.class);
         addTestSuite(FortranFormatterTestCase.class);
         addTestSuite(FortranFormatterFixedTestCase.class);

@@ -105,7 +105,10 @@ public class ProjectBridge {
         String workingDirRel = CndPathUtilitities.toRelativePath(baseFolder, CndPathUtilitities.naturalize(workingDir));
         workingDirRel = CndPathUtilitities.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
-        project = ProjectGenerator.createBlankProject("DiscoveryProject", baseFolder, new MakeConfiguration[] {extConf}, true); // NOI18N
+        String prjName = "DiscoveryProject"; // NOI18N
+        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(prjName, baseFolder);// NOI18N
+        prjParams.setOpenFlag(true).setConfiguration(extConf);
+        project = ProjectGenerator.createBlankProject(prjParams); // NOI18N
         resultSet.add(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
@@ -301,15 +304,14 @@ public class ProjectBridge {
     }
     
     public void setupProject(List<String> includes, List<String> macros, boolean isCPP){
-        Configuration c = makeConfigurationDescriptor.getActiveConfiguration();
-        if (c instanceof MakeConfiguration) {
+        MakeConfiguration extConf = makeConfigurationDescriptor.getActiveConfiguration();
+        if (extConf != null) {
             for(int i = 0; i < includes.size(); i++) {
                 includes.set(i, getString(includes.get(i)));
             }
             for(int i = 0; i < macros.size(); i++) {
                 macros.set(i, getString(macros.get(i)));
             }
-            MakeConfiguration extConf = (MakeConfiguration)c;
             if (isCPP) {
                 extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(includes);
                 extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);

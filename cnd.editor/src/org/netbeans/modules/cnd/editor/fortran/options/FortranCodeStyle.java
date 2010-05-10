@@ -41,9 +41,17 @@
 
 package org.netbeans.modules.cnd.editor.fortran.options;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.NodeChangeListener;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 
@@ -54,18 +62,34 @@ import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 public final class FortranCodeStyle {
     
     private Preferences preferences;
+    private final boolean autoDetectedFormat;
     
-    private FortranCodeStyle(Preferences preferences) {
+    private FortranCodeStyle(Preferences preferences, boolean autoDetectedFormat) {
         this.preferences = preferences;
+        this.autoDetectedFormat = autoDetectedFormat;
     }
 
-    /** For testing purposes only */
-    public static FortranCodeStyle get(Preferences prefs) {
-        return new FortranCodeStyle(prefs);
+    public InputAttributes setupLexerAttributes(Document doc){
+        InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
+        if (lexerAttrs == null) {
+            lexerAttrs = new InputAttributes();
+            doc.putProperty(InputAttributes.class, lexerAttrs);
+        }
+        lexerAttrs.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH, getRrightMargin(), true);
+        lexerAttrs.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_FREE_FORMAT, isFreeFormatFortran(), true);
+        return lexerAttrs;
+    }
+
+    // for options panel
+    public static FortranCodeStyle get(Document doc, Preferences pref) {
+        boolean autoDetectedFormat = CndLexerUtilities.detectFortranFormat(doc);
+        return new FortranCodeStyle(pref, autoDetectedFormat);
     }
 
     public static FortranCodeStyle get(Document doc) {
-        return new FortranCodeStyle(CodeStylePreferences.get(doc).getPreferences());
+        Preferences pref = CodeStylePreferences.get(doc).getPreferences();
+        boolean autoDetectedFormat = CndLexerUtilities.detectFortranFormat(doc);
+        return new FortranCodeStyle(pref, autoDetectedFormat);
     }
 
     public boolean absoluteLabelIndent() {
@@ -82,6 +106,10 @@ public final class FortranCodeStyle {
         return preferences.getInt(FmtOptions.tabSize, FmtOptions.getDefaultAsInt(FmtOptions.tabSize));
     }
 
+    public int getRrightMargin() {
+        return preferences.getInt(FmtOptions.rightMargin, FmtOptions.getDefaultAsInt(FmtOptions.rightMargin));
+    }
+
     public boolean indentCasesFromSwitch() {
         return true;
     }
@@ -95,12 +123,24 @@ public final class FortranCodeStyle {
     }
 
     public boolean isFreeFormatFortran() {
+        if (isAutoFormatDetection()) {
+            return autoDetectedFormat;
+        }
         return preferences.getBoolean(FmtOptions.freeFormat, FmtOptions.getDefaultAsBoolean(FmtOptions.freeFormat));
     }
 
     /** For testing purposes only */
     public void setFreeFormatFortran(boolean freeFormat) {
         preferences.putBoolean(FmtOptions.freeFormat, freeFormat);
+    }
+
+    public boolean isAutoFormatDetection() {
+        return preferences.getBoolean(FmtOptions.autoDetect, FmtOptions.getDefaultAsBoolean(FmtOptions.autoDetect));
+    }
+
+    /** For testing purposes only */
+    public void setAutoFormatDetection(boolean autoFormatDetection) {
+        preferences.putBoolean(FmtOptions.autoDetect, autoFormatDetection);
     }
 
     public boolean sharpAtStartLine() {
@@ -186,4 +226,5 @@ public final class FortranCodeStyle {
     public boolean spaceWithinWhileParens() {
         return false;
     }
+
 }

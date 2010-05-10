@@ -50,9 +50,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.support.APTBuilder;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
+import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -77,7 +79,7 @@ public class APTDriverImpl {
     private APTDriverImpl() {
     }
     
-    public static APTFile findAPT(APTFileBuffer buffer, boolean withTokens) throws IOException {
+    public static APTFile findAPT(APTFileBuffer buffer, boolean withTokens, String lang) throws IOException {
         CharSequence path = buffer.getAbsolutePath();
         APTFile apt = _getAPTFile(path, withTokens);
         if (apt == null) {
@@ -93,7 +95,7 @@ public class APTDriverImpl {
             assert (creator != null);
             // use instance synchronized method to prevent
             // multiple apt creating for the same file
-            apt = creator.findAPT(buffer, withTokens);
+            apt = creator.findAPT(buffer, withTokens, lang);
             file2creator.remove(path);
         }
         return apt;        
@@ -123,7 +125,7 @@ public class APTDriverImpl {
         }
         
         /** synchronized on instance */
-        public synchronized APTFile findAPT(APTFileBuffer buffer, boolean withTokens) throws IOException {
+        public synchronized APTFile findAPT(APTFileBuffer buffer, boolean withTokens, String lang) throws IOException {
             CharSequence path = buffer.getAbsolutePath();
             // quick exit: check if already was added by another creator
             // during wait
@@ -141,7 +143,7 @@ public class APTDriverImpl {
                 try {
                     reader = buffer.getReader();
                     if (!withTokens) {
-                        TokenStream ts = APTTokenStreamBuilder.buildLightTokenStream(path, reader);
+                        TokenStream ts = APTTokenStreamBuilder.buildLightTokenStream(path, reader, lang);
                         // build apt from light token stream
                         apt = APTBuilder.buildAPT(path, ts);
                         fullAPT = null;
@@ -158,7 +160,7 @@ public class APTDriverImpl {
                             _putAPTFile(path, lightAPT, false);
                         }
                     } else {
-                        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(path, reader);
+                        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(path, reader, lang);
                         // build apt from token stream
                         apt = APTBuilder.buildAPT(path, ts);
                         fullAPT = apt;

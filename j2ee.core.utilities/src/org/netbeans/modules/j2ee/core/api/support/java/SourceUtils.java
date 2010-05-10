@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.core.api.support.java;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.util.TreePath;
+import java.io.IOException;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -50,7 +51,11 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -173,5 +178,24 @@ public final class SourceUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Finds the <code>FileObject</code> by name on the given classpath.
+     */
+    public static FileObject getFileObject(final String className, ClasspathInfo cpInfo) throws IOException{
+        final FileObject[] result = new FileObject[]{null};
+        JavaSource.create(cpInfo).runUserActionTask(new Task<CompilationController>() {
+            @Override
+            public void run(CompilationController cc) throws Exception {
+                cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElem = cc.getElements().getTypeElement(className);
+                if (typeElem != null){
+                    result[0] = org.netbeans.api.java.source.SourceUtils.getFile(ElementHandle.create(typeElem), cc.getClasspathInfo());
+                }
+            }
+        }, true);
+
+        return result[0];
     }
 }

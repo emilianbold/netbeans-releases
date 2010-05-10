@@ -221,28 +221,28 @@ public class UpdateManagerImpl extends Object {
         Cache() {
             units = UpdateUnitFactory.getDefault ().getUpdateUnits ();
         }        
-        public Set<UpdateElement> getAvailableEagers() {
+        public synchronized Set<UpdateElement> getAvailableEagers() {
             if (availableEagers == null) {
                 createMaps ();
             }
             assert availableEagers != null : "availableEagers initialized";
             return availableEagers;
         }
-        public Set<UpdateElement> getInstalledEagers() {
+        public synchronized Set<UpdateElement> getInstalledEagers() {
             if (installedEagers == null) {
                 createMaps ();
             }            
             assert installedEagers != null : "installedEagers initialized";
             return installedEagers;
         }                        
-        public Map<String, Collection<ModuleInfo>> createMapToken2InstalledProviders () {
+        public synchronized Map<String, Collection<ModuleInfo>> createMapToken2InstalledProviders () {
             if (token2installedProviders == null) {
                 createMaps ();
             }            
             assert token2installedProviders != null : "token2installedProviders initialized";
             return token2installedProviders;
         }                        
-        public Map<String, Collection<ModuleInfo>> createMapToken2AvailableProviders () {
+        public synchronized Map<String, Collection<ModuleInfo>> createMapToken2AvailableProviders () {
             if (token2availableProviders == null) {
                 createMaps ();
             }

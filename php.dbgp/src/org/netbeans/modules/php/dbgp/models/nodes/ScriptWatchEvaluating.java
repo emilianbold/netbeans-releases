@@ -26,7 +26,9 @@ import org.netbeans.modules.php.dbgp.UnsufficientValueException;
 import org.netbeans.modules.php.dbgp.models.VariablesModelFilter.FilterType;
 import org.netbeans.modules.php.dbgp.packets.EvalCommand;
 import org.netbeans.modules.php.dbgp.packets.Property;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.util.NbBundle;
 
 public class ScriptWatchEvaluating extends AbstractModelNode 
     implements ModelNode
@@ -79,6 +81,10 @@ public class ScriptWatchEvaluating extends AbstractModelNode
     }
 
     public synchronized String getValue() throws UnsufficientValueException {
+        if (!PhpOptions.getInstance().isDebuggerWatchesAndEval()) {
+            return NbBundle.getMessage(ScriptWatchEvaluating.class, "WatchesAndEvalDisabled");
+        }
+
         if ( myValue == null ) {
             return null;
         }
@@ -153,8 +159,7 @@ public class ScriptWatchEvaluating extends AbstractModelNode
         if ( session == null ){
             return;
         }
-        EvalCommand command = new EvalCommand( session.getTransactionId() );
-        command.setData( getExpression() );
+        final String toEvaluation = getExpression();
         /* TODO : uncommented but it may cause following problems: 
          * I found a bug in XDEbug with eval command:
          * after response to eval request it performs two actions:
@@ -168,7 +173,12 @@ public class ScriptWatchEvaluating extends AbstractModelNode
          * http://bugs.xdebug.org/bug_view_page.php?bug_id=0000313
          * 
          */
-         session.sendCommandLater(command); 
+        if (PhpOptions.getInstance().isDebuggerWatchesAndEval()) {
+            EvalCommand command = new EvalCommand(session.getTransactionId());
+            command.setData(toEvaluation);
+            session.sendCommandLater(command);
+        }
+
         
     }
     

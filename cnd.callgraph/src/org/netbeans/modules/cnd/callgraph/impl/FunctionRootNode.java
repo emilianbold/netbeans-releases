@@ -55,8 +55,8 @@ public class FunctionRootNode extends AbstractNode {
     private CallGraphState model;
     private boolean isCalls;
 
-    public FunctionRootNode(Function element, CallGraphState model, boolean isCalls) {
-        super(new CallChildren(element, model, isCalls));
+    public FunctionRootNode(Function element, CallGraphState model, boolean isCalls, boolean isShowOverriding) {
+        super(new CallChildren(element, model, isCalls, isShowOverriding));
         object = element;
         this.model = model;
         this.isCalls = isCalls;

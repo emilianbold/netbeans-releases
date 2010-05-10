@@ -255,8 +255,7 @@ public class BindingGenerator implements Command {
                 Iterator<Fault> it = faults.iterator();
                 while(it.hasNext()) {
                     Fault fault = it.next();
-                    BindingFault bFault = createAndAddBindingOperationFault(bOperation, bindingSubType);
-                    bFault.setName(fault.getName());
+                    BindingFault bFault = createAndAddBindingOperationFault(fault.getName(), bOperation, bindingSubType);
                 }
             }
             
@@ -293,8 +292,7 @@ public class BindingGenerator implements Command {
                 Iterator<Fault> it = faults.iterator();
                 while(it.hasNext()) {
                     Fault fault = it.next();
-                    BindingFault bFault = createAndAddBindingOperationFault(bOperation, bindingSubType);
-                    bFault.setName(fault.getName());
+                    BindingFault bFault = createAndAddBindingOperationFault(fault.getName(), bOperation, bindingSubType);
                 }
             }
         } else if(portTypeOperation instanceof NotificationOperation) {
@@ -329,9 +327,10 @@ public class BindingGenerator implements Command {
         return bOut;
     }
     
-    private BindingFault createAndAddBindingOperationFault(BindingOperation bOperation, LocalizedTemplate bindingSubType) {
+    private BindingFault createAndAddBindingOperationFault(String faultName, BindingOperation bOperation, LocalizedTemplate bindingSubType) {
         BindingFault bFault = this.mModel.getFactory().createBindingFault();
         bOperation.addBindingFault(bFault);
+        bFault.setName(faultName);
         this.mUtil.createAndAddExtensionElementAndAttribute(WSDLExtensibilityElements.ELEMENT_BINDING_OPERATION_FAULT,
                                                  bindingSubType,
                                                  bFault);

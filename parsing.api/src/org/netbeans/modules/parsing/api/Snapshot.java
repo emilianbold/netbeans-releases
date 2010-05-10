@@ -66,22 +66,25 @@ import org.openide.filesystems.FileObject;
  */
 public final class Snapshot {
     
-    private CharSequence    text;
-    private MimePath        mimePath;
-    int[][]                 currentToOriginal;
-    int[][]                 originalToCurrent;
-    private Source          source;
+    private final CharSequence text;
+    /* package */ final int[] lineStartOffsets;
+    private final MimePath mimePath;
+    /* package */ final int[][] currentToOriginal;
+    private final int[][] originalToCurrent;
+    private final Source source;
     private TokenHierarchy<?> tokenHierarchy;
     
    
     Snapshot (
-        CharSequence        text, 
+        CharSequence        text,
+        int []              lineStartOffsets,
         Source              source,
         MimePath            mimePath,
         int[][]             currentToOriginal,
         int[][]             originalToCurrent
     ) {
         this.text =         text;
+        this.lineStartOffsets = lineStartOffsets;
         this.source =       source;
         this.mimePath =     mimePath;
         this.currentToOriginal =    
@@ -151,6 +154,7 @@ public final class Snapshot {
         MimePath newMimePath = MimePath.get (mimePath, mimeType);
         Snapshot snapshot = new Snapshot (
             getText ().subSequence (offset, offset + length),
+            null,
             source,
             newMimePath,
             newCurrentToOriginal.toArray (new int [newCurrentToOriginal.size ()][]),
@@ -177,6 +181,7 @@ public final class Snapshot {
         return new Embedding (
             new Snapshot (
                 charSequence,
+                null,
                 source,
                 newMimePath,
                 new int[][] {new int[] {0, -1}}, new int[][] {}

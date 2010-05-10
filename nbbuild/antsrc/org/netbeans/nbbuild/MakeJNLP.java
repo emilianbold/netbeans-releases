@@ -476,7 +476,7 @@ public class MakeJNLP extends Task {
             if (!fileToOwningModule.isEmpty()) {
                 throw new BuildException(
                     "Cannot build JNLP for module " + f + " as these files are in " +
-                    "module's NBM, but are not referenced from any path:\n" + fileToOwningModule.keySet()
+                    "module's NBM, but are not referenced from any path (see harness/README for properties you can define to fix):\n" + fileToOwningModule.keySet()
                 );
             }
         }

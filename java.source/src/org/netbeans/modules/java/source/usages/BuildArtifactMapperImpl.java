@@ -65,6 +65,7 @@ import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -260,9 +261,15 @@ public class BuildArtifactMapperImpl {
         sources(targetFolder, sources);
 
         for (FileObject sr : sources[0]) {
-            File index = JavaIndex.getClassFolder(sr.getURL(), true);
+            URL srURL = sr.getURL();
+            File index = JavaIndex.getClassFolder(srURL, true);
 
             if (index == null) {
+                //#181992: (not nice) ignore the annotation processing target directory:
+                if (srURL.equals(AnnotationProcessingQuery.getAnnotationProcessingOptions(sr).sourceOutputDirectory())) {
+                    continue;
+                }
+                
                 return null;
             }
 
@@ -639,8 +646,13 @@ public class BuildArtifactMapperImpl {
         private final ThreadLocal<Boolean> recursive = new ThreadLocal<Boolean>();
         private final Map<FileObject, Reference<Status>> file2Status = new WeakHashMap<FileObject, Reference<Status>>();
 
-        public synchronized Status getStatus(FileObject file) {
-            Reference<Status> statusRef = file2Status.get(file);
+        public Status getStatus(FileObject file) {
+            Reference<Status> statusRef;
+
+            synchronized(this) {
+                statusRef = file2Status.get(file);
+            }
+            
             Status result = statusRef != null ? statusRef.get() : null;
 
             if (result != null) {
@@ -670,18 +682,25 @@ public class BuildArtifactMapperImpl {
                 File target = getTarget(owner.getURL());
                 File tagFile = FileUtil.normalizeFile(new File(target, TAG_FILE_NAME));
 
-                Reference<FileChangeListenerImpl> ref = file2Listener.get(tagFile);
-                FileChangeListenerImpl l = ref != null ? ref.get() : null;
+                synchronized(this) {
+                    Reference<FileChangeListenerImpl> ref = file2Listener.get(tagFile);
+                    FileChangeListenerImpl l = ref != null ? ref.get() : null;
 
-                if (l == null) {
-                    file2Listener.put(tagFile, new WeakReference<FileChangeListenerImpl>(l = new FileChangeListenerImpl()));
-                    listener2File.put(l, tagFile);
-                    FileChangeSupport.DEFAULT.addListener(l, tagFile);
+                    if (l == null) {
+                        file2Listener.put(tagFile, new WeakReference<FileChangeListenerImpl>(l = new FileChangeListenerImpl()));
+                        listener2File.put(l, tagFile);
+                        FileChangeSupport.DEFAULT.addListener(l, tagFile);
+                    }
+
+                    Reference<Status> prevRef = file2Status.get(file);
+                    result = prevRef != null ? prevRef.get() : null;
+
+                    if (result == null) {
+                        file2Status.put(file, new WeakReference<Status>(result = new FileBuiltQueryStatusImpl(delegate, tagFile, l)));
+                    }
+
+                    return result;
                 }
-
-                file2Status.put(file, new WeakReference<Status>(result = new FileBuiltQueryStatusImpl(delegate, tagFile, l)));
-
-                return result;
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
                 return null;

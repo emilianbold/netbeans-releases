@@ -54,7 +54,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.*;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.WeakListeners;
 
@@ -65,9 +64,6 @@ import org.openide.util.WeakListeners;
 */
 final class FolderChildren extends Children.Keys<FolderChildrenPair>
 implements PropertyChangeListener, ChangeListener, FileChangeListener {
-   /** Private req processor for the refresh tasks */
-    private static RequestProcessor refRP = new RequestProcessor("FolderChildren_Refresh"); // NOI18N
-
     /** the folder */
     private FolderList folder;
     /** filter of objects */
@@ -118,7 +114,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     }
 
     static void waitRefresh() {
-        refRP.post(Task.EMPTY, 0, Thread.MIN_PRIORITY).waitFinished();
+        DataNode.RP.post(Task.EMPTY, 0, Thread.MIN_PRIORITY).waitFinished();
     }
 
     /** If the folder changed its children we change our nodes.
@@ -192,7 +188,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             run.run();
         } else {
             run.op = operation;
-            refTask = refRP.post(run);
+            refTask = DataNode.RP.post(run);
         }
     }
 

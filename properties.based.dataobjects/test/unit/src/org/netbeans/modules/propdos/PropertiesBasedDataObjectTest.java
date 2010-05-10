@@ -130,8 +130,7 @@ public class PropertiesBasedDataObjectTest extends NbTestCase {
         p.setProperty("foo", "bar");
         A four = new A (p);
         boolean equal = one.equals(four);
-        System.err.println("Equal? " + equal);
-        assertFalse (one.equals(four));
+        assertFalse (equal);
     }
 
     @Test

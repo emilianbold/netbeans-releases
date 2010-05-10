@@ -19,30 +19,27 @@
 	 to organize these breakpoints into groups. Once your breakpoints are placed
 	into groups, you can enable, disable, and delete them as a single
 	unit. </p>
-<p> <b>To add a breakpoint to a group:</b> </p>
+
+
+<p> <b>To add a breakpoint to a custom group:</b> </p>
 <ol>
-  <li>Choose Windows  &gt; Debugging 
-       &gt; Breakpoints (Alt-Shift-5) 
-      to open the Breakpoints window.
-  </li>
-  <li> Right-click the breakpoint and choose Set Group Name. </li>
-  <li>Type the name of the group and click OK. 
-    <p> The IDE creates the group if it does not already exist and moves the breakpoint 
-      into it.</p>
+  <li>Choose Windows  &gt; Debugging &gt; Breakpoints (Alt-Shift-5) to open the Breakpoints window.</li>
+  <li>Right-click the breakpoint and choose Move Into Group and select a custom group from the list.
+      <ul class="note">
+        <li>To create a custom group, right-click the breakpoint and choose Move Into Group &gt; New
+        and type the name of the new group in the dialog box.</li>
+      </ul>
   </li>
 </ol>
 
-<p><b>To remove a breakpoint from a group:</b></p>
-<ol>
-  <li>In the Breakpoints window, right-click the breakpoint and choose Set Group 
-    Name.</li>
-  <li>In the dialog that appears,  click OK without entering a group name. 
-  	<p>The IDE removes the breakpoint from the group.</li>
-</ol>
-        <ul class="note"> 
-    <li>Right-click any breakpoint group to run commands 
-      on all of the breakpoints in the group.</li>
-  </ul>
+
+
+<p><b>To remove a breakpoint from a custom group:</b></p>
+<ul>
+  <li>In the Breakpoints window, right-click the breakpoint and choose Move Into Group &gt; &lt;Default&gt;.</li>
+</ul>
+
+
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="breakpoint_about.html">Breakpoints in the IDE</a></dd>

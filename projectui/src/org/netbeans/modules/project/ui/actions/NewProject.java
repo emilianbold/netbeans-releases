@@ -58,6 +58,7 @@ import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.netbeans.modules.project.ui.TemplatesPanel;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -144,13 +145,6 @@ public class NewProject extends BasicAction {
                         }
                     }
                     
-                    Object mainProperty = wizard.getProperty( /* XXX Define somewhere */ "setAsMain" ); // NOI18N
-                    boolean setFirstMain = true;
-                    if ( mainProperty instanceof Boolean ) {
-                        setFirstMain = ((Boolean)mainProperty).booleanValue();
-                    }
-                    final boolean setFirstMainFinal = setFirstMain;
-                    
                     //#69618: the non-project cache may contain a project folder listed in newObjects:
                     ProjectManager.getDefault().clearNonProjectCache();
                     ProjectUtilities.WaitCursor.show();
@@ -203,16 +197,14 @@ public class NewProject extends BasicAction {
                         Project lastProject = projectsToOpen.size() > 0 ? projectsToOpen.get(0) : null;
                         
                         Project mainProject = null;
-                        if (setFirstMainFinal && lastProject != null) {
+                        if (Templates.getDefinesMainProject(wizard) && lastProject != null) {
                             mainProject = lastProject;
                         }
                         
                         OpenProjectList.getDefault().open(projectsToOpen.toArray(new Project[0]), false, true, mainProject);
                         
                         // Show the project tab to show the user we did something
-                        if (! Boolean.getBoolean("project.tab.no.selection")) { //NOI18N
-                            ProjectUtilities.makeProjectTabVisible( true );
-                        }
+                        ProjectUtilities.makeProjectTabVisible();
                         
                         if (lastProject != null) {
                             // Just select and expand the project node

@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -79,7 +80,7 @@ public class APTHandlersSupportImpl {
     public static void invalidatePreprocHandler(APTPreprocHandler preprocHandler) {
         ((APTPreprocHandlerImpl)preprocHandler).setValid(false);
     }
-    
+
     public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths) {
         // user paths could contain "-include file" elements
         List<IncludeDirEntry> fileEntries = new ArrayList<IncludeDirEntry>(0);
@@ -107,6 +108,16 @@ public class APTHandlersSupportImpl {
         return ((APTPreprocHandlerImpl.StateImpl)orig).copyInvalid();
     }
 
+    public static boolean equalsIgnoreInvalid(State state1, State state2) {
+        if (state1 instanceof APTPreprocHandlerImpl.StateImpl) {
+            return ((APTPreprocHandlerImpl.StateImpl) state1).equalsIgnoreInvalidFlag(state2);
+        } else if (state2 instanceof APTPreprocHandlerImpl.StateImpl) {
+            return ((APTPreprocHandlerImpl.StateImpl) state2).equalsIgnoreInvalidFlag(state1);
+        } else {
+            return state1.equals(state2);
+        }
+    }
+
     public static boolean isFirstLevel(APTIncludeHandler includeHandler) {
         if (includeHandler != null) {
             return ((APTIncludeHandlerImpl) includeHandler).isFirstLevel();
@@ -126,9 +137,7 @@ public class APTHandlersSupportImpl {
     public static Map<CharSequence, APTMacro> extractMacroMap(APTPreprocHandler.State state){
         assert state != null;
         APTBaseMacroMap.StateImpl macro = (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
-        Map<CharSequence, APTMacro> tmpMap = new HashMap<CharSequence, APTMacro>(128);
-        APTMacroMapSnapshot.addAllMacros(macro.snap, tmpMap);
-        return tmpMap;
+        return APTMacroMapSnapshot.addAllMacros(macro.snap, null);
     }
 
     public static APTBaseMacroMap.State extractMacroMapState(APTPreprocHandler.State state){

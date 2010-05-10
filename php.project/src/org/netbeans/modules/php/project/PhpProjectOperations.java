@@ -66,14 +66,16 @@ public class PhpProjectOperations implements DeleteOperationImplementation, Copy
         this.project = project;
     }
 
+    @Override
     public void notifyDeleted() throws IOException {
         project.getHelper().notifyDeleted();
     }
 
+    @Override
     public void notifyDeleting() throws IOException {
     }
 
-
+    @Override
     public void notifyCopied(Project originalProject, File file, String newName) throws IOException {
         if (originalProject == null) {
             // do nothing for the original project.
@@ -82,9 +84,11 @@ public class PhpProjectOperations implements DeleteOperationImplementation, Copy
         project.setName(newName);
     }
 
+    @Override
     public void notifyCopying() throws IOException {
     }
 
+    @Override
     public void notifyMoved(Project originalProject, File file, String newName) throws IOException {
         if (originalProject == null) {
             project.getHelper().notifyDeleted();
@@ -93,14 +97,17 @@ public class PhpProjectOperations implements DeleteOperationImplementation, Copy
         project.setName(newName);
     }
 
+    @Override
     public void notifyMoving() throws IOException {
     }
 
+    @Override
     public List<FileObject> getDataFiles() {
         // all the sources, including external
         return Arrays.asList(PhpProjectUtils.getSourceObjects(project));
     }
 
+    @Override
     public List<FileObject> getMetadataFiles() {
         List<FileObject> files = new ArrayList<FileObject>(1);
         // add nbproject dir

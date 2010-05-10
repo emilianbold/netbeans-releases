@@ -1718,6 +1718,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
+    public Map<String, ObjectVariable> getAllLabels() {
+        synchronized (markedObjects) {
+            return new HashMap<String, ObjectVariable>(markedObjectLabels);
+        }
+    }
+
     public ExpressionPool getExpressionPool() {
         return expressionPool;
     }

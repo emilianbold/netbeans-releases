@@ -60,13 +60,13 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.jar.Manifest;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.TestFileUtils;
 
 /**
  * Tests {@link Util}.
@@ -180,6 +180,16 @@ public class UtilTest extends TestBase {
         } finally {
             Locale.setDefault(orig);
         }
+    }
+
+    public void testfindLocalizedBundleInfoFromOSGi() throws Exception { // #179752
+        File jar = new File(getWorkDir(), "x.zip");
+        TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:Bundle-SymbolicName: foo\nBundle-Name: Foo\nBundle-Description: Does some foo stuff.\n");
+        LocalizedBundleInfo info = Util.findLocalizedBundleInfoFromJAR(jar);
+        assertNotNull(info);
+        assertEquals("Foo", info.getDisplayName());
+        assertEquals("Does some foo stuff.", info.getShortDescription());
+        // XXX improve to load Bundle-Localization also if present
     }
 
     public void testLoadProperties() throws Exception {

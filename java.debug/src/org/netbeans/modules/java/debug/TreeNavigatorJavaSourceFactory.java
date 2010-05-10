@@ -63,7 +63,12 @@ public final class TreeNavigatorJavaSourceFactory extends LookupBasedJavaSourceT
     private CancellableTask<CompilationInfo> task;
     
     static TreeNavigatorJavaSourceFactory getInstance() {
-        return Lookup.getDefault().lookup(TreeNavigatorJavaSourceFactory.class);
+        for (JavaSourceTaskFactory f :  Lookup.getDefault().lookupAll(JavaSourceTaskFactory.class)) {
+            if (f instanceof TreeNavigatorJavaSourceFactory) {
+                return (TreeNavigatorJavaSourceFactory) f;
+            }
+        }
+        return null;
     }
     
     public TreeNavigatorJavaSourceFactory() {

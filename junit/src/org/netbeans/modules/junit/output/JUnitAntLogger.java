@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import javax.tools.FileObject;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
@@ -373,8 +374,10 @@ public final class JUnitAntLogger extends AntLogger {
                 if (projectDir == null){
                     projectDir = event.getProperty("basedir"); // NOI18N
                 }
-                if ((projectDir != null) && (projectDir.length() != 0)){
-                    project = FileOwnerQuery.getOwner(FileUtil.toFileObject(new File(projectDir))); //NOI18N
+                if ((projectDir != null) && (projectDir.length() != 0)) {
+                    File pd = new File(projectDir);
+                    File f = FileUtil.normalizeFile(pd); // #182715
+                    project = FileOwnerQuery.getOwner(FileUtil.toFileObject(f));
                 }
             }catch(Exception e){}
             Properties props = new Properties();

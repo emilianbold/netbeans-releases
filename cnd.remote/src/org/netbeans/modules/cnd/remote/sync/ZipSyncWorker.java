@@ -84,7 +84,7 @@ import org.openide.util.NbBundle;
         private final SharabilityFilter delegate;
 
         public TimestampAndSharabilityFilter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
-            fileData = new FileData(privProjectStorageDir, executionEnvironment);
+            fileData = FileData.get(privProjectStorageDir, executionEnvironment);
             delegate = new SharabilityFilter();
         }
 
@@ -255,7 +255,7 @@ import org.openide.util.NbBundle;
                 long unzipStart = System.currentTimeMillis();
 
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-                pb.setCommandLine("unzip -o " + remoteFile + " > /dev/null"); // NOI18N
+                pb.setCommandLine("unzip -oqq " + remoteFile + " < /dev/null"); // NOI18N
                 //pb.setExecutable("unzip");
                 //pb.setArguments("-o", remoteFile);
                 pb.setWorkingDirectory(remoteRoot);
@@ -288,12 +288,14 @@ import org.openide.util.NbBundle;
             // NB: we aren't waining for completion,
             // since the name of the file made my File.createTempFile is new each time
             filter.flush();
+        } catch (IOException ex) {
+            throw ex;
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
             if (zipFile != null && zipFile.exists()) {
                 if (!zipFile.delete()) {
-                    RemoteUtil.LOGGER.info("Can not delete temporary file " + zipFile.getAbsolutePath()); //NOI18N
+                    RemoteUtil.LOGGER.log(Level.INFO, "Can not delete temporary file {0}", zipFile.getAbsolutePath()); //NOI18N
                 }
             }
         }
@@ -312,6 +314,7 @@ import org.openide.util.NbBundle;
     }
 
 
+    @Override
     public boolean startup(Map<String, String> env2add) {
         // Later we'll allow user to specify where to copy project files to
         String remoteRoot = RemotePathMap.getRemoteSyncRoot(executionEnvironment);

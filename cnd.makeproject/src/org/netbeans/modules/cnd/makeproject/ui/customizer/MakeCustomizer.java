@@ -602,11 +602,19 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
             Lookup lookup = Lookups.fixed(lastContext);
             return ItemNodeFactory.createRootNodeItem(lookup);
         } else if (folder != null) {
-            lastContext = new MakeContext(MakeContext.Kind.Folder, project, getSelectedHost(), selectedConfigurations)
-                    .setFolder(folder)
-                    .setConfigurationDescriptor(projectDescriptor);
-            Lookup lookup = Lookups.fixed(lastContext);
-            return FolderNodeFactory.createRootNodeFolder(lookup);
+            if(folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()) {
+                lastContext = new MakeContext(MakeContext.Kind.Folder, project, getSelectedHost(), selectedConfigurations)
+                        .setFolder(folder)
+                        .setConfigurationDescriptor(projectDescriptor);
+                Lookup lookup = Lookups.fixed(lastContext, folder);
+                return FolderNodeFactory.createRootNodeFolder(lookup);
+            } else {
+                lastContext = new MakeContext(MakeContext.Kind.Folder, project, getSelectedHost(), selectedConfigurations)
+                        .setFolder(folder)
+                        .setConfigurationDescriptor(projectDescriptor);
+                Lookup lookup = Lookups.fixed(lastContext);
+                return FolderNodeFactory.createRootNodeFolder(lookup);
+            }
         } else {
             lastContext = new MakeContext(MakeContext.Kind.Project, project, getSelectedHost(), selectedConfigurations)
                     .setPanel(this)

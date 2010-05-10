@@ -84,6 +84,15 @@ public class Accessor {
         return location;
     }
 
+    public static String getPath( Task t ) {
+        URL url = getURL(t);
+        if( null != url ) {
+            return url.toString();
+        }
+        FileObject fo = getFile(t);
+        return fo.getPath();
+    }
+
     public static String getFileNameExt( Task t ) {
         FileObject fo = getFile(t);
         if( null == fo )

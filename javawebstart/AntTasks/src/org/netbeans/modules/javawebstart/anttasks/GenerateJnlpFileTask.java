@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,7 @@ import org.apache.tools.ant.PathTokenizer;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.types.Path;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -50,6 +52,7 @@ public class GenerateJnlpFileTask extends Task {
     private File destDir;
     private File template;
     private File properties;
+    private Path lazyJars;
     
     private static final String EXT_RESOURCE_PROPNAME_PREFIX = "jnlp.ext.resource.";
     private static String[] EXT_RESOURCE_SUFFIXES = new String[] { "href", "name", "version" };
@@ -95,7 +98,11 @@ public class GenerateJnlpFileTask extends Task {
     public void setTemplate(File file) {
         this.template = file;
     }
-    
+
+    public void setLazyJars(final Path lazyJars) {
+        this.lazyJars = lazyJars;
+    }
+
     // XXX ??? properties that will override those 
     // available via getProject().getProperty()
     public void setProperties(File file) {
@@ -403,12 +410,15 @@ public class GenerateJnlpFileTask extends Task {
                         resourceElem.removeChild(node);
                         String cpProp = getProperty("run.classpath", null); // property in project.properties
                         log("run.classpath = " + cpProp, Project.MSG_VERBOSE);
-                        PathTokenizer ptok = new PathTokenizer(cpProp);
+                        final PathTokenizer ptok = new PathTokenizer(cpProp);
+                        final Set<? extends String> lazyJarsSet = getLazyJarsSet(lazyJars);
                         while (ptok.hasMoreTokens()) {
-                            String fileName = stripFilename(ptok.nextToken());
+                            final String path = ptok.nextToken();
+                            final String fileName = stripFilename(path);
                             if (fileName.endsWith("jar") && !fileName.equals("javaws.jar")) {
-                                // lib/ should be probably taken from some properties file ? 
-                                resourceElem.appendChild(createJarElement(docDom, "lib/" + fileName, false, false));
+                                // lib/ should be probably taken from some properties file ?
+                                final boolean eager = !lazyJarsSet.contains(getProject().resolveFile(path).getPath());
+                                resourceElem.appendChild(createJarElement(docDom, "lib/" + fileName, false, eager));
                             }
                         }
                     } else if (nodeValue.equals(DEFAULT_JNLP_RESOURCES_EXTENSIONS)) {
@@ -583,5 +593,14 @@ public class GenerateJnlpFileTask extends Task {
         int sepIndex = path.lastIndexOf('/') == -1 ? path.lastIndexOf('\\') : path.lastIndexOf('/');
         return  path.substring(sepIndex + 1);
     }
-    
+
+    private static Set<? extends String> getLazyJarsSet(final Path value) {
+        final Set<String> result = new HashSet<String>();
+        if (value != null) {
+            for (String pathElement : value.list()) {
+                result.add(pathElement);
+            }
+        }
+        return result;
+    }
 }

@@ -52,6 +52,7 @@ public final class GizmoServiceInfo {
     }
     public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder";//NOI18N
     public static final String GIZMO_PROJECT_EXECUTABLE = "GizmoProjectExecutable";//NOI18N
+    public static final String GIZMO_REMOTE_EXECUTABLE = "GizmoProjectRemoteExecutable";//NOI18N
     public static final String GIZMO_DEMANGLE_UTILITY = "GizmoDemangleUtility";//NOI18N
     public static final String CPP_COMPILER = "GizmoCppCompiler";//NOI18N
     public static final String CPP_COMPILER_BIN_PATH = "GizmoCppCompilerBinPath";//NOI18N

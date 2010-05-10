@@ -77,16 +77,17 @@ public class HudsonManagerImpl {
     private final List<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
     private PropertyChangeListener projectsListener;
     private Map<Project, HudsonInstanceImpl> projectInstances = new HashMap<Project, HudsonInstanceImpl>();
+    private final RequestProcessor.Task checkOpenProjects = RequestProcessor.getDefault().create(new Runnable() {
+        public @Override void run() {
+            checkOpenProjects();
+        }
+    });
     
     private HudsonManagerImpl() {
         projectsListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            checkOpenProjects();
-                        }
-                    });
+                    checkOpenProjects.schedule(0);
                 }
             }
         };

@@ -110,8 +110,13 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
                             DataObject dobj = (DataObject) evt.getSource();
-                            FileObject newFO = dobj.getPrimaryFile();
-                            annotate(newFO);
+                            final FileObject newFO = dobj.getPrimaryFile();
+                            annotationProcessor.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    annotate(newFO);
+                                }
+                            });
                         }
                     }
                 };
@@ -271,8 +276,8 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                 EditorContext.DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE;
         } else if (b instanceof ClassLoadUnloadBreakpoint) {
             annotationType = b.isEnabled() ?
-                "ClassBreakpoint" :
-                "DisabledClassBreakpoint";
+                EditorContext.CLASS_BREAKPOINT_ANNOTATION_TYPE :
+                EditorContext.DISABLED_CLASS_BREAKPOINT_ANNOTATION_TYPE;
         } else {
             throw new IllegalStateException(b.toString());
         }

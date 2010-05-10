@@ -45,6 +45,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Position;
 import javax.swing.text.TabExpander;
@@ -60,11 +61,17 @@ import org.netbeans.lib.editor.util.GapList;
  * @author Miloslav Metelka
  */
 
-public class EditorBoxViewChildren extends GapList<EditorView> {
+public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.EditorBoxViewChildren.level=FINE
     private static final Logger LOG = Logger.getLogger(EditorBoxViewChildren.class.getName());
 
+    /**
+     * Repaint bounds that extend to end of component. Using just MAX_VALUE
+     * for width/height caused problems since it probably overflowed
+     * inside AWT code when added to positive x/y so ">> 1" is done for now.
+     */
+    protected static final double EXTEND_TO_END = (double) (Integer.MAX_VALUE >> 1);
     /**
      * Number of child views above which they will start to be managed
      * in a gap-storage way upon modification.
@@ -100,8 +107,8 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
     /**
      * @see {@link EditorBoxView#replace(int, int, javax.swing.text.View[], int, java.awt.Shape, float)}
      */
-    public void replace(EditorBoxView boxView, EditorBoxView.ReplaceResult result,
-            int index, int removeCount, EditorView[] addedViews,
+    public EditorBoxView.ReplaceResult replace(EditorBoxView<V> boxView, EditorBoxView.ReplaceResult result,
+            int index, int removeCount, View[] addedViews,
             int offsetDelta, Shape alloc)
     {
         boolean modified = false;
@@ -120,7 +127,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         moveStorage(index + removeCount); // Includes moveGap()
         double visualOffset = getViewVisualOffset(boxView, index);
         double removedSpan;
-        int gapIndexDelta = removeCount;
+        int gapIndexDelta = -removeCount;
         if (removeCount != 0) { // Removing at least one item => index < size
             // Update visual offsets
             removedSpan = getViewVisualOffset(boxView, index + removeCount) - visualOffset;
@@ -133,6 +140,12 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         float minorAxisChildrenSpan = getMinorAxisChildrenSpan(boxView);
         boolean minorAxisChildrenSpanChange = false;
         int majorAxis = boxView.getMajorAxis();
+        // Update offsetGapStart/Length at this point so that the childView.getStartOffset()
+        // returns proper value once childView.setRawOffset() gets called.
+        if (gapStorage != null) {
+            gapStorage.offsetGapStart += offsetDelta;
+            gapStorage.offsetGapLength -= offsetDelta;
+        }
         if (addedViews != null && addedViews.length != 0) {
             modified = true;
             gapIndexDelta += addedViews.length;
@@ -143,7 +156,8 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
             double viewVisualOffset = visualOffset;
             TabExpander tabExpander = boxView.getTabExpander();
             for (int i = 0; i < addedViews.length; i++) {
-                EditorView view = addedViews[i];
+                @SuppressWarnings("unchecked")
+                V view = (V) addedViews[i];
                 if (supportsRawOffsetUpdate) {
                     int offset = view.getRawOffset();
                     // Below gap => do not use offsetGapLength
@@ -175,7 +189,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         boolean majorAxisChildrenSpanChange = (addedSpan != removedSpan);
         if (majorAxisChildrenSpanChange || offsetDelta != 0) {
             // Fix both visual and textual offsets in one iteration through children
-            fixOffsetsAndSpan(boxView, index + addedViews.length, offsetDelta, addedSpan - removedSpan);
+            fixOffsetsAndMajorSpan(boxView, index + addedViews.length, offsetDelta, addedSpan - removedSpan);
         }
         if (minorAxisChildrenSpanChange) {
             setMinorAxisChildrenSpan(boxView, minorAxisChildrenSpan);
@@ -187,6 +201,14 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                     minorAxisChildrenSpanChange, alloc
             );
         } // Otherwise the repaint bounds and other vars in result stay unfilled
+        // Update boxView's length to actual length of children.
+        // It cannot be done relatively by just adding offsetDelta to original boxView's length
+        // since box views with unitialized children already have proper length
+        // so later children initialization would double the boxView's length.
+        // Also this must be done after updateSpans() was called since it updates
+        // relative offsets of the local views necessary for proper getLength() result.
+        boxView.setLength(getLength());
+        return result;
     }
 
     protected double getMajorAxisChildrenSpan(EditorBoxView boxView) {
@@ -221,26 +243,26 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                 repaintBounds.x += visualOffset;
                 if (majorAxisSpanChange || removedTillEnd) {
                     result.widthChanged = true;
-                    repaintBounds.width = (double) Integer.MAX_VALUE; // Extend to end
+                    repaintBounds.width = EXTEND_TO_END;
                 } else { // Just repaint the modified area (of the same size)
                     repaintBounds.width = removedSpan;
                 }
                 if (minorAxisSpanChange) {
                     result.heightChanged = true;
-                    repaintBounds.height = (double) Integer.MAX_VALUE; // Extend to end
+                    repaintBounds.height = EXTEND_TO_END;
                 } // else: leave the repaintBounds.height set to alloc's height
 
             } else { // Y_AXIS is major axis
                 repaintBounds.y += visualOffset;
                 if (majorAxisSpanChange || removedTillEnd) {
                     result.heightChanged = true;
-                    repaintBounds.height = (double) Integer.MAX_VALUE; // Extend to end
+                    repaintBounds.height = EXTEND_TO_END;
                 } else { // Just repaint the modified area (of the same size)
                     repaintBounds.height = removedSpan;
                 }
                 if (minorAxisSpanChange) {
                     result.widthChanged = true;
-                    repaintBounds.width = (double) Integer.MAX_VALUE; // Extend to end
+                    repaintBounds.width = EXTEND_TO_END;
                 } // else: leave the repaintBounds.width set to alloc's width
             }
             result.repaintBounds = ViewUtils.toRect(repaintBounds);
@@ -256,14 +278,35 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         }
     }
 
-    public int getViewIndex(int offset, Position.Bias bias) {
+    /**
+     * Get view at given index and if that view is a box view then make sure
+     * its children are initialized.
+     *
+     * @param index
+     * @return view with its children initialized.
+     */
+    protected V getWithChildrenValid(EditorBoxView boxView, int index) {
+        V child = get(index);
+        if (child instanceof EditorBoxView) {
+            EditorBoxView boxChild = (EditorBoxView) child;
+            if (boxChild.children == null) {
+                boxView.initChildren(index, index + 1);
+                // Reget the view since the rebuild could replace it
+                child = get(index);
+                assert (((EditorBoxView)child).children != null);
+            }
+        }
+        return child;
+    }
+
+    int getViewIndex(int offset, Position.Bias bias) {
 	if(bias == Position.Bias.Backward) {
 	    offset -= 1;
 	}
         return getViewIndex(offset);
     }
 
-    public int getViewIndex(int offset) {
+    int getViewIndex(int offset) {
         int high = size() - 1;
         if (high == -1) {
             return -1;
@@ -295,10 +338,20 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                 : offset + gapStorage.offsetGapLength;
     }
 
+    int getLength() { // Total length of contained child views
+        int size = size();
+        if (size > 0) {
+            V lastChildView = get(size - 1);
+            return raw2RelOffset(lastChildView.getRawOffset()) + lastChildView.getLength();
+        } else {
+            return 0;
+        }
+    }
+
     private double raw2VisualOffset(double rawVisualOffset) {
         return (gapStorage == null || rawVisualOffset < gapStorage.visualGapStart)
                 ? rawVisualOffset
-                : rawVisualOffset + gapStorage.visualGapLength;
+                : rawVisualOffset - gapStorage.visualGapLength;
     }
 
     final double getViewVisualOffset(EditorBoxView boxView, int index) {
@@ -348,7 +401,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
      *  If there are multiple items with the same offset then the first one of them
      *  will be returned.
      */
-    private int getViewIndexFirst(int offset) {
+    int getViewIndexFirst(int offset) {
         int high = size() - 1;
         if (high == -1) {
             return -1; // No items
@@ -407,75 +460,113 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
     }
 
     final void moveStorage(int index) {
-        if (gapStorage == null) {
-            if (false && size() > GAP_STORAGE_THRESHOLD) { // [TODO] Enable gap behavior
-                gapStorage = new GapStorage(size());
+        if (size() > 0) { // This should ensure that the gap will not be constructed if no replace done yet
+            if (gapStorage == null) {
+                if (false && size() > GAP_STORAGE_THRESHOLD) {
+                    gapStorage = new GapStorage(size());
+                    moveGap(index);
+                }
+            } else { // Existing gap storage
                 moveGap(index);
             }
-        } else { // Existing gap storage
-            moveGap(index);
         }
     }
 
-    final void fixOffsetsAndSpan(EditorBoxView boxView, int index, int offsetDelta, double visualDelta) {
+    final void fixOffsetsAndMajorSpan(EditorBoxView boxView, int index, int offsetDelta, double visualDelta) {
         // Expects moveGap(index) was called already before calling of this method
+        int viewCount = size();
         boolean visualUpdate = (visualDelta != 0d);
         if (gapStorage != null) {
-            gapStorage.offsetGapLength -= offsetDelta;
+            // offsetGapStart/Length already had to be updated during replace()
+            gapStorage.visualGapStart += visualDelta;
             gapStorage.visualGapLength -= visualDelta;
             if (handleTabableViews()) {
                 TabExpander tabExpander = boxView.getTabExpander();
                 // Go though the rest of views and check if their span has changed
-                int viewCount = size();
+                double tabVisualDelta = 0d;
+                boolean tabVisualUpdate = false;
                 for (int i = index; i < viewCount; i++) {
-                    EditorView view = get(i);
-                    if (visualUpdate) {
-                        view.setRawVisualOffset(view.getRawVisualOffset() + visualDelta);
+                    V view = get(i);
+                    if (tabVisualUpdate) {
+                        view.setRawVisualOffset(view.getRawVisualOffset() + tabVisualDelta);
                     }
-                    if (view instanceof TabableView) {
-                        double origMajorSpan = boxView.getViewMajorAxisSpan(index);
-                        float visualOffset = (float) boxView.getViewVisualOffset(index);
-                        double majorSpan = ((TabableView)view).getTabbedSpan(visualOffset, tabExpander);
-                        if (majorSpan != origMajorSpan) {
-                            visualDelta += (majorSpan - origMajorSpan);
-                            visualUpdate = true;
+                    if (view instanceof TabableView) { // Must re-measure tab-view's span since it depends on x-coordinate.
+                        // All indices are above visual gap (index is right above gap).
+                        // visualGapLength is already updated so the x-coordinate reflects the update.
+                        // visualOffset was just shifted by tabVisualDelta (but view[i+1] not yet).
+                        double visualOffset = view.getRawVisualOffset() - gapStorage.visualGapLength;
+                        // Use difference of visual offsets since it is most precise (doubles subtracting)
+                        // and getPreferredSpan() could be expensive.
+                        double nextViewVisualOffset = (i != viewCount - 1)
+                                // all visual offsets already use the updated visualGapLength
+                                ? get(i + 1).getRawVisualOffset() - gapStorage.visualGapLength
+                                // but major-axis-children-span does not reflect visualDelta yet => add it
+                                : getMajorAxisChildrenSpan(boxView) + visualDelta;
+                        // add tabVisualDelta to nextViewVisualOffset since visualOffset already includes tabVisualDelta
+                        double origMajorSpan = (nextViewVisualOffset + tabVisualDelta) - visualOffset;
+                        double majorSpan = ((TabableView)view).getTabbedSpan((float)visualOffset, tabExpander);
+                        double majorSpanDelta = majorSpan - origMajorSpan;
+                        if (majorSpanDelta != 0d) {
+                            tabVisualDelta += majorSpanDelta;
+                            tabVisualUpdate = (tabVisualDelta != 0); // may go back to zero e.g. first tab
                         }
                     }
                 }
-
+                visualDelta += tabVisualDelta;
+                visualUpdate = (visualDelta != 0d);
             }
         } else { // Move the items one by one
             boolean offsetUpdate = rawOffsetUpdate() && (offsetDelta != 0);
-            int viewCount = size();
+            TabExpander tabExpander = boxView.getTabExpander();
             for (int i = index; i < viewCount; i++) {
-                EditorView view = get(i);
+                V view = get(i);
                 if (offsetUpdate) {
                     view.setRawOffset(view.getRawOffset() + offsetDelta);
                 }
                 if (visualUpdate) {
                     view.setRawVisualOffset(view.getRawVisualOffset() + visualDelta);
                 }
+                // Must possibly re-measure tab-view's span since it depends on x-coordinate.
+                // Unlike when gap is active here both visualDelta shift and tab-remeasure shifts are joined
+                if (handleTabableViews() && view instanceof TabableView) {
+                    double visualOffset = view.getRawVisualOffset();
+                    // Use difference of visual offsets since it is most precise (doubles subtracting)
+                    // and getPreferredSpan() could be expensive.
+                    double nextViewVisualOffset = (i != viewCount - 1)
+                            ? get(i + 1).getRawVisualOffset()
+                            : getMajorAxisChildrenSpan(boxView);
+                    // add visualDelta to nextViewVisualOffset since visualOffset already includes visualDelta
+                    double origMajorSpan = (nextViewVisualOffset + visualDelta) - visualOffset;
+                    double majorSpan = ((TabableView) view).getTabbedSpan((float) visualOffset, tabExpander);
+                    double majorSpanDelta = majorSpan - origMajorSpan;
+                    if (majorSpanDelta != 0d) {
+                        visualDelta += majorSpanDelta;
+                        visualUpdate = (visualDelta != 0);
+                    }
+                }
             }
         }
+
         if (visualUpdate) {
             setMajorAxisChildrenSpan(boxView, getMajorAxisChildrenSpan(boxView) + visualDelta);
         }
     }
 
     private void moveGap(int index) {
+        checkGap();
         if (index != gapStorage.gapIndex) {
             boolean supportsRawOffsetUpdate = rawOffsetUpdate();
             if (index < gapStorage.gapIndex) {
                 int lastOffset = 0;
                 double lastVisualOffset = 0d;
                 for (int i = gapStorage.gapIndex - 1; i >= index; i--) {
-                    EditorView view = get(i);
+                    V view = get(i);
                     if (supportsRawOffsetUpdate) {
-                        lastOffset = view.getRawOffset() + gapStorage.offsetGapLength;
-                        view.setRawOffset(lastOffset);
+                        lastOffset = view.getRawOffset();
+                        view.setRawOffset(lastOffset + gapStorage.offsetGapLength);
                     }
-                    lastVisualOffset = view.getRawVisualOffset() + gapStorage.visualGapLength;
-                    view.setRawVisualOffset(lastVisualOffset);
+                    lastVisualOffset = view.getRawVisualOffset();
+                    view.setRawVisualOffset(lastVisualOffset + gapStorage.visualGapLength);
                 }
                 if (supportsRawOffsetUpdate) {
                     gapStorage.offsetGapStart = lastOffset;
@@ -484,19 +575,21 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
 
             } else { // index > gapStorage.gapIndex
                 for (int i = gapStorage.gapIndex; i < index; i++) {
-                    EditorView view = get(i);
+                    V view = get(i);
                     view.setRawVisualOffset(view.getRawVisualOffset() - gapStorage.visualGapLength);
                     if (supportsRawOffsetUpdate) {
                         view.setRawOffset(view.getRawOffset() - gapStorage.offsetGapLength);
                     }
                 }
-                if (index < size()) { // Gap moved to existing view
-                    EditorView view = get(index);
+                if (index < size()) { // Gap moved to existing view - the view is right above gap => subtract gap-lengths
+                    V view = get(index);
                     if (supportsRawOffsetUpdate) {
                         gapStorage.offsetGapStart = view.getRawOffset() - gapStorage.offsetGapLength;
                     }
                     gapStorage.visualGapStart = view.getRawVisualOffset() - gapStorage.visualGapLength;
-                } else { // Gap above at end of all existing views => make gap starts high enough to eliminate translation
+                } else {
+                    // Gap above at end of all existing views => make gap starts high enough
+                    // so that no offset/visual-offset is >= offsetGapStart/visualGapStart (no translation occurs)
                     assert (index == size()) : "Invalid requested index=" + index + // NOI18N
                             ", size()=" + size() + ", gapIndex=" + gapStorage.gapIndex; // NOI18N
                     if (supportsRawOffsetUpdate) {
@@ -506,6 +599,71 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                 }
             }
             gapStorage.gapIndex = index;
+        }
+        checkGap();
+    }
+    
+    private void checkGap() {
+        if (LOG.isLoggable(Level.FINE) && gapStorage != null) {
+            String error = null;
+            int gapIndex = gapStorage.gapIndex;
+            if (gapIndex > size()) {
+                error = "gapIndex=" + gapIndex + " > size()=" + size(); // NOI18N
+            } else {
+                for (int i = 0; i < size(); i++) {
+                    V view = get(i);
+                    int rawOffset = view.getRawOffset();
+                    int relOffset = raw2RelOffset(rawOffset);
+                    double rawVisualOffset = view.getRawVisualOffset();
+                    double visualOffset = raw2VisualOffset(rawVisualOffset);
+                    // Check textual offset
+                    if (rawOffsetUpdate()) {
+                        if (i < gapIndex) {
+                            if (rawOffset >= gapStorage.offsetGapStart) {
+                                error = "Not below offset-gap: rawOffset=" + rawOffset + // NOI18N
+                                        " >= offsetGapStart=" + gapStorage.offsetGapStart; // NOI18N
+                            }
+                        } else { // Above gap
+                            if (rawOffset < gapStorage.offsetGapStart) {
+                                error = "Not above offset-gap: rawOffset=" + rawOffset + // NOI18N
+                                        " < offsetGapStart=" + gapStorage.offsetGapStart; // NOI18N
+                            }
+                            if (i == gapIndex) {
+                                if (relOffset != gapStorage.offsetGapStart) {
+                                    error = "relOffset=" + relOffset + " != gapStorage.offsetGapStart=" + // NOI18N
+                                            gapStorage.offsetGapStart;
+                                }
+                            }
+
+                        }
+                    }
+                    // Check visual offset
+                    if (i < gapIndex) {
+                        if (rawVisualOffset >= gapStorage.visualGapStart) {
+                            error = "Not below visual-gap: rawVisualOffset=" + rawVisualOffset + // NOI18N
+                                    " >= visualGapStart=" + gapStorage.visualGapStart; // NOI18N
+                        }
+                    } else { // Above gap
+                        if (rawVisualOffset < gapStorage.visualGapStart) {
+                            error = "Not above visual-gap: rawVisualOffset=" + rawVisualOffset + // NOI18N
+                                    " < visualGapStart=" + gapStorage.visualGapStart; // NOI18N
+                        }
+                        if (i == gapIndex) {
+                            if (visualOffset != gapStorage.visualGapStart) {
+                                error = "visualOffset=" + visualOffset + " != gapStorage.visualGapStart=" + // NOI18N
+                                        gapStorage.visualGapStart;
+                            }
+                        }
+
+                    }
+                    if (error != null) {
+                        break;
+                    }
+                }
+            }
+            if (error != null) {
+                throw new IllegalStateException("gapStorage INTEGRITY ERROR!!!\n" + error);
+            }
         }
     }
 
@@ -539,11 +697,11 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
     public Shape modelToViewChecked(EditorBoxView boxView, int offset, Shape alloc, Position.Bias bias) {
         int index = getViewIndex(offset, bias);
         if (index >= 0) { // When at least one child the index will fit one of them
+            // First find valid child (can lead to change of child allocation bounds)
+            V view = getWithChildrenValid(boxView, index);
             Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
-            // Forward to the child view
-            EditorView child = get(index);
             // Update the bounds with child.modelToView()
-            return child.modelToViewChecked(offset, childAlloc, bias);
+            return view.modelToViewChecked(offset, childAlloc, bias);
         } else { // No children => fallback by leaving the given bounds
             return alloc;
         }
@@ -553,14 +711,29 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         int index = getViewIndexAtPoint(boxView, x, y, alloc);
         int offset;
         if (index >= 0) {
+            // First find valid child (can lead to change of child allocation bounds)
+            V view = getWithChildrenValid(boxView, index);
             Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
             // forward to the child view
-            EditorView view = get(index);
             offset = view.viewToModelChecked(x, y, childAlloc, biasReturn);
         } else { // at the end
             offset = boxView.getStartOffset();
         }
         return offset;
+    }
+
+    public String getToolTipTextChecked(EditorBoxView boxView, double x, double y, Shape alloc) {
+        int index = getViewIndexAtPoint(boxView, x, y, alloc);
+        int offset;
+        if (index >= 0) {
+            // First find valid child (can lead to change of child allocation bounds)
+            V view = getWithChildrenValid(boxView, index);
+            Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
+            // forward to the child view
+            return view.getToolTipTextChecked(x, y, childAlloc);
+        } else { // at the end
+            return null;
+        }
     }
 
     protected void paint(EditorBoxView boxView, Graphics2D g, Shape alloc, Rectangle clipBounds) {
@@ -594,8 +767,11 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         }
 
         while (index < endIndex) {
+            // Ensure chlidren are initialized. If they are not the batch size should cover
+            // a visible screen height at minimum so there should be just one initialization
+            // at maximum for regular painting requests.
+            V view = getWithChildrenValid(boxView, index);
             Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
-            EditorView view = get(index);
             view.paint(g, childAlloc, clipBounds);
             index++;
         }
@@ -620,7 +796,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
             sb.append('\n');
             ArrayUtilities.appendSpaces(sb, indent);
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
-            EditorView view = get(i);
+            V view = get(i);
             view.appendViewInfo(sb, indent, childImportantIndex);
             boolean appendDots = false;
             if (i == 4) { // After showing first 5 items => possibly skip to important index
@@ -648,6 +824,13 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                 ArrayUtilities.appendSpaces(sb, indent);
                 sb.append("...");
             }
+        }
+        return sb;
+    }
+
+    protected StringBuilder appendViewInfoCore(StringBuilder sb, int indent, int importantChildIndex) {
+        if (gapStorage != null) {
+            gapStorage.appendInfo(sb);
         }
         return sb;
     }
@@ -689,6 +872,17 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
          * Index of the gap in the contained children.
          */
         int gapIndex;
+
+        StringBuilder appendInfo(StringBuilder sb) {
+            sb.append("<").append(offsetGapStart).append("|").append(offsetGapLength);
+            sb.append(", vis<").append(visualGapStart).append("|").append(visualGapLength);
+            return sb;
+        }
+
+        @Override
+        public String toString() {
+            return appendInfo(new StringBuilder(100)).toString();
+        }
 
     }
 

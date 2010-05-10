@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
@@ -248,8 +249,8 @@ public final class SingleModuleProperties extends ModuleProperties {
             NbPlatform plaf = NbPlatform.getPlatformByDestDir(getHelper().resolveFile(nbDestDirS));
             if (!plaf.isValid()) { // #134492
                 NbPlatform def = NbPlatform.getDefaultPlatform();
-                LOG.log(Level.FINE, "Platform not found, switching to default (" + def.getDestDir() + ")");
                 if (def != null) {
+                    LOG.log(Level.FINE, "Platform not found, switching to default ({0})", def.getDestDir());
                     plaf = def;
                 }
             }
@@ -445,7 +446,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         Set<ModuleDependency> deps = depsModel.getDependencies();
         for (Iterator it = deps.iterator(); it.hasNext();) {
             ModuleDependency dep = (ModuleDependency) it.next();
-            if (dep.hasImplementationDepedendency()) {
+            if (dep.hasImplementationDependency()) {
                 return true;
             }
         }
@@ -911,7 +912,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             try {
                 pxm.replaceDependencies(depsToSave);
             } catch (CyclicDependencyException ex) {
-                throw new IOException(ex.getMessage());
+                throw new IOException(ex);
             }
         }
         Set<String> friends = getFriendListModel().getFriends();

@@ -42,6 +42,7 @@ import java.awt.Image;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
@@ -286,24 +287,42 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
                 switch (type) {
                     case TYPE_DEPENDENCY:
                         {
-                            artifacts.addAll(mp.getDependencyArtifacts());
+                            Set deps = mp.getDependencyArtifacts();
+                            if (deps != null) {
+                                artifacts.addAll(deps);
+                            }
                         }
                         break;
                     case TYPE_COMPILE:
                          {
-                            artifacts.addAll(mp.getCompileArtifacts());
+                            List compArtifs = mp.getCompileArtifacts();
+                            if (compArtifs != null) {
+                                artifacts.addAll(compArtifs);
+                            }
                         }
                         break;
                     case TYPE_TEST:
                          {
-                            artifacts.addAll(mp.getTestArtifacts());
-                            artifacts.removeAll(mp.getCompileArtifacts());
+                            List testArtifs = mp.getTestArtifacts();
+                            if (testArtifs != null) {
+                                artifacts.addAll(testArtifs);
+                            }
+                            List compArtifs = mp.getCompileArtifacts();
+                            if (compArtifs != null) {
+                                artifacts.removeAll(compArtifs);
+                            }
                         }
                         break;
                     case TYPE_RUNTIME:
                          {
-                            artifacts.addAll(mp.getRuntimeArtifacts());
-                            artifacts.removeAll(mp.getCompileArtifacts());
+                            List runtimeArtifs = mp.getRuntimeArtifacts();
+                            if (runtimeArtifs != null) {
+                                artifacts.addAll(runtimeArtifs);
+                            }
+                            List compArtifs = mp.getCompileArtifacts();
+                            if (compArtifs != null) {
+                                artifacts.removeAll(compArtifs);
+                            }
                         }
                         break;
                 }

@@ -111,7 +111,7 @@ public class OperationPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
         operationConfigurationPanel1 = new OperationConfigurationPanel(this.mProject, true, mModel, false);
-        commonMessagePanel1 = new org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel();
+        commonMessagePanel1 = new org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel();
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -355,7 +355,7 @@ public class OperationPanel extends javax.swing.JPanel {
 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel commonMessagePanel1;
+    private org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel commonMessagePanel1;
     private org.netbeans.modules.xml.wsdl.ui.view.OperationConfigurationPanel operationConfigurationPanel1;
     // End of variables declaration//GEN-END:variables
     

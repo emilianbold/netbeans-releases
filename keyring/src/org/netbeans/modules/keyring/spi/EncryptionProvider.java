@@ -113,4 +113,10 @@ public interface EncryptionProvider {
      */
     void encryptionChanged();
 
+    /**
+     * Tells the provider whether this is a new, empty keyring.
+     * @param fresh true if this is a new keyring, false if it has been used before
+     */
+    void freshKeyring(boolean fresh);
+
 }

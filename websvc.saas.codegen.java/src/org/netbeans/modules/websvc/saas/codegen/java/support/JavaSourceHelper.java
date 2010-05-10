@@ -664,10 +664,7 @@ public class JavaSourceHelper {
                         }
                     }
                 }
-
-                //annotationTrees.add(maker.Annotation(maker.Identifier(annotation), expressionTrees));
-                TypeElement element = copy.getElements().getTypeElement(annotation);
-                annotationTrees.add(maker.Annotation(maker.QualIdent(element), expressionTrees));
+                annotationTrees.add(maker.Annotation(createTypeTree(copy, annotation), expressionTrees));
             }
         } else {
             annotationTrees = Collections.<AnnotationTree>emptyList();

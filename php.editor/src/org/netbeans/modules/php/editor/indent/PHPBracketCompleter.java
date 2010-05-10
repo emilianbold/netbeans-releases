@@ -41,6 +41,7 @@
 package org.netbeans.modules.php.editor.indent;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -63,10 +64,15 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.openide.util.Exceptions;
 
 
 /** 
@@ -290,7 +296,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             StringBuilder sb = new StringBuilder();
             if (offset > afterLastNonWhite) {
                 sb.append("\n"); //NOI18N
-                sb.append(IndentUtils.createIndentString(doc, indent));
+                sb.append(IndentUtils.createIndentString(doc, countIndent(doc, offset, indent)));
                 
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
@@ -298,7 +304,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 String restOfLine = doc.getText(offset, Utilities.getRowEnd(doc, afterLastNonWhite)-offset);
                 sb.append(restOfLine);
                 sb.append("\n"); //NOI18N
-                sb.append(IndentUtils.createIndentString(doc, indent));
+                sb.append(IndentUtils.createIndentString(doc, countIndent(doc, offset, indent)));
                 doc.remove(offset, restOfLine.length());
             }
             
@@ -479,14 +485,24 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             
             if (isEmptyComment) {
                 final int indent = GsfUtilities.getLineIndent(doc, ts.offset());
-                //XXX: workaround for issue #133210:
-                if (!IndexingManager.getDefault().isIndexing()) {
-                    SwingUtilities.invokeLater(new Runnable() {
+                try {
+                    //XXX: workaround for issue #133210:
+                    final long currentTimeMillis = System.currentTimeMillis();
+                    ParserManager.parseWhenScanFinished(Collections.<Source>singleton(Source.create(document)), new UserTask() {
                         @Override
-                        public void run() {
-                            GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            if (System.currentTimeMillis() - currentTimeMillis < 1500) {
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
+                                    }
+                                });
+                            }
                         }
                     });
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
             
@@ -512,6 +528,8 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         
         return -1;
     }
+
+
     
     private static Object [] beforeBreakInComments(
         BaseDocument doc, TokenSequence<? extends PHPTokenId> ts, int offset, Caret caret,
@@ -1237,14 +1255,15 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                     int previousExprestion = PHPNewLineIndenter.findStartTokenOfExpression(ts);
                     int previousIndent = Utilities.getRowIndent(doc, previousExprestion);
                     int currentIndent = Utilities.getRowIndent(doc, offset);
-                    if (previousIndent != currentIndent) {
-                        GsfUtilities.setLineIndentation(doc, offset, previousIndent);
+                    int newIndent = countIndent(doc, offset, previousIndent);
+                    if (newIndent != currentIndent) {
+                        GsfUtilities.setLineIndentation(doc, offset, newIndent);
                         return;
                     }
                 }
 
                 if (id == PHPTokenId.PHP_CURLY_CLOSE) {
-                    begin = LexUtilities.findBwd(doc, ts, '{', '}');
+                    begin = LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_CURLY_OPEN, '{', PHPTokenId.PHP_CURLY_CLOSE, '}');
                 } else {
                     begin = LexUtilities.findBegin(doc, ts);
                 }
@@ -1807,6 +1826,69 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         default:
             return bracket;
         }
+    }
+
+    /**
+     * This method count new indent ofr braces and parent
+     * @param doc
+     * @param offset - the original offset, where is cursor 
+     * @param currentIndent - the indnet that should be modified
+     * @param previousIndent - indent of the line abot
+     * @return
+     */
+    private int countIndent(BaseDocument doc, int offset, int previousIndent) {
+        int value = previousIndent;
+        int delta = 0;
+        TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
+
+        ts.move(offset);
+
+        if (!ts.moveNext() || !ts.moveNext()) {
+            return previousIndent;
+        }
+
+        Token<?extends PHPTokenId> token = ts.token();
+        while (token.id() != PHPTokenId.PHP_CURLY_OPEN
+                && token.id() != PHPTokenId.PHP_SEMICOLON
+                && !(token.id() == PHPTokenId.PHP_TOKEN
+                    && ("(".equals(token.text())
+                        || "[".equals(token.text())))
+                && ts.movePrevious()) {
+            token = ts.token();
+        }
+        if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
+            while (token.id() != PHPTokenId.PHP_CLASS
+                    && token.id() != PHPTokenId.PHP_FUNCTION
+                    && token.id() != PHPTokenId.PHP_IF
+                    && token.id() != PHPTokenId.PHP_ELSE
+                    && token.id() != PHPTokenId.PHP_ELSEIF
+                    && token.id() != PHPTokenId.PHP_FOR
+                    && token.id() != PHPTokenId.PHP_FOREACH
+                    && token.id() != PHPTokenId.PHP_WHILE
+                    && token.id() != PHPTokenId.PHP_DO
+                    && token.id() != PHPTokenId.PHP_SWITCH
+                    && ts.movePrevious()) {
+                token = ts.token();
+            }
+            CodeStyle codeStyle = CodeStyle.get(doc);
+            CodeStyle.BracePlacement bracePlacement = codeStyle.getOtherBracePlacement();
+            if (token.id() == PHPTokenId.PHP_CLASS) {
+                bracePlacement = codeStyle.getClassDeclBracePlacement();
+            } else if (token.id() == PHPTokenId.PHP_FUNCTION) {
+                bracePlacement = codeStyle.getMethodDeclBracePlacement();
+            } else if (token.id() == PHPTokenId.PHP_IF || token.id() == PHPTokenId.PHP_ELSE || token.id() == PHPTokenId.PHP_ELSEIF) {
+                bracePlacement = codeStyle.getIfBracePlacement();
+            } else if (token.id() == PHPTokenId.PHP_FOR || token.id() == PHPTokenId.PHP_FOREACH) {
+                bracePlacement = codeStyle.getForBracePlacement();
+            } else if (token.id() == PHPTokenId.PHP_WHILE || token.id() == PHPTokenId.PHP_DO) {
+                bracePlacement = codeStyle.getWhileBracePlacement();
+            } else if (token.id() == PHPTokenId.PHP_SWITCH) {
+                bracePlacement = codeStyle.getSwitchBracePlacement();
+            }
+            value = bracePlacement == CodeStyle.BracePlacement.NEW_LINE_INDENTED ? previousIndent + codeStyle.getIndentSize() : previousIndent;
+        }
+
+        return value;
     }
 
     @Override

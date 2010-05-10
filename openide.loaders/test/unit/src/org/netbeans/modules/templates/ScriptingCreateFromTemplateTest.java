@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
@@ -51,6 +52,8 @@ import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.openide.loaders.CreateFromTemplateHandler;
+import org.openide.util.SharedClassObject;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -71,7 +74,7 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
-        MockLookup.setInstances(new SimpleLoader());
+        MockLookup.setInstances(SharedClassObject.findObject(SimpleLoader.class, true));
     }
 
     public void testCreateFromTemplateEncodingProperty() throws Exception {
@@ -101,6 +104,50 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         Charset targetEnc = FileEncodingQuery.getEncoding(instFO);
         assertNotNull("Template encoding is null", targetEnc);
         assertEquals("Encoding in template doesn't match", targetEnc.name(), instFO.asText());
+    }
+
+    public void testFreeFileExtension() throws Exception {
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject template = FileUtil.createData(root, "simple.pl");
+        OutputStream os = template.getOutputStream();
+        os.write("#!/usr/bin/perl\n# ${license}\n# ${name} in ${nameAndExt}\n".getBytes());
+        os.close();
+        template.setAttribute("template", true);
+        template.setAttribute("javax.script.ScriptEngine", "freemarker");
+        Map<String,Object> parameters = new HashMap<String,Object>();
+        parameters.put("license", "GPL");
+        parameters.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
+        ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader().getParent());
+        try {
+            FileObject inst;
+            inst = DataObject.find(template).createFromTemplate(DataFolder.findFolder(root), "nue", parameters).getPrimaryFile();
+            assertEquals("#!/usr/bin/perl\n# GPL\n# nue in nue.pl\n", inst.asText());
+            assertEquals("nue.pl", inst.getPath());
+            /* XXX perhaps irrelevant since typical wizards disable Finish in this condition
+            inst = DataObject.find(template).createFromTemplate(DataFolder.findFolder(root), "nue", parameters).getPrimaryFile();
+            assertEquals("#!/usr/bin/perl\n# GPL\n# nue_1 in nue_1.pl\n", inst.asText());
+            assertEquals("nue_1.pl", inst.getPath());
+             */
+            inst = DataObject.find(template).createFromTemplate(DataFolder.findFolder(root), "nue.cgi", parameters).getPrimaryFile();
+            assertEquals("#!/usr/bin/perl\n# GPL\n# nue in nue.cgi\n", inst.asText());
+            assertEquals("nue.cgi", inst.getPath());
+            /* XXX
+            inst = DataObject.find(template).createFromTemplate(DataFolder.findFolder(root), "nue.cgi", parameters).getPrimaryFile();
+            assertEquals("#!/usr/bin/perl\n# GPL\n# nue_1 in nue_1.cgi\n", inst.asText());
+            assertEquals("nue_1.cgi", inst.getPath());
+             */
+            inst = DataObject.find(template).createFromTemplate(DataFolder.findFolder(root), "explicit.pl", parameters).getPrimaryFile();
+            assertEquals("#!/usr/bin/perl\n# GPL\n# explicit in explicit.pl\n", inst.asText());
+            assertEquals("explicit.pl", inst.getPath());
+            /* XXX
+            inst = DataObject.find(template).createFromTemplate(DataFolder.findFolder(root), "explicit.pl", parameters).getPrimaryFile();
+            assertEquals("#!/usr/bin/perl\n# GPL\n# explicit_1 in explicit_1.pl\n", inst.asText());
+            assertEquals("explicit_1.pl", inst.getPath());
+             */
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldLoader);
+        }
     }
     
     //fix for this test was rolled back because of issue #120865

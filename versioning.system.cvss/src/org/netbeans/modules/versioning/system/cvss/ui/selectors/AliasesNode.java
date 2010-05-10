@@ -60,6 +60,7 @@ import java.util.Collections;
 import java.util.List;
 import java.awt.*;
 import java.beans.BeanInfo;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 
 /**
  * Represents module aliases subtree.
@@ -116,8 +117,7 @@ final class AliasesNode extends AbstractNode {
             super.addNotify();
             AbstractNode waitNode = new WaitNode(org.openide.util.NbBundle.getMessage(AliasesNode.class, "BK2006"));
             setKeys(Collections.singleton(waitNode));
-            RequestProcessor rp = RequestProcessor.getDefault();
-            task = rp.post(this);
+            task = CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(this);
         }
 
         protected void removeNotify() {

@@ -75,6 +75,9 @@ public class RailsProjectUtilTest extends RubyTestBase {
         version = RailsProjectUtil.versionFor("2.3.2");
         assertEquals("2.3.2", version.asString());
 
+        version = RailsProjectUtil.versionFor("3.0.0.beta");
+        assertEquals("3.0.0.beta", version.asString());
+
         version = RailsProjectUtil.versionFor("x.1");
         assertEquals("0.0.0", version.asString());
     }
@@ -83,5 +86,6 @@ public class RailsProjectUtilTest extends RubyTestBase {
         assertEquals(-1, RailsProjectUtil.versionFor("2.1").compareTo(RailsProjectUtil.versionFor("2.3.0")));
         assertEquals(0, RailsProjectUtil.versionFor("1.1").compareTo(RailsProjectUtil.versionFor("1.1")));
         assertEquals(1, RailsProjectUtil.versionFor("2.4.10").compareTo(RailsProjectUtil.versionFor("2.4.9")));
+        assertEquals(1, RailsProjectUtil.versionFor("3.0.0.beta2").compareTo(RailsProjectUtil.versionFor("3.0.0.beta")));
     }
 }

@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.tree.TreeCellRenderer;
+import org.openide.util.NbBundle;
 
 
 /** Default renderer for nodes. Can paint either Nodes directly or
@@ -158,8 +159,13 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
         }
 
         String text = vis.getHtmlDisplayName();
+        if (list.getModel() instanceof NodeListModel) {
+            int depth = NodeListModel.findVisualizerDepth(list.getModel(), vis);
+            if (depth == -1) {
+                text = NbBundle.getMessage(NodeRenderer.class, "LBL_UP");
+            }
+        }
         boolean isHtml = text != null;
-
         if (!isHtml) {
             text = vis.getDisplayName();
         }

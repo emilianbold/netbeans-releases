@@ -40,7 +40,6 @@ package org.netbeans.modules.nativeexecution;
 
 import com.sun.jna.Pointer;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -61,9 +60,6 @@ import org.openide.util.NbBundle;
 public final class LocalNativeProcess extends AbstractNativeProcess {
 
     private Process process = null;
-    private InputStream processOutput = null;
-    private OutputStream processInput = null;
-    private InputStream processError = null;
 
     public LocalNativeProcess(NativeProcessInfo info) {
         super(info);
@@ -80,10 +76,9 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                 createNonWin();
             }
         } catch (Throwable ex) {
-            String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage()) + "\n"; // NOI18N
-            processOutput = new ByteArrayInputStream(new byte[0]);
-            processError = new ByteArrayInputStream(msg.getBytes());
-            processInput = new ByteArrayOutputStream();
+            if (process != null) {
+                process.destroy();
+            }
             throw ex;
         }
     }
@@ -116,28 +111,31 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         process = pb.start();
 
-        processInput = process.getOutputStream();
-        processError = process.getErrorStream();
-        processOutput = process.getInputStream();
+        OutputStream toProcessStream = process.getOutputStream();
+        InputStream fromProcessStream = process.getInputStream();
 
-        processInput.write("echo $$\n".getBytes()); // NOI18N
-        processInput.flush();
+        setErrorStream(process.getErrorStream());
+        setInputStream(fromProcessStream);
+        setOutputStream(toProcessStream);
 
-        EnvWriter ew = new EnvWriter(processInput);
+        toProcessStream.write("echo $$\n".getBytes()); // NOI18N
+        toProcessStream.flush();
+
+        EnvWriter ew = new EnvWriter(toProcessStream, false);
         ew.write(env);
 
         if (info.getInitialSuspend()) {
-            processInput.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N
-            processInput.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
-            processInput.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
+            toProcessStream.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N
+            toProcessStream.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
+            toProcessStream.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
         }
 
-        processInput.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
-        processInput.flush();
+        toProcessStream.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
+        toProcessStream.flush();
 
         creation_ts = System.nanoTime();
 
-        readPID(processOutput);
+        readPID(fromProcessStream);
     }
 
     private void createWin() throws IOException, InterruptedException {
@@ -197,9 +195,9 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         creation_ts = System.nanoTime();
 
-        processInput = process.getOutputStream();
-        processError = process.getErrorStream();
-        processOutput = process.getInputStream();
+        setErrorStream(process.getErrorStream());
+        setInputStream(process.getInputStream());
+        setOutputStream(process.getOutputStream());
 
         int newPid = 12345;
 
@@ -224,74 +222,19 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
     }
 
     @Override
-    public OutputStream getOutputStream() {
-        return processInput;
-    }
-
-    @Override
-    public InputStream getInputStream() {
-        return processOutput;
-    }
-
-    @Override
-    public InputStream getErrorStream() {
-        return processError;
-    }
-
-    @Override
     public final int waitResult() throws InterruptedException {
         if (process == null) {
             return -1;
         }
 
-        /*
-         * Why not just process.waitResult()...
-         * This is to avoid a problem with short-running tasks, when
-         * this Thread (that waits for process' termination) doesn't see
-         * that it has been interrupted....
-         * TODO: describe situation in details...
-         */
-
-        int result = -1;
-
-//        // Get lock on process not to take it on every itteration
-//        // (in process.exitValue())
-//
-//        synchronized (process) {
-        // Why this synchronized is commented-out..
-        // This is because ProcessReaper is also synchronized on this...
-        // And it should be able to react on process' termination....
-
-        while (true) {
-            // This sleep is to avoid lost interrupted exception...
-            try {
-                Thread.sleep(200);
-                // 200 - to make this check not so often...
-                // actually, to avoid the problem, 1 is OK.
-            } catch (InterruptedException ex) {
-                throw ex;
-            }
-
-            try {
-                result = process.exitValue();
-            } catch (IllegalThreadStateException ex) {
-                continue;
-            }
-
-            break;
-        }
-//        }
-
-        if (getState() == State.CANCELLED) {
-            throw new InterruptedException();
-        }
-
-        return result;
+        return process.waitFor();
     }
 
     @Override
     protected final synchronized void cancel() {
-        ProcessUtils.destroy(this);
+        if (process != null) {
+            ProcessUtils.destroy(process);
+        }
     }
 
     private static String loc(String key, String... params) {

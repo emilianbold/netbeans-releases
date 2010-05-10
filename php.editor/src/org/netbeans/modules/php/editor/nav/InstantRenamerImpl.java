@@ -52,6 +52,7 @@ import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.Occurence;
+import org.netbeans.modules.php.editor.model.Occurence.Accuracy;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -68,6 +69,7 @@ public class InstantRenamerImpl implements InstantRenamer {
     private static final boolean IS_RENAME_REFACTORING_ENABLED = false;
     private List<Occurence> allOccurences = Collections.emptyList();
 
+    @Override
     public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
         allOccurences.clear();        
         PHPParseResult result = (PHPParseResult) info;
@@ -75,36 +77,41 @@ public class InstantRenamerImpl implements InstantRenamer {
         OccurencesSupport occurencesSupport = model.getOccurencesSupport(caretOffset);
         Occurence caretOccurence = occurencesSupport.getOccurence();
         if (caretOccurence != null) {
-            if (IS_RENAME_REFACTORING_ENABLED) {
-                PhpElement decl = caretOccurence.getDeclaration();
-                if (caretOccurence.getAllDeclarations().size() > 1) {
-                    return false;
+            final Accuracy accuracy = caretOccurence.degreeOfAccuracy();
+            if (accuracy.equals(Occurence.Accuracy.EXACT) || accuracy.equals(Occurence.Accuracy.UNIQUE)) {
+                if (IS_RENAME_REFACTORING_ENABLED) {
+                    final Collection<? extends PhpElement> allDeclarations = caretOccurence.getAllDeclarations();
+                    if (allDeclarations.size() != 1) {
+                        return false;
+                    }
+                    PhpElement decl = allDeclarations.iterator().next();
+                    if (decl instanceof VariableName) {
+                        VariableName varName = (VariableName) decl;
+                        if (!varName.isGloballyVisible() && !varName.representsThis()) {
+                            return checkAll(caretOccurence);
+                        }
+                    } else if (decl instanceof MethodScope) {
+                        MethodScope meth = (MethodScope) decl;
+                        PhpModifiers phpModifiers = meth.getPhpModifiers();
+                        if (phpModifiers.isPrivate()) {
+                            return checkAll(caretOccurence);
+                        }
+                    } else if (decl instanceof FieldElement) {
+                        FieldElement fld = (FieldElement) decl;
+                        PhpModifiers phpModifiers = fld.getPhpModifiers();
+                        if (phpModifiers.isPrivate()) {
+                            return checkAll(caretOccurence);
+                        }
+                    }
+                } else {
+                    return checkAll(caretOccurence);
                 }
-                if (decl instanceof VariableName) {
-                    VariableName varName = (VariableName) decl;
-                    if (!varName.isGloballyVisible() && !varName.representsThis()) {
-                        return checkAll(caretOccurence);
-                    }
-                } else if (decl instanceof MethodScope) {
-                    MethodScope meth = (MethodScope) decl;
-                    PhpModifiers phpModifiers = meth.getPhpModifiers();
-                    if (phpModifiers.isPrivate()) {
-                        return checkAll(caretOccurence);
-                    }
-                } else if (decl instanceof FieldElement) {
-                    FieldElement fld = (FieldElement) decl;
-                    PhpModifiers phpModifiers = fld.getPhpModifiers();
-                    if (phpModifiers.isPrivate()) {
-                        return checkAll(caretOccurence);
-                    }
-                }
-            } else {
-                return checkAll(caretOccurence);
-            }
+            } 
         }
         return false;
     }
 
+    @Override
     public Set<OffsetRange> getRenameRegions(ParserResult info, int caretOffset) {
         Set<OffsetRange> retval = new HashSet<OffsetRange>();
         for (Occurence occurence : allOccurences) {

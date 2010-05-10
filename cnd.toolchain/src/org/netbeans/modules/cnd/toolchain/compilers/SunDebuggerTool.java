@@ -54,8 +54,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     }
     
     @Override
-    public SunDebuggerTool createCopy() {
-        return new SunDebuggerTool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
+    public SunDebuggerTool createCopy(CompilerFlavor flavor) {
+        return new SunDebuggerTool(getExecutionEnvironment(), flavor, getName(), getDisplayName(), getPath());
     }
 
     public static SunDebuggerTool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {

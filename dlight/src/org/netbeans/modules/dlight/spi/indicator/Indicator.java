@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -103,6 +104,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     private boolean visible;
     private final Action defaultAction;
     private final Collection<Column> columnsProvided = new ArrayList<Column>();
+    final AtomicReference<Object> oldRef = new AtomicReference<Object>(); 
 
     static {
         IndicatorAccessor.setDefault(new IndicatorAccessorImpl());
@@ -342,6 +344,15 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
                 }
                 component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
                 component.setBackground(c);
+                JRootPane rootPane = component.getRootPane();
+
+                if (rootPane == null) {
+                    return;
+                }
+                InputMap iMap = rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), oldRef.get());
+                ActionMap aMap = rootPane.getActionMap();
+                aMap.remove("enter"); // NOI18N
 
             }
         });

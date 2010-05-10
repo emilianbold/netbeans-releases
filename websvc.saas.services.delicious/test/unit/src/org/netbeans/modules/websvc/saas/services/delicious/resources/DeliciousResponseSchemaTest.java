@@ -39,13 +39,13 @@
 package org.netbeans.modules.websvc.saas.services.delicious.resources;
 
 import junit.framework.TestSuite;
-import org.netbeans.modules.websvc.saas.kit.SchemaTest;
+import org.netbeans.modules.websvc.saas.util.SchemaTestBase;
 
 /**
  *
  * @author lukas
  */
-public class DeliciousResponseSchemaTest extends SchemaTest {
+public class DeliciousResponseSchemaTest extends SchemaTestBase {
 
     private DeliciousResponseSchemaTest() {
         super();

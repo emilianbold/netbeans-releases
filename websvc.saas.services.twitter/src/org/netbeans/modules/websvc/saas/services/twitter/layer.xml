@@ -48,6 +48,7 @@
         <folder name="Twitter">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.twitter.Bundle"/>
             <file name="Twitter.xml" url="/org/netbeans/modules/websvc/saas/services/twitter/resources/Twitter.xml"/>
+            <file name="TwitterOAuth.xml" url="/org/netbeans/modules/websvc/saas/services/twitter/resources/TwitterOAuth.xml"/>
         </folder>
     </folder>
     

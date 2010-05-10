@@ -58,6 +58,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 public class AntBasedProjectFactorySingletonTest extends NbTestCase {
@@ -238,7 +239,7 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
     }
     private static String namesOfChildren(Element e) {
         StringBuilder b = new StringBuilder();
-        for (Element kid : Util.findSubElements(e)) {
+        for (Element kid : XMLUtil.findSubElements(e)) {
             if (b.length() > 0) {
                 b.append(' ');
             }

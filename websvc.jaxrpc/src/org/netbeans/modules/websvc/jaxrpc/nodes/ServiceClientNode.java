@@ -50,6 +50,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport.Reflection;
 import org.openide.nodes.Sheet.Set;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
 import org.netbeans.modules.websvc.spi.support.ConfigureHandlerAction;
@@ -61,6 +62,7 @@ import org.netbeans.modules.websvc.jaxrpc.ServiceInformation;
 import org.netbeans.modules.websvc.wsdl.config.ServiceInformationImpl;
 import org.netbeans.modules.websvc.wsdl.config.WsCompileConfigDataObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 
 /** Wrap wsdl node from wsdl directory in a filter, but display children from
@@ -132,7 +134,7 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
     
     @Override
     public String getDisplayName() {
-        return (registerNode != null) ? registerNode.getDisplayName() : super.getDisplayName();
+        return (registerNode != null) ? registerNode.getDisplayName() : NbBundle.getMessage(ServiceClientNode.class, "MSG_parsingWSDL");
     }
     
     @Override
@@ -191,20 +193,22 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
     
     @Override
     public Image getIcon(int type) {
-        // !PW FIXME me need static source for Web Service Icon
-        Image wsdlIcon = super.getIcon(type);
-        
         // show icon for registry node instead of WSDL node
-        return registerNode != null ? registerNode.getIcon(type) : wsdlIcon;
+        return registerNode != null ? registerNode.getIcon(type) : getWaitIcon();
     }
     
     @Override
     public Image getOpenedIcon(int type) {
-        // !PW FIXME me need static source for Web Service Opened Icon
-        Image wsdlOpenedIcon = super.getOpenedIcon(type);
-        
         // show opened icon for registry node instead of WSDL node
-        return registerNode != null ? registerNode.getOpenedIcon(type) : wsdlOpenedIcon;
+        return registerNode != null ? registerNode.getOpenedIcon(type) : getWaitIcon();
+    }
+
+    private static Image waitIcon;
+    private static synchronized Image getWaitIcon() {
+        if (waitIcon == null) {
+            waitIcon = ImageUtilities.loadImage("org/netbeans/modules/websvc/jaxrpc/nodes/resources/wait.gif"); //NOI18N
+        }
+        return waitIcon;
     }
     
     @Override

@@ -75,6 +75,7 @@ public final class SortColumnHeaderRenderer implements TableCellRenderer {
         model.sort(sortColumnIndex, sortAscending);
     }
 
+    @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         Component text = textRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         if (text instanceof JLabel) {

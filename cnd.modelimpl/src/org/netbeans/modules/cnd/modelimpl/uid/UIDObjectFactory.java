@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -74,6 +75,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ClassifierUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.DeclarationUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.FileUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.IncludeUID;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.InheritanceUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.MacroUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.NamespaceUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ParamListUID;
@@ -86,7 +88,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.UnresolvedFileUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.UnresolvedNamespaceUID;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
 /**
@@ -182,7 +184,25 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             assert anUID != null;
             writeUID(anUID, aStream);
         }
+    }
 
+    public <T> void writeStringToUIDMapSet(Map<CharSequence, Set<CsmUID<T>>> aMap, DataOutput aStream) throws IOException {
+        assert aMap != null;
+        assert aStream != null;
+        int collSize = aMap.size();
+        aStream.writeInt(collSize);
+
+        for (Map.Entry<CharSequence, Set<CsmUID<T>>> anEntry : aMap.entrySet()) {
+            CharSequence key = anEntry.getKey();
+            assert key != null;
+            PersistentUtils.writeUTF(key, aStream);
+            collSize = anEntry.getValue().size();
+            aStream.writeInt(collSize);
+            for(CsmUID<T> anUID : anEntry.getValue()) {
+                assert anUID != null;
+                writeUID(anUID, aStream);
+            }
+        }
     }
 
     public <T> void writeOffsetSortedToUIDMap(Map<FileImpl.OffsetSortedKey, CsmUID<T>> aMap, DataOutput aStream, boolean sync) throws IOException {
@@ -282,6 +302,21 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
 
+    public <T> void readStringToUIDMapSet(Map<CharSequence, Set<CsmUID<T>>> aMap, DataInput aStream, APTStringManager manager, int collSize) throws IOException {
+        for (int i = 0; i < collSize; ++i) {
+            CharSequence key = PersistentUtils.readUTF(aStream, manager);
+            assert key != null;
+            int aSize = aStream.readInt();
+            Set<CsmUID<T>> set = new HashSet<CsmUID<T>>(aSize);
+            for(int j = 0; j < aSize; j++) {
+                CsmUID<T> uid = readUID(aStream);
+                assert uid != null;
+                set.add(uid);
+            }
+            aMap.put(key, set);
+        }
+    }
+
     public TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> readOffsetSortedToUIDMap(DataInput aStream, APTStringManager manager) throws IOException {
         assert aStream != null;
         HelperDeclarationsSortedMap helper = new HelperDeclarationsSortedMap(this, aStream, manager);
@@ -331,6 +366,8 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             aHandler = UID_MACRO_UID;
         } else if (object instanceof IncludeUID) {
             aHandler = UID_INCLUDE_UID;
+        } else if (object instanceof UIDUtilities.InheritanceUID) {
+            aHandler = UID_INHERITANCE_UID;
         } else if (object instanceof ParamListUID<?>) {
             aHandler = UID_PARAM_LIST_UID;
         } else if (object instanceof UnnamedOffsetableDeclarationUID<?>) {
@@ -396,7 +433,12 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                 anUID = new IncludeUID(aStream);
                 break;
 
-            // no reason to cache declaration and more detailed uids.
+            case UID_INHERITANCE_UID:
+                share = true;
+                anUID = new InheritanceUID(aStream);
+                break;
+
+                // no reason to cache declaration and more detailed uids.
             case UID_PARAM_LIST_UID:
                 anUID = new ParamListUID<CsmNamedElement>(aStream);
                 break;
@@ -454,7 +496,8 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     private static final int UID_UNNAMED_CLASSIFIER_UID = UID_CLASSIFIER_UID + 1;
     private static final int UID_MACRO_UID = UID_UNNAMED_CLASSIFIER_UID + 1;
     private static final int UID_INCLUDE_UID = UID_MACRO_UID + 1;
-    private static final int UID_PARAM_LIST_UID = UID_INCLUDE_UID + 1;
+    private static final int UID_INHERITANCE_UID = UID_INCLUDE_UID + 1;
+    private static final int UID_PARAM_LIST_UID = UID_INHERITANCE_UID + 1;
     private static final int UID_UNNAMED_OFFSETABLE_DECLARATION_UID = UID_PARAM_LIST_UID + 1;
     private static final int UID_DECLARATION_UID = UID_UNNAMED_OFFSETABLE_DECLARATION_UID + 1;
     private static final int UID_BUILT_IN_UID = UID_DECLARATION_UID + 1;
@@ -913,7 +956,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             this.manager = manager;
         }
         public Comparator<? super CharSequence> comparator() {
-            return CharSequenceKey.Comparator;
+            return CharSequences.comparator();
         }
         public SortedMap<CharSequence, Object> subMap(CharSequence fromKey, CharSequence toKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
@@ -1066,7 +1109,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             this.manager = manager;
         }
         public Comparator<? super CharSequence> comparator() {
-            return CharSequenceKey.Comparator;
+            return CharSequences.comparator();
         }
         public SortedMap<CharSequence, CsmUID<CsmNamespaceDefinition>> subMap(CharSequence fromKey, CharSequence toKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N

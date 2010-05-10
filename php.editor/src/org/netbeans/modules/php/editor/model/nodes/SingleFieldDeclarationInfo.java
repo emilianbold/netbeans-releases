@@ -69,7 +69,7 @@ public class SingleFieldDeclarationInfo extends ASTNodeInfo<SingleFieldDeclarati
 
     @Override
     public Kind getKind() {
-        return Kind.FIELD;
+        return getAccessModifiers().isStatic() ? Kind.STATIC_FIELD : Kind.FIELD;
     }
 
     @Override

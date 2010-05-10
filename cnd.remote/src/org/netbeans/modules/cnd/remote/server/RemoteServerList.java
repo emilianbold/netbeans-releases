@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
@@ -60,6 +61,7 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
@@ -114,8 +116,7 @@ public class RemoteServerList implements ServerListImplementation {
                     syncFactory = RemoteSyncFactory.fromID(syncId);
                     if (syncFactory == null) {
                         syncFactory = RemoteSyncFactory.getDefault();
-                        RemoteUtil.LOGGER.warning("Unsupported synchronization mode \"" + syncId + "\" for " + env.toString() + //NOI18N
-                                ". Switching to default one."); //NOI18N
+                        RemoteUtil.LOGGER.log(Level.WARNING, "Unsupported synchronization mode \"{0}\" for {1}. Switching to default one.", new Object[]{syncId, env.toString()}); //NOI18N
                     }
                 }
                 if (env.isRemote()) {
@@ -164,6 +165,7 @@ public class RemoteServerList implements ServerListImplementation {
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings("UG") // since get(ExecutionEnvironment) is synchronized
+    @Override
     public ServerRecord get(Project project) {
         ExecutionEnvironment execEnv = RemoteProjectSupport.getExecutionEnvironment(project);
         if( execEnv != null) {
@@ -293,13 +295,16 @@ public class RemoteServerList implements ServerListImplementation {
     @Override
     public synchronized void set(List<ServerRecord> records, ServerRecord defaultRecord) {
         ArrayList<RemoteServerRecord> oldItems = new ArrayList<RemoteServerRecord>(items);
-        RemoteUtil.LOGGER.finest("ServerList: set " + records);
+        RemoteUtil.LOGGER.log(Level.FINEST, "ServerList: set {0}", records);
         Collection<ExecutionEnvironment> removed = clear();
+        List<ExecutionEnvironment> allEnv = new ArrayList<ExecutionEnvironment>();
         for (ServerRecord rec : records) {
             addServer(rec.getExecutionEnvironment(), rec.getDisplayName(), rec.getSyncFactory(), false, false);
             removed.remove(rec.getExecutionEnvironment());
+            allEnv.add(rec.getExecutionEnvironment());
         }
         setDefaultRecord(defaultRecord);
+        PasswordManager.getInstance().setServerList(allEnv);
         firePropertyChange(ServerList.PROP_RECORD_LIST, oldItems, new ArrayList<RemoteServerRecord>(items));
     }
 
@@ -326,7 +331,7 @@ public class RemoteServerList implements ServerListImplementation {
         getPreferences().put(REMOTE_SERVERS, sb.toString());
     }
 
-    protected void refresh() {
+    private void refresh() {
         cs.fireChange();
     }
 
@@ -366,10 +371,12 @@ public class RemoteServerList implements ServerListImplementation {
         cs.removeChangeListener(listener);
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
     }
@@ -383,6 +390,7 @@ public class RemoteServerList implements ServerListImplementation {
     }
 
     private static final Comparator<RemoteServerRecord> RECORDS_COMPARATOR = new Comparator<RemoteServerRecord> () {
+        @Override
         public int compare(RemoteServerRecord o1, RemoteServerRecord o2) {
             if (o1 == o2) {
                 return 0;
@@ -404,6 +412,7 @@ public class RemoteServerList implements ServerListImplementation {
         }
     };
 
+    @Override
     public ServerRecord createServerRecord(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory) {
         return new RemoteServerRecord(env, displayName, syncFactory, false);
     }

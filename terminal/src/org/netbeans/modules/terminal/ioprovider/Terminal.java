@@ -44,7 +44,7 @@ package org.netbeans.modules.terminal.ioprovider;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -54,6 +54,9 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.beans.PropertyVetoException;
+import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -65,18 +68,38 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.text.AttributeSet;
 
 import org.openide.util.NbPreferences;
 import org.openide.windows.IOContainer;
 
 import org.netbeans.lib.terminalemulator.ActiveTerm;
-import org.netbeans.lib.terminalemulator.StreamTerm;
+import org.netbeans.lib.terminalemulator.Term;
 
 import org.netbeans.lib.terminalemulator.support.DefaultFindState;
 import org.netbeans.lib.terminalemulator.support.FindState;
 import org.netbeans.lib.terminalemulator.support.TermOptions;
+import org.netbeans.lib.terminalemulator.Coord;
+import org.netbeans.modules.terminal.api.IOConnect;
+import org.netbeans.modules.terminal.api.IOVisibility;
+import org.netbeans.modules.terminal.api.IOVisibilityControl;
 
-import org.netbeans.modules.terminal.ui.TermAdvancedOption;
+import org.netbeans.modules.terminal.TermAdvancedOption;
+import org.openide.awt.TabbedPaneFactory;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.lib.terminalemulator.ActiveRegion;
+import org.netbeans.lib.terminalemulator.ActiveTermListener;
+import org.netbeans.lib.terminalemulator.Extent;
+import org.netbeans.lib.terminalemulator.TermListener;
+import org.netbeans.modules.terminal.api.IOResizable;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 /**
  * A {@link org.netbeans.lib.terminalemulator.Term}-based terminal component for
@@ -101,26 +124,21 @@ import org.netbeans.modules.terminal.ui.TermAdvancedOption;
  * </pre>
  * @author ivan
  */
-public final class Terminal extends JComponent {
-
-//    /**
-//     * Communicates state changes to container (TermTopComponent).
-//     */
-//    interface TerminalListener {
-//        void reaped(Terminal who);
-//        void setTitle(Terminal who, String title);
-//    }
+/* package */ final class Terminal extends JComponent {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     private final IOContainer ioContainer;
-    private final Action[] actions;
+    private final TerminalInputOutput tio;	// back pointer
     private final String name;
+    private final MouseAdapter mouseAdapter;
 
     private final CallBacks callBacks = new CallBacks();
 
-    private final StreamTerm term;
-    private final FindState findState;
+    // Not final so we can dispose of them
+    private ActiveTerm term;
+    private final TermListener termListener;
+    private FindState findState;
 
     private static final Preferences prefs =
         NbPreferences.forModule(TermAdvancedOption.class);
@@ -129,8 +147,21 @@ public final class Terminal extends JComponent {
 
     private String title;
 
-    private boolean closing;
-    private boolean closed;
+    // AKA ! weak closed
+    private boolean visibleInContainer;
+
+    // AKA ! stream closed
+    private boolean outConnected;
+    private boolean errConnected;
+    private boolean extConnected;
+
+    // AKA strong closed
+    private boolean disposed;
+
+    // properties managed by IOvisibility
+    private boolean closable = true;
+
+    private boolean closedUnconditionally;
 
     private class TermOptionsPCL implements PropertyChangeListener {
 	@Override
@@ -142,13 +173,21 @@ public final class Terminal extends JComponent {
     /**
      * These are messages from IOContainer we are obligated to handle.
      */
-    private class CallBacks implements IOContainer.CallBacks {
+    private class CallBacks implements IOContainer.CallBacks, Lookup.Provider {
+
+	private final Lookup lookup = Lookups.fixed(new MyIOVisibilityControl());
+
+	@Override
+	public Lookup getLookup() {
+	    return lookup;
+	}
 
 	@Override
         public void closed() {
             // System.out.printf("Terminal.CallBacks.closed()\n");
 	    // Causes assertion error in IOContainer/IOWindow.
             // OLD close();
+	    setVisibleInContainer(false);
         }
 
 	@Override
@@ -165,20 +204,64 @@ public final class Terminal extends JComponent {
         public void deactivated() {
             // System.out.printf("Terminal.CallBacks.deactivated()\n");
         }
+
+	private class MyIOVisibilityControl extends IOVisibilityControl {
+
+	    @Override
+	    protected boolean okToClose() {
+		if (Terminal.this.isClosedUnconditionally())
+		    return true;
+		return Terminal.this.okToHide();
+	    }
+
+	    @Override
+	    protected boolean isClosable() {
+		if (Terminal.this.isClosedUnconditionally())
+		    return true;
+		return Terminal.this.isClosable();
+	    }
+	}
     }
 
-    /* package */ Terminal(IOContainer ioContainer, Action[] actions, String name) {
+    /**
+     * Adapter to forward Term size change events as property changes.
+     */
+    private class MyTermListener implements TermListener {
+	@Override
+	public void sizeChanged(Dimension cells, Dimension pixels) {
+	    IOResizable.Size size = new IOResizable.Size(cells, pixels);
+	    tio.pcs().firePropertyChange(IOResizable.PROP_SIZE, null, size);
+	}
+    }
+
+    private static class TerminalOutputEvent extends OutputEvent {
+        private final String text;
+
+        public TerminalOutputEvent(InputOutput io, String text) {
+            super(io);
+            this.text = text;
+        }
+
+        @Override
+        public String getLine() {
+            return text;
+        }
+    }
+
+    /* package */ Terminal(IOContainer ioContainer, TerminalInputOutput tio, String name) {
 	if (ioContainer == null)
 	    throw new IllegalArgumentException("ioContainer cannot be null");	// NOI18N
 
         this.ioContainer = ioContainer;
-        this.actions = (actions == null)? new Action[0]: actions;
+	this.tio = tio;
 	this.name = name;
 
         termOptions = TermOptions.getDefault(prefs);
 
         // this.term = new StreamTerm();
         this.term = new ActiveTerm();
+
+	applyDebugFlags();
 
         this.term.setCursorVisible(true);
 
@@ -188,11 +271,12 @@ public final class Terminal extends JComponent {
         term.setEmulation("ansi");	// NOI18N
         term .setBackground(Color.white);
         term.setHistorySize(4000);
-
+        term.setRenderingHints(getRenderingHints());
+	
         termOptions.addPropertyChangeListener(termOptionsPCL);
         applyTermOptions(true);
 
-        term.getScreen().addMouseListener(new MouseAdapter() {
+        mouseAdapter = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (e.isPopupTrigger()) {
@@ -202,7 +286,27 @@ public final class Terminal extends JComponent {
                     postPopupMenu(p);
                 }
             }
-        } );
+        };
+        term.getScreen().addMouseListener(mouseAdapter);
+
+	termListener = new MyTermListener();
+	term.addListener(termListener);
+
+        // Set up to convert clicks on active regions, created by OutputWriter.
+        // println(), to outputLineAction notifications.
+        term.setActionListener(new ActiveTermListener() {
+	    @Override
+            public void action(ActiveRegion r, InputEvent e) {
+                OutputListener ol = (OutputListener) r.getUserObject();
+                if (ol == null)
+                    return;
+                Extent extent = r.getExtent();
+                String text = term.textWithin(extent.begin, extent.end);
+                OutputEvent oe =
+                    new TerminalOutputEvent(Terminal.this.tio, text);
+                ol.outputLineAction(oe);
+            }
+        });
 
         // Tell term about keystrokes we use for menu accelerators so
         // it passes them through.
@@ -217,8 +321,26 @@ public final class Terminal extends JComponent {
 
         this.setLayout(new BorderLayout());
         add(term, BorderLayout.CENTER);
+	setFocusable(false);
+    }
 
-	// OLD setActions(actions);
+    void dispose() {
+	if (disposed)
+	    return;
+	disposed = true;
+
+        term.getScreen().removeMouseListener(mouseAdapter);
+	term.removeListener(termListener);
+	term.setActionListener(null);
+	findState = null;
+	term = null;
+        termOptions.removePropertyChangeListener(termOptionsPCL);
+	tio.dispose();
+	TerminalIOProvider.dispose(tio);
+    }
+
+    boolean isDisposed() {
+	return disposed;
     }
 
     public IOContainer.CallBacks callBacks() {
@@ -239,21 +361,46 @@ public final class Terminal extends JComponent {
         pcs.removePropertyChangeListener(listener);
     }
 
+    @Override
+    public void requestFocus() {
+	// redirect focus into terminal's screen
+	term.getScreen().requestFocus();
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+	// redirect focus into terminal's screen
+	return term.getScreen().requestFocusInWindow();
+    }
+
+    private void applyDebugFlags() {
+	String value = System.getProperty("Term.debug");
+	if (value == null)
+	    return;
+
+	int flags = 0;
+	StringTokenizer st = new StringTokenizer(value, ",");	// NOI18N
+	while (st.hasMoreTokens()) {
+	    String s = st.nextToken();
+	    if (s.toLowerCase().equals("ops"))			// NOI18N
+		flags |= Term.DEBUG_OPS;
+	    else if (s.toLowerCase().equals("keys"))		// NOI18N
+		flags |= Term.DEBUG_KEYS;
+	    else if (s.toLowerCase().equals("input"))		// NOI18N
+		flags |= Term.DEBUG_INPUT;
+	    else if (s.toLowerCase().equals("output"))		// NOI18N
+		flags |= Term.DEBUG_OUTPUT;
+	    else if (s.toLowerCase().equals("wrap"))		// NOI18N
+		flags |= Term.DEBUG_WRAP;
+	    else if (s.toLowerCase().equals("margins"))		// NOI18N
+		flags |= Term.DEBUG_MARGINS;
+	    else
+		;
+	}
+	term.setDebugFlags(flags);
+    }
+
     private void applyTermOptions(boolean initial) {
-        Font font = term.getFont();
-        /* OLD
-        if (font != null) {
-            Font newFont = new Font(font.getName(),
-                                    font.getStyle(),
-                                    termOptions.getFontSize());
-            term.setFont(newFont);
-        } else {
-            Font newFont = new Font("monospaced",
-                                    java.awt.Font.PLAIN,
-                                    termOptions.getFontSize());
-            term.setFont(newFont);
-        }
-        */
         term.setFixedFont(true);
         term.setFont(termOptions.getFont());
 
@@ -280,13 +427,13 @@ public final class Terminal extends JComponent {
      * Return the underlying Term.
      * @return the underlying StreamTerm.
      */
-    public StreamTerm term() {
+    public ActiveTerm term() {
         return term;
     }
 
     public void setTitle(String title) {
         this.title = title;
-	ioContainer.setTitle(this, title);
+	updateName();
     }
 
     public String getTitle() {
@@ -295,10 +442,6 @@ public final class Terminal extends JComponent {
 
     FindState getFindState() {
         return findState;
-    }
-
-    Action[] getActions() {
-        return actions;
     }
 
     private final class ClearAction extends AbstractAction {
@@ -331,6 +474,11 @@ public final class Terminal extends JComponent {
                 return;
             close();
         }
+
+	@Override
+	public boolean isEnabled() {
+	    return closable;
+	}
     }
 
     private final class CopyAction extends AbstractAction {
@@ -380,8 +528,18 @@ public final class Terminal extends JComponent {
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled())
                 return;
+
+	    // OLD ioContainer.find(Terminal.this);
+	    // the following is code that used to be in TerminalContainer.find():
+	    FindState findState = getFindState();
+	    if (findState.isVisible()) {
+		return;
+	    }
+	    findState.setVisible(true);
 	    /* LATER
-	    ioContainer.find(Terminal.this);
+	    findBar.setState(findState);
+	    add(findBar, BorderLayout.SOUTH);
+	    validate();
 	     */
         }
     }
@@ -421,33 +579,104 @@ public final class Terminal extends JComponent {
     private final Action clearAction = new ClearAction();
     private final Action closeAction = new CloseAction();
 
-    private void closeWork() {
-        assert closing;
-        if (closed)
-            return;
-	closed = true;
-	ioContainer.remove(this);
-        termOptions.removePropertyChangeListener(termOptionsPCL);
+
+
+    // Ideally IOContainer.remove() would be unconditional and we could check
+    // the isClosable() and vetoing here. However, Closing a tab via it's 'X'
+    // is internal to IOContainer implementation and it calls IOCOntainer.remove()
+    // directly. So we're stuck with it being conditional.
+    //
+    // But we can trick it into being unconditional by having MyIOVisibilityControl,
+    // which gets called from IOCOntainer.remove(), return true if we're
+    // closing unconditionally.
+
+    /* package */ void setClosedUnconditionally(boolean closedUnconditionally) {
+	this.closedUnconditionally = closedUnconditionally;
+    }
+
+    /* package */ boolean isClosedUnconditionally() {
+	return closedUnconditionally;
+    }
+
+    public void closeUnconditionally() {
+	setClosedUnconditionally(true);
+	close();
     }
 
     public void close() {
-        // This makes sure, in the reaping pathway, that we don't hang
-        // about even if we're restartable.
-        closing = true;
-
-	/* LATER
-        if (termProcess != null && !termProcess.isFinished()) {
-            termProcess.hangup();
-            // This should eventually end up in reaperThread.
-        } else
-	 */
-	{
-            closeWork();
-        }
+	if (!isVisibleInContainer())
+	    return;
+	ioContainer.remove(this);
     }
 
-    public boolean isClosed() {
-        return closed;
+    public void setVisibleInContainer(boolean visible) {
+	boolean wasVisible = this.visibleInContainer;
+	this.visibleInContainer = visible;
+	if (visible != wasVisible)
+	    tio.pcs().firePropertyChange(IOVisibility.PROP_VISIBILITY, wasVisible, visible);
+    }
+
+    public boolean isVisibleInContainer() {
+	return visibleInContainer;
+    }
+
+    public void setOutConnected(boolean outConnected) {
+	boolean wasConnected = isConnected();
+	this.outConnected = outConnected;
+
+	// closing out implies closing err.
+	if (outConnected == false)
+	    this.errConnected = false;
+
+	if (isConnected() != wasConnected) {
+	    updateName();
+	    tio.pcs().firePropertyChange(IOConnect.PROP_CONNECTED, wasConnected, isConnected());
+	}
+    }
+
+    public void setErrConnected(boolean errConnected) {
+	boolean wasConnected = isConnected();
+	this.errConnected = errConnected;
+	if (isConnected() != wasConnected) {
+	    updateName();
+	    tio.pcs().firePropertyChange(IOConnect.PROP_CONNECTED, wasConnected, isConnected());
+	}
+    }
+
+    public void setExtConnected(boolean extConnected) {
+	boolean wasConnected = isConnected();
+	this.extConnected = extConnected;
+	if (isConnected() != wasConnected) {
+	    updateName();
+	    tio.pcs().firePropertyChange(IOConnect.PROP_CONNECTED, wasConnected, isConnected());
+	}
+    }
+
+    public boolean isConnected() {
+	return outConnected || errConnected || extConnected;
+    }
+
+    private boolean okToHide() {
+	try {
+	    tio.vcs().fireVetoableChange(IOVisibility.PROP_VISIBILITY, true, false);
+	} catch (PropertyVetoException ex) {
+	    return false;
+	}
+	return true;
+    }
+
+    public void setClosable(boolean closable) {
+	this.closable = closable;
+	putClientProperty(TabbedPaneFactory.NO_CLOSE_BUTTON, ! closable);
+    }
+
+    public boolean isClosable() {
+	return closable;
+    }
+
+    private void updateName() {
+	Task task = new Task.UpdateName(ioContainer, this);
+	task.post();
     }
 
     private boolean isBooleanStateAction(Action a) {
@@ -475,6 +704,8 @@ public final class Terminal extends JComponent {
 	menu.putClientProperty("container", ioContainer); // NOI18N
         menu.putClientProperty("component", this);             // NOI18N
 
+	/* LATER?
+	 * NB IO APIS don't add sidebar actions to menu
         Action[] acts = getActions();
         if (acts.length > 0) {
             for (Action a : acts) {
@@ -484,6 +715,7 @@ public final class Terminal extends JComponent {
             if (menu.getSubElements().length > 0)
                 menu.add(new JSeparator());
         }
+	 */
         addMenuItem(menu, copyAction);
         addMenuItem(menu, pasteAction);
         addMenuItem(menu, new JSeparator());
@@ -513,6 +745,22 @@ public final class Terminal extends JComponent {
         menu.show(term.getScreen(), p.x, p.y);
     }
 
+    private Map<?, ?> getRenderingHints() {
+        Map<?, ?> renderingHints = null;
+        // init hints if any
+        Lookup lookup = MimeLookup.getLookup("text/plain"); // NOI18N
+        if (lookup != null) {
+            FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
+            if (fcs != null) {
+                AttributeSet attributes = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+                if (attributes != null) {
+                    renderingHints = (Map<?, ?>) attributes.getAttribute(EditorStyleConstants.RenderingHints);
+                }
+            }
+        }
+	return renderingHints;
+    }
+
     /**
      * Callback for when a hyperlink in a Terminal is clicked.
      * <p>
@@ -537,4 +785,8 @@ public final class Terminal extends JComponent {
 	});
     }
      */
+
+    void scrollTo(Coord coord) {
+        term.possiblyNormalize(coord);
+    }
 }

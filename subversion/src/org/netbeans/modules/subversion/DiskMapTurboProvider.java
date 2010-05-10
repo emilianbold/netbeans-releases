@@ -145,7 +145,7 @@ class DiskMapTurboProvider implements TurboProvider {
                                 entriesCount++;
                                 File f = (File) j.next();
                                 FileInformation info = (FileInformation) value.get(f);
-                                if(info.getStatus() == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                                if((info.getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT) != 0) {
                                     conflictedIndex.add(f);
                                 }
                                 if ((info.getStatus() & STATUS_VALUABLE) != 0) {
@@ -352,6 +352,9 @@ class DiskMapTurboProvider implements TurboProvider {
     }
 
     private void adjustIndex(File dir, Object value) {
+        // the file must be a folder or must not exist
+        // adding existing file is forbidden
+        assert !dir.isFile();
         Map map = (Map) value;
         Set set = map != null ? map.keySet() : null;
 
@@ -364,7 +367,7 @@ class DiskMapTurboProvider implements TurboProvider {
                 FileInformation info = (FileInformation) map.get(file);
 
                 // conflict
-                if(info.getStatus() == FileInformation.STATUS_VERSIONED_CONFLICT) {
+                if((info.getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT) != 0) {
                     conflictedSet.add(file);
                 }
 
@@ -374,7 +377,7 @@ class DiskMapTurboProvider implements TurboProvider {
                 }
             }
         }
-        index.add(dir, set);
+        index.add(dir, newSet);
         conflictedIndex.add(dir, conflictedSet);
     }
 
@@ -395,7 +398,7 @@ class DiskMapTurboProvider implements TurboProvider {
             Subversion.LOG.log(Level.INFO, "Corrupted cache file content:\n" + encodedContent + "\n");
             Exception ex = new Exception("Corrupted cache file \"" + file.getAbsolutePath() + "\", please report in subversion module issues and attach "
                     + tmpFile.getAbsolutePath() + " plus the IDE message log", e);
-            Subversion.LOG.log(Level.SEVERE, null, ex);
+            Subversion.LOG.log(Level.INFO, null, ex);
         } catch (IOException ex) {
             Subversion.LOG.log(Level.SEVERE, null, ex);
         }
@@ -410,7 +413,8 @@ class DiskMapTurboProvider implements TurboProvider {
     }
 
     private String readChars(DataInputStream dis, int len) throws IOException {
-        StringBuffer sb = new StringBuffer(len);
+        if (len < 0 || len > 1024 * 1024 * 10) throw new EOFException("Len: " + len); // preventing from OOME
+        StringBuilder sb = new StringBuilder(len);
         while (len-- > 0) {
             sb.append(dis.readChar());
         }
@@ -485,7 +489,7 @@ class DiskMapTurboProvider implements TurboProvider {
         byte [] buffer = new byte[4096];
         int totalLen = len;
         for (;;) {
-            int n = (len <= 4096) ? len : 4096;
+            int n = (len >= 0 && len <= 4096) ? len : 4096;
             n = in.read(buffer, 0, n);
             if (n < 0) throw new EOFException("Missing " + len + " bytes from total " + totalLen + " bytes.");  // NOI18N
             out.write(buffer, 0, n);

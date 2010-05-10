@@ -41,23 +41,20 @@
 
 package org.netbeans.modules.welcome.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
-import java.awt.Rectangle;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -68,68 +65,54 @@ public class StartPageContent extends JPanel implements Constants {
     private final static Color COLOR_TOP = new Color(198, 211, 223);
     private final static Color COLOR_BOTTOM = new Color(235, 235, 235);
 
+    private Image imgCenter;
+    private Image imgLeft;
+    private Image imgRight;
+
+
     public StartPageContent() {
-        super( new BorderLayout() );
+        super( new GridBagLayout() );
 
-        add( new TopBar(), BorderLayout.NORTH );
+        imgCenter = ImageUtilities.loadImage(IMAGE_TOPBAR_CENTER, true);
+        imgLeft = ImageUtilities.loadImage(IMAGE_TOPBAR_LEFT, true);
+        imgRight = ImageUtilities.loadImage(IMAGE_TOPBAR_RIGHT, true);
 
-        JComponent tabs = new TabbedPane( BundleSupport.getLabel( "WelcomeTab" ), new WelcomeTab(), //NOI18N
-                       BundleSupport.getLabel( "MyNetBeansTab"), new MyNetBeansTab()); //NOI18N
+//        setPreferredSize( new Dimension( imgCenter.getWidth(null), imgCenter.getHeight(null)) );
+
+        JComponent tabs = new TabbedPane( new LearnAndDiscoverTab(),
+                new MyNetBeansTab(),
+                new WhatsNewTab());
         tabs.setBorder(BorderFactory.createEmptyBorder(10,15,15,15));
         tabs.setOpaque(false);
 
-        JPanel panel = new JPanel( new GridBagLayout() );
-        panel.setOpaque(false);
-        panel.add( tabs, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0), 0, 0) );
-
-        JScrollPane scroll = new JScrollPane(panel);
-        scroll.setBorder(BorderFactory.createEmptyBorder());
-        scroll.getViewport().setOpaque(false);
-        scroll.setOpaque(false);
-        scroll.getViewport().setPreferredSize(new Dimension(Constants.START_PAGE_MIN_WIDTH,100));
-        JScrollBar vertical = scroll.getVerticalScrollBar();
-        if( null != vertical ) {
-            vertical.setBlockIncrement(30*FONT_SIZE);
-            vertical.setUnitIncrement(FONT_SIZE);
-        }
-
-        add( scroll, BorderLayout.CENTER  );
+        add( new TopBar(), new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(7,0,0,0), 0, 0) );
         
-        setOpaque(false);
+        add( tabs, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0) );
+
+        add( new JLabel(), new GridBagConstraints(0, 2, 1, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0) );
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setPaint(new GradientPaint(0, 0, COLOR_TOP, 0, getHeight(), COLOR_BOTTOM));
-        g2d.fillRect(0, 0, getWidth(), getHeight());
-    }
+        int width = getWidth();
+        int height = getHeight();
 
-    private static class TabsPanel extends JPanel {// implements Scrollable {
-        public TabsPanel( JComponent content ) {
-            super( new GridBagLayout() );
-            setOpaque(false);
-            add( content, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0), 0, 0) );
-        }
+        int centerImageWidth = imgCenter.getWidth(null);
+        int centerImageHeight = imgCenter.getHeight(null);
 
-        public Dimension getPreferredScrollableViewportSize() {
-            return getPreferredSize();
-        }
+        int x = (width - centerImageWidth) / 2;
+        int y = 0;
 
-        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-            return Constants.FONT_SIZE;
+        g.drawImage(imgCenter, x, y, null);
+        if( x > 0 ) {
+            for( int i=0; i<=x; i++ ) {
+                g.drawImage(imgLeft, i, y, null);
+                g.drawImage(imgRight, width-i-1, y, null);
+            }
         }
-
-        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-            return 30*getScrollableUnitIncrement(visibleRect, orientation, direction);
-        }
-
-        public boolean getScrollableTracksViewportWidth() {
-            return false;
-        }
-
-        public boolean getScrollableTracksViewportHeight() {
-            return false;
-        }
+        
+        g2d.setPaint(new GradientPaint(0, centerImageHeight, COLOR_TOP, 0, height, COLOR_BOTTOM));
+        g2d.fillRect(0, centerImageHeight, width, height);
     }
 }

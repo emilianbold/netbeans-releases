@@ -109,6 +109,9 @@ public class MakefileTargetProviderImpl implements MakefileTargetProvider {
                             if (MakefileUtils.isPreferredTarget(target)) {
                                 preferredTargets.add(target);
                             }
+                            if (MakefileUtils.isRunnableTarget(target)) {
+                                runnableTargets.add(target);
+                            }
                         }
                     }
                 }

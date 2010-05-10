@@ -2022,7 +2022,9 @@ public final class DefaultPlugin extends JUnitPlugin {
                                         throws DataObjectNotFoundException,
                                                IOException {
         
-        assert cp.getRoots().length == 1;
+        assert cp.getRoots().length == 1:
+            "Please, re-open Bug 176958 with the following info:\n" +
+            "More than one root in the ClassPath=" + cp;                //NOI18N
         FileObject root = cp.getRoots()[0];
         int index = testClassName.lastIndexOf('/');
         String pkg = index > -1 ? testClassName.substring(0, index)

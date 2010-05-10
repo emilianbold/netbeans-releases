@@ -106,7 +106,8 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
             res.add(action);
             decl = getObject();
             CharSequence name = decl.getUniqueName();
-            CsmProject project = decl.getContainingFile().getProject();
+            final CsmFile file = decl.getContainingFile();
+            CsmProject project = file.getProject();
             if (project != null){
                 Collection<CsmOffsetableDeclaration> arr = project.findDeclarations(name);
                 for(CsmFriend friend : CsmFriendResolver.getDefault().findFriends(decl)){
@@ -127,13 +128,15 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
                     res.add(more);
                 }
             }
-        }
-        res.add(RefactoringActionsFactory.renameAction());
-        res.add(RefactoringActionsFactory.whereUsedAction());
-        if (CsmKindUtilities.isField(decl) || CsmKindUtilities.isClass(decl)) {
-            res.add(CsmRefactoringActionsFactory.encapsulateFieldsAction());
-        } else if (CsmKindUtilities.isFunction(decl) && !CsmKindUtilities.isDestructor(decl)) {
-            res.add(CsmRefactoringActionsFactory.changeParametersAction());
+            if (CsmRefactoringActionsFactory.supportRefactoring(file)) {
+                res.add(RefactoringActionsFactory.renameAction());
+                res.add(RefactoringActionsFactory.whereUsedAction());
+                if (CsmKindUtilities.isField(decl) || CsmKindUtilities.isClass(decl)) {
+                    res.add(CsmRefactoringActionsFactory.encapsulateFieldsAction());
+                } else if (CsmKindUtilities.isFunction(decl) && !CsmKindUtilities.isDestructor(decl)) {
+                    res.add(CsmRefactoringActionsFactory.changeParametersAction());
+                }
+            }
         }
         return res.toArray(new Action[res.size()]);
     }

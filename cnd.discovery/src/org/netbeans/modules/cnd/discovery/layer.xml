@@ -43,16 +43,21 @@ Contributor(s):
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction"/>
             </file>
         </folder>
+        <folder name="NativeProjectCodeAssistance">
+            <file name="org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProjectAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.discovery.projectimport.ReconfigureAction.getReconfigureAction"/>
+            </file>
+        </folder>
     </folder>
 
     <folder name="NativeProjects">
-        <folder name="Actions">
-            <file name="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.shadow">
+        <folder name="CodeAssistanceActions">
+            <file name="DiscoveryWizardAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.instance"/>
                 <attr name="position" intvalue="200"/>
             </file>
-            <file name="ReconfigureProjectAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.discovery.projectimport.ReconfigureAction.getReconfigureAction"/>
+            <file name="ReconfigureProjectAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProjectAction.instance"/>
                 <attr name="position" intvalue="250"/>
             </file>
         </folder>

@@ -4,10 +4,11 @@
  */
 package org.netbeans.modules.php.editor.codegen;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -15,6 +16,16 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.editor.api.ElementQuery.Index;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.ElementTransformation;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenWay;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
@@ -35,6 +46,7 @@ public class CGSInfo {
     final private List<Property> possibleGetters;
     final private List<Property> possibleSetters;
     final private List<Property> possibleGettersSetters;
+    final private List<MethodProperty> possibleMethods;
     final private JTextComponent textComp;
     /**
      * how to generate  getters and setters method name
@@ -47,6 +59,7 @@ public class CGSInfo {
         possibleGetters = new ArrayList<Property>();
         possibleSetters = new ArrayList<Property>();
         possibleGettersSetters = new ArrayList<Property>();
+        possibleMethods = new ArrayList<MethodProperty>();
         className = null;
         this.textComp = textComp;
         hasConstructor = false;
@@ -62,6 +75,10 @@ public class CGSInfo {
 
     public List<Property> getProperties() {
         return properties;
+    }
+
+    public List<MethodProperty> getPossibleMethods() {
+        return possibleMethods;
     }
 
     public List<Property> getPossibleGetters() {
@@ -119,6 +136,31 @@ public class CGSInfo {
                     ClassDeclaration classDecl = findEnclosingClass(info, caretOffset);
                     if (classDecl != null) {
                         className = classDecl.getName().getName();
+                        if (info != null && className != null) {
+                            FileObject fileObject = info.getSnapshot().getSource().getFileObject();
+                            Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+                            final ElementFilter forFilesFilter = ElementFilter.forFiles(fileObject);
+                            Set<ClassElement> classes = forFilesFilter.filter(index.getClasses(NameKind.exact(className)));
+                            for (ClassElement classElement : classes) {
+                                ElementFilter forNotDeclared = ElementFilter.forExcludedElements(index.getDeclaredMethods(classElement));
+                                final Set<MethodElement> accessibleMethods = new HashSet<MethodElement>();
+                                accessibleMethods.addAll(forNotDeclared.filter(index.getAccessibleMethods(classElement, classElement)));
+                                accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getConstructors(classElement))));
+                                accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getAccessibleMagicMethods(classElement))));
+                                final Set<TypeElement> preferedTypes = forFilesFilter.prefer(ElementTransformation.toMemberTypes().transform(accessibleMethods));
+                                final TreeElement<TypeElement> enclosingType = index.getInheritedTypesAsTree(classElement, preferedTypes);
+                                final List<MethodProperty> properties = new ArrayList<MethodProperty>();
+                                final Set<MethodElement> methods = ElementFilter.forMembersOfTypes(preferedTypes).filter(accessibleMethods);
+                                for (final MethodElement methodElement : methods) {
+                                    if (!methodElement.isFinal()) {
+                                        properties.add(new MethodProperty(methodElement, enclosingType));
+                                    }
+                                }
+                                Collections.<MethodProperty>sort(properties, MethodProperty.getComparator());
+                                getPossibleMethods().addAll(properties);
+                            }
+                        }
+
                         List<String> existingGetters = new ArrayList<String>();
                         List<String> existingSetters = new ArrayList<String>();
 

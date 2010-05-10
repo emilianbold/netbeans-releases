@@ -42,6 +42,7 @@ package org.netbeans.modules.java.editor.javadoc;
 import com.sun.javadoc.Doc;
 import com.sun.javadoc.ParamTag;
 import com.sun.javadoc.Tag;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -97,10 +98,11 @@ public final class JavadocImports {
      * @param el an element to search
      * @return referenced elements.
      */
-    public static Set<TypeElement> computeReferencedElements(CompilationInfo javac, Element el) {
+    public static Set<TypeElement> computeReferencedElements(CompilationInfo javac, TreePath tp) {
         Set<TypeElement> result = null;
-        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, el);
-        if (jdTokenSequence != null) {
+        Element el = javac.getTrees().getElement(tp);
+        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, tp.getLeaf(), el);
+        if (el != null && jdTokenSequence != null) {
             ElementKind kind = el.getKind();
             TypeElement scope;
             
@@ -152,10 +154,11 @@ public final class JavadocImports {
      * @param toFind an element to find in favadoc
      * @return referenced elements.
      */
-    public static List<Token> computeTokensOfReferencedElements(CompilationInfo javac, Element el, Element toFind) {
+    public static List<Token> computeTokensOfReferencedElements(CompilationInfo javac, TreePath forElement, Element toFind) {
         List<Token> result = null;
-        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, el);
-        if (jdTokenSequence != null) {
+        Element el = javac.getTrees().getElement(forElement);
+        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, forElement.getLeaf(), el);
+        if (el != null && jdTokenSequence != null) {
             ElementKind kind = el.getKind();
             TypeElement scope;
             
@@ -323,7 +326,7 @@ public final class JavadocImports {
                                 : 0;
                     }
                 }
-            } else if (tag != null && "@param".equals(tag.name())) { // NOI18N
+            } else if (tag instanceof ParamTag && "@param".equals(tag.name())) { // NOI18N
                 ParamTag ptag = (ParamTag) tag;
                 result = paramElementFor(el, ptag);
             }
@@ -551,7 +554,7 @@ public final class JavadocImports {
             String jdText = javac.getElements().getDocComment(el);
             if (jdText != null) {
                 Doc javadoc = javac.getElementUtilities().javaDocFor(el);
-                TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, el);
+                TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, null, el);
                 if (jdTokenSequence != null) {
                     DocPositions positions = DocPositions.get(javac, javadoc, jdTokenSequence);
                     if (positions != null) {

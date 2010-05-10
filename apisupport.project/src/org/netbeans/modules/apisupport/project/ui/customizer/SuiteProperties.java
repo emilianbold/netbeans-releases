@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ui.branding.BasicBrandingModel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import java.io.File;
@@ -401,6 +402,9 @@ public final class SuiteProperties extends ModuleProperties {
                 cpwdc.add(entry);
             } else {
                 String entry = PropertyUtils.relativizeFile(getProjectDirectoryFile(), ci.getClusterDir());
+                if (entry == null) {
+                    entry = ci.getClusterDir().getAbsolutePath();
+                }
                 if (ci.isEnabled()) {
                     cp.add(entry);
                 } else {

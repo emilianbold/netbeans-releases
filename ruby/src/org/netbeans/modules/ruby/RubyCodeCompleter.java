@@ -1229,7 +1229,13 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 String fqn = AstUtilities.getFqnName(path);
 
                 if ((fqn == null) || (fqn.length() == 0)) {
-                    fqn = "Object"; // NOI18N
+                    String fileName = RubyUtils.getFileObject(context.getParserResult()).getName();
+                    if (fileName.endsWith("_spec")) { //NOI18N
+                        // use the virtual class created for the spec file
+                        fqn = RubyUtils.underlinedNameToCamel(fileName);
+                    } else {
+                        fqn = "Object"; // NOI18N
+                    }
                 }
 
                 // TODO - if fqn has multiple ::'s, try various combinations? or is 
@@ -2212,7 +2218,11 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         return html;
     }
 
+    @Override
     public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
+        if (elementHandle == null) {
+            return null;
+        }
         if (link.indexOf('#') != -1 && elementHandle.getMimeType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
             if (link.startsWith("#")) {
                 // Put the current class etc. in front of the method call if necessary

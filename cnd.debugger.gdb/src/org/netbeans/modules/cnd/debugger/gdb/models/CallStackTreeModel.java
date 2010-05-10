@@ -200,7 +200,7 @@ public class CallStackTreeModel implements TreeModel {
             if (e.getPropertyName().equals(GdbDebugger.PROP_STATE) && debugger.isStopped()) {
                 synchronized (this) {
                     if (task == null) {
-                        task = RequestProcessor.getDefault().create(new Refresher());
+                        task = debugger.getRequestProcessor().create(new Refresher());
                     }
                     task.schedule(200);
                 }

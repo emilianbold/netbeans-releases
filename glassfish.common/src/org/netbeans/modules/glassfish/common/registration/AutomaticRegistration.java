@@ -141,7 +141,7 @@ public class AutomaticRegistration {
      */
     private static String generateUniqueDisplayName(FileObject serverInstanceDir, String version) {
         // find a unique display name
-        String displayName = "GlassFish v3"; // NOI18N
+        String displayName = "GlassFish Server 3"; // NOI18N
         boolean unique = true;
         int i = 1;
         while (true) {
@@ -155,9 +155,9 @@ public class AutomaticRegistration {
             if (unique) {
                 break;
             }
-            displayName = "GlassFish v3 "+i++;
+            displayName = "GlassFish Server 3 "+i++;
             unique = true;
-        };
+        }
         return displayName;
     }
 

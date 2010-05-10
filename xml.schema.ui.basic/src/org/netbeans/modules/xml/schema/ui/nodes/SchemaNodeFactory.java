@@ -95,7 +95,12 @@ public abstract class SchemaNodeFactory extends Object {
 //		SchemaComponentReference<Schema> reference=
 //			SchemaComponentReference.create(
 //				getContext().getModel().getSchema());
-		return (SchemaNode)createNode(getContext().getModel().getSchema());
+            Schema schema = getContext().getModel().getSchema();
+            if (schema != null) {
+                    return (SchemaNode)createNode(schema);
+            }
+            //
+            return null;
 	}
 
 

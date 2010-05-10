@@ -5,6 +5,8 @@ select from c|
   customers*
     customer
       customer_id
+    casummary[view]
+      casummary_id
   accounting
     invoice
       invoice_id

@@ -94,7 +94,10 @@ public class OpenTagCompletionProvider extends CompletionModelProvider{
         List <CompletionModel> models =  new ArrayList<CompletionModel>();
         FileObject primaryFile = context.getPrimaryFile();
         ClassPath cp = ClassPath.getClassPath(primaryFile, ClassPath.COMPILE);
-        FileObject resource = cp.findResource(SpringUtilities.SPRING_CLASS_NAME.replace('.', '/')+".class");
+        if (cp == null) {
+            return Collections.EMPTY_LIST;
+        }
+        FileObject resource = cp.findResource(SpringUtilities.SPRING_CLASS_NAME.replace('.', '/')+".class");    //NOI18N
         if ( resource != null ) {
             FileObject ownerRoot = cp.findOwnerRoot(resource);
             String version = findVersion(ownerRoot);

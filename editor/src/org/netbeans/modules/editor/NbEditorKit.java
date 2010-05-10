@@ -288,6 +288,7 @@ public class NbEditorKit extends ExtKit implements Callable {
             putValue ("helpID", ToggleToolbarAction.class.getName ()); // NOI18N
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
             boolean toolbarVisible = prefs.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, EditorPreferencesDefaults.defaultToolbarVisible);
@@ -303,7 +304,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                 toolbarVisible);
             
             item.addItemListener( new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
+                public @Override void itemStateChanged(ItemEvent e) {
                     actionPerformed(null,null);
                 }
             });
@@ -444,9 +445,16 @@ public class NbEditorKit extends ExtKit implements Callable {
                 if (item instanceof DynamicMenuContent) {
                     Component[] cmps = ((DynamicMenuContent)item).getMenuPresenters();
                     for (int i = 0; i < cmps.length; i++) {
-                        popupMenu.add(cmps[i]);
+                        if(cmps[i] != null) {
+                            popupMenu.add(cmps[i]);
+                        } else {
+                            popupMenu.addSeparator();
+                        }
                     }
                 } else {
+                    if (Boolean.TRUE.equals(action.getValue(DynamicMenuContent.HIDE_WHEN_DISABLED)) && !action.isEnabled()) {
+                        return;
+                    }
                     item.setEnabled(action.isEnabled());
                     Object helpID = action.getValue ("helpID"); // NOI18N
                     if (helpID != null && (helpID instanceof String)) {
@@ -499,10 +507,17 @@ public class NbEditorKit extends ExtKit implements Callable {
                             if (item instanceof DynamicMenuContent) {
                                 Component[] cmps = ((DynamicMenuContent)item).getMenuPresenters();
                                 for (int i = 0; i < cmps.length; i++) {
-                                    popupMenu.add(cmps[i]);
+                                    if(cmps[i] != null) {
+                                        popupMenu.add(cmps[i]);
+                                    } else {
+                                        popupMenu.addSeparator();
+                                    }
                                 }
                             } else {
                                 if (!(item instanceof JMenu)) {
+                                    if (Boolean.TRUE.equals(action.getValue(DynamicMenuContent.HIDE_WHEN_DISABLED)) && !action.isEnabled()) {
+                                        return;
+                                    }
                                     assignAccelerator(
                                          (Keymap)Lookup.getDefault().lookup(Keymap.class),
                                          action,
@@ -602,6 +617,7 @@ public class NbEditorKit extends ExtKit implements Callable {
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
         }
 
@@ -638,6 +654,7 @@ public class NbEditorKit extends ExtKit implements Callable {
             return NbEditorKit.class;
         }
         
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
         }
 
@@ -787,6 +804,7 @@ public class NbEditorKit extends ExtKit implements Callable {
             return fos;
         }
         
+        @SuppressWarnings("LeakingThisInConstructor")
         private LayerSubFolderMenu(JTextComponent target, String text, List items) {
             super();
             Mnemonics.setLocalizedText(this, text);
@@ -907,6 +925,7 @@ public class NbEditorKit extends ExtKit implements Callable {
         }        
     }
 
+    @Override
     public Object call() {
         Map<SideBarPosition, List<SideBarFactory>> factoriesMap = CustomizableSideBar.getFactoriesMap(getContentType());
         //initialize all factories

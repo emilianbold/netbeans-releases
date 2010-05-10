@@ -101,6 +101,23 @@ public abstract class IOTerm {
 	    return;
     }
 
+    /**
+     * Disconnect previously connected Streams and free resources.
+     * Arrange to wait until all pending output from a terminated or exited
+     * process has been rendered in the terminal and then call
+     * continuation.run() on the EDT thread.
+     * Only then can connect() be called again.
+     * @param continuation The continuation to run after all output has been
+     *        drained.
+     */
+    public static void disconnect(InputOutput io, Runnable continuation) {
+	IOTerm iot = find(io);
+	if (iot != null)
+	    iot.disconnect(continuation);
+	else
+	    return;
+    }
+
 
     /**
      * Return the underlying Term associatd with this IO.
@@ -120,4 +137,6 @@ public abstract class IOTerm {
      *             ptys.
      */
     abstract protected void connect(OutputStream pin, InputStream pout, InputStream perr);
+
+    abstract protected void disconnect(Runnable continuation);
 }

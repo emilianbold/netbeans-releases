@@ -47,7 +47,7 @@ final class ArchiveFileFilter extends FileFilter {
     @Override
     public boolean accept(File f) {
         String s = f == null ? null : f.getPath().toLowerCase();
-        return s != null && s.endsWith(".eap") && f.getPath().toLowerCase().endsWith("cap") || s.endsWith("jar") || s.endsWith("zip") || f.isDirectory();
+        return s != null && (s.endsWith(".eap") || s.endsWith("cap") || s.endsWith("jar") || s.endsWith("zip") || f.isDirectory());
     }
 
     @Override

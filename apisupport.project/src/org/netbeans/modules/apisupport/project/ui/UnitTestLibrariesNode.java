@@ -73,7 +73,7 @@ import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.queries.ModuleProjectClassPathExtender;
 import org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel;
 import org.netbeans.modules.apisupport.project.ui.customizer.EditTestDependencyPanel;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -110,6 +110,8 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Tomas Musil
  */
 final class UnitTestLibrariesNode extends AbstractNode {
+
+    private static final Logger LOG = Logger.getLogger(UnitTestLibrariesNode.class.getName());
 
     private final String testType;
     private final NbModuleProject project;
@@ -246,7 +248,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
                     }
                 });
             } catch (MutexException e) {
-                assert false : e.getException();
+                LOG.log(Level.INFO, null, e);
             }
         }
         

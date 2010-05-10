@@ -4,6 +4,7 @@
 // comment 2
 // comment 3
 // comment 4
+
 namespace foo;
 
 use My\Full\Classname as Another;

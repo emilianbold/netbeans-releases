@@ -45,9 +45,11 @@
 
 package org.netbeans.modules.websvc.rest.client;
 
+import java.io.IOException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.xml.bind.JAXBException;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
@@ -175,10 +177,12 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
         buttonGroup1.add(jRadioButton1);
         jRadioButton1.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, org.openide.util.NbBundle.getMessage(RESTResourcesPanel.class, "RESTResourcesPanel.jRadioButton1.text")); // NOI18N
+        jRadioButton1.setToolTipText(org.openide.util.NbBundle.getMessage(RESTResourcesPanel.class, "RESTResourcesPanel.jRadioButton1_hint")); // NOI18N
         jPanel1.add(jRadioButton1);
 
         buttonGroup1.add(jRadioButton2);
         org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, org.openide.util.NbBundle.getMessage(RESTResourcesPanel.class, "RESTResourcesPanel.jRadioButton2.text")); // NOI18N
+        jRadioButton2.setToolTipText(org.openide.util.NbBundle.getMessage(RESTResourcesPanel.class, "RESTResourcesPanel.jRadioButton2_hint")); // NOI18N
         jPanel1.add(jRadioButton2);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -191,19 +195,19 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jButton1))
                     .addComponent(jLabel3)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jComboBox1, 0, 320, Short.MAX_VALUE)
+                        .addComponent(jComboBox1, 0, 198, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jCheckBox1))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addGap(28, 28, 28)
-                        .addComponent(jTextField2, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE))
+                        .addComponent(jTextField2, javax.swing.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE))
                     .addComponent(jLabel1))
                 .addContainerGap())
         );
@@ -242,28 +246,42 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
     private void resourceChanged() {
         WadlSaasResource saasResource = resourceNode.getLookup().lookup(WadlSaasResource.class);
         if (saasResource != null) {
-            Authentication auth = saasResource.getSaas().getSaasMetadata().getAuthentication();
-            if (auth != null) {
-                if (auth.getSessionKey().size() > 0) {
-                    jComboBox1.setModel(new DefaultComboBoxModel(new Object[] {Security.Authentication.SESSION_KEY}));
+            boolean isOauth = false;
+            try {
+                if (saasResource.getSaas().getOauthMetadata() != null) {
+                    jComboBox1.setModel(new DefaultComboBoxModel(new Object[] {Security.Authentication.OAUTH}));
                     securityDefault = false;
-                } else if (auth.getHttpBasic() != null) {
-                    if (!securityDefault) {
-                        jComboBox1.setModel(new DefaultComboBoxModel(cbDefault));
-                        securityDefault = true;
-                    }
-                    jComboBox1.setSelectedItem(Security.Authentication.BASIC);
+                    isOauth = true;
+                }
+            } catch (IOException ex) {
 
+            } catch (JAXBException ex) {
+
+            }
+            if (!isOauth) {
+                Authentication auth = saasResource.getSaas().getSaasMetadata().getAuthentication();
+                if (auth != null) {
+                    if (auth.getSessionKey().size() > 0) {
+                        jComboBox1.setModel(new DefaultComboBoxModel(new Object[] {Security.Authentication.SESSION_KEY}));
+                        securityDefault = false;
+                    } else if (auth.getHttpBasic() != null) {
+                        if (!securityDefault) {
+                            jComboBox1.setModel(new DefaultComboBoxModel(cbDefault));
+                            securityDefault = true;
+                        }
+                        jComboBox1.setSelectedItem(Security.Authentication.BASIC);
+
+                    } else {
+                        if (!securityDefault) {
+                            jComboBox1.setModel(new DefaultComboBoxModel(cbDefault));
+                            securityDefault = true;
+                        }
+                    }
                 } else {
                     if (!securityDefault) {
                         jComboBox1.setModel(new DefaultComboBoxModel(cbDefault));
                         securityDefault = true;
                     }
-                }
-            } else {
-                if (!securityDefault) {
-                    jComboBox1.setModel(new DefaultComboBoxModel(cbDefault));
-                    securityDefault = true;
                 }
             }
         } else {

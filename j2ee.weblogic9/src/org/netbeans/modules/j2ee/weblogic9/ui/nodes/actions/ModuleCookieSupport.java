@@ -46,6 +46,7 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.util.Lookup;
 
@@ -54,8 +55,6 @@ import org.openide.util.Lookup;
  * @author Petr Hejl
  */
 public final class ModuleCookieSupport {
-
-    private static final int MANAGER_TIMEOUT = 60000;
 
     private final TargetModuleID module;
 
@@ -82,7 +81,7 @@ public final class ModuleCookieSupport {
                 }
             });
             try {
-                latch.await(MANAGER_TIMEOUT, TimeUnit.MILLISECONDS);
+                latch.await(WLDeploymentManager.MANAGER_TIMEOUT, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }

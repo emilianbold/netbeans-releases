@@ -51,6 +51,7 @@ import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.FileCollection;
 import org.netbeans.lib.cvsclient.CVSRoot;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.Setup;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 
 /**
@@ -75,7 +76,6 @@ public class CvsModuleConfig {
     
     private static final CvsModuleConfig INSTANCE = new CvsModuleConfig();
     public static final String PREFIX_KEYRING_KEY = "versioning.cvs."; //NOI18N
-    private static final String LAST_COMMIT_MESSAGE = "lastCommitMessage"; //NOI18N
 
     public static CvsModuleConfig getDefault() {
         return INSTANCE;
@@ -84,7 +84,8 @@ public class CvsModuleConfig {
     private FileCollection excludedFiles;
     
     private Map<String, RootSettings> rootsMap;
-
+    private String lastCanceledCommitMessage;
+    private static final String LAST_USED_MODIFICATION_CONTEXT = "lastUsedModificationContext"; //NOI18N
 
     public CvsModuleConfig() {
         excludedFiles = new FileCollection();
@@ -126,16 +127,20 @@ public class CvsModuleConfig {
      * @param file file to exclude from commit
      */
     public void addExclusion(File file) {
-        excludedFiles.add(file);
-        excludedFiles.save(getPreferences(), PROP_COMMIT_EXCLUSIONS);
+        if (!excludedFiles.contains(file)) {
+            excludedFiles.add(file);
+            excludedFiles.save(getPreferences(), PROP_COMMIT_EXCLUSIONS);
+        }
     }
 
     /**
      * @param file file to include in commit
      */
     public void removeExclusion(File file) {
-        excludedFiles.remove(file);
-        excludedFiles.save(getPreferences(), PROP_COMMIT_EXCLUSIONS);
+        if (excludedFiles.contains(file)) {
+            excludedFiles.remove(file);
+            excludedFiles.save(getPreferences(), PROP_COMMIT_EXCLUSIONS);
+        }
     }
     
     // clients code ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -178,7 +183,7 @@ public class CvsModuleConfig {
         defaults.extRememberPassword = false;
         defaults.extCommand = System.getenv("CVS_RSH"); // NOI18N
         defaults.extUseInternalSsh = true;
-        defaults.extPassword = null;
+        defaults.extPassword = new char[0];
         return defaults;
     }
 
@@ -205,12 +210,26 @@ public class CvsModuleConfig {
          getPreferences().putInt(colorName, value.getRGB());
     }
 
-    public String getLastCommitMessage() {
-        return getPreferences().get(LAST_COMMIT_MESSAGE, ""); //NOI18N
+    public String getLastCanceledCommitMessage() {
+        return lastCanceledCommitMessage == null ? "" : lastCanceledCommitMessage; //NOI18N
     }
 
-    public void setLastCommitMessage(String message) {
-        getPreferences().put(LAST_COMMIT_MESSAGE, message);
+    public void setLastCanceledCommitMessage(String message) {
+        lastCanceledCommitMessage = message;
+    }
+
+    public int getLastUsedModificationContext () {
+        int lastUsedContext = getPreferences().getInt(LAST_USED_MODIFICATION_CONTEXT, Setup.DIFFTYPE_LOCAL);
+        if (lastUsedContext != Setup.DIFFTYPE_LOCAL
+                && lastUsedContext != Setup.DIFFTYPE_REMOTE
+                && lastUsedContext != Setup.DIFFTYPE_ALL) {
+            lastUsedContext = Setup.DIFFTYPE_LOCAL;
+        }
+        return lastUsedContext;
+    }
+
+    public void setLastUsedModificationContext (int lastUsedContext) {
+        getPreferences().putInt(LAST_USED_MODIFICATION_CONTEXT, lastUsedContext);
     }
 
     private Map<String, RootSettings> getRootsMap() {
@@ -234,6 +253,9 @@ public class CvsModuleConfig {
                 es.extRememberPassword = Boolean.valueOf(fields[2]);
                 es.extCommand = fields.length >= 4 ? fields[3] : ""; //NOI18N
                 es.extPassword = KeyringSupport.read(PREFIX_KEYRING_KEY, fields[0]);
+                if (es.extPassword == null) {
+                    es.extPassword = new char[0];
+                }
                 if (fields.length >= 5 && !"".equals(fields[4])) {
                     es.extPassword = fields[4].toCharArray();
                     KeyringSupport.save(PREFIX_KEYRING_KEY, fields[0], es.extPassword.clone(), null);

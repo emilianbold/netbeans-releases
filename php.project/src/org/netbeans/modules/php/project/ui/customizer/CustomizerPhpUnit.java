@@ -74,7 +74,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class CustomizerPhpUnit extends JPanel {
+public final class CustomizerPhpUnit extends JPanel {
     private static final long serialVersionUID = 2171421712032630826L;
 
     private final Category category;
@@ -150,6 +150,7 @@ public class CustomizerPhpUnit extends JPanel {
     private void addListeners() {
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         bootstrapCheckBox.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 enableFile(e.getStateChange() == ItemEvent.SELECTED,
                         bootstrapLabel, bootstrapTextField, bootstrapGenerateButton, bootstrapBrowseButton, bootstrapForCreateTestsCheckBox);
@@ -165,6 +166,7 @@ public class CustomizerPhpUnit extends JPanel {
         });
 
         configurationCheckBox.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 enableFile(e.getStateChange() == ItemEvent.SELECTED, configurationLabel, configurationTextField, configurationGenerateButton, configurationBrowseButton);
                 validateData();
@@ -173,6 +175,7 @@ public class CustomizerPhpUnit extends JPanel {
         configurationTextField.getDocument().addDocumentListener(defaultDocumentListener);
 
         suiteCheckBox.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 enableFile(e.getStateChange() == ItemEvent.SELECTED, suiteLabel, suiteTextField, suiteBrowseButton, suiteInfoLabel);
                 validateData();
@@ -504,12 +507,15 @@ public class CustomizerPhpUnit extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     private final class DefaultDocumentListener implements DocumentListener {
+        @Override
         public void insertUpdate(DocumentEvent e) {
             processUpdate();
         }
+        @Override
         public void removeUpdate(DocumentEvent e) {
             processUpdate();
         }
+        @Override
         public void changedUpdate(DocumentEvent e) {
             processUpdate();
         }

@@ -178,16 +178,22 @@ public class QuietUndoManager extends CompoundUndoManager {
 
     public void redo() throws CannotRedoException {
         UndoableEditListener[] listeners = prepare();
-        super.redo();
-        syncModel();
-        finish(listeners);
+        try {
+            super.redo();
+            syncModel();
+        } finally {
+            finish(listeners);
+        }
     }
 
     public void undo() throws CannotUndoException {
         UndoableEditListener[] listeners = prepare();
-        super.undo();
-        syncModel();
-        finish(listeners);
+        try {
+            super.undo();
+            syncModel();
+        } finally {
+            finish(listeners);
+        }
     }
     
     /**

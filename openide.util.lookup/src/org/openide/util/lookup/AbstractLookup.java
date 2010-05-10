@@ -568,11 +568,15 @@ public class AbstractLookup extends Lookup implements Serializable {
         public String getMessage() {
             StringBuilder sb = new StringBuilder();
             sb.append("StackOverflowError, here are the listeners:\n"); // NOI18N
-            for (Object o : print) {
-                sb.append('\n').append(o);
-                if (sb.length() > 10000) {
-                    break;
+            if (print != null) {
+                for (Object o : print) {
+                    sb.append('\n').append(o);
+                    if (sb.length() > 10000) {
+                        break;
+                    }
                 }
+            } else {
+                sb.append("listeners are null"); // NOI18N
             }
             return sb.toString();
         }

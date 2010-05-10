@@ -54,10 +54,12 @@ public final class NotificationLineSupportAdapter implements ValidationUI {
         this.nls = nls;
     }
 
+    @Override
     public void clearProblem() {
         nls.clearMessages();
     }
 
+    @Override
     public void setProblem(Problem p) {
         switch (p.severity()) {
             case INFO :

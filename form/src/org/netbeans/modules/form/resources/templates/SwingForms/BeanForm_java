@@ -20,7 +20,7 @@ package ${package};
  */
 public class ${name} {
 
-    /** Creates new form BeanForm */
+    /** Creates new form ${name} */
     public ${name}() {
         initComponents();
     }

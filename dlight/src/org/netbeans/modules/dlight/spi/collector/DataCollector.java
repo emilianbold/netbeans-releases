@@ -62,6 +62,19 @@ import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 public interface DataCollector<G extends DataCollectorConfiguration>
         extends DLightTargetListener, Validateable<DLightTarget>, DataFilterListener {
 
+
+    /**
+     * Add new listener which will be notified about all changes in the collector's state
+     * @param listener listener to be added
+     */
+    void addDataCollectorListener(DataCollectorListener listener);
+
+    /**
+     * Removes the listener 
+     * @param listener listener to be removed
+     */
+    void removeDataCollectorListener(DataCollectorListener listener);
+
     /**
      * The types of storage this collector requires
      * @return returns list of {@link org.netbeans.modules.dlight.spi.storage.DataStorageType}
@@ -119,4 +132,44 @@ public interface DataCollector<G extends DataCollectorConfiguration>
      * @return user visible name
      */
     String getName();
+
+/**
+     * States collector can be at
+     */
+    public enum CollectorState {
+
+
+        /**
+         * Initial state
+         */
+        INIT,
+        /**
+         * Validate state
+         */
+        VALIDATING,
+        /**
+         * Starting state
+         */
+        STARTING,
+        /**
+         * Running state
+         */
+        RUNNING,
+        /**
+         * Target is done
+         */
+        DONE,
+        /**
+         * Target is failed
+         */
+        FAILED,
+        /**
+         * Target is Stopped
+         */
+        STOPPED,
+        /**
+         * Target is terminated
+         */
+        TERMINATED,
+    }
 }

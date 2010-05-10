@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.util.ArrayList;
+import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -142,6 +143,7 @@ public class CppUtils {
         return path;
     }
 
+    @CheckReturnValue
     public static String getQmakeSpec(CompilerSet cs, int platform) {
         CompilerFlavor flavor = cs.getCompilerFlavor();
         String qmakespec = flavor.getToolchainDescriptor().getQmakeSpec();

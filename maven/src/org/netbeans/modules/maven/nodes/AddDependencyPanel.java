@@ -129,6 +129,8 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
 
     private static final String DELIMITER = " : ";
 
+    private static final RequestProcessor RP = new RequestProcessor("Dependency Panel"); //NOI18N
+
     private NotificationLineSupport nls;
     private RepositoryInfo nbRepo;
 
@@ -148,7 +150,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             public void focusLost(FocusEvent e) {
                 if (txtGroupId.getText().trim().length() > 0) {
                     artifactCompleter.setLoading(true);
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
                         public void run() {
                             populateArtifact();
                         }
@@ -163,7 +165,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 if (txtGroupId.getText().trim().length() > 0 &&
                     txtArtifactId.getText().trim().length() > 0) {
                     versionCompleter.setLoading(true);
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
                         public void run() {
                             populateVersion();
                         }
@@ -193,7 +195,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         txtArtifactId.getDocument().addDocumentListener(docList);
         checkValidState();
         groupCompleter.setLoading(true);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 populateGroupId();
             }
@@ -925,7 +927,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 }
             }
 
-            Task t = RequestProcessor.getDefault().post(new Runnable() {
+            Task t = RP.post(new Runnable() {
 
                 public void run() {
                     List<NBVersionInfo> tempInfos = null;
@@ -1086,7 +1088,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             AddDependencyPanel.this.artifactsLabel.setLabelFor(btv);
 
             // disable tab if DM section not defined
-            RequestProcessor.getDefault().post(this);
+            RP.post(this);
         }
 
         public ExplorerManager getExplorerManager() {
@@ -1190,7 +1192,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             setLayout(new BorderLayout());
             add(btv, BorderLayout.CENTER);
 
-            RequestProcessor.getDefault().post(this);
+            RP.post(this);
         }
 
         public ExplorerManager getExplorerManager() {
@@ -1238,7 +1240,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     }
 
 
-    private class DefAction extends AbstractAction implements ContextAwareAction {
+    private class DefAction extends AbstractAction implements ContextAwareAction, Runnable {
         private final boolean close;
         private final Lookup lookup;
 
@@ -1272,12 +1274,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     //reset completion.
                     AddDependencyPanel.this.artifactCompleter.setLoading(true);
                     AddDependencyPanel.this.versionCompleter.setLoading(true);
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            AddDependencyPanel.this.populateArtifact();
-                            AddDependencyPanel.this.populateVersion();
-                        }
-                    });
+                    RP.post(this);
                 }
             } else {
                 AddDependencyPanel.this.setFields("","",""); //NOI18N
@@ -1289,6 +1286,12 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
 
         public Action createContextAwareInstance(Lookup actionContext) {
             return new DefAction(close, actionContext);
+        }
+
+        @Override
+        public void run() {
+            AddDependencyPanel.this.populateArtifact();
+            AddDependencyPanel.this.populateVersion();
         }
 
     }

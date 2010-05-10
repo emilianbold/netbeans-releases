@@ -59,7 +59,7 @@ final class PrintDetailsTask implements Runnable {
     /** */
     private static final int BUFFER_SIZE = 8;
     /** */
-    private final Object[] objects;
+    private final List<MatchingObject> objects;
     /** */
     private final BasicSearchCriteria basicSearchCriteria;
     /** */
@@ -75,7 +75,7 @@ final class PrintDetailsTask implements Runnable {
     
     
     /** Creates a new instance of PrintDetailsTask */
-    PrintDetailsTask(final Object[] matchingObjects,
+    PrintDetailsTask(final List<MatchingObject> matchingObjects,
                      final BasicSearchCriteria basicCriteria,
                      final List<SearchType> searchTypes) {
         this.objects = matchingObjects;
@@ -84,17 +84,18 @@ final class PrintDetailsTask implements Runnable {
     }
     
     /** */
+    @Override
     public void run() {
         displayer = new SearchDisplayer();
         callDisplayerFromAWT("prepareOutput");                    //NOI18N
         
         int freeBufSpace = 0;
-        for (Object obj : objects) {
+        for (MatchingObject obj : objects) {
 
             /* Collect details about the found node: */
             Node[] allDetails = null;
             if (basicSearchCriteria != null) {
-                Node[] details = basicSearchCriteria.getDetails(obj);
+                Node[] details = basicSearchCriteria.getDetails(obj.object);
                 if (details != null && details.length != 0) {
                     allDetails = details;
                 }
@@ -216,6 +217,7 @@ final class PrintDetailsTask implements Runnable {
             final Method method = SearchDisplayer.class
                                   .getDeclaredMethod(methodName, new Class[0]);
             Runnable runnable = new Runnable() {
+                @Override
                 public void run() {
                     try {
                         method.invoke(displayer, (Object[]) null);

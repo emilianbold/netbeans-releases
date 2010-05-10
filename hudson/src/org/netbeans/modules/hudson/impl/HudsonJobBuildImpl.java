@@ -49,6 +49,8 @@ import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.constants.HudsonXmlApiConstants;
@@ -63,16 +65,14 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
 
     private final HudsonJobImpl job;
     private final int build;
-    private final boolean building;
-    private final Result result;
+    private boolean building;
+    private Result result;
     private final HudsonConnector connector;
 
-    HudsonJobBuildImpl(HudsonConnector connector, HudsonJobImpl job, int build, boolean building, Result result) {
+    HudsonJobBuildImpl(HudsonConnector connector, HudsonJobImpl job, int build) {
         this.connector = connector;
         this.job = job;
         this.build = build;
-        this.building = building;
-        this.result = result;
     }
     
     public HudsonJob getJob() {
@@ -91,11 +91,19 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
         return getUrl();
     }
 
-    public boolean isBuilding() {
+    public @Override boolean isBuilding() {
+        getResult();
         return building;
     }
     
-    public Result getResult() {
+    public @Override synchronized Result getResult() {
+        if (result == null) {
+            AtomicBoolean _building = new AtomicBoolean();
+            AtomicReference<Result> _result = new AtomicReference<Result>(Result.NOT_BUILT);
+            connector.loadResult(this, _building, _result);
+            building = _building.get();
+            result = _result.get();
+        }
         return result;
     }
 

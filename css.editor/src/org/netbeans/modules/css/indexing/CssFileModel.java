@@ -38,14 +38,11 @@
  */
 package org.netbeans.modules.css.indexing;
 
-import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.refactoring.api.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -53,6 +50,7 @@ import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.css.gsf.CssGSFParser;
 import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserConstants;
@@ -68,11 +66,13 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
+ * Instances of this class represents a css model associated with a snapshot of the file content.
  *
  * @author marekfukala
  */
@@ -80,36 +80,51 @@ public class CssFileModel {
 
     private static final Logger LOGGER = Logger.getLogger(CssIndex.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    //private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*[\\u0022]?([^\\u0022]*)[\\u0022]?\\s*\\)"); //NOI18N
-    private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)");
-    private Collection<Entry> classes, ids, htmlElements, imports, colors;
-    private CssParserResult parserResult;
+    private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
 
-    public CssFileModel(Source source) throws ParseException {
+    private Collection<Entry> classes, ids, htmlElements, imports, colors;
+    private final Snapshot snapshot;
+    private final Snapshot topLevelSnapshot;
+    private SimpleNode parseTreeRoot;
+    
+
+    public static CssFileModel create(Source source) throws ParseException {
+        final AtomicReference<CssParserResult> result = new AtomicReference<CssParserResult>();
+        final AtomicReference<Snapshot> snapshot = new AtomicReference<Snapshot>();
         ParserManager.parse(Collections.singletonList(source), new UserTask() {
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, CssLanguage.CSS_MIME_TYPE);
-                if (cssRi != null) {
-                    parserResult = (CssParserResult)cssRi.getParserResult();
-                    init();
-                }
+                snapshot.set(resultIterator.getSnapshot());
+                result.set(cssRi == null ? null : (CssParserResult) cssRi.getParserResult());
             }
         });
+
+        return new CssFileModel(result.get(), snapshot.get());
     }
 
-    public CssFileModel(CssParserResult parserResult) {
-        this.parserResult = parserResult;
-        init();
+    public static CssFileModel create(CssParserResult result) {
+        return new CssFileModel(result, null);
     }
 
-    public CssParserResult getParserResult() {
-        return parserResult;
+    private CssFileModel(CssParserResult parserResult, Snapshot topLevelSnapshot) {
+        snapshot = parserResult.getSnapshot();
+        parseTreeRoot = parserResult.root();
+        this.topLevelSnapshot = topLevelSnapshot;
+
+        if(parseTreeRoot != null) {
+            SimpleNodeUtil.visitChildren(parseTreeRoot, new AstVisitor());
+        } //else broken source, no parse tree
+
     }
 
     public Snapshot getSnapshot() {
-        return parserResult.getSnapshot();
+        return snapshot;
+    }
+
+    public Snapshot getTopLevelSnapshot() {
+        return topLevelSnapshot;
     }
 
     public FileObject getFileObject() {
@@ -197,13 +212,6 @@ public class CssFileModel {
         return colors;
     }
 
-    private void init() {
-        SimpleNode root = parserResult.root();
-        if(root != null) {
-            SimpleNodeUtil.visitChildren(root, new AstVisitor());
-        } //else completely broken source, no parser result
-    }
-
     @Override
     public String toString() {
         StringBuffer buf = new StringBuffer(super.toString());
@@ -246,6 +254,29 @@ public class CssFileModel {
 
                 Collection<Entry> collection;
                 int start_offset_diff;
+                //find the selector body range if possible
+                SimpleNode styleRuleNode = SimpleNodeUtil.getAncestorByType(node, CssParserTreeConstants.JJTSTYLERULE);
+                OffsetRange body = null;
+                if(styleRuleNode != null) {
+                    //find the opening left curly bracket {
+                    Token first = styleRuleNode.jjtGetFirstToken();
+                    Token last = styleRuleNode.jjtGetLastToken();
+                    int from = -1;
+                    do {
+                        if(first.kind == CssParserConstants.LBRACE) {
+                            from = first.offset + 1;
+                            break;
+                        }
+                    } while((first = first.next) != last);
+
+                    //get the closing right curly bracket }
+                    int to = styleRuleNode.jjtGetLastToken().offset;
+
+                    if(from != -1 && to != -1) {
+                        body = new OffsetRange(from, to);
+                    }
+                }
+
                 switch (node.kind()) {
                     case CssParserTreeConstants.JJT_CLASS:
                         collection = getClassesCollectionInstance();
@@ -270,13 +301,13 @@ public class CssFileModel {
                 //check if the real start offset can be translated to the original offset
                 boolean isVirtual = getSnapshot().getOriginalOffset(node.startOffset()) == -1;
 
-                Entry e = createEntry(image, range, isVirtual);
+                Entry e = createEntry(image, range, body, isVirtual);
                 if(e != null) {
                     collection.add(e);
                 }
 
             } else if(node.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
-                String image = node.image();
+                String image = SimpleNodeUtil.getNodeImage(node);
                 int[] wsLens = getTextWSPreAndPostLens(image);
                 image = image.substring(wsLens[0], image.length() - wsLens[1]);
                 OffsetRange range = new OffsetRange(node.startOffset() + wsLens[0], node.endOffset() - wsLens[1]);
@@ -319,13 +350,23 @@ public class CssFileModel {
         }
     }
 
-    public Entry createEntry(String name, OffsetRange range, boolean isVirtual) {
+    private Entry createEntry(String name, OffsetRange range, boolean isVirtual) {
+        return createEntry(name, range, null, isVirtual);
+    }
+
+    private Entry createEntry(String name, OffsetRange range, OffsetRange bodyRange, boolean isVirtual) {
+        //do not create entries for virtual generated code
+        if(CssGSFParser.containsGeneratedCode(name)) {
+            return null;
+        }
+
         int documentFrom = getSnapshot().getOriginalOffset(range.getStart());
         int documentTo = getSnapshot().getOriginalOffset(range.getEnd());
 
         OffsetRange documentRange = null;
-        String elementLineText = null;
-        String elementText = null;
+        OffsetRange documentBodyRange = null;
+        CharSequence elementLineText = null;
+        CharSequence elementText = null;
         int lineOffset = -1;
         if (documentFrom == -1 || documentTo == -1) {
             if(LOG) {
@@ -339,43 +380,32 @@ public class CssFileModel {
             documentRange = new OffsetRange(documentFrom, documentTo);
             try {
                 //extract element text
-                elementText = getSnapshot().getText().subSequence(range.getStart(), range.getEnd()).toString();
+                elementText = getSnapshot().getText().subSequence(range.getStart(), range.getEnd());
 
                 //extract element line text
                 int astLineStart = GsfUtilities.getRowStart(getSnapshot().getText(), range.getStart());
                 int astLineEnd = GsfUtilities.getRowEnd(getSnapshot().getText(), range.getStart());
-                elementLineText = getSnapshot().getText().subSequence(astLineStart, astLineEnd).toString();
-
-                //try to compute line number of document start offset, this "needs" to run on document.
-                final Document doc = getSnapshot().getSource().getDocument(true);
-                if(doc == null) {
-                    //strange, this should not normally happen
-                    lineOffset = -1; //cannot determine the value
-                    
-                } else {
-                    final AtomicInteger ret = new AtomicInteger();
-                    final int offset = documentFrom;
-                    doc.render(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            try {
-                                ret.set(Utilities.getLineOffset((BaseDocument) doc, offset));
-                            } catch (BadLocationException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-
-                    });
-                    lineOffset = ret.get();
+                elementLineText = getSnapshot().getText().subSequence(astLineStart, astLineEnd);
+                if(topLevelSnapshot != null) {
+                    //compute the line offset of the element in the source snapshot (document)
+                    lineOffset = LexerUtils.getLineOffset(topLevelSnapshot.getText(), documentFrom); //ast offsets
                 }
 
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
+
+            if(bodyRange != null) {
+                int bodyDocFrom = getSnapshot().getOriginalOffset(bodyRange.getStart());
+                int bodyDocTo = getSnapshot().getOriginalOffset(bodyRange.getEnd());
+                if(bodyDocFrom != -1 && bodyDocTo != -1) {
+                    documentBodyRange = new OffsetRange(bodyDocFrom, bodyDocTo);
+                }
+            }
         }
 
-        return new Entry(name, range, documentRange, lineOffset, elementText, elementLineText, isVirtual);
+        return new Entry(name, range, documentRange, bodyRange, documentBodyRange,
+                lineOffset, elementText, elementLineText, isVirtual);
     }
 
     private static int[] getTextWSPreAndPostLens(String text) {

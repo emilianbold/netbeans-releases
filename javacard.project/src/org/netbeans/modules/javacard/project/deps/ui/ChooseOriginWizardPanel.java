@@ -99,7 +99,20 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
     }
 
     public boolean isValid() {
-        boolean result = kind != null && component != null && component.valid();
+        boolean result;
+        synchronized (this) {
+            result = validationError == null;
+            if (!result) {
+                //if we don't do this, the error message is immediately hidden
+                wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, validationError);
+            }
+        }
+        if (result) {
+            result = kind != null && component != null && component.valid();
+        }
+        if (result) {
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        }
         return result;
     }
 
@@ -117,6 +130,9 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
         this.kind = k;
         if (component != null) {
             component.setDepKind(k);
+        }
+        synchronized(this) {
+            validationError = null;
         }
     }
     public void storeSettings(Map<String, Object> settings) {
@@ -138,11 +154,31 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
     }
 
     public void stateChanged(ChangeEvent e) {
+        boolean removeError = false;
+        synchronized(this) {
+            removeError = validationError != null;
+            validationError = null;
+        }
+        if (removeError) {
+            this.wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        }
         supp.fireChange();
     }
-    private static final String MANIFEST_APP_TYPE = "Application-Type"; //NOI18N
-
+    //Cache the error message from asynch validation, otherwise it will be
+    //lost immediately
+    private String validationError;
     public void validate() throws WizardValidationException {
+        try {
+            doValidate();
+        } catch (WizardValidationException ex) {
+            synchronized(this) {
+                validationError = ex.getLocalizedMessage();
+            }
+            throw ex;
+        }
+    }
+
+    private void doValidate() throws WizardValidationException {
         assert !EventQueue.isDispatchThread();
         //Here we do the heavy lifting.  Validate that the files are real and
         //correctly directories or files.  Then actually read the JAR files
@@ -155,6 +191,7 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
         Project target = (Project) settings.get(AddDependencyWizardIterator.PROP_TARGET_PROJECT);
         assert target != null;
         ProjectKind pkind = target.getLookup().lookup(ProjectKind.class);
+        assert pkind != null;
         if (origin == null || !origin.exists()) {
             throw new WizardValidationException(component, "Bad Jar file: " + origin, //NOI18N
                     NbBundle.getMessage(ChooseOriginWizardPanel.class,
@@ -171,44 +208,39 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
             case JAR_FILE:
                 realKind = DependencyKind.RAW_JAR;
                 try {
-                    JarFile jar = new JarFile(origin);
-                    try {
-                        Manifest m = jar.getManifest();
-                        if (m == null) {
-                            throw new WizardValidationException(component,
-                                    "No Application-Type entry in main section of manifest for " + //NOI18N
-                                    origin.getAbsolutePath(), NbBundle.getMessage(ChooseOriginWizardPanel.class,
-                                    "ERR_MISSING_MANIFEST", origin.getPath())); //NOI18N
+                    FileObject ofo = FileUtil.toFileObject(FileUtil.normalizeFile(origin));
+                    if (!FileUtil.isArchiveFile(ofo)) {
+                        String msg = NbBundle.getMessage(ChooseOriginWizardPanel.class,
+                                "MSG_NOT_AN_ARCHIVE", origin.getAbsolutePath()); //NOI18N
+                        throw new WizardValidationException(component, msg, msg);
+                    }
+                    ProjectKind jarKind = ProjectKind.forJarFile(origin);
+                    if (jarKind != null) {
+                        if (jarKind.isApplication()) {
+                            String msg = NbBundle.getMessage (ChooseSigOrExpFilePanelVisual.class,
+                                    "MSG_WRONG_JAR_TYPE", origin.getName(), jarKind.getDisplayName());
+                            throw new WizardValidationException (component, msg, msg);
                         }
-                        String libType = m.getMainAttributes().getValue(MANIFEST_APP_TYPE);
-                        if (libType == null) {
-                            realKind = DependencyKind.RAW_JAR;
-                        } else if ("classic-lib".equals(libType)) {
-                            realKind = DependencyKind.CLASSIC_LIB_JAR;
-                        } else if ("extension-lib".equals(libType)) {
-                            if (pkind != null && pkind.isClassic()) {
-                                throw new WizardValidationException(component,
-                                        "Classic -> Extended dep not allowed: " + libType, NbBundle.getMessage(ChooseOriginWizardPanel.class, //NOI18N
-                                        "ERR_CLASSIC_TO_EXT_DEPENDENCY")); //NOI18N
-                                }
-                            realKind = DependencyKind.EXTENSION_LIB_JAR;
+                        if (pkind.isClassic() != jarKind.isClassic()) {
+                            String key = pkind.isClassic() ? "MSG_CLASSIC_PROJECT_REQUIRES_CLASSIC_DEP" : "MSG_EXT_PROJECT_REQUIRES_EXT_DEP";
+                            String msg = NbBundle.getMessage(ChooseOriginWizardPanel.class, key);
+                            throw new WizardValidationException (component, msg, msg);
                         }
-                        //force further validation - try to trigger an IOE if
-                        //JAR is corrupted
-                        for (JarEntry e : NbCollections.iterable(jar.entries())) {
-                            e.getName();
+                        switch (jarKind) {
+                            case CLASSIC_LIBRARY :
+                                realKind = DependencyKind.CLASSIC_LIB_JAR;
+                                break;
+                            case EXTENSION_LIBRARY :
+                                realKind = DependencyKind.EXTENSION_LIB_JAR;
+                                break;
+                            default :
+                                throw new AssertionError();
                         }
-                    } catch (IOException ex) {
-                        WizardValidationException e = new WizardValidationException(component, ex.getMessage(),
-                                NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_BAD_JAR_FILE")); //NOI18N
-                        e.initCause(ex);
-                        throw e;
-                    } finally {
-                        jar.close();
                     }
                 } catch (IOException ex) {
+                    realKind = null;
                     WizardValidationException e = new WizardValidationException(component, ex.getMessage(),
-                            NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_BAD_JAR_FILE")); //NOI18N
+                            NbBundle.getMessage(ChooseOriginWizardPanel.class, "MSG_BAD_JAR", origin.getAbsolutePath())); //NOI18N
                     e.initCause(ex);
                     throw e;
                 }
@@ -229,10 +261,14 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
                     throw new WizardValidationException(component, "Adding a project to itself: " + target, //NOI18N
                             NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_PROJECT_CANNOT_DEPEND_ON_SELF")); //NOI18N
                 }
+                if (p.getProjectDirectory().getFileObject("build.xml") == null) {
+                    throw new WizardValidationException(component, "Adding a project to itself: " + target, //NOI18N
+                            NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_NO_BUILD_SCRIPT", origin.getName())); //NOI18N
+                }
                 //XXX check for circular dependencies if target is library project
                 JCProject jp = p.getLookup().lookup(JCProject.class);
                 if (jp != null) {
-                    if (pkind != null && (pkind.isClassic() && !jp.kind().isClassic())) {
+                    if (pkind != null && (pkind.isClassic() != jp.kind().isClassic())) {
                         throw new WizardValidationException(component,
                                 "Classic -> Extended dep not allowed", NbBundle.getMessage(ChooseOriginWizardPanel.class, //NOI18N
                                 "ERR_CLASSIC_TO_EXT_DEPENDENCY")); //NOI18N
@@ -270,18 +306,16 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
         assert realKind != null : "Kind not found"; //NOI18N
         settings.put(PROP_ACTUAL_DEP_KIND, realKind);
         switch (realKind) {
-            case CLASSIC_LIB_JAR:
             case EXTENSION_LIB_JAR:
-                settings.put(PROP_INTERMEDIATE_PANEL_KIND, IntermediatePanelKind.SIG_FILE);
-                iter.setIntermediatePanelKind(IntermediatePanelKind.SIG_FILE);
+                settings.remove(PROP_INTERMEDIATE_PANEL_KIND);
+                iter.setIntermediatePanelKind(null);
                 break;
-
+            case CLASSIC_LIB_JAR:
             case JAVA_PROJECT:
             case RAW_JAR:
                 settings.put(PROP_INTERMEDIATE_PANEL_KIND, IntermediatePanelKind.EXP_FILE);
                 iter.setIntermediatePanelKind(IntermediatePanelKind.EXP_FILE);
                 break;
-
             default:
                 settings.remove(PROP_INTERMEDIATE_PANEL_KIND);
                 iter.setIntermediatePanelKind(null);
@@ -289,6 +323,9 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
     }
     
     public void prepareValidation() {
+        synchronized(this) {
+            validationError = null;
+        }
         //do nothing
     }
 }

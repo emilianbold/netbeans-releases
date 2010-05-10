@@ -107,10 +107,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
                 return bottomHelp;
             }
         }
-        
-        //XXX
-        return null;
-        
+        return new HelpCtx(JavaTargetChooserPanel.class);
     }
 
     public boolean isValid() {              

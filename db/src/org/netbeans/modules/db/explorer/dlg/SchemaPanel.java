@@ -42,7 +42,7 @@
 package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.BorderLayout;
-import java.util.Vector;
+import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
@@ -71,18 +71,22 @@ public class SchemaPanel extends javax.swing.JPanel {
         initAccessibility();
 
         ConnectionProgressListener progressListener = new ConnectionProgressListener() {
+            @Override
             public void connectionStarted() {
                 startProgress();
             }
             
+            @Override
             public void connectionStep(String step) {
                 setProgressMessage(step);
             }
 
+            @Override
             public void connectionFinished() {
                 stopProgress(true);
             }
 
+            @Override
             public void connectionFailed() {
                 stopProgress(false);
             }
@@ -208,12 +212,12 @@ public class SchemaPanel extends javax.swing.JPanel {
         return available;
     }
     
-    public boolean setSchemas(Vector items, String schema) {
+    public boolean setSchemas(List<String> items, String schema) {
         schemaComboBox.removeAllItems();
         for (int i = 0; i < items.size(); i++)
-            schemaComboBox.addItem(items.elementAt(i));
+            schemaComboBox.addItem(items.get(i));
 
-        if (items.size() == 0) {
+        if (items.isEmpty()) {
             schemaComboBox.addItem(NbBundle.getMessage (SchemaPanel.class, "TXT_NoSchema")); //NOI18N
             schemaComboBox.setEnabled(false);
         } else
@@ -244,6 +248,7 @@ public class SchemaPanel extends javax.swing.JPanel {
     
     private void startProgress() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 progressHandle = ProgressHandleFactory.createHandle(null);
                 progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
@@ -256,6 +261,7 @@ public class SchemaPanel extends javax.swing.JPanel {
     
     private void setProgressMessage(final String message) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 progressMessageLabel.setText(message);
             }
@@ -272,6 +278,7 @@ public class SchemaPanel extends javax.swing.JPanel {
     
     private void stopProgress(final boolean connected) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 if (progressHandle != null)
                 {

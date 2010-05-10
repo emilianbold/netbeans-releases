@@ -55,7 +55,7 @@ public class QtTranslationDataObject extends MultiDataObject {
         super(pf, loader);
         CookieSet cookies = getCookieSet();
         cookies.add(new ExternalProgramOpenCookie(
-                this, "linguist", NbBundle.getMessage(QtTranslationDataObject.class, "MSG_OpenWithQtToolFailed"))); // NOI18N
+                this, "linguist", NbBundle.getMessage(QtTranslationDataObject.class, "MSG_OpenWithQtLinguistFailed"))); // NOI18N
     }
 
     @Override

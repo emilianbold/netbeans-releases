@@ -41,6 +41,7 @@ package org.netbeans.modules.php.symfony;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -77,7 +78,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         if (!symfonyScript.initProject(phpModule, getPanel().getProjectParams())) {
             // can happen if symfony script was not chosen
             Logger.getLogger(SymfonyPhpModuleExtender.class.getName())
-                    .info("Framework Symfony not found in newly created project " + phpModule.getDisplayName());
+                    .log(Level.INFO, "Framework Symfony not found in newly created project {0}", phpModule.getDisplayName());
             throw new ExtendingException(NbBundle.getMessage(SymfonyPhpModuleExtender.class, "MSG_NotExtended"));
         }
 

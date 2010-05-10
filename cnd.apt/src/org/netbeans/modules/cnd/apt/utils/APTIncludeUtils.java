@@ -46,7 +46,7 @@ import java.util.Iterator;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.util.Utilities;
@@ -94,7 +94,14 @@ public class APTIncludeUtils {
         while( searchPaths.hasNext() ) {
             IncludeDirEntry dirPrefix = searchPaths.next();
             if (dirPrefix.isExistingDirectory()) {
-                String absolutePath = CharSequenceKey.toString(dirPrefix.getAsString(), File.separatorChar, includedFile);
+                String prefix = dirPrefix.getAsString();
+                int len = prefix.length();
+                String absolutePath;
+                if (len > 0 && prefix.charAt(len - 1) == File.separatorChar) {
+                    absolutePath = prefix + includedFile;
+                } else {
+                    absolutePath = CharSequenceUtils.toString(prefix, File.separatorChar, includedFile);
+                }
                 if (isExistingFile(absolutePath)) {
                     return new ResolvedPath(dirPrefix.getAsSharedCharSequence(), normalize(absolutePath), absolutePath, false, dirOffset);
                 } else {

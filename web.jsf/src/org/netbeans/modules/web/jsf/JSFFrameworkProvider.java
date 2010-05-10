@@ -197,7 +197,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 webInf = FileUtil.createFolder(webModule.getDocumentBase(), "WEB-INF"); //NOI18N
             }
             assert webInf != null;
-            FileSystem fileSystem = webModule.getWebInf().getFileSystem();
+            FileSystem fileSystem = webInf.getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
 
             FileObject welcomeFile = (panel!=null && panel.isEnableFacelets()) ? webModule.getDocumentBase().getFileObject(WELCOME_XHTML):
@@ -212,7 +212,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
         return result;
     }
-    
+
     public static String readResource(InputStream is, String encoding) throws IOException {
         // read the config from resource first
         StringBuffer sbuffer = new StringBuffer();
@@ -457,6 +457,12 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         }
                     } else if (faceletsEnabled && welcomeFiles == null) {
                         welcomeFileList.add(ConfigurationUtils.translateURI(facesMapping, WELCOME_XHTML));
+                    }
+                    if (welcomeFiles != null && welcomeFileList.isEmpty()) {
+                        for (String fileName : welcomeFiles.getWelcomeFile()) {
+                            welcomeFileList.add(ConfigurationUtils.translateURI(facesMapping, fileName));
+                        }
+                        welcomeFiles = null;
                     }
                     if (welcomeFiles == null && !welcomeFileList.isEmpty()) {
                         welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList"); //NOI18N

@@ -78,8 +78,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-
-import org.netbeans.modules.xml.catalogsupport.util.ProjectReferenceUtility;
+import org.netbeans.modules.xml.catalogsupport.ProjectReferenceUtility;
 
 /**
  *
@@ -134,6 +133,9 @@ public class CustomizerProjectReferences extends javax.swing.JPanel implements H
                 ProjectInformation pInfo = ProjectUtils.getInformation(newlyAddedProject);
                 listModel.addElement(pInfo);
             }
+        }
+        if (projectList.getModel().getSize() > 0 && projectList.getSelectedIndex() == -1) {
+            projectList.setSelectedIndex(0);
         }
     }
     
@@ -259,7 +261,7 @@ public class CustomizerProjectReferences extends javax.swing.JPanel implements H
                         return;
                     };
                 }
-                ProjectReferenceUtility.removeProjectReference(getRefHelper(),refProject);
+                ProjectReferenceUtility.removeProjectReference(getProject(), getRefHelper(), refProject);
             }
         }
         refreshProjectList();
@@ -320,7 +322,7 @@ public class CustomizerProjectReferences extends javax.swing.JPanel implements H
                                 CustomizerProjectReferences.class, "MSG_Cycles")));
                         return;
                     }
-                    ProjectReferenceUtility.addProjectReference(getRefHelper(),refProject);
+                    ProjectReferenceUtility.addProjectReference(getProject(), getRefHelper(), refProject);
                     newlyAddedProject = refProject;
                 }
             } catch (IllegalArgumentException ex) {

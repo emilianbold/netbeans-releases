@@ -61,7 +61,10 @@ class CCCompilerCustomizerNode extends CustomizerNode {
         switch (getContext().getKind()){
             case Item:
                 ItemConfiguration itemConfiguration = getContext().getItem().getItemConfiguration(configuration);
-                return itemConfiguration.getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, null);
+                if (itemConfiguration != null) {
+                    return itemConfiguration.getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, null);
+                }
+                break;
             case Folder:
                 Folder folder = getContext().getFolder();
                 return folder.getFolderConfiguration(configuration).getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, folder);

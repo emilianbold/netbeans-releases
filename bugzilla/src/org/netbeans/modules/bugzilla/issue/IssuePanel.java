@@ -46,7 +46,10 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
@@ -65,13 +68,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -79,6 +86,7 @@ import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle;
 import javax.swing.ListModel;
 import javax.swing.Scrollable;
@@ -86,9 +94,12 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicTextFieldUI;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
@@ -109,6 +120,7 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
@@ -119,6 +131,7 @@ import org.netbeans.modules.bugzilla.repository.CustomIssueField;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.awt.HtmlBrowser;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -134,6 +147,7 @@ import org.openide.windows.WindowManager;
  */
 public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private static final Color HIGHLIGHT_COLOR = new Color(217, 255, 217);
+    private static final RequestProcessor RP = new RequestProcessor("Bugzilla Issue Panel", 5, false);
     private BugzillaIssue issue;
     private CommentsPanel commentsPanel;
     private AttachmentsPanel attachmentsPanel;
@@ -163,9 +177,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         duplicateButton.setVisible(false);
         attachDocumentListeners();
         attachHideStatusListener();
+        addCommentArea.addCaretListener(new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                makeCaretVisible(addCommentArea);
+            }
+        });
 
         // A11Y - Issues 163597 and 163598
-        BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
+        UIUtils.fixFocusTraversalKeys(addCommentArea);
 
         // Comments panel
         commentsPanel = new CommentsPanel();
@@ -182,8 +202,25 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         layout.replace(dummyCommentsPanel, commentsPanel);
         layout.replace(dummyAttachmentsPanel, attachmentsPanel);
         attachmentsLabel.setLabelFor(attachmentsPanel);
+        initSpellChecker();
+        initDefaultButton();
 
-        BugtrackingUtil.issue163946Hack(scrollPane1);
+        UIUtils.issue163946Hack(scrollPane1);
+    }
+
+    private void initDefaultButton() {
+        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "submit"); // NOI18N
+        ActionMap actionMap = getActionMap();
+        Action submitAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (submitButton.isEnabled()) {
+                    submitButtonActionPerformed(null);
+                }
+            }
+        };
+        actionMap.put("submit", submitAction); // NOI18N
     }
 
     private void updateReadOnlyField(JTextField field) {
@@ -532,8 +569,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             commentsPanel.setIssue(issue, attachments);
         }
         attachmentsPanel.setAttachments(attachments);
-        BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
-        BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
+        UIUtils.keepFocusedComponentVisible(commentsPanel);
+        UIUtils.keepFocusedComponentVisible(attachmentsPanel);
         if (force && !isNew) {
             addCommentArea.setText(""); // NOI18N
         }
@@ -704,7 +741,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void initAssignedCombo() {
         assignedCombo.setRenderer(new RepositoryUserRenderer());
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 BugzillaRepository repository = issue.getBugzillaRepository();
@@ -1112,7 +1149,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void updateTasklistButton() {
         tasklistButton.setEnabled(false);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 BugzillaIssueProvider provider = BugzillaIssueProvider.getInstance();
@@ -1134,6 +1171,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 });
             }
         });
+    }
+
+    private void initSpellChecker () {
+        Spellchecker.register(summaryField);
+        Spellchecker.register(addCommentArea);
     }
 
     private List<CustomFieldInfo> customFields = new LinkedList<CustomFieldInfo>();
@@ -1172,8 +1214,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         comp = scrollPane;
                         editor = textArea;
                         label.setVerticalAlignment(SwingConstants.TOP);
-                        BugtrackingUtil.fixFocusTraversalKeys(textArea);
-                        BugtrackingUtil.issue163946Hack(scrollPane);
+                        UIUtils.fixFocusTraversalKeys(textArea);
+                        UIUtils.issue163946Hack(scrollPane);
                         break;
                     case FreeText:
                         comp = editor = new JTextField();
@@ -1191,7 +1233,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         editor = list;
                         label.setVerticalAlignment(SwingConstants.TOP);
                         rigid = true;
-                        BugtrackingUtil.issue163946Hack(scrollPane);
+                        UIUtils.issue163946Hack(scrollPane);
                         break;
                     case DropDown:
                         comp = editor = new JComboBox();
@@ -1531,6 +1573,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         scrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         addCommentArea.setLineWrap(true);
+        addCommentArea.setWrapStyleWord(true);
         scrollPane1.setViewportView(addCommentArea);
         addCommentArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentArea.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -1976,11 +2019,18 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             BugzillaRepositoryConnector connector = Bugzilla.getInstance().getRepositoryConnector();
             try {
                 connector.getTaskDataHandler().initializeTaskData(issue.getBugzillaRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
-                if (BugzillaUtil.isNbRepository(repository)) { // Issue 180467
+                if (BugzillaUtil.isNbRepository(repository)) { // Issue 180467, 184412
+                    // Default target milestone
                     List<String> milestones = repository.getConfiguration().getTargetMilestones(product);
                     String defaultMilestone = "TBD"; // NOI18N
                     if (milestones.contains(defaultMilestone)) {
                         issue.setFieldValue(IssueField.MILESTONE, defaultMilestone);
+                    }
+                    // Default version
+                    List<String> versions = repository.getConfiguration().getVersions(product);
+                    String defaultVersion = getCurrentNetBeansVersion();
+                    if (versions.contains(defaultVersion)) {
+                        issue.setFieldValue(IssueField.VERSION, defaultVersion);
                     }
                 }
                 initialValues.remove(IssueField.COMPONENT.getKey());
@@ -1988,7 +2038,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 initialValues.remove(IssueField.MILESTONE.getKey());
                 reloadForm(false);
             } catch (CoreException cex) {
-                cex.printStackTrace();
+                Bugzilla.LOG.log(Level.INFO, cex.getMessage(), cex);
             }
         }
     }//GEN-LAST:event_productComboActionPerformed
@@ -2100,14 +2150,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         handle.switchToIndeterminate();
         skipReload = true;
         enableComponents(false);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 boolean ret = false;
                 try {
                     ret = issue.submitAndRefresh();
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
-                        if (attachment.file.exists()) {
+                        if (attachment.file.exists() && attachment.file.isFile()) {
                             if (attachment.description.trim().length() == 0) {
                                 attachment.description = NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription"); // NOI18N
                             }
@@ -2128,7 +2178,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     if(ret) {
                         if (isNew) {
                             // Show all custom fields, not only the ones shown on bug creation
-                            initCustomFields();
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    initCustomFields();
+                                }
+                            });
                         }
                         reloadFormInAWT(true);
                     }
@@ -2189,7 +2244,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         handle.switchToIndeterminate();
         skipReload = true;
         enableComponents(false);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -2296,7 +2351,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         handle.switchToIndeterminate();
         skipReload = true;
         enableComponents(false);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 issue.getBugzillaRepository().refreshConfiguration();
@@ -2532,6 +2587,19 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         return true;
     }
+    
+    void makeCaretVisible(JTextArea textArea) {
+        int pos = textArea.getCaretPosition();
+        try {
+            Rectangle rec = textArea.getUI().modelToView(textArea, pos);
+            if (rec != null) {
+                Point p = SwingUtilities.convertPoint(textArea, rec.x, rec.y, this);
+                scrollRectToVisible(new Rectangle(p.x, p.y, rec.width, rec.height));
+            }
+        } catch (BadLocationException blex) {
+            Bugzilla.LOG.log(Level.INFO, blex.getMessage(), blex);
+        }
+    }
 
     @Override
     public boolean getScrollableTracksViewportHeight() {
@@ -2547,6 +2615,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         return unitIncrement;
+    }
+
+    private String getCurrentNetBeansVersion() {
+        return "6.9"; // NOI18N
     }
 
     private void addNetbeansInfo() {

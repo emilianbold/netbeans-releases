@@ -417,8 +417,10 @@ public final class PathUiSupport {
             em.valueChanged(null);
         }
 
-        /** Handles button events
+        /**
+         * Handles button events.
          */
+        @Override
         public void actionPerformed(ActionEvent e) {
 
             Object source = e.getSource();
@@ -436,8 +438,10 @@ public final class PathUiSupport {
             }
         }
 
-        /** Handles changes in the selection
+        /**
+         * Handles changes in the selection.
          */
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             // addFolder allways enabled
             remove.setEnabled(selectionModel.getMinSelectionIndex() != -1);

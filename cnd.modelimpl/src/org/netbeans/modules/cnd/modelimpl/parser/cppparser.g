@@ -1518,7 +1518,7 @@ function_definition
         {in_parameter_list = false;}
     )?
     (   compound_statement
-    |   function_try_block
+    |   function_try_block[false]
     )
     //	|	// Next line is equivalent to guarded predicate in PCCTS
     //		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiPtrMember)>>?
@@ -1734,16 +1734,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
                 LCURLY
                 // This stores class name in dictionary
                 {beginClassDefinition(ts, id);}
-                (options{generateAmbigWarnings = false;greedy=false;}:
-                    member_declaration
-                |
-                    // IZ 136081 : Wrong parser recovering in class
-                    balanceCurlies { reportError(new NoViableAltException(LT(0), getFilename())); }
-                |
-                    // IZ 138291 : Completion does not work for unfinished constructor
-                    // On unfinished construction we skip some symbols for class parsing process recovery
-                    (~(LCURLY))! { reportError(new NoViableAltException(LT(0), getFilename())); }
-                )*
+                class_members
         		{endClassDefinition();}
                 {enclosingClass = saveClass;}
                 ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
@@ -1761,6 +1752,26 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
             | RCURLY )
             {enclosingClass = saveClass;}
         )
+    ;
+
+class_members
+    :
+    (options{generateAmbigWarnings = false;greedy=false;}:
+        member_declaration
+    |
+        // IZ 136081 : Wrong parser recovering in class
+        balanceCurlies { reportError(new NoViableAltException(LT(0), getFilename())); }
+    |
+        // IZ 138291 : Completion does not work for unfinished constructor
+        // On unfinished construction we skip some symbols for class parsing process recovery
+        (~(LCURLY))! { reportError(new NoViableAltException(LT(0), getFilename())); }
+    )*
+    ;
+
+fix_fake_class_members
+    :
+        class_members
+        { #fix_fake_class_members = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #fix_fake_class_members); }
     ;
 
 enum_specifier
@@ -2298,9 +2309,8 @@ qualified_ctor_id returns [String q = ""]
 
 ctor_body
     :
-    (ctor_initializer)?
-    (   compound_statement
-    |   function_try_block)
+    (  (ctor_initializer)? compound_statement
+    |  function_try_block[true])
     ;
 
 ctor_initializer
@@ -2858,7 +2868,7 @@ statement
                 {if (statementTrace>=1) 
 			printf("statement_11[%d]: try_block\n", LT(1).getLine());
 		}	
-                try_block
+                try_block[false]
 	|
                 {if (statementTrace>=1) 
 			printf("statement_12[%d]: throw_statement\n", LT(1).getLine());
@@ -2927,17 +2937,19 @@ compound_statement
             )                      
 	;
 
-function_try_block
+function_try_block[boolean constructor]
     :
         {isLazyCompound()}?
-        LITERAL_try balanceCurlies 
+        LITERAL_try
+        ({(constructor)}?((COLON) => ctor_initializer)?)?
+        balanceCurlies
         (options {greedy=true;} : LITERAL_catch
         LPAREN exception_declaration RPAREN
         balanceCurlies)*
         {#function_try_block = #(#[CSM_TRY_CATCH_STATEMENT_LAZY, "CSM_TRY_CATCH_STATEMENT_LAZY"], #function_try_block);}
     |
         {!isLazyCompound()}?
-        try_block
+        try_block[constructor]
         {#function_try_block = #(#[CSM_COMPOUND_STATEMENT, "CSM_COMPOUND_STATEMENT"], #function_try_block);}
     ;
 
@@ -3073,9 +3085,11 @@ jump_statement
 	)
 	;
 
-try_block
+try_block[boolean constructor]
     :
-    LITERAL_try compound_statement (options {greedy=true;} : handler)*
+    LITERAL_try
+    ({(constructor)}?((COLON) => ctor_initializer)?)?
+    compound_statement (options {greedy=true;} : handler)*
     {#try_block = #(#[CSM_TRY_STATEMENT, "CSM_TRY_STATEMENT"], #try_block);}
     ;
 

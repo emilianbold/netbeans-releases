@@ -466,7 +466,10 @@ public final class LibrariesNode extends AbstractNode {
             Icon openedIcon;
             String displayName;
             final URL url = FileUtil.urlForArchiveOrDir(file);
-            if ("jar".equals(url.getProtocol())) {  //NOI18N
+            if (url == null) {
+                return null;
+            }
+            else if ("jar".equals(url.getProtocol())) {  //NOI18N
                 icon = openedIcon = ImageUtilities.loadImageIcon(ARCHIVE_ICON, false);
                 displayName = file.getName();
             }

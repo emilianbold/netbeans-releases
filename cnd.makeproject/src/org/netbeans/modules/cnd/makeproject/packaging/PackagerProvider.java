@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.makeproject.packaging;
 
 import java.util.ArrayList;
@@ -48,8 +47,10 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptorProvider;
  *
  * @author thp
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.PackagerDescriptorProvider.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.PackagerDescriptorProvider.class)
 public class PackagerProvider implements PackagerDescriptorProvider {
+
+    @Override
     public List<PackagerDescriptor> getPackagerDescriptorProviderList() {
         ArrayList<PackagerDescriptor> list = new ArrayList<PackagerDescriptor>();
         list.add(new TarPackager());

@@ -174,16 +174,16 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
             switch (hostInfo.getOSFamily()) {
                 case LINUX:
-                    return "ls --full-time"; // NOI18N
+                    return "/bin/ls --full-time"; // NOI18N
                 case MACOSX:
-                    return "ls -lT"; // NOI18N
+                    return "/bin/ls -lT"; // NOI18N
                 case SUNOS:
-                    return "ls -lE"; // NOI18N
+                    return "/bin/ls -lE"; // NOI18N
                 case WINDOWS:
                     throw new IllegalStateException("Windows in unsupported"); //NOI18N
                 case UNKNOWN:
                 default:
-                    return "ls -l"; // NOI18N
+                    return "/bin/ls -l"; // NOI18N
             }
         }
 

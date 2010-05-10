@@ -118,7 +118,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
             scopeModel.addElement(scope);
         }
 
-        jTextFieldName.setText("NewJSFManagedBean");
+        jTextFieldName.setText("newJSFManagedBean");
         jTextFieldName.getDocument().addDocumentListener(this);
         
 //        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FormBeanNewPanelVisual.class, "ACS_BeanFormProperties"));  // NOI18N

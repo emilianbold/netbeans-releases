@@ -48,7 +48,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -111,21 +111,11 @@ final class CreatedModifiedFilesProvider  {
     }
     
     static String getLibraryDescriptorEntryPath(String libraryName) {
-        StringBuffer sb = new StringBuffer();
-        
-        sb.append(LIBRARY_LAYER_ENTRY).append("/").append(libraryName).append(".xml");//NOI18N
-        
-        return sb.toString();//NOI18N
+        return LIBRARY_LAYER_ENTRY + "/"  + libraryName + ".xml"; // NOI18N
     }
     
-    
     private static String transformURL(final String cnb, final String pathPrefix, final String archiveName) {
-        StringBuffer sb = new StringBuffer();
-        
-        sb.append("jar:nbinst://").append(cnb).append("/");//NOI18N
-        sb.append(pathPrefix).append(archiveName).append("!/");//NOI18N
-        
-        return sb.toString();
+        return "jar:nbinst://" + cnb + "/" + pathPrefix + archiveName + "!/"; // NOI18N
     }
     
     private static Map<String, String> getTokens(CreatedModifiedFiles fileSupport, Project project, NewLibraryDescriptor.DataModel data) {
@@ -133,36 +123,24 @@ final class CreatedModifiedFilesProvider  {
         Library library = data.getLibrary();
         retval.put("NAME",data.getLibraryName());//NOI18N
         retval.put("BUNDLE",getPackagePlusBundle(project).replace('/','.'));//NOI18N
-        
-        Iterator<URL> it = library.getContent(VOLUME_CLASS).iterator();
-        retval.put("CLASSPATH",getTokenSubstitution(it, fileSupport, data, "libs/"));//NOI18N
-        
-        it = library.getContent(VOLUME_SRC).iterator();
-        retval.put("SRC",getTokenSubstitution(it, fileSupport, data, "sources/"));//NOI18N
-        
-        it = library.getContent(VOLUME_JAVADOC).iterator();
-        retval.put("JAVADOC",getTokenSubstitution(it, fileSupport, data, "docs/"));//NOI18N
-        
+        retval.put("CLASSPATH",getTokenSubstitution(library.getContent(VOLUME_CLASS), fileSupport, data, "libs/")); // NOI18N
+        retval.put("SRC",getTokenSubstitution(library.getContent(VOLUME_SRC), fileSupport, data, "sources/")); // NOI18N
+        retval.put("JAVADOC",getTokenSubstitution(library.getContent(VOLUME_JAVADOC), fileSupport, data, "docs/")); // NOI18N
         return retval;
     }
     
-    private static String getTokenSubstitution(Iterator<URL> it, CreatedModifiedFiles fileSupport,
+    private static String getTokenSubstitution(List<URL> urls, CreatedModifiedFiles fileSupport,
             NewLibraryDescriptor.DataModel data, String pathPrefix) {
-        StringBuffer sb = new StringBuffer();
-        while (it.hasNext()) {
-            URL originalURL = it.next();
+        StringBuilder sb = new StringBuilder();
+        for (URL originalURL : urls) {
             String archiveName;
             archiveName = addArchiveToCopy(fileSupport, data, originalURL, "release/"+pathPrefix);//NOI18N
             if (archiveName != null) {
                 String codeNameBase = data.getModuleInfo().getCodeNameBase();
                 String urlToString = transformURL(codeNameBase, pathPrefix, archiveName);//NOI18N
-                sb.append("<resource>");//NOI18N
+                sb.append("\n        <resource>"); // NOI18N
                 sb.append(urlToString);
-                if (it.hasNext()) {
-                    sb.append("</resource>\n");//NOI18N
-                } else {
-                    sb.append("</resource>");//NOI18N
-                }
+                sb.append("</resource>"); // NOI18N
             }
         }
         return sb.toString();
@@ -180,15 +158,13 @@ final class CreatedModifiedFilesProvider  {
                 return null;
             }
             retval = archiv.getNameExt();
-            StringBuffer sb = new StringBuffer();
-            sb.append(pathPrefix).append(retval);
-            fileSupport.add(fileSupport.createFile(sb.toString(), archiv));
+            fileSupport.add(fileSupport.createFile(pathPrefix + retval, archiv));
         } else {
             if ("file".equals(originalURL.getProtocol())) {//NOI18N
                 FileObject folderToZip;
                 folderToZip = URLMapper.findFileObject(originalURL);
                 if (folderToZip != null) {
-                    retval = data.getLibraryName()+".zip";//NOI18N
+                    retval = data.getLibraryName() + "-" + folderToZip.getName() + ".zip"; // NOI18N
                     pathPrefix += retval;
                     fileSupport.add(new ZipAndCopyOperation(data.getProject(),
                             folderToZip, pathPrefix));
@@ -208,19 +184,21 @@ final class CreatedModifiedFilesProvider  {
             addCreatedOrModifiedPath(relativePath, false);
         }
         
-        public void run() throws IOException {
+        public @Override void run() throws IOException {
             Collection<? extends FileObject> files = Collections.list(folderToZip.getChildren(true));
-            if (files.isEmpty()) return;
+            if (files.isEmpty()) {
+                return;
+            }
             FileObject prjDir = getProject().getProjectDirectory();
             assert prjDir != null;
             
-            FileObject zipedTarget  = prjDir.getFileObject(relativePath);
-            if (zipedTarget == null) {
-                zipedTarget = FileUtil.createData(prjDir, relativePath);
+            FileObject zippedTarget  = prjDir.getFileObject(relativePath);
+            if (zippedTarget == null) {
+                zippedTarget = FileUtil.createData(prjDir, relativePath);
             }
             
-            assert zipedTarget != null;
-            OutputStream os = zipedTarget.getOutputStream();
+            assert zippedTarget != null;
+            OutputStream os = zippedTarget.getOutputStream();
             try {
                 createZipFile(os, folderToZip, files);
             } finally {

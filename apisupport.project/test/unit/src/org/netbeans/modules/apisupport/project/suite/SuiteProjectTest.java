@@ -51,7 +51,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
+import org.netbeans.modules.apisupport.project.ui.branding.BasicBrandingModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;

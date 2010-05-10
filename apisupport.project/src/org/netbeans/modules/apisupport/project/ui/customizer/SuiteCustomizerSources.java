@@ -74,7 +74,7 @@ final class SuiteCustomizerSources extends NbPropertyPanel.Suite {
         });
     }
     
-    void refresh() {
+    protected void refresh() {
         moduleList.setModel(getProperties().getModulesListModel());
     }
     

@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -59,6 +60,9 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.api.java.source.ModificationResult.Difference.Kind;
 import org.netbeans.api.java.source.PositionConverter;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
@@ -71,6 +75,7 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 
@@ -256,7 +261,17 @@ public abstract class JavaSourceAccessor {
 
     public abstract AnnotatedTypeTree makeAnnotatedType(TreeMaker make, List<? extends AnnotationTree> annotations, ExpressionTree type);
     public abstract AnnotationTree makeTypeAnnotation(TreeMaker make, AnnotationTree t);
-    
+
+    public static boolean holdsParserLock() {
+	return Utilities.holdsParserLock();
+    }
+
+    public abstract Difference createDifference(Kind kind, PositionRef startPos, PositionRef endPos, String oldText, String newText, String description);
+    public abstract Difference createNewFileDifference(JavaFileObject fileObject, String text);
+    public abstract ModificationResult createModificationResult(Map<FileObject, List<Difference>> diffs, Map<?, int[]> tag2Span);
+    public abstract Map<FileObject, List<Difference>> getDiffsFromModificationResult(ModificationResult mr);
+    public abstract Map<?, int[]> getTagsFromModificationResult(ModificationResult mr);
+
     private static class CancelableTaskWrapper extends JavaParserResultTask implements ClasspathInfoProvider {
         
         private final JavaSource javaSource;

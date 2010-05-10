@@ -106,7 +106,7 @@ public class CoverageBar extends JComponent {
     }
 
     private String getString() {
-        return String.format("%.1f %%", coveragePercentage); // NOI18N
+        return String.format("%.2f %%", coveragePercentage); // NOI18N
     }
 
     @Override

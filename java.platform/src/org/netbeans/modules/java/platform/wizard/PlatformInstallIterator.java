@@ -52,6 +52,8 @@ import org.netbeans.spi.java.platform.GeneralPlatformInstall;
 import org.netbeans.spi.java.platform.PlatformInstall;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -174,7 +176,20 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
     public void initialize(WizardDescriptor wiz) {
         this.wizard = wiz;
         List<GeneralPlatformInstall> installers = InstallerRegistry.getDefault().getAllInstallers();
-        if (installers.size()>1) {
+        if (installers.isEmpty()) {
+            //Probably fixed by: #178256
+            final Collection<? extends ModuleInfo> infos = Lookup.getDefault().lookupAll(ModuleInfo.class);
+            final StringBuilder sb = new StringBuilder("No PlatformInstallFound in Lookup, enabled modules:\n");    //NOI18N
+            for (ModuleInfo info : infos) {
+                if (info.isEnabled()) {
+                    sb.append(info.getDisplayName());
+                    sb.append('('); //NOI18N
+                    sb.append(info.getCodeName());
+                    sb.append(")\n"); //NOI18N
+                }
+            }
+            throw new IllegalStateException(sb.toString());
+        } else if (installers.size()>1) {
             panelIndex = 0;
             hasSelectorPanel = true;
         }

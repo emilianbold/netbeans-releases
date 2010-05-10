@@ -282,7 +282,7 @@ public class Utilities {
 
     public static int[] findIdentifierSpan( final TreePath decl, final CompilationInfo info, final Document doc) {
         final int[] result = new int[] {-1, -1};
-        doc.render(new Runnable() {
+        Runnable r = new Runnable() {
             public void run() {
                 Token<JavaTokenId> t = findIdentifierSpan(info, doc, decl);
                 if (t != null) {
@@ -290,20 +290,28 @@ public class Utilities {
                     result[1] = t.offset(null) + t.length();
                 }
             }
-        });
-        
+        };
+        if (doc != null) {
+            doc.render(r);
+        } else {
+            r.run();
+        }
         return result;
     }
     
     public static Token<JavaTokenId> findIdentifierSpan(final CompilationInfo info, final Document doc, final TreePath decl) {
         @SuppressWarnings("unchecked")
         final Token<JavaTokenId>[] result = new Token[1];
-        doc.render(new Runnable() {
+        Runnable r = new Runnable() {
             public void run() {
                 result[0] = findIdentifierSpanImpl(info, decl);
             }
-        });
-        
+        };
+        if (doc != null) {
+            doc.render(r);
+        } else {
+            r.run();
+        }
         return result[0];
     }
     

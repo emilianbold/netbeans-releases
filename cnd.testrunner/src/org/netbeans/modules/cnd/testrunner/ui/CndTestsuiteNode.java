@@ -70,6 +70,9 @@ public final class CndTestsuiteNode extends TestsuiteNode {
     }
 
     private Testcase getFirstTestCase() {
+        if (report == null) {
+            return null;
+        }
         return report.getTests().isEmpty() ? null : report.getTests().iterator().next();
     }
 
@@ -85,7 +88,7 @@ public final class CndTestsuiteNode extends TestsuiteNode {
         //    //XXX: not the exact location of the class
         //    return new JumpToCallStackAction(this, CndTestMethodNode.getTestLocation(testcase, report.getProject()), 1);
         //}
-        return new JumpToTestAction(getFirstTestCase(), report.getProject(), NbBundle.getMessage(CndTestsuiteNode.class, "LBL_GoToSource"), true);
+        return new JumpToTestAction(testcase, report.getProject(), NbBundle.getMessage(CndTestsuiteNode.class, "LBL_GoToSource"), true);
     }
 
     @Override

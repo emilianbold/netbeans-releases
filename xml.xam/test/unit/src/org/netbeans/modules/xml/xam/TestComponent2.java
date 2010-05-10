@@ -74,11 +74,19 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         this(model, name, index);
         setValue(value);
     }
+
+    @Override
     public String toString() { return getName(); }
+
+    @Override
     public String getName() { return getPeer().getLocalName()+getIndex(); }
+
+    @Override
     public String getNamespaceURI() {
         return super.getNamespaceURI();
     }
+
+    @Override
     protected void populateChildren(List<TestComponent2> children) {
         NodeList nl = getPeer().getChildNodes();
         if (nl != null){
@@ -132,14 +140,17 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         return s == null ? -1 : Integer.parseInt(s); 
     }
 
+    @Override
     public void updateReference(Element n) {
         assert (n != null);
         assert n.getLocalName().equals(getQName().getLocalPart());
         super.updateReference(n);
     }
-    
+
+    @Override
     public QName getQName() { return ROOT_QNAME; }
-    
+
+    @Override
     protected Object getAttributeValueOf(Attribute attr, String stringValue) {
         if (stringValue == null) return null;
         if (String.class.isAssignableFrom(attr.getType())) {
@@ -159,6 +170,7 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         public A(TestModel2 model, Element e) {
             super(model, e);
         }
+        @Override
         public QName getQName() { return QNAME; }
     }
     public static class Aa extends TestComponent2 {
@@ -169,6 +181,7 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         public Aa(TestModel2 model, Element e) {
             super(model, e);
         }
+        @Override
         public QName getQName() { return QNAME; }
     }
     public static class B extends TestComponent2 {
@@ -179,6 +192,7 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         public B(TestModel2 model, Element e) {
             super(model, e);
         }
+        @Override
         public QName getQName() { return QNAME; }
     }
     public static class C extends TestComponent2 {
@@ -189,6 +203,7 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         public C(TestModel2 model, Element e) {
             super(model, e);
         }
+        @Override
         public QName getQName() { return QNAME; }
     }
     public static class D extends TestComponent2 {
@@ -199,6 +214,8 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         public D(TestModel2 model, Element e) {
             super(model, e);
         }
+
+        @Override
         public QName getQName() { return QNAME; }
     }
     public static class E extends TestComponent2 {
@@ -209,17 +226,23 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         public E(TestModel2 model, Element e) {
             super(model, e);
         }
+
+        @Override
         public QName getQName() { return QNAME; }
 
+        @Override
         public String getValue() {
             String retValue;
             
             retValue = super.getValue();
             return retValue;
         }
+
+        @Override
         public String getName() {
             return super.getAttribute(TestAttribute.NAME);
         }
+
         public void setName(String v) {
             setAttribute(TestAttribute.NAME.getName(), TestAttribute.NAME, v);
         }
@@ -227,19 +250,26 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
     
     public static class TestComponentReference<T extends TestComponent2> 
             extends AbstractNamedComponentReference<T> {
+        
         public TestComponentReference(Class<T> type, TestComponent2 parent, String ref) {
             super(type, parent, ref);
         }
+
         public TestComponentReference(T ref, Class<T> type, TestComponent2 parent) {
             super(ref, type, parent);
         }
+
+        @Override
         public TestComponent2 getParent() {
             return (TestComponent2) super.getParent();
         }
+
+        @Override
         public String getEffectiveNamespace() {
             return getParent().getModel().getRootComponent().getTargetNamespace();
         }
 
+        @Override
         public T get() {
             if (getReferenced() == null) {
                 String tns = getQName().getNamespaceURI();
@@ -252,7 +282,8 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
             return getReferenced();
         }
     }
-    
+
+    @Override
     public TestModel2 getModel() {
         return (TestModel2) super.getModel();
     }
@@ -284,11 +315,14 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
         
         public ReferencedFinder() {
         }
+        
         public TestComponent2 findReferenced(TestComponent2 root, String name) {
             this.name = name;
             root.accept(this);
             return found;
         }
+
+        @Override
         public void visit(TestComponent2 component) {
             if (name.equals(component.getName())) {
                 found = component;
@@ -296,6 +330,8 @@ public class TestComponent2 extends AbstractDocumentComponent<TestComponent2> im
                 visitChildren(component);
             }
         }
+
+        @Override
         public void visitChildren(TestComponent2 component) {
             for (TestComponent2 child : component.getChildren()) {
                 child.accept(this);

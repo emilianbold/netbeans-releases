@@ -714,47 +714,47 @@ public class CPPParserEx extends CPPParser {
     @Override
     protected final void classForwardDeclaration(/*TypeSpecifier*/int ts, DeclSpecifier ds, String tag) {
 
-        CPPSymbol c = null;
-
-        /* TODO: revive the original code:
-        // if already in symbol table as a class, don't add
-        // of course, this is incorrect as you can rename
-        // classes by entering a new scope, but our limited
-        // example basically keeps all types globally visible.
-        if (symbols->lookup(tag)!=NULL) {
-        CPPSymbol *cs = (CPPSymbol *) symbols->lookup(tag);
-
         if (statementTrace >= 2) {
-        printf("classForwardDeclaration[%d]: %s already stored in dictionary,"
-        " ObjectType %d\n", LT(1)->getLine(),tag,cs->getType());
-        }
-        return;
-        }
-         */
+            CPPSymbol c = null;
 
-        switch (ts) {
-            case tsSTRUCT:
-                c = new CPPSymbol(tag, CPPSymbol.otStruct);
-                break;
+            /* TODO: revive the original code:
+            // if already in symbol table as a class, don't add
+            // of course, this is incorrect as you can rename
+            // classes by entering a new scope, but our limited
+            // example basically keeps all types globally visible.
+            if (symbols->lookup(tag)!=NULL) {
+            CPPSymbol *cs = (CPPSymbol *) symbols->lookup(tag);
 
-            case tsUNION:
-                c = new CPPSymbol(tag, CPPSymbol.otUnion);
-                break;
+            if (statementTrace >= 2) {
+            printf("classForwardDeclaration[%d]: %s already stored in dictionary,"
+            " ObjectType %d\n", LT(1)->getLine(),tag,cs->getType());
+            }
+            return;
+            }
+             */
 
-            case tsCLASS:
-                c = new CPPSymbol(tag, CPPSymbol.otClass);
-                break;
-            case tsInvalid:
-                reportError("classForwardDeclaration: invalid TypeSpecifier"); // NOI18N
-                break;
-            default:
-                throw new IllegalArgumentException("Illegal argument: " + ts); // NOI18N
-        }
+            switch (ts) {
+                case tsSTRUCT:
+                    c = new CPPSymbol(tag, CPPSymbol.otStruct);
+                    break;
 
-        /* TODO: revive the original code:
-        symbols->defineInScope(tag, c, externalScope);
-         */
-        if (statementTrace >= 2) {
+                case tsUNION:
+                    c = new CPPSymbol(tag, CPPSymbol.otUnion);
+                    break;
+
+                case tsCLASS:
+                    c = new CPPSymbol(tag, CPPSymbol.otClass);
+                    break;
+                case tsInvalid:
+                    reportError("classForwardDeclaration: invalid TypeSpecifier"); // NOI18N
+                    break;
+                default:
+                    throw new IllegalArgumentException("Illegal argument: " + ts); // NOI18N
+            }
+
+            /* TODO: revive the original code:
+            symbols->defineInScope(tag, c, externalScope);
+             */
             printf("classForwardDeclaration[%d]: Declare %s in external scope, " + // NOI18N
                     "ObjectType %d\n", getLine(1), tag, c.getType()); // NOI18N
         }
@@ -775,48 +775,49 @@ public class CPPParserEx extends CPPParser {
 
     @Override
     protected final void beginClassDefinition(/*TypeSpecifier*/int ts, String tag) {
-        CPPSymbol c;
 
-        /* TODO: revive the original code:
-        // if already in symbol table as a class, don't add
-        // of course, this is incorrect as you can rename
-        // classes by entering a new scope, but our limited
-        // example basically keeps all types globally visible.
-        if (symbols->lookup(tag) != NULL) {
-        symbols->saveScope();   // still have to use scope to collect members
-        //printf("support.cpp beginClassDefinition_1 saveScope() now %d\n",
-        //			symbols->getCurrentScopeIndex());
         if (statementTrace >= 2) {
-        printf("beginClassDefinition[%d]: Classname %s already "
-        "in dictionary\n", LT(1)->getLine(),tag);
-        }
-        return;
-        }
-         */
+            CPPSymbol c = null;
 
-        switch (ts) {
-            case tsSTRUCT:
-                c = new CPPSymbol(tag, CPPSymbol.otStruct);
-                break;
+            /* TODO: revive the original code:
+            // if already in symbol table as a class, don't add
+            // of course, this is incorrect as you can rename
+            // classes by entering a new scope, but our limited
+            // example basically keeps all types globally visible.
+            if (symbols->lookup(tag) != NULL) {
+            symbols->saveScope();   // still have to use scope to collect members
+            //printf("support.cpp beginClassDefinition_1 saveScope() now %d\n",
+            //			symbols->getCurrentScopeIndex());
+            if (statementTrace >= 2) {
+            printf("beginClassDefinition[%d]: Classname %s already "
+            "in dictionary\n", LT(1)->getLine(),tag);
+            }
+            return;
+            }
+             */
 
-            case tsUNION:
-                c = new CPPSymbol(tag, CPPSymbol.otUnion);
-                break;
+            switch (ts) {
+                case tsSTRUCT:
+                    c = new CPPSymbol(tag, CPPSymbol.otStruct);
+                    break;
 
-            case tsCLASS:
-                c = new CPPSymbol(tag, CPPSymbol.otClass);
-                break;
-            case tsInvalid:
-                reportError("classForwardDeclaration: invalid TypeSpecifier"); // NOI18N
-                break;
-            default:
-                throw new IllegalArgumentException("Illegal argument: " + ts); // NOI18N
-        }
+                case tsUNION:
+                    c = new CPPSymbol(tag, CPPSymbol.otUnion);
+                    break;
 
-        /* TODO: revive the original code:
-        symbols->defineInScope(tag, c, externalScope);
-         */
-        if (statementTrace >= 2) {
+                case tsCLASS:
+                    c = new CPPSymbol(tag, CPPSymbol.otClass);
+                    break;
+                case tsInvalid:
+                    reportError("classForwardDeclaration: invalid TypeSpecifier"); // NOI18N
+                    break;
+                default:
+                    throw new IllegalArgumentException("Illegal argument: " + ts); // NOI18N
+            }
+
+            /* TODO: revive the original code:
+            symbols->defineInScope(tag, c, externalScope);
+             */
             printf("beginClassDefinition[%d]: Define %s in external scope (1), " + // NOI18N
                     "ObjectType %d\n", getLine(1), tag, c.getType()); // NOI18N
         }
@@ -861,16 +862,16 @@ public class CPPParserEx extends CPPParser {
 
     @Override
     protected final void beginEnumDefinition(String e) {
-        // DW 26/3/97 Set flag for new class
-
-        // Add all enum tags into the global scope (not correct, but
-        // will work for most code).
-        // This symbol lives until the end of the file
-        CPPSymbol c = new CPPSymbol(e, CPPSymbol.otEnum);
-        /* TODO: revive the original code:
-        symbols->defineInScope(e, c, externalScope);
-         */
         if (statementTrace >= 2) {
+            // DW 26/3/97 Set flag for new class
+
+            // Add all enum tags into the global scope (not correct, but
+            // will work for most code).
+            // This symbol lives until the end of the file
+            CPPSymbol c = new CPPSymbol(e, CPPSymbol.otEnum);
+            /* TODO: revive the original code:
+            symbols->defineInScope(e, c, externalScope);
+             */
             printf("beginEnumDefinition[%d]: %s define in external scope, " + // NOI18N
                     "ObjectType %d\n", getLine(1), e, c.getType()); // NOI18N
         }
@@ -882,14 +883,14 @@ public class CPPParserEx extends CPPParser {
 
     @Override
     protected final void templateTypeParameter(String t) {
-        //DW 11/06/03 Symbol saved in templateParameterScope (0)
-        //  as a temporary measure until scope is implemented fully
-        // This symbol lives until the end of the file
-        CPPSymbol e = new CPPSymbol(t, CPPSymbol.otTypedef);
-        /* TODO: revive the original code:
-        symbols->defineInScope(t, e, templateParameterScope);
-         */
         if (statementTrace >= 2) {
+            //DW 11/06/03 Symbol saved in templateParameterScope (0)
+            //  as a temporary measure until scope is implemented fully
+            // This symbol lives until the end of the file
+            CPPSymbol e = new CPPSymbol(t, CPPSymbol.otTypedef);
+            /* TODO: revive the original code:
+            symbols->defineInScope(t, e, templateParameterScope);
+             */
             printf("templateTypeParameter[%d]: Declare %s in " + // NOI18N
                     "template parameter scope (0), ObjectType %d\n", // NOI18N
                     getLine(1), t, e.getType());

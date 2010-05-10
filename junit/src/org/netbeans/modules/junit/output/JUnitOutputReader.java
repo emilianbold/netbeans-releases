@@ -326,7 +326,7 @@ final class JUnitOutputReader {
                                           Integer.parseInt(matcher.group(3)),
                                           parseTime(matcher.group(4)));
                         } catch (NumberFormatException ex) {
-                            assert false;
+                            assert false : ex; // #175298
                         }
                     } else {
                         assert false;

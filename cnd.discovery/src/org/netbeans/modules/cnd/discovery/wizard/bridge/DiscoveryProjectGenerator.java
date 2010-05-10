@@ -78,7 +78,7 @@ public class DiscoveryProjectGenerator {
     private DiscoveryDescriptor wizard;
     private String baseFolder;
     private String level;
-    
+
     /** Creates a new instance of PrjectGenerator */
     public DiscoveryProjectGenerator(DiscoveryDescriptor wizard) throws IOException {
         this.wizard = wizard;
@@ -90,7 +90,7 @@ public class DiscoveryProjectGenerator {
             projectBridge = new ProjectBridge(baseFolder);
         }
     }
-    
+
     public void process(){
         List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
         Folder sourceRoot = projectBridge.getRoot();
@@ -306,7 +306,7 @@ public class DiscoveryProjectGenerator {
         }
         return Collections.<Project>emptySet();
     }
-    
+
     private Set<String> getSourceFolders(){
         Set<String> used = new HashSet<String>();
         List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
@@ -325,7 +325,7 @@ public class DiscoveryProjectGenerator {
         }
         return used;
     }
-    
+
     private Map<String,Folder> prefferedFolders(){
         Map<String,Folder> folders = new HashMap<String,Folder>();
         for(Item item : projectBridge.getAllSources()){
@@ -344,7 +344,7 @@ public class DiscoveryProjectGenerator {
         }
         return folders;
     }
-    
+
     private void addAdditional(Folder folder, String base, Set<Item> usedItems){
         Set<String> folders = getSourceFolders();
         Set<String> used = new HashSet<String>();
@@ -474,7 +474,7 @@ public class DiscoveryProjectGenerator {
             }
         }
     }
-    
+
     private void setupCompilerConfiguration(ProjectConfiguration config){
         if ("project".equals(level)){ // NOI18N
             Set<String> set = new HashSet<String>();
@@ -493,7 +493,7 @@ public class DiscoveryProjectGenerator {
             projectBridge.setupProject(vector, buf, config.getLanguageKind() == ItemProperties.LanguageKind.CPP);
         }
     }
-    
+
     private List<String> buildMacrosString(final Map<String, String> map) {
         List<String> vector = new ArrayList<String>();
         for(Map.Entry<String,String> entry : map.entrySet()){
@@ -505,7 +505,7 @@ public class DiscoveryProjectGenerator {
         }
         return vector;
     }
-    
+
     private void setupFile(FileConfiguration config, Item item, boolean isCPP) {
         projectBridge.setSourceTool(item,isCPP);
         if ("file".equals(level)){ // NOI18N
@@ -523,7 +523,7 @@ public class DiscoveryProjectGenerator {
             projectBridge.setupFile(config.getCompilePath(), vector, true, buf, true, item);
         }
     }
-    
+
     private void reConsolidatePaths(Set<String> set, FileConfiguration file){
         String compilePath = file.getCompilePath();
         for (String path : file.getUserInludePaths()){
@@ -542,7 +542,7 @@ public class DiscoveryProjectGenerator {
             set.add(projectBridge.getRelativepath(compilePath));
         }
     }
-    
+
     private boolean isDifferentCompilePath(String name, String path){
         if (Utilities.isWindows()) {
             name = name.replace('\\', '/'); // NOI18N
@@ -556,7 +556,7 @@ public class DiscoveryProjectGenerator {
         }
         return false;
     }
-    
+
     private void addConfiguration(Folder sourceRoot, ProjectConfiguration conf, Set<Item> used){
         boolean isCPP =conf.getLanguageKind()==ItemProperties.LanguageKind.CPP;
         Map<String,Set<Pair>> configurationStructure = analyzeConfigurationStructure(conf.getFiles(), isCPP);
@@ -624,7 +624,7 @@ public class DiscoveryProjectGenerator {
             }
         }
     }
-    
+
     private void createOrphan(Folder sourceRoot, List<Pair> orphan, boolean isCPP){
         Map<String,Pair> folders = new HashMap<String,Pair>();
         for(Pair pair : orphan){
@@ -634,7 +634,7 @@ public class DiscoveryProjectGenerator {
         AbstractRoot additional = UnusedFactory.createRoot(folders.keySet());
         addFolder(sourceRoot, additional, folders, isCPP);
     }
-    
+
     private void addFolder(Folder folder, AbstractRoot additional, Map<String,Pair> folders, boolean isCPP){
         String name = additional.getName();
         Folder added = getOrCreateFolder(folder, name, additional);
@@ -659,8 +659,8 @@ public class DiscoveryProjectGenerator {
             }
         }
     }
-    
-    
+
+
     private List<Pair> detectOrphan(final Map<String, Set<Pair>> configurationStructure, boolean isCPP) {
         Map<String,Folder> preffered = prefferedFolders();
         List<Pair> orphan = new ArrayList<Pair>();
@@ -708,7 +708,7 @@ public class DiscoveryProjectGenerator {
         }
         return orphan;
     }
-    
+
     private Map<String,Set<Pair>> analyzeConfigurationStructure(List<FileConfiguration> files, boolean isCPP){
         Map<String,Set<Pair>> folders = new HashMap<String,Set<Pair>>();
         for (FileConfiguration file : files){
@@ -743,5 +743,5 @@ public class DiscoveryProjectGenerator {
             this.item = item;
         }
     }
-    
+
 }

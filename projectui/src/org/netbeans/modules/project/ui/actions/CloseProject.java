@@ -67,7 +67,16 @@ public class CloseProject extends ProjectAction {
     }
         
     @Override
-    protected void actionPerformed( Lookup context ) {
+    protected void actionPerformed( final Lookup context ) {
+        if (EventQueue.isDispatchThread()) {
+            OpenProjectList.OPENING_RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    actionPerformed(context);
+                }
+            });
+            return;
+        }
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );        
         // show all modified documents, if an user cancel it then no project is closed        
         OpenProjectList.getDefault().close( projects, true );
@@ -91,6 +100,7 @@ public class CloseProject extends ProjectAction {
     private void enable(final boolean enable) {
         if (!EventQueue.isDispatchThread()) {
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     setEnabled(enable);
                 }

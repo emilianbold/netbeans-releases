@@ -3,5 +3,4 @@
 function foo() {
   echo 'test';
 }
-
 ?>

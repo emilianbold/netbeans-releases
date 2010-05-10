@@ -82,6 +82,7 @@ public class FinalizeDoesNotCallSuper {
         assert ctx != null;
         final TreePath tp = ctx.getPath();
         final MethodTree method = (MethodTree) tp.getLeaf();
+        if (method.getBody() == null) return null;
         if (!Util.isFinalize(method)) {
             return null;
         }

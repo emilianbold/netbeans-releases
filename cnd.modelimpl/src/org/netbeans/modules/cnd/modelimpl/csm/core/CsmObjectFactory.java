@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl;
@@ -239,6 +240,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = ENUMERATOR_IMPL;
         } else if (object instanceof IncludeImpl) {
             aHandler = INCLUDE_IMPL;
+        } else if (object instanceof InheritanceImpl) {
+            aHandler = INHERITANCE_IMPL;
         } else if (object instanceof ParameterListImpl) {
             aHandler = PARAM_LIST_IMPL;
             if (object instanceof FunctionParameterListImpl) {
@@ -429,6 +432,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new IncludeImpl(stream);
                 break;
 
+            case INHERITANCE_IMPL:
+                obj = new InheritanceImpl(stream);
+                break;
+
             case PARAM_LIST_IMPL:
                 obj = new ParameterListImpl(stream);
                 break;
@@ -573,7 +580,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int ENUMERATOR_IMPL                = PARAMETER_ELLIPSIS_IMPL + 1;
 
     private static final int INCLUDE_IMPL                   = ENUMERATOR_IMPL + 1;
-    private static final int PARAM_LIST_IMPL                = INCLUDE_IMPL + 1;
+    private static final int INHERITANCE_IMPL               = INCLUDE_IMPL + 1;
+    private static final int PARAM_LIST_IMPL                = INHERITANCE_IMPL + 1;
     private static final int FUNCTION_PARAM_LIST_IMPL       = PARAM_LIST_IMPL + 1;
     private static final int FUNCTION_KR_PARAM_LIST_IMPL    = FUNCTION_PARAM_LIST_IMPL + 1;
     private static final int MACRO_IMPL                     = FUNCTION_KR_PARAM_LIST_IMPL + 1;

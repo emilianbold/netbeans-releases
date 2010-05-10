@@ -93,7 +93,9 @@ import prefuse.data.Node;
  */
 public class GraphHelper {
     
-        private static final ImageIcon FIND_USAGES_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + "findusages.png", false);
+        private static final ImageIcon FIND_USAGES_ICON = ImageUtilities.loadImageIcon(
+             "org/netbeans/modules/refactoring/api/resources/" + 
+             "findusages.png", false);
     
     public static final prefuse.data.Schema FIND_USAGES_NODES_SCHEMA =
             new prefuse.data.Schema();   // prefuse graph schema

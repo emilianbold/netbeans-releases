@@ -50,6 +50,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -82,6 +83,7 @@ import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -95,7 +97,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
     private static final Logger LOG = Logger.getLogger(IndentationPanel.class.getName());
 
-    private final boolean lineWrapOn = Boolean.getBoolean("org.netbeans.editor.linewrap"); //NOI18N
+    private final boolean lineWrapOn;
 
     private final MimePath mimePath;
     private final CustomizerSelector.PreferencesFactory prefsFactory;
@@ -109,6 +111,18 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
      */
     @SuppressWarnings("LeakingThisInConstructor")
     public IndentationPanel(MimePath mimePath, CustomizerSelector.PreferencesFactory prefsFactory, Preferences prefs, Preferences allLangPrefs, PreviewProvider preview) {
+        boolean lwo;
+        try {
+            ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+            Class clazz = cl.loadClass("org.netbeans.modules.editor.lib2.highlighting.HighlightingManager"); //NOI18N
+            Field field = clazz.getField("LINEWRAP_ENABLED"); //NOI18N
+            lwo = (Boolean) field.get(null);
+        } catch (Exception e) {
+            LOG.log(Level.INFO, null, e);
+            lwo = false;
+        }
+        lineWrapOn = lwo;
+
         this.mimePath = mimePath;
         this.prefsFactory = prefsFactory;
         this.prefs = prefs;

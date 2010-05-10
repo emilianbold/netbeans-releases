@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -130,6 +130,7 @@ public class DDBinding implements Comparable<DDBinding> {
         return new DDBinding(resolver, newSunBean, standardMap, annotationMap, virtual);
     }
     
+    @Override
     public int compareTo(DDBinding other) {
         return Utils.strCompareTo(getBeanName(), other.getBeanName());
     }
@@ -226,7 +227,7 @@ public class DDBinding implements Comparable<DDBinding> {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder(128);
-        builder.append("Sun DD: ");
+        builder.append("sun DD: ");
         builder.append(sunBean != null ? getBeanName() : "(null)");
         builder.append(", Standard DD: ");
         builder.append(standardMap != null ? standardMap.get(PROP_NAME) : "(null)");

@@ -44,6 +44,6 @@ public class ${name} extends Applet {
      *            the incoming APDU
      */
     public void process(APDU apdu) {
-        //
+        //Insert your code here
     }
 }

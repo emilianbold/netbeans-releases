@@ -137,6 +137,8 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
 
     private static final String JAR_INDEX = "jar.index";    //NOI18N
     private static final String JAR_ARCHIVE_DISABLED ="jar.archive.disabled";   //NOI18N
+    public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
+
 
     public enum DescType {
         application, applet, component;

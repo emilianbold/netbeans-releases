@@ -54,6 +54,7 @@ import java.io.DataOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -72,7 +73,7 @@ import org.openide.windows.WindowManager;
 final class TimableEventQueue extends EventQueue 
 implements Runnable {
     private static final Logger LOG = Logger.getLogger(TimableEventQueue.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor("Timeable Event Queue Watch Dog", 1, true); // NOI18N
+    static final RequestProcessor RP = new RequestProcessor("Timeable Event Queue Watch Dog", 1, true); // NOI18N
     private static final int QUANTUM;
     private static final int REPORT;
     static {
@@ -84,6 +85,7 @@ implements Runnable {
         QUANTUM = Integer.getInteger("org.netbeans.core.TimeableEventQueue.quantum", quantum); // NOI18N
         REPORT = Integer.getInteger("org.netbeans.core.TimeableEventQueue.report", report); // NOI18N
     } 
+    private static final int WAIT_CURSOR_LIMIT = Integer.getInteger("org.netbeans.core.TimeableEventQueue.waitcursor", 15000); // NOI18N
     private static final int PAUSE = Integer.getInteger("org.netbeans.core.TimeableEventQueue.pause", 15000); // NOI18N
 
     private final RequestProcessor.Task TIMEOUT;
@@ -108,6 +110,7 @@ implements Runnable {
         // XXX this is a hack!
         try {
             Mutex.EVENT.writeAccess (new Mutex.Action<Void>() {
+                @Override
                 public Void run() {
                     ClassLoader scl = Lookup.getDefault().lookup(ClassLoader.class);
                     if (scl != null) {
@@ -137,32 +140,24 @@ implements Runnable {
     private void done() {
         TIMEOUT.cancel();
         LOG.log(Level.FINE, "isWait cursor {0}", isWaitCursor); // NOI18N
-        long r = isWaitCursor ? REPORT * 10 : REPORT;
+        long r;
+        if (isWaitCursor) {
+            r = REPORT * 10;
+            if (r > WAIT_CURSOR_LIMIT) {
+                r = (WAIT_CURSOR_LIMIT > REPORT) ? WAIT_CURSOR_LIMIT : REPORT;
+            }
+        } else {
+            r = REPORT;
+        }
         isWaitCursor = false;
         long time = System.currentTimeMillis() - start;
         if (time > QUANTUM) {
             LOG.log(Level.FINE, "done, timer stopped, took {0}", time); // NOI18N
             if (time > r) {
                 LOG.log(Level.WARNING, "too much time in AWT thread {0}", stoppable); // NOI18N
-                ActionListener ss = stoppable;
-                if (ss != null) {
-                    try {
-                        ByteArrayOutputStream out = new ByteArrayOutputStream();
-                        DataOutputStream dos = new DataOutputStream(out);
-                        ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
-                        dos.close();
-                        if (dos.size() > 0) {
-                            Object[] params = new Object[]{out.toByteArray(), time};
-                            Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
-                        } else {
-                            LOG.log(Level.WARNING, "no snapshot taken"); // NOI18N
-                        }
-                        stoppable = null;
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    ignoreTill = System.currentTimeMillis() + PAUSE;
-                }
+                ignoreTill = System.currentTimeMillis() + PAUSE;
+                report(stoppable, time);
+                stoppable = null;
             }
         } else {
             LOG.log(Level.FINEST, "done, timer stopped, took {0}", time);
@@ -183,6 +178,7 @@ implements Runnable {
         }
     }
 
+    @Override
     public void run() {
         if (stoppable != null) {
             LOG.log(Level.WARNING, "Still previous controller {0}", stoppable);
@@ -194,6 +190,32 @@ implements Runnable {
             stoppable = (ActionListener)selfSampler;
         }
         isWaitCursor |= isWaitCursor();
+    }
+
+    private static void report(final ActionListener ss, final long time) {
+        if (ss == null) {
+            return;
+        }
+        class R implements Runnable {
+            @Override
+            public void run() {
+                try {
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    DataOutputStream dos = new DataOutputStream(out);
+                    ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+                    dos.close();
+                    if (dos.size() > 0) {
+                        Object[] params = new Object[]{out.toByteArray(), time};
+                        Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
+                    } else {
+                        LOG.log(Level.WARNING, "no snapshot taken"); // NOI18N
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        RP.post(new R());
     }
 
     private static Object createSelfSampler() {
@@ -216,18 +238,31 @@ implements Runnable {
                 return true;
             }
             Window w = SwingUtilities.windowForComponent(focus);
-            if (w != null && w.getCursor().getType() == Cursor.WAIT_CURSOR) {
+            if (w != null && isWaitCursorOnWindow(w)) {
                 LOG.finer("wait cursor on window"); // NOI18N
                 return true;
             }
         }
         for (Frame f : Frame.getFrames()) {
-            if (f.getCursor().getType() == Cursor.WAIT_CURSOR) {
+            if (isWaitCursorOnWindow(f)) {
                 LOG.finer("wait cursor on frame"); // NOI18N
                 return true;
             }
         }
         LOG.finest("no wait cursor"); // NOI18N
+        return false;
+    }
+
+    private static boolean isWaitCursorOnWindow(Window w) {
+        if (w.getCursor().getType() == Cursor.WAIT_CURSOR) {
+            return true;
+        }
+        if (w instanceof JFrame) {
+            Component glass = ((JFrame)w).getGlassPane();
+            if (glass.getCursor().getType() == Cursor.WAIT_CURSOR) {
+                return true;
+            }
+        }
         return false;
     }
 

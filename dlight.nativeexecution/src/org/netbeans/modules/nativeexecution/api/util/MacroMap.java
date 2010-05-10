@@ -200,6 +200,10 @@ public final class MacroMap implements Cloneable {
         }
     }
 
+    public void remove(String name) {
+        map.remove(name);
+    }
+
     private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {
 
         public CaseInsensitiveComparator() {

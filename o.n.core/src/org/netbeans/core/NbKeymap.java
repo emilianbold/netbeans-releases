@@ -73,12 +73,17 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=Keymap.class)
 public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
+
+    private static final RequestProcessor RP = new RequestProcessor("NbKeyMap", 1); //NOI18N
+    //for unit testing only
+    private RequestProcessor.Task refreshTask;
 
     private static final Action BROKEN = new AbstractAction("<broken>") { // NOI18N
         public void actionPerformed(ActionEvent e) {
@@ -145,9 +150,24 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
         }
     };
 
-    private synchronized void refreshBindings() {
+    private void refreshBindings() {
+        refreshTask = RP.post(new Runnable() {
+            @Override
+            public void run() {
+                doRefreshBindings();
+            }
+        });
+    }
+
+    private synchronized void doRefreshBindings() {
         bindings = null;
         bindings();
+    }
+
+    //for unit testing only
+    void waitFinished() throws InterruptedException {
+        if( null != refreshTask )
+            refreshTask.waitFinished(5000);
     }
 
     private synchronized Map<KeyStroke,Binding> bindings() {
@@ -213,9 +233,12 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
             if (refresh) {
                 // Update accelerators of existing actions after switching keymap.
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
-                        for (Map.Entry<Action, String> entry : action2Id.entrySet()) {
-                            entry.getKey().putValue(Action.ACCELERATOR_KEY, id2Stroke.get(entry.getValue()));
+                        synchronized( action2Id ) {
+                            for (Map.Entry<Action, String> entry : action2Id.entrySet()) {
+                                entry.getKey().putValue(Action.ACCELERATOR_KEY, id2Stroke.get(entry.getValue()));
+                            }
                         }
                     }
                 });
@@ -342,10 +365,12 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
     KeyStroke keyStrokeForAction(Action a, FileObject definingFile) {
         String id = idForFile(definingFile);
         bindings();
-        action2Id.put(a, id);
-        KeyStroke k = id2Stroke.get(id);
-        LOG.log(Level.FINE, "found keystroke {0} for {1} with ID {2}", new Object[] {k, id(a), id});
-        return k;
+        synchronized( action2Id ) {
+            action2Id.put(a, id);
+            KeyStroke k = id2Stroke.get(id);
+            LOG.log(Level.FINE, "found keystroke {0} for {1} with ID {2}", new Object[] {k, id(a), id});
+            return k;
+        }
     }
 
     @ServiceProvider(service=AcceleratorBinding.class)

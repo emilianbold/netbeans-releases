@@ -126,6 +126,7 @@ made subject to such option by the copyright holder.
                 <folder name="Actions">
                     <file name="org-netbeans-modules-xsl-actions-TransformAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xsl-actions-TransformAction.instance"/>
+                        <attr name="position" intvalue="19500"/>
                     </file>
                 </folder>
             </folder>

@@ -94,7 +94,12 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
         String name = templateWizard.getTemplate().getNodeDelegate().getDisplayName();
         if (name != null) {
             name = name.replaceAll(" ", ""); //NOI18N
+            int par = name.indexOf("(");
+            if (par != -1) {
+                name = name.substring(0, par);
+            }
         }
+
         templateWizard.putProperty (WizardProperties.NAME, name);
         basicPanel = new PanelConfigureProject();
         currentIndex = 0;

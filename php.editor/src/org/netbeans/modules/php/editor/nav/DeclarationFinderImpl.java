@@ -77,10 +77,12 @@ import org.openide.filesystems.FileUtil;
  * @author Radek Matous
  */
 public class DeclarationFinderImpl implements DeclarationFinder {
+    @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
         return findDeclarationImpl(info, caretOffset);
     }
 
+    @Override
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
         TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
         return getReferenceSpan(ts, caretOffset);
@@ -191,8 +193,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
     private static DeclarationLocation findDeclarationImpl(Occurence underCaret, ParserResult info) {
         DeclarationLocation retval = DeclarationLocation.NONE;
-        if (underCaret != null && underCaret.gotoDeclarationEnabled()) {
-            PhpElement declaration = underCaret.gotoDeclaratin();
+        if (underCaret != null) {
+            Collection<? extends PhpElement> gotoDeclarations = underCaret.gotoDeclarations();
+            if (gotoDeclarations == null || gotoDeclarations.isEmpty()) {
+                return DeclarationLocation.NONE;
+            }
+            PhpElement declaration = gotoDeclarations.iterator().next();
             FileObject declarationFo = declaration.getFileObject();
             if (declarationFo == null) {
                 return DeclarationLocation.NONE;
@@ -202,7 +208,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             if (info.getSnapshot().getSource().getFileObject() == declaration.getFileObject()) {
                 return retval;
             }
-            Collection<? extends PhpElement> alternativeDeclarations = underCaret.getAllDeclarations();
+            Collection<? extends PhpElement> alternativeDeclarations = gotoDeclarations;
             if (alternativeDeclarations.size() > 1) {
                 retval = DeclarationLocation.NONE;
                 for (PhpElement elem : alternativeDeclarations) {
@@ -236,10 +242,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             this(modelElement, new DeclarationLocation(modelElement.getFileObject(), modelElement.getOffset(), modelElement));
         }
 
+        @Override
         public ElementHandle getElement() {
             return modelElement;
         }
 
+        @Override
         public String getDisplayHtml(HtmlFormatter formatter) {
             formatter.reset();
             ElementKind ek = modelElement.getKind();
@@ -265,10 +273,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             return formatter.getText();
         }
 
+        @Override
         public DeclarationLocation getLocation() {
             return declaration;
         }
 
+        @Override
         public int compareTo(AlternativeLocation o) {
             AlternativeLocationImpl i = (AlternativeLocationImpl) o;
             return this.modelElement.getName().compareTo(i.modelElement.getName());

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -152,6 +152,13 @@ public class Utils {
             modulesDir = new File(modulesDir, subdir);
         }
         if (modulesDir.canRead() && modulesDir.isDirectory()) {
+            // try the express check...
+            String expressPattern = jarNamePattern.replace(ServerUtilities.GFV3_VERSION_MATCHER, ".jar"); // NOI18N
+            File candidate = new File(modulesDir, expressPattern);
+            if (!"".equals(expressPattern) && candidate.exists()) {
+                return candidate;
+            }
+            // try the longer check...
             File[] candidates = modulesDir.listFiles(new VersionFilter(jarNamePattern));
             if (candidates != null && candidates.length > 0) {
                 return candidates[0]; // the first one
@@ -160,7 +167,7 @@ public class Utils {
         return null;
     }
 
-        private static class VersionFilter implements FileFilter {
+    private static class VersionFilter implements FileFilter {
 
         private final Pattern pattern;
 
@@ -168,6 +175,7 @@ public class Utils {
             pattern = Pattern.compile(namePattern);
         }
 
+        @Override
         public boolean accept(File file) {
             return pattern.matcher(file.getName()).matches();
         }

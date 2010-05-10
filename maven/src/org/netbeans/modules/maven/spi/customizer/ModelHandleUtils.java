@@ -64,11 +64,11 @@ import org.openide.filesystems.FileUtil;
 
 /**
  * Some random utility methods to allow post creation modifications of the project model.
- * 
+ *
  * @author mkleint
  */
 public final class ModelHandleUtils {
-    
+
     private ModelHandleUtils() {}
 
     //TODO deprecate in favour of o.n.m.maven.model.Utilities + ModelOperation?
@@ -92,10 +92,15 @@ public final class ModelHandleUtils {
         ActionToGoalMapping mapping = new NetbeansBuildActionXpp3Reader().read(new StringReader(usr.getDefaultConfig().getRawMappingsAsString()));
         List<ModelHandle.Configuration> configs = new ArrayList<ModelHandle.Configuration>();
 
+        // with fix of #180773 we need to start transactions here for compatibility
+        // because it has been removed from ModelHandle's constructor
+        model.startTransaction();
+        profilesModel.startTransaction();
+        
         return CustomizerProviderImpl.ACCESSOR.createHandle(model, profilesModel, project.getOriginalMavenProject(),
                 Collections.<String, ActionToGoalMapping>singletonMap(M2Configuration.DEFAULT,mapping), configs, null, project.getAuxProps());
     }
-    
+
     //TODO deprecate in favour of o.n.m.maven.model.Utilities + ModelOperation?
     public static void writeModelHandle(ModelHandle handle, Project prj) throws IOException {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);

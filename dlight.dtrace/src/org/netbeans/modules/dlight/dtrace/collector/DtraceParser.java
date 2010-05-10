@@ -39,7 +39,6 @@
 package org.netbeans.modules.dlight.dtrace.collector;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +47,7 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.util.DLightLogger;
 
 /**
@@ -57,31 +57,22 @@ public class DtraceParser {
 
     private static final Logger log =
             DLightLogger.getLogger(DtraceParser.class);
-    private final DataTableMetadata metadata;
-    private final List<String> colnames;
     private static final Pattern regex = Pattern.compile("[^\\s\"']+|\"[^\"]*\"|'[^']*'"); // NOI18N
-    private static final String dquote = "\""; // NOI18N
-    private static final String squote = "'"; // NOI18N
+    private static final char DQUOTE = '"'; // NOI18N
+    private static final char SQUOTE = '\''; // NOI18N
+    private final DataTableMetadata metadata;
 
     public DtraceParser(DataTableMetadata metadata) {
         this.metadata = metadata;
-        if (metadata != null) {
-            colnames = new ArrayList<String>(metadata.getColumnsCount());
-            for (Column c : metadata.getColumns()) {
-                colnames.add(c.getColumnName());
-            }
-        } else {
-            colnames = Collections.<String>emptyList();
-        }
     }
 
-    private List<String> parse(String line) {
+    private List<Object> parse(String line) {
         assert metadata != null;
         return parse(line, metadata.getColumnsCount());
     }
 
     /** parses first colCount columns, leaves the rest */
-    protected List<String> parse(String line, int colCount) {
+    protected List<Object> parse(String line, int colCount) {
         List<String> matchList = new ArrayList<String>();
         Matcher regexMatcher = regex.matcher(line);
         while (regexMatcher.find()) {
@@ -98,47 +89,55 @@ public class DtraceParser {
             return null;
         }
 
-        List<Column> columns = metadata.getColumns();
-        List<String> data = new ArrayList<String>();
+        try {
+            List<Column> columns = metadata.getColumns();
+            List<Object> data = new ArrayList<Object>(columns.size());
 
-        for (int i = 0; i < colCount; i++) {
+            for (int i = 0; i < colCount; i++) {
 
-            Class columnClass = columns.get(i).getColumnClass();
-
-            if (columnClass == String.class) {
                 String stringValue = matchList.get(i);
-                if (stringValue != null && stringValue.startsWith(dquote)) {
-                    stringValue = stringValue.substring(1);
+                int stringLength = stringValue.length();
+                if (stringValue != null && 2 <= stringLength &&
+                        (stringValue.charAt(0) == SQUOTE && stringValue.charAt(stringLength - 1) == SQUOTE
+                        || stringValue.charAt(0) == DQUOTE && stringValue.charAt(stringLength - 1) == DQUOTE)) {
+                    stringValue = stringValue.substring(1, stringLength - 2);
                 }
-                if (stringValue != null && stringValue.endsWith(dquote)) {
-                    stringValue = stringValue.substring(0,
-                            stringValue.length() - 1);
+
+                Class<?> columnClass = columns.get(i).getColumnClass();
+                Object value;
+
+                if (columnClass == Long.class || columnClass == Time.class) {
+                    value = Long.valueOf(stringValue);
+                } else if (columnClass == Integer.class) {
+                    value = Integer.valueOf(stringValue);
+                } else if (columnClass == Short.class) {
+                    value = Short.valueOf(stringValue);
+                } else if (columnClass == Byte.class) {
+                    value = Byte.valueOf(stringValue);
+                } else if (columnClass == Double.class) {
+                    value = Double.valueOf(stringValue);
+                } else if (columnClass == Float.class) {
+                    value = Float.valueOf(stringValue);
+                } else {
+                    value = stringValue;
                 }
-//                stringValue = squote +
-//                        stringValue.replaceAll(squote, dquote) + squote;
-                data.add(i, stringValue);
-            } else {
-                data.add(i, matchList.get(i));
+
+                data.add(value);
             }
-//      if (columnClass == Long.class){
-//        data.add(i, line);
-//      } else if (columnClass == Double.class){
-//
-//      } else if (columnClass == Integer.class){
-//
-//      } else if (columnClass == String.class){
-//
-//      }
+            return data;
+
+        } catch (NumberFormatException ex) {
+            log.log(Level.WARNING, "Failed to parse number in line: " + line, ex); // NOI18N
+            return null;
         }
-        return data;
     }
 
     public DataRow process(String line) {
-        List<String> data = parse(line);
+        List<Object> data = parse(line);
         if (data == null) {
             return null;
         } else {
-            return new DataRow(colnames, data);
+            return new DataRow(metadata.getColumnNames(), data);
         }
     }
 

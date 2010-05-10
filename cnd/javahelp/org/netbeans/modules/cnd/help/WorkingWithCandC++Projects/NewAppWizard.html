@@ -14,8 +14,10 @@ type="text/css">
 <h2>New C/C++ Application Wizard: Name and Location</h2>
 <p><small><a href="#seealso">See Also</a>&nbsp; </small>
 <p>The New C/C++ Application wizard enables you to create a new C or C++ 
-application project.</p>
-<p>In the Name and Location page, you have to set the following properties:
+application project. The New C/C++ Qt Application wizard is similar, and
+allows you to create a new C/C++ Application that uses the Qt libraries
+and tools.</p>
+<p>In the Name and Location page, you must set the following properties:
 <ul>
 <li><b>Project Name.</b> Specifies the display name of the project. 
 This name is also used to create the project folder.
@@ -30,6 +32,13 @@ you can with projects based on existing makefiles.</li>
 <li><b>Project Makefile Name.</b> You can change the default name of the project makefile. 
 If a makefile already exists in the project folder, the default name is Makefile-<i>project</i>.mk; otherwise, 
 the default name is Makefile.</li>
+<li><b>Create Main File. </b> You can change the default name of the main program file, and select the
+C or C++ language from a list.  By default the name is <tt>main</tt> and the language is C++. For Qt projects,
+the language can only be C++.</li>
+<li><b>Development Host.</b> You can select the localhost or a remote development host
+that you have previously set up. The project will be built and run on the selected development host.</li>
+<li><b>Tool Collection.</b> You can select a tool collection that has been previously configured for the selected development host.
+The tool collection will be used to build and run the project.</li>
 <li><b>Set as Main Project.</b> Sets the newly created project as the 
 <a href="../WorkingWithCandC++Projects/SettingMainCorC++Project.html">main project</a>.
 </li>
@@ -42,7 +51,8 @@ the default name is Makefile.</li>
 <td width="23"></td>
 <td>
 <a href="CreatingCorC++Project.html">Creating a C or C++ Project</a><br>
-<a href="AboutCandC++Projects.html">About C and C++ Projects</a>
+<a href="AboutCandC++Projects.html">About C and C++ Projects</a><br>
+<a href="AboutQtProjects.html">About Qt Projects</a>
 </td>
 </tr>
 </table>

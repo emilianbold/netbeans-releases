@@ -44,6 +44,7 @@ import java.awt.Component;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
+import org.openide.util.RequestProcessor;
 
 /**
  * Utility class
@@ -58,7 +59,13 @@ class ViewUtil {
     private static final boolean useDefaultBackground =
             Boolean.getBoolean("nb.explorerview.aqua.defaultbackground"); //NOI18N
 
+    private static final RequestProcessor RP = new RequestProcessor("Explorer Views"); // NOI18N
+
     private ViewUtil() {
+    }
+
+    static RequestProcessor uiProcessor() {
+        return RP;
     }
 
     /**

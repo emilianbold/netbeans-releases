@@ -140,6 +140,7 @@ public class ZendScript extends PhpProgram {
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .inputOutput(InputOutput.NULL)
                 .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+            @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
             }
@@ -235,16 +236,19 @@ public class ZendScript extends PhpProgram {
     }
 
     static class HelpLineProcessor implements LineProcessor {
-        private final StringBuilder buffer = new StringBuilder();
+        private final StringBuilder buffer = new StringBuilder(2000);
 
+        @Override
         public void processLine(String line) {
             buffer.append(line);
             buffer.append("\n"); // NOI18N
         }
 
+        @Override
         public void reset() {
         }
 
+        @Override
         public void close() {
         }
 

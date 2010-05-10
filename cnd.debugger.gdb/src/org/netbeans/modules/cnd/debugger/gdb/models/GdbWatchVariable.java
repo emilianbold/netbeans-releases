@@ -70,7 +70,7 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
  */
 public class GdbWatchVariable extends AbstractVariable implements PropertyChangeListener {
     
-    protected static boolean disableMacros = Boolean.getBoolean("gdb.macros.disable");
+    protected static final boolean disableMacros = Boolean.getBoolean("gdb.macros.disable");
 
     private final Watch watch;
     private static final Logger log = Logger.getLogger("gdb.logger.watches"); // NOI18N

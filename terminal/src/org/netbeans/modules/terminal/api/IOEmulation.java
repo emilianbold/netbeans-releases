@@ -93,7 +93,7 @@ public abstract class IOEmulation {
     /**
      * Return whether this IO implements it's own line discipline.
      * @param io IO to operate on.
-     * @return
+     * @return If true this IO implements it's own line discipline.
      */
     public static boolean isDisciplined(InputOutput io) {
 	IOEmulation ior = find(io);
@@ -130,7 +130,7 @@ public abstract class IOEmulation {
 
     /**
      * Return whether this IO implements it's own line discipline.
-     * @return
+     * @return If true this IO implements it's own line discipline.
      */
     abstract protected boolean isDisciplined();
 

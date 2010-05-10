@@ -5,4 +5,3 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/catalogsupport/resour
 OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help
 OpenIDE-Module-Specification-Version: 1.3
 AutoUpdate-Show-In-Client: false
-

@@ -192,7 +192,8 @@ public class SchemaNavigatorContent extends AbstractXMLNavigatorContent  impleme
                 //finally update the UI in EDT
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        if (model == null || model.getState() != SchemaModel.State.VALID) {
+                        if (model == null || model.getRootComponent() == null ||
+                                model.getState() != SchemaModel.State.VALID) {
                             showError(AbstractXMLNavigatorContent.ERROR_NO_DATA_AVAILABLE);
                         } else {
                             show(model);

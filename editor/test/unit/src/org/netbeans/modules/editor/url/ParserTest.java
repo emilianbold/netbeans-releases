@@ -68,6 +68,9 @@ public class ParserTest {
         performTest("    f t p://www.test-test.test/a.jsp?tt\\&t$=$\n", null);
         performTest("    ftp://www.test-test.test/a.jsp?tt\\&t$=$", 4, 43);
         performTest("    \"http://www.netbeans.org/\"", 5, 29);
+        performTest("    http://some.where/some-thing.html#section\n", 4, 45);
+        performTest("    http://netbeans.org/bugzilla/buglist.cgi?bug_id=181772,172312\n", 4, 65);
+        performTest("    http://some.where/some-thing.html#section?cow=moo's\n", 4, 55);
         performTest("    h", null);
     }
 

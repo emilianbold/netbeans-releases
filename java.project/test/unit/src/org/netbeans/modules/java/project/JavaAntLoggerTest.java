@@ -134,7 +134,7 @@ public final class JavaAntLoggerTest extends NbTestCase {
         assertNotNull("have build.xml as a FileObject", buildXml);
         ActionUtils.runTarget(buildXml, new String[] {"clean", "test"}, props).result();
         //System.out.println("nonhyperlinkedOut=" + nonhyperlinkedOut + " nonhyperlinkedErr=" + nonhyperlinkedErr + " hyperlinkedOut=" + hyperlinkedOut + " hyperlinkedErr=" + hyperlinkedErr);
-        assertTrue("got a hyperlink for Clazz.run NPE in " + hyperlinkedErr, hyperlinkedErr.contains("\tat simpleapp.Clazz.run(Clazz.java:4)"));
+        assertTrue("got a hyperlink for Clazz.run NPE in " + hyperlinkedErr + " vs. " + nonhyperlinkedErr, hyperlinkedErr.contains("\tat simpleapp.Clazz.run(Clazz.java:4)"));
     }
     
     private static final class SFBQ implements SourceForBinaryQueryImplementation {

@@ -44,18 +44,37 @@ import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
 
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import java.util.concurrent.Future;
+import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import org.openide.util.NbBundle;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
@@ -69,7 +88,13 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.MethodChooser;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotation;
+import org.openide.util.Exceptions;
 
 public class MethodChooserSupport implements PropertyChangeListener {
 
@@ -85,6 +110,7 @@ public class MethodChooserSupport implements PropertyChangeListener {
     private int selectedIndex = -1;
     private Operation[] operations;
     private Location[] locations;
+    private boolean[] isCertainlyReachable;
 
     MethodChooserSupport(JPDADebuggerImpl debugger, String url, ReferenceType clazz, int methodLine, int methodOffset) {
         this.debugger = debugger;
@@ -102,7 +128,11 @@ public class MethodChooserSupport implements PropertyChangeListener {
         for (int x = 0; x < segments.length; x++) {
             int start = operations[x].getMethodStartPosition().getOffset();
             int end = operations[x].getMethodEndPosition().getOffset();
-            segments[x] = new MethodChooser.Segment(start, end);
+            if (isCertainlyReachable[x]) {
+                segments[x] = new MethodChooser.Segment(start, end);
+            } else {
+                segments[x] = new UncertainSegment(start, end);
+            }
         }
         return segments;
     }
@@ -237,14 +267,20 @@ public class MethodChooserSupport implements PropertyChangeListener {
             }
         }
 
+        Operation opToExecute = null;
         if (currOpIndex == -1) {
             selectedOp = operations[operations.length - 1];
-        } else if (currOpIndex == lastOpIndex) {
-            tempOps = new Operation[operations.length - 1 - currOpIndex];
-            tempLocs = new Location[operations.length - 1 - currOpIndex];
+            opToExecute = operations[0];
+        } else {
+            int splitIndex = currOpIndex == lastOpIndex ? currOpIndex : currOpIndex - 1;
+            if (splitIndex + 1 < operations.length) {
+                opToExecute = operations[splitIndex + 1];
+            }
+            tempOps = new Operation[operations.length - 1 - splitIndex];
+            tempLocs = new Location[operations.length - 1 - splitIndex];
             for (int x = 0; x < tempOps.length; x++) {
-                tempOps[x] = operations[x + currOpIndex + 1];
-                tempLocs[x] = locations[x + currOpIndex + 1];
+                tempOps[x] = operations[x + splitIndex + 1];
+                tempLocs[x] = locations[x + splitIndex + 1];
             }
             operations = tempOps;
             locations = tempLocs;
@@ -252,12 +288,6 @@ public class MethodChooserSupport implements PropertyChangeListener {
                 return false;
             }
             selectedOp = operations[0];
-        } else {
-            selectedIndex = currOpIndex;
-            // do not show UI, continue directly using the selection
-            String name = operations[selectedIndex].getMethodName();
-            RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex], true);
-            return true;
         }
 
         Object[][] elems = new Object[operations.length][2];
@@ -266,14 +296,62 @@ public class MethodChooserSupport implements PropertyChangeListener {
             elems[i][1] = locations[i];
         }
         Arrays.sort(elems, new OperatorsComparator());
-        selectedIndex = 0;
+        isCertainlyReachable = new boolean[operations.length];
         for (int i = 0; i < operations.length; i++) {
             operations[i] = (Operation)elems[i][0];
             locations[i] = (Location)elems[i][1];
-            if (operations[i].equals(selectedOp)) {
+            isCertainlyReachable[i] = true;
+        }
+        int[] flags = new int[operations.length];
+        for (int i = 0; i < flags.length; i++) {
+            flags[i] = 0;
+        }
+        detectUnreachableOps(flags, currOp);
+        int count = 0;
+        for (int i = 0; i < flags.length; i++) {
+            if (flags[i] < 2) {
+                count++;
+            }
+        }
+        tempOps = operations;
+        tempLocs = locations;
+        operations = new Operation[count];
+        locations = new Location[count];
+        isCertainlyReachable = new boolean[count];
+        int index = 0;
+        int opToExecuteIndex = -1;
+        for (int i = 0; i < flags.length; i++) {
+            if (flags[i] < 2) {
+                operations[index] = tempOps[i];
+                locations[index] = tempLocs[i];
+                isCertainlyReachable[index] = flags[i] == 0;
+                if (opToExecute == operations[index]) {
+                    opToExecuteIndex = index;
+                }
+                index++;
+            }
+        }
+
+        selectedIndex = 0;
+        for (int i = 0; i < operations.length; i++) {
+            if (operations[i].equals(selectedOp) && isCertainlyReachable[i]) {
                 selectedIndex = i;
             }
         }
+
+        if (opToExecuteIndex >= 0 && !isCertainlyReachable[opToExecuteIndex]) {
+            // perform step over expression and run init() again
+            synchronized(this) {
+                StepOperationActionProvider.doAction(debugger, this);
+                try {
+                    wait();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return init();
+        }
+
         if (operations.length == 1) {
             // do not show UI, continue directly using the selection
             String name = operations[selectedIndex].getMethodName();
@@ -281,6 +359,133 @@ public class MethodChooserSupport implements PropertyChangeListener {
             return true;
         }
         return false;
+    }
+
+    private void detectUnreachableOps(final int[] flags, final Operation currOp) {
+        FileObject fileObj = null;
+        try {
+            fileObj = URLMapper.findFileObject(new URL(url));
+        } catch (MalformedURLException e) {
+        }
+        if (fileObj == null) return;
+        DataObject dobj = null;
+        try {
+            dobj = DataObject.find(fileObj);
+        } catch (DataObjectNotFoundException ex) {
+        }
+        if (dobj == null) return;
+        final EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+        if (ec == null) return;
+        JavaSource js = JavaSource.forFileObject(fileObj);
+        if (js == null) return;
+
+        final JEditorPane[] editorPane = new JEditorPane[1];
+        if (SwingUtilities.isEventDispatchThread()) {
+            JEditorPane[] openedPanes = ec.getOpenedPanes();
+            if (openedPanes != null && openedPanes.length > 0) {
+                editorPane[0] = openedPanes[0];
+            }
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        JEditorPane[] openedPanes = ec.getOpenedPanes();
+                        if (openedPanes != null && openedPanes.length > 0) {
+                            editorPane[0] = openedPanes[0];
+                        }
+                    }
+                });
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        final Future<Void> scanFinished;
+        try {
+            scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                public void run(CompilationController ci) throws Exception {
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "\nDiagnostics = "+ci.getDiagnostics()+
+                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                        return;
+                    }
+                    SourcePositions positions = ci.getTrees().getSourcePositions();
+                    CompilationUnitTree compUnit = ci.getCompilationUnit();
+                    TreeUtilities treeUtils = ci.getTreeUtilities();
+                    int pcOffset = currOp == null ? 0 : currOp.getMethodStartPosition().getOffset() + 1;
+                    for (int i = 0; i < operations.length; i++) {
+                        int offset = operations[i].getMethodStartPosition().getOffset() + 1;
+                        TreePath path = treeUtils.pathFor(offset);
+                        while (path != null) {
+                            Tree tree = path.getLeaf();
+                            if (tree instanceof ConditionalExpressionTree) {
+                                ConditionalExpressionTree ternaryOpTree = (ConditionalExpressionTree)tree;
+                                //Tree condTree = ternaryOpTree.getCondition();
+                                Tree trueTree = ternaryOpTree.getTrueExpression();
+                                Tree falseTree = ternaryOpTree.getFalseExpression();
+                                //long condStart = positions.getStartPosition(compUnit, condTree);
+                                //long condEnd = positions.getEndPosition(compUnit, condTree);
+                                long trueStart = positions.getStartPosition(compUnit, trueTree);
+                                long trueEnd = positions.getEndPosition(compUnit, trueTree);
+                                long falseStart = positions.getStartPosition(compUnit, falseTree);
+                                long falseEnd = positions.getEndPosition(compUnit, falseTree);
+
+                                if (trueStart <= offset && offset <= trueEnd) {
+                                    if (pcOffset < trueStart) {
+                                        markSegment(i, false);
+                                    }
+                                } else if (falseStart <= offset && offset <= falseEnd) {
+                                    if (pcOffset < trueStart) {
+                                        markSegment(i, false);
+                                    } else if (trueStart <= pcOffset && pcOffset <= trueEnd) {
+                                        markSegment(i, true);
+                                    }
+                                }
+                            } else if (tree.getKind() == Tree.Kind.CONDITIONAL_AND ||
+                                    tree.getKind() == Tree.Kind.CONDITIONAL_OR) {
+                                BinaryTree binaryTree = (BinaryTree)tree;
+                                Tree rightTree = binaryTree.getRightOperand();
+                                long rightStart = positions.getStartPosition(compUnit, rightTree);
+                                long rightEnd = positions.getEndPosition(compUnit, rightTree);
+
+                                if (rightStart <= offset && offset <= rightEnd) {
+                                    if (pcOffset < rightStart) {
+                                        markSegment(i, false);
+                                    }
+                                }
+                            }
+                            path = path.getParentPath();
+                        } // while
+                    } // for
+                }
+
+                public void markSegment(int index, boolean excludeSegment) {
+                    if (flags[index] == 2) return;
+                    flags[index] = excludeSegment ? 2 : 1;
+                }
+
+            }, true);
+            if (!scanFinished.isDone()) {
+                if (java.awt.EventQueue.isDispatchThread()) {
+                    return;
+                } else {
+                    try {
+                        scanFinished.get();
+                    } catch (InterruptedException iex) {
+                    } catch (java.util.concurrent.ExecutionException eex) {
+                        ErrorManager.getDefault().notify(eex);
+                    }
+                }
+            }
+        } catch (IOException ioex) {
+            ErrorManager.getDefault().notify(ioex);
+        }
     }
 
     private void annotateLines() {
@@ -312,8 +517,15 @@ public class MethodChooserSupport implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED ||
+        if (JPDAStep.PROP_STATE_EXEC.equals(evt.getPropertyName())) {
+            synchronized(this) {
+                notifyAll();
+            }
+        } else if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED ||
                 currentThread != debugger.getCurrentThread() || !currentThread.isSuspended()) {
+            synchronized(this) {
+                notifyAll();
+            }
             chooser.releaseUI(false);
         }
     }
@@ -333,6 +545,14 @@ public class MethodChooserSupport implements PropertyChangeListener {
             return op1.getMethodStartPosition().getOffset() - op2.getMethodStartPosition().getOffset();
         }
         
+    }
+
+    private static class UncertainSegment extends MethodChooser.Segment {
+
+        public UncertainSegment(int start, int end) {
+            super(start, end);
+        }
+
     }
     
 }

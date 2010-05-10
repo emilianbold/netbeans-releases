@@ -238,8 +238,10 @@ public class AntSettings {
         if (aecpResult == null) {
             aecpResult = Lookup.getDefault().lookupResult(AutomaticExtraClasspathProvider.class);
             aecpResult.addLookupListener(new LookupListener() {
-                public void resultChanged(LookupEvent ev) {
-                    defAECP = null;
+                public @Override void resultChanged(LookupEvent ev) {
+                    synchronized (AntSettings.class) {
+                        defAECP = null;
+                    }
                     firePropertyChange(PROP_AUTOMATIC_EXTRA_CLASSPATH);
                 }
             });
@@ -247,6 +249,7 @@ public class AntSettings {
         if (defAECP == null) {
             defAECP = new ArrayList<File>();
             for (AutomaticExtraClasspathProvider provider : aecpResult.allInstances()) {
+                assert provider != null;
                 defAECP.addAll(Arrays.asList(provider.getClasspathItems()));
             }
         }
@@ -262,7 +265,7 @@ public class AntSettings {
     }
 
     public static boolean getAlwaysShowOutput() {
-        return prefs().getBoolean(PROP_ALWAYS_SHOW_OUTPUT, true);
+        return prefs().getBoolean(PROP_ALWAYS_SHOW_OUTPUT, /* #87801 */false);
     }
 
     public static void setAlwaysShowOutput(boolean b) {

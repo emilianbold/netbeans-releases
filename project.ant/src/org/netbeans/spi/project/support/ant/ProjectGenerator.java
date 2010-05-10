@@ -99,7 +99,7 @@ public class ProjectGenerator {
     }
     
     /**
-     * See {@link #createProject(FileObject, String)} for more datails. This 
+     * See {@link #createProject(FileObject, String)} for more details. This
      * method in addition allows to setup shared libraries location
      * @param directory the main project directory to create it in
      *                  (see {@link AntProjectHelper#getProjectDirectory})
@@ -115,7 +115,7 @@ public class ProjectGenerator {
             final String name, final String librariesDefinition) throws IOException, IllegalArgumentException {
         try {
             return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<AntProjectHelper>() {
-                public AntProjectHelper run() throws IOException {
+                public @Override AntProjectHelper run() throws IOException {
                     directory.refresh();
                     FileObject projectXml = directory.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
                     if (projectXml != null) {
@@ -167,18 +167,24 @@ public class ProjectGenerator {
                     // Load the project into memory and mark it as modified.
                     ProjectManager.getDefault().clearNonProjectCache();
                     ByteArrayOutputStream diagStream = new ByteArrayOutputStream();
-                    Handler diagHandler = new StreamHandler(diagStream, new SimpleFormatter());
-                    diagHandler.setLevel(Level.ALL);
-                    Level oldLevel = AntBasedProjectFactorySingleton.LOG.getLevel();
-                    AntBasedProjectFactorySingleton.LOG.setLevel(Level.ALL);
-                    AntBasedProjectFactorySingleton.LOG.addHandler(diagHandler);
                     Project p;
-                    try {
+                    if (System.getProperty("java.class.path").contains("junit")) {
+                        diagStream.write(':');
+                        diagStream.write('\n');
+                        Handler diagHandler = new StreamHandler(diagStream, new SimpleFormatter());
+                        diagHandler.setLevel(Level.ALL);
+                        Level oldLevel = AntBasedProjectFactorySingleton.LOG.getLevel();
+                        AntBasedProjectFactorySingleton.LOG.setLevel(Level.ALL);
+                        AntBasedProjectFactorySingleton.LOG.addHandler(diagHandler);
+                        try {
+                            p = ProjectManager.getDefault().findProject(directory);
+                        } finally {
+                            AntBasedProjectFactorySingleton.LOG.removeHandler(diagHandler);
+                            AntBasedProjectFactorySingleton.LOG.setLevel(oldLevel);
+                            diagHandler.close();
+                        }
+                    } else {
                         p = ProjectManager.getDefault().findProject(directory);
-                    } finally {
-                        AntBasedProjectFactorySingleton.LOG.removeHandler(diagHandler);
-                        AntBasedProjectFactorySingleton.LOG.setLevel(oldLevel);
-                        diagHandler.close();
                     }
                     if (p == null) {
                         // Something is wrong, it is not being recognized.
@@ -186,7 +192,7 @@ public class ProjectGenerator {
                             if (abpt.getType().equals(type)) {
                                 // Well, the factory was there.
                                 throw new IllegalArgumentException("For some reason the folder " + directory +
-                                        " with a new project of type " + type + " is still not recognized:\n" + diagStream); // NOI18N
+                                        " with a new project of type " + type + " is still not recognized" + diagStream); // NOI18N
                             }
                         }
                         throw new IllegalArgumentException("No Ant-based project factory for type " + type); // NOI18N

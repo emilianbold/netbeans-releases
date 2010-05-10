@@ -188,6 +188,7 @@ public class IssueCache<T> {
         }
 
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 synchronized(CACHE_LOCK) {
                     cleanup();
@@ -263,7 +264,7 @@ public class IssueCache<T> {
                     LOG.log(Level.FINE, "created issue {0} ", new Object[] {id}); // NOI18N
                     readIssue(entry);
                     Map<String, String> attr = entry.getSeenAttributes();
-                    if(attr == null || attr.size() == 0) {
+                    if(attr == null || attr.isEmpty()) {
                         // firsttimer
                         if(referenceTime >= issueAccessor.getLastModified(entry.issue)) {
                             setSeen(id, true);
@@ -285,7 +286,7 @@ public class IssueCache<T> {
                     if(isChanged(entry.seenAttributes, issueAccessor.getAttributes(entry.issue)) || entry.lastSeenModified < lastModified) {
                         LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
                         if(entry.lastSeenModified >= lastModified) {
-                            LOG.warning(" issue {0} changed, yet last known modify > last modify. [" + entry.lastSeenModified + "," + lastModified +"]"); // NOI18N
+                            LOG.log(Level.WARNING, " issue '{'0'}' changed, yet last known modify > last modify. [{0},{1}]", new Object[]{entry.lastSeenModified, lastModified}); // NOI18N
                         }
                         storeIssue(entry);
                         entry.seen = false;

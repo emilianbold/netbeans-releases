@@ -93,12 +93,14 @@ public final class TransferFilter extends TransferFilesChooserPanel {
     private PopupActionSupport popupActionsSupport;
     private static final RequestProcessor FILTER_PROCESSOR = new RequestProcessor("filter processor");
     private final RequestProcessor.Task searchTask = FILTER_PROCESSOR.create(new Runnable() {
+        @Override
         public void run() {
             if (filter != null) {
                 int row = getSelectedRow();
                 final TransferFileUnit unit = getModel().getUnitAtRow(row);
                 final Map<Integer, Boolean> state = TransferFileTableModel.captureState(model.getData());
                 Runnable runAfterWards = new Runnable() {
+                    @Override
                     public void run() {
                         if (unit != null) {
                             int row = model.getRowForUnit(unit);
@@ -169,6 +171,7 @@ public final class TransferFilter extends TransferFilesChooserPanel {
 
     void focusTable() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 table.requestFocusInWindow();
             }
@@ -192,10 +195,12 @@ public final class TransferFilter extends TransferFilesChooserPanel {
         }
         if (flForSearch == null) {
             flForSearch = new FocusListener() {
+                @Override
                 public void focusGained(FocusEvent e) {
                     tfSearch.selectAll();
                 }
 
+                @Override
                 public void focusLost(FocusEvent e) {
                     tfSearch.select(0, 0);
                 }
@@ -231,6 +236,7 @@ public final class TransferFilter extends TransferFilesChooserPanel {
                 throw new IllegalArgumentException("Unknown model type: " + model.getType());
         }
         model.addTableModelListener(new TableModelListener() {
+            @Override
             public void tableChanged(TableModelEvent e) {
                 refreshState();
             }
@@ -242,6 +248,7 @@ public final class TransferFilter extends TransferFilesChooserPanel {
     private void listenOnSelection() {
         table.getSelectionModel().setSelectionInterval(0, 0);
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 // ignore extra messages.
                 if (e.getValueIsAdjusting()) {
@@ -259,12 +266,14 @@ public final class TransferFilter extends TransferFilesChooserPanel {
 
     private void listenOnUnitChanges() {
         addUpdateUnitListener(new TransferFileTableChangeListener() {
+            @Override
             public void updateUnitsChanged() {
                 // no need to refresh table data (they are sorted so it's already done)
                 refreshState();
                 filesChangeSupport.fireSelectedFilesChange();
             }
 
+            @Override
             public void filterChanged() {
                 model.fireTableDataChanged();
                 refreshState();
@@ -280,14 +289,17 @@ public final class TransferFilter extends TransferFilesChooserPanel {
     DocumentListener getDocumentListener() {
         if (dlForSearch == null) {
             dlForSearch = new DocumentListener() {
+                @Override
                 public void insertUpdate(DocumentEvent event) {
                     processUpdate(event);
                 }
 
+                @Override
                 public void removeUpdate(DocumentEvent event) {
                     processUpdate(event);
                 }
 
+                @Override
                 public void changedUpdate(DocumentEvent event) {
                     processUpdate(event);
                 }
@@ -533,7 +545,7 @@ public final class TransferFilter extends TransferFilesChooserPanel {
             putValue(NAME, name);
         }
 
-        public void putIntoActionMap(JComponent component) {
+        public final void putIntoActionMap(JComponent component) {
             KeyStroke ks = (KeyStroke) getValue(ACCELERATOR_KEY);
             Object key = getValue(NAME);
             if (ks == null) {
@@ -551,6 +563,7 @@ public final class TransferFilter extends TransferFilesChooserPanel {
             }
         }
 
+        @Override
         public final void actionPerformed(ActionEvent e) {
             performerImpl();
         }
@@ -608,6 +621,7 @@ public final class TransferFilter extends TransferFilesChooserPanel {
             unitChanged();
         }
 
+        @Override
         public final void performerImpl() {
             performerImpl(unit);
             model.fireUpdataUnitChange();
@@ -643,6 +657,7 @@ public final class TransferFilter extends TransferFilesChooserPanel {
             super("FileConfirmationPane_UncheckAllAction", "Uncheck"); // NOI18N
         }
 
+        @Override
         public void performerImpl(TransferFileUnit notUsed) {
             final int row = getSelectedRow();
             Collection<TransferFileUnit> allUnits = model.getVisibleFileUnits();
@@ -704,6 +719,7 @@ public final class TransferFilter extends TransferFilesChooserPanel {
             super("FileConfirmationPane_CheckAction", KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), null); // NOI18N
         }
 
+        @Override
         public void performerImpl(TransferFileUnit unit) {
             final int row = getSelectedRow();
             if (unit != null && unit.canBeMarked()) {
@@ -713,10 +729,12 @@ public final class TransferFilter extends TransferFilesChooserPanel {
             restoreSelectedRow(row);
         }
 
+        @Override
         protected boolean isEnabled(TransferFileUnit unit) {
             return unit.canBeMarked();
         }
 
+        @Override
         protected String getContextName(TransferFileUnit unit) {
             return getActionName();
         }

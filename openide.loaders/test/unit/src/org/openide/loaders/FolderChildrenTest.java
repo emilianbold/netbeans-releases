@@ -551,8 +551,9 @@ public class FolderChildrenTest extends NbTestCase {
 
         Node[] newNodes = obj.getFolder().getNodeDelegate().getChildren().getNodes(true);
         assertEquals("One new node", 1, newNodes.length);
-        assertEquals("the new obj", newObj, newNodes[0].getLookup().lookup(DataObject.class));
-
+        assertEquals("the new obj.\nOld nodes: " + Arrays.toString(origNodes) + "\nNew nodes: " + Arrays.toString(newNodes),
+            newObj, newNodes[0].getLookup().lookup(DataObject.class)
+        );
     }
 
     public void testRefreshInvalidDO() throws Exception {

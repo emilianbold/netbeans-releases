@@ -904,15 +904,16 @@ final class BinaryFS extends FileSystem {
         protected void doInitialize(ByteBuffer sub) throws Exception {
             int files = sub.getInt();
             if (files > 0) {
-                    childrenMap = new HashMap<String,BFSBase>(files*4/3+1);
-                    for (int i=0; i<files; i++) { //read file desc:
-                        String nm = getString(sub);   // String name
-                        byte isFolder = sub.get();      // boolean isFolder
-                        int off = sub.getInt();          // int contentRef
-                        childrenMap.put(nm, isFolder == 0 ?
-                            new BFSFile(nm, this, off) :
-                            new BFSFolder(nm, this, off));
-                    }
+                HashMap<String, BFSBase> map = new HashMap<String, BFSBase>(files * 4 / 3 + 1);
+                for (int i=0; i<files; i++) { //read file desc:
+                    String nm = getString(sub);   // String name
+                    byte isFolder = sub.get();      // boolean isFolder
+                    int off = sub.getInt();          // int contentRef
+                    map.put(nm, isFolder == 0 ?
+                        new BFSFile(nm, this, off) :
+                        new BFSFolder(nm, this, off));
+                }
+                childrenMap = map;
                 if (LayerCacheManager.err.isLoggable(Level.FINEST)) {
                     LayerCacheManager.err.log(Level.FINEST, "  children for " + getPath() + " are: " + childrenMap.keySet());
                 }

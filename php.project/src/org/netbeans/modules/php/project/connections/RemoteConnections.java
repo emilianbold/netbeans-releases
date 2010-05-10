@@ -304,6 +304,7 @@ public final class RemoteConnections {
             readConfigs();
         }
 
+        @Override
         public String[] getConfigProperties() {
             Set<String> properties = new HashSet<String>();
             for (RemoteConnectionProvider provider : getConnectionProviders()) {
@@ -312,14 +313,17 @@ public final class RemoteConnections {
             return properties.toArray(new String[properties.size()]);
         }
 
+        @Override
         public Map<String, Map<String, String>> getConfigs() {
             return configs;
         }
 
+        @Override
         public String getActiveConfig() {
             return null;
         }
 
+        @Override
         public void setActiveConfig(String configName) {
         }
 

@@ -44,6 +44,7 @@ package org.netbeans.modules.apisupport.project.layers;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.ManifestManager;
@@ -66,20 +67,21 @@ import org.openide.util.actions.CookieAction;
  */
 public class PickNameAction extends CookieAction {
     
-    private static FileObject findFile(Node[] activatedNodes) {
+    static FileObject findFile(Node[] activatedNodes) {
         return activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
     }
     
-    private static NbModuleProvider findProject(FileObject f) {
-        URL location = (URL) f.getAttribute("WritableXMLFileSystem.location"); // NOI18N
-        if (location == null) {
+    static NbModuleProvider findProject(FileObject f) {
+        URL[] location = (URL[]) f.getAttribute("layers"); // NOI18N
+        if (location == null || location.length != 1) {
             return null;
         }
-        Project p = FileOwnerQuery.getOwner(URI.create(location.toExternalForm()));
-                
-        assert p != null : location;
+        Project p = FileOwnerQuery.getOwner(URI.create(location[0].toExternalForm()));
+        if (p == null) { // e.g. [jar:file:.../ide/modules/org-netbeans-modules-projectui.jar!/org/netbeans/modules/project/ui/resources/layer.xml]
+            return null;
+        }
         NbModuleProvider prov = p.getLookup().lookup(NbModuleProvider.class);
-        assert prov != null : location;
+        assert prov != null : Arrays.asList(location);
         return prov;
     }
     
@@ -94,7 +96,7 @@ public class PickNameAction extends CookieAction {
         }
     }
     
-    protected void performAction(Node[] activatedNodes) {
+    protected @Override void performAction(Node[] activatedNodes) {
         NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(
                 NbBundle.getMessage(PickNameAction.class, "PickNameAction_dialog_label"),
                 NbBundle.getMessage(PickNameAction.class, "PickNameAction_dialog_title"));
@@ -103,8 +105,17 @@ public class PickNameAction extends CookieAction {
         }
         String name = d.getInputText();
         FileObject f = findFile(activatedNodes);
+        if (f == null) {
+            return;
+        }
         NbModuleProvider p = findProject(f);
+        if (p == null) {
+            return;
+        }
         String bundlePath = findBundlePath(p);
+        if (bundlePath == null) {
+            return;
+        }
         try {
             FileObject properties = p.getSourceDirectory().getFileObject(bundlePath);
             EditableProperties ep = Util.loadProperties(properties);
@@ -136,19 +147,19 @@ public class PickNameAction extends CookieAction {
         return findBundlePath(p) != null;
     }
 
-    public String getName() {
+    public @Override String getName() {
         return NbBundle.getMessage(PickIconAction.class, "LBL_pick_name");
     }
     
-    protected Class[] cookieClasses() {
-        return new Class[] {DataObject.class};
+    protected @Override Class<?>[] cookieClasses() {
+        return new Class<?>[] {DataObject.class};
     }
     
-    protected int mode() {
+    protected @Override int mode() {
         return MODE_EXACTLY_ONE;
     }
     
-    public HelpCtx getHelpCtx() {
+    public @Override HelpCtx getHelpCtx() {
         return null;
     }
     

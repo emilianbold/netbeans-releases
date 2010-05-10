@@ -12,3 +12,4 @@ information_schema*
       table_name
       column_name
     tables
+    asummary[view]

@@ -76,8 +76,8 @@ import org.netbeans.modules.xml.schema.ui.basic.SchemaColumnsCategory;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaSettings;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaSettings.ViewMode;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaTreeCategory;
-import org.netbeans.modules.xml.validation.ShowCookie;
-import org.netbeans.modules.xml.validation.ValidateAction;
+import org.netbeans.modules.xml.validation.action.ValidateAction;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
@@ -298,7 +298,7 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
         SchemaEditorSupport editor = schemaDataObject.getSchemaEditorSupport();
         try {
             SchemaModel sm = editor.getModel();
-            if (sm != null &&
+            if (sm != null && sm.getRootComponent() != null && 
                     sm.getState() == SchemaModel.State.VALID) {
                 return true;
             }
@@ -488,7 +488,8 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
         try {
             SchemaModel model = schemaDataObject
                     .getSchemaEditorSupport().getModel();
-            if (model != null && model.getState() == SchemaModel.State.VALID) {
+            if (model != null && model.getRootComponent() != null &&
+                    model.getState() == SchemaModel.State.VALID) {
                 toolbar = new JToolBar();
                 toolbar.setFloatable(false);
                 if (categoryPane != null) {

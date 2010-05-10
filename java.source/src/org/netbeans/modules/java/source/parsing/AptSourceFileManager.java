@@ -49,7 +49,6 @@ import java.util.List;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.openide.filesystems.FileObject;
@@ -63,26 +62,22 @@ import org.openide.util.Exceptions;
  */
 public class AptSourceFileManager extends SourceFileManager {
 
-    public static interface Marker {
-        void mark (@NonNull URL source, @NonNull URL generated);
-        void finished(@NonNull URL source);
-    }
-
     public static final String ORIGIN_FILE = "apt-origin";    //NOI18N
 
     private final ClassPath userRoots;
-    private final Marker marker;
-    private URL explicitSibling;
+    private final SiblingProvider siblings;
 
 
 
-    public AptSourceFileManager (final @NonNull ClassPath userRoots,
-                              final @NonNull ClassPath aptRoots,
-                              final @NullAllowed Marker marker) {
+    public AptSourceFileManager (
+            final @NonNull ClassPath userRoots,
+            final @NonNull ClassPath aptRoots,
+            final @NonNull SiblingProvider siblings) {
         super(aptRoots, true);
         assert userRoots != null;
+        assert siblings != null;
         this.userRoots = userRoots;
-        this.marker = marker;
+        this.siblings = siblings;
     }
 
     @Override
@@ -93,7 +88,7 @@ public class AptSourceFileManager extends SourceFileManager {
         }
         final FileObject aptRoot = getAptRoot(sibling);
         if (aptRoot == null) {
-            throw new UnsupportedOperationException("No apt root for source root: " + getOwnerRoot(sibling)); // NOI18N
+            throw new UnsupportedOperationException(noAptRootDebug(sibling));
         }
         final String nameStr = pkgName.length() == 0 ?
             relativeName :
@@ -101,7 +96,6 @@ public class AptSourceFileManager extends SourceFileManager {
         //Always on master fs -> file is save.
         File rootFile = FileUtil.toFile(aptRoot);
         final javax.tools.FileObject result = FileObjects.nbFileObject( new File(rootFile,nameStr).toURI().toURL(), aptRoot);
-        mark(result);
         return result;
     }
 
@@ -114,42 +108,18 @@ public class AptSourceFileManager extends SourceFileManager {
         }
         final FileObject aptRoot = getAptRoot(sibling);
         if (aptRoot == null) {
-            throw new UnsupportedOperationException("No apt root for source root: " + getOwnerRoot(sibling)); // NOI18N
+            throw new UnsupportedOperationException(noAptRootDebug(sibling));
         }
         final String nameStr = className.replace('.', File.separatorChar) + kind.extension;    //NOI18N
         //Always on master fs -> file is save.
         File rootFile = FileUtil.toFile(aptRoot);
         final JavaFileObject result = FileObjects.nbFileObject(new File(rootFile,nameStr).toURI().toURL(), aptRoot);
-        mark(result);
         return result;
     }
 
     @Override
     public boolean handleOption(String head, Iterator<String> tail) {
-        if (ORIGIN_FILE.equals(head)) {
-            if (!tail.hasNext()) {
-                throw new IllegalArgumentException("The apt-source-root requires folder.");    //NOI18N
-            }
-            final String ownerRootURL = tail.next();
-            if (ownerRootURL.length() == 0) {
-                try {
-                    markerFinished();
-                } finally {
-                    explicitSibling = null;
-                }
-            }
-            else {
-                try {
-                    explicitSibling = new URL(ownerRootURL);
-                } catch (MalformedURLException ex) {
-                    throw new IllegalArgumentException("Invalid path argument: " + ownerRootURL);    //NOI18N
-                }
-            }
-            return false;   //Pass the option to all FileManagers
-        }
-        else {
-            return super.handleOption(head, tail);
-        }
+        return super.handleOption(head, tail);
     }
 
     private FileObject getAptRoot (final javax.tools.FileObject sibling) {
@@ -163,7 +133,7 @@ public class AptSourceFileManager extends SourceFileManager {
 
     private URL getOwnerRoot (final javax.tools.FileObject sibling) {
         try {
-            return explicitSibling != null ? getOwnerRootSib(explicitSibling) :
+            return siblings.hasSibling() ? getOwnerRootSib(siblings.getSibling()) :
                 (sibling == null ? getOwnerRootNoSib() : getOwnerRootSib(sibling.toUri().toURL()));
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
@@ -179,6 +149,12 @@ public class AptSourceFileManager extends SourceFileManager {
                 return rootURL;
             }
         }
+        for (ClassPath.Entry entry : sourceRoots.entries()) {
+            final URL rootURL = entry.getURL();
+            if (FileObjects.isParentOf(rootURL, sibling)) {
+                return rootURL;
+            }
+        }
         return null;
     }
 
@@ -188,16 +164,19 @@ public class AptSourceFileManager extends SourceFileManager {
         return entries.size() == 1 ? entries.get(0).getURL() : null;
     }
 
-    private void mark(final javax.tools.FileObject result) throws MalformedURLException {
-        if (marker != null && explicitSibling != null) {
-            marker.mark(explicitSibling, result.toUri().toURL());
+    private String noAptRootDebug(final javax.tools.FileObject sibling) {
+        final StringBuilder sb = new StringBuilder("No apt root for source root: ");    //NOI18N
+        sb.append(getOwnerRoot(sibling));
+        sb.append(" sibling: ");    //NOI18N
+        if (siblings.hasSibling()) {
+            sb.append(siblings.getSibling());
+        } else if (sibling != null) {
+            sb.append(sibling.toUri());
         }
-    }
-
-    private void markerFinished() {
-        if (marker != null && explicitSibling != null) {
-            marker.finished(explicitSibling);
+        else {
+            sb.append("none");  //NOI18N
         }
+        return sb.toString();
     }
 
 }

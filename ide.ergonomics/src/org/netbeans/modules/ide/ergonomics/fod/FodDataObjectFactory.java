@@ -87,6 +87,7 @@ public class FodDataObjectFactory implements DataObject.Factory {
         return new FodDataObjectFactory(fo);
     }
 
+    @Override
     public DataObject findDataObject(FileObject fo, Set<? super FileObject> recognized) throws IOException {
         if (fo.isFolder()) {
             return null;
@@ -139,10 +140,12 @@ public class FodDataObjectFactory implements DataObject.Factory {
             return getCookieSet().getLookup();
         }
 
+        @Override
         public void open() {
             delegate(true);
         }
 
+        @Override
         public void edit() {
             delegate(false);
         }
@@ -185,6 +188,7 @@ public class FodDataObjectFactory implements DataObject.Factory {
             }
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             FeatureInfo info = FoDFileSystem.getInstance().whichProvides(definition);
             FoDFileSystem.LOG.log(Level.FINER, "Refresh state of {0}", this);

@@ -197,15 +197,15 @@ public final class CompletionSupport implements DocumentListener {
         if (pos == 0) {
             return 0;
         }
-        if (!CndTokenUtilities.isInPreprocessorDirective(getDocument(), pos)) {
+//        if (!CndTokenUtilities.isInPreprocessorDirective(getDocument(), pos)) {
             if (lastSeparatorOffset >= 0 && lastSeparatorOffset < pos) {
                 return lastSeparatorOffset;
             }
             lastSeparatorOffset = CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
             return lastSeparatorOffset;
-        } else {
-            return CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
-        }
+//        } else {
+//            return CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
+//        }
     }
 
     /** Get the class from name. The import sections are consulted to find
