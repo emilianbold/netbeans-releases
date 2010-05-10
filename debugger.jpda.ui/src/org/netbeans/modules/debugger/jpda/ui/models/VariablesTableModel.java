@@ -77,8 +77,6 @@ import org.openide.util.NbPreferences;
 public class VariablesTableModel implements TableModel, Constants {
     
     private JPDADebugger debugger;
-    private Set<ModelListener> listeners = new HashSet<ModelListener>();
-    private Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(VariablesViewButtons.PREFERENCES_NAME);
 
     public VariablesTableModel(ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
@@ -99,16 +97,10 @@ public class VariablesTableModel implements TableModel, Constants {
                     return ((ObjectVariable) row).getToStringValue ();
                 } catch (InvalidExpressionException ex) {
                     return getMessage (ex);
-                } finally {
-                    fireChildrenChange(row);
                 }
             else
             if (row instanceof Variable) {
-                try {
-                    return ((Variable) row).getValue ();
-                } finally {
-                    fireChildrenChange(row);
-                }
+                return ((Variable) row).getValue ();
             }
             if (row instanceof Operation ||
                 row == "lastOperations" || // NOI18N
@@ -143,18 +135,10 @@ public class VariablesTableModel implements TableModel, Constants {
                 String e = w.getExceptionDescription ();
                 if (e != null)
                     return BoldVariablesTableModelFilterFirst.toHTML(">" + e + "<", false, false, Color.RED);
-                try {
-                        return w.getValue ();
-                } finally {
-                    fireChildrenChange(row);
-                }
+                return w.getValue ();
             } else 
             if (row instanceof Variable) {
-                try {
-                    return ((Variable) row).getValue ();
-                } finally {
-                    fireChildrenChange(row);
-                }
+                return ((Variable) row).getValue ();
             }
         }
         if (row instanceof JPDAClassType) {
@@ -307,26 +291,12 @@ public class VariablesTableModel implements TableModel, Constants {
         throw new UnknownTypeException (row);
     }
     
-    private void fireChildrenChange(Object row) {
-        Set<ModelListener> ls;
-        synchronized(listeners) {
-            ls = new HashSet(listeners);
-        }
-        for (ModelListener ml : ls)
-            ml.modelChanged (
-                new ModelEvent.NodeChanged(this, row, ModelEvent.NodeChanged.CHILDREN_MASK)
-            );
-    }
-    
     /** 
      * Registers given listener.
      * 
      * @param l the listener to add
      */
     public void addModelListener (ModelListener l) {
-        synchronized(listeners) {
-            listeners.add(l);
-        }
     }
 
     /** 
@@ -335,9 +305,6 @@ public class VariablesTableModel implements TableModel, Constants {
      * @param l the listener to remove
      */
     public void removeModelListener (ModelListener l) {
-        synchronized(listeners) {
-            listeners.remove(l);
-        }
     }
     
     static String getShort (String c) {

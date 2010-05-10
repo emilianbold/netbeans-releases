@@ -59,6 +59,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.security.auth.RefreshFailedException;
+import javax.security.auth.Refreshable;
 import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -371,11 +373,30 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         return 0;
     }
     
-    public boolean isLeaf (Object o) throws UnknownTypeException {
+    public boolean isLeaf (final Object o) throws UnknownTypeException {
         if (o.equals (ROOT))
             return false;
-        if (o instanceof AbstractVariable)
+        if (o instanceof AbstractVariable) {
+            if (o instanceof FieldVariable) {
+                return true;
+            }
+            if (o instanceof Refreshable && !((Refreshable) o).isCurrent()) {
+                debugger.getRequestProcessor().post(new Runnable() {
+                    public void run() {
+                        try {
+                            ((Refreshable) o).refresh();
+                        } catch (RefreshFailedException ex) {
+                            return ;
+                        }
+                        if (!(((AbstractVariable) o).getInnerValue () instanceof ObjectReference)) {
+                            fireNodeChildrenChanged(o);
+                        }
+                    }
+                });
+                return false;
+            }
             return !(((AbstractVariable) o).getInnerValue () instanceof ObjectReference);
+        }
         if (o.toString().startsWith("SubArray")) {
             return false;
         }
@@ -446,7 +467,20 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             );
     }
 
-    
+    private void fireNodeChildrenChanged(Object node) {
+        List<ModelListener> ls;
+        synchronized (listeners) {
+            ls = new ArrayList<ModelListener>(listeners);
+        }
+        int i, k = ls.size ();
+        for (i = 0; i < k; i++) {
+            ls.get(i).modelChanged (
+                new ModelEvent.NodeChanged(this, node, ModelEvent.NodeChanged.CHILDREN_MASK)
+            );
+        }
+    }
+
+
     // private methods .........................................................
     
     private Object[] getLocalVariables (

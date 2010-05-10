@@ -1242,12 +1242,10 @@ class OccurenceBuilder {
                 final String name = nodeInfo.getName();
                 if (!name.isEmpty() && NameKind.exact(name).matchesName(PhpElementKind.CLASS, phpElement.getName()) &&
                         NameKind.exact(qualifiedName).matchesName(phpElement)) {
-                    if (fileScope.getFileObject() == phpElement.getFileObject()) {
-                        if (qualifiedName.getKind().isUnqualified()) {
-                            occurences.add(new OccurenceImpl(ElementFilter.forFiles(fileScope.getFileObject()).prefer(elements), nodeInfo.getRange()));
-                        } else {
-                            occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
-                        }
+                    if (qualifiedName.getKind().isUnqualified()) {
+                        occurences.add(new OccurenceImpl(ElementFilter.forFiles(fileScope.getFileObject()).prefer(elements), nodeInfo.getRange()));
+                    } else {
+                        occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
                     }
                 }
             }
