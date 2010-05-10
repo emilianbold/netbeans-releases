@@ -40,8 +40,10 @@ package org.netbeans.modules.masterfs.filebasedfs.utils;
 
 import java.io.File;
 import java.security.Permission;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
@@ -58,10 +60,12 @@ public class FileChangedManager extends SecurityManager {
     private static final int CREATE_HINT = 2;
     private static final int DELETE_HINT = 1;
     private static final int AMBIGOUS_HINT = 3;
+
     private final ConcurrentHashMap<Integer,Integer> hints = new ConcurrentHashMap<Integer,Integer>();
     private long shrinkTime = System.currentTimeMillis();
     private static volatile long ioTime = -1;
     private static volatile int ioLoad;
+    private static final AtomicInteger priorityIO = new AtomicInteger();
     private static final ThreadLocal<Integer> IDLE_IO = new ThreadLocal<Integer>();
     private static final ThreadLocal<Runnable> IDLE_CALL = new ThreadLocal<Runnable>();
     private static final ThreadLocal<AtomicBoolean> IDLE_ON = new ThreadLocal<AtomicBoolean>();
@@ -140,6 +144,15 @@ public class FileChangedManager extends SecurityManager {
         return retval;
     }
 
+    public static <T> T priorityIO(Callable<T> callable) throws Exception {
+        try {
+            priorityIO.incrementAndGet();
+            return callable.call();
+        } finally {
+            priorityIO.decrementAndGet();
+        }
+    }
+
     private static boolean isIdleIO() {
         return IDLE_IO.get() != null;
     }
@@ -170,7 +183,7 @@ public class FileChangedManager extends SecurityManager {
                 throw new InterruptedException(msg);
             }
             int l = pingIO(0);
-            if (l < load) {
+            if (l < load && priorityIO.get() == 0) {
                 return;
             }
             synchronized (IDLE_IO) {
