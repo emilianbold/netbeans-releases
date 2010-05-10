@@ -76,6 +76,14 @@ public class HtmlSpecificRefactoringsProvider extends HtmlSpecificActionsImpleme
         if(ec == null) {
             return false;
         }
+
+        //workaround for bug 185814 -  LowPerformance took 3917 ms >>>
+        //do not call blocking ec.getOpenedPanes() if the document is not loaded
+        if(ec.getDocument() == null) {
+            return false;
+        }
+        //<<<
+
         JEditorPane[] panes = ec.getOpenedPanes();
         if(panes == null || panes.length == 0) {
             return false;
