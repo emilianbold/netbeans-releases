@@ -741,6 +741,28 @@ import org.openide.windows.OutputListener;
 	    passKeystrokes.add(accelerator);
 	}
 
+	/* LATER
+	 * unsuccessful attempt at fixing bug #185483
+	 * getBoundKeyStrokes is not implemented.
+
+	// get global keymap
+	Collection<? extends Keymap> c = Lookup.getDefault().lookupAll(Keymap.class);
+	System.out.printf("Terminal.setupKeymap() ... lookup returns %d hits\n", c.size());
+	Keymap globalKeymap = Lookup.getDefault().lookup(Keymap.class);
+	if (globalKeymap == null) {
+	    System.out.printf("\tCouldn't find keymap\n");
+	} else {
+	    KeyStroke[] keyStrokes = globalKeymap.getBoundKeyStrokes();
+	    for (KeyStroke ks : keyStrokes) {
+		System.out.printf("\tks %s\n", ks);
+	    }
+
+	}
+
+	// passKeystrokes.add(KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0));
+	// passKeystrokes.add(KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0));
+	 */
+
 	comp.setActionMap(newActionMap);
 	comp.setInputMap(JComponent.WHEN_FOCUSED, newInputMap);
         term.setKeyStrokeSet((HashSet) passKeystrokes);
