@@ -160,6 +160,26 @@ public class AstNode {
             return false; //unknown tag can contain anything, error reports done somewhere else
         }
 
+        Boolean canReduce = null;
+        //process includes/excludes from the root node to the leaf
+        List<AstNode> path = new ArrayList<AstNode>();
+        for(AstNode node = this; node.type() != AstNode.NodeType.ROOT; node = node.parent()) {
+            path.add(0, node);
+        }
+        for(AstNode node : path) {
+            DTD.ContentModel cModel = node.getDTDElement().getContentModel();
+            if(cModel.getIncludes().contains(element)) {
+                canReduce = true;
+            }
+            if(cModel.getExcludes().contains(element)) {
+                canReduce = false;
+            }
+        }
+
+        if(canReduce != null) {
+            return canReduce;
+        }
+
         //explicitly exluded or included elements doesn't affect the reduction!
         if (contentModel.getExcludes().contains(element)) {
             return false;
