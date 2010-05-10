@@ -53,6 +53,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.crudsampleapplication.dbaccess.Customer;
 import org.netbeans.modules.crudsampleapplication.dbaccess.DiscountCode;
 import org.netbeans.modules.crudsampleapplication.dbaccess.JavaDBSupport;
+import org.netbeans.modules.crudsampleapplication.viewer.CustomerTopComponent;
 import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -354,6 +355,7 @@ public final class EditorTopComponent extends TopComponent implements LookupList
                     entityManager.persist(customer);
                     entityManager.getTransaction().commit();
                 }
+                CustomerTopComponent.refreshNode();
             }
 
         }
