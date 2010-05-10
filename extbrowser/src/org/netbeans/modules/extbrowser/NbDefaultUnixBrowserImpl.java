@@ -90,6 +90,7 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
         if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
             ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDeaultUnixBrowserImpl.setUrl: " + url); // NOI18N
         }
+        url = URLUtil.createExternalURL(url, false);
         String urlArg = url.toExternalForm();
         // go with x-www-browser if available
         String command = XBROWSER_AVAILABLE ? XBROWSER_COMMAND : XDG_COMMAND;

@@ -42,8 +42,11 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 <fontscolors>
-    <fontcolor default="keyword" name="keyword"/>
+    <fontcolor default="keyword" name="select"/>
+    <fontcolor default="keyword" name="from"/>
     <fontcolor default="keyword" name="instanceof"/>
+    <fontcolor default="keyword" name="where"/>
+    
     <fontcolor default="error"   name="clazz-typo">
         <font style="italic"/>
     </fontcolor>
