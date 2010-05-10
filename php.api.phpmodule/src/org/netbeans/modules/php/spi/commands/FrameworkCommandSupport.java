@@ -75,7 +75,7 @@ public abstract class FrameworkCommandSupport {
     // @GuardedBy(COMMANDS_CACHE)
     private static final Map<PhpModule, List<FrameworkCommand>> COMMANDS_CACHE = new WeakHashMap<PhpModule, List<FrameworkCommand>>();
 
-    private static final RequestProcessor RP = new RequestProcessor(FrameworkCommandSupport.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(FrameworkCommandSupport.class);
 
     protected final PhpModule phpModule;
 
