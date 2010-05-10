@@ -42,6 +42,7 @@
         </folder>
     </folder>
     <folder name="Windows2">
+        <file name="WindowManager.wswmgr" url="viewer/windowmanager.wswmgr"/>
         <folder name="Components">
             <file name="CustomerTopComponent.settings" url="viewer/CustomerTopComponentSettings.xml"/>
             <file name="EditorTopComponent.settings" url="editor/EditorTopComponentSettings.xml"/>
