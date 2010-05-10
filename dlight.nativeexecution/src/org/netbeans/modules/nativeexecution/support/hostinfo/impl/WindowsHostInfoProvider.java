@@ -40,6 +40,7 @@ package org.netbeans.modules.nativeexecution.support.hostinfo.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -76,14 +77,14 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         private final int cpuNum;
         private final String hostname;
         private final String shell;
-        private final String path;
         private File tmpDirFile;
         private String tmpDir;
         private File userDirFile;
         private String userDir;
+        private Map<String, String> environment;
 
         HostInfoImpl() {
-            Map<String, String> env = WindowsSupport.getInstance().getEnv();
+            Map<String, String> env = new ProcessBuilder("").environment(); // NOI18N
 
             // Use os.arch to detect bitness.
             // Another way is described in the following article:
@@ -103,11 +104,20 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             cpuNum = _cpuNum;
             hostname = env.get("COMPUTERNAME"); // NOI18N
             shell = WindowsSupport.getInstance().getShell();
+
             if (shell != null) {
-                path = env.get("PATH") + ';' + new File(shell).getParent(); // NOI18N
-            } else {
-                path = env.get("PATH"); // NOI18N
+                String path = new File(shell).getParent();
+
+                if (env.containsKey("Path")) { // NOI18N
+                    path = path + ";" + env.get("Path"); // NOI18N
+                    env.put("Path", path); // NOI18N
+                } else if (env.containsKey("PATH")) { // NOI18N
+                    path = path + ";" + env.get("PATH"); // NOI18N
+                    env.put("PATH", path); // NOI18N
+                }
             }
+
+            environment = Collections.unmodifiableMap(env);
 
             os = new OS() {
 
@@ -137,7 +147,6 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             File _tmpDirFile = null;
             String _tmpDir = null;
             String ioTmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
-            Map<String, String> env = WindowsSupport.getInstance().getEnv();
 
             /**
              * Some magic with temp dir...
@@ -145,7 +154,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
              * plain name as in case of MinGW (without cygwin) execution may (will)
              * fail...
              */
-            String username = env.get("USERNAME"); // NOI18N
+            String username = environment.get("USERNAME"); // NOI18N
 
             if (username != null) {
                 for (int i = 0; i < username.length(); i++) {
@@ -189,7 +198,6 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             File _userDirFile = null;
             String _userDir = null;
             String ioUserDir = System.getProperty("user.home"); // NOI18N
-            Map<String, String> env = WindowsSupport.getInstance().getEnv();
 
             /**
              * Some magic with temp dir...
@@ -197,7 +205,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
              * plain name as in case of MinGW (without cygwin) execution may (will)
              * fail...
              */
-            String username = env.get("USERNAME"); // NOI18N
+            String username = environment.get("USERNAME"); // NOI18N
 
             if (username != null) {
                 for (int i = 0; i < username.length(); i++) {
@@ -282,16 +290,21 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             return userDirFile;
         }
 
-        
-
         @Override
         public long getClockSkew() {
             return 0;
         }
 
         @Override
-        public String getPath() {
-            return path;
+        public String getEnvFile() {
+            // Windows is always local...
+            // env is the same as in jvm
+            return "/dev/null"; // NOI18N
+        }
+
+        @Override
+        public Map<String, String> getEnvironment() {
+            return environment;
         }
     }
 }
