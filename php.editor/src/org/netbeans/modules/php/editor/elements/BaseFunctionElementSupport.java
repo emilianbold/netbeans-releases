@@ -110,6 +110,23 @@ public class BaseFunctionElementSupport  {
                     template.append(String.format("{\nparent::%s;\n}", methdodInvocation));//NOI18N
                 }
                 break;
+            case ReturnSemiTypes:
+                for (TypeResolver typeResolver : getReturnTypes()) {
+                    if (typeResolver.isResolved()) {
+                        QualifiedName typeName = typeResolver.getTypeName(false);
+                        if (typeName != null) {
+                            if (template.length() > 0) template.append("|");//NOI18N
+                            template.append(typeName.toString());
+                        }
+                    } else {
+                        String typeName = typeResolver.getRawTypeName();
+                        if (typeName != null) {
+                            if (template.length() > 0) template.append("|");//NOI18N
+                            template.append(typeName);
+                        }
+                    }
+                }
+                break;
             case ReturnTypes:
                 for (TypeResolver typeResolver : getReturnTypes()) {
                     if (typeResolver.isResolved()) {
@@ -119,7 +136,6 @@ public class BaseFunctionElementSupport  {
                             template.append(typeName.toString());
                         }
                     }
-
                 }
                 break;
         }

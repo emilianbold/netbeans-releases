@@ -41,9 +41,11 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
@@ -114,14 +116,17 @@ class CachingSupport {
         return retval;
     }
 
-    static Collection<? extends MethodScope> getMethods(ClassScope clsScope, String methodName, ModelElement elem, final int... modifiers) {
+    static Collection<? extends MethodScope> getMethods(TypeScope clsScope, String methodName, ModelElement elem, final int... modifiers) {
         Collection<? extends MethodScope> retval;
         CachingSupport cachingSupport = CachingSupport.getInstance(elem);
         if (cachingSupport != null) {
             retval = cachingSupport.getMergedMethods((ClassScopeImpl)clsScope, methodName);
         } else {
-            //retval = clsScope.findDeclaredMethods(methodName, modifiers);
-            retval = ModelUtils.filter(clsScope.getInheritedMethods(), methodName);
+            Set<MethodScope> tmp =  new HashSet<MethodScope>();
+            tmp.addAll(ModelUtils.filter(clsScope.getDeclaredMethods(), methodName));
+            tmp.addAll(ModelUtils.filter(clsScope.getInheritedMethods(), methodName));
+            retval = tmp;
+
         }
         return retval;
     }
@@ -270,8 +275,10 @@ class CachingSupport {
         if (methods.isEmpty()) {
             methods = (clsScope != null ? clsScope.findDeclaredMethods(methodName, modifiers) : Collections.<MethodScopeImpl>emptyList());
             if (methods.isEmpty()) {
-                IndexScope indexScope = fileScope.getIndexScope();
-                methods = (clsScope != null ? indexScope.findMethods(clsScope,methodName, modifiers) : Collections.<MethodScopeImpl>emptyList());
+                Set<MethodScope> tmp = new HashSet<MethodScope>();
+                tmp.addAll(ModelUtils.filter(clsScope.getDeclaredMethods(), methodName));
+                tmp.addAll(ModelUtils.filter(clsScope.getInheritedMethods(), methodName));
+                methods = tmp;
             }
             if (!methods.isEmpty()) {
                 List<MethodScope> methList = methodScopes.get(clsScope);

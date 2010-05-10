@@ -45,19 +45,16 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectChooserAccessory;
-import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -68,14 +65,13 @@ public class OpenProject extends BasicAction {
     private static final String DISPLAY_NAME = NbBundle.getMessage( OpenProject.class, "LBL_OpenProjectAction_Name" ); // NOI18N
     private static final String _SHORT_DESCRIPTION = NbBundle.getMessage( OpenProject.class, "LBL_OpenProjectAction_Tooltip" ); // NOI18N
         
-    /** Creates a new instance of BrowserAction */
     public OpenProject() {
         super( DISPLAY_NAME, ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/openProject.png", false));
         putValue("iconBase","org/netbeans/modules/project/ui/resources/openProject.png"); //NOI18N
         putValue(SHORT_DESCRIPTION, _SHORT_DESCRIPTION);
     }
 
-    public void actionPerformed( ActionEvent evt ) {
+    public @Override void actionPerformed(ActionEvent evt) {
         Project projectToExpand = null;
         JFileChooser chooser = ProjectChooserAccessory.createProjectChooser( true ); // Create the jFileChooser
         chooser.setMultiSelectionEnabled( true );
@@ -146,30 +142,7 @@ public class OpenProject extends BasicAction {
                         true,                             // open asynchronously
                         mainProject);
                     
-                    final ProjectTab ptLogical  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
-                    
-                    // invoke later to select the being opened project if the focus is outside ProjectTab
-                    SwingUtilities.invokeLater (new Runnable () {
-                        public void run () {
-                            Node root = ptLogical.getExplorerManager ().getRootContext ();
-                            
-                            ArrayList<Node> nodes = new ArrayList<Node>( projectDirs.length );
-                            for( int i = 0; i < projectDirs.length; i++ ) {                
-                                Node projNode = root.getChildren ().findChild (projectDirs[i].getName () );
-                                if ( projNode != null ) {
-                                    nodes.add( projNode );
-                                }
-                            }
-                            try {
-                                Node[] nodesArray = new Node[ nodes.size() ];
-                                nodes.toArray( nodesArray );
-                                ptLogical.getExplorerManager ().setSelectedNodes (nodesArray);
-                                ProjectUtilities.makeProjectTabVisible();
-                            } catch (Exception ignore) {
-                                // may ignore it
-                            }
-                        }
-                    });
+                    ProjectUtilities.makeProjectTabVisible();
                     break; // and exit the loop
                 }
             }

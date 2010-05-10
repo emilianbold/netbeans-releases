@@ -59,6 +59,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -566,22 +567,27 @@ public abstract class TreeView extends JScrollPane {
         });
     }
 
-    /** Expandes the node in the tree.
-    *
-    * @param n node
-    */
+    /** Expands the node in the tree. This method can be called outside
+     * of AWT dispatch thread. It gets the children fro the node immediately,
+     * and then switches to AWT via {@link EventQueue#invokeLater(java.lang.Runnable)}
+     * and really expands the node
+     *
+     * @param n node
+     * @exception IllegalArgumentException if the node is null
+     */
     public void expandNode(final Node n) {
         if (n == null) {
             throw new IllegalArgumentException();
         }
 
         lookupExplorerManager();
-
+        final List<Node> prepare = n.getChildren().snapshot();
         // run safely to be sure all preceding events are processed (especially VisualizerEvent.Added)
         // otherwise VisualizerNodes may not be in hierarchy yet (see #140629)
         VisualizerNode.runSafe(new Runnable() {
-
+            @Override
             public void run() {
+                LOG.log(Level.FINEST, "Just print the variable so it is not GCed: {0}", prepare);
                 tree.expandPath(getTreePath(n));
             }
         });

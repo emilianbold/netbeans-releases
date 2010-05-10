@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -128,6 +129,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathV
 import org.netbeans.modules.php.project.api.PhpEditorExtender;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -695,12 +697,17 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
                 }
                 if (classScope != null) {
-                    Set<FieldElement> declaredFields = new HashSet<FieldElement>();
-                    declaredFields.addAll(classScope.getDeclaredFields());
-                    declaredFields = ElementFilter.forName(NameKind.exact(fieldAccessInfo.getName())).filter(declaredFields);
-                    if (declaredFields.isEmpty()) {
-                        String typeName = VariousUtils.extractVariableTypeFromExpression(rightHandSide, new HashMap<String, AssignmentImpl>());
-                        new FieldElementImpl(classScope, typeName, fieldAccessInfo);
+                    final String name = fieldAccessInfo.getName();
+                    if (name == null ) {
+                        showAssertionFor185229();
+                    } else {
+                        Set<FieldElement> declaredFields = new HashSet<FieldElement>();
+                        declaredFields.addAll(classScope.getDeclaredFields());
+                        declaredFields = ElementFilter.forName(NameKind.exact(name)).filter(declaredFields);
+                        if (declaredFields.isEmpty()) {
+                            String typeName = VariousUtils.extractVariableTypeFromExpression(rightHandSide, new HashMap<String, AssignmentImpl>());
+                            new FieldElementImpl(classScope, typeName, fieldAccessInfo);
+                        }
                     }
                 }
             }
@@ -712,6 +719,22 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
 
         super.scan(rightHandSide);
+    }
+
+    private void showAssertionFor185229() {
+        boolean showAssertFor185229 = false;
+        assert showAssertFor185229 = true;
+        if (showAssertFor185229) {
+            final FileObject fileObject = fileScope.getFileObject();
+            if (fileObject != null) {
+                try {
+                    assert false : fileObject.asText();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            assert false;
+        }
     }
 
     @Override
