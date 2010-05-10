@@ -415,7 +415,7 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
     }
     
     public Value getJDIValue() {
-        return value;
+        return getInnerValue();
     }
     
     protected final JPDADebuggerImpl getDebugger() {

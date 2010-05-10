@@ -85,6 +85,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.security.auth.Refreshable;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
@@ -1701,6 +1702,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }*/
 
     public String getLabel(ObjectVariable var) {
+        if (var instanceof Refreshable) {
+            if (!((Refreshable) var).isCurrent()) {
+                return null;
+            }
+        }
         synchronized (markedObjects) {
             return markedObjects.get(var.getUniqueID());
         }

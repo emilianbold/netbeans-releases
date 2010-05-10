@@ -56,7 +56,8 @@ public class CustomerRootNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         Action[] result = new Action[]{
-            new RefreshAction()};
+            new RefreshAction()
+        };
         return result;
     }
 
@@ -66,6 +67,7 @@ public class CustomerRootNode extends AbstractNode {
             putValue(Action.NAME, "Refresh");
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             CustomerTopComponent.refreshNode();
         }

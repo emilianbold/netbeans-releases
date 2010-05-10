@@ -118,11 +118,11 @@ class OQLLexer implements Lexer<OQLTokenId> {
                     String trimmed = lastToken.trim();
 
                     if (Character.isWhitespace(actChar)) {
-                        if (trimmed.length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
+                        if (trimmed.length() == 0) return tokenFactory.createToken(OQLTokenId.SELECT);
                         if (TOKEN_SELECT.equals(trimmed)) {
                             state = State.JSBLOCK;
                             input.backup(1);
-                            return tokenFactory.createToken(OQLTokenId.KEYWORD);
+                            return tokenFactory.createToken(OQLTokenId.SELECT);
                         } else {
                             state = State.ERROR;
                             input.backup(input.readLength());
@@ -139,11 +139,11 @@ class OQLLexer implements Lexer<OQLTokenId> {
                 case IN_FROM: {
                     if (Character.isWhitespace(actChar)) {
                         String lastToken = input.readText().toString().toUpperCase();
-                        if (lastToken.trim().length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
+                        if (lastToken.trim().length() == 0) return tokenFactory.createToken(OQLTokenId.FROM);
                         if (TOKEN_FROM.equals(lastToken.trim())) {
                             input.backup(1);
                             state = State.FROM;
-                            return tokenFactory.createToken(OQLTokenId.KEYWORD, lastToken.trim().length(), PartType.COMPLETE);
+                            return tokenFactory.createToken(OQLTokenId.FROM, lastToken.trim().length(), PartType.COMPLETE);
                         } else {
                             state = State.ERROR;
                             input.backup(input.readLength());
@@ -154,12 +154,23 @@ class OQLLexer implements Lexer<OQLTokenId> {
 
                 case FROM: {
                     String lastToken = input.readText().toString().toUpperCase();
-                    if (TOKEN_INSTANCEOF.startsWith(lastToken.trim())) {
-                        state = State.FROM_INSTANCEOF;
+                    String trimmed = lastToken.trim();
+                    if (!TOKEN_FROM.startsWith(lastToken.trim())) {
                         input.backup(input.readLength());
-                    } else {
-                        state = State.IN_CLASSNAME;
+                        state = State.JSBLOCK;
                     }
+                    if (Character.isWhitespace(actChar)) {
+                        if (trimmed.length() == 0) return tokenFactory.createToken(OQLTokenId.FROM);
+                        input.backup(lastToken.length() - trimmed.length());
+                        if (TOKEN_FROM.equals(trimmed)) {
+                            state = State.FROM_INSTANCEOF;
+                            return tokenFactory.createToken(OQLTokenId.FROM);
+                        } else {
+                            input.backup(input.readLength());
+                            state = State.JSBLOCK;
+                        }
+                    }
+
                     break;
                 }
 
@@ -171,14 +182,12 @@ class OQLLexer implements Lexer<OQLTokenId> {
                         input.backup(input.readLength());
                     }
                     if (Character.isWhitespace(actChar)) {
-                        if (trimmed.length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
+                        if (trimmed.length() == 0) return tokenFactory.createToken(OQLTokenId.INSTANCEOF);
+                        input.backup(lastToken.length() - trimmed.length());
                         if (TOKEN_INSTANCEOF.equals(trimmed)) {
                             state = State.IN_CLASSNAME;
-                            return tokenFactory.createToken(OQLTokenId.KEYWORD);
-                        } else {
-                            state = State.ERROR;
-                            input.backup(input.readLength());
                         }
+                        return tokenFactory.createToken(OQLTokenId.INSTANCEOF);
                     }
                     break;
                 }
@@ -188,7 +197,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
                         String lastToken = input.readText().toString().toUpperCase();
                         String trimmed = lastToken.trim();
                         if (trimmed.endsWith(TOKEN_FROM)) {
-                            state = State.IN_FROM;
+                            state = State.FROM;
                             if (input.readLength() > 5) {
                                 input.backup(5);
                                 return tokenFactory.createToken(OQLTokenId.JSBLOCK);
@@ -233,11 +242,13 @@ class OQLLexer implements Lexer<OQLTokenId> {
                         String lastToken = input.readText().toString().toUpperCase();
                         Matcher idMatcher = classIdPattern.matcher(lastToken.trim());
                         if (idMatcher.matches()) {
+                            input.backup(1);
                             state = State.CLASS_ALIAS;
                             return tokenFactory.createToken(OQLTokenId.CLAZZ);
                         }
                         Matcher nameMatcher = classPattern.matcher(lastToken.trim());
                         if (nameMatcher.matches()) {
+                            input.backup(1);
                             if ((isEmpty(nameMatcher.group(1)) ? 0 : 1) + (isEmpty(nameMatcher.group(2)) ? 0 : 1) > 1) {
                                 return tokenFactory.createToken(OQLTokenId.CLAZZ_E);
 //                                input.backup(input.readLength());
@@ -261,7 +272,10 @@ class OQLLexer implements Lexer<OQLTokenId> {
                         break;
                     }
                     if (Character.isWhitespace(actChar)) {
-                        if (lastToken.trim().length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
+                        if (lastToken.trim().length() == 0) {
+                            return tokenFactory.createToken(OQLTokenId.IDENTIFIER);
+                        }
+                        input.backup(lastToken.length() - lastToken.trim().length());
                         state = State.IN_WHERE;
                         return tokenFactory.createToken(OQLTokenId.IDENTIFIER);
                     }
@@ -282,14 +296,14 @@ class OQLLexer implements Lexer<OQLTokenId> {
                         input.backup(input.readLength());
                     }
                     if (Character.isWhitespace(actChar)) {
-                        if (trimmed.length() == 0) return tokenFactory.createToken(OQLTokenId.WHITESPACE);
+                        if (trimmed.length() == 0) {
+                            return tokenFactory.createToken(OQLTokenId.WHERE);
+                        }
+                        input.backup(lastToken.length() - trimmed.length());
                         if (TOKEN_WHERE.equals(trimmed)) {
                             state = State.JSBLOCK;
-                            return tokenFactory.createToken(OQLTokenId.KEYWORD);
-                        } else {
-                            state = State.ERROR;
-                            input.backup(input.readLength());
                         }
+                        return tokenFactory.createToken(OQLTokenId.WHERE);
                     }
                     break;
                 }
@@ -298,6 +312,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
                     break;
                 }
                 case ERROR: {
+                    while (input.read() != LexerInput.EOF);
                     return tokenFactory.createToken(OQLTokenId.ERROR);
                 }
             } // switch (state)
@@ -309,7 +324,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
                 return tokenFactory.createToken(OQLTokenId.UNKNOWN);
             }
             case IN_SELECT: {
-                return tokenFactory.createToken(OQLTokenId.KEYWORD, input.readLength(), PartType.START);
+                return tokenFactory.createToken(OQLTokenId.SELECT, input.readLength(), PartType.START);
             }
             case JSBLOCK: {
                 String lastToken = input.readText().toString().trim().toUpperCase();
@@ -330,13 +345,13 @@ class OQLLexer implements Lexer<OQLTokenId> {
                 return tokenFactory.createToken(OQLTokenId.JSBLOCK);
             }
             case IN_FROM: {
-                return tokenFactory.createToken(OQLTokenId.KEYWORD, input.readLength(), PartType.START);
+                return tokenFactory.createToken(OQLTokenId.FROM, input.readLength(), PartType.START);
             }
             case FROM: {
                 return tokenFactory.createToken(OQLTokenId.UNKNOWN);
             }
             case FROM_INSTANCEOF: {
-                return tokenFactory.createToken(OQLTokenId.KEYWORD, input.readLength(), PartType.START);
+                return tokenFactory.createToken(OQLTokenId.INSTANCEOF, input.readLength(), PartType.START);
             }
             case IN_CLASSNAME: {
                 String lastToken = input.readText().toString().trim().toUpperCase();
@@ -367,7 +382,7 @@ class OQLLexer implements Lexer<OQLTokenId> {
                 }
             }
             case IN_WHERE: {
-                return tokenFactory.createToken(OQLTokenId.KEYWORD, input.readLength(), PartType.START);
+                return tokenFactory.createToken(OQLTokenId.WHERE, input.readLength(), PartType.START);
             }
             case ERROR: {
                 return tokenFactory.createToken(OQLTokenId.ERROR);

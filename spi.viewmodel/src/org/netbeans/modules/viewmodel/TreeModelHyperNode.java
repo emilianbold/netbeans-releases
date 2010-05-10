@@ -94,14 +94,14 @@ public class TreeModelHyperNode extends TreeModelNode {
     }
 
     @Override
-    protected void refreshTheChildren(Models.CompoundModel model, TreeModelChildren.RefreshingInfo refreshInfo) {
+    protected void refreshTheChildren(Set<Models.CompoundModel> models, TreeModelChildren.RefreshingInfo refreshInfo) {
         //System.err.println("HYPER node: refreshTheChildren("+model+", "+refreshInfo+")");
         //Thread.dumpStack();
         Children ch = getChildren();
         if (ch instanceof TreeModelChildren) {
             HyperModelChildren hch = (HyperModelChildren) ch;
             //hch.cleanCachedChildren(model);
-            hch.refreshChildren(hch.new HyperRefreshingInfo(refreshInfo, model));
+            hch.refreshChildren(hch.new HyperRefreshingInfo(refreshInfo, models));
         } else {
             setChildren(new HyperModelChildren (this.model, treeModelRoot, object));
         }
@@ -328,6 +328,7 @@ public class TreeModelHyperNode extends TreeModelNode {
                 treeModelRoot,
                 object
             );
+            //System.err.println("created node for ("+object+") = "+tmn);
             objectToNode.put (object, new WeakReference<TreeModelNode>(tmn));
             return new Node[] {tmn};
         }
@@ -345,10 +346,9 @@ public class TreeModelHyperNode extends TreeModelNode {
 
             private final Set<Models.CompoundModel> models;
 
-            public HyperRefreshingInfo(RefreshingInfo ri, Models.CompoundModel model) {
+            public HyperRefreshingInfo(RefreshingInfo ri, Set<Models.CompoundModel> models) {
                 super(ri.refreshSubNodes);
-                this.models = new HashSet<Models.CompoundModel>();
-                this.models.add(model);
+                this.models = models;
             }
 
             @Override

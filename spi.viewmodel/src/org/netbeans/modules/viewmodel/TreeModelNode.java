@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.viewmodel;
 
+import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
@@ -52,10 +53,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
@@ -111,11 +114,14 @@ public class TreeModelNode extends AbstractNode {
     // variables ...............................................................
 
     private Models.CompoundModel model;
-    private ColumnModel[]        columns;
+    private final ColumnModel[]  columns;
     protected TreeModelRoot      treeModelRoot;
     protected Object             object;
-    
+
+    private String              displayName, oldDisplayName;
     private String              htmlDisplayName;
+    private final Object        displayNameLock = new Object();
+    private boolean             iconLoaded;
     private String              shortDescription;
     private final Object        shortDescriptionLock = new Object();
     private final Map<String, Object> properties = new HashMap<String, Object>();
@@ -152,7 +158,9 @@ public class TreeModelNode extends AbstractNode {
         this(
             model,
             columns,
-            createChildren (model, columns, treeModelRoot, object),
+            object != model.getRoot() ?
+                new UnknownChildren() :
+                createChildren (model, columns, treeModelRoot, object),
             treeModelRoot,
             object
         );
@@ -206,9 +214,8 @@ public class TreeModelNode extends AbstractNode {
         }
         // </RAVE>
         
-        treeModelRoot.registerNode (object, this); 
-        refreshNode ();
-        initProperties (columns);
+        treeModelRoot.registerNode (object, this);
+        this.columns = columns;
     }
 
     private static Lookup createLookup(Object object, Models.CompoundModel model,
@@ -261,18 +268,18 @@ public class TreeModelNode extends AbstractNode {
 
 
     // Node implementation .....................................................
-    
-    private void initProperties (ColumnModel[] columns) {
+
+    @Override
+    protected Sheet createSheet() {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet ();
-        this.columns = columns;
         int i, k = columns.length;
         for (i = 0; i < k; i++)
             ps.put (new MyProperty (columns [i], treeModelRoot));
         sheet.put (ps);
-        setSheet (sheet);
+        return sheet;
     }
-    
+
     private static Children createChildren (
         Models.CompoundModel model,
         ColumnModel[] columns,
@@ -291,6 +298,10 @@ public class TreeModelNode extends AbstractNode {
             }
             return Children.LEAF;
         }
+    }
+
+    private void updateChildren() {
+        setChildren(createChildren(model, columns, treeModelRoot, object));
     }
 
     @Override
@@ -481,9 +492,11 @@ public class TreeModelNode extends AbstractNode {
         return object;
     }
 
-    private final Map<Models.CompoundModel, Task> tasksByModels = new HashMap<Models.CompoundModel, Task>();
+    private Task refreshTask;
+    private final Object refreshTaskLock = new Object();
+    private final Set<Models.CompoundModel> childrenRefreshModels = new HashSet<Models.CompoundModel>();
     
-    void refresh (final Models.CompoundModel model) {
+    void refresh (Models.CompoundModel model) {
         //System.err.println("TreeModelNode.refresh("+model+") on "+object);
         //Thread.dumpStack();
         // 1) empty cache
@@ -493,10 +506,12 @@ public class TreeModelNode extends AbstractNode {
         
         
         // 2) refresh name, displayName and iconBase
-        synchronized (tasksByModels) {
-            Task task = tasksByModels.get(model);
-            if (task == null) {
-                task = getRequestProcessor ().create (new Runnable () {
+        synchronized (childrenRefreshModels) {
+            childrenRefreshModels.add(model);
+        }
+        synchronized (refreshTaskLock) {
+            if (refreshTask == null) {
+                refreshTask = getRequestProcessor ().create (new Runnable () {
                     public void run () {
                         if (!SwingUtilities.isEventDispatchThread()) {
                             try {
@@ -511,12 +526,18 @@ public class TreeModelNode extends AbstractNode {
                         doFireShortDescriptionChange();
 
                         // 3) refresh children
-                        refreshTheChildren(model, new TreeModelChildren.RefreshingInfo(true));
+                        Set<Models.CompoundModel> modelsToRefresh;
+                        synchronized (childrenRefreshModels) {
+                            modelsToRefresh = new HashSet<Models.CompoundModel>(childrenRefreshModels);
+                            childrenRefreshModels.clear();
+                        }
+                        if (modelsToRefresh.size() > 0) {
+                            refreshTheChildren(modelsToRefresh, new TreeModelChildren.RefreshingInfo(true));
+                        }
                     }
                 });
-                tasksByModels.put(model, task);
             }
-            task.schedule(0);
+            refreshTask.schedule(10);
         }
     }
     
@@ -527,22 +548,21 @@ public class TreeModelNode extends AbstractNode {
         }
         boolean refreshed = false;
         if ((ModelEvent.NodeChanged.DISPLAY_NAME_MASK & changeMask) != 0) {
-            try {
-                setModelDisplayName();
-            } catch (UnknownTypeException e) {
-                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
+            boolean doFireDisplayNameChange;
+            synchronized (displayNameLock) {
+                doFireDisplayNameChange = displayName != null;
+                displayName = null;
+            }
+            if (doFireDisplayNameChange) {
+                fireDisplayNameChange(null, null);
             }
             refreshed = true;
         }
         if ((ModelEvent.NodeChanged.ICON_MASK & changeMask) != 0) {
-            try {
-                String iconBase = model.getIconBaseWithExtension (object);
-                if (iconBase != null)
-                    setIconBaseWithExtension (iconBase);
-                else
-                    setIconBaseWithExtension ("org/openide/resources/actions/empty.gif");
-            } catch (UnknownTypeException e) {
-                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
+            if (iconLoaded) {
+                iconLoaded = false;
+                fireIconChange();
+                fireOpenedIconChange();
             }
             refreshed = true;
         }
@@ -551,11 +571,20 @@ public class TreeModelNode extends AbstractNode {
             refreshed = true;
         }
         if ((ModelEvent.NodeChanged.CHILDREN_MASK & changeMask) != 0) {
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                    refreshTheChildren(model, new TreeModelChildren.RefreshingInfo(false));
-                }
-            });
+            boolean doRefresh;
+            synchronized (childrenRefreshModels) {
+                doRefresh = childrenRefreshModels.add(model);
+            }
+            if (doRefresh) {
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        synchronized (childrenRefreshModels) {
+                            childrenRefreshModels.remove(model);
+                        }
+                        refreshTheChildren(model, new TreeModelChildren.RefreshingInfo(false));
+                    }
+                });
+            }
             refreshed = true;
         }
         if ((ModelEvent.NodeChanged.EXPANSION_MASK & changeMask) != 0) {
@@ -584,32 +613,27 @@ public class TreeModelNode extends AbstractNode {
         }
     }
 
-    private void setName (String name, boolean italics) {
+    private boolean setName (String name, boolean italics) {
         // XXX HACK: HTMLDisplayName is missing in the models!
-        String oldHtmlDisplayName = htmlDisplayName;
-        String oldDisplayName = getDisplayName();
-        
-        String newDisplayName;
-        if (name.startsWith ("<html>")) {
-            htmlDisplayName = name;
-            newDisplayName = removeHTML(name);
-        } else if (name.startsWith ("<_html>")) { //[TODO] use empty string as name in the case of <_html> tag
-            htmlDisplayName = '<' + name.substring(2);
-            newDisplayName = "";
-        } else {
-            htmlDisplayName = null;
-            newDisplayName = name;
-        }
-        if ((oldDisplayName == null) || !oldDisplayName.equals(newDisplayName)) {
-            setDisplayName(newDisplayName);
-        } else {
-            if (oldHtmlDisplayName != null && !oldHtmlDisplayName.equals(htmlDisplayName) ||
-                htmlDisplayName != null && !htmlDisplayName.equals(oldHtmlDisplayName)) {
-                
-                // Display names are equal, but HTML display names differ!
-                // We hope that this is sufficient to refresh the HTML display name:
-                fireDisplayNameChange(oldDisplayName + "_HACK", getDisplayName());
+        synchronized (displayNameLock) {
+            String oldHtmlDisplayName = htmlDisplayName;
+            String _oldDisplayName = oldDisplayName;
+
+            String newDisplayName;
+            if (name.startsWith ("<html>")) {
+                htmlDisplayName = name;
+                newDisplayName = removeHTML(name);
+            } else if (name.startsWith ("<_html>")) { //[TODO] use empty string as name in the case of <_html> tag
+                htmlDisplayName = '<' + name.substring(2);
+                newDisplayName = "";
+            } else {
+                htmlDisplayName = null;
+                newDisplayName = name;
             }
+            displayName = newDisplayName;
+            oldDisplayName = newDisplayName;
+            return _oldDisplayName == null || !_oldDisplayName.equals(newDisplayName) ||
+                   oldHtmlDisplayName == null || !oldHtmlDisplayName.equals(htmlDisplayName);
         }
     }
 
@@ -628,7 +652,7 @@ public class TreeModelNode extends AbstractNode {
                 setName (name, false);
             }
         } else {
-            final String originalDisplayName = getDisplayName();
+            final String originalDisplayName = (oldDisplayName != null) ? oldDisplayName : "";
             setName(EVALUATING_STR, false);
             exec.execute(new Runnable() {
                 public void run() {
@@ -638,6 +662,7 @@ public class TreeModelNode extends AbstractNode {
                     } catch (UnknownTypeException ex) {
                         Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
                         setName(originalDisplayName, false);
+                        fireDisplayNameChange(null, originalDisplayName);
                         return ;
                     }
                     if (name == null) {
@@ -648,29 +673,91 @@ public class TreeModelNode extends AbstractNode {
                             );
                         Exceptions.printStackTrace(t);
                         setName(originalDisplayName, false);
+                        fireDisplayNameChange(null, originalDisplayName);
                     } else {
-                        setName (name, false);
+                        if (setName (name, false)) {
+                            fireDisplayNameChange(null, name);
+                        }
                     }
                 }
             });
         }
     }
-    
-    private void refreshNode () {
-        try {
-            setModelDisplayName();
-            String iconBase = null;
-            if (model.getRoot() != object) {
-                iconBase = model.getIconBaseWithExtension (object);
+
+    @Override
+    public String getDisplayName() {
+        synchronized (displayNameLock) {
+            if (displayName == null) {
+                try {
+                    setModelDisplayName();
+                } catch (UnknownTypeException ex) {
+                    Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
+                }
             }
-            if (iconBase != null)
-                setIconBaseWithExtension (iconBase);
-            else
-                setIconBaseWithExtension ("org/openide/resources/actions/empty.gif");
-            firePropertyChange(null, null, null);
-        } catch (UnknownTypeException e) {
-            Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
+            return displayName;
         }
+    }
+
+    private void setModelIcon() throws UnknownTypeException {
+        String iconBase = null;
+        if (model.getRoot() != object) {
+            iconBase = model.getIconBaseWithExtension (object);
+        }
+        if (iconBase != null)
+            setIconBaseWithExtension (iconBase);
+        else
+            setIconBaseWithExtension ("org/openide/resources/actions/empty.gif");
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        if (!iconLoaded) {
+            try {
+                setModelIcon();
+            } catch (UnknownTypeException ex) {
+                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
+            }
+            iconLoaded = true;
+            if (getChildren() instanceof UnknownChildren) {
+                // We do not set the children until an icon is needed, for performance reason
+                updateChildren();
+            }
+        }
+        return super.getIcon(type);
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        if (!iconLoaded) {
+            try {
+                setModelIcon();
+            } catch (UnknownTypeException ex) {
+                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
+            }
+            iconLoaded = true;
+            if (getChildren() instanceof UnknownChildren) {
+                // We do not set the children until an icon is needed, for performance reason
+                updateChildren();
+            }
+        }
+        return super.getOpenedIcon(type);
+    }
+
+    private void refreshNode () {
+        boolean doFireDisplayNameChange;
+        synchronized (displayNameLock) {
+            doFireDisplayNameChange = displayName != null;
+            displayName = null;
+        }
+        if (doFireDisplayNameChange) {
+            fireDisplayNameChange(null, null);
+        }
+        if (iconLoaded) {
+            iconLoaded = false;
+            fireIconChange();
+            fireOpenedIconChange();
+        }
+        firePropertyChange(null, null, null);
     }
     
     void refreshColumn(String column) {
@@ -685,8 +772,20 @@ public class TreeModelNode extends AbstractNode {
      * @param model The associated model - necessary for hyper node.
      * @param refreshSubNodes If recursively refresh subnodes.
      */
-    protected void refreshTheChildren(Models.CompoundModel model, TreeModelChildren.RefreshingInfo refreshInfo) {
+    protected void refreshTheChildren(Set<Models.CompoundModel> models, TreeModelChildren.RefreshingInfo refreshInfo) {
+        for (Models.CompoundModel model: models) {
+            refreshTheChildren(model, refreshInfo);
+        }
+    }
+    /**
+     * @param model The associated model - necessary for hyper node.
+     * @param refreshSubNodes If recursively refresh subnodes.
+     */
+    private void refreshTheChildren(Models.CompoundModel model, TreeModelChildren.RefreshingInfo refreshInfo) {
         Children ch = getChildren();
+        if (ch instanceof UnknownChildren) {
+            return ;
+        }
         try {
             if (ch instanceof TreeModelChildren) {
                 if (model.isLeaf(object)) {
@@ -1062,6 +1161,10 @@ public class TreeModelNode extends AbstractNode {
         
         @Override
         protected void addNotify () {
+            if (initialezed) {
+                //System.err.println("\n\nTreeModelChildren.addNotify() called more that once! Parent = "+getNode()+"\n\n");
+                return ;
+            }
             initialezed = true;
             refreshChildren (new RefreshingInfo(true));
         }
@@ -1127,11 +1230,12 @@ public class TreeModelNode extends AbstractNode {
                 //System.err.println(this.hashCode()+" evaluateLazily() ready, evaluated[0] = "+eval+" => fire = "+fire+", refreshingStarted = "+refreshingStarted+", children_evaluated = "+(children_evaluated != null));
             }
             if (fire) {
-                applyChildren(ch, rinfo);
+                applyChildren(ch, rinfo, false);
             }
         }
 
         protected Object[] getModelChildren(RefreshingInfo refreshInfo) throws UnknownTypeException {
+            //System.err.println("! getModelChildren("+object+", "+getNode()+")");
             int count = model.getChildrenCount (object);
             return model.getChildren (
                 object,
@@ -1145,6 +1249,9 @@ public class TreeModelNode extends AbstractNode {
         }
         
         private void refreshLazyChildren (RefreshingInfo refreshInfo) {
+            //System.err.println("\n!! refreshLazyChildren("+getNode()+") from:");
+            //Thread.dumpStack();
+            //System.err.println("");
             Executor exec = getModelAsynchronous();
             if (exec == AsynchronousModelFilter.CURRENT_THREAD) {
                 Object[] ch;
@@ -1156,7 +1263,7 @@ public class TreeModelNode extends AbstractNode {
                         Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
                     }
                 }
-                applyChildren(ch, refreshInfo);
+                applyChildren(ch, refreshInfo, true);
                 return ;
             }
             synchronized (evaluated) {
@@ -1211,7 +1318,7 @@ public class TreeModelNode extends AbstractNode {
             if (ch == null) {
                 applyWaitChildren();
             } else {
-                applyChildren(ch, refreshInfo);
+                applyChildren(ch, refreshInfo, true);
             }
         }
 
@@ -1228,27 +1335,31 @@ public class TreeModelNode extends AbstractNode {
             }
         }
         
-        private void applyChildren(final Object[] ch, RefreshingInfo refreshInfo) {
+        private void applyChildren(final Object[] ch, RefreshingInfo refreshInfo, boolean doSetObject) {
             //System.err.println(this.hashCode()+" applyChildren("+refreshSubNodes+")");
-            //System.err.println("applyChildren("+Arrays.toString(ch)+")");
+            //System.err.println("applyChildren("+Arrays.toString(ch)+", "+doSetObject+")");
             int i, k = ch.length; 
             WeakHashMap<Object, WeakReference<TreeModelNode>> newObjectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
             for (i = 0; i < k; i++) {
                 if (ch [i] == null) {
                     throw new NullPointerException("Null child at index "+i+", parent: "+object+", model: "+model);
                 }
-                WeakReference<TreeModelNode> wr = objectToNode.get(ch [i]);
-                if (wr == null) continue;
-                TreeModelNode tmn = wr.get ();
-                if (tmn == null) continue;
-                if (refreshInfo == null || refreshInfo.isRefreshSubNodes(ch[i])) {
-                    tmn.setObject (ch [i]);
-                } else {
-                    tmn.setObjectNoRefresh(ch[i]);
+                if (doSetObject) {
+                    WeakReference<TreeModelNode> wr = objectToNode.get(ch [i]);
+                    if (wr == null) continue;
+                    TreeModelNode tmn = wr.get ();
+                    if (tmn == null) continue;
+                    if (refreshInfo == null || refreshInfo.isRefreshSubNodes(ch[i])) {
+                        tmn.setObject (ch [i]);
+                    } else {
+                        tmn.setObjectNoRefresh(ch[i]);
+                    }
+                    newObjectToNode.put (ch [i], wr);
                 }
-                newObjectToNode.put (ch [i], wr);
             }
-            objectToNode = newObjectToNode;
+            if (doSetObject) {
+                objectToNode = newObjectToNode;
+            }
             setKeys (ch);
 
             SwingUtilities.invokeLater (new Runnable () {
@@ -1326,6 +1437,7 @@ public class TreeModelNode extends AbstractNode {
                 treeModelRoot, 
                 object
             );
+            //System.err.println("created node for ("+object+") = "+tmn);
             objectToNode.put (object, new WeakReference<TreeModelNode>(tmn));
             return new Node[] {tmn};
         }
@@ -1390,6 +1502,34 @@ public class TreeModelNode extends AbstractNode {
             fireChangeEvent(new ChangeEvent(this));
         }
 
+    }
+
+    private static class UnknownChildren extends Children {
+
+        @Override
+        public boolean add(Node[] nodes) {
+            return false;
+        }
+
+        @Override
+        public boolean remove(Node[] nodes) {
+            return false;
+        }
+
+    }
+
+    // Adaptive property refresh time. Belongs to MyProperty, but can not be there since it's static :-(
+    private static AtomicLong lastPropertyRefresh = new AtomicLong(0);
+
+    private static long getPropertyRefreshWaitTime() {
+        long now = System.currentTimeMillis();
+        long last = lastPropertyRefresh.getAndSet(now);
+        if ((now - last) < 1000) {
+            // Refreshes in less than a second - the system needs to respond fast
+            return 1;
+        } else {
+            return 25;
+        }
     }
 
     private class MyProperty extends PropertySupport implements Runnable { //LazyEvaluator.Evaluable {
@@ -1530,7 +1670,7 @@ public class TreeModelNode extends AbstractNode {
             synchronized (evaluated) {
                 if (evaluated[0] != 1) {
                     try {
-                        evaluated.wait(25);
+                        evaluated.wait(getPropertyRefreshWaitTime());
                     } catch (InterruptedException iex) {}
                     if (evaluated[0] != 1) {
                         evaluated[0] = -1; // timeout
@@ -1696,7 +1836,7 @@ public class TreeModelNode extends AbstractNode {
             }
         }
     }
-    
+
     /** The single-threaded evaluator of lazy models. *//*
     static class LazyEvaluator implements Runnable {
         

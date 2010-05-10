@@ -10,6 +10,7 @@ var/cache/lastModified
 var/cache/lastModified/all-checksum.txt
 var/cache/all-manifest.dat
 var/cache/all-layers.dat
+var/cache/localeVariants
 
 var/cache/bugtracking
 

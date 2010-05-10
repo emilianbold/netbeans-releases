@@ -47,6 +47,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import javax.swing.ActionMap;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.customerdb.JavaDBSupport;
 import org.openide.util.NbBundle;
@@ -71,7 +72,9 @@ public final class CustomerTopComponent extends TopComponent implements Explorer
         initComponents();
         setName(NbBundle.getMessage(CustomerTopComponent.class, "CTL_CustomerTopComponent"));
         setToolTipText(NbBundle.getMessage(CustomerTopComponent.class, "HINT_CustomerTopComponent"));
-        associateLookup(ExplorerUtils.createLookup(em, getActionMap()));
+        ActionMap map = this.getActionMap();
+        map.put("delete", ExplorerUtils.actionDelete(em, true)); //NOI18N
+        associateLookup(ExplorerUtils.createLookup(em, map));
         RequestProcessor.getDefault().post(new Runnable () {
             @Override
             public void run() {
