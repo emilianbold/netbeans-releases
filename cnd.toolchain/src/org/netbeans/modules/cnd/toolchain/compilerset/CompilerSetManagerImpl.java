@@ -201,10 +201,13 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     @Override
     public synchronized void initialize(boolean save, boolean runCompilerSetDataLoader, Writer reporter) {
         CompilerSetReporter.setWriter(reporter);
+        ProgressHandle pHandle = null;
         try {
             CndUtils.assertNonUiThread();
             if (isUninitialized()) {
                 log.log(Level.FINE, "CSM.getDefault: Doing remote setup from EDT?{0}", SwingUtilities.isEventDispatchThread());
+                pHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(getClass(), "PROGRESS_TEXT", getExecutionEnvironment().getDisplayName())); // NOI18N
+                pHandle.start();
                 this.sets.clear();
                 initRemoteCompilerSets(true, runCompilerSetDataLoader);
                 if (initializationTask != null) {
@@ -217,6 +220,9 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             }
         } finally {
             CompilerSetReporter.setWriter(null);
+            if (pHandle != null) {
+                pHandle.finish();
+            }
         }
     }
 

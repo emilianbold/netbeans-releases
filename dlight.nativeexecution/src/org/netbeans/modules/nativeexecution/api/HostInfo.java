@@ -39,6 +39,7 @@
 package org.netbeans.modules.nativeexecution.api;
 
 import java.io.File;
+import java.util.Map;
 
 public interface HostInfo {
 
@@ -111,7 +112,9 @@ public interface HostInfo {
 
     public String getShell();
 
-    public String getPath();
+    public String getEnvFile();
+
+    public Map<String, String> getEnvironment();
 
     public String getTempDir();
 

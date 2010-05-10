@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.text.ParseException;
@@ -46,6 +47,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
@@ -73,6 +75,15 @@ public final class MacroMap implements Cloneable {
             map = new TreeMap<String, String>(new CaseInsensitiveComparator());
         } else {
             map = new TreeMap<String, String>();
+        }
+
+        if (HostInfoUtils.isHostInfoAvailable(execEnv)) {
+            // This always should be true
+            try {
+                map.putAll(HostInfoUtils.getHostInfo(execEnv).getEnvironment());
+            } catch (IOException ex) {
+            } catch (CancellationException ex) {
+            }
         }
     }
 
