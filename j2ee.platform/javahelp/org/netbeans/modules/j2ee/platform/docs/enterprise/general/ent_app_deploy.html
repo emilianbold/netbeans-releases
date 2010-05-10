@@ -1,69 +1,94 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!--       
+<!--
 *     Copyright © 2009 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Deploying an Enterprise Application</title>
-<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head>
-<body>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Deploying an Enterprise Application</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
 
-<h2>Deploying an Enterprise Application</h2>
-<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>Unless your EJB modules and web application modules are designed to be deployed as stand-alone modules, 
-  you should always deploy them by deploying the enterprise application 
-  that contains them. If you run the Run or Deploy commands on an individual 
-  module that is part of an enterprise application, the IDE only deploys that 
-  module itself. Any changes you have made in the other modules in the project are 
-  not propagated to the server.</p>
-  
-  <p><b>To deploy an enterprise application:</b></p>
-<ul>
-  <li>In the Projects window, right-click the enterprise application project and 
-    choose one of the following: 
-    <ul>
-      <li><b>Run.</b> Starts the target application server and domain, 
-        deploys the enterprise application to the target application server and domain, 
-        and displays it in the IDE's default browser.</li>
-      <li><b>Deploy.</b> If already deployed, 
-      stops the application and all application sessions and processes and undeploys the enterprise application. 
-      The enterprise application is then deployed to the target application server and domain.</li>
-    </ul>
-  </li>
-</ul>
+        <h2>Deploying an Enterprise Application</h2>
+
+        <p><small><a href="#seealso">See Also</a></small>
+
+        <p>Unless your EJB modules and web application modules are designed to be deployed as stand-alone modules,
+            you should always deploy them by deploying the enterprise application
+            that contains them. If you run the Run or Deploy commands on an individual
+            module that is part of an enterprise application, the IDE only deploys that
+            module itself. Any changes you have made in the other modules in the project are
+            not propagated to the server.</p>
+
+        <p><b>To deploy an enterprise application:</b></p>
+
+        <ul>
+            <li>In the Projects window, right-click the enterprise application project and
+                choose one of the following options:
+
+                <ul>
+                    <li><b>Run.</b>
+
+                        <ol>
+                            <li>Sub-projects are compiled.</li>
+                            <li>New and changed files are copied from a sub-project's build directory to
+                                the EAR's deployment directory.</li>
+                            <li>The target application server and domain start.</li>
+                            <li>The EAR's deployment directory is used to redeploy the application.</li>
+                            <li>The &quot;client&quot; for the EAR is triggered (i.e., a web application
+                                opens in the IDE's default browser).</li>
+                        </ol></li>
+
+                    <li><b>Deploy.</b>
+                        
+                        <ol>
+                            <li>Sub-projects are compiled.</li>
+                            <li>The target application server and domain start.</li>
+                            <li>If the application has already been deployed, any active sessions and
+                                processes are terminated, and the application is undeployed from the server.</li>
+                            <li>The EAR project's deployment directory is cleared (i.e., all content is
+                                deleted).</li>
+                            <li>All the files in the build directories for each of the sub-projects get
+                                copied into the EAR's deployment directory.</li>
+                            <li>The EAR's deployment directory is used to redeploy the application to the
+                                target application server and domain.</li>
+                        </ol>
+                </ul>
+            </li>
+        </ul>
 
 
-<p><b>To undeploy an enterprise application 
-(Sun Java System Application Server/GlassFish):</b></p>
-<ol>
-  <li>In the Services window, expand the Servers node and the Sun Java System Application 
-    Server/GlassFish node. 
-    <ul class="note">
-      <li>The server must be running and <a href="../../server/server_register.html">registered with the IDE</a>. </li>
-    </ul>
-  </li>
-  <li>Expand the Applications node and locate the enterprise application you want to undeploy.</li>
-  <li>Right-click the enterprise application node and choose Undeploy.</li>
-</ol>
+        <p><b>To undeploy an enterprise application (GlassFish):</b></p>
 
-<ul class="note">
-   <li>You cannot start and stop a remote installation of a server from within the IDE.</li>
-</ul>
+        <ol>
+            <li>In the Services window, expand the Servers &gt; GlassFish node.
 
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="about_ent_apps.html">About Enterprise Applications</a></dd>
-    <dd><a href="ent_app_build.html">Building an Enterprise Application</a></dd>
-    <dd><a href="ent_app_verify.html">Verifying an Enterprise Application</a></dd>
-    <dd><a href="../../archiveproject/archiveproject-deploying.html">Redeploying an Application to a Different Server</a></dd>
-</dl>
+                <ul class="note">
+                    <li>The server must be running and <a href="../../server/server_register.html">registered with the IDE</a>.</li>
+                </ul>
+            </li>
 
-<hr><small><a href="../../credits.html">Legal Notices</a></small>
+            <li>Expand the Applications node and locate the enterprise application you want to undeploy.</li>
+            <li>Right-click the enterprise application node and choose Undeploy.</li>
+        </ol>
 
-<table border="0" cellpadding="50">
-<tr><td>&nbsp;</td></tr>
-</table></body>
+        <ul class="note">
+            <li>You cannot start and stop a remote installation of a server from within the IDE.</li>
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="about_ent_apps.html">About Enterprise Applications</a></dd>
+            <dd><a href="ent_app_build.html">Building an Enterprise Application</a></dd>
+            <dd><a href="ent_app_verify.html">Verifying an Enterprise Application</a></dd>
+            <dd><a href="../../archiveproject/archiveproject-deploying.html">Redeploying an Application to a Different Server</a></dd>
+        </dl>
+
+        <hr><small><a href="../../credits.html">Legal Notices</a></small>
+
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table></body>
 </html>
