@@ -279,10 +279,7 @@ do_run_updater() {
 
 look_for_pre_runs() {
     base="$1"
-    newUpdaterDir="${base}/update/new_updater"
-    if [ -f "${newUpdaterDir}/updater.jar" ] ; then
-        install_new_updater "$1"
-    fi
+    install_new_updater "$1"
     dir="${base}/update/download"
     if [ "`echo "${dir}"/*.nbm`" != "${dir}/*.nbm" -o "`echo "${dir}"/*.jar`" != "${dir}/*.jar" ] ; then
         run_updater=yes
@@ -296,10 +293,7 @@ look_for_pre_runs() {
 
 look_for_post_runs() {
     base="$1"
-    newUpdaterDir="${base}/update/new_updater"
-    if [ -f "${newUpdaterDir}/updater.jar" ] ; then
-        install_new_updater "$1"
-    fi
+    install_new_updater "$1"
     dir="${base}/update/download"
     if [ \! -f "${dir}/install_later.xml" ] && [ "`echo "${dir}"/*.nbm`" != "${dir}/*.nbm" -o "`echo "${dir}"/*.jar`" != "${dir}/*.jar" ] ; then
         run_updater=yes
@@ -336,9 +330,18 @@ delete_new_clusters_file() {
 install_new_updater() {
     base="$1"
     newUpdaterDir="${base}/update/new_updater"
-    mkdir -p "${base}/modules/ext/"
-    mv -f "${newUpdaterDir}/updater.jar" "${base}/modules/ext/"
-    rmdir "${newUpdaterDir}"
+    if [ -d "${newUpdaterDir}" ]; then
+        mkdir -p "${base}/modules/ext/"
+        if [ -f "${newUpdaterDir}/updater.jar" ]; then
+            mv -f "${newUpdaterDir}/updater.jar" "${base}/modules/ext/"
+        fi
+        ls -l "${newUpdaterDir}/"updater_*.jar
+        for i in "${newUpdaterDir}/"updater_*.jar; do
+            mkdir -p "${base}/modules/ext/locale/"
+            mv -f "$i" "${base}/modules/ext/locale/"
+        done
+        rmdir "${newUpdaterDir}"
+    fi
 }
 
 # detect system http proxy setting

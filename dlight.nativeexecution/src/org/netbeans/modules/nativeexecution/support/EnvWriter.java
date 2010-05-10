@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -60,7 +62,7 @@ public final class EnvWriter {
         this.os = os;
         this.remote = remote;
     }
-    
+
     public static byte[] getBytes(String str, boolean remote) {
         if (remote) {
             final String charSet = ProcessUtils.getRemoteCharSet();
@@ -76,13 +78,21 @@ public final class EnvWriter {
     }
 
     public void write(final MacroMap env) throws IOException {
+        write(env.entrySet());
+    }
+
+    public void write(Map<String, String> env) throws IOException {
+        write(env.entrySet());
+    }
+
+    private void write(Set<Entry<String, String>> env) throws IOException {
         if (!env.isEmpty()) {
             String name = null;
             String value = null;
             // Very simple sanity check of vars...
             Pattern pattern = Pattern.compile("[A-Z0-9_]+"); // NOI18N
 
-            for (Entry<String, String> entry : env.entrySet()) {
+            for (Entry<String, String> entry : env) {
                 // ask key as is
                 name = entry.getKey();
                 // check capitalized key by pattern

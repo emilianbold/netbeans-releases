@@ -31,7 +31,7 @@ DEFAULTCONF=Solaris_x64
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Solaris_x64 Solaris_x86 Linux_x64 Linux_x86 MacOS_x64 MacOS_x86 
+ALLCONFS=Solaris_x64 Solaris_x86 Linux_x64 Linux_x86 MacOS_x64 MacOS_x86 Solaris_sparc Solaris_sparc64 
 
 
 # build

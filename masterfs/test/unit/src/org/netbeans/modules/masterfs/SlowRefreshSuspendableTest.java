@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManagerTest;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -60,6 +61,11 @@ import org.openide.util.RequestProcessor;
 public class SlowRefreshSuspendableTest extends NbTestCase {
     private Logger LOG;
     private FileObject testFolder;
+
+    static {
+        // Just pre load the class
+        FileChangedManagerTest.assertNoLock();
+    }
 
     public SlowRefreshSuspendableTest(String testName) {
         super(testName);
@@ -157,6 +163,7 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
 
             @Override
             public void run() {
+                FileChangedManagerTest.assertNoLock();
                 goingIdle++;
             }
 

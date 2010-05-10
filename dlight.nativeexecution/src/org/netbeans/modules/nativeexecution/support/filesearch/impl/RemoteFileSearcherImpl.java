@@ -58,6 +58,7 @@ public class RemoteFileSearcherImpl implements FileSearcher {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
 
+    @Override
     public String searchFile(FileSearchParams fileSearchParams) {
         final ExecutionEnvironment execEnv = fileSearchParams.getExecEnv();
 
@@ -72,20 +73,17 @@ public class RemoteFileSearcherImpl implements FileSearcher {
                 return null;
             }
 
-            String shell = hostInfo.getShell();
-
-            if (shell == null) {
-                return null;
-            }
-
             List<String> sp = new ArrayList<String>(fileSearchParams.getSearchPaths());
 
             if (fileSearchParams.isSearchInUserPaths()) {
-                sp.addAll(Arrays.asList(hostInfo.getPath().split(":"))); // NOI18N
+                String path = hostInfo.getEnvironment().get("PATH"); // NOI18N
+                if (path != null) {
+                    sp.addAll(Arrays.asList(path.split(":"))); // NOI18N
+                }
             }
 
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable(shell).setArguments("-s"); // NOI18N
+            npb.setExecutable("/bin/sh").setArguments("-s"); // NOI18N
 
             Process p = npb.call();
 

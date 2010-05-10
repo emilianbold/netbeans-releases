@@ -90,10 +90,10 @@ public class LibraryChecker {
         LinkerDescriptor linker = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker();
         String dummySourceFile = createDummySourceFile(execEnv, compiler.getKind());
         try {
-            String compilerPath = compiler.getPath();
+            String linkerPath = getLinker(compiler, compilerSet).getPath();
             String dummySourcePath = dummySourceFile;
             if (execEnv.isLocal() && Utilities.isWindows()) {
-                compilerPath = LinkSupport.resolveWindowsLink(compilerPath);
+                linkerPath = LinkSupport.resolveWindowsLink(linkerPath);
                 dummySourcePath = convertToCompilerPath(dummySourcePath, compilerSet);
             }
 
@@ -104,7 +104,7 @@ public class LibraryChecker {
             args.addAll(Arrays.asList(dummySourcePath + ".out", linker.getLibraryFlag() + lib, dummySourcePath)); // NOI18N
 
             NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(execEnv);
-            processBuilder.setExecutable(compilerPath);
+            processBuilder.setExecutable(linkerPath);
             processBuilder.setArguments(args.toArray(new String[args.size()]));
 
             NativeProcess process = processBuilder.call();
@@ -167,6 +167,17 @@ public class LibraryChecker {
             } else {
                 throw new IOException(ex);
             }
+        }
+    }
+
+    private static AbstractCompiler getLinker(AbstractCompiler compiler, CompilerSet compilerSet) {
+        String preferred = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getPreferredCompiler();
+        if ("c".equals(preferred)) { // NOI18N
+            return (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCompiler);
+        } else if ("cpp".equals(preferred)) { // NOI18N
+            return (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
+        } else {
+            return compiler;
         }
     }
 

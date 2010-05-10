@@ -136,8 +136,7 @@ public final class ExternalTerminalProvider {
                         }
 
                         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-                        npb.setExecutable(HostInfoUtils.getHostInfo(execEnv).getShell());
-                        npb.setArguments("-c", command); // NOI18N
+                        npb.setExecutable("/bin/sh").setArguments("-c", command); // NOI18N
 
                         Process pr = npb.call();
                         int result = pr.waitFor();

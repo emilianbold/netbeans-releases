@@ -169,5 +169,53 @@
         </linkerTool>
       </compileType>
     </conf>
+    <conf name="Solaris_sparc" type="1">
+      <toolsSet>
+        <developmentServer>ak119685@spb-nero:22</developmentServer>
+        <compilerSet>GNU|GNU</compilerSet>
+        <platform>0</platform>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+          <architecture>1</architecture>
+          <commandLine>--std=c99</commandLine>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="Solaris_sparc64" type="1">
+      <toolsSet>
+        <developmentServer>ak119685@spb-nero:22</developmentServer>
+        <compilerSet>GNU|GNU</compilerSet>
+        <platform>0</platform>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+          <architecture>2</architecture>
+          <commandLine>--std=c99</commandLine>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+    </conf>
   </confs>
 </configurationDescriptor>

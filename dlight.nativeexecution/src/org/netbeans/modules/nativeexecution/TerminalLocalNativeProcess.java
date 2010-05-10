@@ -54,7 +54,9 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -215,8 +217,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 pb.environment().put("DISPLAY", display); // NOI18N
             }
 
-            env.appendPathVariable("PATH", hostInfo.getPath()); // NOI18N
-
             if (!env.isEmpty()) {
                 // TODO: FIXME (?)
                 // Do PATH normalization on Windows....
@@ -227,12 +227,29 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     // [for external terminal only]
                     String path = env.get("PATH"); // NOI18N
                     env.remove("PATH"); // NOI18N
-                    env.put("PATH", "/bin:/usr/bin:" + WindowsSupport.getInstance().convertToAllShellPaths(path)); // NOI18N
+                    env.put("PATH", WindowsSupport.getInstance().convertToAllShellPaths(path)); // NOI18N
+                }
+
+                // Will preserve only changed env variables...
+
+                Map<String, String> orig = HostInfoUtils.getHostInfo(getExecutionEnvironment()).getEnvironment();
+                Map<String, String> res = new HashMap<String, String>();
+                String var, val;
+
+                for (Map.Entry<String, String> entry : env.entrySet()) {
+                    var = entry.getKey();
+                    val = entry.getValue();
+                    if (orig.containsKey(var)) {
+                        if (orig.get(var).equals(val)) {
+                            continue;
+                        }
+                    }
+                    res.put(var, val);
                 }
 
                 OutputStream fos = new FileOutputStream(envFileFile);
                 EnvWriter ew = new EnvWriter(fos, false);
-                ew.write(env);
+                ew.write(res);
                 fos.close();
 
                 /**

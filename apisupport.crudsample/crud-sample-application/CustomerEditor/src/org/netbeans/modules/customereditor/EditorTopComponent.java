@@ -53,6 +53,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.customerdb.JavaDBSupport;
+import org.netbeans.modules.customerviewer.CustomerTopComponent;
 import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -354,6 +355,7 @@ public final class EditorTopComponent extends TopComponent implements LookupList
                     entityManager.persist(customer);
                     entityManager.getTransaction().commit();
                 }
+                CustomerTopComponent.refreshNode();
             }
 
         }
