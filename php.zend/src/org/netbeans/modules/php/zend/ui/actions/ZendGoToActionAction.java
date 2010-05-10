@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,57 +34,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.zend.ui.actions;
 
-package org.netbeans.modules.php.zend;
-
-import java.util.Collections;
-import java.util.List;
-import javax.swing.Action;
+import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.spi.actions.GoToActionAction;
-import org.netbeans.modules.php.spi.actions.GoToViewAction;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.zend.ui.actions.RunCommandAction;
-import org.netbeans.modules.php.zend.ui.actions.ZendGoToActionAction;
-import org.netbeans.modules.php.zend.ui.actions.ZendGoToViewAction;
 import org.netbeans.modules.php.zend.util.ZendUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
 
-/**
- * @author Tomas Mysik
- */
-public class ZendPhpModuleActionsExtender extends PhpModuleActionsExtender {
-    private static final List<Action> ACTIONS = Collections.<Action>singletonList(RunCommandAction.getInstance());
+public final class ZendGoToActionAction extends GoToActionAction {
+    private static final long serialVersionUID = 89756313874L;
 
-    @Override
-    public String getMenuName() {
-        return NbBundle.getMessage(ZendPhpModuleActionsExtender.class, "LBL_MenuName");
+    private final FileObject fo;
+
+    public ZendGoToActionAction(FileObject fo) {
+        assert ZendUtils.isViewWithAction(fo);
+        this.fo = fo;
     }
 
     @Override
-    public List<? extends Action> getActions() {
-        return ACTIONS;
+    public void actionPerformedInternal() {
+        FileObject action = ZendUtils.getAction(fo);
+        if (action != null) {
+            UiUtils.open(action, getActionMethodOffset(action));
+        }
     }
 
-    @Override
-    public boolean isViewWithAction(FileObject fo) {
-        return ZendUtils.isViewWithAction(fo);
-    }
-
-    @Override
-    public boolean isActionWithView(FileObject fo) {
-        return ZendUtils.isAction(fo);
-    }
-
-    @Override
-    public GoToActionAction getGoToActionAction(FileObject fo, int offset) {
-        return new ZendGoToActionAction(fo);
-    }
-
-    @Override
-    public GoToViewAction getGoToViewAction(FileObject fo, int offset) {
-        return new ZendGoToViewAction(fo, offset);
+    private int getActionMethodOffset(FileObject action) {
+        String actionMethodName = ZendUtils.getActionName(fo);
+        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+        for (PhpClass phpClass : editorSupport.getClasses(action)) {
+            if (phpClass.getName().endsWith(ZendUtils.CONTROLLER_CLASS_SUFFIX)) {
+                if (actionMethodName != null) {
+                    for (PhpClass.Method method : phpClass.getMethods()) {
+                        if (actionMethodName.equals(method.getName())) {
+                            return method.getOffset();
+                        }
+                    }
+                }
+                return phpClass.getOffset();
+            }
+        }
+        return DEFAULT_OFFSET;
     }
 }
