@@ -45,6 +45,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
@@ -60,7 +61,7 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
  */
 public class GlassFishV3JaxRpcStack implements WSStackImplementation<JaxRpc> {
     private static final String[] METRO_LIBRARIES =
-        new String[] {"webservices", "javax.activation"}; //NOI18N
+            new String[] {"webservices(|-osgi).jar"}; //NOI18N
     private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
     
     private String gfRootStr;
@@ -127,36 +128,36 @@ public class GlassFishV3JaxRpcStack implements WSStackImplementation<JaxRpc> {
         File f = getJarName(gfRootStr, METRO_LIBRARIES[0]);
         return f!=null && f.exists();
     }
-    
-    protected static class VersionFilter implements FileFilter {
-       
-        private String nameprefix;
-        
-        public VersionFilter(String nameprefix) {
-            this.nameprefix = nameprefix;
+
+    private static class VersionFilter implements FileFilter {
+
+        private final Pattern pattern;
+
+        public VersionFilter(String namePattern) {
+            pattern = Pattern.compile(namePattern);
         }
-        
+
         public boolean accept(File file) {
-            return file.getName().startsWith(nameprefix);
+            return pattern.matcher(file.getName()).matches();
         }
-        
+
     }
     
-    protected File getJarName(String glassfishInstallRoot, String jarNamePrefix) {
+    protected File getJarName(String glassfishInstallRoot, String jarNamePattern) {
+
         File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
-        int subindex = jarNamePrefix.lastIndexOf("/");
+        int subindex = jarNamePattern.lastIndexOf("/");
         if(subindex != -1) {
-            String subdir = jarNamePrefix.substring(0, subindex);
-            jarNamePrefix = jarNamePrefix.substring(subindex+1);
+            String subdir = jarNamePattern.substring(0, subindex);
+            jarNamePattern = jarNamePattern.substring(subindex+1);
             modulesDir = new File(modulesDir, subdir);
         }
-        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePrefix));
+        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePattern));
 
-        if(candidates != null && candidates.length > 0) {
+        if (candidates != null && candidates.length > 0) {
             return candidates[0]; // the first one
-        } else {
-            return null;
         }
-    } 
+        return null;
+    }
 
 }
