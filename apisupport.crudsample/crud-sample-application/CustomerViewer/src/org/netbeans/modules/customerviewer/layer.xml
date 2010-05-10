@@ -69,6 +69,7 @@ made subject to such option by the copyright holder.
         <folder name="Components">
             <file name="CustomerTopComponent.settings" url="CustomerTopComponentSettings.xml"/>
         </folder>
+        <file name="WindowManager.wswmgr" url="windowmanager.wswmgr"/>
         <folder name="Modes">
             <folder name="explorer">
                 <file name="CustomerTopComponent.wstcref" url="CustomerTopComponentWstcref.xml"/>
