@@ -149,7 +149,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 public Integer call() throws Exception {
                     return waitResult();
                 }
-            }, "Waiting for " + info.getExecutable()); // NOI18N
+            }, "Waiting for " + id); // NOI18N
         } catch (Throwable ex) {
             LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex.toString()); // NOI18N
             setState(State.ERROR);
