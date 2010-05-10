@@ -44,7 +44,9 @@ import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -61,7 +63,7 @@ public final class HostInfoFactory {
     private HostInfoFactory() {
     }
 
-    static protected HostInfo newHostInfo(Properties initData) {
+    static HostInfo newHostInfo(Properties initData, Map<String, String> environment) {
         HostInfoImpl info = new HostInfoImpl();
 
         OSImpl _os = new OSImpl();
@@ -83,10 +85,16 @@ public final class HostInfoFactory {
         info.tempDir = initData.getProperty("TMPDIRBASE", UNKNOWN); // NOI18N
         info.userDir = initData.getProperty("USERDIRBASE", UNKNOWN); // NOI18N
         info.cpuNum = getInt(initData, "CPUNUM", 1); // NOI18N
-        info.path = initData.getProperty("PATH", "/bin:/usr/bin"); // NOI18N
+        info.envFile = initData.getProperty("ENVFILE", "/dev/null"); // NOI18N
+
+        if (environment == null) {
+            info.environment = Collections.unmodifiableMap(Collections.<String, String>emptyMap());
+        } else {
+            info.environment = Collections.unmodifiableMap(environment);
+        }
 
         if (initData.containsKey("LOCALTIME")) { // NOI18N
-            long localTime = (Long)initData.get("LOCALTIME"); // NOI18N
+            long localTime = (Long) initData.get("LOCALTIME"); // NOI18N
             long remoteTime = getTime(initData, "DATETIME", localTime); // NOI18N
             info.clockSkew = remoteTime - localTime;
         }
@@ -132,32 +140,40 @@ public final class HostInfoFactory {
         private String userDir;
         private int cpuNum;
         private long clockSkew;
-        private String path;
+        private String envFile;
+        private Map<String, String> environment;
 
+        @Override
         public OS getOS() {
             return os;
         }
 
+        @Override
         public CpuFamily getCpuFamily() {
             return cpuFamily;
         }
 
+        @Override
         public int getCpuNum() {
             return cpuNum;
         }
 
+        @Override
         public OSFamily getOSFamily() {
             return os.getFamily();
         }
 
+        @Override
         public String getHostname() {
             return hostname;
         }
 
+        @Override
         public String getShell() {
             return shell;
         }
 
+        @Override
         public String getTempDir() {
             return tempDir;
         }
@@ -176,8 +192,7 @@ public final class HostInfoFactory {
             }
         }
 
-        
-
+        @Override
         public File getTempDirFile() {
             if (getOSFamily() == OSFamily.WINDOWS) {
                 return new File(WindowsSupport.getInstance().convertToWindowsPath(tempDir));
@@ -186,12 +201,19 @@ public final class HostInfoFactory {
             }
         }
 
+        @Override
         public long getClockSkew() {
             return clockSkew;
         }
 
-        public String getPath() {
-            return path;
+        @Override
+        public String getEnvFile() {
+            return envFile;
+        }
+
+        @Override
+        public Map<String, String> getEnvironment() {
+            return environment;
         }
     }
 
@@ -202,18 +224,22 @@ public final class HostInfoFactory {
         private String version = UNKNOWN;
         private Bitness bitness = Bitness._32;
 
+        @Override
         public Bitness getBitness() {
             return bitness;
         }
 
+        @Override
         public String getVersion() {
             return version;
         }
 
+        @Override
         public OSFamily getFamily() {
             return family;
         }
 
+        @Override
         public String getName() {
             return name;
         }

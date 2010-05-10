@@ -54,3 +54,19 @@ CND_ARTIFACT_PATH_MacOS_x86=dist/MacOS_x86/GNU-MacOSX/ptysupport
 CND_PACKAGE_DIR_MacOS_x86=dist/MacOS_x86/GNU-MacOSX/package
 CND_PACKAGE_NAME_MacOS_x86=ptysupport.tar
 CND_PACKAGE_PATH_MacOS_x86=dist/MacOS_x86/GNU-MacOSX/package/ptysupport.tar
+# Solaris_sparc configuration
+CND_PLATFORM_Solaris_sparc=GNU-Solaris-Sparc
+CND_ARTIFACT_DIR_Solaris_sparc=dist/Solaris_sparc/GNU-Solaris-Sparc
+CND_ARTIFACT_NAME_Solaris_sparc=ptysupport
+CND_ARTIFACT_PATH_Solaris_sparc=dist/Solaris_sparc/GNU-Solaris-Sparc/ptysupport
+CND_PACKAGE_DIR_Solaris_sparc=dist/Solaris_sparc/GNU-Solaris-Sparc/package
+CND_PACKAGE_NAME_Solaris_sparc=ptysupport.tar
+CND_PACKAGE_PATH_Solaris_sparc=dist/Solaris_sparc/GNU-Solaris-Sparc/package/ptysupport.tar
+# Solaris_sparc64 configuration
+CND_PLATFORM_Solaris_sparc64=GNU-Solaris-Sparc
+CND_ARTIFACT_DIR_Solaris_sparc64=dist/Solaris_sparc64/GNU-Solaris-Sparc
+CND_ARTIFACT_NAME_Solaris_sparc64=ptysupport
+CND_ARTIFACT_PATH_Solaris_sparc64=dist/Solaris_sparc64/GNU-Solaris-Sparc/ptysupport
+CND_PACKAGE_DIR_Solaris_sparc64=dist/Solaris_sparc64/GNU-Solaris-Sparc/package
+CND_PACKAGE_NAME_Solaris_sparc64=ptysupport.tar
+CND_PACKAGE_PATH_Solaris_sparc64=dist/Solaris_sparc64/GNU-Solaris-Sparc/package/ptysupport.tar

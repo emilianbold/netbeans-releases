@@ -90,9 +90,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
         }
 
-        env.appendPathVariable("PATH", "/bin:/usr/bin:" + hostInfo.getPath()); // NOI18N
-
-        final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
+        final ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-s"); // NOI18N
 
         // Get working directory ....
         String workingDirectory = info.getWorkingDirectory(true);
@@ -153,14 +151,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         if (isInterrupted()) {
             throw new InterruptedException();
-        }
-
-        // In case we want to run application that was compiled with cygwin
-        // and require cygwin1.dll to run - we need the path to the dll in the
-        // PATH variable..
-
-        if (hostInfo.getShell() != null) {
-            jointEnv.appendPathVariable("PATH", new File(hostInfo.getShell()).getParent()); // NOI18N
         }
 
         if (info.isUnbuffer()) {

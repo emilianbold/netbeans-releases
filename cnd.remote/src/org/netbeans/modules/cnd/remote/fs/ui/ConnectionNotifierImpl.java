@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,67 +34,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+package org.netbeans.modules.cnd.remote.fs.ui;
 
-public final class EnvReader implements Callable<Map<String, String>> {
+import org.netbeans.modules.cnd.spi.remote.ConnectionNotifierImplementation;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.lookup.ServiceProvider;
 
-    private final InputStream is;
-    private final boolean remote;
+/**
+ *
+ * @author Vladimir Kvashin
+ */
+@ServiceProvider(service=ConnectionNotifierImplementation.class)
+public class ConnectionNotifierImpl implements ConnectionNotifierImplementation {
 
-    public EnvReader(final InputStream is, final boolean remote) {
-        this.is = is;
-        this.remote = remote;
+    @Override
+    public void addTask(ExecutionEnvironment execEnv, NamedRunnable task) {
+        ConnectionNotifierDelegate.getInstance(execEnv).addTask(task);
     }
 
     @Override
-    public Map<String, String> call() throws Exception {
-        Map<String, String> result = new HashMap<String, String>();
-        BufferedReader br = ProcessUtils.getReader(is, remote);
-        String s = null;
-        StringBuilder buffer = new StringBuilder();
-
-        while (true) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            s = br.readLine();
-
-            if (s == null) {
-                break;
-            }
-
-            if (s.trim().length() == 0) {
-                continue;
-            }
-
-            buffer.append(s.trim());
-
-            if (s.charAt(s.length() - 1) != '\\') {
-                String str = buffer.toString();
-                buffer.setLength(0);
-
-                int epos = str.indexOf('=');
-
-                if (epos < 0) {
-                    continue;
-                }
-
-                String var = str.substring(0, epos);
-                String val = str.substring(epos + 1);
-                result.put(var.trim(), val.trim());
-            }
-        }
-
-        return result;
+    public void removeTask(ExecutionEnvironment execEnv, NamedRunnable task) {
+        ConnectionNotifierDelegate.getInstance(execEnv).removeTask(task);
     }
 }
