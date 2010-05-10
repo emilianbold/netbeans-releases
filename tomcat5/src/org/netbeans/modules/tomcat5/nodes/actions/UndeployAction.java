@@ -61,6 +61,16 @@ import org.openide.util.actions.NodeAction;
  */
 public class UndeployAction extends NodeAction {
 
+    private static RequestProcessor rp;
+
+    /** Returns shared RequestProcessor. */
+    private static synchronized RequestProcessor rp () {
+        if (rp == null) {
+            rp = new RequestProcessor ("Tomcat app undeployment", 1); // NOI18N
+        }
+        return rp;
+    }
+
     /** Creates a new instance of Undeploy */
     public UndeployAction() {
     }
@@ -71,7 +81,7 @@ public class UndeployAction extends NodeAction {
     }
 
     protected void performAction(Node[] nodes) {
-        NodeRefreshTask refresh = new NodeRefreshTask(RequestProcessor.getDefault());
+        NodeRefreshTask refresh = new NodeRefreshTask(rp());
         for (int i=0; i<nodes.length; i++) {
             TomcatWebModuleCookie cookie = (TomcatWebModuleCookie) nodes[i].getCookie(TomcatWebModuleCookie.class);
             if (cookie != null) {
@@ -81,7 +91,7 @@ public class UndeployAction extends NodeAction {
             }
         }
 
-        RequestProcessor.getDefault().post(refresh);
+        rp().post(refresh);
     }
 
     protected boolean asynchronous() {
