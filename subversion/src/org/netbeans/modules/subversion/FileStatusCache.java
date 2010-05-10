@@ -601,7 +601,7 @@ public class FileStatusCache {
                 } else {
                     newFiles.put(file, fi);
                 }
-                assert newFiles.containsKey(dir) == false;
+                assert newFiles.containsKey(dir) == false : "Dir " + dir + "contains " + files.toString(); //NOI18N
                 turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.isEmpty() ? null : newFiles);
             }
         }
@@ -792,7 +792,14 @@ public class FileStatusCache {
         }
 
         files = (Map<File, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
-        if (files != null) return files;
+        if (files != null) {
+            if (files.containsKey(dir)) {
+                LOG.log(Level.WARNING, "Corrupted cached entry for folder {0}, it contains {1}", new Object[] {dir, files}); //NOI18N
+                files.remove(dir); // remove the corrupted entry
+                turbo.writeEntry(dir, FILE_STATUS_MAP, files); // and save the corrected map
+            }
+            return files;
+        }
         if (isNotManagedByDefault(dir)) {
             return NOT_MANAGED_MAP; 
         }
@@ -801,7 +808,7 @@ public class FileStatusCache {
 
         dir = FileUtil.normalizeFile(dir);
         files = scanFolder(dir);    // must not execute while holding the lock, it may take long to execute
-        assert files.containsKey(dir) == false;
+        assert files.containsKey(dir) == false : "Dir " + dir + "contains " + files.toString(); //NOI18N
         turbo.writeEntry(dir, FILE_STATUS_MAP, files);
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
