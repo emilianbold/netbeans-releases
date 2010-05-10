@@ -194,7 +194,7 @@ public final class ConnectionManager {
         int attempts = 2;
 
         while (attempts > 0) {
-            if (doConnect(env)) {
+            if (doConnect(env, true)) {
                 break;
             }
 
@@ -209,7 +209,7 @@ public final class ConnectionManager {
 
     }
 
-    private boolean doConnect(final ExecutionEnvironment env) throws IOException, CancellationException {
+    private boolean doConnect(final ExecutionEnvironment env, final boolean fetchHostInfo) throws IOException, CancellationException {
 
         final ConnectionTask connectionTask = new ConnectionTask(env);
         final Future<Session> connectionTaskResult = connectorThread.submit(connectionTask);
@@ -266,8 +266,10 @@ public final class ConnectionManager {
             sessions.put(env, session);
         }
 
-        HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
-        log.log(Level.FINE, "New connection established: {0} - {1}", new String[]{env.toString(), hostInfo.getOS().getName()}); // NOI18N
+        if (fetchHostInfo) {
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+            log.log(Level.FINE, "New connection established: {0} - {1}", new String[]{env.toString(), hostInfo.getOS().getName()}); // NOI18N
+        }
 
         fireConnected(env);
 
@@ -661,6 +663,11 @@ public final class ConnectionManager {
                         }
                 }
             }
+        }
+
+        @Override
+        public boolean doConnect(ExecutionEnvironment execEnv, boolean fetchHostInfo) throws IOException, CancellationException {
+            return instance.doConnect(execEnv, fetchHostInfo);
         }
     }
 }

@@ -117,8 +117,6 @@ public final class ShellScriptRunner {
             throw new IOException("Unable to get shell for " + env.getDisplayName()); // NOI18N
         }
 
-        final String shell = info.getShell();
-
         if (scriptCS == null) {
             if (env.isLocal()) {
                 if (info.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
@@ -136,7 +134,7 @@ public final class ShellScriptRunner {
         }
 
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
-        pb.setExecutable(shell).setArguments("-s"); // NOI18N
+        pb.setExecutable("/bin/sh").setArguments("-s"); // NOI18N
 
         shellProcess = pb.call();
 

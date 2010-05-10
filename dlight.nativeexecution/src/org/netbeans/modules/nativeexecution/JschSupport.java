@@ -38,9 +38,12 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -60,16 +63,14 @@ public final class JschSupport {
     private JschSupport() {
     }
 
-    public static ChannelStreams execCommand(final ExecutionEnvironment env, final String command, final ChannelParams params)
+    public static ChannelStreams startCommand(final ExecutionEnvironment env, final String command, final ChannelParams params)
             throws IOException, JSchException {
 
-        Session session = ConnectionManagerAccessor.getDefault().
-                getConnectionSession(env, true);
+        JSchWorker<ChannelStreams> worker = new JSchWorker<ChannelStreams>() {
 
-        int retry = 2;
-
-        while (retry-- > 0) {
-            try {
+            @Override
+            public ChannelStreams call() throws JSchException, IOException {
+                Session session = ConnectionManagerAccessor.getDefault().getConnectionSession(env, true);
                 ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
                 echannel.setCommand(command);
                 echannel.setXForwarding(params == null ? false : params.x11forward);
@@ -79,6 +80,48 @@ public final class JschSupport {
                         echannel.getInputStream(),
                         echannel.getErrStream(),
                         echannel.getOutputStream());
+            }
+
+            @Override
+            public String toString() {
+                return command;
+            }
+        };
+
+        return start(worker, env, 2);
+    }
+
+    public static ChannelStreams startLoginShellSession(final ExecutionEnvironment env) throws IOException, JSchException {
+        JSchWorker<ChannelStreams> worker = new JSchWorker<ChannelStreams>() {
+
+            @Override
+            public ChannelStreams call() throws JSchException, IOException {
+                Session session = ConnectionManagerAccessor.getDefault().getConnectionSession(env, true);
+                ChannelShell shell = (ChannelShell) session.openChannel("shell"); // NOI18N
+                shell.setPty(false);
+                shell.connect(JSCH_CONNECTION_TIMEOUT);
+
+                return new ChannelStreams(shell,
+                        shell.getInputStream(),
+                        new ByteArrayInputStream(new byte[0]),
+                        shell.getOutputStream());
+            }
+
+            @Override
+            public String toString() {
+                return "shell session for " + env.getDisplayName(); // NOI18N
+            }
+        };
+
+        return start(worker, env, 2);
+    }
+
+    private static ChannelStreams start(final JSchWorker<ChannelStreams> worker, final ExecutionEnvironment env, final int attempts) throws IOException, JSchException {
+        int retry = attempts;
+
+        while (retry-- > 0) {
+            try {
+                return worker.call();
             } catch (JSchException ex) {
                 String message = ex.getMessage();
                 Throwable cause = ex.getCause();
@@ -98,18 +141,16 @@ public final class JschSupport {
                     // Looks like in this case an attempt to
                     // just re-open a channel will fail - so create a new session
                     ConnectionManagerAccessor.getDefault().reconnect(env);
-                    session = ConnectionManagerAccessor.getDefault().getConnectionSession(env, true);
                 } else {
                     throw ex;
                 }
-
             } catch (NullPointerException npe) {
                 // Jsch bug... retry? ;)
                 log.log(Level.FINE, "Exception from JSch", npe); // NOI18N
             }
         }
 
-        throw new IOException("Failed to execute " + command); // NOI18N
+        throw new IOException("Failed to execute " + worker.toString()); // NOI18N
     }
 
     public final static class ChannelStreams {
@@ -117,9 +158,9 @@ public final class JschSupport {
         public final InputStream out;
         public final InputStream err;
         public final OutputStream in;
-        public final ChannelExec channel;
+        public final Channel channel;
 
-        public ChannelStreams(ChannelExec channel, InputStream out,
+        public ChannelStreams(Channel channel, InputStream out,
                 InputStream err, OutputStream in) {
             this.channel = channel;
             this.out = out;
@@ -135,5 +176,10 @@ public final class JschSupport {
         public void setX11Forwarding(boolean forward) {
             this.x11forward = forward;
         }
+    }
+
+    private static interface JSchWorker<T> {
+
+        T call() throws JSchException, IOException;
     }
 }

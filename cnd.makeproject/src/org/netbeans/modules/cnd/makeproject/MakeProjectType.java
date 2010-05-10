@@ -59,6 +59,10 @@ public final class MakeProjectType implements AntBasedProjectType {
     public static final String MAKE_DEP_PROJECTS = "make-dep-projects"; // NOI18N
     public static final String MAKE_DEP_PROJECT = "make-dep-project"; // NOI18N
     public static final String SOURCE_ENCODING_TAG = "sourceEncoding"; // NOI18N
+    public final static String SOURCE_ROOT_LIST_ELEMENT = "sourceRootList"; // NOI18N
+    public final static String SOURCE_ROOT_ELEMENT = "sourceRootElem"; // NOI18N
+    public final static String CONFIGURATION_LIST_ELEMENT = "confList"; // NOI18N
+    public final static String CONFIGURATION_ELEMENT = "confElem"; // NOI18N
     
     /**
      * Do nothing, just a service.
