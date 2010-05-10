@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
- 
+
     <folder name="Actions">
         <folder name="File">
             <file name="org-netbeans-modules-crudsampleapplication-editor-NewAction.instance">
@@ -26,6 +26,9 @@
         </folder>
     </folder>
     <folder name="Menu">
+        <folder name="GoTo_hidden"/>
+        <folder name="Tools_hidden"/>
+        <folder name="View_hidden"/>
         <folder name="File">
             <file name="org-netbeans-modules-crudsampleapplication-editor-NewAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-crudsampleapplication-editor-NewAction.instance"/>
@@ -68,5 +71,6 @@
                 <attr name="position" intvalue="0"/>
             </file>
         </folder>
+        <folder name="Memory_hidden"/>
     </folder>
 </filesystem>
