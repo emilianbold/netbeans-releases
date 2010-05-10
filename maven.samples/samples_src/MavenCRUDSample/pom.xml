@@ -24,6 +24,11 @@
             <version>3.8.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-actions</artifactId>
+            <version>RELEASE68</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

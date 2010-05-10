@@ -41,6 +41,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.TreeScanner;
 import java.io.*;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -76,6 +77,7 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ForLoopTest("test120270"));
 //        suite.addTest(new ForLoopTest("testForEachLoop160488"));
 //        suite.addTest(new ForLoopTest("testAddInitializer175866"));
+//        suite.addTest(new ForLoopTest("testInitializerVariable185746"));
         return suite;
     }
 
@@ -752,6 +754,50 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
                 AssignmentTree initAssign = make.Assignment(make.Identifier("j"), vt.getInitializer());
                 ExpressionStatementTree est = make.ExpressionStatement(initAssign);
                 workingCopy.rewrite(vt, est);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+
+    public void testInitializerVariable185746() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    public void method() {\n" +
+            "        for (int p = 0, i; ; );\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    public void method() {\n" +
+            "        for (int p = 0, hh; ; );\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitVariable(VariableTree node, Void p) {
+                        if (node.getName().contentEquals("i"))
+                            workingCopy.rewrite(node, make.setLabel(node, "hh"));
+                        return super.visitVariable(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
             }
         };
         testSource.runModificationTask(task).commit();

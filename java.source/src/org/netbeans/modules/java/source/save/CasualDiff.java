@@ -688,7 +688,7 @@ public class CasualDiff {
                 printer.printVarInit(newT);
             }
         }
-        copyTo(localPointer, localPointer = endPos(oldT)-1);
+        copyTo(localPointer, localPointer = endPos(oldT));
         return localPointer;
     }
 
