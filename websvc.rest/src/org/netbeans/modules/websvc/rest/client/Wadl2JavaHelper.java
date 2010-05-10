@@ -286,7 +286,7 @@ class Wadl2JavaHelper {
     }
 
     static MethodTree createHttpGETMethod(WorkingCopy copy, WadlSaasMethod saasMethod, HttpMimeType mimeType, boolean multipleMimeTypes, HttpParams httpParams, Security security) {
-        String methodName = saasMethod.getName() + (multipleMimeTypes ? "_"+mimeType.name() : ""); //NOI18N
+        String methodName = makeJavaIdentifier(saasMethod.getName()) + (multipleMimeTypes ? "_"+mimeType.name() : ""); //NOI18N
 
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
