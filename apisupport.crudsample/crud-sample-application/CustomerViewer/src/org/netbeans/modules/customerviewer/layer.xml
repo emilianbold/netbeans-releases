@@ -53,11 +53,17 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="Menu">
+        <folder name="GoTo_hidden"/>
+        <folder name="Tools_hidden"/>
+        <folder name="View_hidden"/>
         <folder name="Window">
             <file name="CustomerAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-customerviewer-CustomerAction.instance"/>
             </file>
         </folder>
+    </folder>
+    <folder name="Toolbars">
+        <folder name="Memory_hidden"/>
     </folder>
     <folder name="Windows2">
         <folder name="Components">
