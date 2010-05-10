@@ -423,7 +423,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         }
     } // End of Listener class
 
-    private final class Seq implements HighlightsSequence {
+    private final class Seq implements HighlightsSequenceEx {
         
         private HighlightsSequence seq;
         private long version;
@@ -470,6 +470,12 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             synchronized (CompoundHighlightsContainer.this.LOCK) {
                 assert attibutes != null : "Sequence not initialized, call moveNext() first."; //NOI18N
                 return attibutes;
+            }
+        }
+
+        public @Override boolean isStale() {
+            synchronized (CompoundHighlightsContainer.this.LOCK) {
+                return !checkVersion();
             }
         }
 
