@@ -73,6 +73,10 @@ public final class EnvReader implements Callable<Map<String, String>> {
                 break;
             }
 
+            if (s.trim().length() == 0) {
+                continue;
+            }
+
             buffer.append(s.trim());
 
             if (s.charAt(s.length() - 1) != '\\') {
@@ -86,10 +90,8 @@ public final class EnvReader implements Callable<Map<String, String>> {
                 }
 
                 String var = str.substring(0, epos);
-                var = var.substring(var.lastIndexOf(' ') + 1);
-                String val = str.substring(epos + 2, str.length() - 1);
-
-                result.put(var, val);
+                String val = str.substring(epos + 1);
+                result.put(var.trim(), val.trim());
             }
         }
 

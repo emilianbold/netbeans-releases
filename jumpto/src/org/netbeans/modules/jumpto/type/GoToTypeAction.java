@@ -744,6 +744,12 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     }
     
     private Profile initializeProfiling() {
+        boolean assertsOn = false;
+        assert assertsOn = true;
+        if (!assertsOn) {
+            return null;
+        }
+
         FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance");
         if (fo == null) {
             return null;

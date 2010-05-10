@@ -335,10 +335,9 @@ public class InstallSupportImpl {
                 }
                 
                 boolean needsRestart = false;
-                JarEntry updaterJarEntry = null;
-                JarFile updaterJarFile = null;
-                File updaterTargetCluster = null;
                 File targetCluster = null;
+                List <UpdaterInfo> updaterFiles = new ArrayList <UpdaterInfo> ();
+                
                 for (ModuleUpdateElementImpl moduleImpl : affectedModuleImpls) {
                     synchronized(this) {
                         if (currentStep == STEP.CANCEL) {
@@ -362,36 +361,53 @@ public class InstallSupportImpl {
                     File dest = getDestination(targetCluster, moduleImpl.getCodeName(), source);
                     assert dest != null : "Destination file exists for " + moduleImpl + " in " + targetCluster;
                     
-                    // check if 'updater.jar' is being installed
-                    if (AUTOUPDATE_SERVICES_MODULE.equals (moduleImpl.getCodeName ())) {
-                        err.log (Level.FINEST, AUTOUPDATE_SERVICES_MODULE + " is being installed, check if contains " + ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH);
-                        JarFile jf = new JarFile (dest);
-                        try {
-                            for (JarEntry entry : Collections.list (jf.entries ())) {
-                                if (ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH.equals (entry.toString ())) {
-                                    err.log (Level.FINE, ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH + " is being installed from " + moduleImpl.getCodeName ());
-                                    updaterJarEntry = entry;
-                                    updaterJarFile = jf;
-                                    updaterTargetCluster = targetCluster;
-                                    needsRestart = true;
-                                    break;
-                                }
-                            }
-                        } finally {
-                            if (jf != null && ! jf.equals (updaterJarFile)) {
-                                jf.close ();
-                            }
-                        }
+                    // check if 'updater.jar' or 'updater_<branding>_<locale>.jar' is being installed
+                    if (AUTOUPDATE_SERVICES_MODULE.equals(moduleImpl.getCodeName())) {
+                        err.log(Level.FINEST, AUTOUPDATE_SERVICES_MODULE + " is being installed, check if contains " + ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH);
                     }
-                    
+
+                    JarFile jf = new JarFile(dest);
+                    boolean added = false;
+                    try {
+                       for (JarEntry entry : Collections.list(jf.entries())) {
+                            if (ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH.equals(entry.toString()) ||
+                                    entry.toString().matches(ModuleUpdater.AUTOUPDATE_UPDATER_JAR_LOCALE_PATTERN)) {
+                                err.log(Level.FINE, entry.toString() + " is being installed from " + moduleImpl.getCodeName());
+                                updaterFiles.add(new UpdaterInfo(entry, jf, targetCluster));
+                                needsRestart = true;
+                                added = true;
+                             }
+                         }
+                    } finally {
+                        if (jf != null && !added) {
+                            jf.close();
+                        }
+                     }
+
+
                     needsRestart |= needsRestart(installed != null, moduleImpl, dest);
                 }
                 
                 try {
                     // store source of installed files
                     Utilities.writeAdditionalInformation (getElement2Clusters ());
-                    if (updaterJarFile != null) {
-                        Utilities.writeUpdateOfUpdaterJar (updaterJarEntry, updaterJarFile, updaterTargetCluster);
+                    for(int i=0;i<updaterFiles.size();i++) {
+                        UpdaterInfo info = updaterFiles.get(i);
+                        Utilities.writeUpdateOfUpdaterJar (info.getUpdaterJarEntry(), info.getUpdaterJarFile(), info.getUpdaterTargetCluster());
+                        boolean hasAnotherEntryInSameJarFile = false;
+                        for(int j = i + 1; j < updaterFiles.size(); j++) {
+                            if(updaterFiles.get(j).getUpdaterJarFile() == info.getUpdaterJarFile()) {
+                                hasAnotherEntryInSameJarFile = true;
+                                break;
+                            }
+                        }
+                        if (!hasAnotherEntryInSameJarFile) {
+                            try {
+                                info.getUpdaterJarFile().close();
+                            } catch (IOException e) {
+                                err.log(Level.INFO, "Cannot close jar file " + info.getUpdaterJarFile());
+                            }
+                        }
                     }
 
                     if (! needsRestart) {
@@ -1131,5 +1147,40 @@ public class InstallSupportImpl {
             es = Executors.newSingleThreadExecutor ();
         }
         return es;
+    }
+        private static class UpdaterInfo {
+        private JarEntry updaterJarEntry;
+        private JarFile updaterJarFile;
+        private File updaterTargetCluster;
+
+        public UpdaterInfo(JarEntry updaterJarEntry, JarFile updaterJarFile, File updaterTargetCluster) {
+            this.updaterJarEntry = updaterJarEntry;
+            this.updaterJarFile = updaterJarFile;
+            this.updaterTargetCluster = updaterTargetCluster;
+        }
+
+        public JarEntry getUpdaterJarEntry() {
+            return updaterJarEntry;
+        }
+
+        public void setUpdaterJarEntry(JarEntry updaterJarEntry) {
+            this.updaterJarEntry = updaterJarEntry;
+        }
+
+        public JarFile getUpdaterJarFile() {
+            return updaterJarFile;
+        }
+
+        public void setUpdaterJarFile(JarFile updaterJarFile) {
+            this.updaterJarFile = updaterJarFile;
+        }
+
+        public File getUpdaterTargetCluster() {
+            return updaterTargetCluster;
+        }
+
+        public void setUpdaterTargetCluster(File updaterTargetCluster) {
+            this.updaterTargetCluster = updaterTargetCluster;
+        }
     }
 }

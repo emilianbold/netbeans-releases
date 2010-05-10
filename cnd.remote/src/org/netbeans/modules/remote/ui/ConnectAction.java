@@ -40,10 +40,6 @@ package org.netbeans.modules.remote.ui;
 
 import java.io.IOException;
 import java.util.concurrent.CancellationException;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -88,24 +84,11 @@ public class ConnectAction extends SingleHostAction {
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
             try {
                 ConnectionManager.getInstance().connectTo(env);
-                checkSetupAfterConnection(env);
+                RemoteUtil.checkSetupAfterConnection(env);
             } catch (IOException ex) {
                 conectionFailed(env, ex);
             } catch (CancellationException ex) {
                 conectionFailed(env, ex);
-            }
-        }
-    }
-
-    private void checkSetupAfterConnection(ExecutionEnvironment env) {
-        RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
-        if (!record.isOnline()) {
-            record.resetOfflineState();
-            record.init(null);
-            if (record.isOnline()) {
-                ToolsCacheManager cacheManager = ToolsCacheManager.createInstance(true);
-                CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment(), false);
-                csm.initialize(false, true, null);
             }
         }
     }
