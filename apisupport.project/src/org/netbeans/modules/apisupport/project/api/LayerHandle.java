@@ -185,6 +185,7 @@ public final class LayerHandle {
                 generated = null;
             }
             configure();
+            setPropagateMasks(true);
         }
         private void configure() {
             List<FileSystem> layers = new ArrayList<FileSystem>(2);

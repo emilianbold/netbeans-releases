@@ -78,6 +78,12 @@ public class FileChangedManager extends SecurityManager {
         return INSTANCE;
     }
 
+    static void assertNoLock() {
+        assert !Thread.holdsLock(IDLE_CALL);
+        assert !Thread.holdsLock(IDLE_IO);
+        assert !Thread.holdsLock(IDLE_ON);
+    }
+
     @Override
     public void checkPermission(Permission perm) {
     }
@@ -173,11 +179,11 @@ public class FileChangedManager extends SecurityManager {
             if (l < load) {
                 return;
             }
+            Runnable goingToSleep = IDLE_CALL.get();
+            if (goingToSleep != null) {
+                goingToSleep.run();
+            }
             synchronized (IDLE_IO) {
-                Runnable goingToSleep = IDLE_CALL.get();
-                if (goingToSleep != null) {
-                    goingToSleep.run();
-                }
                 IDLE_IO.wait(100);
             }
         }
