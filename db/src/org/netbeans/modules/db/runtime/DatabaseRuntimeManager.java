@@ -79,12 +79,13 @@ public final class DatabaseRuntimeManager {
      * The Lookup.Result instance containing all the DatabaseRuntime instances.
      */
     private Lookup.Result<DatabaseRuntime> result = getLookupResult();
-    
+
     /**
      * Returns the singleton database runtime manager instance.
      */
     public static synchronized DatabaseRuntimeManager getDefault() {
         if (DEFAULT == null) {
+            LOGGER.finest("Instantiated DatabaseRuntimeManager.");
             DEFAULT = new DatabaseRuntimeManager();
         }
         return DEFAULT;
@@ -95,6 +96,11 @@ public final class DatabaseRuntimeManager {
         return runtimes.toArray(new DatabaseRuntime[runtimes.size()]);
     }
     
+    public static synchronized boolean isInstantiated() {
+        LOGGER.finest("Is DatabaseRuntimeManager instantiated? " + (DEFAULT != null));
+        return DEFAULT != null;
+    }
+
     /**
      * Returns the runtimes registered for the specified JDBC driver.
      *

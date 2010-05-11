@@ -68,16 +68,18 @@ public class DatabaseModule extends ModuleInstall {
                 }
             }
         }
-        
+
         // stop all running runtimes
-        DatabaseRuntime[] runtimes = DatabaseRuntimeManager.getDefault().getRuntimes();
-        for (int i = 0; i < runtimes.length; i++) {
-            if (runtimes[i].isRunning()) {
-                try {
-                    runtimes[i].stop();
-                } catch (Exception e) {
-                    // cf. issue 64185 exceptions should only be logged
-                    Logger.getLogger("global").log(Level.INFO, null, e);
+        if (DatabaseRuntimeManager.isInstantiated()) {
+            DatabaseRuntime[] runtimes = DatabaseRuntimeManager.getDefault().getRuntimes();
+            for (int i = 0; i < runtimes.length; i++) {
+                if (runtimes[i].isRunning()) {
+                    try {
+                        runtimes[i].stop();
+                    } catch (Exception e) {
+                        // cf. issue 64185 exceptions should only be logged
+                        Logger.getLogger("global").log(Level.INFO, null, e);
+                    }
                 }
             }
         }
