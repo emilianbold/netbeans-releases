@@ -204,9 +204,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
             if (TOOL_TRUSTSTORECLIENT.equals(toolName)) {  //NOI18N
                 return true;
             }
-            if (TOOL_WSCOMPILE.equals(toolName)) {     //NOI18N
-                if (ServerUtilities.getJarName(gfRootStr, "webservices.jar") != null)
-                return true;   // TODO - the support is there - need to find the right classpath then change to true
+            if (TOOL_WSCOMPILE.equals(toolName)) {  //NOI18N
+                return true;
             }
             if (TOOL_APPCLIENTRUNTIME.equals(toolName)) { //NOI18N
                 return true;
@@ -245,8 +244,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
             }
 
             if (TOOL_WSCOMPILE.equals(toolName)) {
-                String[] entries = new String[]{"webservices", //NOI18N
-                    "javax.activation"}; //NOI18N
+                String[] entries = new String[] {"webservices(|-osgi).jar"}; //NOI18N
                 List<File> cPath = new ArrayList<File>();
 
                 for (String entry : entries) {

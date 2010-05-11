@@ -533,7 +533,8 @@ public class Outline extends ETable {
     public boolean editCellAt (int row, int column, EventObject e) {
         //If it was on column 0, it may be a request to expand a tree
         //node - check for that first.
-        if (isTreeColumnIndex (column) && e instanceof MouseEvent) {
+        boolean isTreeColumn = isTreeColumnIndex(column);
+        if (isTreeColumn && e instanceof MouseEvent) {
             MouseEvent me = (MouseEvent) e;
             TreePath path = getLayoutCache().getPathForRow(convertRowIndexToModel(row));
             if (!getOutlineModel().isLeaf(path.getLastPathComponent())) {
@@ -591,13 +592,13 @@ public class Outline extends ETable {
         }
             
         boolean res = false;
-        if (e instanceof MouseEvent && ((MouseEvent)e).getClickCount() > 1) {
+        if (!isTreeColumn || e instanceof MouseEvent && ((MouseEvent)e).getClickCount() > 1) {
             res = super.editCellAt(row, column, e);
         }
-        if( res && isTreeColumnIndex(column) && null != getEditorComponent() ) {
+        if( res && isTreeColumn && null != getEditorComponent() ) {
             configureTreeCellEditor(getEditorComponent(), row, column);
         }
-        if (e == null && !res && isTreeColumnIndex(column)) {
+        if (e == null && !res && isTreeColumn) {
             // Handle SPACE
             checkAt(row, column, null);
         }
