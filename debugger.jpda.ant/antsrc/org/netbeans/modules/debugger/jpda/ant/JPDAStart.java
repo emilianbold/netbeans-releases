@@ -61,6 +61,7 @@ import com.sun.jdi.connect.Connector;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -102,6 +103,7 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 
@@ -116,6 +118,8 @@ public class JPDAStart extends Task implements Runnable {
 
     private static final String SOCKET_TRANSPORT = "dt_socket"; // NOI18N
     private static final String SHMEM_TRANSPORT = "dt_shmem"; // NOI18N
+    private static final String SOCKET_CONNECTOR = "com.sun.jdi.SocketListen"; // NOI18N
+    private static final String SHMEM_CONNECTOR = "com.sun.jdi.SharedMemoryListen"; // NOI18N
 
     private static final Pattern[] BOOT_CLASSPATH_WARNING_FILTER = new Pattern[] {
         Pattern.compile(".*jre.lib.sunrsasign\\.jar$"),
@@ -128,6 +132,8 @@ public class JPDAStart extends Task implements Runnable {
     private String                  addressProperty;
     /** Default transport is socket*/
     private String                  transport = SOCKET_TRANSPORT;
+    /** Preferred connector name. May be null. */
+    private String                  connector;
     /** Name which will represent this debugging session in debugger UI.
      * If known in advance it should be name of the app which will be debugged.
      */
@@ -145,7 +151,7 @@ public class JPDAStart extends Task implements Runnable {
     private String                  stopClassName = null;
     private String                  listeningCP = null;
 
-    
+
     // properties ..............................................................
     
     public void setAddressProperty (String propertyName) {
@@ -165,6 +171,14 @@ public class JPDAStart extends Task implements Runnable {
         return transport;
     }
     
+    public void setConnector(String connector) {
+        this.connector = connector;
+    }
+
+    public String getConnector() {
+        return connector;
+    }
+
     public void setName (String name) {
         this.name = name;
     }
@@ -220,7 +234,21 @@ public class JPDAStart extends Task implements Runnable {
         }
     }
 
-    
+    /** Searching for a connector in given collection.
+     * @param name - name of the connector
+     * @param connectors
+     * @return the connector or null
+     */
+    private static ListeningConnector findConnector(String name, final Collection<ListeningConnector> connectors) {
+        assert name != null;
+        for (ListeningConnector c : connectors) {
+            if (name.equals(c.name())) {
+                return c;
+            }
+        }
+        return null;
+    }
+
     // main methods ............................................................
 
     @Override
@@ -276,23 +304,47 @@ public class JPDAStart extends Task implements Runnable {
         synchronized (lock) {
             debug("Entered synch lock"); // NOI18N
             try {
-
                 ListeningConnector lc = null;
-                Iterator i = Bootstrap.virtualMachineManager ().
-                    listeningConnectors ().iterator ();
-                for (; i.hasNext ();) {
-                    ListeningConnector llc = (ListeningConnector) i.next ();
-                    Transport t = llc.transport ();
-                    if (t != null && t.name ().equals (transport)) {
-                        lc = llc;
-                        break;
+                final Set<ListeningConnector> connectors = new HashSet<ListeningConnector>();
+                // search for connectors registered by NetBeans modules
+                final Lookup.Result<ListeningConnector> r = Lookup.getDefault().lookupResult(ListeningConnector.class);
+                connectors.addAll(r.allInstances());
+                // use JDI default as well
+                connectors.addAll(Bootstrap.virtualMachineManager().listeningConnectors());
+
+                // if name of the connector has been specified, try to use it
+                if (connector != null) {
+                    logger.log(Level.FINE, "Looking for connector {0}", connector);
+                    lc = findConnector(connector, connectors);
+                }
+                if (lc == null) {
+                    // if dt_socket then use default socket as specified by JDI
+                    if (transport.equals(SOCKET_TRANSPORT)) {
+                        logger.log(Level.FINE, "Looking for default connector {0}", SOCKET_CONNECTOR);
+                        lc = findConnector(SOCKET_CONNECTOR, connectors);
+                    // if dt_shmem then use the default socket as specified by JDI
+                    } else if (transport.equals(SHMEM_TRANSPORT)) {
+                        logger.log(Level.FINE, "Looking for default connector {0}", SHMEM_CONNECTOR);
+                        lc = findConnector(SHMEM_CONNECTOR, connectors);
+                    }
+                }
+                // fallback to the original, i.e. find first connector whose transport
+                // name matches given transport
+                if (lc == null) {
+                    logger.log(Level.FINE, "Fall back, looking for a connector with transport {0}", transport);
+                    for (ListeningConnector c: connectors) {
+                        Transport t = c.transport ();
+                        if (t != null && t.name ().equals (transport)) {
+                            lc = c;
+                            break;
+                        }
                     }
                 }
                 if (lc == null) 
                     throw new BuildException
-                        ("No trasports named " + transport + " found!");
+                        ("No transports named " + transport + " found!");
 
-                logger.fine("Listening using transport "+transport);
+                logger.log(Level.FINE, "Listening using connector {0}, transport {1}", new Object[] {lc.name(), lc.transport().name()});
 
                 final Map args = lc.defaultArguments ();
                 Connector.StringArgument localAddress = (Connector.StringArgument) args.get("localAddress"); // NOI18N
