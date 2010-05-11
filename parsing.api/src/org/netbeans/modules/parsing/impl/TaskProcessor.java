@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -190,7 +191,13 @@ public class TaskProcessor {
                     }
                 }
                 lockCount++;
-                task.run ();
+                Utilities.runPriorityIO(new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        task.run ();
+                        return null;
+                    }
+                });
             } catch (final Exception e) {
                 final ParseException ioe = new ParseException ();
                 ioe.initCause(e);

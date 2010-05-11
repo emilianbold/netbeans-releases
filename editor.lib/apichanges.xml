@@ -104,6 +104,27 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ToolTipSupport-heavyweight-tooltips">
+            <summary>Support for heavyweight tooltips</summary>
+            <version major="2" minor="10"/>
+            <date day="5" month="5" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+                <p>
+                    Adding flags to <code>o.n.editor.ext.ToolTipSupport</code> class that control
+                    tooltip behavior such as if the tooltip should be hidden on mouse move, timeout, etc.
+                    The flags are <code>FLAG_HIDE_ON_MOUSE_MOVE</code>, <code>FLAG_HIDE_ON_TIMER</code>, <code>FLAG_PERMANENT</code>
+                    and <code>FLAGS_LIGHTWEIGHT_TOOLTIP</code>, <code>FLAGS_HEAVYWEIGHT_TOOLTIP</code>.
+                </p>
+                <p>
+                    A new method <code>ToolTipSupport.setTooltip()</code> accepting the additional <code>flags</code>
+                    parameter has also been added.
+                </p>
+            </description>
+            <issue number="181533"/>
+        </change>
+
         <change id="Utilities.createSingleLineEditor">
             <summary>Adding Utilities.createSingleLineEditor</summary>
             <version major="2" minor="7"/>

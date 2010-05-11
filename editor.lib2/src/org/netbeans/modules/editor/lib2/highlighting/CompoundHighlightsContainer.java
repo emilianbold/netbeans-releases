@@ -126,13 +126,16 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
 
             int [] update = null;
 
-            int lowest = cacheBoundaries.getLowerBoundary();
-            int highest = cacheBoundaries.getUpperBoundary();
+            int lowest = -1;
+            int highest = -1;
 
             if (cacheObsolete) {
                 cacheObsolete = false;
                 discardCache();
             } else {
+                lowest = cacheBoundaries.getLowerBoundary();
+                highest = cacheBoundaries.getUpperBoundary();
+
                 if (lowest == -1 || highest == -1) {
                     // not sure what is cached -> reset the cache
                     discardCache();
@@ -420,7 +423,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         }
     } // End of Listener class
 
-    private final class Seq implements HighlightsSequence {
+    private final class Seq implements HighlightsSequenceEx {
         
         private HighlightsSequence seq;
         private long version;
@@ -470,6 +473,12 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             }
         }
 
+        public @Override boolean isStale() {
+            synchronized (CompoundHighlightsContainer.this.LOCK) {
+                return !checkVersion();
+            }
+        }
+
         // There can be concurrent modifications from different threads operating under
         // document's read lock. See IZ#106069.
         private boolean checkVersion() {
@@ -492,7 +501,8 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         public int getLowerBoundary() {
             if (boundaries.size() == 2) {
                 OffsetGapList.Offset lower = boundaries.get(0);
-                return lower.getOffset() >= doc.getLength() ? -1 : lower.getOffset();
+                int lowerOffset = lower.getOffset();
+                return lowerOffset >= doc.getLength() ? -1 : lowerOffset;
             } else {
                 return -1;
             }
@@ -501,7 +511,8 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         public int getUpperBoundary() {
             if (boundaries.size() == 2) {
                 OffsetGapList.Offset higher = boundaries.get(1);
-                return higher.getOffset() >= doc.getLength() ? Integer.MAX_VALUE : higher.getOffset();
+                int higherOffset = higher.getOffset();
+                return higherOffset >= doc.getLength() ? Integer.MAX_VALUE : higherOffset;
             } else {
                 return -1;
             }

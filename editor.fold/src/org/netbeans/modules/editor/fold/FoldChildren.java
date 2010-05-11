@@ -102,7 +102,18 @@ public final class FoldChildren extends GapList {
      * @param index &gt;=0 &amp;&amp; &lt;{@link #getFoldCount()}
      *  index of the fold.
      */
+    private static int invalidIndexHierarchySnapshot;
     public Fold getFold(int index) {
+        if (index >= getFoldCount() && invalidIndexHierarchySnapshot == 0) {
+            StringBuilder sb = new StringBuilder(200);
+            sb.append("Invalid index=").append(index).append("; foldCount=").append(getFoldCount()).append('\n'); // NOI18N
+            if (parent != null) {
+                invalidIndexHierarchySnapshot++;
+                sb.append(parent.getHierarchy().toString());
+                invalidIndexHierarchySnapshot--;
+            }
+            throw new IndexOutOfBoundsException(sb.toString());
+        }
         return (Fold)get(index);
     }
     

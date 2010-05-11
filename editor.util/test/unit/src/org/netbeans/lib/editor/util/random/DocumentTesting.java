@@ -81,10 +81,10 @@ public class DocumentTesting {
     /** Redo by doc.getProperty(UndoManager.class). */
     public static final String REDO = "doc-redo";
 
-    /** Maxium number of chars inserted by INSERT_TEXT op. */
+    /** Maximum number of chars inserted by INSERT_TEXT op. */
     public static final String INSERT_TEXT_MAX_LENGTH = "doc-insert-text-max-length";
 
-    /** Maxium number of chars removed by REMOVE_TEXT op. */
+    /** Maximum number of chars removed by REMOVE_TEXT op. */
     public static final String REMOVE_TEXT_MAX_LENGTH = "doc-remove-text-max-length";
 
     /** Maximum number of undo/redo (4 by default) to be performed at once. */
@@ -106,7 +106,18 @@ public class DocumentTesting {
             doc = new TestDocument();
             container.putProperty(Document.class, doc);
         }
-        
+
+        // Init a default random text if not yet inited (can be reinited later)
+        if (container.getInstanceOrNull(RandomText.class) == null) {
+            RandomText randomText = RandomText.join(
+                    RandomText.lowerCaseAZ(3),
+                    RandomText.spaceTabNewline(1),
+                    RandomText.phrase("   ", 1),
+                    RandomText.phrase("\n\n", 1),
+                    RandomText.phrase("\t\tabcdef\t", 1));
+            container.putProperty(RandomText.class, randomText);
+        }
+
         container.addOp(new InsertOp(INSERT_CHAR));
         container.addOp(new InsertOp(INSERT_TEXT));
         container.addOp(new InsertOp(INSERT_PHRASE));
@@ -141,6 +152,14 @@ public class DocumentTesting {
         } else {
             return provider.getInstanceOrNull(Document.class);
         }
+    }
+
+    public static Document getValidDocument(PropertyProvider provider) {
+        Document doc = getDocument(provider);
+        if (doc == null) {
+            throw new IllegalStateException("Null Document for property provider " + provider); // NOI18N
+        }
+        return doc;
     }
 
     public static boolean isLogDoc(PropertyProvider provider) {
@@ -327,37 +346,37 @@ public class DocumentTesting {
 
     }
 
-    final static class RemoveOp extends RandomTestContainer.Op {
+        final static class RemoveOp extends RandomTestContainer.Op {
 
-        public RemoveOp(String name) {
-            super(name);
-        }
-
-        @Override
-        protected void run(Context context) throws Exception {
-            Document doc = getDocument(context);
-            int docLen = doc.getLength();
-            if (docLen == 0)
-                return; // Nothing to possibly remove
-            Random random = context.container().random();
-            int length;
-            if (REMOVE_CHAR == name()) { // Just use ==
-                length = 1;
-            } else if (REMOVE_TEXT == name()) { // Just use ==
-                Integer maxLength = (Integer) context.getPropertyOrNull(REMOVE_TEXT_MAX_LENGTH);
-                if (maxLength == null)
-                    maxLength = Integer.valueOf(10);
-                if (maxLength > docLen)
-                    maxLength = Integer.valueOf(docLen);
-                length = random.nextInt(maxLength) + 1;
-            } else {
-                throw new IllegalStateException("Unexpected op name=" + name());
+            public RemoveOp(String name) {
+                super(name);
             }
-            int offset = random.nextInt(docLen - length + 1);
-            remove(context, offset, length);
-        }
 
-    }
+            @Override
+            protected void run(Context context) throws Exception {
+                Document doc = getDocument(context);
+                int docLen = doc.getLength();
+                if (docLen == 0)
+                    return; // Nothing to possibly remove
+                Random random = context.container().random();
+                int length;
+                if (REMOVE_CHAR == name()) { // Just use ==
+                    length = 1;
+                } else if (REMOVE_TEXT == name()) { // Just use ==
+                    Integer maxLength = (Integer) context.getPropertyOrNull(REMOVE_TEXT_MAX_LENGTH);
+                    if (maxLength == null)
+                        maxLength = Integer.valueOf(10);
+                    if (maxLength > docLen)
+                        maxLength = Integer.valueOf(docLen);
+                    length = random.nextInt(maxLength) + 1;
+                } else {
+                    throw new IllegalStateException("Unexpected op name=" + name());
+                }
+                int offset = random.nextInt(docLen - length + 1);
+                remove(context, offset, length);
+            }
+
+        }
 
     final static class UndoRedo extends RandomTestContainer.Op {
 
