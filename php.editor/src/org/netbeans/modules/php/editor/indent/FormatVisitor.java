@@ -820,16 +820,18 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Program program) {
-	path.addFirst(program);
-	ts.move(0);
-	ts.moveNext();
-	ts.movePrevious();
-	addFormatToken(formatTokens);
-	super.visit(program);
-	while (ts.moveNext()) {
-	    addFormatToken(formatTokens);
-	}
-	path.removeFirst();
+        if (ts != null) {
+            path.addFirst(program);
+            ts.move(0);
+            ts.moveNext();
+            ts.movePrevious();
+            addFormatToken(formatTokens);
+            super.visit(program);
+            while (ts.moveNext()) {
+                addFormatToken(formatTokens);
+            }
+            path.removeFirst();
+        }
     }
 
     @Override
