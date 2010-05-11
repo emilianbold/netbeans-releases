@@ -185,8 +185,10 @@ public class ConstructorPanel extends JPanel {
         cbMethodGeneration = new javax.swing.JComboBox();
         cbGenerateDoc = new javax.swing.JCheckBox();
 
+        label.setLabelFor(scrollPane);
         label.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.label.text")); // NOI18N
 
+        jLabel1.setLabelFor(cbMethodGeneration);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.jLabel1.text")); // NOI18N
 
         cbMethodGeneration.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -216,6 +218,12 @@ public class ConstructorPanel extends JPanel {
                 .addGap(65, 65, 65))
         );
 
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.jLabel1.AccessibleContext.accessibleName")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.jLabel1.AccessibleContext.accessibleDescription")); // NOI18N
+        cbMethodGeneration.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbMethodGeneration.AccessibleContext.accessibleName")); // NOI18N
+        cbMethodGeneration.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbMethodGeneration.AccessibleContext.accessibleDescription")); // NOI18N
+
+        cbGenerateDoc.setMnemonic('G');
         cbGenerateDoc.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbGenerateDoc.text")); // NOI18N
         cbGenerateDoc.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -249,6 +257,18 @@ public class ConstructorPanel extends JPanel {
                 .addComponent(cbGenerateDoc)
                 .addContainerGap())
         );
+
+        label.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.label.AccessibleContext.accessibleName")); // NOI18N
+        label.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.label.AccessibleContext.accessibleDescription")); // NOI18N
+        scrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.scrollPane.AccessibleContext.accessibleName")); // NOI18N
+        scrollPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.scrollPane.AccessibleContext.accessibleDescription")); // NOI18N
+        pGSCustomize.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.pGSCustomize.AccessibleContext.accessibleName")); // NOI18N
+        pGSCustomize.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.pGSCustomize.AccessibleContext.accessibleDescription")); // NOI18N
+        cbGenerateDoc.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbGenerateDoc.AccessibleContext.accessibleName")); // NOI18N
+        cbGenerateDoc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbGenerateDoc.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbMethodGenerationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbMethodGenerationActionPerformed

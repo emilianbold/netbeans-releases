@@ -359,6 +359,46 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
         connVariableLabel = new javax.swing.JLabel();
         connVariableTextField = new javax.swing.JTextField();
 
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return connVariableTextField;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return connVariableTextField;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return connVariableTextField;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  dbconnComboBox){
+                    return tableComboBox;
+                }
+                if(aComponent ==  tableComboBox){
+                    return columnList;
+                }
+                if(aComponent ==  columnList){
+                    return connVariableTextField;
+                }
+                return connVariableTextField;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  tableComboBox){
+                    return dbconnComboBox;
+                }
+                if(aComponent ==  columnList){
+                    return tableComboBox;
+                }
+                if(aComponent ==  connVariableTextField){
+                    return columnList;
+                }
+                return connVariableTextField;//end getComponentBefore
+
+            }}
+        );
+
         dbconnLabel.setLabelFor(dbconnComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(dbconnLabel, org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "ConnectionGeneratorPanel.dbconnLabel.text")); // NOI18N
 
