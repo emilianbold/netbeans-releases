@@ -285,6 +285,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private void initProjectCombo() {
         Project[] projects = issue.getRepository().getConfiguration().getProjects();
         DefaultComboBoxModel model = new DefaultComboBoxModel(projects);
+        model.setSelectedItem(null); // Make sure nothing is pre-selected
         projectCombo.setModel(model);
     }
 
