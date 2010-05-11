@@ -44,6 +44,7 @@ package org.netbeans.lib.editor.util.random;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -139,8 +140,10 @@ public final class RandomTestContainer extends PropertyProvider {
     private Random random;
 
     int totalOpCount;
-    
-    private Context context;
+
+    private Context context; // Global context
+
+    private Context runContext; // Context for running of random test
 
     private long seed;
 
@@ -168,21 +171,43 @@ public final class RandomTestContainer extends PropertyProvider {
      *  or <code>0L</code> to run a truly random test.
      */
     public void run(long seed) throws Exception {
+        runInit(seed);
+        runOps(0); // Run all
+    }
+
+    /**
+     * Initialize for random test running. Next one or more calls to runOps() should follow.
+     *
+     * @param seed
+     */
+    public void runInit(long seed) {
         this.random = new Random();
         if (seed == 0) { // Use currentTimeMillis() (btw nanoTime() in 1.5 instead)
             seed = System.currentTimeMillis();
         }
         this.seed = seed;
         random.setSeed(this.seed);
-        LOG.info(name() + " with SEED=" + this.seed + "L - useful for RandomTestContainer.run(seed)\n"); // NOI18N
+        LOG.log(Level.INFO, "{0} with SEED={1}L - useful for RandomTestContainer.run(seed)\n", // NOI18N
+                new Object[]{name(), this.seed});
 
-        if (name2Op.size() == 0) {
-            throw new IllegalStateException("No operations defined."); // NOI18N
+        if (name2Op.isEmpty()) {
+            throw new IllegalStateException("No operations defined for the test."); // NOI18N
         }
-        Context context = new Context(this);
-        for (Round round : rounds) {
-            round.run(context);
+        if (rounds.isEmpty()) {
+            throw new IllegalStateException("No rounds defined for the test.");
         }
+
+        // Use a fresh run context
+        runContext = new Context(this);
+        runContext.runInit(rounds);
+    }
+
+    public void runOps(int opCount) throws Exception {
+        runContext.runOps(opCount);
+    }
+
+    public Context runContext() {
+        return runContext;
     }
 
     public Op op(String name) {
@@ -306,7 +331,7 @@ public final class RandomTestContainer extends PropertyProvider {
 
         private final RandomTestContainer container;
 
-        private int opCount;
+        private int totalOpCount;
 
         final Map<String,Double> op2Ratio;
 
@@ -315,7 +340,7 @@ public final class RandomTestContainer extends PropertyProvider {
         Round(RandomTestContainer container, Round roundToClone) {
             this.container = container;
             if (roundToClone != null)
-                this.opCount = roundToClone.opCount;
+                this.totalOpCount = roundToClone.totalOpCount;
             this.op2Ratio = new HashMap<String, Double>((roundToClone != null)
                     ? roundToClone.op2Ratio
                     : Collections.<String,Double>emptyMap()
@@ -327,10 +352,9 @@ public final class RandomTestContainer extends PropertyProvider {
         }
 
         void run(Context context) throws Exception {
-            context.setCurrentRound(this);
             try {
                 double opRatioSum = computeOpRatioSum();
-                for (int i = 0; i < opCount; i++) {
+                while (context.continueRun(totalOpCount)) {
                     Op op = findOp(context, opRatioSum);
                     op.run(context);
                     for (Check check : context.container().checks) {
@@ -343,18 +367,16 @@ public final class RandomTestContainer extends PropertyProvider {
                 LOG.info("ERROR: " + container.name() + // NOI18N
                         " during TESTOP[" + context.opCount() + "] (SEED=" + container.seed + "L)\n"); // NOI18N
                 throw e;
-            } finally {
-                context.setCurrentRound(null);
             }
         }
 
         public int opCount() {
-            return opCount;
+            return totalOpCount;
         }
 
         public void setOpCount(int opCount) {
-            container.totalOpCount += (opCount - this.opCount); // Diff before assignment
-            this.opCount = opCount;
+            container.totalOpCount += (opCount - this.totalOpCount); // Diff before assignment
+            this.totalOpCount = opCount;
         }
 
         public void setRatio(String opName, double ratio) {
@@ -411,7 +433,13 @@ public final class RandomTestContainer extends PropertyProvider {
 
         private Round currentRound;
 
-        private int totalOpCount;
+        private Iterator<Round> roundIterator;
+
+        private int roundOpCount; // How many ops performed inside round so far
+
+        private int opCount;
+
+        private int stopOpCount;
 
         Context(RandomTestContainer container) {
             this.container = container;
@@ -425,8 +453,9 @@ public final class RandomTestContainer extends PropertyProvider {
             return currentRound;
         }
 
-        void setCurrentRound(Round round) {
+        private void setCurrentRound(Round round) {
             this.currentRound = round;
+            this.roundOpCount = 0;
         }
 
         /**
@@ -435,7 +464,7 @@ public final class RandomTestContainer extends PropertyProvider {
          * @return operation count.
          */
         public int opCount() {
-            return totalOpCount;
+            return opCount;
         }
 
         public StringBuilder logOpBuilder() {
@@ -462,10 +491,36 @@ public final class RandomTestContainer extends PropertyProvider {
             return (round() != null) ? round() : container;
         }
 
+        void runInit(List<Round> rounds) {
+            roundIterator = rounds.iterator();
+            setCurrentRound(roundIterator.next()); // should not be empty
+        }
+
+        void runOps(int opCount) throws Exception {
+            if (opCount == 0) { // Till end
+                stopOpCount = container.totalOpCount;
+            } else {
+                stopOpCount += opCount;
+            }
+            while (opCount < stopOpCount) {
+                currentRound.run(this);
+                if (roundIterator.hasNext()) {
+                    setCurrentRound(roundIterator.next());
+                } else {
+                    break; // stopOpCount too high so break now
+                }
+            }
+        }
+
+        boolean continueRun(int roundTotalOpCount) {
+            return (opCount < stopOpCount && roundOpCount < roundTotalOpCount);
+        }
+
         void incrementOpCount() {
-            totalOpCount++;
-            if (totalOpCount % (container.totalOpCount / PROGRESS_COUNT) == 0) {
-                LOG.info(container.name() + ": " + totalOpCount + " operations finished.\n"); // NOI18N
+            roundOpCount++;
+            opCount++;
+            if (opCount % (container.totalOpCount / PROGRESS_COUNT) == 0) {
+                LOG.info(container.name() + ": " + opCount + " operations finished.\n"); // NOI18N
             }
         }
 

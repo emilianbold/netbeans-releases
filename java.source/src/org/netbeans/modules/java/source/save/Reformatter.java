@@ -1088,10 +1088,19 @@ public class Reformatter implements ReformatTask {
         @Override
         public Boolean visitParameterizedType(ParameterizedTypeTree node, Void p) {
             scan(node.getType(), p);
+            int index = tokens.index();
+            int c = col;
+            Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+            boolean ltRead;
+            if (LT == accept(LT)) {
+                tpLevel++;
+                ltRead = true;
+            } else {
+                rollback(index, c, d);
+                ltRead = false;
+            }
             List<? extends Tree> targs = node.getTypeArguments();
             if (targs != null && !targs.isEmpty()) {
-                if (LT == accept(LT))
-                    tpLevel++;
                 for (Iterator<? extends Tree> it = targs.iterator(); it.hasNext();) {
                     Tree targ = it.next();
                     scan(targ, p);
@@ -1101,19 +1110,19 @@ public class Reformatter implements ReformatTask {
                         spaces(cs.spaceAfterComma() ? 1 : 0);
                     }
                 }
-                JavaTokenId accepted;
-                if (tpLevel > 0 && (accepted = accept(GT, GTGT, GTGTGT)) != null) {
-                    switch (accepted) {
-                        case GTGTGT:
-                            tpLevel -= 3;
-                            break;
-                        case GTGT:
-                            tpLevel -= 2;
-                            break;
-                        case GT:
-                            tpLevel--;
-                            break;
-                    }
+            }
+            JavaTokenId accepted;
+            if (ltRead && tpLevel > 0 && (accepted = accept(GT, GTGT, GTGTGT)) != null) {
+                switch (accepted) {
+                    case GTGTGT:
+                        tpLevel -= 3;
+                        break;
+                    case GTGT:
+                        tpLevel -= 2;
+                        break;
+                    case GT:
+                        tpLevel--;
+                        break;
                 }
             }
             return true;

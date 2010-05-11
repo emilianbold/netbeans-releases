@@ -36,40 +36,46 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.api.makefile;
 
-package org.netbeans.modules.cnd.makefile.model;
-
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
+import java.util.Collections;
+import java.util.List;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Parameters;
 
 /**
  * @author Alexey Vladykin
  */
-public final class MakefileAssignment extends AbstractMakefileElement {
+public final class MakefileRule extends MakefileElement {
 
-    private final String value;
+    private final List<String> targets;
+    private final List<String> prereqs;
 
-    public MakefileAssignment(String name, String value, FileObject file, int startOffset, int endOffset) {
-        super(ElementKind.VARIABLE, name, file, startOffset, endOffset);
-        Parameters.notNull("value", value);
-        this.value = value;
+    /*package*/ MakefileRule(
+            FileObject fileObject, int startOffset, int endOffset,
+            List<String> targets, List<String> prereqs) {
+        super(Kind.RULE, fileObject, startOffset, endOffset);
+        this.targets = Collections.unmodifiableList(targets);
+        this.prereqs = Collections.unmodifiableList(prereqs);
     }
 
-    public String getValue() {
-        return value;
+    public List<String> getTargets() {
+        return targets;
     }
 
-    @Override
-    public boolean signatureEquals(ElementHandle that) {
-        return that instanceof MakefileAssignment
-                && that.getKind() == this.getKind()
-                && that.getName().equals(this.getName());
+    public List<String> getPrerequisites() {
+        return prereqs;
     }
 
     @Override
     public String toString() {
-        return getName() + " = " + getValue(); // NOI18N
+        StringBuilder buf = new StringBuilder();
+        for (String target : targets) {
+            buf.append(target).append(' ');
+        }
+        buf.append(':');
+        for (String prereq : prereqs) {
+            buf.append(' ').append(prereq);
+        }
+        return buf.toString();
     }
 }

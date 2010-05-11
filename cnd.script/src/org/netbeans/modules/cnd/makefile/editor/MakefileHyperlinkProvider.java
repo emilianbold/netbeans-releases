@@ -39,7 +39,7 @@
 package org.netbeans.modules.cnd.makefile.editor;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -50,19 +50,13 @@ import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
+import org.netbeans.modules.cnd.api.makefile.MakefileElement;
+import org.netbeans.modules.cnd.api.makefile.MakefileMacro;
+import org.netbeans.modules.cnd.api.makefile.MakefileRule;
+import org.netbeans.modules.cnd.api.makefile.MakefileSupport;
 import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
-import org.netbeans.modules.cnd.makefile.model.AbstractMakefileElement;
-import org.netbeans.modules.cnd.makefile.model.MakefileAssignment;
-import org.netbeans.modules.cnd.makefile.model.MakefileRule;
-import org.netbeans.modules.cnd.makefile.parser.MakefileParseResult;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -70,7 +64,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  * @author Alexey Vladykin
@@ -101,13 +94,13 @@ public class MakefileHyperlinkProvider implements HyperlinkProvider {
         if (tokenHierarchy != null) {
             final HyperlinkToken token = findHyperlinkToken(tokenHierarchy, offset);
             if (token != null) {
-                switch (token.targetKind) {
+                switch (token.kind) {
                     case RULE:
-                    case VARIABLE:
+                    case MACRO:
                         findAndOpenElement(doc, token);
                         break;
 
-                    case FILE:
+                    case INCLUDE:
                         FileObject fileObject = NbEditorUtilities.getFileObject(doc);
                         if (fileObject != null) {
                             findAndOpenFile(fileObject.getParent(), token.text);
@@ -140,7 +133,7 @@ public class MakefileHyperlinkProvider implements HyperlinkProvider {
     private static HyperlinkToken analyzeBareToken(TokenSequence<MakefileTokenId> tokenSequence, Token<MakefileTokenId> token, int offset) {
         String text = token.text().toString();
         int tokenOffset = tokenSequence.offset();
-        ElementKind targetKind = ElementKind.RULE;
+        MakefileElement.Kind kind = MakefileElement.Kind.RULE;
 
         // check for "include" keyword behind current token
         PREV_LOOP:
@@ -155,7 +148,7 @@ public class MakefileHyperlinkProvider implements HyperlinkProvider {
 
                 case KEYWORD:
                     if (TokenUtilities.equals(prevToken.text(), "include")) { // NOI18N
-                        targetKind = ElementKind.FILE;
+                        kind = MakefileElement.Kind.INCLUDE;
                     }
                     break PREV_LOOP;
 
@@ -180,7 +173,7 @@ public class MakefileHyperlinkProvider implements HyperlinkProvider {
                 case EQUALS:
                 case COLON_EQUALS:
                 case PLUS_EQUALS:
-                    targetKind = ElementKind.VARIABLE;
+                    kind = MakefileElement.Kind.MACRO;
                     break NEXT_LOOP;
 
                 default:
@@ -188,7 +181,7 @@ public class MakefileHyperlinkProvider implements HyperlinkProvider {
             }
         }
 
-        return new HyperlinkToken(text, tokenOffset, targetKind);
+        return new HyperlinkToken(text, tokenOffset, kind);
     }
 
     private static HyperlinkToken analyzeMacroToken(TokenSequence<MakefileTokenId> tokenSequence, Token<MakefileTokenId> token, int offset) {
@@ -197,7 +190,7 @@ public class MakefileHyperlinkProvider implements HyperlinkProvider {
         if ((text.startsWith("$(") && text.endsWith(")") || text.startsWith("${") && text.endsWith("}")) && // NOI18N
                 tokenOffset + 2 <= offset && offset < tokenOffset + text.length() - 1) {
             text = text.substring(2, text.length() - 1);
-            return new HyperlinkToken(text, tokenOffset + 2, ElementKind.VARIABLE);
+            return new HyperlinkToken(text, tokenOffset + 2, MakefileElement.Kind.MACRO);
         }
         return null;
     }
@@ -214,74 +207,45 @@ public class MakefileHyperlinkProvider implements HyperlinkProvider {
     }
 
     private static void findAndOpenElement(final Document doc, final HyperlinkToken token) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    ParserManager.parse(
-                            Collections.singleton(Source.create(doc)),
-                            new HyperlinkTask(token.text, token.targetKind));
-                } catch (ParseException ex) {
-                    // tsss, don't tell anybody
+        try {
+            List<MakefileElement> elements = MakefileSupport.parseDocument(doc);
+            for (MakefileElement element : elements) {
+                if (element.getKind() == MakefileElement.Kind.RULE && token.kind == MakefileElement.Kind.RULE) {
+                    MakefileRule rule = (MakefileRule) element;
+                    if (rule.getTargets().contains(token.text)) {
+                        asyncOpenInEditor(doc, rule.getStartOffset());
+                        break;
+                    }
+                } else if (element.getKind() == MakefileElement.Kind.MACRO && token.kind == MakefileElement.Kind.MACRO) {
+                    MakefileMacro macro = (MakefileMacro) element;
+                    if (macro.getName().equals(token.text)) {
+                        asyncOpenInEditor(doc, macro.getStartOffset());
+                        break;
+                    }
                 }
             }
-        });
+        } catch (ParseException ex) {
+            // tsss, don't tell anybody
+        }
     }
 
     private static final class HyperlinkToken {
 
         private final String text;
         private final int offset;
-        private final ElementKind targetKind;
+        private final MakefileElement.Kind kind;
 
-        private HyperlinkToken(String text, int offset, ElementKind targetKind) {
+        private HyperlinkToken(String text, int offset, MakefileElement.Kind kind) {
             this.text = text;
             this.offset = offset;
-            this.targetKind = targetKind;
+            this.kind = kind;
         }
     }
 
-    private static final class HyperlinkTask extends UserTask {
-
-        private final String elementName;
-        private final ElementKind elementKind;
-
-        private HyperlinkTask(String elementName, ElementKind elementKind) {
-            this.elementName = elementName;
-            this.elementKind = elementKind;
-        }
-
-        @Override
-        public void run(ResultIterator resultIterator) throws Exception {
-            Result result = resultIterator.getParserResult();
-            if (result instanceof MakefileParseResult) {
-                MakefileParseResult makefileResult = (MakefileParseResult) result;
-                for (AbstractMakefileElement element : makefileResult.getElements()) {
-                    if (element.getKind() == ElementKind.RULE && elementKind == ElementKind.RULE) {
-                        MakefileRule rule = (MakefileRule) element;
-                        if (rule.getTargets().contains(elementName)) {
-                            asyncOpenInEditor(result.getSnapshot().getSource(), rule.getOffsetRange(makefileResult).getStart());
-                            break;
-                        }
-                    } else if (element.getKind() == ElementKind.VARIABLE && elementKind == ElementKind.VARIABLE) {
-                        MakefileAssignment assign = (MakefileAssignment) element;
-                        if (assign.getName().equals(elementName)) {
-                            asyncOpenInEditor(result.getSnapshot().getSource(), assign.getOffsetRange(makefileResult).getStart());
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private static void asyncOpenInEditor(final Source source, final int offset) {
-        Document doc = source.getDocument(true);
-        if (doc != null) {
-            DataObject dataObject = NbEditorUtilities.getDataObject(doc);
-            if (dataObject != null) {
-                asyncOpenIdEditor(dataObject, doc, offset);
-            }
+    private static void asyncOpenInEditor(final Document doc, final int offset) {
+        DataObject dataObject = NbEditorUtilities.getDataObject(doc);
+        if (dataObject != null) {
+            asyncOpenIdEditor(dataObject, doc, offset);
         }
     }
 
