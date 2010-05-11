@@ -59,7 +59,7 @@ import java.beans.PropertyChangeListener;
  * the singleton.
  */
 
-public class TermOptions {
+public final class TermOptions {
 
     private static TermOptions DEFAULT;
 
@@ -206,10 +206,15 @@ public class TermOptions {
     public Font getFont() {
 	return font;
     }
+
     public void setFont(Font font) {
 	if (this.font!= font) {
-	    this.font= font;
+	    this.font = font;
 	    dirty = true;
+
+	    // recalculate fontSize as well.
+	    fontSize = this.font.getSize();
+
 	    pcs.firePropertyChange(null, null, null);
 	}
     }
@@ -221,15 +226,18 @@ public class TermOptions {
 
     private int fontSize;
 
-    /*
-     TMP
     public int getFontSize() {
 	return fontSize;
-    } 
-     */
+    }
+
     public void setFontSize(int fontSize) {
 	if (this.fontSize != fontSize) {
 	    this.fontSize = fontSize;
+
+	    // recalculate font as well.
+	    font = new Font(font.getFamily(),
+		            font.getStyle(),
+			    this.fontSize);
 	    dirty = true;
 	    pcs.firePropertyChange(null, null, null);
 	} 
