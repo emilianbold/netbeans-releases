@@ -101,6 +101,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         actionsToolbar.add(Box.createHorizontalGlue());
         
         nextAction = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onNext();
             }
@@ -109,6 +110,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         bNext.setAction(nextAction);
             
         prevAction = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onPrev();
             }
@@ -185,6 +187,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         refreshComponents();
     }
@@ -354,22 +357,27 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
             this.isRight = isRight;
         }
 
+        @Override
         public boolean isEditable() {
             return isRight && fileObject.canWrite();
         }
 
+        @Override
         public Lookup getLookup() {
             return Lookups.fixed(fileObject);
         }
 
+        @Override
         public String getName() {
             return fileObject.getName();
         }
 
+        @Override
         public String getTitle() {
             return FileUtil.getFileDisplayName(fileObject);
         }
 
+        @Override
         public String getMIMEType() {
             if (type != null) {
                 return type.getMIMEType();
@@ -378,6 +386,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
             }
         }
 
+        @Override
         public Reader createReader() throws IOException {
             if (type != null) {
                 return new InputStreamReader(fileObject.getInputStream(), FileEncodingQuery.getEncoding(type));
@@ -386,6 +395,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
             }
         }
 
+        @Override
         public Writer createWriter(Difference[] conflicts) throws IOException {
             return null;
         }
