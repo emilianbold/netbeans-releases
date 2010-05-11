@@ -329,4 +329,6 @@
 	<mapID target="RemoteDevelopmentTerminal" url="WorkingWithCandC++Projects/RemoteDevelopmentTerminal.html"/>
 	<mapID target="remote-terminal-icon" url="images/remote-terminal-icon.png"/>
 	<mapID target="terminal-icon" url="images/terminal-icon.png"/>
+        <mapID target="CreateTestWizardP1" url="TestingCandC++Projects/CreateTestWizardP1.html"/>
+        <mapID target="CreateTestWizardP2" url="TestingCandC++Projects/CreateTestWizardP2.html"/>
 </map>
