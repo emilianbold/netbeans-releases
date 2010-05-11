@@ -137,6 +137,10 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         innerPanel = controller.getJComponent();
         controllerPanel.add(innerPanel);
         setName(innerPanel.getName());
+        Container c = getParent();
+        if (c != null) {
+            c.setName(getName());
+        }
         activateNodes();
         revalidate();
         repaint();
@@ -309,10 +313,6 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         modified = temp;
         try {
             refreshController();
-            Container c = getParent();
-            if (c != null) {
-                c.setName(getName());
-            }
         } catch (IOException e) {
             Logger.getLogger(SingleDiffPanel.class.getName()).log(Level.SEVERE, "", e); // elegant, nice and simple exception logging
         }
