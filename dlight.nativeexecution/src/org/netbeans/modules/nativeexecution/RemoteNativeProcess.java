@@ -73,7 +73,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             streams.in.write(EnvWriter.getBytes(". " + envFile + ">/dev/null 2>&1\n", true)); // NOI18N
 
             EnvWriter ew = new EnvWriter(streams.in, true);
-            ew.write(envVars);
+            ew.write(onlyChangedEnv(envVars));
 
             // 4. additional setup
             if (info.getInitialSuspend()) {
