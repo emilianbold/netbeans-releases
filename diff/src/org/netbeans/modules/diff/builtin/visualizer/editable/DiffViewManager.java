@@ -512,35 +512,31 @@ class DiffViewManager implements ChangeListener {
         return value;
     }
     
-    private DifferencePosition findDifferenceToMatch(int rightOffset, int rightViewportHeight) {
-        
-        DecoratedDifference candidate = null;
-        
-        DecoratedDifference [] diffs = getDecorations();
-        for (DecoratedDifference dd : diffs) {
+    private int findDifferenceToMatch (int rightOffset, int rightViewportHeight, DecoratedDifference [] diffs, int index) {
+        int candidateIndex = -1;
+        // start the loop with the last used index, it will speed-up things
+        for (; index < diffs.length; ++index) {
+            DecoratedDifference dd = diffs[index];
             if (dd.getTopRight() > rightOffset + rightViewportHeight) break;
             if (dd.getBottomRight() != -1) {
                 if (dd.getBottomRight() <= rightOffset) continue;
             } else {
                 if (dd.getTopRight() <= rightOffset) continue;
             }
-            if (candidate != null) {
+            if (candidateIndex > -1) {
+                DecoratedDifference candidate = diffs[candidateIndex];
                 if (candidate.getDiff().getType() == Difference.DELETE) {
-                    candidate = dd;
+                    candidateIndex = index;
                 } else if (candidate.getTopRight() < rightOffset) { 
-                    candidate = dd;
+                    candidateIndex = index;
                 } else if (dd.getTopRight() <= rightOffset + rightViewportHeight / 2) { 
-                    candidate = dd;
+                    candidateIndex = index;
                 }
             } else {
-                candidate = dd;
+                candidateIndex = index;
             }
         }
-        if (candidate == null) return null;
-        boolean matchStart = candidate.getTopRight() > rightOffset + rightViewportHeight / 2;
-        if (candidate.getDiff().getType() == Difference.DELETE && candidate.getTopRight() < rightOffset + rightViewportHeight * 4 / 5) matchStart = false;
-        if (candidate.getDiff().getType() == Difference.DELETE && candidate == diffs[diffs.length -1]) matchStart = false;
-        return new DifferencePosition(candidate.getDiff(), matchStart);
+        return candidateIndex;
     }
 
     double getScrollFactor() {
@@ -704,9 +700,23 @@ class DiffViewManager implements ChangeListener {
             View rootRightView = Utilities.getDocumentView(rightContentPanel.getEditorPane());
             if (rootLeftView == null || rootRightView == null) return scrollMap;
             HashMap<Difference, Rectangle[]> positionsPerDiff = new HashMap<Difference, Rectangle[]>(getDecorations().length);
-            for (int rightOffset = 0; rightOffset < rightPanelHeightCached; rightOffset++) {
-                DifferencePosition dpos = findDifferenceToMatch(rightOffset, rightViewportHeight);
+
+            DecoratedDifference [] diffs = getDecorations();
+            int lastDiffIndex = 0;
+            for (int rightOffset = 0; rightOffset < rightPanelHeightCached; rightOffset+=5) { // count position for every fifth pix, others are linearly interpolated
+                DifferencePosition dpos = null;
                 int leftOffset;
+                // find diff for every fifth pix
+                int candidateIndex = diffs.length == 0 ? -1 : findDifferenceToMatch(rightOffset, rightViewportHeight, diffs, lastDiffIndex);
+                if (candidateIndex > -1) {
+                    lastDiffIndex = candidateIndex;
+                    DecoratedDifference candidate = diffs[candidateIndex];
+                    boolean matchStart = candidate.getTopRight() > rightOffset + rightViewportHeight / 2;
+                    if (candidate.getDiff().getType() == Difference.DELETE && candidate.getTopRight() < rightOffset + rightViewportHeight * 4 / 5) matchStart = false;
+                    if (candidate.getDiff().getType() == Difference.DELETE && candidate == diffs[diffs.length -1]) matchStart = false;
+                    dpos = new DifferencePosition(candidate.getDiff(), matchStart);
+                }
+
                 if (dpos == null) {
                     leftOffset = lastOffset + rightOffset;
                 } else {
@@ -723,7 +733,11 @@ class DiffViewManager implements ChangeListener {
                     leftOffset = computeLeftOffsetToMatchDifference(dpos, rightOffset, positions);
                     lastOffset = leftOffset - rightOffset;
                 }
-                scrollMap[rightOffset] = leftOffset;
+                // now try to interpolate for next 4 positions
+                int maxIndex = Math.min(rightPanelHeightCached - rightOffset, 5);
+                for (int i = 0; i <  maxIndex; ++i) {
+                    scrollMap[rightOffset + i] = leftOffset + i;
+                }
             }
             scrollMap = smooth(scrollMap);
             return scrollMap;
