@@ -1369,13 +1369,13 @@ public class TokenFormatter {
                     indexFirstLine ++;
                 }
 		if (indexFirstLine < comment.length() && comment.charAt(indexFirstLine) == '\n') {
-		    sb.append('\n');
+//		    sb.append('\n');
 		    indentLine = true;
                     firstLine = false;
 		}
 		boolean lastAdded = false; // was the last part added to coment . does it have a non whitespace character?
                 
-		for (StringTokenizer st = new StringTokenizer(comment, "\n"); st.hasMoreTokens();) { //NOI18N
+		for (StringTokenizer st = new StringTokenizer(comment, "\n", true); st.hasMoreTokens();) { //NOI18N
 		    String part = st.nextToken();
                     String trimPart = part.trim();
                     if (trimPart.length() > 0 && trimPart.charAt(0) == '*') {
@@ -1389,8 +1389,17 @@ public class TokenFormatter {
 //                        if (trimPart.length() == 0 && indentLine) {
 //                            part = indentString;
 //                        } else {
-                            if (firstLine && part.charAt(0) != ' ') {
-                                sb.append(' ');
+                            if (firstLine) {
+                                if (part.charAt(0) != ' ') {
+                                    sb.append(' ');
+                                }
+                            } else {
+                                if (trimPart.length() > 0) {
+                                    sb.append(indentString);
+                                    sb.append(' ');
+
+                                    part = trimPart;
+                                }
                             }
 //                        }
                     }
@@ -1409,9 +1418,8 @@ public class TokenFormatter {
 			    }
 			}
 		    }*/
-		    if (trimPart.length() > 0 || firstLine) {
+		    if (trimPart.length() > 0 || firstLine || "\n".equals(part)) {
 			sb.append(part);
-			sb.append('\n');
 			lastAdded = true;
 		    }
 		    else {
@@ -1428,7 +1436,7 @@ public class TokenFormatter {
 		    if(sb.length() > 0 && sb.charAt(sb.length() - 1) == '\n' && !lastAdded) {
 			sb.append(indentString);
 		    } else {
-			if (sb.length() > 0) {
+			if (sb.length() > 0 && sb.charAt(sb.length() - 1) == '\n') {
 			    sb.setLength(sb.length() - 1); // remove the last new line
 			}
 			if (sb.length() > 0 && sb.charAt(sb.length() - 1) != ' ') {

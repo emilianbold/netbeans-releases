@@ -66,7 +66,7 @@ public class SyntaxTreeTest extends TestBase {
 
     public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new SyntaxTreeTest("testComment"));
+        suite.addTest(new SyntaxTreeTest("testIssue185837"));
         return suite;
     }
 
@@ -492,6 +492,11 @@ public class SyntaxTreeTest extends TestBase {
         assertEquals(AstNode.NodeType.COMMENT, commentNode.type());
         assertEquals(commentNode.logicalStartOffset(), 0);
         assertEquals(commentNode.logicalEndOffset(), code.length());
+    }
+
+    public void testIssue185837() throws Exception {
+        String code = "<html><head><title></title></head><body><b><del></del></b></body></html>";
+        assertAST(code);
     }
 
     //------------------------ private methods ---------------------------
