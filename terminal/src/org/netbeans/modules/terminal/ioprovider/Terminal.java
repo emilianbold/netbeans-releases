@@ -793,9 +793,13 @@ import org.openide.windows.OutputListener;
         addMenuItem(menu, wrapAction);
         addMenuItem(menu, new JSeparator());
         addMenuItem(menu, clearAction);
-        addMenuItem(menu, closeAction);
+	if (isClosable())
+	    addMenuItem(menu, closeAction);
 
         findAction.setEnabled(! findState.isVisible());
+
+	// TMP Find is not operation so keep it disabled
+	findAction.setEnabled(false);
 
         menu.addPopupMenuListener(new PopupMenuListener() {
 	    @Override
