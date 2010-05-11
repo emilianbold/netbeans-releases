@@ -72,6 +72,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -161,7 +162,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private IssueLinksPanel issueLinksPanel;
     private boolean skipReload;
     private boolean reloading;
-    private Map<NbJiraIssue.IssueField,Object> initialValues = new HashMap<NbJiraIssue.IssueField,Object>();
+    private Map<NbJiraIssue.IssueField,Object> initialValues = new EnumMap<NbJiraIssue.IssueField,Object>(NbJiraIssue.IssueField.class);
     private PropertyChangeListener tasklistListener;
 
     public IssuePanel() {
