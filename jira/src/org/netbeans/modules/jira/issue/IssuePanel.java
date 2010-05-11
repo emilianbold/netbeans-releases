@@ -983,7 +983,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             try {
                 return Integer.parseInt(text);
             } catch (NumberFormatException nfex) {
-                nfex.printStackTrace();
+                Jira.LOG.log(Level.INFO, nfex.getMessage(), nfex);
             }
         }
         return 0;
@@ -1920,7 +1920,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 connector.getTaskDataHandler().initializeTaskData(issue.getRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
                                 reloadForm(false);
                             } catch (CoreException cex) {
-                                cex.printStackTrace();
+                                Jira.LOG.log(Level.INFO, cex.getMessage(), cex);
                             }
                         }
                     }
@@ -2190,7 +2190,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         try {
             connector.getTaskDataHandler().initializeSubTaskData(issue.getTaskRepository(), subTask.getTaskData(), issue.getTaskData(), new NullProgressMonitor());
         } catch (CoreException cex) {
-            cex.printStackTrace();
+            Jira.LOG.log(Level.INFO, cex.getMessage(), cex);
         }
         subTask.open();
     }//GEN-LAST:event_createSubtaskButtonActionPerformed
