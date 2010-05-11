@@ -20,8 +20,8 @@
     </folder>
     <folder name="Actions">
         <folder name="PHP">
-            <file name="org-netbeans-modules-php-symfony-ui-actions-RunCommandAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.symfony.ui.actions.RunCommandAction.getInstance"/>
+            <file name="org-netbeans-modules-php-symfony-ui-actions-SymfonyRunCommandAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.symfony.ui.actions.SymfonyRunCommandAction.getInstance"/>
             </file>
             <file name="org-netbeans-modules-php-symfony-ui-actions-ClearCacheAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.symfony.ui.actions.ClearCacheAction.getInstance"/>

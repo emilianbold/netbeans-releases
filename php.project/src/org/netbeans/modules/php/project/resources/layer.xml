@@ -50,6 +50,9 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-php-project-ui-logicalview-UploadAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.logicalview.SrcNode.createUploadAction"/>
             </file>
+            <file name="org-netbeans-modules-php-project-ui-actions-RunFrameworkCommandAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.actions.RunFrameworkCommandAction.getInstance"/>
+            </file>
         </folder>
         <folder name="Tools">
             <file name="org-netbeans-modules-php-project-ui-actions-tests-CreateTestsAction.instance"/>

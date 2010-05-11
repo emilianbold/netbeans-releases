@@ -44,8 +44,9 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.php.spi.actions.GoToActionAction;
 import org.netbeans.modules.php.spi.actions.GoToViewAction;
+import org.netbeans.modules.php.spi.actions.RunCommandAction;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.zend.ui.actions.RunCommandAction;
+import org.netbeans.modules.php.zend.ui.actions.ZendRunCommandAction;
 import org.netbeans.modules.php.zend.ui.actions.ZendGoToActionAction;
 import org.netbeans.modules.php.zend.ui.actions.ZendGoToViewAction;
 import org.netbeans.modules.php.zend.util.ZendUtils;
@@ -56,7 +57,6 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class ZendPhpModuleActionsExtender extends PhpModuleActionsExtender {
-    private static final List<Action> ACTIONS = Collections.<Action>singletonList(RunCommandAction.getInstance());
 
     @Override
     public String getMenuName() {
@@ -64,8 +64,13 @@ public class ZendPhpModuleActionsExtender extends PhpModuleActionsExtender {
     }
 
     @Override
+    public RunCommandAction getRunCommandAction() {
+        return ZendRunCommandAction.getInstance();
+    }
+
+    @Override
     public List<? extends Action> getActions() {
-        return ACTIONS;
+        return Collections.emptyList();
     }
 
     @Override

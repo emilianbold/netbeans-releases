@@ -37,49 +37,51 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.zend.ui.actions;
+package org.netbeans.modules.php.project.ui.actions;
 
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.zend.ZendPhpFrameworkProvider;
-import org.openide.util.HelpCtx;
+import org.netbeans.modules.php.project.PhpModuleImpl;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.spi.actions.RunCommandAction;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public abstract class BaseAction extends AbstractAction implements HelpCtx.Provider {
+public final class RunFrameworkCommandAction extends RunCommandAction {
+    private static final long serialVersionUID = -22735302227232842L;
+    private static final RunFrameworkCommandAction INSTANCE = new RunFrameworkCommandAction();
 
-    protected BaseAction() {
-        putValue("noIconInMenu", true); // NOI18N
-        putValue(NAME, getFullName());
-        putValue("menuText", getPureName()); // NOI18N
+    private RunFrameworkCommandAction() {
+    }
+
+    public static RunFrameworkCommandAction getInstance() {
+        return INSTANCE;
     }
 
     @Override
-    public final void actionPerformed(ActionEvent e) {
-        PhpModule phpModule = PhpModule.inferPhpModule();
-
-        if (phpModule == null) {
-            return;
+    public void actionPerformed(final PhpModule phpModule) {
+        if (phpModule instanceof PhpModuleImpl) {
+            PhpProject project = ((PhpModuleImpl) phpModule).getPhpProject();
+            // XXX more precise would be to collect all Run Command actions and if > 1 then show a dialog which framework should be run
+            for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
+                PhpModuleActionsExtender actionsExtender = frameworkProvider.getActionsExtender(phpModule);
+                if (actionsExtender != null) {
+                    RunCommandAction runCommandAction = actionsExtender.getRunCommandAction();
+                    if (runCommandAction != null) {
+                        runCommandAction.actionPerformed(phpModule);
+                        return;
+                    }
+                }
+            }
         }
-        if (!ZendPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
-            return;
-        }
-
-        actionPerformed(phpModule);
     }
 
+    @Override
     protected String getFullName() {
-        return NbBundle.getMessage(BaseAction.class, "LBL_ZendAction", getPureName());
+        return NbBundle.getMessage(RunFrameworkCommandAction.class, "LBL_RunFrameworkCommand");
     }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    protected abstract String getPureName();
-    protected abstract void actionPerformed(PhpModule phpModule);
 }

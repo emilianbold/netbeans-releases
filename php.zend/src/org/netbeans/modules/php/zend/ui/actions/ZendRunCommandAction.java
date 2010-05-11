@@ -40,30 +40,34 @@
 package org.netbeans.modules.php.zend.ui.actions;
 
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.spi.actions.RunCommandAction;
 import org.netbeans.modules.php.zend.ZendPhpFrameworkProvider;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public final class RunCommandAction extends BaseAction {
+public final class ZendRunCommandAction extends RunCommandAction {
     private static final long serialVersionUID = -2278946423132142L;
-    private static final RunCommandAction INSTANCE = new RunCommandAction();
+    private static final ZendRunCommandAction INSTANCE = new ZendRunCommandAction();
 
-    private RunCommandAction() {
+    private ZendRunCommandAction() {
     }
 
-    public static RunCommandAction getInstance() {
+    public static ZendRunCommandAction getInstance() {
         return INSTANCE;
     }
 
     @Override
     public void actionPerformed(PhpModule phpModule) {
+        if (!ZendPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
+            return;
+        }
         ZendPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
     }
 
     @Override
-    protected String getPureName() {
-        return NbBundle.getMessage(RunCommandAction.class, "LBL_RunCommand");
+    protected String getFullName() {
+        return NbBundle.getMessage(ZendRunCommandAction.class, "LBL_ZendAction", getPureName());
     }
 }

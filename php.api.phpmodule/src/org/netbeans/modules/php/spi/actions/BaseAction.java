@@ -37,33 +37,61 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony.ui.actions;
+package org.netbeans.modules.php.spi.actions;
 
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
-import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 
 /**
+ * Base action class which operates with a PHP module, suitable for framework classes.
+ * It takes care about names (name in menu, name in shortcuts).
  * @author Tomas Mysik
+ * @since 1.30
  */
-public final class RunCommandAction extends BaseAction {
-    private static final long serialVersionUID = -22735302227232842L;
-    private static final RunCommandAction INSTANCE = new RunCommandAction();
+public abstract class BaseAction extends AbstractAction implements HelpCtx.Provider {
 
-    private RunCommandAction() {
+    protected BaseAction() {
+        putValue("noIconInMenu", true); // NOI18N
+        putValue(NAME, getFullName());
+        putValue("menuText", getPureName()); // NOI18N
     }
 
-    public static RunCommandAction getInstance() {
-        return INSTANCE;
-    }
+    /**
+     * Get the name for shortcuts table (Tools > Options > Keymap).
+     * @return the name for shortcuts table (Tools > Options > Keymap)
+     */
+    protected abstract String getFullName();
+
+    /**
+     * Get the name for menu (and context menu).
+     * @return the name for menu (and context menu)
+     */
+    protected abstract String getPureName();
+
+    /**
+     * Framework implementations should likely check whether they
+     * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#isInPhpModule(PhpModule) extend} the given PHP module.
+     * @param phpModule PHP module the action is invoked on, never {@code null}
+     */
+    protected abstract void actionPerformed(PhpModule phpModule);
 
     @Override
-    public void actionPerformed(PhpModule phpModule) {
-        SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 
+    /**
+     * If a PHP module {@link PhpModule#inferPhpModule() is found} then
+     * {@link #actionPerformed(PhpModule) actionPerformed(PhpModule)} is called.
+     */
     @Override
-    protected String getPureName() {
-        return NbBundle.getMessage(RunCommandAction.class, "LBL_RunCommand");
+    public final void actionPerformed(ActionEvent e) {
+        PhpModule phpModule = PhpModule.inferPhpModule();
+        if (phpModule == null) {
+            return;
+        }
+        actionPerformed(phpModule);
     }
 }

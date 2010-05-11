@@ -43,6 +43,7 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.php.spi.actions.GoToActionAction;
 import org.netbeans.modules.php.spi.actions.GoToViewAction;
+import org.netbeans.modules.php.spi.actions.RunCommandAction;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -65,6 +66,20 @@ public abstract class PhpModuleActionsExtender {
      * @return list of actions, can be empty but never <code>null</code>.
      */
     public abstract List<? extends Action> getActions();
+
+    /**
+     * Get the {@link RunCommandAction} if the framework provider supports it or {@code null} if not.
+     * <p>
+     * If it is not {@code null}, it is places as the 1st action in the {@link #getMenuName() actions submenu}
+     * followed by a separator and {@link #getActions() actions}.
+     * <p>
+     * The default implementation returns {@code null}.
+     * @return {@link RunCommandAction} if the framework provider supports it or {@code null} if not
+     * @since 1.30
+     */
+    public RunCommandAction getRunCommandAction() {
+        return null;
+    }
 
     /**
      * Return {@code true} if the given file object is a <em>view</em> (or a <em>template</em>).

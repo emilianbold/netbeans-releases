@@ -20,8 +20,8 @@
     </folder>
     <folder name="Actions">
         <folder name="PHP">
-            <file name="org-netbeans-modules-php-zend-ui-actions-RunCommandAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.zend.ui.actions.RunCommandAction.getInstance"/>
+            <file name="org-netbeans-modules-php-zend-ui-actions-ZendRunCommandAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.zend.ui.actions.ZendRunCommandAction.getInstance"/>
             </file>
         </folder>
     </folder>

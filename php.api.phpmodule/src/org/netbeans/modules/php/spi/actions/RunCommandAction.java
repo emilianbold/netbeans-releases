@@ -37,61 +37,31 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony;
+package org.netbeans.modules.php.spi.actions;
 
-import java.util.Collections;
-import java.util.List;
-import javax.swing.Action;
-import org.netbeans.modules.php.spi.actions.GoToActionAction;
-import org.netbeans.modules.php.spi.actions.GoToViewAction;
-import org.netbeans.modules.php.spi.actions.RunCommandAction;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.symfony.ui.actions.ClearCacheAction;
-import org.netbeans.modules.php.symfony.ui.actions.SymfonyRunCommandAction;
-import org.netbeans.modules.php.symfony.ui.actions.SymfonyGoToActionAction;
-import org.netbeans.modules.php.symfony.ui.actions.SymfonyGoToViewAction;
-import org.netbeans.modules.php.symfony.util.SymfonyUtils;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.util.NbBundle;
 
 /**
+ * Base Run Command action.
  * @author Tomas Mysik
+ * @since 1.30
  */
-public class SymfonyPhpModuleActionsExtender extends PhpModuleActionsExtender {
-    private static final List<Action> ACTIONS = Collections.<Action>singletonList(ClearCacheAction.getInstance());
+public abstract class RunCommandAction extends BaseAction {
 
+    /**
+     * The typical implementation calls {@link org.netbeans.modules.php.spi.commands.FrameworkCommandSupport#runCommand()}.
+     * @param phpModule
+     */
     @Override
-    public String getMenuName() {
-        return NbBundle.getMessage(SymfonyPhpModuleActionsExtender.class, "LBL_MenuName");
-    }
+    public abstract void actionPerformed(PhpModule phpModule);
 
+    /**
+     * The default "short" name for this action (<em>Run Command...</em>).
+     * @return
+     */
     @Override
-    public List<? extends Action> getActions() {
-        return ACTIONS;
-    }
-
-    @Override
-    public RunCommandAction getRunCommandAction() {
-        return SymfonyRunCommandAction.getInstance();
-    }
-
-    @Override
-    public boolean isViewWithAction(FileObject fo) {
-        return SymfonyUtils.isViewWithAction(fo);
-    }
-
-    @Override
-    public boolean isActionWithView(FileObject fo) {
-        return SymfonyUtils.isAction(fo);
-    }
-
-    @Override
-    public GoToActionAction getGoToActionAction(FileObject fo, int offset) {
-        return new SymfonyGoToActionAction(fo);
-    }
-
-    @Override
-    public GoToViewAction getGoToViewAction(FileObject fo, int offset) {
-        return new SymfonyGoToViewAction(fo, offset);
+    protected final String getPureName() {
+        return NbBundle.getMessage(RunCommandAction.class, "LBL_RunCommand");
     }
 }
