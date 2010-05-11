@@ -152,6 +152,7 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class IssuePanel extends javax.swing.JPanel implements Scrollable {
+    private static final RequestProcessor RP = new RequestProcessor("JIRA Issue Panel", 5, false); // NOI18N
     private static final Color ORIGINAL_ESTIMATE_COLOR = new Color(137, 175, 215);
     private static final Color REMAINING_ESTIMATE_COLOR = new Color(236, 142, 0);
     private static final Color TIME_SPENT_COLOR = new Color(81, 168, 37);
@@ -311,7 +312,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void initAssigneeCombo() {
         assigneeCombo.setRenderer(new RepositoryUserRenderer());
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 final Collection<RepositoryUser> users = issue.getRepository().getUsers();
@@ -562,7 +563,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         final String parentKey = issue.getParentKey();
         boolean hasParent = (parentKey != null) && (parentKey.trim().length() > 0);
         if  (hasParent) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     Issue parentIssue = issue.getRepository().getIssueCache().getIssue(parentKey);
@@ -753,7 +754,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     });
                     subTaskScrollPane = new JScrollPane(subTaskTable);
                 }
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         final SubtaskTableModel tableModel = new SubtaskTableModel(issue);
@@ -1115,7 +1116,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void updateTasklistButton() {
         tasklistButton.setEnabled(false);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 JiraIssueProvider provider = JiraIssueProvider.getInstance();
@@ -1170,7 +1171,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         handle.start();
         handle.switchToIndeterminate();
         skipReload = true;
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -1852,7 +1853,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msg);
         handle.start();
         handle.switchToIndeterminate();
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
 
@@ -1934,7 +1935,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(refreshMessage);
         handle.start();
         handle.switchToIndeterminate();
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 IssueCache cache = issue.getRepository().getIssueCache();
@@ -2004,7 +2005,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (!isNew && !"".equals(addCommentArea.getText().trim())) { // NOI18N
             issue.addComment(addCommentArea.getText());
         }
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 boolean ret = false;
