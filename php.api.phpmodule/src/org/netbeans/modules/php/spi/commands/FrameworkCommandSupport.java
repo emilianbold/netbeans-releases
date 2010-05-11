@@ -42,6 +42,7 @@ package org.netbeans.modules.php.spi.commands;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -73,7 +74,8 @@ import org.openide.util.Utilities;
 public abstract class FrameworkCommandSupport {
 
     // @GuardedBy(COMMANDS_CACHE)
-    private static final Map<PhpModule, List<FrameworkCommand>> COMMANDS_CACHE = new WeakHashMap<PhpModule, List<FrameworkCommand>>();
+    //                      php module     fw name            commands
+    private static final Map<PhpModule, Map<String, List<FrameworkCommand>>> COMMANDS_CACHE = new WeakHashMap<PhpModule, Map<String, List<FrameworkCommand>>>();
 
     private static final RequestProcessor RP = new RequestProcessor(FrameworkCommandSupport.class);
 
@@ -164,11 +166,14 @@ public abstract class FrameworkCommandSupport {
      * @return list of {@link FrameworkCommand framework commands} or <code>null</code> if not known already.
      */
     public List<FrameworkCommand> getFrameworkCommands() {
-        List<FrameworkCommand> commands;
+        List<FrameworkCommand> frameworkCommands = null;
         synchronized (COMMANDS_CACHE) {
-            commands = COMMANDS_CACHE.get(phpModule);
+            Map<String, List<FrameworkCommand>> moduleCommands = COMMANDS_CACHE.get(phpModule);
+            if (moduleCommands != null) {
+                frameworkCommands = moduleCommands.get(getFrameworkName());
+            }
         }
-        return commands;
+        return frameworkCommands;
     }
 
     /**
@@ -216,7 +221,12 @@ public abstract class FrameworkCommandSupport {
             }
         }
         synchronized (COMMANDS_CACHE) {
-            COMMANDS_CACHE.put(phpModule, freshCommands);
+            Map<String, List<FrameworkCommand>> moduleCommands = COMMANDS_CACHE.get(phpModule);
+            if (moduleCommands == null) {
+                moduleCommands = new HashMap<String, List<FrameworkCommand>>();
+            }
+            moduleCommands.put(getFrameworkName(), freshCommands);
+            COMMANDS_CACHE.put(phpModule, moduleCommands);
         }
     }
 
