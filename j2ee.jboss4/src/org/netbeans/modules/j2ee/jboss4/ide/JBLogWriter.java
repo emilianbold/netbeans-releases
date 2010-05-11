@@ -69,7 +69,7 @@ public final class JBLogWriter {
     private static final Logger LOGGER = Logger.getLogger(JBLogWriter.class.getName());
     
     private final static int DELAY = 500;
-    private static final int START_TIMEOUT = 900000;
+    private static final int START_TIMEOUT = 300000;
     
     /**
      * Lock used to avoid a reader switching while the reader is used
