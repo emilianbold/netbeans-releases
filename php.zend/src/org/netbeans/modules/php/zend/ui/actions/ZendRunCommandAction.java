@@ -37,61 +37,37 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony;
+package org.netbeans.modules.php.zend.ui.actions;
 
-import java.util.Collections;
-import java.util.List;
-import javax.swing.Action;
-import org.netbeans.modules.php.spi.actions.GoToActionAction;
-import org.netbeans.modules.php.spi.actions.GoToViewAction;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.actions.RunCommandAction;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.symfony.ui.actions.ClearCacheAction;
-import org.netbeans.modules.php.symfony.ui.actions.SymfonyRunCommandAction;
-import org.netbeans.modules.php.symfony.ui.actions.SymfonyGoToActionAction;
-import org.netbeans.modules.php.symfony.ui.actions.SymfonyGoToViewAction;
-import org.netbeans.modules.php.symfony.util.SymfonyUtils;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.php.zend.ZendPhpFrameworkProvider;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public class SymfonyPhpModuleActionsExtender extends PhpModuleActionsExtender {
-    private static final List<Action> ACTIONS = Collections.<Action>singletonList(ClearCacheAction.getInstance());
+public final class ZendRunCommandAction extends RunCommandAction {
+    private static final long serialVersionUID = -2278946423132142L;
+    private static final ZendRunCommandAction INSTANCE = new ZendRunCommandAction();
 
-    @Override
-    public String getMenuName() {
-        return NbBundle.getMessage(SymfonyPhpModuleActionsExtender.class, "LBL_MenuName");
+    private ZendRunCommandAction() {
+    }
+
+    public static ZendRunCommandAction getInstance() {
+        return INSTANCE;
     }
 
     @Override
-    public List<? extends Action> getActions() {
-        return ACTIONS;
+    public void actionPerformed(PhpModule phpModule) {
+        if (!ZendPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
+            return;
+        }
+        ZendPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
     }
 
     @Override
-    public RunCommandAction getRunCommandAction() {
-        return SymfonyRunCommandAction.getInstance();
-    }
-
-    @Override
-    public boolean isViewWithAction(FileObject fo) {
-        return SymfonyUtils.isViewWithAction(fo);
-    }
-
-    @Override
-    public boolean isActionWithView(FileObject fo) {
-        return SymfonyUtils.isAction(fo);
-    }
-
-    @Override
-    public GoToActionAction getGoToActionAction(FileObject fo, int offset) {
-        return new SymfonyGoToActionAction(fo);
-    }
-
-    @Override
-    public GoToViewAction getGoToViewAction(FileObject fo, int offset) {
-        return new SymfonyGoToViewAction(fo, offset);
+    protected String getFullName() {
+        return NbBundle.getMessage(ZendRunCommandAction.class, "LBL_ZendAction", getPureName());
     }
 }

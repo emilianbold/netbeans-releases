@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,62 +34,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.spi.actions;
 
-package org.netbeans.modules.php.zend;
-
-import java.util.Collections;
-import java.util.List;
-import javax.swing.Action;
-import org.netbeans.modules.php.spi.actions.GoToActionAction;
-import org.netbeans.modules.php.spi.actions.GoToViewAction;
-import org.netbeans.modules.php.spi.actions.RunCommandAction;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.zend.ui.actions.ZendRunCommandAction;
-import org.netbeans.modules.php.zend.ui.actions.ZendGoToActionAction;
-import org.netbeans.modules.php.zend.ui.actions.ZendGoToViewAction;
-import org.netbeans.modules.php.zend.util.ZendUtils;
-import org.openide.filesystems.FileObject;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
+ * Base Go To Action action.
+ * <p>
+ * This implementation just sets the correct name and runs the method
+ * {@link #actionPerformedInternal() actionPerformedInternal()} in its
+ * own {@link RequestProcessor request processor}.
  * @author Tomas Mysik
+ * @since 1.29
  */
-public class ZendPhpModuleActionsExtender extends PhpModuleActionsExtender {
+public abstract class GoToActionAction extends AbstractAction {
+    protected static final int DEFAULT_OFFSET = 0;
 
-    @Override
-    public String getMenuName() {
-        return NbBundle.getMessage(ZendPhpModuleActionsExtender.class, "LBL_MenuName");
+    private static final RequestProcessor RP = new RequestProcessor(GoToActionAction.class);
+
+    public GoToActionAction() {
+        super(NbBundle.getMessage(GoToActionAction.class, "LBL_GoToAction"));
     }
 
-    @Override
-    public RunCommandAction getRunCommandAction() {
-        return ZendRunCommandAction.getInstance();
-    }
+    /**
+     * Method where the navigation itself happens. It is run in its
+     * own {@link RequestProcessor request processor}.
+     */
+    public abstract void actionPerformedInternal();
 
     @Override
-    public List<? extends Action> getActions() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public boolean isViewWithAction(FileObject fo) {
-        return ZendUtils.isViewWithAction(fo);
-    }
-
-    @Override
-    public boolean isActionWithView(FileObject fo) {
-        return ZendUtils.isAction(fo);
-    }
-
-    @Override
-    public GoToActionAction getGoToActionAction(FileObject fo, int offset) {
-        return new ZendGoToActionAction(fo);
-    }
-
-    @Override
-    public GoToViewAction getGoToViewAction(FileObject fo, int offset) {
-        return new ZendGoToViewAction(fo, offset);
+    public final void actionPerformed(ActionEvent e) {
+        RP.execute(new Runnable() {
+            @Override
+            public void run() {
+                actionPerformedInternal();
+            }
+        });
     }
 }

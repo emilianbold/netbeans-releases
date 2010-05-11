@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,64 +34,61 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.symfony.ui.actions;
 
-package org.netbeans.modules.php.symfony;
-
-import java.util.Collections;
-import java.util.List;
-import javax.swing.Action;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.spi.actions.GoToActionAction;
-import org.netbeans.modules.php.spi.actions.GoToViewAction;
-import org.netbeans.modules.php.spi.actions.RunCommandAction;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.symfony.ui.actions.ClearCacheAction;
-import org.netbeans.modules.php.symfony.ui.actions.SymfonyRunCommandAction;
-import org.netbeans.modules.php.symfony.ui.actions.SymfonyGoToActionAction;
-import org.netbeans.modules.php.symfony.ui.actions.SymfonyGoToViewAction;
 import org.netbeans.modules.php.symfony.util.SymfonyUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
 
-/**
- * @author Tomas Mysik
- */
-public class SymfonyPhpModuleActionsExtender extends PhpModuleActionsExtender {
-    private static final List<Action> ACTIONS = Collections.<Action>singletonList(ClearCacheAction.getInstance());
+public final class SymfonyGoToActionAction extends GoToActionAction {
+    private static final long serialVersionUID = 89756313874L;
+    private static final Pattern ACTION_METHOD_NAME = Pattern.compile("^(\\w+)[A-Z]"); // NOI18N
 
-    @Override
-    public String getMenuName() {
-        return NbBundle.getMessage(SymfonyPhpModuleActionsExtender.class, "LBL_MenuName");
+    private final FileObject fo;
+
+    public SymfonyGoToActionAction(FileObject fo) {
+        assert SymfonyUtils.isViewWithAction(fo);
+        this.fo = fo;
     }
 
     @Override
-    public List<? extends Action> getActions() {
-        return ACTIONS;
+    public void actionPerformedInternal() {
+        FileObject action = SymfonyUtils.getAction(fo);
+        if (action != null) {
+            UiUtils.open(action, getActionMethodOffset(action));
+        }
     }
 
-    @Override
-    public RunCommandAction getRunCommandAction() {
-        return SymfonyRunCommandAction.getInstance();
+    private int getActionMethodOffset(FileObject action) {
+        String actionMethodName = getActionMethodName(fo.getName());
+        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+        for (PhpClass phpClass : editorSupport.getClasses(action)) {
+            if (actionMethodName != null) {
+                for (PhpClass.Method method : phpClass.getMethods()) {
+                    if (actionMethodName.equals(method.getName())) {
+                        return method.getOffset();
+                    }
+                }
+            }
+            return phpClass.getOffset();
+        }
+        return DEFAULT_OFFSET;
     }
 
-    @Override
-    public boolean isViewWithAction(FileObject fo) {
-        return SymfonyUtils.isViewWithAction(fo);
-    }
-
-    @Override
-    public boolean isActionWithView(FileObject fo) {
-        return SymfonyUtils.isAction(fo);
-    }
-
-    @Override
-    public GoToActionAction getGoToActionAction(FileObject fo, int offset) {
-        return new SymfonyGoToActionAction(fo);
-    }
-
-    @Override
-    public GoToViewAction getGoToViewAction(FileObject fo, int offset) {
-        return new SymfonyGoToViewAction(fo, offset);
+    static String getActionMethodName(String filename) {
+        Matcher matcher = ACTION_METHOD_NAME.matcher(filename);
+        if (matcher.find()) {
+            String group = matcher.group(1);
+            return SymfonyUtils.ACTION_METHOD_PREFIX + group.substring(0, 1).toUpperCase() + group.substring(1);
+        }
+        return null;
     }
 }
