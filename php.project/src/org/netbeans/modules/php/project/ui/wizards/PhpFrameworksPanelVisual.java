@@ -48,6 +48,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.DefaultListModel;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -253,53 +254,62 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        frameworksScrollPane = new JScrollPane();
-        frameworksTable = new JTable();
-        descriptionLabel = new JLabel();
-        separator = new JSeparator();
-        configPanel = new JPanel();
+        frameworksScrollPane = new javax.swing.JScrollPane();
+        frameworksTable = new javax.swing.JTable();
+        descriptionLabel = new javax.swing.JLabel();
+        separator = new javax.swing.JSeparator();
+        configPanel = new javax.swing.JPanel();
 
-        frameworksTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        frameworksTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         frameworksTable.setShowHorizontalLines(false);
         frameworksTable.setShowVerticalLines(false);
         frameworksTable.setTableHeader(null);
         frameworksScrollPane.setViewportView(frameworksTable);
+        frameworksTable.getAccessibleContext().setAccessibleName(org..NbBundle.getMessage(PhpFelVisual.class, "PhpFrameworksPanelVisual.frameworksTable.AccessibleContext.accessibleName")); // NOI18N
+        frameworksTable.getAccessibleContext().setAccessibleDescription(org..NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.frameworksTable.AccessibleContext.accessibleDescription")); // NOI18N
 
         descriptionLabel.setText("DUMMY"); // NOI18N
 
-        configPanel.setLayout(new BorderLayout());
+        configPanel.w java.awt.BorderLayout());
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayou     this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(separator, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(descriptionLabel)
+            yout.createSequentialGroup()
+    .addComponent(descriptionLabel)
                 .addContainerGap())
-            .addComponent(configPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-            .addComponent(frameworksScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addComponent(configPanel, javax.swing.GroupLayouZE, 400, Short.MAX_VALUE)
+      mponent(frameworksScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layquentialGroup()
                 .addComponent(frameworksScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(descriptionLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(configPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
         );
+
+        frameworksScrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.frameworksScrollPane.AccessibleContext.accessibleName")); // NOI18N
+        frameworksScrollPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.frameworksScrollPane.AccessibleContext.accessibleDescription")); // NOI18N
+        configPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.configPanel.AccessibleContext.accessibleName")); // NOI18N
+        configPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.configPanel.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JPanel configPanel;
-    private JLabel descriptionLabel;
-    private JScrollPane frameworksScrollPane;
-    private JTable frameworksTable;
-    private JSeparator separator;
+    private javax.swing.JPanel configPanel;
+    private javax.swing.JLabel descriptionLabel;
+    private javax.swing.JScrollPane frameworksScrollPane;
+    private javax.swing.JTable frameworksTable;
+    private javax.swing.JSeparator separator;
     // End of variables declaration//GEN-END:variables
 
     private static final class FrameworksTableCellRenderer extends DefaultTableCellRenderer {
