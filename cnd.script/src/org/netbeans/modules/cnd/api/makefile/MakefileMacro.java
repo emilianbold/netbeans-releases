@@ -36,82 +36,39 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.api.makefile;
 
-package org.netbeans.modules.cnd.makefile.model;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
  * @author Alexey Vladykin
  */
-public abstract class AbstractMakefileElement implements ElementHandle {
+public final class MakefileMacro extends MakefileElement {
 
-    private final ElementKind kind;
     private final String name;
-    private final FileObject file;
-    private final int startOffset;
-    private final int endOffset;
+    private final String value;
 
-    protected AbstractMakefileElement(ElementKind kind, String name, FileObject file, int startOffset, int endOffset) {
-        Parameters.notNull("kind", kind);
-        Parameters.notNull("file", file);
-        this.kind = kind;
+    /*package*/ MakefileMacro(
+            FileObject fileObject, int startOffset, int endOffset,
+            String name, String value) {
+        super(Kind.MACRO, fileObject, startOffset, endOffset);
+        Parameters.notNull("name", name);
+        Parameters.notNull("value", value);
         this.name = name;
-        this.file = file;
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
+        this.value = value;
     }
 
-    @Override
-    public final String getMimeType() {
-        return MIMENames.MAKEFILE_MIME_TYPE;
-    }
-
-    @Override
-    public final ElementKind getKind() {
-        return kind;
-    }
-
-    @Override
-    public final String getName() {
+    public String getName() {
         return name;
     }
 
-    @Override
-    public final Set<Modifier> getModifiers() {
-        return Collections.emptySet();
+    public String getValue() {
+        return value;
     }
 
     @Override
-    public final String getIn() {
-        return null; // ???
-    }
-
-    @Override
-    public final FileObject getFileObject() {
-        return file;
-    }
-
-    @Override
-    public final OffsetRange getOffsetRange(ParserResult result) {
-        return new OffsetRange(startOffset, endOffset);
-    }
-
-    protected static String first(Collection<String> items) {
-        if (items.isEmpty()) {
-            return ""; // NOI18N
-        } else {
-            return items.iterator().next();
-        }
+    public String toString() {
+        return name + '=' + value; // NOI18N
     }
 }

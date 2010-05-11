@@ -285,7 +285,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     private Acceptor whitespaceAcceptor;
 
-    private final ArrayList<Syntax> syntaxList = new ArrayList<Syntax>();
+//    private final ArrayList<Syntax> syntaxList = new ArrayList<Syntax>();
 
     /** Root element of line elements representation */
     LineRootElement lineRootElement;
@@ -583,25 +583,31 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     }
 
     Syntax getFreeSyntax() {
-        synchronized (syntaxList) {
-            int cnt = syntaxList.size();
-            if (cnt > 0) {
-                return syntaxList.remove(cnt - 1);
-            } else {
-                EditorKit kit = getEditorKit();
-                if (kit instanceof BaseKit) {
-                    return ((BaseKit) kit).createSyntax(this);
-                } else {
-                    return new BaseKit.DefaultSyntax();
-                }
-            }
+        EditorKit kit = getEditorKit();
+        if (kit instanceof BaseKit) {
+            return ((BaseKit) kit).createSyntax(this);
+        } else {
+            return new BaseKit.DefaultSyntax();
         }
+//        synchronized (syntaxList) {
+//            int cnt = syntaxList.size();
+//            if (cnt > 0) {
+//                return syntaxList.remove(cnt - 1);
+//            } else {
+//                EditorKit kit = getEditorKit();
+//                if (kit instanceof BaseKit) {
+//                    return ((BaseKit) kit).createSyntax(this);
+//                } else {
+//                    return new BaseKit.DefaultSyntax();
+//                }
+//            }
+//        }
     }
 
     void releaseSyntax(Syntax syntax) {
-        synchronized (syntaxList) {
-            syntaxList.add(syntax);
-        }
+//        synchronized (syntaxList) {
+//            syntaxList.add(syntax);
+//        }
     }
 
     /**

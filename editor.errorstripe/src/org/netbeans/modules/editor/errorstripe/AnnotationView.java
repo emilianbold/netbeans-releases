@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -109,7 +109,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     /*package private*/ static final int LOWER_HANDLE = 4;
     
     private BaseDocument doc;
-    private JTextComponent  pane;
+    private final JTextComponent  pane;
     
     private static final Color STATUS_UP_PART_COLOR = Color.WHITE;
     private static final Color STATUS_DOWN_PART_COLOR = new Color(0xCDCABB);
@@ -119,8 +119,8 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     private static final RequestProcessor WORKER = new RequestProcessor(AnnotationView.class.getName(), 1, false, false); //NOI18N
     private final RequestProcessor.Task repaintTask;
     private final RepaintTask           repaintTaskRunnable;
-    
-    private AnnotationViewData data;
+    private final Insets scrollBar;
+    private final AnnotationViewData data;
     
     private static Icon busyIcon;
     
@@ -140,7 +140,8 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         setName("errorStripe");
         
         repaintTask = WORKER.create(repaintTaskRunnable = new RepaintTask());
-        data = new AnnotationViewDataImpl(this, pane);
+        this.data = new AnnotationViewDataImpl(this, pane);
+        this.scrollBar = UIManager.getInsets("Nb.Editor.ErrorStripe.ScrollBar.Insets"); // NOI18N
         
         FoldHierarchy.get(pane).addFoldHierarchyListener(this);
         pane.addPropertyChangeListener(this);
@@ -177,7 +178,10 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
         
     /*package private for tests*/int[] getLinesSpan(int currentLine) {
-        double position  = modelToView(currentLine);
+        double componentHeight = getComponentHeight();
+        double usableHeight = getUsableHeight();
+
+        double position  = _modelToView(currentLine, componentHeight, usableHeight);
         
         if (position == (-1))
             return new int[] {currentLine, currentLine};
@@ -185,10 +189,10 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         int    startLine = currentLine;
         int    endLine   = currentLine;
         
-        while (position == modelToView(startLine - 1) && startLine > 0)
+        while (position == _modelToView(startLine - 1, componentHeight, usableHeight) && startLine > 0)
             startLine--;
         
-        while ((endLine + 1) < Utilities.getRowCount(doc) && position == modelToView(endLine + 1))
+        while ((endLine + 1) < Utilities.getRowCount(doc) && position == _modelToView(endLine + 1, componentHeight, usableHeight))
             endLine++;
         
         return new int[] {startLine, endLine};
@@ -441,8 +445,6 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             scrollPaneCandidade = scrollPaneCandidade.getParent();
         }
         
-        Insets scrollBar = UIManager.getInsets("Nb.Editor.ErrorStripe.ScrollBar.Insets"); // NOI18N
-        
         if (scrollPaneCandidade == null || !(scrollPaneCandidade instanceof JScrollPane) || scrollBar == null) {
             //no help for #54080:
             return getHeight() - HEIGHT_OFFSET;
@@ -456,10 +458,8 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         
         return visibleHeight - topButton - bottomButton;
     }
-    
+
     int topOffset() {
-        Insets scrollBar = UIManager.getInsets("Nb.Editor.ErrorStripe.ScrollBar.Insets"); // NOI18N
-        
         if (scrollBar == null) {
             //no help for #54080:
             return HEIGHT_OFFSET;
@@ -520,12 +520,16 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
     
     /*package private*/ double modelToView(int line) {
+        return _modelToView(line, getComponentHeight(), getUsableHeight());
+    }
+
+    private double _modelToView(int line, double componentHeight, double usableHeight) {
         try {
             int r = getModelToViewImpl(line);
-            
+
             if (r == (-1))
                 return -1.0;
-            
+
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: line=" + line); // NOI18N
 //                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: lineOffset=" + lineOffset); // NOI18N
@@ -533,15 +537,15 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
                 ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: getComponentHeight()=" + getComponentHeight()); // NOI18N
                 ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: getUsableHeight()=" + getUsableHeight()); // NOI18N
             }
-            
-            if (getComponentHeight() <= getUsableHeight()) {
+
+            if (componentHeight <= usableHeight) {
                 //1:1 mapping:
                 return r + topOffset();
             } else {
-                double position = r / getComponentHeight();
-                int    blocksCount = (int) (getUsableHeight() / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE));
+                double position = r / componentHeight;
+                int    blocksCount = (int) (usableHeight / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE));
                 int    block = (int) (position * blocksCount);
-                
+
                 return block * (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE) + topOffset();
             }
         } catch (BadLocationException e) {
