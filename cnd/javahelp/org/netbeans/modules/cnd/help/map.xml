@@ -326,4 +326,7 @@
 	<mapID target="Documenting1" url="EditingSourceFiles/Documenting.html"/>
 	<mapID target="NewMakeWizardP01" url="WorkingWithCandC++Projects/NewMakeWizardP0.html"/>
 	<mapID target="stop" url="images/stop.png"/>
+	<mapID target="RemoteDevelopmentTerminal" url="WorkingWithCandC++Projects/RemoteDevelopmentTerminal.html"/>
+	<mapID target="remote-terminal-icon" url="images/remote-terminal-icon.png"/>
+	<mapID target="terminal-icon" url="images/terminal-icon.png"/>
 </map>

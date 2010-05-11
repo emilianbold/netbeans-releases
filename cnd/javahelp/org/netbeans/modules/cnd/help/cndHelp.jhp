@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/Users/smorgan/netbeans-repo-edit/cnd-main/cnd/javahelp/org/netbeans/modules/cnd/help">
+		<directory title="/Users/smorgan/netbeans-repo/edit-cnd-main/cnd/javahelp/org/netbeans/modules/cnd/help">
 			<directory title="CandC++ProjectBasics">
 				<file title="AddtlIncludeDirectories.html"/>
 				<file title="AddtlLibraryDirectories.html"/>
@@ -218,6 +218,7 @@
 				<file title="previous.png"/>
 				<file title="projectFolder.gif"/>
 				<file title="refresh.png"/>
+				<file title="remote-terminal-icon.png"/>
 				<file title="RunningThread.gif"/>
 				<file title="runtime-window-databases.png"/>
 				<file title="runtime-window-httpserver.png"/>
@@ -237,6 +238,7 @@
 				<file title="SuperVariable.gif"/>
 				<file title="SuspendedThread.gif"/>
 				<file title="template_parameter_16.png"/>
+				<file title="terminal-icon.png"/>
 				<file title="tip.gif"/>
 				<file title="tree.png"/>
 				<file title="typedef_16.png"/>
@@ -329,6 +331,7 @@
 				<file title="RemoteDevelopmentFileSharing.html"/>
 				<file title="RemoteDevelopmentManageHosts.html"/>
 				<file title="RemoteDevelopmentProjects.html"/>
+				<file title="RemoteDevelopmentTerminal.html"/>
 				<file title="RunningCorC++Project.html"/>
 				<file title="SettingCandC++FileProperties.html"/>
 				<file title="SettingCandC++ProjectProperties.html"/>
