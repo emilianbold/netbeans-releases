@@ -648,6 +648,9 @@ public class FormatVisitor extends DefaultVisitor {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_PARAMETER_LIST, ts.offset() + ts.token().length()));
 		addUnbreakalbeSequence(parameters.get(i), false);
 	    }
+            if (ts.token().id() == PHPTokenId.WHITESPACE) {
+                addFormatToken(formatTokens);
+            }
 	}
         scan(node.getBody()); // scan the body of the function
     }

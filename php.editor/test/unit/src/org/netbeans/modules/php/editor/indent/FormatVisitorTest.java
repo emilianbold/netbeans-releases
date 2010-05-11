@@ -102,6 +102,11 @@ public class FormatVisitorTest extends PHPTestBase {
         executeTest("testfiles/formatting/blankLines/Class03.php");
     }
 
+    public void testFunctionDeclaration()  throws Exception {
+        executeTest("testfiles/formatting/spaces/spaceWithinMethodDecl01.php");
+    }
+
+
     /**
      * This is "manual" test, when you need format more php files. 
      *
