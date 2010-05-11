@@ -73,6 +73,7 @@ import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightingSpiPackageAccessor;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightsLayerAccessor;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightsLayerFilter;
+import org.netbeans.modules.editor.lib2.highlighting.HighlightsSequenceEx;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
@@ -102,6 +103,7 @@ public final class HighlightingDrawLayer extends DrawLayer.AbstractLayer
     
     // Above CaretRowHighlighting.LAYER_TYPE_ID
     private static final HighlightsLayerFilter FILTER_A = new HighlightsLayerFilter() {
+        @Override
         public List<? extends HighlightsLayer> filterLayers(List<? extends HighlightsLayer> layers) {
             ArrayList<HighlightsLayer> filteredLayers = new ArrayList<HighlightsLayer>();
             boolean add = false;
@@ -126,6 +128,7 @@ public final class HighlightingDrawLayer extends DrawLayer.AbstractLayer
     
     // above ZOrder.SYNTAX_RACK and below (including) CaretRowHighlighting.LAYER_TYPE_ID
     private static final HighlightsLayerFilter FILTER_B = new HighlightsLayerFilter() {
+        @Override
         public List<? extends HighlightsLayer> filterLayers(List<? extends HighlightsLayer> layers) {
             ArrayList<HighlightsLayer> filteredLayers = new ArrayList<HighlightsLayer>();
             
@@ -149,6 +152,7 @@ public final class HighlightingDrawLayer extends DrawLayer.AbstractLayer
     
     // Only ZOrder.SYNTAX_RACK
     private static final HighlightsLayerFilter FILTER_C = new HighlightsLayerFilter() {
+        @Override
         public List<? extends HighlightsLayer> filterLayers(List<? extends HighlightsLayer> layers) {
             ArrayList<HighlightsLayer> filteredLayers = new ArrayList<HighlightsLayer>();
             
@@ -173,6 +177,7 @@ public final class HighlightingDrawLayer extends DrawLayer.AbstractLayer
 
     // ZOrder.BOTTOM_RACK
     private static final HighlightsLayerFilter FILTER_D = new HighlightsLayerFilter() {
+        @Override
         public List<? extends HighlightsLayer> filterLayers(List<? extends HighlightsLayer> layers) {
             ArrayList<HighlightsLayer> filteredLayers = new ArrayList<HighlightsLayer>();
             
@@ -256,6 +261,8 @@ public final class HighlightingDrawLayer extends DrawLayer.AbstractLayer
 
     private WeakReference<JTextComponent> paneRef = null;
     private HighlightsContainer highlights = null;
+    private HighlightsSequence sequence = null;
+    private int sequenceEnd = -1;
     
     private AttributeSet lastAttributeSet = null;
     
@@ -347,6 +354,7 @@ public final class HighlightingDrawLayer extends DrawLayer.AbstractLayer
         }
     }
     
+    @Override
     public boolean isActive(DrawContext ctx, DrawMark mark) {
         if (highlights != null) {
             return processOffset(ctx, false);
@@ -355,6 +363,7 @@ public final class HighlightingDrawLayer extends DrawLayer.AbstractLayer
         }
     }
 
+    @Override
     public void updateContext(DrawContext ctx) {
         if (highlights != null) {
             ColoringAccessor accessor = ColoringAccessor.get();
@@ -416,6 +425,7 @@ public final class HighlightingDrawLayer extends DrawLayer.AbstractLayer
     //  HighlightsChangeListener implementation
     // ----------------------------------------------------------------------
     
+    @Override
     public void highlightChanged(final HighlightsChangeEvent event) {
         if (LOG.isLoggable(Level.FINEST)) {
             LOG.finest("BRIDGE-LAYER: changed area [" + event.getStartOffset() + ", " + event.getEndOffset() + "]"); //NOI18N
@@ -496,7 +506,7 @@ public final class HighlightingDrawLayer extends DrawLayer.AbstractLayer
     private void invokeDamageRange(final int startOffset, final int endOffset) {
 //        LOG.log(Level.INFO, "invokeDamageRange: [" + startOffset + ", " + endOffset + "]", new Exception());
         SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 setNextActivityChangeOffset(0);
 
                 JTextComponent pane = paneRef.get();
@@ -545,10 +555,12 @@ public final class HighlightingDrawLayer extends DrawLayer.AbstractLayer
         });
     }
 
+    @Override
     public void atomicLock(AtomicLockEvent evt) {
         inAtomicLock = true;
     }
 
+    @Override
     public void atomicUnlock(AtomicLockEvent evt) {
         inAtomicLock = false;
         if (damageStartPos != null && damageEndPos != null) { // Accumulated damage range
@@ -606,8 +618,18 @@ public final class HighlightingDrawLayer extends DrawLayer.AbstractLayer
         int lineIndex = lastLineIndex;
         if (lineIndex < lineRootElement.getElementCount()) {
             Element lineElement = lineRootElement.getElement(lineIndex);
-            if (offset >= lineElement.getStartOffset() && offset < lineElement.getEndOffset()) {
-                return lineElement.getEndOffset();
+            int eo = lineElement.getEndOffset();
+            if (offset < eo) {
+                if (offset >= lineElement.getStartOffset()) {
+                    return eo;
+                }
+            } else if (lineIndex + 1 < lineRootElement.getElementCount()) {
+                lineElement = lineRootElement.getElement(lineIndex + 1);
+                eo = lineElement.getEndOffset();
+                if (offset < eo && offset >= lineElement.getStartOffset()) {
+                    lastLineIndex = lineIndex + 1;
+                    return eo;
+                }
             }
         }
         lineIndex = lineRootElement.getElementIndex(offset);
@@ -623,25 +645,48 @@ public final class HighlightingDrawLayer extends DrawLayer.AbstractLayer
         if (endOffset >= doc.getLength()) {
             endOffset = Integer.MAX_VALUE;
         }
-        
-        HighlightsSequence hs = highlights.getHighlights(currentOffset, endOffset);
-        boolean hasHighlight = hs.moveNext();
+
+        boolean hasHighlight = false;
+        if (sequence != null) {
+            if ((sequence instanceof HighlightsSequenceEx) && !((HighlightsSequenceEx) sequence).isStale()) {
+                if (currentOffset >= sequence.getStartOffset() && currentOffset < sequenceEnd) {
+                    hasHighlight = true;
+                    while (currentOffset >= sequence.getEndOffset()) {
+                        if (!sequence.moveNext()) {
+                            sequence = null;
+                            break;
+                        }
+                    }
+                } else {
+                    sequence = null;
+                }
+            } else {
+                sequence = null;
+            }
+        }
+
+        if (sequence == null) {
+            sequenceEnd = endOffset;
+            sequence = highlights.getHighlights(currentOffset, endOffset);
+            hasHighlight = sequence.moveNext();
+        }
 
         if (hasHighlight) {
-            if (hs.getStartOffset() <= currentOffset) {
+            if (sequence.getStartOffset() <= currentOffset) {
                 if (applyAttributes) {
-                    Coloring coloring = Coloring.fromAttributeSet(hs.getAttributes());
+                    Coloring coloring = Coloring.fromAttributeSet(sequence.getAttributes());
                     ColoringAccessor.get().apply(coloring, ctx);
                 }
                 
-                lastAttributeSet = hs.getAttributes();
-                setNextActivityChangeOffset(hs.getEndOffset());
+                lastAttributeSet = sequence.getAttributes();
+                setNextActivityChangeOffset(sequence.getEndOffset());
             } else {
-                setNextActivityChangeOffset(hs.getStartOffset());
+                setNextActivityChangeOffset(sequence.getStartOffset());
             }
 
             return true;
         } else {
+            sequence = null;
             return false;
         }
     }

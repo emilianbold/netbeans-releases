@@ -43,6 +43,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.Callable;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -51,6 +52,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -160,10 +162,16 @@ public class TaskProcessorTest extends NbTestCase {
         public void run(ResultIterator resultIterator) throws Exception {
             ArrayList<StackTraceElement> filteredStackTrace = new ArrayList<StackTraceElement>();
             StackTraceElement [] stackTrace = Thread.currentThread().getStackTrace();
+            boolean active = false;
             for(StackTraceElement e : stackTrace) {
-                if (!getClass().getName().equals(e.getClassName())) {
-                    filteredStackTrace.add(e);
+                if (!active) {
+                    if (e.getClassName().equals(TaskProcessor.class.getName()) && e.getMethodName().equals("runUserTask")) {
+                        active = true;
+                    } else {
+                        continue;
+                    }
                 }
+                filteredStackTrace.add(e);
             }
             caller = Util.findCaller(filteredStackTrace.toArray(new StackTraceElement[filteredStackTrace.size()]));
         }
