@@ -55,6 +55,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -69,6 +70,8 @@ public class FormatVisitor extends DefaultVisitor {
     TokenSequence<PHPTokenId> ts;
     private LinkedList<ASTNode> path;
     private int indentLevel;
+    private final int tsTokenCount;
+    private final int maxFormattingRules;
     private DocumentOptions options;
     private boolean includeWSBeforePHPDoc;
     private boolean isCurly; // whether the last visited block is curly or standard syntax.
@@ -81,13 +84,29 @@ public class FormatVisitor extends DefaultVisitor {
 	indentLevel = 0;
 	options = new DocumentOptions(document);
 	includeWSBeforePHPDoc = true;
-	formatTokens = new ArrayList<FormatToken>(ts.tokenCount() * 2);
+        tsTokenCount = ts.tokenCount();
+	formatTokens = new ArrayList<FormatToken>(tsTokenCount * 2);
+        maxFormattingRules = tsTokenCount * 3;
 	formatTokens.add(new FormatToken.InitToken());
         isMethodInvocationShifted = false;
     }
 
     public List<FormatToken> getFormatTokens() {
 	return formatTokens;
+    }
+
+    private void showAssertionFor185063() {
+        boolean showAssertFor185063 = false;
+        assert showAssertFor185063 = true;
+        if (showAssertFor185063) {
+            try {
+                assert false : "Too many formatting rules.\nPlease report this to help fix issue 185063.\n\n" // sNOI18N
+                        + document.getText(0, document.getLength() - 1);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        assert false;
     }
 
     @Override
@@ -97,7 +116,10 @@ public class FormatVisitor extends DefaultVisitor {
 	}
 	int indent = path.size();
 
-
+        if (formatTokens.size() > maxFormattingRules) {
+            showAssertionFor185063();
+        }
+        
 	// find comment before the node.
 	List<FormatToken> beforeTokens = new ArrayList<FormatToken>(30);
 	int indexBeforeLastComment = -1;  // remember last comment
