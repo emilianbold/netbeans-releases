@@ -68,7 +68,7 @@ public class AstNodeUtilsTest extends TestBase {
 
     public static Test xsuite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new AstNodeUtilsTest("testGetPossibleOpenTagElements"));
+        suite.addTest(new AstNodeUtilsTest("testIssue185837"));
         return suite;
     }
 
@@ -201,6 +201,22 @@ public class AstNodeUtilsTest extends TestBase {
 
 //        assertPossibleElements(root, 47, arr("thead","tbody","tr"), Match.CONTAINS);
 
+
+    }
+
+    public void testIssue185837() throws BadLocationException {
+        String code = "<html><head><title></title></head><body><b><del>xxx</del></b></body></html>";
+        //             0123456789012345678901234567890123456789012345678901234
+        //             0         1         2         3         4         5
+
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+//        AstNodeUtils.dumpTree(root);
+
+        //root node allows all dtd elements
+        assertPossibleElements(root, 40, arr("del", "ins"), Match.CONTAINS);
+        assertPossibleElements(root, 43, arr("del", "ins"), Match.CONTAINS);
 
     }
 
