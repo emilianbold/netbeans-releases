@@ -156,7 +156,10 @@ public final class TermOptions {
     void loadFrom(Preferences prefs) {
         if (prefs == null)
             return;
+	String fontFamily = prefs.get(PREFIX + PROP_FONT_FAMILY, font.getFamily());
+	int fontStyle = prefs.getInt(PREFIX + PROP_FONT_STYLE, font.getStyle());
 	fontSize = prefs.getInt(PREFIX + PROP_FONT_SIZE, fontSize);
+
 	tabSize = prefs.getInt(PREFIX + PROP_TAB_SIZE, tabSize);
 	historySize = prefs.getInt(PREFIX + PROP_HISTORY_SIZE, historySize);
 
@@ -177,11 +180,21 @@ public final class TermOptions {
 					  scrollOnOutput);
 	lineWrap = prefs.getBoolean(PREFIX + PROP_LINE_WRAP,
 				    lineWrap);
+
+	font = new Font(fontFamily, fontStyle, fontSize);
+
+	// If 'fontfamily' isn't recognized Font.<init> will return
+	// a "Dialog" font, per javadoc, which isn't fixed-width so
+	// we need to fall back on Monospaced.
+	if ("Dialog".equals(font.getFamily()))			// NOI18N
+	    font = new Font("Monospaced", fontStyle, fontSize);// NOI18N
     }
 
     public void storeTo(Preferences prefs) {
         if (prefs == null)
             return;
+	prefs.put(PREFIX + PROP_FONT_FAMILY, font.getFamily());
+	prefs.putInt(PREFIX + PROP_FONT_STYLE, font.getStyle());
 	prefs.putInt(PREFIX + PROP_FONT_SIZE, fontSize);
 	prefs.putInt(PREFIX + PROP_TAB_SIZE, tabSize);
 	prefs.putInt(PREFIX + PROP_HISTORY_SIZE, historySize);
@@ -200,6 +213,10 @@ public final class TermOptions {
      * Font property
      */
     public static final String PROP_FONT = "font"; // NOI18N
+
+    // we use PROP_FONT_SIZE and these two when we persist PROP_FONT
+    public static final String PROP_FONT_STYLE = "fontStyle"; // NOI18N
+    public static final String PROP_FONT_FAMILY = "fontFamily"; // NOI18N
 
     private Font font;
 
