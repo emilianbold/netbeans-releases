@@ -121,9 +121,8 @@ public final class Fold {
             throw new IllegalArgumentException("endGuardedLength=" // NOI18N
                 + endGuardedLength + " < 0"); // NOI18N
         }
-        if (startOffset == endOffset) {
-            throw new IllegalArgumentException("startOffset == endOffset == " // NOI18N
-                + startOffset);
+        if (startOffset >= endOffset) {
+            throw new IllegalArgumentException("startOffset=" + startOffset + " >= endOffset=" + endOffset); // NOI18N
         }
         if ((endOffset - startOffset) < (startGuardedLength + endGuardedLength)) {
             throw new IllegalArgumentException("(endOffset=" + endOffset // NOI18N

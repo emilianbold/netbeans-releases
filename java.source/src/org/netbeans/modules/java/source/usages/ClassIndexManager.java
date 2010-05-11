@@ -49,9 +49,11 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.openide.util.Exceptions;
 
 /**
@@ -142,7 +144,23 @@ public final class ClassIndexManager {
     public <T> T takeWriteLock(final ExceptionAction<T> r) throws IOException, InterruptedException {
         this.lock.writeLock().lock();
         try {
-            return r.run();
+            return Utilities.runPriorityIO(new Callable<T>() {
+                @Override
+                public T call() throws Exception {
+                    return r.run();
+                }
+            });
+        } catch (IOException ioe) {
+            //rethrow ioe
+            throw ioe;
+        } catch (InterruptedException ie) {
+            //rethrow ioe
+            throw ie;
+        } catch (RuntimeException re) {
+            //rethrow ioe
+            throw re;
+        } catch (Exception e) {
+            throw new IOException(e);
         } finally {
             this.lock.writeLock().unlock();
         }
@@ -151,7 +169,23 @@ public final class ClassIndexManager {
     public <T> T readLock (final ExceptionAction<T> r) throws IOException, InterruptedException {
         this.lock.readLock().lock();
         try {
-            return r.run();
+            return Utilities.runPriorityIO(new Callable<T>() {
+                @Override
+                public T call() throws Exception {
+                    return r.run();
+                }
+            });
+        } catch (IOException ioe) {
+            //rethrow ioe
+            throw ioe;
+        } catch (InterruptedException ie) {
+            //rethrow ioe
+            throw ie;
+        } catch (RuntimeException re) {
+            //rethrow ioe
+            throw re;
+        } catch (Exception e) {
+            throw new IOException(e);
         } finally {
             this.lock.readLock().unlock();
         }

@@ -36,57 +36,43 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makefile.model;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Parameters;
+package org.netbeans.modules.cnd.makefile.parser;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
  * @author Alexey Vladykin
  */
-public final class MakefileRule extends AbstractMakefileElement {
+public final class MakefileUtils {
 
-    private final List<String> targets;
-    private final List<String> prereqs;
+    private MakefileUtils() {}
 
-    public MakefileRule(List<String> targets, List<String> prereqs, FileObject file, int startOffset, int endOffset) {
-        super(ElementKind.RULE, first(targets), file, startOffset, endOffset);
-        Parameters.notNull("targets", targets);
-        Parameters.notNull("prereqs", prereqs);
-        this.targets = Collections.unmodifiableList(targets);
-        this.prereqs = Collections.unmodifiableList(prereqs);
+    private static final Set<String> PREFERRED_TARGETS = new HashSet<String>(Arrays.asList(
+            // see http://www.gnu.org/prep/standards/html_node/Standard-Targets.html
+            "all", // NOI18N
+            "install", // NOI18N
+            "uninstall", // NOI18N
+            "clean", // NOI18N
+            "distclean", // NOI18N
+            "dist", // NOI18N
+            "check", // NOI18N
+
+            // targets written by CND
+            "build", // NOI18N
+            "build-tests", // NOI18N
+            "clobber", // NOI18N
+            "help", // NOI18N
+            "test")); // NOI18N
+
+    public static boolean isPreferredTarget(String target) {
+        return PREFERRED_TARGETS.contains(target);
     }
 
-    public List<String> getTargets() {
-        return targets;
-    }
-
-    public List<String> getPrerequisites() {
-        return prereqs;
-    }
-
-    @Override
-    public boolean signatureEquals(ElementHandle that) {
-        return that instanceof MakefileRule
-                && that.getKind() == this.getKind()
-                && that.toString().equals(this.toString());
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder buf = new StringBuilder();
-        for (String target : targets) {
-            buf.append(target).append(' ');
-        }
-        buf.append(':');
-        for (String prereq : prereqs) {
-            buf.append(' ').append(prereq);
-        }
-        return buf.toString();
+    public static boolean isRunnableTarget(String target) {
+        return 0 < target.length() && target.charAt(0) != '.' && !target.contains("%"); // NOI18N
     }
 }

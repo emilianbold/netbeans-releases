@@ -219,6 +219,18 @@ Use is subject to license terms.
         selected, the IDE will warn you if you attempt to run a project that was created on a
         platform that is not the same as your current development host's platform.
       </li>
+      <li><b>Support indexing of non C/C++/Fortran files in projects (slows down parsing)</b>
+          If selected, the IDE indexes project files that are not C, C++, or Fortran source files.
+          By default, this option is not selected to speed up parsing.
+      </li>
+      <li>
+          <b>Rebuild entire project if project properties have changed.</b> If selected,
+          the IDE rebuilds the project if you change any project properties, even ones
+          that should have no effect on build products. By default, this is not selected
+          because dependency checking should ensure most required
+          rebuilds. You might want to enable this option if you are using GNU tools
+          and changing compiler or linker options does not cause a rebuild.
+      </li>
     </ul>
     <h3>
        <a name="codeassistancetab"></a> Code Assistance Tab

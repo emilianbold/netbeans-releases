@@ -325,6 +325,9 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         private PropertyChangeListener l;
         private Position pos;
         private BaseDocument doc;
+
+        private int lastKnownOffset = -1;
+        private int lastKnownLine = -1;
         
         AnnotationDescDelegate(BaseDocument doc, Position pos, int length, Annotation anno) {
             super(pos.getOffset(),length);
@@ -370,11 +373,23 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         }
         
         public int getLine() {
-            try {
-                return Utilities.getLineOffset(doc, pos.getOffset());
-            } catch (BadLocationException e) {
-                return 0;
+            int offset = pos.getOffset();
+
+            if (lastKnownOffset != -1 && lastKnownLine != -1) {
+                if (lastKnownOffset == offset) {
+                    return lastKnownLine;
+                }
             }
+
+            try {
+                lastKnownLine = Utilities.getLineOffset(doc, offset);
+                lastKnownOffset = offset;
+            } catch (BadLocationException e) {
+                lastKnownOffset = -1;
+                lastKnownLine = 0;
+            }
+
+            return lastKnownLine;
         }
 
         public Lookup getLookup() {
