@@ -211,6 +211,18 @@ public class JavaFixTest extends TestBase {
 		           "}\n");
     }
 
+    public void testRewriteWithoutParenthesis5() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    int i = new Integer(1 * 2).hashCode();\n" +
+                           "}\n",
+                           "$1.hashCode()=>$1.hashCode()",
+                           "package test;\n" +
+                           "public class Test {\n" +
+		           "    int i = new Integer(1 * 2).hashCode();\n" +
+		           "}\n");
+    }
+
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);
 
