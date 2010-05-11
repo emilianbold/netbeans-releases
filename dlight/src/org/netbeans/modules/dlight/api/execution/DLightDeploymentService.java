@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,52 +37,12 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.dtrace.collector.support;
-
-import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.impl.DTDCConfigurationAccessor;;
-import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
+package org.netbeans.modules.dlight.api.execution;
 
 /**
  *
+ * @author mt154047
  */
-@ServiceProviders({
-    @ServiceProvider(service = DataCollectorFactory.class),
-    @ServiceProvider(service = IndicatorDataProviderFactory.class)
-})
-public final class DtraceDataCollectorFactory
-        implements DataCollectorFactory<DTDCConfiguration>,
-        IndicatorDataProviderFactory<DTDCConfiguration> {
-
-    private DtraceDataCollector mergedDtraceCollector;
-
-    public DtraceDataCollectorFactory() {
-    }
-
-    @Override
-    public String getID() {
-        return DTDCConfigurationAccessor.getDefault().getID();
-    }
-
-    @Override
-    public synchronized DtraceDataCollector create(DTDCConfiguration configuration) {
-        if (DTDCConfigurationAccessor.getDefault().isStandalone(configuration)) {
-            return new DtraceDataCollector(false, configuration);
-        } else {
-            if (mergedDtraceCollector == null) {
-                mergedDtraceCollector = new DtraceDataCollector(true, configuration);
-            } else {
-                mergedDtraceCollector.addSlaveConfiguration(configuration);
-            }
-            return mergedDtraceCollector;
-        }
-    }
-
-    @Override
-    public synchronized void reset() {
-        mergedDtraceCollector = null;
-    }
+public interface DLightDeploymentService {
+    String getName();
 }
