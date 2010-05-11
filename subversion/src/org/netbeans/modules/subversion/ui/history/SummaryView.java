@@ -459,42 +459,61 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             @Override
             public void perform() {
                 for(RepositoryRevision.Event event : events) {
-                    rollback(event, this);
+                    rollback(event);
+                }
+            }
+
+            private void rollback (RepositoryRevision.Event event) {
+                File file = event.getFile();
+                if (event.getChangedPath().getAction() == 'D') {
+                    // it was deleted, lets delete it again
+                    if (file.exists()) {
+                        try {
+                            SvnClient client = Subversion.getInstance().getClient(false);
+                            client.remove(new File[]{file}, true);
+                        } catch (SVNClientException ex) {
+                            Subversion.LOG.log(Level.SEVERE, null, ex);
+                        }
+                        Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                    }
+                    return;
+                }
+                File parent = file.getParentFile();
+                parent.mkdirs();
+                SVNUrl repoUrl = event.getLogInfoHeader().getRepositoryRootUrl();
+                SVNUrl fileUrl = repoUrl.appendPath(event.getChangedPath().getPath());
+                try {
+                    File oldFile = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, Long.toString(event.getLogInfoHeader().getLog().getRevision().getNumber()), event.getFile().getName());
+                    for (int i = 1; i < 7; i++) {
+                        if (file.delete()) {
+                            break;
+                        }
+                        try {
+                            Thread.sleep(i * 34);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                    FileUtil.copyFile(FileUtil.toFileObject(oldFile), FileUtil.toFileObject(parent), file.getName(), "");
+                } catch (IOException e) {
+                    if (refersToDirectory(e)) {
+                        Subversion.LOG.log(Level.FINE, null, e);
+                        getLogger().logError(NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.refersToDirectory", fileUrl)); //NOI18N
+                    } else {
+                        Subversion.LOG.log(Level.SEVERE, null, e);
+                    }
                 }
             }
         };
         support.start(rp, repository, NbBundle.getMessage(SummaryView.class, "MSG_Rollback_Progress")); // NOI18N
     }
 
-    private static void rollback(RepositoryRevision.Event event, SvnProgressSupport progress) {
-        File file = event.getFile();
-        if(event.getChangedPath().getAction() == 'D') {
-            // it was deleted, lets delete it again
-            if(file.exists()) {
-                try {
-                    SvnClient client = Subversion.getInstance().getClient(false);
-                    client.remove(new File[]{file}, true);
-                } catch (SVNClientException ex) {
-                    Subversion.LOG.log(Level.SEVERE, null, ex);
-                }
-                Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-            }
-            return;
+    private static boolean refersToDirectory (Exception ex) {
+        Throwable t = ex;
+        boolean dir = false;
+        while (t != null && !(dir = t.getMessage().contains("refers to a directory"))) { //NOI18N
+            t = t.getCause();
         }
-        File parent = file.getParentFile();
-        parent.mkdirs();
-        try {
-            SVNUrl repoUrl = event.getLogInfoHeader().getRepositoryRootUrl();
-            SVNUrl fileUrl = repoUrl.appendPath(event.getChangedPath().getPath());
-            File oldFile = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, Long.toString(event.getLogInfoHeader().getLog().getRevision().getNumber()), event.getFile().getName());
-            for (int i = 1; i < 7; i++) {
-                if (file.delete()) break;
-                try { Thread.sleep(i * 34); } catch (InterruptedException e) { }
-            }
-            FileUtil.copyFile(FileUtil.toFileObject(oldFile), FileUtil.toFileObject(parent), file.getName(), "");
-        } catch (IOException e) {
-            Subversion.LOG.log(Level.SEVERE, null, e);
-        }
+        return dir;
     }
 
     private void revertModifications(int[] selection) {

@@ -145,6 +145,7 @@ public final class Utils {
             Logger.getLogger(Utils.class.getName()).log(Level.INFO, e.getMessage(), e);
         }
     }
+    private static File tempDir;
 
     private Utils() {
     }
@@ -591,7 +592,7 @@ public final class Utils {
      * @return
      */
     public static File getTempFolder(boolean deleteOnExit) {
-        File tmpDir = new File(System.getProperty("java.io.tmpdir"));   // NOI18N
+        File tmpDir = getTempDir(deleteOnExit);
         for (;;) {
             File dir = new File(tmpDir, "vcs-" + Long.toString(System.currentTimeMillis())); // NOI18N
             if (!dir.exists() && dir.mkdirs()) {
@@ -1071,6 +1072,23 @@ public final class Utils {
             value = Integer.MAX_VALUE;
         }
         return value;
+    }
+
+    private static File getTempDir (boolean deleteOnExit) {
+        if (tempDir == null) {
+            File tmpDir = new File(System.getProperty("java.io.tmpdir"));   // NOI18N
+            for (;;) {
+                File dir = new File(tmpDir, "vcs-" + Long.toString(System.currentTimeMillis())); // NOI18N
+                if (!dir.exists() && dir.mkdirs()) {
+                    tempDir = FileUtil.normalizeFile(dir);
+                    if (deleteOnExit) {
+                        tempDir.deleteOnExit();
+                    }
+                    break;
+                }
+            }
+        }
+        return tempDir;
     }
 
     private static class ViewEnv implements CloneableEditorSupport.Env {
