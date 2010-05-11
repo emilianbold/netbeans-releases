@@ -55,6 +55,7 @@ import org.netbeans.lib.editor.util.random.RandomTestContainer.Context;
 import org.netbeans.lib.editor.util.random.RandomText;
 
 /**
+ * Random testing support for fold managers.
  *
  * @author Miloslav Metelka
  */

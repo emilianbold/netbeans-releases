@@ -126,7 +126,13 @@ public class EditorPaneTesting {
             SwingUtilities.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
-                    validContainer.getInstance(JEditorPane.class).setEditorKit(kit);
+                    JEditorPane pane = validContainer.getInstance(JEditorPane.class);
+                    pane.setEditorKit(kit);
+                    String mimeType = kit.getContentType();
+                    Document doc = pane.getDocument();
+                    if (mimeType != null) {
+                        doc.putProperty("mimeType", mimeType);
+                    }
                 }
             });
         }
@@ -144,6 +150,14 @@ public class EditorPaneTesting {
 
     public static JEditorPane getEditorPane(PropertyProvider provider) {
         return provider.getInstanceOrNull(JEditorPane.class);
+    }
+
+    public static JEditorPane getValidEditorPane(PropertyProvider provider) {
+        JEditorPane pane = getEditorPane(provider);
+        if (pane == null) {
+            throw new IllegalStateException("Null JEditorPane for property provider " + provider); // NOI18N
+        }
+        return pane;
     }
 
     /**

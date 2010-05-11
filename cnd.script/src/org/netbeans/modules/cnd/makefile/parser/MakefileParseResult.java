@@ -41,26 +41,24 @@ package org.netbeans.modules.cnd.makefile.parser;
 
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.cnd.makefile.model.AbstractMakefileElement;
+import org.netbeans.modules.cnd.api.makefile.MakefileElement;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.util.Parameters;
 
 /**
  * @author Alexey Vladykin
  */
 public class MakefileParseResult extends ParserResult {
 
-    private final List<? extends AbstractMakefileElement> elements;
+    private final List<MakefileElement> elements;
 
-    public MakefileParseResult(Snapshot snapshot, List<? extends AbstractMakefileElement> elements) {
+    public MakefileParseResult(Snapshot snapshot, List<MakefileElement> elements) {
         super(snapshot);
-        Parameters.notNull("elements", elements);
         this.elements = Collections.unmodifiableList(elements);
     }
 
-    public List<? extends AbstractMakefileElement> getElements() {
+    public List<MakefileElement> getElements() {
         return elements;
     }
 

@@ -36,47 +36,55 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makefile;
 
-package org.netbeans.modules.cnd.makefile.model;
-
-import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.cnd.api.makefile.MakefileInclude;
+import org.netbeans.modules.cnd.api.makefile.MakefileMacro;
+import org.netbeans.modules.cnd.api.makefile.MakefileRule;
+import org.netbeans.modules.cnd.api.makefile.MakefileSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Parameters;
 
 /**
- *
  * @author Alexey Vladykin
  */
-public final class MakefileInclude extends AbstractMakefileElement {
+public abstract class MakefileApiAccessor {
 
-    private final List<String> includes;
+    private static volatile MakefileApiAccessor INSTANCE;
 
-    public MakefileInclude(List<String> includes, FileObject file, int startOffset, int endOffset) {
-        super(ElementKind.KEYWORD, first(includes), file, startOffset, endOffset);
-        Parameters.notNull("includes", includes);
-        this.includes = Collections.unmodifiableList(includes);
-    }
-
-    public List<String> getIncludes() {
-        return includes;
-    }
-
-    @Override
-    public boolean signatureEquals(ElementHandle that) {
-        return that instanceof MakefileInclude
-                && that.getKind() == this.getKind()
-                && that.getName().equals(this.getName());
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder buf = new StringBuilder("INCLUDE"); // NOI18N
-        for (String file : includes) {
-            buf.append(' ').append(file);
+    public static MakefileApiAccessor getInstance() {
+        if (INSTANCE == null) {
+            try {
+                Class.forName(MakefileSupport.class.getName());
+            } catch (ClassNotFoundException ex) {
+                // should not happen
+            }
+            if (INSTANCE == null) {
+                throw new IllegalStateException("Accessor not set"); // NOI18N
+            }
         }
-        return buf.toString();
+        return INSTANCE;
     }
+
+    public static void setInstance(MakefileApiAccessor instance) {
+        if (instance == null) {
+            throw new IllegalArgumentException();
+        } else if (INSTANCE != null) {
+            throw new IllegalStateException("Accessor already set"); // NOI18N
+        } else {
+            INSTANCE = instance;
+        }
+    }
+
+    public abstract MakefileInclude newMakefileInclude(
+            FileObject fileObject, int startOffset, int endOffset,
+            List<String> fileNames);
+
+    public abstract MakefileMacro newMakefileMacro(
+            FileObject fileObject, int startOffset, int endOffset,
+            String name, String value);
+
+    public abstract MakefileRule newMakefileRule(
+            FileObject fileObject, int startOffset, int endOffset,
+            List<String> targets, List<String> prereqs);
 }

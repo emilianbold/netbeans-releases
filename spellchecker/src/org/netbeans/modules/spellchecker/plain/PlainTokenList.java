@@ -44,6 +44,7 @@ import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.spellchecker.spi.language.TokenList;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
@@ -54,7 +55,7 @@ import org.openide.util.Exceptions;
  */
 public class PlainTokenList implements TokenList {
 
-    private Document doc;
+    private final Document doc;
     private String currentWord;
     private int currentStartOffset;
     private int nextSearchOffset;
@@ -83,10 +84,10 @@ public class PlainTokenList implements TokenList {
         try {
             int offset = nextSearchOffset;
             boolean searching = true;
+            CharSequence content = DocumentUtilities.getText(doc);
 
-            while (offset < doc.getLength()) {
-                String t = doc.getText(offset, 1);
-                char c = t.charAt(0);
+            while (offset < content.length()) {
+                char c = content.charAt(offset);
 
                 if (searching) {
                     if (Character.isLetter(c)) {

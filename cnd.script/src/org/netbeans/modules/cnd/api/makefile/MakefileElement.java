@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,42 +34,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.api.makefile;
 
-package org.netbeans.modules.editor.lib.drawing;
-
-import org.netbeans.editor.Coloring;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
- *
- * @author vita
+ * @author Alexey Vladykin
  */
-public abstract class ColoringAccessor {
+public abstract class MakefileElement {
 
-    private static ColoringAccessor ACCESSOR = null;
+    private final Kind kind;
+    private final FileObject fileObject;
+    private final int startOffset;
+    private final int endOffset;
 
-    public static synchronized void register(ColoringAccessor accessor) {
-        assert ACCESSOR == null : "Can't register two package accessors!"; //NOI18N
-        ACCESSOR = accessor;
-    }
-
-    public static synchronized ColoringAccessor get() {
-        if (ACCESSOR == null) {
-            // Trying to wake up EditorUI ...
-            try {
-                Class clazz = Class.forName(Coloring.class.getName());
-            } catch (ClassNotFoundException e) {
-                // ignore
-            }
+    /*package*/ MakefileElement(Kind kind, FileObject fileObject, int startOffset, int endOffset) {
+        Parameters.notNull("kind", kind); // NOI18N
+        Parameters.notNull("fileObject", fileObject); // NOI18N
+        if (endOffset < startOffset) {
+            throw new IllegalArgumentException(String.format(
+                    "endOffset:%d < startOffset:%d", endOffset, startOffset)); // NOI18N
         }
-
-        assert ACCESSOR != null : "There is no package accessor available!"; //NOI18N
-        return ACCESSOR;
+        this.kind = kind;
+        this.fileObject = fileObject;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
     }
 
-    protected ColoringAccessor() {
+    public final Kind getKind() {
+        return kind;
     }
 
-    public abstract void apply(Coloring c, DrawContext ctx);
+    public final FileObject getContainingFile() {
+        return fileObject;
+    }
+
+    public final int getStartOffset() {
+        return startOffset;
+    }
+
+    public final int getEndOffset() {
+        return endOffset;
+    }
+
+    public static enum Kind {
+        MACRO,
+        RULE,
+        INCLUDE
+    }
 }

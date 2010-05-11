@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,42 +34,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.api.makefile;
 
-package org.netbeans.modules.editor.lib.drawing;
-
-import org.netbeans.editor.Coloring;
+import java.util.List;
+import org.netbeans.modules.cnd.makefile.MakefileApiAccessor;
+import org.openide.filesystems.FileObject;
 
 /**
- *
- * @author vita
+ * @author Alexey Vladykin
  */
-public abstract class ColoringAccessor {
+/*package*/ final class MakefileApiAccessorImpl extends MakefileApiAccessor {
 
-    private static ColoringAccessor ACCESSOR = null;
-
-    public static synchronized void register(ColoringAccessor accessor) {
-        assert ACCESSOR == null : "Can't register two package accessors!"; //NOI18N
-        ACCESSOR = accessor;
+    @Override
+    public MakefileInclude newMakefileInclude(FileObject fileObject, int startOffset, int endOffset, List<String> fileNames) {
+        return new MakefileInclude(fileObject, startOffset, endOffset, fileNames);
     }
 
-    public static synchronized ColoringAccessor get() {
-        if (ACCESSOR == null) {
-            // Trying to wake up EditorUI ...
-            try {
-                Class clazz = Class.forName(Coloring.class.getName());
-            } catch (ClassNotFoundException e) {
-                // ignore
-            }
-        }
-
-        assert ACCESSOR != null : "There is no package accessor available!"; //NOI18N
-        return ACCESSOR;
+    @Override
+    public MakefileMacro newMakefileMacro(FileObject fileObject, int startOffset, int endOffset, String name, String value) {
+        return new MakefileMacro(fileObject, startOffset, endOffset, name, value);
     }
 
-    protected ColoringAccessor() {
+    @Override
+    public MakefileRule newMakefileRule(FileObject fileObject, int startOffset, int endOffset, List<String> targets, List<String> prereqs) {
+        return new MakefileRule(fileObject, startOffset, endOffset, targets, prereqs);
     }
-
-    public abstract void apply(Coloring c, DrawContext ctx);
 }
