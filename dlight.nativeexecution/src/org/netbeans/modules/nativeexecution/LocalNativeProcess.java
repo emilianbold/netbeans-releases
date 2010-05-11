@@ -120,7 +120,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         toProcessStream.flush();
 
         EnvWriter ew = new EnvWriter(toProcessStream, false);
-        ew.write(env);
+        ew.write(onlyChangedEnv(env));
 
         if (info.getInitialSuspend()) {
             toProcessStream.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N

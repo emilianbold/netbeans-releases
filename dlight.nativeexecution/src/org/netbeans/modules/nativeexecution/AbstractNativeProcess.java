@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -65,6 +67,7 @@ import org.netbeans.modules.nativeexecution.api.ProcessInfo;
 import org.netbeans.modules.nativeexecution.spi.ProcessInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.openide.util.Exceptions;
@@ -474,5 +477,24 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
         infoProviderSearchTask = NativeTaskExecutorService.submit(callable,
                 "get info provider for process " + pid); // NOI18N
+    }
+
+    protected Map<String, String> onlyChangedEnv(final MacroMap mmap) throws IOException {
+        Map<String, String> orig = HostInfoUtils.getHostInfo(getExecutionEnvironment()).getEnvironment();
+        Map<String, String> res = new HashMap<String, String>();
+        String var, val;
+
+        for (Map.Entry<String, String> entry : mmap.entrySet()) {
+            var = entry.getKey();
+            val = entry.getValue();
+            if (orig.containsKey(var)) {
+                if (orig.get(var).equals(val)) {
+                    continue;
+                }
+            }
+            res.put(var, val);
+        }
+
+        return res;
     }
 }

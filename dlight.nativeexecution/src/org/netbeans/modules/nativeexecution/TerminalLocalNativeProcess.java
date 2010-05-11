@@ -232,24 +232,9 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
                 // Will preserve only changed env variables...
 
-                Map<String, String> orig = HostInfoUtils.getHostInfo(getExecutionEnvironment()).getEnvironment();
-                Map<String, String> res = new HashMap<String, String>();
-                String var, val;
-
-                for (Map.Entry<String, String> entry : env.entrySet()) {
-                    var = entry.getKey();
-                    val = entry.getValue();
-                    if (orig.containsKey(var)) {
-                        if (orig.get(var).equals(val)) {
-                            continue;
-                        }
-                    }
-                    res.put(var, val);
-                }
-
                 OutputStream fos = new FileOutputStream(envFileFile);
                 EnvWriter ew = new EnvWriter(fos, false);
-                ew.write(res);
+                ew.write(onlyChangedEnv(env));
                 fos.close();
 
                 /**
