@@ -75,6 +75,7 @@ public class TestResourceUriAction extends NodeAction  {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length != 1) return false;
         ResourceUriProvider resourceUriProvider = activatedNodes[0].getLookup().lookup(ResourceUriProvider.class);
@@ -85,18 +86,21 @@ public class TestResourceUriAction extends NodeAction  {
             if (resourceUri == null || resourceUri.length() == 0) {
                 return false;
             }
+        } 
+        Project prj = activatedNodes[0].getLookup().lookup(Project.class);
+        if (prj == null || prj.getLookup().lookup(J2eeModuleProvider.class) == null) {
+            return false;
         }
         return true;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         String uri = activatedNodes[0].getLookup().lookup(ResourceUriProvider.class).getResourceUri();
         if (!uri.startsWith("/")) {
             uri = "/"+uri;
         }
-        System.out.println("uri = "+uri);
         String resourceURL = getResourceURL(activatedNodes[0].getLookup().lookup(Project.class), uri);
-        System.out.println("url = "+resourceURL);
         try {
             URL url = new URL(resourceURL);
             if (url != null) {
