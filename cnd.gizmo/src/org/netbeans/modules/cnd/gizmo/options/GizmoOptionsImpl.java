@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
@@ -69,7 +70,6 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     public static final String CONFIGURATION_PROP = "configuration"; // NOI18N
     private static final String GIZMO_CATEGORY = "Gizmo"; // NOI18N
     private static final String GIZMO_SIMPLE_CONFIGURATION = "GizmoSimple"; // NOI18N
-
     private final PropertyChangeSupport pcs;
     private boolean needSave = false;
     private String baseDir;
@@ -215,8 +215,8 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         // Take first valid configuration marked as default (configuration positions in layer.xml matter!)
         for (DLightConfiguration dlightConf : list) {
             // configuration that requires SunStudio becomes default only if we have SunStudio
-            if (dlightConf.isDefault() &&
-                    (!dlightConf.getCollectorProviders().contains("SunStudio") || hasSunStudio)) { // NOI18N
+            if (dlightConf.isDefault()
+                    && (!dlightConf.getCollectorProviders().contains("SunStudio") || hasSunStudio)) { // NOI18N
                 defConf = dlightConf;
                 break;
             }
@@ -269,6 +269,10 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     private void checkPropertyChange(String propertyName, boolean oldValue, boolean newValue) {
         if (oldValue != newValue && pcs != null) {
             pcs.firePropertyChange(propertyName, oldValue, newValue);
+        }
+        if (oldValue != newValue && PROFILE_ON_RUN_PROP.equals(propertyName)) {
+            //TRAKING SYSTEM
+            UIGesturesSupport.submit("USG_CND_PROFILE_ON_RUN", newValue ? "ON" : "OFF");
         }
     }
 
