@@ -36,38 +36,29 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.api.makefile;
 
-package org.netbeans.modules.cnd.makefile.parser;
-
-import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.cnd.api.makefile.MakefileElement;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.cnd.makefile.MakefileApiAccessor;
+import org.openide.filesystems.FileObject;
 
 /**
  * @author Alexey Vladykin
  */
-public class MakefileParseResult extends ParserResult {
+/*package*/ final class MakefileApiAccessorImpl extends MakefileApiAccessor {
 
-    private final List<MakefileElement> elements;
-
-    public MakefileParseResult(Snapshot snapshot, List<MakefileElement> elements) {
-        super(snapshot);
-        this.elements = Collections.unmodifiableList(elements);
-    }
-
-    public List<MakefileElement> getElements() {
-        return elements;
+    @Override
+    public MakefileInclude newMakefileInclude(FileObject fileObject, int startOffset, int endOffset, List<String> fileNames) {
+        return new MakefileInclude(fileObject, startOffset, endOffset, fileNames);
     }
 
     @Override
-    public List<? extends Error> getDiagnostics() {
-        return Collections.emptyList();
+    public MakefileMacro newMakefileMacro(FileObject fileObject, int startOffset, int endOffset, String name, String value) {
+        return new MakefileMacro(fileObject, startOffset, endOffset, name, value);
     }
 
     @Override
-    protected void invalidate() {
+    public MakefileRule newMakefileRule(FileObject fileObject, int startOffset, int endOffset, List<String> targets, List<String> prereqs) {
+        return new MakefileRule(fileObject, startOffset, endOffset, targets, prereqs);
     }
 }
