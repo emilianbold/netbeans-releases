@@ -68,16 +68,20 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
-    <!-- uncomment/change default values for actions Download, Upload
     <folder name="Shortcuts">
+        <file name="AS-R.shadow">
+            <attr name="originalFile" stringvalue="Actions/PHP/org-netbeans-modules-php-project-ui-actions-RunFrameworkCommandAction.instance"/>
+        </file>
+    <!-- uncomment/change default values for actions Download, Upload
         <file name="CSA-D.shadow">
             <attr name="originalFile" stringvalue="Actions/PHP/org-netbeans-modules-php-project-ui-logicalview-DownloadAction.instance"/>
         </file>
         <file name="CSA-U.shadow">
             <attr name="originalFile" stringvalue="Actions/PHP/org-netbeans-modules-php-project-ui-logicalview-UploadAction.instance"/>
         </file>
-    </folder>
     -->
+    </folder>
+
     <folder name="Templates">
         <folder name="Project">
             <folder name="PHP">
