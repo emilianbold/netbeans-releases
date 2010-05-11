@@ -327,56 +327,6 @@ public class HgUtils {
         return (str == null) || (str.trim().length() == 0);
     }
     
-    /**
-     * fixIniFilePathsOnWindows - converts '\' to '\\' in paths in IniFile on Windows
-     *
-     * @param File iniFile to process
-     * @return File processed tmpFile 
-     */
-    public static File fixPathsInIniFileOnWindows(File iniFile) {
-        if(!Utilities.isWindows()) return null;
-        
-        File tmpFile = null;
-        BufferedReader br = null;
-        PrintWriter pw = null;
-
-        try {
-            if (iniFile == null || !iniFile.isFile() || !iniFile.canWrite()) {
-                return null;
-            }
-            
-            tmpFile = File.createTempFile(HgCommand.HG_COMMAND + "-", "tmp"); //NOI18N 
-
-            if (tmpFile == null) {
-                return null;
-            }
-            br = new BufferedReader(new FileReader(iniFile));
-            pw = new PrintWriter(new FileWriter(tmpFile));
-
-            String line = null;
-            String stripLine = null;
-            while ((line = br.readLine()) != null) {
-                stripLine = line.replace("\\\\", "\\");
-                pw.println(stripLine.replace("\\", "\\\\"));
-                pw.flush();
-            }
-        } catch (IOException ex) {
-            // Ignore
-        } finally {
-            try {
-                if (pw != null) {
-                    pw.close();
-                }
-                if (br != null) {
-                    br.close();
-                }
-            } catch (IOException ex) {
-                // Ignore
-            }
-        }
-        return tmpFile;
-    }
-
     private static void resetIgnorePatterns(File file) {
         if (ignorePatterns == null) {
             return;
