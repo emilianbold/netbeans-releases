@@ -472,7 +472,11 @@ public class CustomizerDataSupport {
         
         if (jvmModelFlag) {
             JavaPlatformAdapter platformAdapter = (JavaPlatformAdapter)jvmModel.getSelectedItem();
-            tp.setJavaPlatform(platformAdapter.getJavaPlatform());
+            if (platformAdapter != null) {
+                tp.setJavaPlatform(platformAdapter.getJavaPlatform());
+            } else {
+                tp.setJavaPlatform(null);
+            }
             jvmModelFlag = false;
         }
         

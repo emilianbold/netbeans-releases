@@ -104,69 +104,7 @@ public class FmtBraces extends javax.swing.JPanel {
         switchLabel = new javax.swing.JLabel();
         catchLabel = new javax.swing.JLabel();
 
-        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
-            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
-                return forCombo;
-            }//end getDefaultComponent
-
-            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
-                return forCombo;
-            }//end getFirstComponent
-
-            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
-                return otherCombo;
-            }//end getLastComponent
-
-            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  forCombo){
-                    return whileCombo;
-                }
-                if(aComponent ==  catchCombo){
-                    return otherCombo;
-                }
-                if(aComponent ==  ifCombo){
-                    return forCombo;
-                }
-                if(aComponent ==  methodDeclCombo){
-                    return ifCombo;
-                }
-                if(aComponent ==  classDeclCombo){
-                    return methodDeclCombo;
-                }
-                if(aComponent ==  switchCombo){
-                    return catchCombo;
-                }
-                if(aComponent ==  whileCombo){
-                    return switchCombo;
-                }
-                return forCombo;//end getComponentAfter
-            }
-            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  whileCombo){
-                    return forCombo;
-                }
-                if(aComponent ==  otherCombo){
-                    return catchCombo;
-                }
-                if(aComponent ==  forCombo){
-                    return ifCombo;
-                }
-                if(aComponent ==  ifCombo){
-                    return methodDeclCombo;
-                }
-                if(aComponent ==  methodDeclCombo){
-                    return classDeclCombo;
-                }
-                if(aComponent ==  catchCombo){
-                    return switchCombo;
-                }
-                if(aComponent ==  switchCombo){
-                    return whileCombo;
-                }
-                return otherCombo;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
         setName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_Braces")); // NOI18N
         setOpaque(false);
 

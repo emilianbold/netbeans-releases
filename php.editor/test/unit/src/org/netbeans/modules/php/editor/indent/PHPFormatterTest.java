@@ -1726,6 +1726,11 @@ public class PHPFormatterTest extends PHPTestBase {
 	reformatFileContents("testfiles/formatting/comment10.php", options);
     }
 
+    public void testComment11() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	reformatFileContents("testfiles/formatting/comment11.php", options);
+    }
+
     // the html tests doesn't work properly, the results are deferent then in the ide. i don't know why. 
     public void testHtml01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
