@@ -299,52 +299,53 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
 
     @Override
     public void destroy() throws java.io.IOException {
-        Project project = FileOwnerQuery.getOwner(wsdlFileObject);
-        if (project != null) {
-            final String clientId = client.getId();
-            
-            // remove entry from wsimport configuration
-            final ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
-                public void performOperation(POMModel model) {
-                    MavenModelUtils.removeWsimportExecution(model, clientId);
-                }
-            };
-            final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-            RequestProcessor.getDefault().post(new Runnable() {
+        FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
+        if (wsdlFolder != null) {
+            Project project = FileOwnerQuery.getOwner(wsdlFolder);
+            if (project != null) {
+                final String clientId = client.getId();
 
-                public void run() {
-                    Utilities.performPOMModelOperations(pom, Collections.singletonList(oper));
-                }
+                // remove entry from wsimport configuration
+                final ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
+                    public void performOperation(POMModel model) {
+                        MavenModelUtils.removeWsimportExecution(model, clientId);
+                    }
+                };
+                final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+                RequestProcessor.getDefault().post(new Runnable() {
 
-            });
-            
-            // remove wsdl file
-            if (wsdlFileObject != null) {
-                // check if there are other clients/services with the same wsdl
-                boolean hasOtherServices = false;
-                List<JaxWsService> services = jaxWsSupport.getServices();
-                for (JaxWsService s : services) {
-                    if (clientId != null && !clientId.equals(s.getId()) && client.getLocalWsdl().equals(s.getLocalWsdl())) {
-                        hasOtherServices = true;
-                        break;
+                    public void run() {
+                        Utilities.performPOMModelOperations(pom, Collections.singletonList(oper));
+                    }
+
+                });
+
+                // remove wsdl file
+                if (wsdlFileObject != null) {
+                    // check if there are other clients/services with the same wsdl
+                    boolean hasOtherServices = false;
+                    List<JaxWsService> services = jaxWsSupport.getServices();
+                    for (JaxWsService s : services) {
+                        if (clientId != null && !clientId.equals(s.getId()) && client.getLocalWsdl().equals(s.getLocalWsdl())) {
+                            hasOtherServices = true;
+                            break;
+                        }
+                    }
+                    if (!hasOtherServices) {
+                        // remove wsdl file
+                        wsdlFileObject.delete();
                     }
                 }
-                if (!hasOtherServices) {
-                    // remove wsdl file
-                    wsdlFileObject.delete();
+
+                // remove stale file
+                try {
+                    removeStaleFile(project, clientId);
+                } catch (IOException ex) {
+                    Logger.getLogger(JaxWsClientNode.class.getName()).log(
+                            Level.FINE, "Cannot remove stale file", ex); //NOI18N
                 }
             }
-
-            // remove stale file
-            try {
-                removeStaleFile(project, clientId);
-            } catch (IOException ex) {
-                Logger.getLogger(JaxWsClientNode.class.getName()).log(
-                        Level.FINE, "Cannot remove stale file", ex); //NOI18N
-            }
-
             super.destroy();
-
         }
     }
     

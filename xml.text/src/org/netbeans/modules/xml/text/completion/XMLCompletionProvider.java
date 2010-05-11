@@ -74,6 +74,7 @@ public class XMLCompletionProvider implements CompletionProvider {
     public XMLCompletionProvider() {
     }
     
+    @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         SyntaxSupport support = Utilities.getDocument(component).getSyntaxSupport();
         if( (support == null) || !(support instanceof XMLSyntaxSupport))
@@ -86,6 +87,7 @@ public class XMLCompletionProvider implements CompletionProvider {
         return 0;
     }
     
+    @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (queryType == COMPLETION_QUERY_TYPE || queryType == COMPLETION_ALL_QUERY_TYPE) {
             return new AsyncCompletionTask(new Query(), component);
@@ -103,10 +105,13 @@ public class XMLCompletionProvider implements CompletionProvider {
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }
-                
+
+        @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            XMLSyntaxSupport support = (XMLSyntaxSupport)Utilities.getSyntaxSupport(component);
-            if (!ENABLED || support==null) {
+            SyntaxSupport syntaxSupport = Utilities.getSyntaxSupport(component); // fix for issue #185876
+            XMLSyntaxSupport support = (syntaxSupport instanceof XMLSyntaxSupport ?
+                (XMLSyntaxSupport) syntaxSupport : null);
+            if (!ENABLED || support == null) {
                 resultSet.finish();
                 return;
             }

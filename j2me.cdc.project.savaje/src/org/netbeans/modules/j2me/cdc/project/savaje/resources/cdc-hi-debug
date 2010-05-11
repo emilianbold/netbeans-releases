@@ -15,7 +15,8 @@
               <arg value="-Xdebug"/>
             </exec>
             <property name="debug.delay" value="500"/>
-            <nb-mobility-debug address="${{active.debug.port}}" name="${{app.codename}}" delay="${{debug.delay}}" timeout="30000" period="2000"/>
+            <property name="debug.timeout" value="30000"/>
+            <nb-mobility-debug address="${{active.debug.port}}" name="${{app.codename}}" delay="${{debug.delay}}" timeout="${{debug.timeout}}" period="2000"/>
         </parallel>
     </target>
 

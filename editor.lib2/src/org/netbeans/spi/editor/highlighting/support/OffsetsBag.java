@@ -837,10 +837,11 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
                         idx++;
                     }
 
-                    while (isIndexValid(idx)) {
+                    int []  offsets = new int [2];
+                    while (isIndexValid(idx, offsets)) {
                         if (marks.get(idx).getAttributes() != null) {
-                            highlightStart = Math.max(marks.get(idx).getOffset(), startOffset);
-                            highlightEnd = Math.min(marks.get(idx + 1).getOffset(), endOffset);
+                            highlightStart = Math.max(offsets[0], startOffset);
+                            highlightEnd = Math.min(offsets[1], endOffset);
                             highlightAttributes = marks.get(idx).getAttributes();
                             return true;
                         }
@@ -875,11 +876,11 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             }
         }
         
-        private boolean isIndexValid(int idx) {
+        private boolean isIndexValid(int idx, int [] offsets) {
             return  idx >= 0 && 
                     idx + 1 < marks.size() && 
-                    marks.get(idx).getOffset() < endOffset &&
-                    marks.get(idx + 1).getOffset() > startOffset;
+                    (offsets[0] = marks.get(idx).getOffset()) < endOffset &&
+                    (offsets[1] = marks.get(idx + 1).getOffset()) > startOffset;
         }
         
         private OffsetsBag getBag() {
