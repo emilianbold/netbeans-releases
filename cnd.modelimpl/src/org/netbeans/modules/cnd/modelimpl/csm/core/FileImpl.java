@@ -1935,28 +1935,31 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         boolean wereFakes = false;
         synchronized (fakeIncludeRegistrations) {
             for (FakeIncludePair fakeIncludePair : fakeIncludeRegistrations) {
-                CsmInclude include = fakeIncludePair.includeUid.getObject();
-                ClassImpl cls = fakeIncludePair.classUid.getObject();
-                FileImpl file = (FileImpl) include.getIncludeFile();
+                CsmInclude include = UIDCsmConverter.UIDtoIdentifiable(fakeIncludePair.includeUid);
+                ClassImpl cls = UIDCsmConverter.UIDtoIdentifiable(fakeIncludePair.classUid);
+                if (cls != null && cls.isValid() && include != null) {
+                    FileImpl file = (FileImpl) include.getIncludeFile();
+                    if (file != null && file.isValid()) {
+                        TokenStream ts = file.getTokenStream(0, Integer.MAX_VALUE, 0, true);
 
-                TokenStream ts = file.getTokenStream(0, Integer.MAX_VALUE, 0, true);
-
-                CPPParserEx parser = CPPParserEx.getInstance(file.getFile().getName(), ts, 0);
-                parser.fix_fake_class_members();
-                AST ast = parser.getAST();
+                        CPPParserEx parser = CPPParserEx.getInstance(file.getFile().getName(), ts, 0);
+                        parser.fix_fake_class_members();
+                        AST ast = parser.getAST();
 
 
-                CsmDeclaration.Kind kind = cls.getKind();
-                CsmVisibility visibility = CsmVisibility.PRIVATE;
-                if(kind == CsmDeclaration.Kind.CLASS) {
-                    visibility = CsmVisibility.PRIVATE;
-                } else if( kind == CsmDeclaration.Kind.STRUCT ||
-                        kind == CsmDeclaration.Kind.UNION) {
-                    visibility = CsmVisibility.PUBLIC;
+                        CsmDeclaration.Kind kind = cls.getKind();
+                        CsmVisibility visibility = CsmVisibility.PRIVATE;
+                        if(kind == CsmDeclaration.Kind.CLASS) {
+                            visibility = CsmVisibility.PRIVATE;
+                        } else if( kind == CsmDeclaration.Kind.STRUCT ||
+                                kind == CsmDeclaration.Kind.UNION) {
+                            visibility = CsmVisibility.PUBLIC;
+                        }
+                        cls.fixFakeRender(file, visibility, ast, false);
+
+                        wereFakes = true;
+                    }
                 }
-                cls.fixFakeRender(file, visibility, ast, false);
-
-                wereFakes = true;
             }
         }
         return wereFakes;
