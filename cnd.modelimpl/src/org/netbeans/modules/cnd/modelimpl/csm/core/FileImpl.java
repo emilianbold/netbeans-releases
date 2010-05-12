@@ -275,8 +275,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         Object o = projectRef;
         if (o instanceof ProjectBase) {
             return (ProjectBase) o;
-        } else if (o instanceof Reference) {
-            ProjectBase prj = (ProjectBase)((Reference) o).get();
+        } else if (o instanceof Reference<?>) {
+            ProjectBase prj = (ProjectBase)((Reference<?>) o).get();
             if (prj != null) {
                 return prj;
             }
@@ -286,8 +286,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             ProjectBase prj = null;
             if (projectRef instanceof ProjectBase) {
                 prj = (ProjectBase) projectRef;
-            } else if (projectRef instanceof Reference) {
-                prj = (ProjectBase)((Reference) projectRef).get();
+            } else if (projectRef instanceof Reference<?>) {
+                prj = (ProjectBase)((Reference<?>) projectRef).get();
             }
             if (prj == null) {
                 prj = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);
@@ -1303,11 +1303,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         }
     };
-    static final private Comparator<CsmUID> UID_START_OFFSET_COMPARATOR = new Comparator<CsmUID>() {
+    static final private Comparator<CsmUID<?>> UID_START_OFFSET_COMPARATOR = new Comparator<CsmUID<?>>() {
 
         @SuppressWarnings("unchecked")
         @Override
-        public int compare(CsmUID o1, CsmUID o2) {
+        public int compare(CsmUID<?> o1, CsmUID<?> o2) {
             if (o1 == o2) {
                 return 0;
             }
@@ -1656,16 +1656,16 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             declarationsLock.writeLock().unlock();
         }
         // TODO: remove this dirty hack!
-        if (decl instanceof VariableImpl) {
-            VariableImpl v = (VariableImpl) decl;
+        if (decl instanceof VariableImpl<?>) {
+            VariableImpl<?> v = (VariableImpl<?>) decl;
             if (!NamespaceImpl.isNamespaceScope(v, true)) {
                 v.setScope(this, true);
                 addStaticVariableDeclaration(uidDecl);
             }
         }
         if (CsmKindUtilities.isFunctionDeclaration(decl)) {
-            if (decl instanceof FunctionImpl) {
-                FunctionImpl fi = (FunctionImpl) decl;
+            if (decl instanceof FunctionImpl<?>) {
+                FunctionImpl<?> fi = (FunctionImpl<?>) decl;
                 if (!NamespaceImpl.isNamespaceScope(fi)) {
                     fi.setScope(this);
                     addStaticFunctionDeclaration(uidDecl);
@@ -1675,20 +1675,20 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     @SuppressWarnings("unchecked")
-    private void addStaticFunctionDeclaration(CsmUID uidDecl) {
+    private void addStaticFunctionDeclaration(CsmUID<?> uidDecl) {
         try {
             staticLock.writeLock().lock();
-            staticFunctionDeclarationUIDs.add(uidDecl);
+            staticFunctionDeclarationUIDs.add((CsmUID<CsmFunction>) uidDecl);
         } finally {
             staticLock.writeLock().unlock();
         }
     }
 
     @SuppressWarnings("unchecked")
-    private void addStaticVariableDeclaration(CsmUID uidDecl) {
+    private void addStaticVariableDeclaration(CsmUID<?> uidDecl) {
         try {
             staticLock.writeLock().lock();
-            staticVariableUIDs.add(uidDecl);
+            staticVariableUIDs.add((CsmUID<CsmVariable>) uidDecl);
         } finally {
             staticLock.writeLock().unlock();
         }
