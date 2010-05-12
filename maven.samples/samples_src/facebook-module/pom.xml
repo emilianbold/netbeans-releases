@@ -90,7 +90,7 @@
         <dependency>
             <artifactId>org-netbeans-api-progress</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <version>RELEASE69-BETAT</version>
+            <version>RELEASE69-BETA</version>
         </dependency>
         <dependency>
             <artifactId>org-netbeans-modules-settings</artifactId>
