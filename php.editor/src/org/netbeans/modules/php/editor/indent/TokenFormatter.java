@@ -1114,12 +1114,12 @@ public class TokenFormatter {
                                     int caretPosition = caretOffset + delta;
                                     if (realOffset <= caretPosition && caretPosition <= realOffset + oldText.length() + 1) {
                                         int positionOldText = caretPosition - realOffset - 1;
-                                        if (positionOldText > -1  && positionOldText < oldText.length()
-                                                && oldText.charAt(positionOldText) ==  ' ') {
+                                        if (positionOldText > -1 && positionOldText < oldText.length()
+                                                && oldText.charAt(positionOldText) == ' ') {
                                             newText = ' ' + newText;   // templates like public, return ...
                                         }
                                         caretInTemplateSolved = true;
-                                    }
+                                    } 
                                 }
                             }
                             index--;
@@ -1611,7 +1611,7 @@ public class TokenFormatter {
                                         replaceNew = createWhitespace(document, 0, Math.max(0, newSpaces));
                                     }
                                     if (!replaceOld.equals(replaceNew)
-                                            && ((indexOldText + replaceOld.length()) < oldText.length()
+                                            && ((indexOldText + replaceOld.length()) <= oldText.length()
                                             || indexNewText == indexNewTextLine)) {
                                         delta = replaceSimpleString(document, realOffset + indexOldText,
                                                 replaceOld, replaceNew, delta);
@@ -1653,11 +1653,6 @@ public class TokenFormatter {
                                     }
 
                                 }
-                                if (indexOldText < oldText.length()
-                                        && indexNewText >= newText.length()) {
-
-                                }
-
                             }
 
                         }
