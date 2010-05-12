@@ -89,7 +89,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
     private volatile String text;
     private TokenHierarchy<?> tokens;
     private final JavaFileFilterImplementation filter;
-    private static Logger log = Logger.getLogger(SourceFileObject.class.getName());
+    private static final Logger log = Logger.getLogger(SourceFileObject.class.getName());
 
     public static SourceFileObject create (final FileObject file, final FileObject root) {
         try {
@@ -122,14 +122,14 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         this.kind = filter == null ? FileObjects.getKind(ext) : Kind.SOURCE; //#141411
     }
 
-    public void update () throws IOException {
+    public final void update () throws IOException {
         if (this.kind != Kind.CLASS) {
             //Side effect assigns the text
             getContent(true);
         }
     }
 
-    public void update (final CharSequence content) throws IOException {
+    public final void update (final CharSequence content) throws IOException {
         if (content == null) {
             update();
         }
@@ -140,11 +140,13 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
     }
 
 
+    @Override
     public boolean isNameCompatible (String simplename, JavaFileObject.Kind kind) {
         assert simplename != null;
         return this.kind == kind && this.getNameWithoutExtension().equals(simplename);
     }
 
+    @Override
     public CharBuffer getCharContent(boolean ignoreEncodingErrors) throws IOException {
         String _text = this.text;
         if (_text == null) {
@@ -161,6 +163,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return this.tokens;
     }
 
+    @Override
     public java.io.Writer openWriter() throws IOException {
         final FileObject file = handle.resolveFileObject(true);
         if (file == null) {
@@ -169,6 +172,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return new OutputStreamWriter (this.openOutputStream(), FileEncodingQuery.getEncoding(file));
     }
 
+    @Override
     public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
         String _text = text;
         if (_text == null) {
@@ -177,6 +181,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return new StringReader(_text);
     }
 
+    @Override
     public java.io.OutputStream openOutputStream() throws IOException {
         final FileObject file = handle.resolveFileObject(true);
         if (file == null) {
@@ -191,6 +196,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         }
     }
 
+    @Override
     public InputStream openInputStream() throws IOException {
         String _text = text;
         if (_text == null) {
@@ -199,6 +205,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return new ByteArrayInputStream (_text.getBytes());
     }
 
+    @Override
     public boolean delete() {
         if (isModified()!=null) {
             //If the file is modified in editor do not delete it
@@ -225,10 +232,12 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
     }
 
 
+    @Override
     public JavaFileObject.Kind getKind() {
         return this.kind;
     }
 
+    @Override
     public String getName() {
        return this.handle.getName(true);
     }
@@ -237,6 +246,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return this.handle.getName(false);
     }
 
+    @Override
     public synchronized URI toUri () {
         if (this.uri == null) {
             try {
@@ -254,6 +264,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
      * modified file, the mtime is not known, this method returns
      * the current time.
      */
+    @Override
     public long getLastModified() {
         EditorCookie ec;
         if ((ec=isModified())==null) {
@@ -280,14 +291,17 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return file.lastModified().getTime();
     }
 
+    @Override
     public NestingKind getNestingKind() {
         return null;
     }
 
+    @Override
     public Modifier getAccessLevel() {
         return null;
     }
 
+    @Override
     public String inferBinaryName () {
         if (handle.root == null) {
             return null;
@@ -324,6 +338,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return this.handle.hashCode();
     }
 
+    @Override
     public StyledDocument getDocument() {
         final FileObject file = handle.resolveFileObject(false);
         if (file == null) {
@@ -337,6 +352,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return (doc instanceof StyledDocument) ?  ((StyledDocument)doc) : null;
     }
 
+    @Override
     public void runAtomic(final Runnable r) {
         assert r != null;
         final StyledDocument doc = getDocument();
@@ -452,10 +468,10 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
 
 
     private class LckStream extends OutputStream {
-        
+
         private final OutputStream delegate;
         private final FileLock lock;
-        
+
         public LckStream (final FileObject fo) throws IOException {
             assert fo != null;
             this.lock = fo.lock();
@@ -476,6 +492,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
             this.delegate.write(b);
         }
 
+        @Override
         public void write(int b) throws IOException {
             this.delegate.write (b);
         }
@@ -485,9 +502,9 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
                 this.delegate.close();
             } finally {
                 this.lock.releaseLock();
-                text = null;                
-            }            
-        }                
+                text = null;
+            }
+        }
     }
 
     private class DocumentStream extends OutputStream {
@@ -517,6 +534,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
             this.pos+=b.length;
         }
 
+        @Override
         public synchronized void write(int b) throws IOException {
             ensureSize (1);
             this.data[this.pos++]=(byte)(b&0xff);
@@ -539,6 +557,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
             try {
                 NbDocument.runAtomic(this.doc,
                     new Runnable () {
+                        @Override
                         public void run () {
                             try {
                                 doc.remove(0,doc.getLength());
