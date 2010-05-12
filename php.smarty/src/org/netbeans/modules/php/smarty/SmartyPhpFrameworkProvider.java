@@ -136,8 +136,6 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
     public boolean isInPhpModule(final PhpModule phpModule) {
         // get php files within the module
         final FoundSmarty fs = new FoundSmarty();
-        Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(phpModule.getSourceDirectory()));
-        final Set<FileObject> filesWithUsedSmarty = index.getLocationsForIdentifiers(SmartyFramework.BASE_CLASS_NAME);
 
         if (fs.isFound()) {
             return true;
