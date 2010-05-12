@@ -110,6 +110,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Quote;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
@@ -698,8 +699,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 }
                 if (classScope != null) {
                     final String name = fieldAccessInfo.getName();
-                    if (name == null ) {
-                        showAssertionFor185229();
+                    if (name == null) {
+                        showAssertionFor185229(fieldAccessInfo.getOriginalNode());
                     } else {
                         Set<FieldElement> declaredFields = new HashSet<FieldElement>();
                         declaredFields.addAll(classScope.getDeclaredFields());
@@ -721,9 +722,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         super.scan(rightHandSide);
     }
 
-    private void showAssertionFor185229() {
+    private void showAssertionFor185229(final FieldAccess originalNode) {
         boolean showAssertFor185229 = false;
         assert showAssertFor185229 = true;
+        if (showAssertFor185229) {
+            Variable field = originalNode.getField();
+            if (field.getName() instanceof Quote) {
+                return;
+            }
+        }
         if (showAssertFor185229) {
             final FileObject fileObject = fileScope.getFileObject();
             if (fileObject != null) {
