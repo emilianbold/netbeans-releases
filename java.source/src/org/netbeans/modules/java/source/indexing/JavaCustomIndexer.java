@@ -168,51 +168,62 @@ public class JavaCustomIndexer extends CustomIndexer {
                     context.getRootURI());
 
             ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException, InterruptedException {
                     try {
-                        if (context.isAllFilesIndexing()) {
-                            cleanUpResources(context.getRootURI());
-                        }
+                        JavaIndex.setAttribute(context.getRootURI(), DIRTY_ROOT, Boolean.TRUE.toString());
+                        boolean finished = false;
                         final JavaParsingContext javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
-                        if (javaContext.uq == null)
-                            return null; //IDE is exiting, indeces are already closed.
                         final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                         final Set<File> removedFiles = new HashSet<File> ();
                         final List<CompileTuple> toCompile = new ArrayList<CompileTuple>(javaSources.size()+virtualSourceTuples.size());
-                        javaContext.uq.setDirty(null);
-                        for (Indexable i : javaSources) {
-                            final CompileTuple tuple = createTuple(context, javaContext, i);
-                            if (tuple != null) {
-                                toCompile.add(tuple);
-                            }
-                            clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
-                        }
-                        for (CompileTuple tuple : virtualSourceTuples) {
-                            clear(context, javaContext, tuple.indexable.getRelativePath(), removedTypes, removedFiles);
-                        }
-                        toCompile.addAll(virtualSourceTuples);
                         CompileWorker.ParsingOutput compileResult = null;
-                        List<CompileTuple> toCompileRound = toCompile;
-                        int round = 0;
-                        while (round++ < 2) {
-                            for (CompileWorker w : WORKERS) {
-                                compileResult = w.compile(compileResult, context, javaContext, toCompileRound);
-                                if (compileResult == null || context.isCancelled()) {
-                                    return null; // cancelled, IDE is sutting down
+                        try {
+                            if (context.isAllFilesIndexing()) {
+                                cleanUpResources(context.getRootURI());
+                            }
+                            if (javaContext.uq == null)
+                                return null; //IDE is exiting, indeces are already closed.
+
+                            javaContext.uq.setDirty(null);
+                            for (Indexable i : javaSources) {
+                                final CompileTuple tuple = createTuple(context, javaContext, i);
+                                if (tuple != null) {
+                                    toCompile.add(tuple);
                                 }
-                                if (compileResult.success) {
-                                    break;
+                                clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
+                            }
+                            for (CompileTuple tuple : virtualSourceTuples) {
+                                clear(context, javaContext, tuple.indexable.getRelativePath(), removedTypes, removedFiles);
+                            }
+                            toCompile.addAll(virtualSourceTuples);
+                            List<CompileTuple> toCompileRound = toCompile;
+                            int round = 0;
+                            while (round++ < 2) {
+                                for (CompileWorker w : WORKERS) {
+                                    compileResult = w.compile(compileResult, context, javaContext, toCompileRound);
+                                    if (compileResult == null || context.isCancelled()) {
+                                        return null; // cancelled, IDE is sutting down
+                                    }
+                                    if (compileResult.success) {
+                                        break;
+                                    }
+                                }
+                                if (compileResult.aptGenerated.isEmpty()) {
+                                    round++;
+                                } else {
+                                    toCompileRound = new ArrayList<CompileTuple>(compileResult.aptGenerated.size());
+                                    for (CompileTuple ct : compileResult.aptGenerated) {
+                                        toCompileRound.add(ct);
+                                        toCompile.add(ct);
+                                    }
+                                    compileResult.aptGenerated.clear();
                                 }
                             }
-                            if (compileResult.aptGenerated.isEmpty()) {
-                                round++;
-                            } else {
-                                toCompileRound = new ArrayList<CompileTuple>(compileResult.aptGenerated.size());
-                                for (CompileTuple ct : compileResult.aptGenerated) {
-                                    toCompileRound.add(ct);
-                                    toCompile.add(ct);
-                                }
-                                compileResult.aptGenerated.clear();
+                            finished = true;
+                        } finally {
+                            if (finished) {
+                                JavaIndex.setAttribute(context.getRootURI(), DIRTY_ROOT, null);
                             }
                         }
                         assert compileResult != null;
@@ -249,7 +260,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         }
                         return null;
                     } catch (NoSuchAlgorithmException ex) {
-                        throw (IOException) new IOException().initCause(ex);
+                        throw new IOException(ex);
                     }
                 }
             });
@@ -260,7 +271,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     }
 
-    private static final List<? extends Indexable> splitSources(final Iterable<? extends Indexable> indexables, final List<? super Indexable> javaSources) {
+    private static List<? extends Indexable> splitSources(final Iterable<? extends Indexable> indexables, final List<? super Indexable> javaSources) {
         List<Indexable> virtualSources = new LinkedList<Indexable>();
         for (Indexable indexable : indexables) {
             if (indexable.getURL() == null) {

@@ -485,11 +485,13 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         }
         return urls;
     }
-    
+
     private List<URL> createProcessorClasspath(Element compilationUnitEl) {
-        for (Element e : XMLUtil.findSubElements(compilationUnitEl)) {
-            if (e.getLocalName().equals("classpath") && e.getAttribute("mode").equals("processor")) { // NOI18N
-                return createClasspath(e);
+        final Element ap = XMLUtil.findElement(compilationUnitEl, AnnotationProcessingQueryImpl.EL_ANNOTATION_PROCESSING, JavaProjectNature.NS_JAVA_3);
+        if (ap != null) {
+            final Element path = XMLUtil.findElement(ap, AnnotationProcessingQueryImpl.EL_PROCESSOR_PATH, JavaProjectNature.NS_JAVA_3);
+            if (path != null) {
+                return createClasspath(path);
             }
         }
         // None specified; assume it is the same as the compile classpath.
