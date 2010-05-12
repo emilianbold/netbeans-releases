@@ -663,14 +663,15 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
 
         case INSTASGNNODE: {
-            if (parent instanceof AstClassElement) {
+            AstClassElement classParent = findClassParent(parent);
+            if (classParent != null) {
                 // We don't have unique declarations, only assignments (possibly many)
                 // so stash these in a map and extract unique fields when we're done
-                Set<InstAsgnNode> assignments = fields.get(parent);
+                Set<InstAsgnNode> assignments = fields.get(classParent);
 
                 if (assignments == null) {
                     assignments = new HashSet<InstAsgnNode>();
-                    fields.put((AstClassElement)parent, assignments);
+                    fields.put(classParent, assignments);
                 }
 
                 assignments.add((InstAsgnNode)node);
@@ -707,11 +708,12 @@ public class RubyStructureAnalyzer implements StructureScanner {
                         break;
                     }
                     case INSTASGNNODE: {
-                        if (parent instanceof AstClassElement) {
-                            Set<InstAsgnNode> assignments = fields.get((AstClassElement) parent);
+                        AstClassElement classParent = findClassParent(parent);
+                        if (classParent != null) {
+                            Set<InstAsgnNode> assignments = fields.get(classParent);
                             if (assignments == null) {
                                 assignments = new HashSet<InstAsgnNode>();
-                                fields.put((AstClassElement) parent, assignments);
+                                fields.put(classParent, assignments);
                             }
                             assignments.add((InstAsgnNode) each);
                         }
@@ -743,7 +745,10 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
         case ALIASNODE: {
             AliasNode aliasNode = (AliasNode) node;
-            addAliasedMethod(aliasNode.getOldName(), aliasNode, parent, in);
+            String aliasedMethodName = AstUtilities.getNameOrValue(aliasNode.getOldName());
+            if (aliasedMethodName != null) {
+                addAliasedMethod(aliasedMethodName, aliasNode, parent, in);
+            }
             break;
         }
         case FCALLNODE: {
@@ -920,57 +925,61 @@ public class RubyStructureAnalyzer implements StructureScanner {
                         }
                     }
                 }
-            } else if (isTestFile && TestNameResolver.isTestMethodName(name)) {
-                    String desc = name;
-                    FCallNode fc = (FCallNode)node;
-                    if (fc.getIterNode() != null || "it".equals(name)) { // NOI18N   // "it" without do/end: pending
-                        Node argsNode = fc.getArgsNode();
-                        
-                        if (argsNode instanceof ListNode) {
-                            ListNode args = (ListNode)argsNode;
+            } else if (isTestFile && parent == null && TestNameResolver.isRspecDescribe(name)) {
+                // creates a fake class for rspec files to be able index instance variables etc in it
+                String className = RubyUtils.underlinedNameToCamel(RubyUtils.getFileObject(result).getName());
+                AstClassElement co = new AstClassElement(result, node);
+                co.setIn(in);
+                co.setFqn(className);
+                co.setName(className);
+                co.setHidden(false);
+                co.setVirtual(true);
+                in = className;
+                addToParent(parent, co);
+                parent = co;
+            }
+            if (isTestFile && TestNameResolver.isTestMethodName(name)) {
+                String desc = name;
+                FCallNode fc = (FCallNode) node;
+                if (fc.getIterNode() != null || "it".equals(name)) { // NOI18N   // "it" without do/end: pending
+                    Node argsNode = fc.getArgsNode();
 
+                    if (argsNode instanceof ListNode) {
+                        ListNode args = (ListNode) argsNode;
+
+                        for (String descBl : AstUtilities.getNamesOrValues(args)) {
                             // TODO handle
                             //  describe  ThingsController, "GET #index" do
                             // e.g. where the desc string is not first
-                            for (int i = 0, max = args.size(); i < max; i++) {
-                                Node n = args.get(i);
 
-                                // For dynamically computed strings, we have n instanceof DStrNode
-                                // but I can't handle these anyway
-                                if (n instanceof StrNode) {
-                                    String descBl = ((StrNode)n).getValue();
-
-                                    if ((descBl != null) && (descBl.length() > 0)) {
-                                        // No truncation? See 138259
-                                        //desc = RubyUtils.truncate(descBl.toString(), MAX_RUBY_LABEL_LENGTH);
-                                        desc = descBl;
-                                        if (TestNameResolver.isShouldaMethod(name)) {
-                                            String shouldaMethodName = TestNameResolver.getTestName(path);
-                                            AstElement co = new AstDynamicMethodElement(result, node, shouldaMethodName);
-                                            co.setHidden(true);
-                                            co.setIn(in);
-                                            // need to add as a child to the class, 
-                                            // not to the parent which is here typically "context"
-                                            addToParent(lastClassElement, co);
-                                        }
-                                        // Prepend the function type (unless it's test - see 138260
-                                        if (!name.equals("test")) { // NOI18N
-                                            desc = name+": " + desc; // NOI18N
-                                        }
-                                    }
-                                    break;
-                                }
+                            // No truncation? See 138259
+                            //desc = RubyUtils.truncate(descBl.toString(), MAX_RUBY_LABEL_LENGTH);
+                            desc = descBl;
+                            if (TestNameResolver.isShouldaMethod(name)) {
+                                String shouldaMethodName = TestNameResolver.getTestName(path);
+                                AstElement co = new AstDynamicMethodElement(result, node, shouldaMethodName);
+                                co.setHidden(true);
+                                co.setIn(in);
+                                // need to add as a child to the class,
+                                // not to the parent which is here typically "context"
+                                addToParent(lastClassElement, co);
                             }
+                            // Prepend the function type (unless it's test - see 138260
+                            if (!name.equals("test")) { // NOI18N
+                                desc = name + ": " + desc; // NOI18N
+                            }
+                            break;
                         }
-                        AstElement co = new AstNameElement(result, node, desc,
-                                ElementKind.TEST);
-
-                        addToParent(parent, co);
-                        parent = co;
                     }
+                    AstElement co = new AstNameElement(result, node, desc,
+                            ElementKind.TEST);
+
+                    addToParent(parent, co);
+                    parent = co;
                 }
             }
-            
+        }
+
             break;
         }
 
@@ -984,6 +993,16 @@ public class RubyStructureAnalyzer implements StructureScanner {
             scan(child, path, in, includes, parent);
             path.ascend();
         }
+    }
+
+    private AstClassElement findClassParent(AstElement candidate) {
+        if (candidate instanceof AstClassElement) {
+            return (AstClassElement) candidate;
+        }
+        if (isTestFile && lastClassElement instanceof AstClassElement) {
+            return (AstClassElement) lastClassElement;
+        }
+        return null;
     }
 
 

@@ -249,7 +249,8 @@ public abstract class BreakpointImpl<B extends CndBreakpoint> implements Propert
                         getBreakpoint().getSuspend(),
 			getBreakpoint().isTemporary(), 
                         bpcmd,
-                        getBreakpoint().getThreadID());
+                        getBreakpoint().getThreadID(),
+                        true);
 		debugger.addPendingBreakpoint(command.getToken(), this);
                 send(command);
 	    } else {

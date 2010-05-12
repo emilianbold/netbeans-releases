@@ -68,6 +68,7 @@ public class JavaProjectNature implements ProjectNature {
 
     public static final String NS_JAVA_1 = "http://www.netbeans.org/ns/freeform-project-java/1"; // NOI18N
     public static final String NS_JAVA_2 = "http://www.netbeans.org/ns/freeform-project-java/2"; // NOI18N
+    public static final String NS_JAVA_3 = "http://www.netbeans.org/ns/freeform-project-java/3"; //NOI18N
     public static final String EL_JAVA = "java-data"; // NOI18N
     public static final String STYLE_PACKAGES = "packages"; // NOI18N
     

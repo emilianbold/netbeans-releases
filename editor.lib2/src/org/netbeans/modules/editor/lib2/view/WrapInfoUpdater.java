@@ -264,6 +264,7 @@ final class WrapInfoUpdater {
      *  and further breaking needs to be done.
      */
     private boolean breakViewNext() {
+        // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
         float width = breakView.getPreferredSpan(View.X_AXIS);
         boolean fits = (width <= availableWidth - x);
         if (!fits && (wrapLine().startViewPart = breakViewImpl()) != null) { // break succeeded
@@ -330,6 +331,7 @@ final class WrapInfoUpdater {
                 }
             }
             wrapLineNonEmpty = true;
+            // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
             float width = part.getPreferredSpan(View.X_AXIS);
             breakView = fragment;
             breakVisualOffset += width;

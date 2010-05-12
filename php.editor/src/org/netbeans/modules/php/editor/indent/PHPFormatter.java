@@ -55,6 +55,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import javax.swing.text.Position;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -110,15 +111,24 @@ public class PHPFormatter implements Formatter {
 
     @Override
     public void reformat(Context context, ParserResult info) {
-        LOG.log(Level.FINE, "PHPFormatter snapshot: \n''{0}''\n", info.getSnapshot().getText().toString()); //NOI18N
+//        LOG.log(Level.FINE, "PHPFormatter snapshot: \n''{0}''\n", info.getSnapshot().getText().toString()); //NOI18N
+//
+//        Map<Position, Integer> indentLevels = new LinkedHashMap<Position, Integer>();
+//        IndentLevelCalculator indentCalc = new IndentLevelCalculator(context.document(), indentLevels);
+//        PHPParseResult phpParseResult = ((PHPParseResult) info);
+//        phpParseResult.getProgram().accept(indentCalc);
+//
+//        prettyPrint(context, info);
+//        astReformat(context, indentLevels);
 
-        Map<Position, Integer> indentLevels = new LinkedHashMap<Position, Integer>();
-        IndentLevelCalculator indentCalc = new IndentLevelCalculator(context.document(), indentLevels);
-        PHPParseResult phpParseResult = ((PHPParseResult) info);
-        phpParseResult.getProgram().accept(indentCalc);
-
-        prettyPrint(context, info);
-        astReformat(context, indentLevels);
+	long start = System.currentTimeMillis();
+	
+	(new TokenFormatter()).reformat(context, info);
+	
+	if (LOG.isLoggable(Level.FINE)) {
+	    long end = System.currentTimeMillis();
+	    LOG.fine("The reformat action took: "  + (end - start));
+	}
     }
 
     @Override

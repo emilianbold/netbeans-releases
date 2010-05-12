@@ -91,14 +91,17 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
         return new SftpConnectionProvider();
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(SftpConnectionProvider.class, "LBL_Sftp");
     }
 
+    @Override
     public Set<String> getPropertyNames() {
         return PROPERTIES;
     }
 
+    @Override
     public RemoteConfiguration createRemoteConfiguration(ConfigManager.Configuration configuration) {
         SshFiles sshFiles = getDefaultSshFiles();
         configuration.putValue(TYPE, SFTP_CONNECTION_TYPE);
@@ -116,6 +119,7 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
         return new SftpConfiguration(configuration);
     }
 
+    @Override
     public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration) {
         if (accept(configuration)) {
             return new SftpConfiguration(configuration);
@@ -123,6 +127,7 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
         return null;
     }
 
+    @Override
     public RemoteClient getRemoteClient(RemoteConfiguration remoteConfiguration, InputOutput io) {
         if (remoteConfiguration instanceof SftpConfiguration) {
             return new SftpClient((SftpConfiguration) remoteConfiguration, io);
@@ -130,6 +135,7 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
         return null;
     }
 
+    @Override
     public RemoteConfigurationPanel getRemoteConfigurationPanel(ConfigManager.Configuration configuration) {
         if (accept(configuration)) {
             return new SftpConfigurationPanel();

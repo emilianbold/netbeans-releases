@@ -100,7 +100,7 @@ public final class SearchScopeRegistry {
     private SearchScopeRegistry getLookupInstance(final Lookup lookup,
                                                   final int id) {
         assert id > 0;
-        assert EventQueue.isDispatchThread();
+        // assert EventQueue.isDispatchThread(); #183636
         assert this == defaultInstance;
         if (LOG.isLoggable(FINER)) {
             LOG.finer("getLookupInstance(Lookup, " + id + ')');

@@ -62,6 +62,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -81,7 +82,10 @@ public class ClassEncapsulation {
     private static final String ACTION_PATH = "Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-InnerToOuterAction.instance";   //NOI18N
     private static final Logger LOG = Logger.getLogger(ClassEncapsulation.class.getName());
 
-    @Hint(category="encapsulation",suppressWarnings={"PublicInnerClass"}, enabled=false)   //NOI18N
+    static final String ALLOW_ENUMS_KEY = "allow.enums";
+    static final boolean ALLOW_ENUMS_DEFAULT = false;
+
+    @Hint(category="encapsulation",suppressWarnings={"PublicInnerClass"}, enabled=false, customizerProvider=CustomizerImpl.class)   //NOI18N
     @TriggerTreeKind(Kind.CLASS)
     public static ErrorDescription publicCls(final HintContext ctx) {
         assert ctx != null;
@@ -89,7 +93,7 @@ public class ClassEncapsulation {
             NbBundle.getMessage(ClassEncapsulation.class, "TXT_PublicInnerClass"), "PublicInnerClass");  //NOI18N
     }
 
-    @Hint(category="encapsulation",suppressWarnings={"ProtectedInnerClass"}, enabled=false)    //NOI18N
+    @Hint(category="encapsulation",suppressWarnings={"ProtectedInnerClass"}, enabled=false, customizerProvider=CustomizerImpl.class)    //NOI18N
     @TriggerTreeKind(Kind.CLASS)
     public static ErrorDescription protectedCls(final HintContext ctx) {
         assert ctx != null;
@@ -97,7 +101,7 @@ public class ClassEncapsulation {
             NbBundle.getMessage(ClassEncapsulation.class, "TXT_ProtectedInnerClass"), "ProtectedInnerClass"); //NOI18N
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"PackageVisibleInnerClass"}, enabled=false)
+    @Hint(category="encapsulation", suppressWarnings={"PackageVisibleInnerClass"}, enabled=false, customizerProvider=CustomizerImpl.class)
     @TriggerTreeKind(Kind.CLASS)
     public static ErrorDescription packageCls(final HintContext ctx) {
         assert ctx != null;
@@ -117,6 +121,11 @@ public class ClassEncapsulation {
         }
         if (!hasRequiredVisibility(((ClassTree)tp.getLeaf()).getModifiers().getFlags(),visibility)) {
             return null;
+        }
+        if (ctx.getPreferences().getBoolean(ALLOW_ENUMS_KEY, ALLOW_ENUMS_DEFAULT)) {
+            if (ctx.getInfo().getTreeUtilities().isEnum((ClassTree) tp.getLeaf())) {
+                return null;
+            }
         }
         return ErrorDescriptionFactory.forName(ctx, tp, description,
             new FixImpl(TreePathHandle.create(tp, ctx.getInfo())),
@@ -221,5 +230,14 @@ public class ClassEncapsulation {
             }
         }
 
+    }
+
+    public static final class CustomizerImpl extends OneCheckboxCustomizerProvider {
+        public CustomizerImpl() {
+            super(NbBundle.getMessage(ClassEncapsulation.class, "DN_IgnoreEnumForInnerClass"),
+                  NbBundle.getMessage(ClassEncapsulation.class, "TP_IgnoreEnumForInnerClass"),
+                  ALLOW_ENUMS_KEY,
+                  ALLOW_ENUMS_DEFAULT);
+        }
     }
 }

@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -77,6 +78,7 @@ import org.netbeans.modules.dlight.procfs.api.SamplingData;
 import org.netbeans.modules.dlight.procfs.reader.api.ProcReader;
 import org.netbeans.modules.dlight.procfs.reader.api.ProcReaderFactory;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorListener;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
@@ -100,6 +102,7 @@ public class ProcFSDataCollector
     private final List<DataTableMetadata> providedDataTables;
     private SQLDataStorage sqlStorage;
     private PreparedStatement insertMSAStatement = null;
+    private final List<DataCollectorListener> listeners = new ArrayList<DataCollectorListener>();
 
     public ProcFSDataCollector(ProcFSDCConfiguration configuration) {
         this.configuration = configuration;
@@ -120,6 +123,72 @@ public class ProcFSDataCollector
         }
 
         providedDataTables = Collections.unmodifiableList(tables);
+    }
+
+/**
+     * Adds collector state listener, all listeners will be notified about
+     * collector state change.
+     * @param listener add listener
+     */
+    @Override
+    public final void addDataCollectorListener(DataCollectorListener listener) {
+        if (listener == null) {
+            return;
+        }
+
+        synchronized (this) {
+            if (!listeners.contains(listener)) {
+                listeners.add(listener);
+            }
+        }
+    }
+
+    /**
+     * Remove collector listener
+     * @param listener listener to remove from the list
+     */
+    @Override
+    public final void removeDataCollectorListener(DataCollectorListener listener) {
+        synchronized (this) {
+            listeners.remove(listener);
+        }
+    }
+
+    /**
+     * Notifies listeners target state changed in separate thread
+     * @param oldState state target was
+     * @param newState state  target is
+     */
+    protected final void notifyListeners(final CollectorState state) {
+        DataCollectorListener[] ll;
+
+        synchronized (this) {
+            ll = listeners.toArray(new DataCollectorListener[0]);
+        }
+
+        final CountDownLatch doneFlag = new CountDownLatch(ll.length);
+
+        // Will do notification in parallel, but wait until all listeners
+        // finish processing of event.
+        for (final DataCollectorListener l : ll) {
+            DLightExecutorService.submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        l.collectorStateChanged(ProcFSDataCollector.this, state);
+                    } finally {
+                        doneFlag.countDown();
+                    }
+                }
+            }, "Notifying " + l); // NOI18N
+        }
+
+        try {
+            doneFlag.await();
+        } catch (InterruptedException ex) {
+        }
+
     }
 
     @Override

@@ -98,7 +98,6 @@ public class PlatformDataObjectTest  {
         assertNotNull (wrapperPlatformFo);
         assertEquals (JCConstants.JAVACARD_PLATFORM_FILE_EXTENSION, wrapperPlatformFo.getExt());
         FileObject cardsInstance = FileUtil.createData(FileUtil.getConfigRoot(), getFakeCardsInstanceFileName("WrapperTest"));
-        System.err.println("Cards Instance File " + cardsInstance.getPath());
         riPlatformDo = DataObject.find (riPlatformFo);
         assertNotNull (riPlatformDo);
         wrapperPlatformDo = DataObject.find (wrapperPlatformFo);
@@ -155,8 +154,6 @@ public class PlatformDataObjectTest  {
         File connectedApiJarF = FileUtil.toFile(connectedApiJar);
         File additionalConnectedJarF = FileUtil.toFile(additionalConnectedJar);
         File additionalClassicJarF = FileUtil.toFile(additionalClassicJar);
-
-        System.err.println("EEPROM FOLDER: " + p.getProperty(JavacardPlatformKeyNames.PLATFORM_EEPROM_FOLDER));
 
         String expectedClassicBootClasspath = additionalClassicJarF.getAbsolutePath() + File.pathSeparator +
                 classicApiJarF.getAbsolutePath();
@@ -234,7 +231,6 @@ public class PlatformDataObjectTest  {
         StringBuilder sb = new StringBuilder(CommonSystemFilesystemPaths.SFS_ADD_HANDLER_REGISTRATION_ROOT + kind + "/" +
                 FakeCardsFactory.class.getName().replace('.', '-'));
         sb.append(".instance");
-        System.err.println("Instance file name " + sb);
         return sb.toString();
     }
     

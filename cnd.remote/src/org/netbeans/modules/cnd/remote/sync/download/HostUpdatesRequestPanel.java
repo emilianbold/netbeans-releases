@@ -43,16 +43,23 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
@@ -78,7 +85,7 @@ public class HostUpdatesRequestPanel extends JPanel {
     private JTable fileTable;
     private final HostUpdatesPersistence persistence;
 
-    public static Set<FileDownloadInfo> request(Collection<FileDownloadInfo> infos, ExecutionEnvironment env, HostUpdatesPersistence persistence) {
+    /*package*/ static Set<FileDownloadInfo> request(Collection<FileDownloadInfo> infos, ExecutionEnvironment env, HostUpdatesPersistence persistence) {
         HostUpdatesRequestPanel panel = new HostUpdatesRequestPanel(infos, env, persistence);
         String envString = RemoteUtil.getDisplayName(env);
         String caption = NbBundle.getMessage(HostUpdatesRequestPanel.class, "HostUpdatesRequestPanel.TITLE", envString);
@@ -108,16 +115,16 @@ public class HostUpdatesRequestPanel extends JPanel {
         Collections.sort(model);
 
         fileTable = new JTable(new FileTableModel());
-        fileTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        fileTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         fileTable.getColumnModel().getColumn(0).setPreferredWidth(24);
         //int height = 32;
         for (int c = 1; c < fileTable.getColumnCount(); c++) {
             //height = packColumnAndCalcHeight(fileTable, c, 2);
-            packColumnAndCalcHeight(fileTable, c, 2);
+            setColumnWidth(fileTable, c, 2);
         }
         Dimension pref = fileTable.getPreferredSize();
         pref.width = Math.min(pref.width, fileTable.getPreferredScrollableViewportSize().width);
-        pref.height = Math.max(Math.min(pref.height, 320), 48);
+        pref.height = Math.max(Math.min(pref.height + 3, 480), 48);
         fileTable.setPreferredScrollableViewportSize(pref);
         JScrollPane scroller = new JScrollPane(fileTable);
         add(scroller, BorderLayout.CENTER);
@@ -128,6 +135,77 @@ public class HostUpdatesRequestPanel extends JPanel {
         cbRememberChoice = new JCheckBox(NbBundle.getMessage(getClass(), "HostUpdatesRequestPanel.remember.text"), false);
         bottomPanel.add(cbRememberChoice);
         this.add(bottomPanel, BorderLayout.SOUTH);
+        setPopup();
+    }
+
+    private void setPopup() {
+
+        Action checkSelected = new AbstractAction(NbBundle.getMessage(getClass(), "ACTION_CheckSelected")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int[] rows = fileTable.getSelectedRows();
+                if (rows.length > 0) {
+                    for (int i = 0; i < rows.length; i++) {
+                        model.get(rows[i]).selected = true;
+                    }
+                }
+                fileTable.repaint();
+            }
+        };
+
+        Action uncheckSelected = new AbstractAction(NbBundle.getMessage(getClass(), "ACTION_UncheckSelected")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int[] rows = fileTable.getSelectedRows();
+                if (rows.length > 0) {
+                    for (int i = 0; i < rows.length; i++) {
+                        model.get(rows[i]).selected = false;
+                    }
+                }
+                fileTable.repaint();
+            }            
+        };
+
+        final JPopupMenu menu = new JPopupMenu();
+        menu.add(new JMenuItem(checkSelected));
+        menu.add(new JMenuItem(uncheckSelected));
+
+        final MenuListener menuListener = new MenuListener(fileTable, menu);
+        fileTable.addMouseListener(menuListener);
+    }
+
+    private static class MenuListener extends MouseAdapter {
+
+        private final JTable table;
+        private final JPopupMenu menu;
+
+        public MenuListener(JTable tblPathMappings, JPopupMenu menu) {
+            this.table = tblPathMappings;
+            this.menu = menu;
+        }
+
+        private void showMenu(MouseEvent evt) {
+            if (evt != null) {
+                int row = table.rowAtPoint(evt.getPoint());
+                if (row >= 0 && table.getSelectionModel().isSelectionEmpty()) {
+                    table.getSelectionModel().setSelectionInterval(row, row);
+                }
+                menu.show(evt.getComponent(), evt.getX(), evt.getY());
+            }
+        }
+
+        @Override
+        public void mousePressed(MouseEvent evt) {
+            if (evt.isPopupTrigger()) {
+                showMenu(evt);
+            }
+        }
+        @Override
+        public void mouseReleased(MouseEvent evt) {
+            if (evt.isPopupTrigger()) {
+                showMenu(evt);
+            }
+        }
     }
 
     private void apply() {
@@ -138,7 +216,7 @@ public class HostUpdatesRequestPanel extends JPanel {
         persistence.store();
     }
 
-    private static void packColumnAndCalcHeight(JTable table, int vColIndex, int margin) {
+    private static void setColumnWidth(JTable table, int vColIndex, int margin) {
         //int height = 0;
         DefaultTableColumnModel colModel = (DefaultTableColumnModel) table.getColumnModel();
         TableColumn col = colModel.getColumn(vColIndex);

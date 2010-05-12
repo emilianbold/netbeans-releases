@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.websvc.api.client;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -48,7 +50,9 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportImpl;
@@ -248,11 +252,15 @@ public final class WebServicesClientSupport {
         return impl.getServiceRefName(serviceName);
     }
 
-    public boolean isBroken(Project  project) {
-        return (getWebServicesClientSupport(project.getProjectDirectory()) == null && !getServiceClients().isEmpty());
+    public static boolean isBroken(Project  project) {
+        try {
+            return (hasJaxRpcClient(project) && getWebServicesClientSupport(project.getProjectDirectory()) == null);
+        } catch (IOException ex) {
+            return false;
+        }
     }
     
-    public void showBrokenAlert(Project  project) {
+    public static void showBrokenAlert(Project  project) {
         ProjectInformation pi = ProjectUtils.getInformation(project);
         String projectName = null;
         if(pi !=null) projectName = pi.getDisplayName();
@@ -277,4 +285,27 @@ public final class WebServicesClientSupport {
         return getDocumentBase ().getPath ().length () + getContextPath ().length ();
     }
  */
+
+    private static boolean hasJaxRpcClient(Project project) throws IOException {
+        boolean found = false;
+        FileObject projectXml = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+        if (projectXml != null) {
+            BufferedReader br = null;
+            try {
+                br = new BufferedReader(new FileReader(FileUtil.toFile(projectXml)));
+                String line = null;
+                while ((line = br.readLine()) != null) {
+                    if (line.contains("<web-service-client>")) { //NOI18N
+                        found = true;
+                        break;
+                    }
+                }
+            } finally {
+                if (br != null) {
+                    br.close();
+                }
+            }
+        }
+        return found;
+    }
 }

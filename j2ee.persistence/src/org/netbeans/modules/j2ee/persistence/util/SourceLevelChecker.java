@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.persistence.util;
 
+import java.math.BigDecimal;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 
@@ -67,4 +68,14 @@ public class SourceLevelChecker {
         return srcLevel != null ? Double.parseDouble(srcLevel) <= 1.4 : false;
     }
     
+    /**
+     * Return source level 
+     *
+     * @return source level for the project
+     */
+    public static String getSourceLevel(Project project) {
+        SourceLevelQueryImplementation sl = project.getLookup().lookup(SourceLevelQueryImplementation.class);
+        String srcLevel = sl.getSourceLevel(project.getProjectDirectory());
+        return srcLevel;
+    }
 }

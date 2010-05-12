@@ -116,7 +116,9 @@ public class DDDataObject extends  DDMultiViewDataObject
     /** List of updates to servlets that should be processed */
     private Vector updates;
 
+    private static final RequestProcessor rp = new RequestProcessor();
     private transient RequestProcessor.Task updateTask;
+    private transient RequestProcessor.Task refreshSourcesTask;
 
     public DDDataObject (FileObject pf, DDDataLoader loader) throws DataObjectExistsException {
         super (pf, loader);
@@ -371,7 +373,7 @@ public class DDDataObject extends  DDMultiViewDataObject
 
         // schedule processDDChangeEvent
         if (updateTask == null) {
-            updateTask = RequestProcessor.getDefault().post (new Runnable () {
+            updateTask = rp.post (new Runnable () {
                 public void run () {
                     java.util.List changes = null;
                     synchronized (DDDataObject.this) {
@@ -668,13 +670,17 @@ public class DDDataObject extends  DDMultiViewDataObject
 
     @Override
     public void stateChanged (final javax.swing.event.ChangeEvent e) {
+        if (refreshSourcesTask != null){
+            refreshSourcesTask.schedule(100);
+            return;
+        }
         //#179622 break the thread stack chain
-        RequestProcessor.getDefault().post(new Runnable() {
+        refreshSourcesTask = rp.post(new Runnable() {
             @Override
             public void run() {
                 refreshSourceFolders ((Sources)e.getSource());
             }
-        });
+        }, 100);
     }
 
     @Override

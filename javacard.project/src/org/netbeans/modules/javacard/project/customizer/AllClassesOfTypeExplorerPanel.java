@@ -59,7 +59,9 @@ import org.openide.util.lookup.ProxyLookup;
 import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyVetoException;
+import java.util.Arrays;
 import org.netbeans.modules.javacard.common.GuiUtils;
+import org.openide.util.Parameters;
 
 /**
  * An explorer panel which is passed a fully qualified class name in its
@@ -113,9 +115,6 @@ public class AllClassesOfTypeExplorerPanel extends JPanel implements ExplorerMan
         }
         if (shouldRunSearch() && !searchCompleted && path != null) {
             task.schedule(20);
-//        } else {
-//            onSearchBegun();
-//            onSearchCompleted();
         }
     }
 
@@ -146,6 +145,7 @@ public class AllClassesOfTypeExplorerPanel extends JPanel implements ExplorerMan
      * @param path
      */
     protected final void setClassPath(ClassPath path) {
+        Parameters.notNull("path", path); //NOI18N
         synchronized (this) {
             this.classpath = path;
         }

@@ -52,6 +52,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.Action;
@@ -224,6 +226,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             ConnectionManager.getDefault().addConnectionListener(listener);
             connectionList = new ArrayList<DatabaseConnection>();
             connectionList.addAll(Arrays.asList(ConnectionManager.getDefault().getConnections()));
+            sortConnections();
         }
 
         public Object getElementAt(int index) {
@@ -271,12 +274,22 @@ public class ConnectionAction extends SQLExecutionBaseAction {
                 public void run() {
                     connectionList.clear();
                     connectionList.addAll(Arrays.asList(ConnectionManager.getDefault().getConnections()));
+                    sortConnections();
 
                     DatabaseConnection selectedItem = (DatabaseConnection)getSelectedItem();
                     if (selectedItem != null && !connectionList.contains(selectedItem)) {
                         setSelectedItem(null);
                     }
                     fireContentsChanged(this, 0, connectionList.size());
+                }
+            });
+        }
+
+        void sortConnections() {
+            Collections.sort(connectionList, new Comparator<DatabaseConnection>() {
+                @Override
+                public int compare(DatabaseConnection o1, DatabaseConnection o2) {
+                    return o1.getDisplayName().compareTo(o2.getDisplayName());
                 }
             });
         }

@@ -25,6 +25,10 @@
             </module-dependencies>
             <public-packages>
                 <package>demo</package>
+                <package>javax.persistence</package>
+                <package>javax.persistence.criteria</package>
+                <package>javax.persistence.metamodel</package>
+                <package>javax.persistence.spi</package>
                 <package>org.netbeans.modules.customerdb</package>
             </public-packages>
             <class-path-extension>

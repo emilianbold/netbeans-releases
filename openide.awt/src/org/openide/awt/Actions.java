@@ -49,12 +49,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,6 +80,7 @@ import org.netbeans.api.actions.Printable;
 import org.netbeans.api.actions.Viewable;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
+import org.openide.util.LookupListener;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.SystemAction;
 
@@ -87,7 +90,6 @@ import org.openide.util.actions.SystemAction;
 * @author   Jaroslav Tulach
 */
 public class Actions {
-
     /**
      * @deprecated should not be used
      */
@@ -179,7 +181,7 @@ public class Actions {
      * @since 3.29
      */
     public static void connect(JMenuItem item, Action action, boolean popup) {
-        for (ButtonActionConnector bac : Lookup.getDefault().lookupAll(ButtonActionConnector.class)) {
+        for (ButtonActionConnector bac : buttonActionConnectors()) {
             if (bac.connect(item, action, popup)) {
                 return;
             }
@@ -190,6 +192,7 @@ public class Actions {
             ((Actions.MenuItem)item).setBridge(b);
         }
         b.updateState(null);
+        item.putClientProperty(DynamicMenuContent.HIDE_WHEN_DISABLED, action.getValue(DynamicMenuContent.HIDE_WHEN_DISABLED));
     }
 
     /** Attaches checkbox menu item to boolean state action.
@@ -232,7 +235,7 @@ public class Actions {
      * @since 3.29
      */
     public static void connect(AbstractButton button, Action action) {
-        for (ButtonActionConnector bac : Lookup.getDefault().lookupAll(ButtonActionConnector.class)) {
+        for (ButtonActionConnector bac : buttonActionConnectors()) {
             if (bac.connect(button, action)) {
                 return;
             }
@@ -282,6 +285,10 @@ public class Actions {
      */
     public static String cutAmpersand(String text) {
         // XXX should this also be deprecated by something in Mnemonics?
+
+        if( null == text )
+            return null;
+
         int i;
         String result = text;
 
@@ -505,7 +512,7 @@ public class Actions {
      * &lt;file name="action-pkg-ClassName.instance"&gt;
      *   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/&gt;
      *   &lt;attr name="type" stringvalue="org.netbeans.api.actions.Openable"/&gt;
-     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Action.inject"/&gt;
+     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/&gt;
      *   &lt;attr name="selectionType" stringvalue="EXACTLY_ONE"/&gt;
      *   &lt;attr name="injectable" stringvalue="pkg.YourClass"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
@@ -537,7 +544,7 @@ public class Actions {
      * <pre>
      * &lt;file name="action-pkg-ClassName.instance"&gt;
      *   &lt;attr name="type" stringvalue="org.netbeans.api.actions.Openable"/&gt;
-     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Action.inject"/&gt;
+     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/&gt;
      *   &lt;attr name="selectionType" stringvalue="ANY"/&gt;
      *   &lt;attr name="injectable" stringvalue="pkg.YourClass"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
@@ -1600,5 +1607,30 @@ public class Actions {
          *    default connect implementation is called
          */
         boolean connect(JMenuItem item, Action action, boolean popup);
+    }
+
+    private static final ButtonActionConnectorGetter GET = new ButtonActionConnectorGetter();
+    private static Collection<? extends ButtonActionConnector> buttonActionConnectors() {
+        return GET.all();
+    }
+    private static final class ButtonActionConnectorGetter implements LookupListener {
+        private final Lookup.Result<ButtonActionConnector> result;
+        private Collection<? extends ButtonActionConnector> all;
+
+        ButtonActionConnectorGetter() {
+            result = Lookup.getDefault().lookupResult(ButtonActionConnector.class);
+            result.addLookupListener(this);
+            resultChanged(null);
+        }
+
+        final Collection<? extends ButtonActionConnector> all() {
+            return all;
+        }
+
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            all = result.allInstances();
+        }
+
     }
 }

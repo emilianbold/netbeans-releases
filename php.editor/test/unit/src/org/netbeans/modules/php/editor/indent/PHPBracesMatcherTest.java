@@ -75,5 +75,17 @@ public class PHPBracesMatcherTest extends PHPTestBase {
     public void testFindMatching3() throws Exception {
         match2("x=^(true || (false)^)\ny=5");
     }
-    
+
+
+    public void testIssue164495_01() throws Exception {
+        match2("foreach ^($q['answers'] as $a^)\n{\n $tag=\"{value_$a[id]}\";\n}");
+    }
+
+    public void testIssue164495_02() throws Exception {
+        match2("foreach ($q^['answers'^] as $a)\n{\n $tag=\"{value_$a[id]}\";\n}");
+    }
+
+    public void testIssue164495_03() throws Exception {
+        match2("foreach ($q['answers'] as $a)\n^{\n $tag=\"{value_$a[id]}\";\n^}");
+    }
 }

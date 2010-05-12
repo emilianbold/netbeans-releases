@@ -82,6 +82,14 @@ public final class HighlightingManager {
     // -J-Dorg.netbeans.modules.editor.lib2.highlighting.HighlightingManager.level=300
     private static final Logger LOG = Logger.getLogger(HighlightingManager.class.getName());
     
+    public static final boolean LINEWRAP_ENABLED;
+    static {
+        String value = System.getProperty("org.netbeans.editor.linewrap"); //NOI18N
+        LINEWRAP_ENABLED = (value != null)
+                ? !value.equalsIgnoreCase("false") //NOI18N
+                : false;
+    }
+
     public static synchronized HighlightingManager getInstance() {
         if (instance == null) {
             instance = new HighlightingManager();
@@ -117,20 +125,22 @@ public final class HighlightingManager {
 
         // The factories changes tracking
         private Lookup.Result<HighlightsLayerFactory> factories = null;
-        private LookupListener factoriesTracker = new LookupListener() {
-            public void resultChanged(LookupEvent ev) {
+        private final LookupListener factoriesTracker = new LookupListener() {
+            public @Override void resultChanged(LookupEvent ev) {
                 rebuildAllLayers();
             }
         };
+        private LookupListener weakFactoriesTracker = null;
 
         // The FontColorSettings changes tracking
         private Lookup.Result<FontColorSettings> settings = null;
-        private LookupListener settingsTracker = new LookupListener() {
-            public void resultChanged(LookupEvent ev) {
+        private final LookupListener settingsTracker = new LookupListener() {
+            public @Override void resultChanged(LookupEvent ev) {
 //                System.out.println("Settings tracker for '" + (lastKnownMimePaths == null ? "null" : lastKnownMimePaths[0].getPath()) + "'");
                 rebuildAllLayers();
             }
         };
+        private LookupListener weakSettingsTracker = null;
 
         private final JTextComponent pane;
         private HighlightsLayerFilter paneFilter;
@@ -143,9 +153,10 @@ public final class HighlightingManager {
         private List<HighlightsContainer> allLayerContainers = null;
         
         // CompoundHighlightsContainers with containers from filtered layers
-        private final WeakHashMap<HighlightsLayerFilter, WeakReference<CompoundHighlightsContainer>> containers = 
-            new WeakHashMap<HighlightsLayerFilter, WeakReference<CompoundHighlightsContainer>>();
-        
+        private final WeakHashMap<HighlightsLayerFilter, WeakReference<MultiLayerContainer>> containers =
+            new WeakHashMap<HighlightsLayerFilter, WeakReference<MultiLayerContainer>>();
+
+        @SuppressWarnings("LeakingThisInConstructor")
         public Highlighting(JTextComponent pane) {
             this.pane = pane;
             this.paneFilter = new RegExpFilter(pane.getClientProperty(PROP_HL_INCLUDES), pane.getClientProperty(PROP_HL_EXCLUDES));
@@ -155,14 +166,14 @@ public final class HighlightingManager {
         }
 
         public synchronized HighlightsContainer getContainer(HighlightsLayerFilter filter) {
-            WeakReference<CompoundHighlightsContainer> ref = containers.get(filter);
-            CompoundHighlightsContainer container = ref == null ? null : ref.get();
+            WeakReference<MultiLayerContainer> ref = containers.get(filter);
+            MultiLayerContainer container = ref == null ? null : ref.get();
 
             if (container == null) {
-                container = new CompoundHighlightsContainer();
+                container = LINEWRAP_ENABLED ? new ProxyHighlightsContainer() : new CompoundHighlightsContainer();
                 rebuildContainer(pane.getDocument(), filter, container);
                 
-                containers.put(filter, new WeakReference<CompoundHighlightsContainer>(container));
+                containers.put(filter, new WeakReference<MultiLayerContainer>(container));
             }
 
             return container;
@@ -172,7 +183,7 @@ public final class HighlightingManager {
         //  PropertyChangeListener implementation
         // ----------------------------------------------------------------------
 
-        public void propertyChange(PropertyChangeEvent evt) {
+        public @Override void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName() == null || PROP_DOCUMENT.equals(evt.getPropertyName())) {
                 rebuildAll();
             }
@@ -221,11 +232,13 @@ public final class HighlightingManager {
                 }
                 
                 // Unregister listeners
-                if (factories != null) {
-                    factories.removeLookupListener(factoriesTracker);
+                if (factories != null && weakFactoriesTracker != null) {
+                    factories.removeLookupListener(weakFactoriesTracker);
+                    weakFactoriesTracker = null;
                 }
-                if (settings != null) {
-                    settings.removeLookupListener(settingsTracker);
+                if (settings != null && weakSettingsTracker != null) {
+                    settings.removeLookupListener(weakSettingsTracker);
+                    weakSettingsTracker = null;
                 }
 
                 if (mimePaths != null) {
@@ -244,11 +257,13 @@ public final class HighlightingManager {
                 
                 // Start listening again
                 if (factories != null) {
-                    factories.addLookupListener(factoriesTracker);
+                    weakFactoriesTracker = WeakListeners.create(LookupListener.class, factoriesTracker, factories);
+                    factories.addLookupListener(weakFactoriesTracker);
                     factories.allItems(); // otherwise we won't get any events at all
                 }
                 if (settings != null) {
-                    settings.addLookupListener(settingsTracker);
+                    weakSettingsTracker = WeakListeners.create(LookupListener.class, settingsTracker, settings);
+                    settings.addLookupListener(weakSettingsTracker);
                     settings.allItems(); // otherwise we won't get any events at all
                 }
 
@@ -259,16 +274,16 @@ public final class HighlightingManager {
             }
         }
         
-        private synchronized void resetAllContainers() {
-            for(HighlightsLayerFilter filter : containers.keySet()) {
-                WeakReference<CompoundHighlightsContainer> ref = containers.get(filter);
-                CompoundHighlightsContainer container = ref == null ? null : ref.get();
-                
-                if (container != null) {
-                    container.resetCache();
-                }
-            }
-        }
+//        private synchronized void resetAllContainers() {
+//            for(HighlightsLayerFilter filter : containers.keySet()) {
+//                WeakReference<CompoundHighlightsContainer> ref = containers.get(filter);
+//                CompoundHighlightsContainer container = ref == null ? null : ref.get();
+//
+//                if (container != null) {
+//                    container.resetCache();
+//                }
+//            }
+//        }
 
         private synchronized void rebuildAllLayers() {
             if (inRebuildAllLayers) {
@@ -343,8 +358,8 @@ public final class HighlightingManager {
             }
 
             for(HighlightsLayerFilter filter : containers.keySet()) {
-                WeakReference<CompoundHighlightsContainer> ref = containers.get(filter);
-                CompoundHighlightsContainer container = ref == null ? null : ref.get();
+                WeakReference<MultiLayerContainer> ref = containers.get(filter);
+                MultiLayerContainer container = ref == null ? null : ref.get();
 
                 if (container != null) {
                     rebuildContainer(document, filter, container);
@@ -352,7 +367,7 @@ public final class HighlightingManager {
             }
         }
 
-        private synchronized void rebuildContainer(Document doc, HighlightsLayerFilter filter, CompoundHighlightsContainer container) {
+        private synchronized void rebuildContainer(Document doc, HighlightsLayerFilter filter, MultiLayerContainer container) {
             if (allLayers != null) {
                 List<? extends HighlightsLayer> filteredLayers = paneFilter.filterLayers(Collections.unmodifiableList(allLayers));
                 filteredLayers = filter.filterLayers(Collections.unmodifiableList(filteredLayers));
@@ -425,6 +440,7 @@ public final class HighlightingManager {
             this.excludes = buildPatterns(excludes);
         }
 
+        @Override
         public List<? extends HighlightsLayer> filterLayers(List<? extends HighlightsLayer> layers) {
             List<? extends HighlightsLayer> includedLayers;
             

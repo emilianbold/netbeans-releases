@@ -42,8 +42,6 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -150,12 +148,14 @@ public class MakeListOfNBM extends Task {
                 }
             }
 
+        boolean osgi = false;
         String codename = attr.getValue("OpenIDE-Module"); //NOI18N
         String versionTag = "OpenIDE-Module-Specification-Version"; // NOI18N
         if (codename == null) {
             codename = attr.getValue("Bundle-SymbolicName"); // NOI18N
             versionTag = "Bundle-Version"; // NOI18N
             if (codename != null) {
+                osgi = true;
                 codename = codename.replace('-', '_');
             }
         }
@@ -271,6 +271,10 @@ public class MakeListOfNBM extends Task {
         String include[] = ds.getIncludedFiles();
         log("Including files " + Arrays.toString(include), Project.MSG_VERBOSE);
         for( int j=0; j < include.length; j++ ){
+            if (osgi && !include[j].equals(moduleName) &&
+                    !include[j].equals("config/Modules/" + codename.replaceFirst("/\\d+$", "").replace('.', '-') + ".xml")) {
+                throw new BuildException("Cannot include other files with an OSGi bundle: " + include[j], getLocation());
+            }
             try {
                 File inFile = new File( ds.getBasedir(), include[j] );
                 CRC32 crc = UpdateTracking.crcForFile(inFile);

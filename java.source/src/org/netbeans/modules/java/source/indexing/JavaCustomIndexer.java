@@ -63,12 +63,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClassIndex;
@@ -77,6 +79,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
+import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
@@ -155,6 +158,10 @@ public class JavaCustomIndexer extends CustomIndexer {
                 JavaIndex.LOG.warning("Source root: " + FileUtil.getFileDisplayName(root) + " is not on its sourcepath"); // NOI18N
                 return;
             }
+            if (!JavaFileFilterListener.getDefault().startListeningOn(root)) {
+                JavaIndex.LOG.fine("Forcing reindex dou to changed JavaFileFilter"); // NOI18N
+                return;
+            }
             final List<Indexable> javaSources = new ArrayList<Indexable>();
             final Collection<? extends CompileTuple> virtualSourceTuples = translateVirtualSources (
                     splitSources(files,javaSources),
@@ -163,6 +170,9 @@ public class JavaCustomIndexer extends CustomIndexer {
             ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     try {
+                        if (context.isAllFilesIndexing()) {
+                            cleanUpResources(context.getRootURI());
+                        }
                         final JavaParsingContext javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
                         if (javaContext.uq == null)
                             return null; //IDE is exiting, indeces are already closed.
@@ -288,7 +298,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         if (!context.checkForEditorModifications() && "file".equals(indexable.getURL().getProtocol()) && (root = FileUtil.toFile(context.getRoot())) != null) { //NOI18N
             try {
                 File file = new File(indexable.getURL().toURI().getPath());
-                return new CompileTuple(FileObjects.fileFileObject(file, root, null, javaContext.encoding), indexable);
+                return new CompileTuple(FileObjects.fileFileObject(file, root, javaContext.filter, javaContext.encoding), indexable);
             } catch (Exception ex) {
             } catch (AssertionError ae) {
                 //Add more debug messages
@@ -435,10 +445,20 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     }
 
-    public static void verifySourceLevel(URL root, String sourceLevel) throws IOException {
-        if (!sourceLevel.equals(JavaIndex.getAttribute(root, SOURCE_LEVEL_ROOT, sourceLevel))) {
+    public static void verifySourceLevel(@NonNull FileObject root, @NonNull FileObject file, @NonNull String sourceLevel) throws IOException {
+        URL rootURL = root.getURL();
+        
+        if (!sourceLevel.equals(JavaIndex.getAttribute(rootURL, SOURCE_LEVEL_ROOT, sourceLevel))) {
+            String rootSourceLevel = SourceLevelQuery.getSourceLevel(root);
+
+            if (!sourceLevel.equals(rootSourceLevel)) {
+                //#181454: mismatching source levels for file and root, may cause infinite rescanning:
+                JavaIndex.LOG.log(Level.WARNING, "Source level for file and for its root differ (file={0}, root={1})", new Object[]{sourceLevel, rootSourceLevel});
+                return;
+            }
+            
             JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
-            IndexingManager.getDefault().refreshIndex(root, null);
+            IndexingManager.getDefault().refreshIndex(rootURL, null);
         }
     }
 
@@ -698,8 +718,29 @@ public class JavaCustomIndexer extends CustomIndexer {
         return ret;
     }
 
+    private static void cleanUpResources (final URL rootURL) throws IOException {
+        final File classFolder = JavaIndex.getClassFolder(rootURL);
+        final File resourcesFile = new File (classFolder,FileObjects.RESOURCES);
+        try {
+            for (String fileName : readRSFile(resourcesFile)) {
+                File f = new File (classFolder, fileName);
+                f.delete();
+            }
+            resourcesFile.delete();
+        } catch (IOException ioe) {
+            //Nothing to delete - pass
+        }
+    }
+
     public static class Factory extends CustomIndexerFactory {
 
+        private static AtomicBoolean javaTaskFactoriesInitialized = new AtomicBoolean(false);
+
+        public Factory() {
+            if (!javaTaskFactoriesInitialized.getAndSet(true)) {
+                JavaSourceTaskFactoryManager.register();
+            }
+        }
 
         @Override
         public boolean scanStarted(final Context context) {
@@ -756,11 +797,13 @@ public class JavaCustomIndexer extends CustomIndexer {
         public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
             assert removedRoots != null;
             final ClassIndexManager cim = ClassIndexManager.getDefault();
+            final JavaFileFilterListener ffl = JavaFileFilterListener.getDefault();
             try {
                 cim.prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
                     public Void run() throws IOException, InterruptedException {
                         for (URL removedRoot : removedRoots) {
                             cim.removeRoot(removedRoot);
+                            ffl.stopListeningOn(removedRoot);
                         }
                         return null;
                     }

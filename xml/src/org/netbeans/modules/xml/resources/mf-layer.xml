@@ -235,7 +235,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-openide-actions-FileSystemAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="200"/>
+                        <attr name="position" intvalue="1450"/>
                     </file>
                     <file name="org-openide-actions-PasteAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
@@ -307,7 +307,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-openide-actions-FileSystemAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="300"/>
+                        <attr name="position" intvalue="1550"/>
                     </file>
                     <file name="org-openide-actions-PasteAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
@@ -384,7 +384,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-openide-actions-FileSystemAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="200"/>
+                        <attr name="position" intvalue="1350"/>
                     </file>
                     <file name="org-openide-actions-PasteAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>

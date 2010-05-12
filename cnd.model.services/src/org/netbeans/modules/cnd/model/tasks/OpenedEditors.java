@@ -72,15 +72,16 @@ public final class OpenedEditors {
     private List<JTextComponent> visibleEditors = new ArrayList<JTextComponent>();
     private Map<JTextComponent, FileObject> visibleEditors2Files = new HashMap<JTextComponent, FileObject>();
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-    private static OpenedEditors DEFAULT = new OpenedEditors();
     private final PropertyChangeListener componentListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
             OpenedEditors.this.propertyChange(evt);
         }
     };
-
     static final boolean SHOW_TIME = Boolean.getBoolean("cnd.model.tasks.time");
     private static final boolean TRACE_FILES = Boolean.getBoolean("cnd.model.tasks.files");
+    private final static List<String> mimeTypesList = Arrays.asList(new String[]
+                {MIMENames.CPLUSPLUS_MIME_TYPE, MIMENames.C_MIME_TYPE, MIMENames.HEADER_MIME_TYPE});
+    private static OpenedEditors DEFAULT = new OpenedEditors();
 
     private OpenedEditors() {
         EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
@@ -89,6 +90,7 @@ public final class OpenedEditors {
                 stateChanged(evt);
             }
         });
+        stateChanged(null);
     }
 
     public void fireStateChanged() {
@@ -211,8 +213,6 @@ public final class OpenedEditors {
 
         return !filterSupportedFiles(Collections.singletonList(file)).isEmpty();
     }
-    private final static List<String> mimeTypesList = Arrays.asList(new String[]
-                {MIMENames.CPLUSPLUS_MIME_TYPE, MIMENames.C_MIME_TYPE, MIMENames.HEADER_MIME_TYPE}); 
 
     /**
      * Filter unsupported files from the <code>files</code> parameter.

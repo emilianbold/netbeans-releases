@@ -53,6 +53,7 @@ import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
 import org.netbeans.modules.xml.xam.ui.customizer.CustomizerProvider;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Attr;
 
 /**
  *
@@ -81,8 +82,19 @@ public class AdvancedLocalElementNode extends LocalElementNode {
         String max=element.getMaxOccursEffective();
         if (max.equals("unbounded"))
             max="*";
-        
-        String decoration="["+element.getMinOccursEffective()+".."+max+"]";
+
+        String minText = null;
+        try {
+            minText = Integer.toString(element.getMinOccursEffective());
+        } catch (NumberFormatException ex) {
+            Attr attrNode = element.getPeer().getAttributeNode("minOccurs");
+            if (attrNode != null) {
+                minText = attrNode.getValue();
+                minText = "<font color='#ff0000'>" + minText + "</font>";
+            }
+        }
+
+        String decoration="[" + minText + ".." + max + "]";
         if(element.getType()!=null && element.getType().get()!=null) {
             String supertypeLabel = NbBundle.getMessage(
                     AdvancedLocalElementNode.class, "LBL_InstanceOf",

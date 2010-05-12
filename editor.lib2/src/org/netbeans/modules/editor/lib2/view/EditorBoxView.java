@@ -41,17 +41,14 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.Rectangle2D;
-import java.awt.geom.Rectangle2D.Double;
+import java.awt.font.FontRenderContext;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
@@ -91,7 +88,7 @@ import javax.swing.text.ViewFactory;
  * @author Miloslav Metelka
  */
 
-public abstract class EditorBoxView extends EditorView {
+public abstract class EditorBoxView<V extends EditorView> extends EditorView implements EditorView.Parent {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.EditorBoxView.level=FINE
     private static final Logger LOG = Logger.getLogger(EditorBoxView.class.getName());
@@ -108,7 +105,7 @@ public abstract class EditorBoxView extends EditorView {
      * Maintainer of children view infos. They may be computed lazily and dropped
      * once they are unnecessary or if they become obsolete.
      */
-    EditorBoxViewChildren children; // 36 + 4 = 40 bytes
+    EditorBoxViewChildren<V> children; // 36 + 4 = 40 bytes
 
     /**
      * Construct a composite box view over the given element.
@@ -151,7 +148,7 @@ public abstract class EditorBoxView extends EditorView {
      * preferenceChange to parent of this view.
      * @param majorAxisSpan
      */
-    void setMajorAxisSpan(double majorAxisSpan) {
+    protected void setMajorAxisSpan(double majorAxisSpan) {
         this.majorAxisSpan = majorAxisSpan;
     }
 
@@ -164,7 +161,7 @@ public abstract class EditorBoxView extends EditorView {
      * preferenceChange to parent of this view.
      * @param minorAxisSpan
      */
-    void setMinorAxisSpan(float minorAxisSpan) {
+    protected void setMinorAxisSpan(float minorAxisSpan) {
         this.minorAxisSpan = minorAxisSpan;
     }
 
@@ -197,35 +194,27 @@ public abstract class EditorBoxView extends EditorView {
         return (children != null) ? children.get(index) : null;
     }
     
-    public final EditorView getEditorView(int index) {
+    public final V getEditorView(int index) {
         return children.get(index);
     }
 
     final double getViewVisualOffset(int index) {
+        checkChildrenNotNull();
         return children.getViewVisualOffset(this, index);
     }
 
-    final double getViewVisualOffset(EditorView view) {
+    final double getViewVisualOffset(V view) {
+        checkChildrenNotNull();
         return children.getViewVisualOffset(view.getRawVisualOffset());
     }
 
     final double getViewMajorAxisSpan(int index) {
+        checkChildrenNotNull();
         return children.getViewMajorAxisSpan(this, index);
     }
 
-    @Override
-    public void setParent(View parent) {
-        super.setParent(parent);
-    }
-    
-    public void releaseChildren() {
-        if (children != null) {
-            children = null;
-        }
-    }
-
-    protected EditorBoxViewChildren createChildren(int capacity) {
-        return new EditorBoxViewChildren(capacity);
+    protected EditorBoxViewChildren<V> createChildren(int capacity) {
+        return new EditorBoxViewChildren<V>(capacity);
     }
 
     /*
@@ -238,6 +227,19 @@ public abstract class EditorBoxView extends EditorView {
     @Override
     public void replace(int index, int length, View[] views) {
         replace(index, length, views, 0, null);
+    }
+
+    /**
+     * Initialize null <code>EditorBoxView.children</code> of child views
+     * at given range of indices.
+     * <br/>
+     * The view may increase the interval to be initialized.
+     *
+     * @param startIndex index >= 0.
+     * @param endIndex index >= startIndex.
+     */
+    protected void initChildren(int startIndex, int endIndex) {
+        throw new IllegalStateException("Not expected to have child views with null children");
     }
 
     /**
@@ -262,9 +264,7 @@ public abstract class EditorBoxView extends EditorView {
             assert (length == 0) : "Attempt to remove from null children length=" + length; // NOI18N
             children = createChildren(views.length);
         }
-        ReplaceResult result = new ReplaceResult();
-        children.replace(this, result, index, length, (EditorView[]) views, offsetDelta, alloc);
-        return result;
+        return children.replace(this, new ReplaceResult(), index, length, views, offsetDelta, alloc);
     }
 
     /**
@@ -273,7 +273,7 @@ public abstract class EditorBoxView extends EditorView {
      * for layout.
      *
      * @param childView the child view of this view or null to signal
-     *  change in this view. 
+     *  change in this view.
      * @param width true if the width preference has changed
      * @param height true if the height preference has changed
      * @see javax.swing.JComponent#revalidate
@@ -317,7 +317,7 @@ public abstract class EditorBoxView extends EditorView {
             }
             double delta = newSpan - origSpan;
             if (delta != 0d) { // TODO (diff < epsilon) instead ?
-                children.fixOffsetsAndSpan(this, childViewIndex + 1, 0, delta);
+                children.fixOffsetsAndMajorSpan(this, childViewIndex + 1, 0, delta);
             } else {
                 majorSpanChange = false; // No real change
             }
@@ -326,7 +326,7 @@ public abstract class EditorBoxView extends EditorView {
             int minorAxis = ViewUtils.getOtherAxis(majorAxis);
             float newSpan = childView.getPreferredSpan(minorAxis);
             if (newSpan > minorAxisSpan) {
-                minorAxisSpan = newSpan;
+                setMinorAxisSpan(newSpan);
             } else {
                 minorSpanChange = false; // No change for this view
             }
@@ -345,10 +345,12 @@ public abstract class EditorBoxView extends EditorView {
 
     @Override
     public Shape getChildAllocation(int index, Shape alloc) {
+        checkChildrenNotNull();
         return children.getChildAllocation(this, index, index + 1, alloc); // alloc overwritten
     }
 
     public Shape getChildAllocation(int startIndex, int endIndex, Shape alloc) {
+        checkChildrenNotNull();
         return children.getChildAllocation(this, startIndex, endIndex, alloc);
     }
 
@@ -382,24 +384,32 @@ public abstract class EditorBoxView extends EditorView {
     }
 
     public int getViewIndex(View childView) {
+        checkChildrenNotNull();
         int index = children.getViewIndex(childView.getStartOffset());
         assert (getEditorView(index) == childView);
         return index;
     }
 
+    public int getViewIndexFirst(int offset) {
+        checkChildrenNotNull();
+        return children.getViewIndexFirst(offset);
+    }
+
     @Override
     public int getViewIndexChecked(double x, double y, Shape alloc) {
+        checkChildrenNotNull();
         return children.getViewIndexAtPoint(this, x, y, alloc);
     }
 
     @Override
     public Shape modelToViewChecked(int offset, Shape alloc, Bias bias) {
-        // Update the bounds with child.modelToView()
+        checkChildrenNotNull();
         return children.modelToViewChecked(this, offset, alloc, bias);
     }
 
     @Override
     public int viewToModelChecked(double x, double y, Shape alloc, Bias[] biasReturn) {
+        checkChildrenNotNull();
         return children.viewToModelChecked(this, x, y, alloc, biasReturn);
     }
 
@@ -417,7 +427,7 @@ public abstract class EditorBoxView extends EditorView {
         if (offset == -1) {
             // Start from the first View.
             int childIndex = (topOrLeft) ? viewCount - 1 : 0;
-            EditorView child = getEditorView(childIndex);
+            V child = getEditorView(childIndex);
             Shape childAlloc = getChildAllocation(childIndex, alloc);
             retValue = child.getNextVisualPositionFromChecked(offset, bias, childAlloc, direction, biasRet);
             if (retValue == -1 && !topOrLeft && viewCount > 1) {
@@ -437,7 +447,7 @@ public abstract class EditorBoxView extends EditorView {
             } else {
                 childIndex = getViewIndex(offset, Position.Bias.Forward);
             }
-            EditorView child = getEditorView(childIndex);
+            V child = getEditorView(childIndex);
             Shape childAlloc = getChildAllocation(childIndex, alloc);
             retValue = child.getNextVisualPositionFromChecked(offset, bias, childAlloc, direction, biasRet);
             // [TODO] For RTL check direction == EAST | WEST && ((CompositeView)v).flipEastAndWestAtEnds(pos, b))
@@ -477,11 +487,19 @@ public abstract class EditorBoxView extends EditorView {
     @Override
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
         // The background is already cleared by BasicTextUI.paintBackground() which uses component.getBackground()
+        checkChildrenNotNull();
         children.paint(this, g, alloc, clipBounds);
     }
 
-    final int getViewOffset(int rawOffset) {
+    @Override
+    public int getViewOffset(int rawOffset) {
         return getStartOffset() + children.raw2RelOffset(rawOffset);
+    }
+
+    @Override
+    public FontRenderContext getFontRenderContext() {
+        EditorView.Parent parent = (EditorView.Parent) getParent();
+        return (parent != null) ? parent.getFontRenderContext() : null;
     }
 
     @Override
@@ -499,12 +517,49 @@ public abstract class EditorBoxView extends EditorView {
     }
 
     final void fixSpans(int index, int offsetDelta, double visualDelta) {
-        children.fixOffsetsAndSpan(this, index, offsetDelta, visualDelta);
+        checkChildrenNotNull();
+        children.fixOffsetsAndMajorSpan(this, index, offsetDelta, visualDelta);
+    }
+
+    private void checkChildrenNotNull() {
+        if (children == null) {
+            throw new IllegalStateException("Null children in " + getDumpId()); // NOI18N
+        }
     }
 
     @Override
     protected String getDumpName() {
         return "EBV";
+    }
+
+    @Override
+    public String findIntegrityError() {
+        if (children != null) {
+            if (children.size() == 0) {
+                return "children.size()==0";
+            }
+            // Check children (visual offsets)
+            if (children.rawOffsetUpdate()) {
+                int viewCount = getViewCount();
+                double lastVisualOffset = 0d;
+                for (int i = 0; i < viewCount; i++) {
+                    V child = getEditorView(i);
+                    double childVisualOffset = getViewVisualOffset(child);
+                    String err = null;
+                    // Do not examine child.getPreferredSpan() since it may be expensive (for HighlightsView calls getTextLayout())
+                    if (childVisualOffset < 0) {
+                        err = "childVisualOffset=" + childVisualOffset + " < 0"; // NOI18N
+                    } else if (childVisualOffset < lastVisualOffset) {
+                        err = "childVisualOffset=" + childVisualOffset + " < lastVisualOffset=" + lastVisualOffset; // NOI18N
+                    }
+                    if (err != null) {
+                        return getDumpId() + "[" + i + "]=" + child.getDumpId() + ": " + err + '\n';
+                    }
+                    lastVisualOffset = childVisualOffset;
+                }
+            }
+        } // Children == null permitted
+        return null;
     }
 
     @Override

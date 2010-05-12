@@ -153,7 +153,7 @@ public final class
     * @param executor to start
     * @param info about class to start
     */
-    public ExecutorTask execute(String name, Runnable run, InputOutput inout) { 
+    public ExecutorTask execute(String name, Runnable run, final InputOutput inout) {
         TaskThreadGroup g = new TaskThreadGroup(base, "exec_" + name + "_" + number); // NOI18N
         g.setDaemon(true);
         ExecutorTaskImpl task = new ExecutorTaskImpl();
@@ -161,8 +161,13 @@ public final class
             try {
                 new RunClassThread(g, name, number++, inout, this, task, run);
                 task.lock.wait();
-            } catch (InterruptedException e) {
-                throw new IllegalStateException(e.getMessage());
+            } catch (InterruptedException e) { // #171795
+                inout.closeInputOutput();
+                return new ExecutorTask(null) {
+                    public @Override void stop() {}
+                    public @Override int result() {return 2;}
+                    public @Override InputOutput getInputOutput() {return inout;}
+                };
             }
         }
         return task;

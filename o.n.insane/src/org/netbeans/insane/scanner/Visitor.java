@@ -57,7 +57,7 @@ public interface Visitor {
      *
      * @param cls the new type found.
      */
-    public void visitClass(Class cls);
+    public void visitClass(Class<?> cls);
 
     /**
      * A new object instance was found.

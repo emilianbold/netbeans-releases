@@ -47,6 +47,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.openide.filesystems.FileObject;
@@ -99,13 +100,13 @@ public class LibraryItem {
     }
 
     // Should be overridden
-    public String getOption() {
-	return ""; // NOI18N
-    }
+//    public String getOption() {
+//	return ""; // NOI18N
+//    }
     
     // Should be overridden
     public String getOption(MakeConfiguration conf) {
-	return "" + getOption(); // NOI18N
+	return "" + getOption(conf); // NOI18N
     }
 
     // Should be overridden
@@ -235,7 +236,7 @@ public class LibraryItem {
 
         @Override
 	public String getToolTip() {
-	    return getString("StandardLibraryTxt") + " " + getDisplayName() + " (" + getOption() + ")"; // NOI18N
+	    return getString("StandardLibraryTxt") + " " + getDisplayName() + " (" + getOption(null) + ")"; // NOI18N
 	}
 
         @Override
@@ -254,7 +255,7 @@ public class LibraryItem {
 	}
 
         @Override
-        public String getOption() {
+        public String getOption(MakeConfiguration conf) {
             StringBuilder options = new StringBuilder();
             for (int i = 0; i < libs.length; i++) {
                 if (libs[i].charAt(0) != '-') {
@@ -296,7 +297,7 @@ public class LibraryItem {
 
         @Override
 	public String getToolTip() {
-	    return getString("LibraryTxt") + "  " + getLibName() + " (" + getOption() + ")"; // NOI18N
+	    return getString("LibraryTxt") + "  " + getLibName() + " (" + getOption(null) + ")"; // NOI18N
 	}
 
         @Override
@@ -315,7 +316,7 @@ public class LibraryItem {
 	}
 
         @Override
-	public String getOption() {
+	public String getOption(MakeConfiguration conf) {
 	    return "-l" + getLibName(); // NOI18N
 	}
 
@@ -349,7 +350,7 @@ public class LibraryItem {
 
         @Override
 	public String getToolTip() {
-	    return getString("LibraryFileTxt") + " "  + getPath() + " (" + getOption() + ")"; // NOI18N
+	    return getString("LibraryFileTxt") + " "  + getPath() + " (" + getOption(null) + ")"; // NOI18N
 	}
 
         @Override
@@ -374,8 +375,13 @@ public class LibraryItem {
 	}
 
         @Override
-	public String getOption() {
-	    return getPath();
+	public String getOption(MakeConfiguration conf) {
+            String lpath = getPath();
+            if (conf != null) {
+                CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+                lpath = CppUtils.normalizeDriveLetter(cs, lpath);
+            }
+	    return lpath;
 	}
 
         @Override
@@ -407,7 +413,7 @@ public class LibraryItem {
 
         @Override
 	public String getToolTip() {
-	    return getString("LibraryOptionTxt") + " "  + getLibraryOption() + " (" + getOption() + ")"; // NOI18N
+	    return getString("LibraryOptionTxt") + " "  + getLibraryOption() + " (" + getOption(null) + ")"; // NOI18N
 	}
 
         @Override
@@ -426,7 +432,7 @@ public class LibraryItem {
 	}
 
         @Override
-	public String getOption() {
+	public String getOption(MakeConfiguration conf) {
 	    return getLibraryOption();
 	}
 

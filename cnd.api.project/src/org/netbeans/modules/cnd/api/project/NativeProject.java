@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.api.project;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 
 public interface NativeProject {
     /**
@@ -148,8 +149,14 @@ public interface NativeProject {
     
     /**
      * Add task which will be run then <NativeProject> is ready to provide Code Model data
+     *
+     * @param task - task to run. Why is it NamedRunnable?
+     * The issue is that when we pass Runnable to be run through a chain of calls,
+     * sometimes a user interaction might be needed.
+     * For example, we'd like to say user "To perform XXX IDE needs to connect host yyy@zzz" :)
+     * In this case NamedRunnable.getName() is used and its value is inserted instead of XXX
      */
-    public void runOnCodeModelReadiness(Runnable task);
+    public abstract void runOnCodeModelReadiness(NamedRunnable task);
 
     /**
      * Execute a command from user's PATH in the context of the native project

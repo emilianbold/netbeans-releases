@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
         <javac destdir="build/libclasses" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" includeantruntime="false">
             <src path="lib/src"/>
             <classpath>
-                <pathelement location="${xni-impl.jar}"/>
+                <pathelement location="${netbeans.dest.dir}/ide/modules/ext/xerces-2.8.0.jar"/>
             </classpath>
         </javac>
         <copy todir="build/libclasses">
@@ -58,7 +58,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="lib-jar" depends="lib-compile">
-        <jar jarfile="${cluster}/modules/ext/org-netbeans-tax.jar" index="${build.package.index}" compress="${build.package.compress}">
+        <jar jarfile="${netbeans.dest.dir}/ide/modules/ext/org-netbeans-tax.jar" index="${build.package.index}" compress="${build.package.compress}">
             <fileset dir="build/libclasses"/>
         </jar>
     </target>
@@ -66,7 +66,7 @@ made subject to such option by the copyright holder.
     <target name="compile" depends="lib-jar,projectized-common.compile"/>
 
     <target name="pre-jar-ml" depends="projectized.build-init,projectized.check-run-mlbuild" if="run.ml.build">
-        <locjar jarfile="${cluster}/modules/ext/org-netbeans-tax.jar"
+        <locjar jarfile="${netbeans.dest.dir}/ide/modules/ext/org-netbeans-tax.jar"
                 basedir="${nb_all}/translatedfiles/src/${module.name}/lib"
                 compress="${build.package.compress}"/>
     </target>

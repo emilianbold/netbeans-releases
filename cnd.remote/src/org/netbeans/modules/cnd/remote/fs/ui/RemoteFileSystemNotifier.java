@@ -36,20 +36,24 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.fs.ui;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.ConnectException;
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Notification;
@@ -65,30 +69,35 @@ import org.openide.util.RequestProcessor;
 public class RemoteFileSystemNotifier {
 
     public interface Callback {
+
         /**
          * Is called as soon as the host has been connected.
          * It is always called in a specially created thread
          */
-        void connected();
+        void connected() throws InterruptedException, ConnectException, InterruptedIOException, IOException, ExecutionException;
 
         List<String> getPendingFiles();
     }
 
     private class Listener implements ConnectionListener {
+
+        @Override
         public void connected(ExecutionEnvironment env) {
             if (RemoteFileSystemNotifier.this.env.equals(env)) {
                 ConnectionManager.getInstance().removeConnectionListener(this);
                 RequestProcessor.getDefault().post(new NamedRunnable("Pending files synchronizer for " + env.getDisplayName()) { //NOI18N
+                    @Override
                     protected void runImpl() {
-                        notification.clear();
-                        callback.connected();
+                        RemoteFileSystemNotifier.this.connected();
                     }
                 });
             }
         }
-        public void disconnected(ExecutionEnvironment env) {}
-    }
 
+        @Override
+        public void disconnected(ExecutionEnvironment env) {
+        }
+    }
     private final ExecutionEnvironment env;
     private final Callback callback;
     private boolean shown;
@@ -100,8 +109,25 @@ public class RemoteFileSystemNotifier {
         shown = false;
     }
 
+    private void connected() {
+        notification.clear();
+        try {
+            callback.connected();
+        } catch (ConnectException ex) {
+            reShow(ex);
+        } catch (InterruptedException ex) {
+            // don't report interruption
+        } catch (InterruptedIOException ex) {
+            // don't report interruption
+        } catch (IOException ex) {
+            reShow(ex);
+        } catch (ExecutionException ex) {
+            reShow(ex);
+        }
+    }
+
     public void showIfNeed() {
-        synchronized(this) {
+        synchronized (this) {
             if (shown) {
                 return;
             } else {
@@ -109,24 +135,45 @@ public class RemoteFileSystemNotifier {
                 ConnectionManager cm = ConnectionManager.getInstance();
                 ConnectionListener listener = new Listener();
                 cm.addConnectionListener(listener);
-                show();
+                show(null);
             }
         }
     }
 
-    private void show() {
+    private void show(Exception error) {
         ActionListener onClickAction = new ActionListener() {
+
+            @Override
             public void actionPerformed(ActionEvent e) {
+                if (PasswordManager.getInstance().isRememberPassword(env)) {
+                    RequestProcessor.getDefault().post(new NamedRunnable("Requesting connection for " + env.getDisplayName()) { //NOI18N
+
+                        @Override
+                        protected void runImpl() {
+                            connect();
+                        }
+                    });
+                    return;
+                }
                 showConnectDialog();
             }
         };
         String envString = RemoteUtil.getDisplayName(env);
-        notification = NotificationDisplayer.getDefault().notify(
-                NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.TITLE", envString),
-                ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/fs/ui/error.gif", false), // NOI18N
-                NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.DETAILS", envString),
-                onClickAction,
-                NotificationDisplayer.Priority.HIGH);
+
+        String title, details;
+        ImageIcon icon;
+
+        if (error == null) {
+            title = NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.TITLE", envString);
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/fs/ui/exclamation.gif", false); // NOI18N
+            details = NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.DETAILS", envString);
+        } else {
+            title = NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.error.TITLE", envString);
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/fs/ui/error.png", false); // NOI18N
+            String errMsg = (error.getMessage() == null) ? "" : error.getMessage();
+            details = NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.error.DETAILS", envString, errMsg, envString);
+        }
+        notification = NotificationDisplayer.getDefault().notify(title, icon, details, onClickAction, NotificationDisplayer.Priority.HIGH);
     }
 
     private void showConnectDialog() {
@@ -139,42 +186,38 @@ public class RemoteFileSystemNotifier {
                 DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
         dlg.setVisible(true);
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {            
+        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             RequestProcessor.getDefault().post(new NamedRunnable("Requesting connection for " + env.getDisplayName()) { //NOI18N
+
+                @Override
                 protected void runImpl() {
-                    connect(panel.getPassword(), panel.isRememberPassword());
+//                    PasswordManager.getInstance().storePassword(env, panel.getPassword(), panel.isRememberPassword());
+                    connect();
                 }
             });
         } else {
-            reShow();
+            reShow(null);
         }
     }
 
-    private void connect(char[] password, boolean rememberPassword) {
-        boolean connected = false;
+    private void connect() {
         try {
-            if (password == null || password.length == 0) {
-                ConnectionManager.getInstance().connectTo(env);
-            } else {
-                ConnectionManager.getInstance().connectTo(env, password, rememberPassword);
-            }
-            connected = true;            
+            ConnectionManager.getInstance().connectTo(env);
             // callback.connected(); // we now use listener instead
         } catch (IOException ex) {
             ex.printStackTrace();
+            reShow(ex);
         } catch (CancellationException ex) {
             // don't log cancellation exception
-        }
-        if (!connected) {
-            reShow();
+            reShow(null);
         }
     }
-    
-    private void reShow() {
-        synchronized(this) {
+
+    private void reShow(Exception error) {
+        synchronized (this) {
             shown = false;
         }
-        show();
+        show(error);
         //notification.clear();
     }
 }

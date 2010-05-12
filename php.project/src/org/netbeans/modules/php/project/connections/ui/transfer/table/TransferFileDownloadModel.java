@@ -53,14 +53,17 @@ public class TransferFileDownloadModel extends TransferFileTableModel {
         setData(fileUnits);
     }
 
+    @Override
     protected Type getType() {
         return TransferFileTableModel.Type.DOWNLOAD;
     }
 
+    @Override
     protected String getTabTitle() {
         return NbBundle.getMessage(TransferFileDownloadModel.class, "FileConfirmationTableModel_Download_Title");
     }
 
+    @Override
     protected String getFirstColumnName() {
         return NbBundle.getMessage(TransferFileDownloadModel.class, "FileConfirmationTableModel_Columns_Download");
     }

@@ -58,7 +58,7 @@ import org.netbeans.modules.apisupport.project.ManifestManager;
  * May or may not have an associated source dir <i>(new in NB 6.7)</i>.
  * </ol>
  */
-public interface ModuleEntry extends Comparable {
+public interface ModuleEntry extends Comparable<ModuleEntry> {
 
     /**
      * Get a relative source path inside netbeans.org sources.
@@ -82,7 +82,7 @@ public interface ModuleEntry extends Comparable {
     String getCodeNameBase();
     
     /**
-     * Get the directory to which the mogdule is built.
+     * Get the directory to which the module is built.
      * @return e.g. .../nbbuild/netbeans/ide
      */
     File getClusterDirectory();

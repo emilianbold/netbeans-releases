@@ -66,6 +66,7 @@ import javax.swing.SwingUtilities;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 
@@ -91,47 +92,21 @@ public final class NotificationDisplayerImpl extends NotificationDisplayer {
 
     @Override
     public Notification notify(String title, Icon icon, String detailsText, ActionListener detailsAction, Priority priority) {
-        if( null == detailsText )
-            throw new NullPointerException("detailsText cannot be null."); //NOI18N
+        Parameters.notNull("detailsText", detailsText); //NOI18N
 
-        JComponent detailsComp1 = createDetails( detailsText, detailsAction );
-        JComponent detailsComp2 = createDetails( detailsText, detailsAction );
-
-        return notify(title, icon, detailsComp1, detailsComp2, priority);
+        NotificationImpl n = createNotification( title, icon, priority );
+        n.setDetails( detailsText, detailsAction );
+        add( n );
+        return n;
     }
 
     @Override
     public Notification notify(String title, Icon icon, JComponent balloonDetails, JComponent popupDetails, Priority priority) {
-        NotificationImpl n = new NotificationImpl();
+        Parameters.notNull("balloonDetails", balloonDetails); //NOI18N
+        Parameters.notNull("popupDetails", popupDetails); //NOI18N
 
-        return notify( n, title, icon, balloonDetails, popupDetails, priority );
-    }
-
-    private Notification notify( NotificationImpl n, String title, Icon icon, JComponent balloonDetails, JComponent popupDetails, Priority priority) {
-        if( null == title )
-            throw new NullPointerException("title cannot be null."); //NOI18N
-        if( null == icon )
-            throw new NullPointerException("icon cannot be null."); //NOI18N
-        if( null == balloonDetails )
-            throw new NullPointerException("balloonDetails cannot be null."); //NOI18N
-        if( null == popupDetails )
-            throw new NullPointerException("popupDetails cannot be null."); //NOI18N
-        if( null == priority )
-            throw new NullPointerException("priority cannot be null."); //NOI18N
-
-        try {
-            title = XMLUtil.toElementContent(title);
-        } catch( CharConversionException ex ) {
-            throw new IllegalArgumentException(ex);
-        }
-        JComponent titleComp = createTitle(title);
-        JComponent balloon = createContent( icon, titleComp, balloonDetails, n );
-        balloon.setBorder(BorderFactory.createEmptyBorder(8, 5, 0, 0));
-        
-        titleComp = createTitle(title);
-        JComponent popup = createContent( icon, titleComp, popupDetails, n );
-        
-        n.init(title, icon, priority, balloon, popup);
+        NotificationImpl n = createNotification(title, icon, priority);
+        n.setDetails( balloonDetails, popupDetails );
         add( n );
         return n;
     }
@@ -201,64 +176,13 @@ public final class NotificationDisplayerImpl extends NotificationDisplayer {
         propSupport.removePropertyChangeListener(l);
     }
 
-    private JComponent createContent(Icon icon, JComponent titleComp, JComponent popupDetails, final Notification n) {
-        JPanel panel = new JPanel( new GridBagLayout() );
-        panel.setOpaque(false);
-        panel.add( new JLabel(icon), new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(3,3,3,3), 0, 0));
-        panel.add( titleComp, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0, 0));
-        panel.add( popupDetails, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0, 0));
-        panel.add( new JLabel(), new GridBagConstraints(2, 2, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
-
-        ActionListener al = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                n.clear();
-                PopupList.dismiss();
-            }
-        };
-        addActionListener( popupDetails, al );
-        return panel;
-    }
-
-    private void addActionListener(Container c, ActionListener al) {
-        if( c instanceof AbstractButton ) {
-            ((AbstractButton)c).addActionListener(al);
-        }
-        for( Component child : c.getComponents() ) {
-            if( child instanceof Container ) {
-                addActionListener((Container)child, al);
-            }
-        }
-    }
-
-    private JComponent createTitle( String title ) {
-        return new JLabel("<html>" + title); // NOI18N
-    }
-
-    private JComponent createDetails( String text, ActionListener action ) {
-        if( null == action ) {
-            return new JLabel(text);
-        }
-        try {
-            text = "<html><u>" + XMLUtil.toElementContent(text); //NOI18N
-        } catch( CharConversionException ex ) {
-            throw new IllegalArgumentException(ex);
-        }
-        JButton btn = new JButton(text);
-        btn.setFocusable(false);
-        btn.setBorder(BorderFactory.createEmptyBorder());
-        btn.setBorderPainted(false);
-        btn.setFocusPainted(false);
-        btn.setOpaque(false);
-        btn.setContentAreaFilled(false);
-        btn.addActionListener(action);
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btn.setForeground(Color.blue);
-        return btn;
-    }
-
     private void firePropertyChange(final String propName, final NotificationImpl notification) {
         Runnable r = new Runnable() {
+            @Override
             public void run() {
+                if( PROP_NOTIFICATION_ADDED.equals(propName) ) {
+                    notification.initDecorations();
+                }
                 propSupport.firePropertyChange(propName, null, notification);
             }
         };
@@ -267,5 +191,19 @@ public final class NotificationDisplayerImpl extends NotificationDisplayer {
         } else {
             SwingUtilities.invokeLater(r);
         }
+    }
+
+    private NotificationImpl createNotification(String title, Icon icon, Priority priority) {
+        Parameters.notNull("title", title); //NOI18N
+        Parameters.notNull("icon", icon); //NOI18N
+        Parameters.notNull("priority", priority); //NOI18N
+
+        try {
+            title = XMLUtil.toElementContent(title);
+        } catch( CharConversionException ex ) {
+            throw new IllegalArgumentException(ex);
+        }
+
+        return new NotificationImpl(title, icon, priority);
     }
 }

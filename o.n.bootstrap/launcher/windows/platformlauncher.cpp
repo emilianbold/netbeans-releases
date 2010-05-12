@@ -347,6 +347,7 @@ bool PlatformLauncher::processAutoUpdateCL() {
 // check if new updater exists, if exists install it (replace old one) and remove ...\new_updater directory
 bool PlatformLauncher::checkForNewUpdater(const char *basePath) {
     logMsg("checkForNewUpdater() at %s", basePath);
+    BOOL removeDir = false;
     string srcPath = basePath;
     srcPath += "\\update\\new_updater\\updater.jar";
     WIN32_FIND_DATA fd = {0};
@@ -371,14 +372,53 @@ bool PlatformLauncher::checkForNewUpdater(const char *basePath) {
             Sleep(100);
         }
         logMsg("New updater successfully moved from \"%s\" to \"%s\"", srcPath.c_str(), destPath.c_str());
+        removeDir = true;
+    } else {
+        logMsg("No new updater at %s", srcPath.c_str());
+    }
+    string locPath = basePath;
+    locPath += "\\update\\new_updater\\updater_*.jar";
+    hFind = FindFirstFile(locPath.c_str(), &fd);
+    while (hFind != INVALID_HANDLE_VALUE) {
+        string destPath = basePath;
+        string name = fd.cFileName;
+        logMsg("New updater localization found: %s", name.c_str());
+        destPath += "\\modules\\ext\\locale\\";
+        destPath += name;
 
+        string fromPath = basePath;
+        fromPath += "\\update\\new_updater\\";
+        fromPath += name;
+
+        createPath(destPath.c_str());
+
+        int i = 0;
+        while (true) {
+            if (MoveFileEx(fromPath.c_str(), destPath.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+                break;
+            }
+            if (exiting || ++i > 10) {
+                logErr(true, false, "Failed to move \"%s\" to \"%s\"", fromPath.c_str(), destPath.c_str());
+                return false;
+            }
+            logErr(true, false, "Failed to move \"%s\" to \"%s\", trying to wait", fromPath.c_str(), destPath.c_str());
+            Sleep(100);
+        }
+        logMsg("New updater successfully moved from \"%s\" to \"%s\"", fromPath.c_str(), destPath.c_str());
+        removeDir = true;
+        
+        if (!FindNextFile(hFind, &fd)) {
+            break;
+        }
+    }
+    FindClose(hFind);
+
+    if (removeDir) {
         srcPath.erase(srcPath.rfind('\\'));
         logMsg("Removing directory \"%s\"", srcPath.c_str());
         if (!RemoveDirectory(srcPath.c_str())) {
             logErr(true, false, "Failed to remove directory \"%s\"", srcPath.c_str());
         }
-    } else {
-        logMsg("No new updater at %s", srcPath.c_str());
     }
     return true;
 }

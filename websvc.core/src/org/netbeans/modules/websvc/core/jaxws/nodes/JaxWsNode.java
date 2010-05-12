@@ -143,6 +143,7 @@ import org.openide.util.lookup.Lookups;
 public class JaxWsNode extends AbstractNode implements
         WsWsdlCookie, JaxWsTesterCookie, ConfigureHandlerCookie {
 
+    private static final RequestProcessor rp = new RequestProcessor("JaxWsNode-request-processor");
     Service service;
     FileObject srcRoot;
     JaxWsModel jaxWsModel;
@@ -194,6 +195,7 @@ public class JaxWsNode extends AbstractNode implements
         }
         OpenCookie cookie = new OpenCookie() {
 
+            @Override
             public void open() {
                 OpenCookie oc = getOpenCookie();
                 if (oc != null) {
@@ -202,8 +204,9 @@ public class JaxWsNode extends AbstractNode implements
             }
         };
         content.add(cookie);
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
 
+            @Override
             public void run() {
                 JaxWsNode.this.setValue("wsdl-url", getWsdlURL());
             }
@@ -544,6 +547,7 @@ public class JaxWsNode extends AbstractNode implements
         if (javaSource != null) {
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 
+                @Override
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
@@ -746,6 +750,7 @@ public class JaxWsNode extends AbstractNode implements
     /**
      * Implementation of the ConfigureHandlerCookie
      */
+    @Override
     public void configureHandler() {
         FileObject implBeanFo = getImplBean();
         if (implBeanFo == null) {

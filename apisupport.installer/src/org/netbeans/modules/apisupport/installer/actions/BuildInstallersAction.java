@@ -81,7 +81,9 @@ import org.openide.util.Utilities;
 
 public final class BuildInstallersAction extends AbstractAction implements ContextAwareAction {
 
-    public BuildInstallersAction() {}
+    public BuildInstallersAction() {
+        putValue(NAME, NbBundle.getMessage(BuildInstallersAction.class, "CTL_BuildInstallers"));
+    }
 
     public @Override void actionPerformed(ActionEvent e) {
         assert false;
@@ -105,9 +107,10 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                 for (Project prj : actionContext.lookupAll(Project.class)) {
                         Preferences prefs = SuiteInstallerProjectProperties.prefs(prj);
                         File suiteLocation = FileUtil.toFile(prj.getProjectDirectory());
-                        FileObject propertiesFile = prj.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         String appName = "";
                         String appIcon = null;
+                        String appIconIcns = null;
+                        File appIconIcnsFile = null;
                         String licenseType = prefs.get(SuiteInstallerProjectProperties.LICENSE_TYPE, null);
                         File licenseFile = null;
                         String licenseFileProp = prefs.get(SuiteInstallerProjectProperties.LICENSE_FILE, null);
@@ -120,6 +123,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         boolean usePack200 = prefs.getBoolean(SuiteInstallerProjectProperties.USE_PACK200_COMPRESSION, false);
 
                         try {
+                            FileObject propertiesFile = prj.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             InputStream is = propertiesFile.getInputStream();
                             Properties ps = new Properties();
                             try {
@@ -129,6 +133,17 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                             }
                             appName = ps.getProperty("app.name");
                             appIcon = ps.getProperty("app.icon");
+                            appIconIcns = ps.getProperty("app.icon.icns", null);
+                            if(appIconIcns!=null) {
+                                appIconIcnsFile = PropertyUtils.resolveFile(suiteLocation, appIconIcns);
+                            } else {
+                                //${harness.dir}/etc/applicationIcon.icns
+                                appIconIcnsFile = new File(InstalledFileLocator.getDefault().locate(
+                                    "etc/applicationIcon.icns",
+                                    "org.netbeans.modules.apisupport.harness", false).getAbsolutePath().replace("\\", "/"));
+                            }
+
+
                             if (appName == null) {
                                 //suite, not standalone app
                                 RequestProcessor.getDefault().post(new Runnable() {
@@ -214,24 +229,24 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
 
                         props.put("nbi.stub.location", InstalledFileLocator.getDefault().locate(
                                 "nbi/stub",
-                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
+                                "org.netbeans.libs.nbi.ant", false).getAbsolutePath().replace("\\", "/"));
                         props.put(
                                 "nbi.stub.common.location", InstalledFileLocator.getDefault().locate(
                                 "nbi/.common",
-                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
+                                "org.netbeans.libs.nbi.ant", false).getAbsolutePath().replace("\\", "/"));
 
                         props.put(
                                 "nbi.ant.tasks.jar", InstalledFileLocator.getDefault().locate(
                                 "modules/ext/nbi-ant-tasks.jar",
-                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
+                                "org.netbeans.libs.nbi.ant", false).getAbsolutePath().replace("\\", "/"));
                         props.put(
                                 "nbi.registries.management.jar", InstalledFileLocator.getDefault().locate(
                                 "modules/ext/nbi-registries-management.jar",
-                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
+                                "org.netbeans.libs.nbi.ant", false).getAbsolutePath().replace("\\", "/"));
                         props.put(
                                 "nbi.engine.jar", InstalledFileLocator.getDefault().locate(
                                 "modules/ext/nbi-engine.jar",
-                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
+                                "org.netbeans.libs.nbi.engine", false).getAbsolutePath().replace("\\", "/"));
                         if (licenseFile != null) {
                             Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.FINE,
                                     "License file is at {0}, exist = {1}", new Object[] {licenseFile, licenseFile.exists()});
@@ -323,69 +338,29 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                                 "nbi.icon.file", appIconFile.getAbsolutePath());
 
                         }
-
-                        /*
-                        for (Object s : props.keySet()) {
-                        Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.INFO,
-                        "[" + s + "] = " + props.get(s));
+                        
+                        if(appIconIcnsFile!=null) {
+                            props.put(
+                                    "nbi.dock.icon.file", appIconIcnsFile.getAbsolutePath());
                         }
-                         */
-                        /*
-                        File tmpProps = null;
-                        try {
-                        tmpProps = File.createTempFile("nbi-properties-", ".properties");
-                        FileOutputStream fos = new FileOutputStream(tmpProps);
-                        props.store(fos, null);
-                        fos.close();
-                        } catch (IOException ex) {
-                        Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "Can`t store properties", ex);
-                        }*/
-                        try {
-                            /*final ExecutorTask executorTask = */ActionUtils.runTarget(findGenXml(), new String[]{"build"}, props);
-                            /*
-                            executorTask.addTaskListener(new TaskListener() {
 
-                            public void taskFinished(Task task) {
-                            if (executorTask.result() == 0) {
-                            try {
-                            ActionUtils.runTarget(findInstXml(prj), new String[]{"build"}, new Properties());
-                            } catch (FileStateInvalidException ex) {
-                            ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
-                            } catch (IOException ex) {
-                            ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
-
-                            }
-                            }
-                            }
-                            });*/
+                        try {
+                            ActionUtils.runTarget(findGenXml(), new String[]{"build"}, props);
                         } catch (FileStateInvalidException ex) {
                             ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
                         } catch (IOException ex) {
                             ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
                         }
-
-                        /*
-                        if (tmpProps != null && !tmpProps.delete() && tmpProps.exists()) {
-                        tmpProps.deleteOnExit();
-                        }*/
                     }
 
         }
 
-//        private static FileObject findBuildXml(Project project) {
-//            return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-//        }
 
         private static FileObject findGenXml() {
             return FileUtil.toFileObject(InstalledFileLocator.getDefault().locate(
                     "nbi/stub/template.xml",
                     "org.netbeans.libs.nbi.ant", false));
         }
-
-//        private static FileObject findInstXml(Project project) throws FileStateInvalidException {
-//            return project.getProjectDirectory().getFileObject("build/installer/build.xml");
-//        }
-
     }
 }
 

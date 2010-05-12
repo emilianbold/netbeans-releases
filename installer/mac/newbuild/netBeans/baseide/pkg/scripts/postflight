@@ -31,6 +31,8 @@ jdk_home=`"$dirname"/get_current_jdk.sh`
 
 "$dirname"/add_gfv3.sh "$NETBEANS_INSTALL_DIR" "$GLASSFISH_V3_INSTALL_DIR"
 
+"$dirname"/add_javadb.sh "$NETBEANS_INSTALL_DIR" "$GLASSFISH_V3_INSTALL_DIR/javadb"
+
 "$dirname"/add_tc.sh "$NETBEANS_INSTALL_DIR" "$TOMCAT_INSTALL_DIR"
 
 "$dirname"/add_mysql.sh "$NETBEANS_INSTALL_DIR" "$MYSQL_INSTALL_DIR"

@@ -102,8 +102,10 @@ class ResultViewPanel extends JPanel{
     private static final String NEXT_ICON =
             "org/netbeans/modules/search/res/next.png"; //NOI18N
 
-    private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
-    private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); //NOI18N
+    private static final boolean isMacLaf =
+            "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+    private static final Color macBackground =
+            UIManager.getColor("NbExplorerView.background"); //NOI18N
     
     /** display the matching string location in context by default? */
     private static final boolean SHOW_CONTEXT_BY_DEFAULT = true;
@@ -190,7 +192,8 @@ class ResultViewPanel extends JPanel{
 
         this.task = task;
         treeModel = createTreeModel();
-        tree = createTree(treeModel, nodeListener = new NodeListener(), arrowUpdater);
+        tree = createTree(treeModel, nodeListener =
+                new NodeListener(), arrowUpdater);
         treeView = new JScrollPane(tree);
         treeView.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(ResultView.class, "ACS_TREEVIEW")); //NOI18N
@@ -210,12 +213,14 @@ class ResultViewPanel extends JPanel{
         btnDisplayContext.setSelected(SHOW_CONTEXT_BY_DEFAULT);
         btnPrev = new JButton();
         btnPrev.setIcon(ImageUtilities.loadImageIcon(PREV_ICON, true));
-        btnPrev.setToolTipText(
-                NbBundle.getMessage(getClass(), "TEXT_BUTTON_PREV_MATCH"));//NOI18N);
+        btnPrev.setToolTipText(NbBundle.getMessage(
+                                            getClass(),
+                                            "TEXT_BUTTON_PREV_MATCH")); //NOI18N
         btnNext = new JButton();
         btnNext.setIcon(ImageUtilities.loadImageIcon(NEXT_ICON, true));
-        btnNext.setToolTipText(
-                NbBundle.getMessage(getClass(), "TEXT_BUTTON_NEXT_MATCH"));//NOI18N);
+        btnNext.setToolTipText(NbBundle.getMessage(
+                                            getClass(),
+                                            "TEXT_BUTTON_NEXT_MATCH")); //NOI18N
 
         toolBar.add(btnDisplayContext);
         toolBar.add(sepDisplayContext = new JToolBar.Separator());
@@ -225,21 +230,25 @@ class ResultViewPanel extends JPanel{
         toolBar.setFloatable(false);
 
         btnPrev.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
                 goToNext(false);
             }
         });
 
         btnNext.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
                 goToNext(true);
             }
         });
 
         btnDisplayContext.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 if (!ignoreContextButtonToggle) {
-                    contextViewEnabled = (e.getStateChange() == ItemEvent.SELECTED);
+                    contextViewEnabled =
+                            (e.getStateChange() == ItemEvent.SELECTED);
                     updateContextViewVisibility();
                 }
             }
@@ -251,21 +260,25 @@ class ResultViewPanel extends JPanel{
 
         //Buttons panel
         btnShowDetails.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
                 fillOutput();
             }
         });
         btnModifySearch.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
                 customizeCriteria();
             }
         });
         btnStop.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Manager.getInstance().stopSearching(getTask());
             }
         });
         btnReplace.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
                 replaceMatches();
             }
@@ -280,7 +293,8 @@ class ResultViewPanel extends JPanel{
         btnModifySearch.setToolTipText(NbBundle.getMessage(ResultView.class,
                                               "TEXT_BUTTON_CUSTOMIZE"));//NOI18N
 
-        btnModifySearch.setIcon(ImageUtilities.loadImageIcon(CUSTOMIZER_ICON, true));
+        btnModifySearch.setIcon(
+                ImageUtilities.loadImageIcon(CUSTOMIZER_ICON, true));
         btnStop.setIcon(ImageUtilities.loadImageIcon(STOP_ICON, true));
         btnShowDetails.setIcon(ImageUtilities.loadImageIcon(SEARCH_ICON, true));
         btnReplace.setIcon(ImageUtilities.loadImageIcon(REPLACE_ICON, true));
@@ -301,7 +315,8 @@ class ResultViewPanel extends JPanel{
         add(toolbarSeparator, getToolbarSeparatorConstraints());
         add(resultsPanel, getMainPanelConstraints());
 
-        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        GridBagConstraints gridBagConstraints =
+                new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -337,8 +352,10 @@ class ResultViewPanel extends JPanel{
 
         this.resultModel = resultModel;
         this.basicSearchCriteria = resultModel.basicCriteria;
-        this.searchTypes = Arrays.asList(resultModel.getSearchGroup().getSearchTypes());
-        this.searchScopeType = resultModel.getSearchGroup().getSearchScope().getTypeId();
+        this.searchTypes =
+                Arrays.asList(resultModel.getSearchGroup().getSearchTypes());
+        this.searchScopeType =
+                resultModel.getSearchGroup().getSearchScope().getTypeId();
 
         tree.setModel(treeModel = new ResultTreeModel(resultModel));
         if (hasCheckBoxes != hadCheckBoxes) {
@@ -346,7 +363,7 @@ class ResultViewPanel extends JPanel{
             setBtnReplaceVisible(hasCheckBoxes);
         }
         if (resultModel != null) {
-            hasResults = !resultModel.isEmpty();
+            hasResults = resultModel.size() != 0;
             hasDetails = hasResults && resultModel.hasDetails();
             resultModel.setObserver(this);
         } else {
@@ -362,27 +379,36 @@ class ResultViewPanel extends JPanel{
         AccessibleContext accessCtx;
         
         accessCtx = treeView.getHorizontalScrollBar().getAccessibleContext();
-        accessCtx.setAccessibleName(bundle.getString("ACSN_HorizontalScrollbar"));          //NOI18N
+        accessCtx.setAccessibleName(
+                bundle.getString("ACSN_HorizontalScrollbar"));          //NOI18N
 
         accessCtx = treeView.getVerticalScrollBar().getAccessibleContext();
-        accessCtx.setAccessibleName(bundle.getString("ACSN_VerticalScrollbar"));            //NOI18N
+        accessCtx.setAccessibleName(
+                bundle.getString("ACSN_VerticalScrollbar"));            //NOI18N
 
         accessCtx = treeView.getAccessibleContext();
-        accessCtx.setAccessibleName(bundle.getString("ACSN_ResultTree"));                   //NOI18N
-        accessCtx.setAccessibleDescription(bundle.getString("ACSD_ResultTree"));                   //NOI18N
+        accessCtx.setAccessibleName(
+                bundle.getString("ACSN_ResultTree"));                   //NOI18N
+        accessCtx.setAccessibleDescription(
+                bundle.getString("ACSD_ResultTree"));                   //NOI18N
 
-        btnReplace.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_REPLACE"));    //NOI18N
-        btnModifySearch.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_CUSTOMIZE")); //NOI18N
-        btnShowDetails.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_FILL"));         //NOI18N
-        btnStop.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_STOP"));           //NOI18N
+        btnReplace.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_TEXT_BUTTON_REPLACE"));           //NOI18N
+        btnModifySearch.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_TEXT_BUTTON_CUSTOMIZE"));         //NOI18N
+        btnShowDetails.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_TEXT_BUTTON_FILL"));              //NOI18N
+        btnStop.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_TEXT_BUTTON_STOP"));              //NOI18N
     }
 
     /** Send search details to output window. */
     public void fillOutput() {
         btnShowDetails.setEnabled(false);
-        Manager.getInstance().schedulePrintTask(new PrintDetailsTask(resultModel.getFoundObjects(),
-                                        basicSearchCriteria,
-                                        searchTypes));
+        Manager.getInstance().schedulePrintTask(
+                new PrintDetailsTask(resultModel.getMatchingObjects(),
+                                     basicSearchCriteria,
+                                     searchTypes));
     }
 
     /**
@@ -400,7 +426,8 @@ class ResultViewPanel extends JPanel{
         hasResults = true;
 
         setRootDisplayName(
-                resultModel.isBasicCriteriaOnly && resultModel.basicCriteria.isFullText()
+                resultModel.isBasicCriteriaOnly &&
+                  resultModel.basicCriteria.isFullText()
                 ? nodeCountFormatFullText.format(
                             new Object[] {new Integer(objectsCount),
                                           new Integer(totalDetailsCount)})
@@ -414,6 +441,7 @@ class ResultViewPanel extends JPanel{
         assert !EventQueue.isDispatchThread();
 
         EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 updateObjectsCount(totalDetailsCount);
             }
@@ -483,9 +511,9 @@ class ResultViewPanel extends JPanel{
     /**
      */
     private ResultTreeModel createTreeModel() {
-        ResultTreeModel treeModel = new ResultTreeModel(null);
-        treeModel.setRootDisplayName(getInitialRootNodeText());
-        return treeModel;
+        ResultTreeModel newTreeModel = new ResultTreeModel(null);
+        newTreeModel.setRootDisplayName(getInitialRootNodeText());
+        return newTreeModel;
     }
 
     /**
@@ -493,12 +521,12 @@ class ResultViewPanel extends JPanel{
     private JTree createTree(ResultTreeModel treeModel,
                                     NodeListener nodeListener,
                                     ArrowStatusUpdater arrowUpdater) {
-        JTree tree = new JTree(treeModel);
+        JTree newTree = new JTree(treeModel);
 
         TreeCellRenderer cellRenderer = new NodeRenderer(false);
-        tree.setCellRenderer(cellRenderer);
-        tree.setRowHeight(cellRenderer.getTreeCellRendererComponent(
-                                                tree,       //tree
+        newTree.setCellRenderer(cellRenderer);
+        newTree.setRowHeight(cellRenderer.getTreeCellRendererComponent(
+                                                newTree,       //tree
                                                 treeModel,  //value
                                                 true,       //selected
                                                 true,       //expanded
@@ -508,25 +536,26 @@ class ResultViewPanel extends JPanel{
                           .getPreferredSize()
                           .height + 2);
 
-        tree.putClientProperty("JTree.lineStyle", "Angled");            //NOI18N
+        newTree.putClientProperty("JTree.lineStyle", "Angled");         //NOI18N
 
-        tree.addMouseListener(nodeListener);
-        tree.addKeyListener(nodeListener);
-        tree.addTreeWillExpandListener(nodeListener);
-        tree.addTreeExpansionListener(nodeListener);
+        newTree.addMouseListener(nodeListener);
+        newTree.addKeyListener(nodeListener);
+        newTree.addTreeWillExpandListener(nodeListener);
+        newTree.addTreeExpansionListener(nodeListener);
 
-        tree.setToggleClickCount(0);
+        newTree.setToggleClickCount(0);
 
-        tree.addMouseListener(arrowUpdater);
-        tree.addKeyListener(arrowUpdater);
+        newTree.addMouseListener(arrowUpdater);
+        newTree.addKeyListener(arrowUpdater);
 
-        return tree;
+        return newTree;
     }
 
     /**
      */
     private String getInitialRootNodeText() {
-        return NbBundle.getMessage(ResultView.class, "TEXT_Search_in_filesystems");       //NOI18N
+        return NbBundle.getMessage(ResultView.class,
+                                   "TEXT_Search_in_filesystems");       //NOI18N
     }
 
     /**
@@ -574,7 +603,8 @@ class ResultViewPanel extends JPanel{
             if (resultModel.searchAndReplace) {
                 bundleKey = "TEXT_MSG_FOUND_X_NODES_REPLACE";           //NOI18N
                 args = new Object[4];
-            } else if (resultModel.isBasicCriteriaOnly && resultModel.basicCriteria.isFullText()) {
+            } else if (resultModel.isBasicCriteriaOnly &&
+                       resultModel.basicCriteria.isFullText()) {
                 bundleKey = "TEXT_MSG_FOUND_X_NODES_FULLTEXT";          //NOI18N
                 args = new Object[2];
             } else {
@@ -653,7 +683,8 @@ class ResultViewPanel extends JPanel{
     /**
      */
     void searchCancelled() {
-        setRootDisplayName(NbBundle.getMessage(ResultView.class, "TEXT_TASK_CANCELLED"));//NOI18N
+        setRootDisplayName(NbBundle.getMessage(ResultView.class, 
+                                               "TEXT_TASK_CANCELLED")); //NOI18N
         searchInProgress = true;
         updateShowAllDetailsBtn();
         setBtnStopEnabled(false);
@@ -688,7 +719,8 @@ class ResultViewPanel extends JPanel{
     }
 
     private GridBagConstraints getMainPanelConstraints(){
-        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        GridBagConstraints gridBagConstraints =
+                new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -711,7 +743,8 @@ class ResultViewPanel extends JPanel{
     }
 
     private GridBagConstraints getToolbarSeparatorConstraints(){
-        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        GridBagConstraints gridBagConstraints =
+                new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridheight = 3;
@@ -945,41 +978,42 @@ class ResultViewPanel extends JPanel{
             return null;
         }
 
-        final MatchingObject[] matchingObjs = resultModel.getMatchingObjects();
+        final List<MatchingObject> matchingObjs =
+                resultModel.getMatchingObjects();
         int currMatchingObjIndex = getMatchingObjIndex(matchingObjs,
                                                        matchingObj,
                                                        forward);
-        MatchingObject nextMatchingObj;
+        MatchingObject nextMatchingObj = null;
+        Node detail = null;
         int i;
 
         if (forward) {
-            for (i = currMatchingObjIndex + 1; i < matchingObjs.length; i++) {
-                nextMatchingObj = matchingObjs[i];
-                if (resultModel.hasDetails(nextMatchingObj)) {
-                    return new TreePath(new Object[] {
-                            root,
-                            nextMatchingObj,
-                            resultModel.getDetails(nextMatchingObj)[0]});
+            for (i = currMatchingObjIndex + 1; i < matchingObjs.size(); i++) {
+                nextMatchingObj = matchingObjs.get(i);
+                Node[] details = resultModel.getDetails(nextMatchingObj);
+                if(details != null) {
+                    detail = details[0];
+                    break;
                 }
             }
         } else {
             for (i = currMatchingObjIndex - 1; i >= 0; i--) {
-                nextMatchingObj = matchingObjs[i];
-                if (resultModel.hasDetails(nextMatchingObj)) {
-                    Node[] details = resultModel.getDetails(nextMatchingObj);
-                    return new TreePath(new Object[] {
-                            root,
-                            nextMatchingObj,
-                            details[details.length - 1]});
+                nextMatchingObj = matchingObjs.get(i);
+                Node[] details = resultModel.getDetails(nextMatchingObj);
+                if(details != null) {
+                    detail = details[details.length - 1];
+                    break;
                 }
             }
         }
-        return null;
+        return detail == null ?
+            null :
+            new TreePath(new Object[] { root, nextMatchingObj, detail });
     }
 
     /**
      */
-    private int getMatchingObjIndex(final MatchingObject[] matchingObjs,
+    private int getMatchingObjIndex(final List<MatchingObject> matchingObjs,
                                     final MatchingObject matchingObj,
                                     final boolean forward) {
         if (matchingObj == null) {
@@ -1001,18 +1035,18 @@ class ResultViewPanel extends JPanel{
             int i;
             if (forward) {
                 startIndex = Math.min(matchingObjIndexCacheIndex + 1,
-                                      matchingObjs.length - 1);
+                                      matchingObjs.size() - 1);
                 endIndex = Math.min(
                                   matchingObjIndexCacheIndex + quickSearchRange,
-                                  matchingObjs.length - 1);
+                                  matchingObjs.size() - 1);
                 for (i = startIndex; i <= endIndex; i++) {
-                    if (matchingObjs[i] == matchingObj) {
+                    if (matchingObjs.get(i) == matchingObj) {
                         foundIndex = i;
                         break;
                     }
                 }
                 if ((foundIndex == -1) && (matchingObjIndexCacheIndex > 0)) {
-                    if (matchingObjs[i = matchingObjIndexCacheIndex - 1]
+                    if (matchingObjs.get(i = matchingObjIndexCacheIndex - 1)
                             == matchingObj) {
                         foundIndex = i;
                     }
@@ -1023,14 +1057,14 @@ class ResultViewPanel extends JPanel{
                                   matchingObjIndexCacheIndex - quickSearchRange,
                                   0);
                 for (i = startIndex; i >= endIndex; i--) {
-                    if (matchingObjs[i] == matchingObj) {
+                    if (matchingObjs.get(i) == matchingObj) {
                         foundIndex = i;
                         break;
                     }
                 }
                 if ((foundIndex == -1)
-                    && (matchingObjIndexCacheIndex < matchingObjs.length - 1)) {
-                    if (matchingObjs[i = matchingObjIndexCacheIndex + 1]
+                    && (matchingObjIndexCacheIndex < matchingObjs.size() - 1)) {
+                    if (matchingObjs.get(i = matchingObjIndexCacheIndex + 1)
                             == matchingObj) {
                         foundIndex = i;
                     }
@@ -1040,8 +1074,8 @@ class ResultViewPanel extends JPanel{
 
         /* Nothing found near the cached position - search from the beginning */
         if (foundIndex == -1) {
-            for (int i = 0; i < matchingObjs.length; i++) {
-                if (matchingObj == matchingObjs[i]) {
+            for (int i = 0; i < matchingObjs.size(); i++) {
+                if (matchingObj == matchingObjs.get(i)) {
                     foundIndex = i;
                     break;
                 }
@@ -1066,9 +1100,11 @@ class ResultViewPanel extends JPanel{
      * @return  list of cloned {@code SearchType}s, with unsupported
      *		{@code SearchType}s omitted
      */
-    private static List<SearchType> cloneAvailableSearchTypes(List<SearchType> searchTypes) {
+    private static List<SearchType> cloneAvailableSearchTypes(
+                                                 List<SearchType> searchTypes) {
         /* build a collection of class names of supported SearchTypes: */
-        Collection<? extends SearchType> availableSearchTypes = Utils.getSearchTypes();
+        Collection<? extends SearchType> availableSearchTypes =
+                                                         Utils.getSearchTypes();
             Collection<String> availableSearchTypeNames
                     = new ArrayList<String>(availableSearchTypes.size());
             for (SearchType searchType : availableSearchTypes) {
@@ -1082,7 +1118,8 @@ class ResultViewPanel extends JPanel{
         /* clone all supported SearchTypes: */
         List<SearchType> clones = new ArrayList<SearchType>(searchTypes.size());
         for (SearchType searchType : searchTypes) {
-                if (availableSearchTypeNames.contains(searchType.getClass().getName())) {
+                if (availableSearchTypeNames.contains(
+                                             searchType.getClass().getName())) {
                     clones.add((SearchType) searchType.clone());
                 }
         }
@@ -1117,7 +1154,9 @@ class ResultViewPanel extends JPanel{
         searchTypes = searchPanel.getSearchTypes();
 
         Manager.getInstance().stopSearching(task);
-        task = new SearchTask(searchScope, basicSearchCriteria, searchPanel.getCustomizedSearchTypes());
+        task = new SearchTask(searchScope, 
+                              basicSearchCriteria,
+                              searchPanel.getCustomizedSearchTypes());
         ResultView.getInstance().addSearchPair(this, task);
         Manager.getInstance().scheduleSearchTask(task);
     }
@@ -1131,7 +1170,8 @@ class ResultViewPanel extends JPanel{
         nodeListener.setSelectionChangeEnabled(false);
         btnReplace.setEnabled(false);
 
-        ReplaceTask taskReplace = new ReplaceTask(resultModel.getMatchingObjects());
+        ReplaceTask taskReplace =
+                new ReplaceTask(resultModel.getMatchingObjects());
         ResultView.getInstance().addReplacePair(taskReplace, this);
         Manager.getInstance().scheduleReplaceTask(taskReplace);
     }
@@ -1145,7 +1185,8 @@ class ResultViewPanel extends JPanel{
     }
 
     void setBtnReplaceEnabled(boolean enabled){
-        btnReplace.setEnabled(enabled && !basicSearchCriteria.isReplacePatternInvalid());
+        btnReplace.setEnabled(enabled &&
+                !basicSearchCriteria.isReplacePatternInvalid());
     }
 
     void setBtnShowDetailsEnabled(boolean enabled){
@@ -1209,6 +1250,7 @@ class ResultViewPanel extends JPanel{
             }
         }
 
+        @Override
         public void keyReleased(KeyEvent e) {
             int key = e.getKeyCode();
 
@@ -1219,25 +1261,32 @@ class ResultViewPanel extends JPanel{
             }
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
             update();
         }
 
+        @Override
         public void keyPressed(KeyEvent e) {
         }
 
+        @Override
         public void keyTyped(KeyEvent e) {
         }
 
+        @Override
         public void mouseClicked(MouseEvent e) {
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
         }
     }

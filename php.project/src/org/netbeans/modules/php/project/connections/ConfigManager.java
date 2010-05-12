@@ -88,6 +88,7 @@ public final class ConfigManager {
      */
     public static Map<String, Map<String, String>> createEmptyConfigs() {
         Map<String, Map<String, String>> configs = new TreeMap<String, Map<String, String>>(new Comparator<String>() {
+            @Override
             public int compare(String s1, String s2) {
                 return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);
             }
@@ -105,6 +106,7 @@ public final class ConfigManager {
     public static Comparator<Configuration> getConfigurationComparator() {
         return new Comparator<Configuration>() {
             Collator coll = Collator.getInstance();
+            @Override
             public int compare(Configuration c1, Configuration c2) {
                 String lbl1 = c1.getDisplayName();
                 String lbl2 = c2.getDisplayName();

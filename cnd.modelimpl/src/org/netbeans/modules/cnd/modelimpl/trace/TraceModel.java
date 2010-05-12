@@ -81,7 +81,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * Tracer for model
@@ -587,7 +587,7 @@ public class TraceModel extends TraceModelBase {
                     CsmFile file = (CsmFile) it.next();
                     l.add(file.getAbsolutePath());
                 }
-                Collections.sort(l, CharSequenceKey.Comparator);
+                Collections.sort(l, CharSequences.comparator());
                 for (Iterator it = l.iterator(); it.hasNext();) {
                     print((String) it.next());
                 }
@@ -600,7 +600,7 @@ public class TraceModel extends TraceModelBase {
                         l.add(file.getAbsolutePath());
                     }
                 }
-                Collections.sort(l, CharSequenceKey.Comparator);
+                Collections.sort(l, CharSequences.comparator());
                 for (Iterator it = l.iterator(); it.hasNext();) {
                     print((String) it.next());
                 }
@@ -844,7 +844,7 @@ public class TraceModel extends TraceModelBase {
         try {
             stream = new BufferedInputStream(new FileInputStream(file), TraceFlags.BUF_SIZE);
             reader = new InputStreamReader(stream, FileEncodingQuery.getDefaultEncoding());
-            TokenStream ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader);
+            TokenStream ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader, getFileLanguage(file));
             for (Token t = ts.nextToken(); !APTUtils.isEOF(t); t = ts.nextToken()) {
                 if (printTokens) {
                     print("" + t);
@@ -907,7 +907,7 @@ public class TraceModel extends TraceModelBase {
         if (cleanAPT) {
             invalidateAPT(buffer);
             time = System.currentTimeMillis();
-            apt = APTDriver.getInstance().findAPT(buffer);
+            apt = APTDriver.getInstance().findAPT(buffer, getFileLanguage(file));
         }
         APTMacroMap macroMap = getMacroMap(file);
         APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(file), true);
@@ -1094,7 +1094,7 @@ public class TraceModel extends TraceModelBase {
         File file = buffer.getFile();
         long oldMem = usedMemory();
         long time = System.currentTimeMillis();
-        APTFile apt = APTDriver.getInstance().findAPT(buffer);
+        APTFile apt = APTDriver.getInstance().findAPT(buffer, getFileLanguage(file));
         time = System.currentTimeMillis() - time;
         long newMem = usedMemory();
         if (isShowTime()) {
@@ -1468,6 +1468,18 @@ public class TraceModel extends TraceModelBase {
             }
         }
         return result;
+    }
+
+    private static String getFileLanguage(File file) {
+        String lang = APTLanguageSupport.GNU_CPP;
+        final String fileName = file.getName();
+        if (file.getName().length() > 2 && fileName.endsWith(".c")) { // NOI18N
+            lang = APTLanguageSupport.GNU_C;
+        }
+        if (file.getName().length() > 2 && fileName.endsWith(".f")) { // NOI18N
+            lang = APTLanguageSupport.FORTRAN;
+        }
+        return lang;
     }
 }
 

@@ -123,11 +123,24 @@ public class LibraryMetadata {
             if (attrNode.getNodeType() == Node.ELEMENT_NODE){
                 Element elem = (Element) attrNode;
                 String attrName = elem.getAttribute("name"); //NOI18N
+
+                String mimeType = parseMimeType(elem);
                 Collection<AttrValueType> valueTypes = readFromXML_parseValueTypes(elem);
 
-                result.add(new TagAttrMetadata(attrName, valueTypes));
+                result.add(new TagAttrMetadata(attrName, valueTypes, mimeType));
             }
         }
+    }
+
+    private static String parseMimeType(Element attrNode){
+        NodeList mimeTypeLst = attrNode.getElementsByTagName("mimetype"); //NOI18N
+
+        if (mimeTypeLst.getLength() > 0){
+            Node firstNode = mimeTypeLst.item(0);
+            return firstNode.getTextContent();
+        }
+
+        return null;
     }
 
     private static Collection<AttrValueType> readFromXML_parseValueTypes(Element attrNode){

@@ -89,6 +89,7 @@ public abstract class MultiFileLoader extends DataLoader {
     * @return suitable data object or <CODE>null</CODE> if the handler cannot
     *   recognize this object (or its group)
     */
+    @Override
     protected final DataObject handleFindDataObject (
         FileObject fo, RecognizedFiles recognized ) throws IOException {
         // finds primary file for given file
@@ -101,16 +102,16 @@ public abstract class MultiFileLoader extends DataLoader {
         boolean willLog = ERR.isLoggable(Level.FINE);
         
         if (willLog) {
-            ERR.fine(getClass().getName() + " is accepting: " + fo); // NOI18N
+            ERR.log(Level.FINE, "{0} is accepting: {1}", new Object[]{getClass().getName(), fo}); // NOI18N
         }
 
         if (primary != fo) {
             if (willLog) {
-                ERR.fine("checking correctness: primary is different than provided file: " + primary + " fo: " + fo); // NOI18N
+                ERR.log(Level.FINE, "checking correctness: primary is different than provided file: {0} fo: {1}", new Object[]{primary, fo}); // NOI18N
             }
-            Enumeration en = DataLoaderPool.getDefault().allLoaders(primary);
+            Enumeration<DataObject.Factory> en = DataLoaderPool.getDefault().allLoaders(primary);
             for (;;) {
-                DataLoader l = (DataLoader)en.nextElement();
+                DataObject.Factory l = en.nextElement();
                 if (l == this) {
                     ERR.fine("ok, consistent"); // NOI18N
                     break;
@@ -119,7 +120,7 @@ public abstract class MultiFileLoader extends DataLoader {
                     MultiFileLoader ml = (MultiFileLoader)l;
                     if (ml.findPrimaryFile(primary) == primary) {
                         if (willLog) {
-                            ERR.fine("loader seems to also take care of the file: " + ml);
+                            ERR.log(Level.FINE, "loader seems to also take care of the file: {0}", ml);
                         }
                         DataObject snd;
                         try {
@@ -140,7 +141,7 @@ public abstract class MultiFileLoader extends DataLoader {
             // create the multi object
             obj = createMultiObject (primary);
             if (willLog) {
-                ERR.fine(getClass().getName() + " created object for: " + fo + " obj: " + obj); // NOI18N
+                ERR.log(Level.FINE, "{0} created object for: {1} obj: {2}", new Object[]{getClass().getName(), fo, obj}); // NOI18N
             }
             if (obj == null) {
                 throw new IOException("Loader: " + this + " returned null from createMultiObject(" + primary + ")"); // NOI18N
@@ -149,12 +150,12 @@ public abstract class MultiFileLoader extends DataLoader {
             // object already exists
             DataObject dataObject = ex.getDataObject ();
             if (willLog) {
-                ERR.fine(getClass().getName() + " object already exists for: " + fo + " obj: " + dataObject); // NOI18N
+                ERR.log(Level.FINE, "{0} object already exists for: {1} obj: {2}", new Object[]{getClass().getName(), fo, dataObject}); // NOI18N
             }
             
             if (dataObject.getLoader () != this) {
                 if (willLog) {
-                    ERR.fine(getClass().getName() + " loader is wrong: " + dataObject.getLoader().getClass().getName()); // NOI18N
+                    ERR.log(Level.FINE, "{0} loader is wrong: {1}", new Object[]{getClass().getName(), dataObject.getLoader().getClass().getName()}); // NOI18N
                 }
 
                 if (dataObject.getLoader() instanceof MultiFileLoader) {
@@ -172,7 +173,7 @@ public abstract class MultiFileLoader extends DataLoader {
                                 return null;
                             }
                             if (o == this) {
-                                ERR.log(Level.FINE, "The loader" + mfl + " is after " + this + ". So do break."); // NOI18N
+                                ERR.log(Level.FINE, "The loader{0} is after {1}. So do break.", new Object[]{mfl, this}); // NOI18N
                                 break;
                             }
                         }
@@ -187,7 +188,7 @@ public abstract class MultiFileLoader extends DataLoader {
             if (!(dataObject instanceof MultiDataObject)) {
                 // but if it is not MultiDataObject, propadate the exception
                 if (willLog) {
-                    ERR.fine(getClass().getName() + " object is not MultiDataObject: " + dataObject); // NOI18N
+                    ERR.log(Level.FINE, "{0} object is not MultiDataObject: {1}", new Object[]{getClass().getName(), dataObject}); // NOI18N
                 }
                 throw ex;
             }
@@ -199,7 +200,7 @@ public abstract class MultiFileLoader extends DataLoader {
 
         if (obj.getLoader () != this) {
             if (willLog) {
-                ERR.fine(getClass().getName() + " wrong loader: " + obj.getLoader().getClass().getName()); // NOI18N
+                ERR.log(Level.FINE, "{0} wrong loader: {1}", new Object[]{getClass().getName(), obj.getLoader().getClass().getName()}); // NOI18N
             }
             // this primary file is recognized by a different
             // loader. We should not add entries to it
@@ -208,17 +209,17 @@ public abstract class MultiFileLoader extends DataLoader {
 
         // mark all secondary entries used
         if (willLog) {
-            ERR.fine(getClass().getName() + " marking secondary entries"); // NOI18N
+            ERR.log(Level.FINE, "{0} marking secondary entries", getClass().getName()); // NOI18N
         }
         obj.markSecondaryEntriesRecognized (recognized);
 
         // if the file is not between
         if (willLog) {
-            ERR.fine(getClass().getName() + " register entry: " + fo); // NOI18N
+            ERR.log(Level.FINE, "{0} register entry: {1}", new Object[]{getClass().getName(), fo}); // NOI18N
         }
         org.openide.loaders.MultiDataObject.Entry e = obj.registerEntry (fo);
         if (willLog) {
-            ERR.fine(getClass().getName() + " success: " + e); // NOI18N
+            ERR.log(Level.FINE, "{0} success: {1}", new Object[]{getClass().getName(), e}); // NOI18N
         }
 
         return obj;

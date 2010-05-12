@@ -265,6 +265,21 @@ public class FileOwnerQueryTest extends NbTestCase {
         
         //XXX: unmarking files.
     }
+
+    public void testExternalOwnerDisappearingProject() throws Exception {
+        FileObject ext1 = scratch.getFileObject("external1");
+        FileObject tempPrjMarker = FileUtil.createFolder(scratch, "tempprj/testproject");
+        FileObject tempPrjDir = tempPrjMarker.getParent();
+        Project tempPrj = ProjectManager.getDefault().findProject(tempPrjDir);
+        assertNotNull(tempPrj);
+        FileOwnerQuery.markExternalOwner(fileObject2URI(ext1), tempPrj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        assertEquals("now have an owner", tempPrj, FileOwnerQuery.getOwner(ext1));
+        Reference<FileObject> r = new WeakReference<FileObject>(tempPrjDir);
+        tempPrjMarker = tempPrjDir = null;
+        tempPrj = null;
+        assertGC("can be GCed", r);
+        assertNotNull("still has an owner", FileOwnerQuery.getOwner(ext1));
+    }
     
     public void testIsProjectDirCollectible() throws Exception {
         Project p2 = ProjectManager.getDefault().findProject(subprojdir);

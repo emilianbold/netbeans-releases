@@ -76,15 +76,9 @@ public class DeploymentXmlModelTest {
         p.close();
         out.close();
 
-        System.out.println("MODEL TO XML:");
-        System.out.println(mdl.toXml());
-
         ByteArrayInputStream ins = new ByteArrayInputStream(out.toByteArray());
         DeploymentXmlModel newer = new DeploymentXmlModel(ins);
         ins.close();
-        System.err.println("NEW MODEL TO XML:");
-        System.out.println(newer.toXml());
-
         assertEquals (mdl, newer);
     }
 }

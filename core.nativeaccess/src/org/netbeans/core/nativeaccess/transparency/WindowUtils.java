@@ -106,6 +106,8 @@ import org.netbeans.core.nativeaccess.transparency.win32.W32API.HWND;
 import com.sun.jna.ptr.ByteByReference;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Provides additional features on a Java {@link Window}.  
@@ -1163,8 +1165,9 @@ public class WindowUtils {
                                                 X11.PropModeReplace,
                                                 patom.getPointer(), 1);
                         }
-                    }
-                    finally {
+                    } catch( IllegalStateException isE ) {
+                        Logger.getLogger(WindowUtils.class.getName()).log(Level.INFO, null, isE);
+                    } finally {
                         x11.XCloseDisplay(dpy);
                     }
                 }

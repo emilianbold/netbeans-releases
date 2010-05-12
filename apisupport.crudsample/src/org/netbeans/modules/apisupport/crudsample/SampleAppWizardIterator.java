@@ -42,6 +42,7 @@ package org.netbeans.modules.apisupport.crudsample;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -265,7 +266,7 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
         }
 
         // 2) target place
-        File targetFile = new File(FileUtil.toFile(projectRoot), "persistence-library" + File.separator + "external"); // NOI18N
+        File targetFile = new File(FileUtil.toFile(projectRoot), "CustomerDBAccessLibrary" + File.separator + "external"); // NOI18N
         targetFile.mkdirs();
         FileObject targetFO = FileUtil.toFileObject(targetFile);
 
@@ -277,22 +278,33 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
         }
 
         // 4) modify project.xml with native jars names
-        File projectXMLFile = new File(FileUtil.toFile(projectRoot), "persistence-library" + File.separator + // NOI18N
+        File projectXMLFile = new File(FileUtil.toFile(projectRoot), "CustomerDBAccessLibrary" + File.separator + // NOI18N
                 "nbproject" + File.separator + "project.xml"); // NOI18N
         FileObject projectXMLFO = FileUtil.toFileObject(projectXMLFile);
 
         Set<String> publicPackages = new HashSet<String> ();
-        Collections.addAll(publicPackages, "javax.persistence", "javax.persistence.spi", "javax.persistence.criteria"); // NOI18N
+        Collections.addAll(publicPackages, "demo",
+                "javax.persistence",
+                "javax.persistence.spi",
+                "javax.persistence.metamodel",
+                "javax.persistence.criteria",
+                "org.netbeans.modules.customerdb"); // NOI18N
         Map<String, String> cp2origin = new HashMap<String, String>(libs.size());
+        // add wrapping project CustomerDBAccess
+        cp2origin.put("ext/CustomerDBAccess.jar", "../CustomerDBAccess/dist/CustomerDBAccess.jar"); // NOI18N
         for (FileObject jar : libs) {
             String cp = "ext/persistence/" + jar.getNameExt(); // NOI18N
             String origin = "external/" + jar.getNameExt(); // NOI18N
             cp2origin.put(cp, origin);
         }
-        generateLibraryModuleTemplate(projectXMLFO, "org.netbeans.modules.persistencelibrary", // NOI18N
+        Map<String, String> dep2version = new HashMap<String, String> ();
+        dep2version.put("org.netbeans.modules.derbyclientlibrary", "1.1"); // NOI18N
+        dep2version.put("org.openide.execution", "1.17"); // NOI18N
+        dep2version.put("org.openide.util", "8.2"); // NOI18N
+        generateLibraryModuleTemplate(projectXMLFO, "org.netbeans.modules.customerdb", // NOI18N
                 publicPackages,
                 cp2origin,
-                Collections.singletonMap("org.netbeans.modules.derbyclientlibrary", "1.0")); // NOI18N
+                dep2version);
         Logger.getLogger(SampleAppWizardIterator.class.getName()).log(Level.FINE, "project.xml file written : {0}", new Object[]{projectXMLFO}); // NOI18N
 
         // 5)  modify $persistencelibrary.xml to persistence.xml
@@ -300,8 +312,17 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
                 "src" + File.separator + "META-INF" + File.separator + l.getName() + ".xml"); // NOI18N
         Logger.getLogger(SampleAppWizardIterator.class.getName()).log(Level.FINE, "META-INF/peristence.xml found at {0}", new Object[]{libraryConfFile});
         assert libraryConfFile.exists() : libraryConfFile + " exists."; // NOI18N
-        File persistenceConfFile = new File(libraryConfFile.getParent(), "persistence.xml"); // NOI18N
+        final File persistenceConfFile = new File(libraryConfFile.getParent(), "persistence.xml"); // NOI18N
         libraryConfFile.renameTo(persistenceConfFile);
+        // remove other xml containing persistence info
+        for (File f : libraryConfFile.getParentFile().listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return pathname.isFile() && pathname.getName().endsWith(".xml") && ! persistenceConfFile.equals(pathname); //
+                }
+            })) {
+                f.delete();
+            }
     }
 
     private void configureDerby(String loc, FileObject projectRoot) throws FileNotFoundException, IOException {
@@ -426,10 +447,10 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
         moduleDependencies.insertBefore(modDepEl, null);
 
         modDepEl.appendChild(createModuleElement(doc, "code-name-base", depCNB)); // NOI18N
-//        if (md.hasCompileDependency()) {
-//            modDepEl.appendChild(createModuleElement(doc, ProjectXMLManager.BUILD_PREREQUISITE));
-//            modDepEl.appendChild(createModuleElement(doc, ProjectXMLManager.COMPILE_DEPENDENCY));
-//        }
+        if (depCNB.startsWith("org.openide")) { // NOI18N
+            modDepEl.appendChild(createModuleElement(doc, "build-prerequisite")); // NOI18N
+            modDepEl.appendChild(createModuleElement(doc, "compile-dependency")); // NOI18N
+        }
 
         Element runDepEl = createModuleElement(doc, "run-dependency"); // NOI18N
         modDepEl.appendChild(runDepEl);

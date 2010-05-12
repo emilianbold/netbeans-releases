@@ -729,7 +729,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
             typeUsed(decl, expr, type);
         }
         
-        private void handleJavadoc(Element classMember) {
+        private void handleJavadoc(TreePath classMember) {
             if (classMember == null) {
                 return;
             }
@@ -935,7 +935,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
             
             Element el = info.getTrees().getElement(getCurrentPath());
             
-            handleJavadoc(el);
+            handleJavadoc(getCurrentPath());
             
             if (el != null && (el.getModifiers().contains(Modifier.ABSTRACT) || el.getModifiers().contains(Modifier.NATIVE) || !el.getModifiers().contains(Modifier.PRIVATE))) {
                 paramsUseTypes = EnumSet.of(UseTypes.WRITE, UseTypes.READ);
@@ -1182,7 +1182,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
             }
             
             if (e != null && e.getKind().isField()) {
-                handleJavadoc(e);
+                handleJavadoc(getCurrentPath());
             }
             
             if (d != null) {
@@ -1344,8 +1344,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
             
             handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.DECLARATION));
             
-            Element el = info.getTrees().getElement(getCurrentPath());
-            handleJavadoc(el);
+            handleJavadoc(getCurrentPath());
             
             scan(tree.getModifiers(), null);
             

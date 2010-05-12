@@ -512,7 +512,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         if (CsmKindUtilities.isMethod(functionObj)) {
             CsmMethod method = (CsmMethod)functionObj;
             if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
-                allMethods.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, true));
+                allMethods.addAll(CsmVirtualInfoQuery.getDefault().getOverriddenMethods(method, true));
                 assert !allMethods.isEmpty() : "must be at least start object " + method;
             }
         }

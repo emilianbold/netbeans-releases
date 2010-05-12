@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.xpath.ext.impl;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.StepNodeTest;
@@ -152,6 +153,7 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
      */
     public void setPredicates(XPathPredicateExpression[] predicates) {
         mPredicates = predicates;
+        mSchemaContext = null; // discard schema context
     }
     
     /**
@@ -159,6 +161,10 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
      * @return the string representation
      */
     public String getString() {
+        return getString(null);
+    }
+
+    public String getString(NamespaceContext nc) {
         StringBuilder sb = new StringBuilder();
         //
         StepNodeTest nodeTest = getNodeTest();
@@ -169,8 +175,30 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
             if (snnt.isWildcard()) {
                 sb.append("*"); // NOI18N
             } else {
-                QName nodeName = ((StepNodeNameTest) nodeTest).getNodeName();
-                sb.append(XPathUtils.qNameObjectToString(nodeName));
+                if (nc == null) {
+                    QName nodeName = ((StepNodeNameTest) nodeTest).getNodeName();
+                    sb.append(XPathUtils.qNameObjectToString(nodeName));
+                } else {
+                    QName nodeName = ((StepNodeNameTest) nodeTest).getNodeName();
+                    String nsUri = nodeName.getNamespaceURI();
+                    if (nsUri == null || nsUri.length() == 0) {
+                        String prefix = nodeName.getPrefix();
+                        NamespaceContext modelNC = mModel.getNamespaceContext();
+                        if (modelNC != null) {
+                            nsUri = modelNC.getNamespaceURI(prefix);
+                        }
+                    }
+                    //
+                    if (nsUri != null && nsUri.length() != 0) {
+                        String newPrefix = nc.getPrefix(nsUri);
+                        QName modifiedNodeName =
+                                new QName(null, nodeName.getLocalPart(), newPrefix);
+                        sb.append(XPathUtils.qNameObjectToString(modifiedNodeName));
+                    } else {
+                        // Use not modified prefix
+                        sb.append(XPathUtils.qNameObjectToString(nodeName));
+                    }
+                }
             }
         } else if (nodeTest instanceof StepNodeTypeTest) {
             StepNodeTypeTest sntt = (StepNodeTypeTest)nodeTest;
@@ -178,7 +206,7 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
             case NODETYPE_NODE:
                 switch (getAxis()) {
                 case CHILD: // it means that the location step is "node()"
-                    sb.append(sntt.getXPathText());
+                    sb.append(sntt.getExpressionString());
                     break;
                 case SELF:   // it means that the location step is abbreviated step "."
                     sb.append("."); // NOI18N
@@ -187,7 +215,7 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
                     sb.append(".."); // NOI18N
                     break;
                 case DESCENDANT_OR_SELF: // it means that the location step is abbreviated step "//"
-                    // It doesn't necessary to append anything here because 
+                    // It doesn't necessary to append anything here because
                     // the double slash "//" abbreviated step is a kind of "empty" step.
                     // It is a step without a content between two slashes.
                     break;
@@ -198,7 +226,7 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
             case NODETYPE_COMMENT:
             case NODETYPE_PI:
             case NODETYPE_TEXT:
-                sb.append(sntt.getXPathText());
+                sb.append(sntt.getExpressionString());
                 break;
             }
         }
@@ -213,11 +241,25 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
 
     public XPathSchemaContext getSchemaContext() {
         if (mSchemaContext == null) {
-            if (myModel.getRootExpression() != null) {
-                myModel.resolveExtReferences(false);
+            boolean success = false;
+            if (mModel.getRootExpression() != null) {
+                success = mModel.resolveExtReferences(false);
             } else {
-                myModel.resolveExpressionExtReferences(this);
+                success = mModel.resolveExpressionExtReferences(this);
             }
+            //
+            // TODO: Nikita. Uncomment for Debugging
+            //
+//            if (success && mSchemaContext == null) {
+//                assert false : "Wrong behavior!"; // NOI18N
+//                //
+//                // Try again for debugging purposes
+//                if (myModel.getRootExpression() != null) {
+//                    success = myModel.resolveExtReferences(true);
+//                } else {
+//                    success = myModel.resolveExpressionExtReferences(this);
+//                }
+//            }
         }
         return mSchemaContext;
     }
@@ -257,4 +299,5 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
         }
         return false;
     }
+
 }

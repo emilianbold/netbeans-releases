@@ -43,6 +43,8 @@ package org.netbeans.modules.print.action;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
+import java.io.InputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
@@ -57,6 +59,7 @@ import org.openide.windows.TopComponent;
 import org.netbeans.api.print.PrintManager;
 import org.netbeans.spi.print.PrintProvider;
 import org.netbeans.modules.print.provider.ComponentProvider;
+import org.netbeans.modules.print.provider.EditorProvider;
 import org.netbeans.modules.print.provider.TextProvider;
 import org.netbeans.modules.print.ui.Preview;
 import org.netbeans.modules.print.util.Config;
@@ -117,7 +120,7 @@ public final class PrintAction extends IconAction {
         if (providers != null) {
             return providers;
         }
-        return getEditorProviders(getSelectedNodes());
+        return getEditorInputStreamProviders(getSelectedNodes());
     }
 
     private PrintProvider[] getTopProviders(TopComponent top) {
@@ -206,7 +209,7 @@ public final class PrintAction extends IconAction {
         return (DataObject) ((TopComponent) top).getLookup().lookup(DataObject.class);
     }
 
-    private PrintProvider[] getEditorProviders(Node[] nodes) {
+    private PrintProvider[] getEditorInputStreamProviders(Node[] nodes) {
 //out();
 //out("get editor provider");
         if (nodes == null) {
@@ -217,7 +220,7 @@ public final class PrintAction extends IconAction {
 
         for (Node node : nodes) {
 //out("  see: " + node);
-            PrintProvider provider = getEditorProvider(node);
+            PrintProvider provider = getEditorInputStreamProvider(node);
 
             if (provider != null) {
                 providers.add(provider);
@@ -231,7 +234,15 @@ public final class PrintAction extends IconAction {
         return providers.toArray(new PrintProvider[providers.size()]);
     }
 
-    private PrintProvider getEditorProvider(Node node) {
+    private PrintProvider getEditorInputStreamProvider(Node node) {
+//out();
+//out("GET input stream provider: " + node);
+        String text = getText(node.getLookup().lookup(InputStream.class));
+
+        if (text != null) {
+//out("text: " + text);
+            return new TextProvider(text);
+        }
 //out("get editor provider");
         EditorCookie editor = node.getLookup().lookup(EditorCookie.class);
 
@@ -243,7 +254,24 @@ public final class PrintAction extends IconAction {
 //out("get editor provider.3");
             return null;
         }
-        return new TextProvider(editor, getDate(getDataObject(node)));
+        return new EditorProvider(editor, getDate(getDataObject(node)));
+    }
+
+    private String getText(InputStream input) {
+        if (input == null) {
+            return null;
+        }
+        try {
+            input.reset();
+            int length = input.available();
+            byte[] bytes = new byte[length];
+            input.read(bytes);
+            input.close();
+            return new String(bytes);
+        }
+        catch (IOException e) {
+            return null;
+        }
     }
 
     private PrintCookie getPrintCookie() {

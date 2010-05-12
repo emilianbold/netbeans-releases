@@ -39,6 +39,7 @@
 
 package org.openide.actions;
 
+import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.JComponent;
 import org.openide.awt.DynamicMenuContent;
@@ -48,18 +49,28 @@ import javax.swing.JMenuItem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Lookup;
 import org.openide.util.actions.ActionPerformer;
 import static org.junit.Assert.*;
+import org.openide.cookies.SaveCookie;
+import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ToolsActionTest extends NbTestCase implements ActionPerformer {
+public class ToolsActionTest extends NbTestCase implements ActionPerformer, SaveCookie {
 
     public ToolsActionTest(String n) {
         super(n);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        FileObject fo = FileUtil.createFolder(FileUtil.getConfigRoot(), "UI/ToolActions");
+        fo.delete();
     }
 
     public void testActionReadFromLayer () throws Exception {
@@ -98,8 +109,33 @@ public class ToolsActionTest extends NbTestCase implements ActionPerformer {
         assertEquals("One " + Arrays.asList(arr), 1, arr.length);
     }
 
+    public void testIsPopupVisible() throws Exception {
+        ToolsAction ta = ToolsAction.get(ToolsAction.class);
+
+        Lookup lkp = Lookups.singleton(this);
+        FileObject fo = FileUtil.createFolder(FileUtil.getConfigRoot(), "UI/ToolActions");
+        assertNotNull("ToolActions folder found", fo);
+
+        fo.createFolder("Cat1").createData("org-openide-actions-SaveAction.instance").setAttribute("position", 100);
+
+        Action a = ta.createContextAwareInstance(lkp);
+        assertTrue("It is menu presenter", a instanceof Presenter.Popup);
+        Presenter.Popup pp = (Presenter.Popup)a;
+        JMenuItem item = pp.getPopupPresenter();
+
+        assertTrue("Item is enabled", item.isEnabled());
+        DynamicMenuContent dmc = (DynamicMenuContent)item;
+        assertEquals("One presenter to delegte to", 1, dmc.getMenuPresenters().length);
+    }
+
+
     @Override
     public void performAction(SystemAction action) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void save() throws IOException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

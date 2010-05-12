@@ -91,11 +91,6 @@ import static org.openide.cookies.EditorCookie.Observable.PROP_OPENED_PANES;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.openfile.OpenFileImpl.class, position=100)
 public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
     
-    /** extenstion for .java files (including the dot) */
-    static final String JAVA_EXT = ".JAVA";                             //NOI18N
-    /** extension for .txt files (including the dot) */
-    static final String TXT_EXT = ".TXT";                               //NOI18N
-
     private final Logger log = Logger.getLogger(getClass().getName());
     /**
      * parameter of this <code>Runnable</code>

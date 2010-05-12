@@ -52,10 +52,10 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
  */
 public class CallImpl implements Call {
 
-    private Function owner;
-    private CsmReference reference;
-    private Function function;
-    private boolean nameOrder;
+    private final Function owner;
+    private final CsmReference reference;
+    private final Function function;
+    private final boolean nameOrder;
     
     public CallImpl(CsmFunction owner, CsmReference reference, CsmFunction function, boolean nameOrder){
         this.owner = new FunctionImpl(owner);

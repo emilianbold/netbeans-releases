@@ -160,6 +160,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         boolean showInput = actionType == ProjectActionEvent.PredefinedType.RUN;
         boolean unbuffer = false;
         boolean runInInternalTerminal = false;
+        CompilerSet cs = null;
 
         int consoleType = pae.getProfile().getConsoleType().getValue();
 
@@ -199,7 +200,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
 
             // Append compilerset base to run path. (IZ 120836)
-            CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+            cs = conf.getCompilerSet().getCompilerSet();
             if (cs != null) {
                 String csdirs = cs.getDirectory();
                 String commands = cs.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
@@ -217,9 +218,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
         } else { // Build or Clean
             // Build or Clean
-            final CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-            String csdirs = compilerSet.getDirectory();
-            String commands = compilerSet.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
+            cs = conf.getCompilerSet().getCompilerSet();
+            String csdirs = cs.getDirectory();
+            String commands = cs.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
             if (commands != null && commands.length() > 0) {
                 // Also add msys to path. Thet's where sh, mkdir, ... are.
                 csdirs = csdirs + pi.pathSeparator() + commands;
@@ -233,8 +234,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             env.put(pi.getPathName(), path);
             // Pass QMAKE from compiler set to the Makefile (IZ 174731)
             if (conf.isQmakeConfiguration()) {
-                String qmakePath = compilerSet.getTool(PredefinedToolKind.QMakeTool).getPath();
-                qmakePath = CppUtils.normalizeDriveLetter(compilerSet, qmakePath.replace('\\', '/')); // NOI18N
+                String qmakePath = cs.getTool(PredefinedToolKind.QMakeTool).getPath();
+                qmakePath = CppUtils.normalizeDriveLetter(cs, qmakePath.replace('\\', '/')); // NOI18N
                 args.add("QMAKE=" + CndPathUtilitities.escapeOddCharacters(qmakePath)); // NOI18N
             }
         }
@@ -259,7 +260,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
         ProcessChangeListener processChangeListener =
                 new ProcessChangeListener(this, null/*Writer outputListener*/,
-                converter, io, pae.getActionName(), !runInInternalTerminal);
+                converter, io, pae.getActionName());
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
                 .setWorkingDirectory(workingDirectory)
@@ -298,8 +299,17 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 .errConvertorFactory(processChangeListener)
                 .outConvertorFactory(processChangeListener);
 
-        if (actionType == PredefinedType.BUILD) {
+        if (actionType == PredefinedType.BUILD || actionType == PredefinedType.CLEAN) {
             descr.noReset(true);
+            if (cs != null) {
+                descr.charset(cs.getEncoding());
+            }
+        }
+
+        if (actionType == PredefinedType.RUN) {
+            if (cs != null) {
+                descr.charset(cs.getEncoding());
+            }
         }
 
         NativeExecutionService es = NativeExecutionService.newService(npb, descr, pae.getActionName()); // NOI18N
@@ -360,7 +370,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             public void run() {
                 Future<Integer> et = executorTask;
                 if (et != null) {
-                    executorTask.cancel(true);
+                    et.cancel(true);
                 }
             }
         });
@@ -399,16 +409,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         private final String actionName;
         private long startTimeMillis;
         private Runnable postRunnable;
-        private final boolean outSummary;
 
         public ProcessChangeListener(ExecutionListener listener, Writer outputListener, LineConvertor lineConvertor,
-                InputOutput tab, String actionName, boolean outSummary) {
+                InputOutput tab, String actionName) {
             this.listener = listener;
             this.outputListener = outputListener;
             this.lineConvertor = lineConvertor;
             this.tab = tab;
             this.actionName = actionName;
-            this.outSummary = outSummary;
         }
 
         @Override
@@ -445,27 +453,25 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
                         @Override
                         public void run() {
-                            if (outSummary) {
-                                StringBuilder res = new StringBuilder();
-                                res.append(MessageFormat.format(getString("TERMINATED"), actionName.toUpperCase())); // NOI18N
-                                res.append(" ("); // NOI18N
-                                if (process.exitValue() != 0) {
-                                    res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                    res.append(' ');
-                                }
-                                res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                                res.append(')');
-
-                                tab.getOut().println(res.toString());
-                                tab.getOut().println();
-                                closeIO();
+                            StringBuilder res = new StringBuilder();
+                            res.append(MessageFormat.format(getString("TERMINATED"), actionName.toUpperCase())); // NOI18N
+                            res.append(" ("); // NOI18N
+                            if (process.exitValue() != 0) {
+                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
+                                res.append(' ');
                             }
+                            res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
+                            res.append(')');
+
+                            // use \n\r to correctly move cursor in terminals as well
+                            tab.getErr().printf("\n\r%s\n\r",res.toString()); // NOI18N
+                            closeIO();
 
                             if (listener != null) {
                                 listener.executionFinished(process.exitValue());
                             }
                             
-                            StatusDisplayer.getDefault().setStatusText(MessageFormat.format("MSG_TERMINATED", actionName)); // NOI18N
+                            StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString("MSG_TERMINATED"), actionName)); // NOI18N
                         }
                     };
                     break;
@@ -476,21 +482,19 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
                         @Override
                         public void run() {
-                            if (outSummary) {
-                                StringBuilder res = new StringBuilder();
-                                res.append(MessageFormat.format(getString("FAILED"), actionName.toUpperCase())); // NOI18N
-                                res.append(" ("); // NOI18N
-                                if (process.exitValue() != 0) {
-                                    res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                    res.append(' ');
-                                }
-                                res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                                res.append(')');
-
-                                tab.getErr().println(res.toString());
-                                tab.getErr().println();
-                                closeIO();
+                            StringBuilder res = new StringBuilder();
+                            res.append(MessageFormat.format(getString("FAILED"), actionName.toUpperCase())); // NOI18N
+                            res.append(" ("); // NOI18N
+                            if (process.exitValue() != 0) {
+                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
+                                res.append(' ');
                             }
+                            res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
+                            res.append(')');
+
+                            // use \n\r to correctly move cursor in terminals as well
+                            tab.getErr().printf("\n\r%s\n\r",res.toString()); // NOI18N
+                            closeIO();
                             if (listener != null) {
                                 listener.executionFinished(-1);
                             }
@@ -506,22 +510,20 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                         @Override
                         public void run() {
                             int rc = process.exitValue();
-                            if (outSummary) {
-                                StringBuilder res = new StringBuilder();
-                                res.append(MessageFormat.format(getString(rc == 0 ? "SUCCESSFUL" : "FAILED"), actionName.toUpperCase())); // NOI18N
-                                res.append(" ("); // NOI18N
-                                if (rc != 0) {
-                                    res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                    res.append(' ');
-                                }
-                                res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                                res.append(')');
-
-                                PrintWriter pw = (rc == 0) ? tab.getOut() : tab.getErr();
-                                pw.println(res.toString());
-                                pw.println();
-                                closeIO();
+                            StringBuilder res = new StringBuilder();
+                            res.append(MessageFormat.format(getString(rc == 0 ? "SUCCESSFUL" : "FAILED"), actionName.toUpperCase())); // NOI18N
+                            res.append(" ("); // NOI18N
+                            if (rc != 0) {
+                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
+                                res.append(' ');
                             }
+                            res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
+                            res.append(')');
+
+                            PrintWriter pw = (rc == 0) ? tab.getOut() : tab.getErr();
+                            // use \n\r to correctly move cursor in terminals as well
+                            pw.printf("\n\r%s\n\r",res.toString()); // NOI18N
+                            closeIO();
 
                             if (listener != null) {
                                 listener.executionFinished(process.exitValue());

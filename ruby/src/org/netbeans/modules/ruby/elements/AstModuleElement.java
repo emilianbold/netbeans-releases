@@ -84,4 +84,9 @@ public class AstModuleElement extends AstElement implements ModuleElement {
         this.extendWith = extendWith;
     }
 
+    @Override
+    public boolean isVirtual() {
+        return false;
+    }
+
 }

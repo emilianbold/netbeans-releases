@@ -95,6 +95,7 @@ import org.openide.util.RequestProcessor.Task;
 public final class CompilerSetManagerImpl extends CompilerSetManager {
 
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(CompilerSetManagerImpl.class.getName(), 1);
 
     //private static final HashMap<ExecutionEnvironment, CompilerSetManagerImpl> managers = new HashMap<ExecutionEnvironment, CompilerSetManagerImpl>();
     //private static final Object MASTER_LOCK = new Object();
@@ -106,6 +107,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     private volatile State state;
     private int platform = -1;
     private Task initializationTask;
+    private CompilerSetProvider provider;
 
 
     public CompilerSetManagerImpl(ExecutionEnvironment env) {
@@ -144,7 +146,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             });
             log.log(Level.FINE, "CSM.init: initializing remote compiler set @{0} for: {1}", new Object[]{System.identityHashCode(CompilerSetManagerImpl.this), toString()});
             progressHandle.start();
-            RequestProcessor.getDefault().post(new NamedRunnable(progressMessage) {
+            RP.post(new NamedRunnable(progressMessage) {
                 protected @Override void runImpl() {
                     threadRef.set(Thread.currentThread());
                     try {
@@ -199,10 +201,13 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     @Override
     public synchronized void initialize(boolean save, boolean runCompilerSetDataLoader, Writer reporter) {
         CompilerSetReporter.setWriter(reporter);
+        ProgressHandle pHandle = null;
         try {
             CndUtils.assertNonUiThread();
             if (isUninitialized()) {
                 log.log(Level.FINE, "CSM.getDefault: Doing remote setup from EDT?{0}", SwingUtilities.isEventDispatchThread());
+                pHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(getClass(), "PROGRESS_TEXT", getExecutionEnvironment().getDisplayName())); // NOI18N
+                pHandle.start();
                 this.sets.clear();
                 initRemoteCompilerSets(true, runCompilerSetDataLoader);
                 if (initializationTask != null) {
@@ -215,7 +220,19 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             }
         } finally {
             CompilerSetReporter.setWriter(null);
+            if (pHandle != null) {
+                pHandle.finish();
+            }
         }
+    }
+
+    @Override
+    public boolean cancel() {
+        CompilerSetProvider aProvider = provider;
+        if (aProvider != null) {
+            return aProvider.cancel();
+        }
+        return false;
     }
 
     @Override
@@ -305,7 +322,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         String progressMessage = NbBundle.getMessage(getClass(), "PROGRESS_TEXT", executionEnvironment.getDisplayName()); // NOI18N
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressMessage);
         progressHandle.start();
-        initializationTask = RequestProcessor.getDefault().post(new Runnable() {
+        initializationTask = RP.post(new Runnable() {
             @Override
             public void run() {
                 initCompilerSetsImpl(dirlist);
@@ -449,8 +466,13 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
 	if (!record.isOnline()) {
             return Collections.<CompilerSet>emptyList();
         }
-        final CompilerSetProvider provider = CompilerSetProviderFactoryImpl.createNew(executionEnvironment);
-        String[] arData = provider.getCompilerSetData(path);
+        String[] arData;
+        try {
+            provider = CompilerSetProviderFactoryImpl.createNew(executionEnvironment);
+            arData = provider.getCompilerSetData(path);
+        } finally {
+            provider = null;
+        }
         List<CompilerSet> css = new ArrayList<CompilerSet>();
         if (arData != null) {
             for (String data : arData) {
@@ -572,7 +594,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                 CompilerSetReporter.report("CSM_Done"); //NOI18N
             }
             // NB: function itself is synchronized!
-            initializationTask = RequestProcessor.getDefault().post(new Runnable() {
+            initializationTask = RP.post(new Runnable() {
 
                 @SuppressWarnings("unchecked")
                 @Override
@@ -582,7 +604,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                     //            CompilerSetReporter.canReport(),System.identityHashCode(CompilerSetManager.this));
                     //}
                     try {
-                        final CompilerSetProvider provider = CompilerSetProviderFactoryImpl.createNew(executionEnvironment);
+                        provider = CompilerSetProviderFactoryImpl.createNew(executionEnvironment);
                         assert provider != null;
                         provider.init();
                         platform = provider.getPlatform();
@@ -629,6 +651,8 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                             " on " + executionEnvironment, thr); //NOI18N
                         CompilerSetReporter.report("CSM_Fail"); //NOI18N
                         completeCompilerSets();
+                    } finally {
+                        provider = null;
                     }
                 }
 
@@ -784,11 +808,11 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                 break;
             }
         }
-        // find 'best' Sun set and copy it
-        CompilerSet sun = getCompilerSet("OracleSolarisStudio"); // NOI18N
-        if (sun != null) {
+        // "OracleSolarisStudio" and "SunStudio" compiler sets must exist
+        if (getCompilerSet("OracleSolarisStudio") != null && getCompilerSet("SunStudio") != null) { // NOI18N
             return;
         }
+        // if one or both are missing, find the 'best' Sun set and copy it
         if (bestCandidate == null) {
             bestCandidate = (CompilerSetImpl) getCompilerSet("OracleSolarisStudio_12.2"); // NOI18N
         }
@@ -826,15 +850,15 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             return;
         }
         CompilerFlavor flavor = CompilerFlavorImpl.toFlavor("OracleSolarisStudio", platform); // NOI18N
-        if (flavor != null) { // #158084 NPE
+        if (flavor != null && getCompilerSet("OracleSolarisStudio") == null) { // #158084 NPE // NOI18N
             CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
-                    flavor, bestCandidate.getDirectory(), "OracleSolarisStudio", true); // NOI18N
+                    flavor, bestCandidate.getDirectory(), "OracleSolarisStudio", true, bestCandidate.getEncoding()); // NOI18N
             addUnsafe(bestCandidateCopy);
         }
         flavor = CompilerFlavorImpl.toFlavor("SunStudio", platform); // NOI18N
-        if (flavor != null) { // #158084 NPE
+        if (flavor != null && getCompilerSet("SunStudio") == null) { // #158084 NPE // NOI18N
             CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
-                    flavor, bestCandidate.getDirectory(), "SunStudio", true); // NOI18N
+                    flavor, bestCandidate.getDirectory(), "SunStudio", true, bestCandidate.getEncoding()); // NOI18N
             addUnsafe(bestCandidateCopy);
         }
     }

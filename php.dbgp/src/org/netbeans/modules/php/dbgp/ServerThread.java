@@ -48,7 +48,7 @@ class ServerThread extends SingleThread {
                         debugSession.startProcessing(sessionSocket);
                     }
                 } catch (SocketTimeoutException e) {
-                    log(e);
+                    log(e, Level.FINEST);
                 } catch (IOException e) {
                     log(e);
                 }
@@ -75,7 +75,10 @@ class ServerThread extends SingleThread {
     }
 
     private void log(Throwable exception) {
-        Logger.getLogger(ServerThread.class.getName()).log(Level.FINE, null, exception);
+        log(exception, Level.FINE);
+    }
+    private void log(Throwable exception, Level level) {
+        Logger.getLogger(ServerThread.class.getName()).log(level, null, exception);
     }
 
     private boolean createServerSocket(DebugSession debugSession) {

@@ -69,11 +69,14 @@ import org.openide.util.lookup.ProxyLookup;
  */
 @NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=139)
 public class GroovyScalaSourcesNodeFactory implements NodeFactory {
+
+    private static final RequestProcessor RP = new RequestProcessor("GroovyScalaNodes"); // NOI18N
     
     /** Creates a new instance of SourcesNodeFactory */
     public GroovyScalaSourcesNodeFactory() {
     }
     
+    @Override
     public NodeList createNodes(Project project) {
         return  new NList(project);
     }
@@ -84,6 +87,7 @@ public class GroovyScalaSourcesNodeFactory implements NodeFactory {
             project = prj;
         }
         
+        @Override
         public List<SourceGroup> keys() {
             //#169192 check roots against java roots and if the same don't show twice.
             Set<FileObject> javaroots = new HashSet<FileObject>();
@@ -109,6 +113,7 @@ public class GroovyScalaSourcesNodeFactory implements NodeFactory {
             return list;
         }
         
+        @Override
         public Node node(SourceGroup group) {
             Node pack = PackageView.createPackageView(group);
 
@@ -138,9 +143,11 @@ public class GroovyScalaSourcesNodeFactory implements NodeFactory {
             srcs.removeChangeListener(this);
         }
 
+        @Override
         public void stateChanged(ChangeEvent arg0) {
             //#167372 break the stack trace chain to prevent deadlocks.
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     fireChange();
                 }
@@ -150,6 +157,7 @@ public class GroovyScalaSourcesNodeFactory implements NodeFactory {
 
     private static class ScalaPrivs implements PrivilegedTemplates {
 
+        @Override
         public String[] getPrivilegedTemplates() {
             return new String[] {
                 "Templates/Scala/Class.scala", //NOI18N
@@ -162,6 +170,7 @@ public class GroovyScalaSourcesNodeFactory implements NodeFactory {
 
     private static class GroovyPrivs implements PrivilegedTemplates {
 
+        @Override
         public String[] getPrivilegedTemplates() {
             return new String[] {
                 "Templates/Groovy/GroovyClass.groovy", //NOI18N

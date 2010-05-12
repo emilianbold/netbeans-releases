@@ -73,7 +73,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Martin Krauskopf
  */
-abstract class BasicCustomizer implements CustomizerProvider {
+public abstract class BasicCustomizer implements CustomizerProvider {
     
     static final String LAST_SELECTED_PANEL = "lastSelectedPanel"; // NOI18N
     
@@ -208,7 +208,7 @@ abstract class BasicCustomizer implements CustomizerProvider {
     
 
     
-    static final class SubCategoryProvider {
+    public static final class SubCategoryProvider {
 
         private String subcategory;
 

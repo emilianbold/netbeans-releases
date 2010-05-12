@@ -46,6 +46,9 @@ import org.openide.filesystems.FileObject;
 
 /**
  * SPI for extending PHP editor.
+ * <p>
+ * <i>All the methods are called only for the {@link FileObject}
+ * that is currently opened in the editor.</i>
  * @since 1.13
  * @author Tomas Mysik
  */

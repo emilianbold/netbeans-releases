@@ -48,9 +48,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -63,7 +63,6 @@ import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.modules.project.ant.ProjectXMLCatalogReader;
 import org.netbeans.modules.project.ant.UserQuestionHandler;
-import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.CacheDirectoryProvider;
@@ -301,7 +300,7 @@ public final class AntProjectHelper {
         File f = FileUtil.toFile(xml);
         assert f != null;
         try {
-            Document doc = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+            Document doc = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
             ProjectXMLCatalogReader.validate(doc.getDocumentElement());
             return doc;
         } catch (IOException e) {
@@ -416,7 +415,7 @@ public final class AntProjectHelper {
         Document doc = getConfigurationXml(shared);
         if (shared) {
             Element project = doc.getDocumentElement();
-            Element config = Util.findElement(project, "configuration", PROJECT_NS); // NOI18N
+            Element config = XMLUtil.findElement(project, "configuration", PROJECT_NS); // NOI18N
             assert config != null;
             return config;
         } else {
@@ -604,10 +603,10 @@ public final class AntProjectHelper {
                     pendingHook = p.getLookup().lookupAll(ProjectXmlSavedHook.class);
                     // might still be null
                 }
-                Iterator<String> it = modifiedMetadataPaths.iterator();
-                while (it.hasNext()) {
+                Set<String> toBeCleared = new HashSet<String>();
+                try {
+                for (String path : new TreeSet<String>(modifiedMetadataPaths)) {
                     try {
-                        String path = it.next();
                         if (path.equals(PROJECT_XML_PATH)) {
                             assert projectXml != null;
                             locks.add(saveXml(projectXml, path));
@@ -622,7 +621,11 @@ public final class AntProjectHelper {
                         LOG.log(Level.INFO, null, x);
                     }
                     // As metadata files are saved, take them off the modified list.
-                    it.remove();
+                    toBeCleared.add(path);
+                }
+                } finally {
+                    modifiedMetadataPaths.removeAll(toBeCleared);
+                    LOG.log(Level.FINE, "saved {0} and have left {1}", new Object[] {toBeCleared, modifiedMetadataPaths});
                 }
                 if (pendingHook != null && pendingHookCount == 0) {
                     try {
@@ -845,7 +848,8 @@ public final class AntProjectHelper {
                     path = PRIVATE_XML_PATH;
                     privateXmlValid = false;
                 } else {
-                    throw new AssertionError("Unexpected file change in " + f); // NOI18N
+                    LOG.log(Level.WARNING, "#184132: unexpected file change in {0}; possibly deleted project?", f);
+                    return;
                 }
             }
             fireExternalChange(path);
@@ -888,7 +892,7 @@ public final class AntProjectHelper {
             public Element run() {
                 synchronized (modifiedMetadataPaths) {
                     Element root = getConfigurationDataRoot(shared);
-                    Element data = Util.findElement(root, elementName, namespace);
+                    Element data = XMLUtil.findElement(root, elementName, namespace);
                     if (data != null) {
                         return cloneSafely(data);
                     } else {
@@ -926,7 +930,7 @@ public final class AntProjectHelper {
             public Void run() {
                 synchronized (modifiedMetadataPaths) {
                     Element root = getConfigurationDataRoot(shared);
-                    Element existing = Util.findElement(root, fragment.getLocalName(), fragment.getNamespaceURI());
+                    Element existing = XMLUtil.findElement(root, fragment.getLocalName(), fragment.getNamespaceURI());
                     // XXX first compare to existing and return if the same
                     if (existing != null) {
                         root.removeChild(existing);
@@ -968,7 +972,7 @@ public final class AntProjectHelper {
             public Boolean run() {
                 synchronized (modifiedMetadataPaths) {
                     Element root = getConfigurationDataRoot(shared);
-                    Element data = Util.findElement(root, elementName, namespace);
+                    Element data = XMLUtil.findElement(root, elementName, namespace);
                     if (data != null) {
                         root.removeChild(data);
                         modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);

@@ -38,8 +38,12 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.IOException;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.spi.ExecutionEnvironmentFactoryService;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = org.netbeans.modules.nativeexecution.spi.ExecutionEnvironmentFactoryService.class, position = 100)
@@ -51,7 +55,11 @@ public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironm
     /**
      * Returns an instance of <tt>ExecutionEnvironment</tt> for localexecution.
      */
+    @Override
     public ExecutionEnvironment getLocal() {
+        if (!HostInfoUtils.isHostInfoAvailable(LOCAL)) {
+            getLocalHostInfo();
+        }
         return LOCAL;
     }
 
@@ -65,6 +73,7 @@ public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironm
      * @param user user name to be used in this environment
      * @param host host identification string (either hostname or IP address)
      */
+    @Override
     public ExecutionEnvironment createNew(String user, String host) {
         return createNew(user, host, DEFAULT_PORT);
     }
@@ -82,6 +91,7 @@ public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironm
      * @param host host identification string. Either hostname or IP address.
      * @param sshPort port to be used to establish ssh connection.
      */
+    @Override
     public ExecutionEnvironment createNew(String user, String host, int port) {
         return new ExecutionEnvironmentImpl(user, host, port);
     }
@@ -92,6 +102,7 @@ public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironm
      * and restore later via fromUniqueID
      * either user@host or "localhost"
      */
+    @Override
     public String toUniqueID(ExecutionEnvironment executionEnvironment) {
         if (!(executionEnvironment instanceof ExecutionEnvironmentImpl)) {
             return null;
@@ -115,6 +126,7 @@ public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironm
      * by string that was got via toUniqueID() method
      * @param hostKey a string that was returned by toUniqueID() method.
      */
+    @Override
     public ExecutionEnvironment fromUniqueID(String hostKey) {
         // TODO: remove this check and refactor clients to use getLocal() instead
         if ("localhost".equals(hostKey) || "127.0.0.1".equals(hostKey)) { //NOI18N
@@ -147,7 +159,28 @@ public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironm
         return createNew(user, host);
     }
 
+    @Override
     public ExecutionEnvironment createNew(String schema) {
         return null;
+    }
+
+    private synchronized void getLocalHostInfo() {
+        if (HostInfoUtils.isHostInfoAvailable(LOCAL)) {
+            return;
+        }
+
+        Runnable task = new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    HostInfoUtils.getHostInfo(LOCAL);
+                } catch (IOException ex) {
+                } catch (CancellationException ex) {
+                }
+            }
+        };
+
+        RequestProcessor.getDefault().post(task).waitFinished();
     }
 }

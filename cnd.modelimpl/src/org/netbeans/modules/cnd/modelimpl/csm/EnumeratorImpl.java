@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
@@ -95,7 +95,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     }
 
     public CharSequence getQualifiedName() {
-	return CharSequenceKey.create(_getEnumeration().getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N    
+	return CharSequences.create(_getEnumeration().getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
     }
 
     private synchronized CsmEnum _getEnumeration() {

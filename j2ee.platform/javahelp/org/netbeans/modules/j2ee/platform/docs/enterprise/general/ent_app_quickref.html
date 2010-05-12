@@ -5,186 +5,208 @@
  * Use is subject to license terms.
 -->
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Enterprise Application Tasks: Quick Reference</title>
-<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-<meta name="keywords" content="enterprise" />
-</head>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Enterprise Application Tasks: Quick Reference</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta name="keywords" content="enterprise" />
+    </head>
 
-<body>
-<h2>Enterprise Application Tasks: Quick Reference</h2>
-<p> This topic describes common tasks you can perform with enterprise applications. For 
-  more detailed information, click the links in the right column. </p>
+    <body>
+        <h2>Enterprise Application Tasks: Quick Reference</h2>
+        <p> This topic describes common tasks you can perform with enterprise applications. For
+            more detailed information, click the links in the right column. </p>
 
-<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
-   task name. The right column lists the steps to perform.">
-  <tr valign="top"> 
-    <th scope="col" align="left">To perform this task</th>
-    <th scope="col" align="left">Follow these steps</th>
-  </tr>
-  <tr valign="top"> 
-    <td>Create a project.</td>
-    <td> 
-      <ol>
-        <li>Choose File &gt; New Project (Ctrl-Shift-N).</li>
-        <li>Select the correct <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_templates.html">template</a> for your project.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Add a JAR file to a project's classpath.</td>
-    <td> 
-      <ol>
-        <li>In the Projects window, right-click the project's Libraries node and 
-          choose Add JAR.</li>
-        <li>Select the JAR file in the file chooser. 
-            <p>If you also want to attach source code and Javadoc for the JAR file, 
-                use the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_libraries.html">Add 
-            Library</a> command instead. </p>
-        </li>
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Set up compilation dependencies between projects.</td>
-    <td> 
-      <ol>
-        <li>In the Projects window, right-click the project's Libraries node and 
-          choose <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_dependencies.html">Add Project</a>.</li>
-        <li>Select the project folder for the project that you want to add to the project's classpath. </li>
-      </ol>
-    </td>
-  </tr>
- <tr valign="top"> 
-    <td>Add a module to an enterprise application.</td>
-    <td> 
-      <ol>
-        <li>Open the module project and the enterprise application project.</li>
-        <li>In the Projects window, right-click the enterprise application node for 
-          the Java EE application and choose <a href="add_modules_to_ent_app.html">Add 
-          Java EE Module</a>.</li>
-        <li>In the dialog box, select the module and click OK.</li>
-      </ol>
-    </td>
-  </tr>
+        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+               task name. The right column lists the steps to perform.">
+            <tr valign="top">
+                <th scope="col" align="left">To perform this task</th>
+                <th scope="col" align="left">Follow these steps</th>
+            </tr>
+            <tr valign="top">
+                <td>Create a project.</td>
+                <td>
+                    <ol>
+                        <li>Choose File &gt; New Project (Ctrl-Shift-N).</li>
+                        <li>Select the correct <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_templates.html">template</a> for your project.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Add a JAR file to a project's classpath.</td>
+                <td>
+                    <ol>
+                        <li>In the Projects window, right-click the project's Libraries node and
+                            choose Add JAR.</li>
+                        <li>Select the JAR file in the file chooser.
+                            <p>If you also want to attach source code and Javadoc for the JAR file,
+                                use the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_libraries.html">Add
+                                    Library</a> command instead. </p>
+                        </li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Set up compilation dependencies between projects.</td>
+                <td>
+                    <ol>
+                        <li>In the Projects window, right-click the project's Libraries node and
+                            choose <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_dependencies.html">Add Project</a>.</li>
+                        <li>Select the project folder for the project that you want to add to the project's classpath. </li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Add a module to an enterprise application.</td>
+                <td>
+                    <ol>
+                        <li>Open the module project and the enterprise application project.</li>
+                        <li>In the Projects window, right-click the enterprise application node for
+                            the Java EE application and choose <a href="add_modules_to_ent_app.html">Add
+                                Java EE Module</a>.</li>
+                        <li>In the dialog box, select the module and click OK.</li>
+                    </ol>
+                </td>
+            </tr>
 
-  <tr valign="top"> 
-    <td>Build a project.</td>
-    <td> 
-        <ol>		    
-        <li>Make sure that your <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_classpath.html">resources are on the classpath</a>.</li>
-        <li>Choose Run &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_project.html">Build 
-        Main Project</a> (F11) from the main menu or right-click any project node and choose Build.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Clean a project.</td>
-    <td> 
-      <ul>
-        <li>Right-click the project node and choose Clean.</li>
-      </ul>
-    </td>
-  </tr>
+            <tr valign="top">
+                <td>Build a project.</td>
+                <td>
+                    <ol>
+                        <li>Make sure that your <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_classpath.html">resources are on the classpath</a>.</li>
+                        <li>Choose Run &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_project.html">Build
+                                Main Project</a> (F11) from the main menu or right-click any project node and choose Build.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Clean a project.</td>
+                <td>
+                    <ol>
+                        <li>Right-click the project node and choose Clean.</li>
+                    </ol>
+                </td>
+            </tr>
 
-  <tr valign="top"> 
-    <td>Run a project.</td>
-    <td> 
-      <ul>
-        <li>Choose Run &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/run/run_app.html">Run 
-          Main Project</a> (F6) from the main menu or right-click any project node and choose Run.</li>
-      </ul>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Modify deployment settings.</td>
-    <td>
-        <p>Do one or both of the following:</p>    
-      <ul>
-      <li><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/webbrowser/default.html">Change the browser</a>.</li>
-      <li><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/deploy/deploy_changeserver.html">Change the server</a>.</li>
-      </ul>
-    </td>
-  </tr>
- <tr valign="top"> 
-    <td>Verify an enterprise application.</td>
-    <td>
-	  <ol>
-	    <li>Right-click any module project whose target server is the Sun Java 
-          System Application Server/Glassfish and choose Verify. 
-          <p>The Verifier window opens and displays all the results.</p>
-  </li>
-  <li>Filter the results according to your needs: 
-    <ul>
-      <li>Click Failures Only to display only failures.</li>
-      <li>Click Failures and Warnings Only to display only failures and warnings.</li>
-    </ul>
-  <li>Make appropriate changes, if any, and verify the project again.</li>
-</ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Debug a project.</td>
-    <td> 
-      <ul>
-        <li>Choose Debug &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_local.html">Debug 
-          Main Project</a> (Ctrl-F5) or right-click any project and choose Debug.</li>
-      </ul>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Attach source code to libraries for debugging.</td>
-    <td>
-        <p>Instead of debugging the source code of a library that you created in the IDE, 
-        debug the project where you created the library. 
-        But, if you want to debug a library created outside the IDE, do the following: 
-      <ol>
-        <li>Choose Tools &gt; Libraries from the main menu.</li>
-        <li>If the JAR file is not already registered in the Library Manager, 
-          create a new library using the Add Library button.</li>
-        <li>Select the library in the left panel of the Library Manager.</li>
-        <li>In the Classpath tab, click Add JAR/Folder and specify the location 
-          of the JAR file containing the compiled class files. A library can contain 
-          multiple JAR files.</li>
-        <li>In the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_source.html">Sources tab</a>, add the 
-          folder or archive file containing the source code. </li>
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Add Javadoc to a project.</td>
-    <td> 
-      <ol>
-        <li>Choose Tools &gt; Libraries from the main menu.</li>
-        <li>If the JAR file is not already registered in the Library Manager, 
-          register the JAR file as described above.</li>
-        <li>In the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/javadoc/javadoc_add.html">Javadoc tab</a>, click 
-          Add ZIP/Folder and specify the location of the Javadoc files.</li>
-      </ol>
-    </td>
-  </tr>
-      <tr valign="top"> 
-    <td>Repackage an existing EAR file for deployment on a different application server.</td>
-    <td> 
-      <ol>
-        <li>Create a <a href="../../archiveproject/archiveproject_about.html">Packaged Archive project</a> 
-based on the existing EAR file.</li>
-        <li>In the new project, modify the appropriate configuration files and create 
-any necessary server-specific files.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Set the main project.</td>
-    <td>
-      <ul>
-        <li>Right-click the project node and choose Set as Main Project.</li>
-      </ul>
-    </td>
-  </tr>
-</table>
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small> 
-</body>
+            <tr valign="top">
+                <td>Deploy a project.</td>
+                <td>
+                    <ol>
+                        <li>Right-click the project node and choose Deploy.
+
+                            <br><br>All sub-projects are compiled.
+                            If the application has already been deployed to the server, it is undeployed.
+                            The EAR project's deployment directory is cleared (all the content is deleted).
+                            The files in the build directories for each of the sub-projects are then copied
+                            into the EAR deployment directory, and the directory is used to redeploy the
+                            application to the server.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Run a project.</td>
+                <td>
+                    <ol>
+                        <li>Choose Run &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/run/run_app.html">Run
+                            Main Project</a> (F6) or right-click any project node and choose Run.
+                            <br><br>
+                            All sub-projects of the EAR are compiled. New and changed files are copied
+                            from sub-projects' build directories to the EAR's deployment directory, and
+                            the directory is used to redeploy the application. The &quot;client&quot; for
+                            the EAR is then triggered (e.g., a web application opens in the browser).</li>
+                    </ol>
+                </td>
+            </tr>
+
+            <tr valign="top">
+                <td>Modify deployment settings.</td>
+                <td>
+                    <p>Do one or both of the following:</p>
+
+                    <ul>
+                        <li><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/webbrowser/default.html">Change the browser</a>.</li>
+                        <li><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/deploy/deploy_changeserver.html">Change the server</a>.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Verify an enterprise application.</td>
+                <td>
+                    <ol>
+                        <li>Right-click any module project whose target server is the Sun Java
+                            System Application Server/Glassfish and choose Verify.
+                            <p>The Verifier window opens and displays all the results.</p>
+                        </li>
+                        <li>Filter the results according to your needs:
+                            <ul>
+                                <li>Click Failures Only to display only failures.</li>
+                                <li>Click Failures and Warnings Only to display only failures and warnings.</li>
+                            </ul>
+                        <li>Make appropriate changes, if any, and verify the project again.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Debug a project.</td>
+                <td>
+                    <ol>
+                        <li>Choose Debug &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_local.html">Debug
+                                Main Project</a> (Ctrl-F5) or right-click any project and choose Debug.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Attach source code to libraries for debugging.</td>
+                <td>
+                    <p>Instead of debugging the source code of a library that you created in the IDE,
+                        debug the project where you created the library.
+                        But, if you want to debug a library created outside the IDE, do the following:
+                    <ol>
+                        <li>Choose Tools &gt; Libraries from the main menu.</li>
+                        <li>If the JAR file is not already registered in the Library Manager,
+                            create a new library using the Add Library button.</li>
+                        <li>Select the library in the left panel of the Library Manager.</li>
+                        <li>In the Classpath tab, click Add JAR/Folder and specify the location
+                            of the JAR file containing the compiled class files. A library can contain
+                            multiple JAR files.</li>
+                        <li>In the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_source.html">Sources tab</a>, add the
+                            folder or archive file containing the source code. </li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Add Javadoc to a project.</td>
+                <td>
+                    <ol>
+                        <li>Choose Tools &gt; Libraries from the main menu.</li>
+                        <li>If the JAR file is not already registered in the Library Manager,
+                            register the JAR file as described above.</li>
+                        <li>In the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/javadoc/javadoc_add.html">Javadoc tab</a>, click
+                            Add ZIP/Folder and specify the location of the Javadoc files.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Repackage an existing EAR file for deployment on a different application server.</td>
+                <td>
+                    <ol>
+                        <li>Create a <a href="../../archiveproject/archiveproject_about.html">Packaged Archive project</a>
+                            based on the existing EAR file.</li>
+                        <li>In the new project, modify the appropriate configuration files and create
+                            any necessary server-specific files.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Set the main project.</td>
+                <td>
+                    <ol>
+                        <li>Right-click the project node and choose Set as Main Project.</li>
+                    </ol>
+                </td>
+            </tr>
+        </table>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+    </body>
 </html>

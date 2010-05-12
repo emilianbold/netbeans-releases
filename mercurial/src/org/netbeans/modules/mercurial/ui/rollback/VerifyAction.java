@@ -106,6 +106,8 @@ public class VerifyAction extends ContextAction {
                     if(list != null && !list.isEmpty()){                      
                         logger.output(list);                        
                     }
+                } catch (HgException.HgCommandCanceledException ex) {
+                    // canceled by user, do nothing
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);

@@ -48,6 +48,6 @@ public class ${name} extends Applet {
      */
     @Override
     public void process(APDU apdu) {
-        //
+        //Insert your code here
     }
 }

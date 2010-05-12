@@ -41,13 +41,17 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.project.uiapi.ActionsFactory;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
-import org.openide.actions.DeleteAction;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -67,7 +71,6 @@ public class Actions implements ActionsFactory {
     
     private static Action SET_AS_MAIN_PROJECT;
     private static Action CUSTOMIZE_PROJECT;
-    private static Action OPEN_SUBPROJECTS;
     private static Action CLOSE_PROJECT;
     private static Action NEW_FILE;
     private static Action COPY_PROJECT;
@@ -89,25 +92,30 @@ public class Actions implements ActionsFactory {
     }
     
     public synchronized Action openSubprojectsAction() {
-        if ( OPEN_SUBPROJECTS == null ) {
-            OPEN_SUBPROJECTS = new OpenSubprojects();
-        }
-        return OPEN_SUBPROJECTS;
+        return SystemAction.get(OpenSubprojects.class);
     }
     
-    public synchronized Action closeProjectAction() {
+    public Action closeProjectAction() {
+        return closeProject();
+    }
+
+    public static synchronized Action closeProject() {
         if ( CLOSE_PROJECT == null ) {
             CLOSE_PROJECT = new CloseProject();
         }
         return CLOSE_PROJECT;        
     }
     
-    public synchronized Action newFileAction() {
+    public Action newFileAction() {
+        return newFile();
+    }
+
+    public static synchronized Action newFile() {
         if ( NEW_FILE == null ) {
             NEW_FILE = new NewFile.WithSubMenu();
         }
         return NEW_FILE;
-    }    
+    }
     
     public Action deleteProjectAction() {
         return deleteProject();
@@ -154,16 +162,19 @@ public class Actions implements ActionsFactory {
     
     public static Action javadocProject() {
         return new ProjectAction (
-            "javadoc", // XXX Define standard
-            NbBundle.getMessage(Actions.class, "LBL_JavadocProjectAction_Name" ), // NOI18N
+            "javadoc", // XXX move to java.project and use JavaProjectConstants.COMMAND_JAVADOC
+            NbBundle.getMessage(Actions.class, "LBL_JavadocProjectAction_Name"),
+            NbBundle.getMessage(Actions.class, "LBL_JavadocProjectAction_Name_popup"),
             null, 
             null ); 
     }
     
     public static Action testProject() {        
         Action a = new ProjectAction (
-            "test", // XXX Define standard
-            NbBundle.getMessage(Actions.class, "LBL_TestProjectAction_Name" ),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/testProject.png", false), //NOI18N
+            ActionProvider.COMMAND_TEST,
+            NbBundle.getMessage(Actions.class, "LBL_TestProjectAction_Name"),
+            NbBundle.getMessage(Actions.class, "LBL_TestProjectAction_Name_popup"),
+            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/testProject.png", false),
             null ); 
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/testProject.png"); //NOI18N
         a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
@@ -174,7 +185,9 @@ public class Actions implements ActionsFactory {
     public static Action buildProject() {
         Action a = new ProjectAction (
             ActionProvider.COMMAND_BUILD, 
-            NbBundle.getMessage(Actions.class, "LBL_BuildProjectAction_Name" ),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/buildCurrentProject.gif", false), //NOI18N
+            NbBundle.getMessage(Actions.class, "LBL_BuildProjectAction_Name"),
+            NbBundle.getMessage(Actions.class, "LBL_BuildProjectAction_Name_popup"),
+            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/buildCurrentProject.gif", false),
             null );  
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/buildCurrentProject.gif"); //NOI18N
         return a;
@@ -183,7 +196,9 @@ public class Actions implements ActionsFactory {
     public static Action cleanProject() {
         Action a = new ProjectAction(
                 ActionProvider.COMMAND_CLEAN,
-                NbBundle.getMessage(Actions.class, "LBL_CleanProjectAction_Name" ),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/cleanCurrentProject.gif", false), //NOI18N
+                NbBundle.getMessage(Actions.class, "LBL_CleanProjectAction_Name"),
+                NbBundle.getMessage(Actions.class, "LBL_CleanProjectAction_Name_popup"),
+                ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/cleanCurrentProject.gif", false),
                 null );
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/cleanCurrentProject.gif"); //NOI18N
         return a;
@@ -192,7 +207,9 @@ public class Actions implements ActionsFactory {
     public static Action rebuildProject() {
         Action a = new ProjectAction(
             ActionProvider.COMMAND_REBUILD,
-            NbBundle.getMessage(Actions.class, "LBL_RebuildProjectAction_Name"),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/rebuildCurrentProject.gif", false), //NOI18N
+            NbBundle.getMessage(Actions.class, "LBL_RebuildProjectAction_Name"),
+            NbBundle.getMessage(Actions.class, "LBL_RebuildProjectAction_Name_popup"),
+            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/rebuildCurrentProject.gif", false),
             null ); 
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/rebuildCurrentProject.gif"); //NOI18N
         return a;
@@ -201,20 +218,34 @@ public class Actions implements ActionsFactory {
     public static Action runProject() {
         Action a = new ProjectAction(
             ActionProvider.COMMAND_RUN, 
-            NbBundle.getMessage(Actions.class, "LBL_RunProjectAction_Name"),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/runCurrentProject.gif", false), //NOI18N
+            NbBundle.getMessage(Actions.class, "LBL_RunProjectAction_Name"),
+            NbBundle.getMessage(Actions.class, "LBL_RunProjectAction_Name_popup"),
+            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/runCurrentProject.gif", false),
             null ); 
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/runCurrentProject.gif"); //NOI18N
         return a;
     }
     
     public static synchronized Action deleteProject() {
-        Action a = new ProjectAction(
+        final Action a = new ProjectAction(
             ActionProvider.COMMAND_DELETE, 
             NbBundle.getMessage(Actions.class, "LBL_DeleteProjectAction_Name"),
             null,
             null );
-        
-        a.putValue(Action.ACCELERATOR_KEY, DeleteAction.get(DeleteAction.class).getValue(Action.ACCELERATOR_KEY));
+
+        try {
+            final Action delete = (Action) DataObject.find(FileUtil.getConfigFile("Actions/Edit/org-openide-actions-DeleteAction.instance")).
+                    // XXX #169338 would make this nicer
+                    getLookup().lookup(InstanceCookie.class).instanceCreate();
+            a.putValue(Action.ACCELERATOR_KEY, delete.getValue(Action.ACCELERATOR_KEY));
+            delete.addPropertyChangeListener(new PropertyChangeListener() {
+                public @Override void propertyChange(PropertyChangeEvent evt) {
+                    a.putValue(Action.ACCELERATOR_KEY, delete.getValue(Action.ACCELERATOR_KEY));
+                }
+            });
+        } catch (Exception x) {
+            Exceptions.printStackTrace(x);
+        }
         
         return a;
     }

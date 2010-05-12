@@ -101,6 +101,8 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         dispatcherNameText.setEnabled(enabled);
         dispatcherMappingText.setEnabled(enabled);
         includeJstlCheckBox.setEnabled(enabled);
+        springVersionLabel.setEnabled(enabled);
+        cbSpringVersion.setEnabled(enabled);
         super.setEnabled(enabled);
     }
     
@@ -129,52 +131,17 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
     private void initComponents() {
 
         tabbedPanel = new javax.swing.JTabbedPane();
+        libPanel = new javax.swing.JPanel();
+        includeJstlCheckBox = new javax.swing.JCheckBox();
+        springVersionLabel = new javax.swing.JLabel();
+        cbSpringVersion = new javax.swing.JComboBox();
         standardPanel = new javax.swing.JPanel();
         dispatcherNameText = new javax.swing.JTextField();
         dispatcherNameLabel = new javax.swing.JLabel();
         dispatcherMappingLabel = new javax.swing.JLabel();
         dispatcherMappingText = new javax.swing.JTextField();
-        libPanel = new javax.swing.JPanel();
-        includeJstlCheckBox = new javax.swing.JCheckBox();
-        springVersionLabel = new javax.swing.JLabel();
-        cbSpringVersion = new javax.swing.JComboBox();
 
         setLayout(new java.awt.BorderLayout());
-
-        org.openide.awt.Mnemonics.setLocalizedText(dispatcherNameLabel, org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_DispatcherName")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(dispatcherMappingLabel, org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_DispatcherMapping")); // NOI18N
-
-        org.jdesktop.layout.GroupLayout standardPanelLayout = new org.jdesktop.layout.GroupLayout(standardPanel);
-        standardPanel.setLayout(standardPanelLayout);
-        standardPanelLayout.setHorizontalGroup(
-            standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(standardPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(dispatcherNameLabel)
-                    .add(dispatcherMappingLabel))
-                .add(8, 8, 8)
-                .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(dispatcherNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
-                    .add(dispatcherMappingText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        standardPanelLayout.setVerticalGroup(
-            standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(standardPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(dispatcherNameLabel)
-                    .add(dispatcherNameText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(dispatcherMappingLabel)
-                    .add(dispatcherMappingText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(308, Short.MAX_VALUE))
-        );
-
-        tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_Configuration"), standardPanel); // NOI18N
 
         libPanel.setAlignmentX(0.2F);
         libPanel.setAlignmentY(0.2F);
@@ -226,6 +193,41 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
 
         tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_Libraries"), libPanel); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(dispatcherNameLabel, org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_DispatcherName")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(dispatcherMappingLabel, org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_DispatcherMapping")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout standardPanelLayout = new org.jdesktop.layout.GroupLayout(standardPanel);
+        standardPanel.setLayout(standardPanelLayout);
+        standardPanelLayout.setHorizontalGroup(
+            standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(standardPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(dispatcherNameLabel)
+                    .add(dispatcherMappingLabel))
+                .add(8, 8, 8)
+                .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(dispatcherNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+                    .add(dispatcherMappingText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        standardPanelLayout.setVerticalGroup(
+            standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(standardPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(dispatcherNameLabel)
+                    .add(dispatcherNameText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(dispatcherMappingLabel)
+                    .add(dispatcherMappingText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(308, Short.MAX_VALUE))
+        );
+
+        tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_Configuration"), standardPanel); // NOI18N
+
         add(tabbedPanel, java.awt.BorderLayout.CENTER);
         tabbedPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.tabbedPanel.AccessibleContext.accessibleName")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -245,6 +247,8 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         dispatcherNameLabel.setEnabled(enabled);
         dispatcherNameText.setEnabled(enabled);
         tabbedPanel.setEnabled(enabled);
+        springVersionLabel.setEnabled(enabled);
+        cbSpringVersion.setEnabled(enabled);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -284,9 +288,12 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
             }
         }
         cbSpringVersion.setModel(new DefaultComboBoxModel(items));
-        springLibrary = springLibs.get(cbSpringVersion.getSelectedIndex());
-        libsInitialized = true;
-        repaint();
+        int selectedIndex = cbSpringVersion.getSelectedIndex();
+        if (selectedIndex < springLibs.size()) {
+            springLibrary = springLibs.get(selectedIndex);
+            libsInitialized = true;
+            repaint();
+        }
     }
 
     private class SpringLibrary {

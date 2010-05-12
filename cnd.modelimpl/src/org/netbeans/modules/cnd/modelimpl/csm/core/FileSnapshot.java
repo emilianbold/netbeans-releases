@@ -61,6 +61,7 @@ public class FileSnapshot implements CsmFile {
     private final Collection<CsmOffsetableDeclaration> declarations;
     private final Collection<CsmMacro> macros;
     private final Collection<CsmScopeElement> scoped;
+    private final FileType fileType;
     private final boolean isSource;
     private final boolean isHeader;
     private final FileImpl delegate;
@@ -76,6 +77,7 @@ public class FileSnapshot implements CsmFile {
         scoped = impl.getScopeElements();
         isSource = impl.isSourceFile();
         isHeader = impl.isHeaderFile();
+        fileType = impl.getFileType();
         delegate = impl;
     }
 
@@ -138,6 +140,11 @@ public class FileSnapshot implements CsmFile {
     @Override
     public boolean isHeaderFile() {
         return isHeader;
+    }
+
+    @Override
+    public FileType getFileType() {
+        return fileType;
     }
 
     @Override

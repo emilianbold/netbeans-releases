@@ -97,15 +97,19 @@ final class TestabilityResult {
     public static TestabilityResult combine(TestabilityResult lhs, TestabilityResult rhs) {
         return new TestabilityResult(lhs.reason | rhs.reason);
     }
+
    /**
-    * Remove reasons from result according filter bit mask
+    * Removes reasons from result according to the specified {@code mask}
+    * (bit mask). If a bit in the {@code mask} is 1 then the corresponding
+    * bit in the returned {@code TestabilityResult} will be set to 0.
     * 
-    * @param lhs the TestabilityResult which reasons should be filtered
-    * @param filterMask the filter bit mask
-    * @return
+    * @param tr the {@code TestabilityResult} which reasons should be filtered.
+    * @param mask the filter bit mask.
+    * @return New {@code TestabilityResult} where some bits are set according to
+    *         the {@code mask}.
     */
-    public static TestabilityResult filter(TestabilityResult lhs, long filterMask) {
-        return new TestabilityResult(lhs.reason & filterMask);
+    public static TestabilityResult filter(TestabilityResult tr, long mask) {
+        return new TestabilityResult(tr.reason & ~mask);
     }
 
     /**
@@ -140,6 +144,7 @@ final class TestabilityResult {
      * Returns {@link #getReason()}.
      * @return String
      */
+    @Override
     public String toString() { 
         return getReason(", ", ", ");                                   //NOI18N
     }

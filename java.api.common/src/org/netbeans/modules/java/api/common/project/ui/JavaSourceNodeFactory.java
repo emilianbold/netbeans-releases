@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
@@ -98,26 +99,50 @@ public final class JavaSourceNodeFactory implements NodeFactory {
         private final Project project;
         private final File genSrcDir;
         private final FileChangeListener genSrcDirListener;
+        private final FileChangeListener genContentListener;
+        private final List<File> listensOn = Collections.synchronizedList(new LinkedList<File>());
+        private final Runnable changeTask;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         public SourcesNodeList(Project proj) {
             project = proj;
+            changeTask = new Runnable() {
+                @Override
+                public void run() {
+                    stateChanged(null);
+                }
+            };
             genSrcDirListener = new FileChangeAdapter() {
                 public @Override void fileFolderCreated(FileEvent fe) {
-                    stateChanged(null);
+                    fe.runWhenDeliveryOver(changeTask);
                 }
                 public @Override void fileDeleted(FileEvent fe) {
-                    stateChanged(null);
+                    fe.runWhenDeliveryOver(changeTask);
                 }
                 public @Override void fileRenamed(FileRenameEvent fe) {
-                    stateChanged(null);
+                    fe.runWhenDeliveryOver(changeTask);
+                }
+            };
+            genContentListener = new FileChangeAdapter() {
+                @Override
+                public void fileFolderCreated(FileEvent fe) {
+                    fe.runWhenDeliveryOver(changeTask);
+                }
+                @Override
+                public void fileDataCreated(FileEvent fe) {
+                    fe.runWhenDeliveryOver(changeTask);
+                }
+                @Override
+                public void fileDeleted(FileEvent fe) {
+                    fe.runWhenDeliveryOver(changeTask);
                 }
             };
             File d = FileUtil.toFile(proj.getProjectDirectory());
             // XXX hardcodes the value of ${build.generated.sources.dir}, since we have no access to evaluator
             genSrcDir = d != null ? new File(d, "build/generated-sources") : null;
         }
-        
+
+        @Override
         public List<SourceGroupKey> keys() {
             if (this.project.getProjectDirectory() == null || !this.project.getProjectDirectory().isValid()) {
                 return Collections.<SourceGroupKey>emptyList();
@@ -126,18 +151,34 @@ public final class JavaSourceNodeFactory implements NodeFactory {
             for (SourceGroup group : getSources().getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
                 result.add(new SourceGroupKey(group, true));
             }
+            File[] removeFrom;
+            synchronized (listensOn) {
+                removeFrom = listensOn.toArray(new File[listensOn.size()]);
+                listensOn.clear();
+            }
+            for (File file : removeFrom) {
+                FileUtil.removeFileChangeListener(genContentListener, file);
+            }
             FileObject genSrc = FileUtil.toFileObject(genSrcDir);
             if (genSrc != null) {
                 for (final FileObject child : genSrc.getChildren()) {
                     if (!child.isFolder()) {
                         continue;
                     }
-                    result.add(new SourceGroupKey(new GeneratedSourceGroup(child), false));
+                    final File childFile = FileUtil.toFile(child);
+                    if (childFile == null) {
+                        continue;
+                    }
+                    FileUtil.addFileChangeListener(genContentListener,childFile);
+                    listensOn.add(childFile);
+                    if (child.getChildren().length > 0) {
+                        result.add(new SourceGroupKey(new GeneratedSourceGroup(child), false));
+                    }
                 }
             }
             return result;
         }
-        
+
         public void addChangeListener(ChangeListener l) {
             changeSupport.addChangeListener(l);
             FileUtil.addFileChangeListener(genSrcDirListener, genSrcDir);

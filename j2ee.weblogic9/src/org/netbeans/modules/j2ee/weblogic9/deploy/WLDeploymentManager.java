@@ -58,6 +58,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
@@ -87,6 +89,8 @@ import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
  */
 public class WLDeploymentManager implements DeploymentManager {
 
+    public static final int MANAGER_TIMEOUT = 60000;
+    
     private static final Logger LOGGER = Logger.getLogger(WLDeploymentManager.class.getName());
 
     private final WLDeploymentFactory factory;
@@ -94,7 +98,9 @@ public class WLDeploymentManager implements DeploymentManager {
     private final String uri;
     private final String host;
     private final String port;
-    private volatile boolean disconnected;
+    private final WLMutableState mutableState;
+
+    private final boolean disconnected;
 
     /* GuardedBy("this") */
     private WLClassLoader classLoader;
@@ -103,12 +109,13 @@ public class WLDeploymentManager implements DeploymentManager {
     private InstanceProperties instanceProperties;
 
     public WLDeploymentManager(WLDeploymentFactory factory, String uri,
-            String host, String port, boolean disconnected) {
+            String host, String port, boolean disconnected, WLMutableState mutableState) {
         this.factory = factory;
         this.uri = uri;
         this.host = host;
         this.port = port;
         this.disconnected = disconnected;
+        this.mutableState = mutableState;
     }
 
     /**
@@ -132,6 +139,14 @@ public class WLDeploymentManager implements DeploymentManager {
         return port;
     }
 
+    public boolean isRestartNeeded() {
+        return mutableState.isRestartNeeded();
+    }
+
+    public void setRestartNeeded(boolean restartNeeded) {
+        mutableState.setRestartNeeded(restartNeeded);
+    }
+
     /**
      * Returns the InstanceProperties object for the current server instance.
      */
@@ -143,19 +158,19 @@ public class WLDeploymentManager implements DeploymentManager {
         return instanceProperties;
     }
 
-    private synchronized ClassLoader getWLClassLoader(String serverRoot) {
+    private synchronized ClassLoader getWLClassLoader(String uri, String serverRoot) {
         if (classLoader == null) {
             try {
                 URL[] urls = new URL[] {new File(serverRoot + "/server/lib/weblogic.jar").toURI().toURL()}; // NOI18N
                 classLoader = new WLClassLoader(urls, WLDeploymentManager.class.getClassLoader());
-            } catch (Exception e) {
+            } catch (MalformedURLException e) {
                 LOGGER.log(Level.WARNING, null, e);
             }
         }
         return classLoader;
     }
 
-    private <T> T executeAction(Action<T> action) throws ExecutionException {
+    private synchronized <T> T executeAction(Action<T> action) throws ExecutionException {
         ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
         String serverRoot = getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
         // if serverRoot is null, then we are in a server instance registration process, thus this call
@@ -165,7 +180,7 @@ public class WLDeploymentManager implements DeploymentManager {
             serverRoot = WLPluginProperties.getInstance().getInstallLocation();
         }
 
-        Thread.currentThread().setContextClassLoader(getWLClassLoader(serverRoot));
+        Thread.currentThread().setContextClassLoader(getWLClassLoader(getUri(), serverRoot));
         try {
             DeploymentManager manager = getDeploymentManager(
                     getInstanceProperties().getProperty(InstanceProperties.USERNAME_ATTR),
@@ -359,7 +374,7 @@ public class WLDeploymentManager implements DeploymentManager {
 
     @Override
     public void release() {
-        disconnected = true;
+        // noop as manager is cached and reused
     }
 
     public DeploymentConfiguration createConfiguration(

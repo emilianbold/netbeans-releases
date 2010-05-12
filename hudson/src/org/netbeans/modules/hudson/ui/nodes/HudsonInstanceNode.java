@@ -43,6 +43,7 @@ package org.netbeans.modules.hudson.ui.nodes;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -62,11 +63,12 @@ import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
 import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
+import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.PersistInstanceAction;
-import org.netbeans.modules.hudson.ui.actions.RemoveInstanceAction;
 import org.netbeans.modules.hudson.ui.actions.SynchronizeAction;
 import org.netbeans.modules.hudson.util.Utilities;
+import org.openide.actions.DeleteAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.nodes.AbstractNode;
@@ -103,6 +105,7 @@ public class HudsonInstanceNode extends AbstractNode {
         setDisplayName(instance.getName());
         setShortDescription(instance.getUrl());
         setIconBaseWithExtension(ICON_BASE);
+        setValue("customDelete", true); // NOI18N
         
         this.instance = instance;
         
@@ -154,11 +157,19 @@ public class HudsonInstanceNode extends AbstractNode {
         if (!instance.isPersisted()) {
             actions.add(SystemAction.get(PersistInstanceAction.class));
         } else {
-            actions.add(SystemAction.get(RemoveInstanceAction.class));
+            actions.add(SystemAction.get(DeleteAction.class));
         }
         actions.add(null);
         actions.add(SystemAction.get(PropertiesAction.class));
         return actions.toArray(new Action[0]);
+    }
+
+    public @Override boolean canDestroy() {
+        return instance.isPersisted();
+    }
+
+    public @Override void destroy() throws IOException {
+        HudsonManagerImpl.getDefault().removeInstance(instance);
     }
 
     public @Override PropertySet[] getPropertySets() {

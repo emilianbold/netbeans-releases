@@ -266,24 +266,32 @@ public class DatabaseConnector {
             }
 
             DriverSpecification drvSpec = this.getDriverSpecification(catName);
+            if (! schema.isDefault() && schema.getName().length() > 0) {
+                drvSpec.setSchema(schema.getName());
+            }
             drvSpec.getColumns(table.getName(), column.getName());
             ResultSet rs = drvSpec.getResultSet();
             if (rs != null) {
-                rs.next();
-                HashMap rset = drvSpec.getRow();
+                boolean ok = rs.next();
+                if (ok) {
+                    HashMap rset = drvSpec.getRow();
 
-                try {
-                    //hack because of MSSQL ODBC problems - see DriverSpecification.getRow() for more info - shouln't be thrown
-                    col.setColumnType(Integer.parseInt((String) rset.get(new Integer(5))));
-                    col.setColumnSize(Integer.parseInt((String) rset.get(new Integer(7))));
-                } catch (NumberFormatException exc) {
-                    col.setColumnType(0);
-                    col.setColumnSize(0);
+                    try {
+                        //hack because of MSSQL ODBC problems - see DriverSpecification.getRow() for more info - shouln't be thrown
+                        col.setColumnType(Integer.parseInt((String) rset.get(new Integer(5))));
+                        col.setColumnSize(Integer.parseInt((String) rset.get(new Integer(7))));
+                    } catch (NumberFormatException exc) {
+                        col.setColumnType(0);
+                        col.setColumnSize(0);
+                    }
+
+                    col.setNullAllowed(((String) rset.get(new Integer(18))).toUpperCase().equals("YES")); //NOI18N
+                    col.setDefaultValue((String) rset.get(new Integer(13)));
+                    rset.clear();
+                } else {
+                    Logger.getLogger(DatabaseConnector.class.getName()).log(Level.INFO, "Empty ResultSet for {0}.{1} in catalog {2}",
+                            new Object[]{table.getName(), column.getName(), catName});
                 }
-
-                col.setNullAllowed(((String) rset.get(new Integer(18))).toUpperCase().equals("YES")); //NOI18N
-                col.setDefaultValue((String) rset.get(new Integer(13)));
-                rset.clear();
 
                 rs.close();
             }

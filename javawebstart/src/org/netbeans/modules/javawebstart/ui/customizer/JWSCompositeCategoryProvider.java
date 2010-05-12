@@ -43,7 +43,6 @@ package org.netbeans.modules.javawebstart.ui.customizer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -60,9 +59,12 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectConfigurations;
+import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.cookies.CloseCookie;
 import org.openide.filesystems.FileLock;
@@ -88,21 +90,23 @@ import org.xml.sax.SAXException;
  */
 @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-java-j2seproject", category="Application", position=200)
 public class JWSCompositeCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
-    
+
     private static final String CAT_WEBSTART = "WebStart"; // NOI18N
-    
+
     private static JWSProjectProperties jwsProps = null;
-    
+
     private static final String MASTER_NAME_APPLICATION = "master-application.jnlp"; // NOI18N
     private static final String MASTER_NAME_APPLET = "master-applet.jnlp"; // NOI18N
     private static final String MASTER_NAME_COMPONENT = "master-component.jnlp"; // NOI18N
-    
+
     private static final String PREVIEW_NAME_APPLICATION = "preview-application.html"; // NOI18N
     private static final String PREVIEW_NAME_APPLET = "preview-applet.html"; // NOI18N
-    
+
     private static final String JWS_ANT_TASKS_LIB_NAME = "JWSAntTasks"; // NOI18N
 
     private static final String PREVIOUS_JNLP_IMPL_CRC32 = "3528ef9f"; // NOI18N
+
+    private static final Logger LOG = Logger.getLogger(JWSCompositeCategoryProvider.class.getName());
 
     public JWSCompositeCategoryProvider() {}
     
@@ -363,11 +367,14 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
         
         private void modifyBuildXml(Project proj) throws IOException {
             FileObject projDir = proj.getProjectDirectory();
-            final FileObject buildXmlFO = projDir.getFileObject("build.xml"); // NOI18N
-            File buildXmlFile = FileUtil.toFile(buildXmlFO);
+            final FileObject buildXmlFO = getBuildXml(proj);
+            if (buildXmlFO == null) {
+                LOG.warning("The project build script does not exist, the project cannot be extended by JWS.");     //NOI18N
+                return;
+            }
             Document xmlDoc = null;
             try {
-                xmlDoc = XMLUtil.parse(new InputSource(buildXmlFile.toURI().toString()), false, true, null, null);
+                xmlDoc = XMLUtil.parse(new InputSource(buildXmlFO.getURL().toExternalForm()), false, true, null, null);
             } catch (SAXException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -381,7 +388,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                 }
                 ProjectManager.getDefault().saveProject(proj);
             } else {
-                Logger.getLogger(JWSCompositeCategoryProvider.class.getName()).log(Level.INFO, 
+                LOG.log(Level.INFO,
                         "Trying to include JWS build snippet in project type that doesn't support AntBuildExtender API contract."); // NOI18N
             }
             
@@ -448,7 +455,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                 }
             }
         }
-        
+
         private void copyJWSAntTasksLibrary(Project proj) throws IOException {
             AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
             if (extender != null) {
@@ -457,7 +464,18 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                 ProjectManager.getDefault().saveProject(proj);
             }
         }
-        
+
+        private static FileObject getBuildXml(final Project prj) {
+            final J2SEPropertyEvaluator j2sepe = prj.getLookup().lookup(J2SEPropertyEvaluator.class);
+            assert j2sepe != null;
+            final PropertyEvaluator eval = j2sepe.evaluator();
+            String buildScriptPath = eval.getProperty(JWSProjectProperties.BUILD_SCRIPT);
+            if (buildScriptPath == null) {
+                buildScriptPath = GeneratedFilesHelper.BUILD_XML_PATH;
+            }
+            return prj.getProjectDirectory().getFileObject (buildScriptPath);
+        }
+
     }
 
     static String computeCrc32(InputStream is) throws IOException {

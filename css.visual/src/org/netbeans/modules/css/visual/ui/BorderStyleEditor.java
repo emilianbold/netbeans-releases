@@ -75,8 +75,11 @@ public class BorderStyleEditor extends StyleEditor {
 
     /** Creates new form FontStyleEditor */
     public BorderStyleEditor() {
-        setName("borderStyleEditor"); //NOI18N
-        setDisplayName(NbBundle.getMessage(BorderStyleEditor.class, "BORDER_EDITOR_DISPNAME"));
+        super("borderStyleEditor", NbBundle.getMessage(BorderStyleEditor.class, "BORDER_EDITOR_DISPNAME")); //NOI18N
+    }
+
+    @Override
+    protected void lazyInitializePanel() {
         initComponents();
         borderPanel.add(borderDataTable, BorderLayout.CENTER);
     }

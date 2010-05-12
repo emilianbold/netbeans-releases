@@ -51,6 +51,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -107,7 +109,7 @@ public class HudsonConnector {
         Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1&xpath=/&exclude=//primaryView&exclude=//view[name='All']" +
                 "&exclude=//view/job/url&exclude=//view/job/color&exclude=//description&exclude=//job/build&exclude=//healthReport" +
                 "&exclude=//firstBuild&exclude=//keepDependencies&exclude=//nextBuildNumber&exclude=//property&exclude=//action" +
-                "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem&exclude=//scm"); // NOI18N
+                "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem&exclude=//scm&exclude=//concurrentBuild"); // NOI18N
         
         if (null == docInstance)
             return new ArrayList<HudsonJob>();
@@ -143,10 +145,7 @@ public class HudsonConnector {
      */
     Collection<? extends HudsonJobBuild> getBuilds(HudsonJobImpl job) {
         Document docBuild = getDocument(job.getUrl() + XML_API_URL +
-                // XXX no good way to only include what you _do_ want without using XSLT
-                "?depth=1&xpath=/*/build&wrapper=root&exclude=//artifact&exclude=//action&exclude=//changeSet&exclude=//culprit" +
-                "&exclude=//duration&exclude=//fullDisplayName&exclude=//keepLog&exclude=//timestamp&exclude=//url&exclude=//builtOn" +
-                "&exclude=//id&exclude=//description");
+                "?xpath=/*/build&wrapper=root&exclude=//url");
         if (docBuild == null) {
             return Collections.emptySet();
         }
@@ -155,8 +154,6 @@ public class HudsonConnector {
         for (int i = 0; i < buildNodes.getLength(); i++) {
             Node build = buildNodes.item(i);
             int number = 0;
-            boolean building = false;
-            Result result = null;
             NodeList details = build.getChildNodes();
             for (int j = 0; j < details.getLength(); j++) {
                 Node detail = details.item(j);
@@ -172,17 +169,30 @@ public class HudsonConnector {
                 String text = firstChild.getTextContent();
                 if (nodeName.equals("number")) { // NOI18N
                     number = Integer.parseInt(text);
-                } else if (nodeName.equals("building")) { // NOI18N
-                    building = Boolean.valueOf(text);
-                } else if (nodeName.equals("result")) { // NOI18N
-                    result = Result.valueOf(text);
                 } else {
                     LOG.warning("unexpected <build> child: " + nodeName);
                 }
             }
-            builds.add(new HudsonJobBuildImpl(this, job, number, building, result));
+            builds.add(new HudsonJobBuildImpl(this, job, number));
         }
         return builds;
+    }
+
+    void loadResult(HudsonJobBuildImpl build, AtomicBoolean building, AtomicReference<Result> result) {
+        Document doc = getDocument(build.getUrl() + XML_API_URL +
+                "?xpath=/*/*[name()='result'%20or%20name()='building']&wrapper=root");
+        if (doc == null) {
+            return;
+        }
+        Element docEl = doc.getDocumentElement();
+        Element resultEl = XMLUtil.findElement(docEl, "result", null);
+        if (resultEl != null) {
+            result.set(Result.valueOf(XMLUtil.findText(resultEl)));
+        }
+        Element buildingEl = XMLUtil.findElement(docEl, "building", null);
+        if (buildingEl != null) {
+            building.set(Boolean.parseBoolean(XMLUtil.findText(buildingEl)));
+        }
     }
     
     protected synchronized HudsonVersion getHudsonVersion() {

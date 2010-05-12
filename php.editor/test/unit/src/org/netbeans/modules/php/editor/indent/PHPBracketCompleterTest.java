@@ -41,13 +41,20 @@
 
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.prefs.Preferences;
+import javax.swing.JEditorPane;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import javax.swing.text.DefaultEditorKit;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 
@@ -117,6 +124,77 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         original = wrapAsPhp(original);
         expected = wrapAsPhp(expected);
         super.insertChar(original, insertText, expected, selection, codeTemplateMode);
+    }
+
+    protected void insertChar(String original, char insertText, String expected, String selection, boolean codeTemplateMode, Map<String, Object> formatPrefs) throws Exception {
+        String source = wrapAsPhp(original);
+        String reformatted = wrapAsPhp(expected);
+        Formatter formatter = getFormatter(null);
+
+        int sourcePos = source.indexOf('^');
+        assertNotNull(sourcePos);
+        source = source.substring(0, sourcePos) + source.substring(sourcePos+1);
+
+        int reformattedPos = reformatted.indexOf('^');
+        assertNotNull(reformattedPos);
+        reformatted = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos+1);
+
+        JEditorPane ta = getPane(source);
+        Caret caret = ta.getCaret();
+        caret.setDot(sourcePos);
+        if (selection != null) {
+            int start = original.indexOf(selection);
+            assertTrue(start != -1);
+            assertTrue("Ambiguous selection - multiple occurrences of selection string",
+                    original.indexOf(selection, start+1) == -1);
+            ta.setSelectionStart(start);
+            ta.setSelectionEnd(start+selection.length());
+            assertEquals(selection, ta.getSelectedText());
+        }
+
+        BaseDocument doc = (BaseDocument) ta.getDocument();
+
+        if (codeTemplateMode) {
+            // Copied from editor/codetemplates/src/org/netbeans/lib/editor/codetemplates/CodeTemplateInsertHandler.java
+            String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N
+            doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.TRUE);
+        }
+
+        if (formatter != null) {
+            configureIndenters(doc, formatter, true);
+        }
+
+        setupDocumentIndentation(doc, null);
+
+        if (formatter != null && formatPrefs != null) {
+            Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+            for (String option : formatPrefs.keySet()) {
+                Object value = formatPrefs.get(option);
+                if (value instanceof Integer) {
+                    prefs.putInt(option, ((Integer)value).intValue());
+                }
+                else if (value instanceof String) {
+                    prefs.put(option, (String)value);
+                }
+                else if (value instanceof Boolean) {
+                    prefs.put(option, ((Boolean)value).toString());
+                }
+                else if (value instanceof CodeStyle.BracePlacement) {
+                    prefs.put(option, ((CodeStyle.BracePlacement)value).name());
+                }
+                else if (value instanceof CodeStyle.WrapStyle) {
+                    prefs.put(option, ((CodeStyle.WrapStyle)value).name());
+                }
+            }
+        }
+        runKitAction(ta, DefaultEditorKit.defaultKeyTypedAction, ""+insertText);
+
+        String formatted = doc.getText(0, doc.getLength());
+        assertEquals(reformatted, formatted);
+
+        if (reformattedPos != -1) {
+            assertEquals(reformattedPos, caret.getDot());
+        }
     }
 
     @Override
@@ -953,7 +1031,8 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         String result  = "if (true)" +
                 "\n" +
                 "{^";
-        insertChar(testString, '{', result);
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar(testString, '{', result, null, false, options);
     }
 
     public void testInsertBrace02() throws Exception {
@@ -961,7 +1040,8 @@ public class PHPBracketCompleterTest extends PHPTestBase {
                 "          ^";
         String result  = "    class Name\n" +
                 "    {^";
-        insertChar(testString, '{', result);
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar(testString, '{', result, null, false, options);
     }
 
     public void testInsertBrace03() throws Exception {
@@ -975,7 +1055,8 @@ public class PHPBracketCompleterTest extends PHPTestBase {
                 "            || $b == 11\n" +
                 "            || $a == $b)\n" +
                 "    {^";
-        insertChar(testString, '{', result);
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        insertChar(testString, '{', result, null, false, options);
     }
 
     public void testInsertBrace04() throws Exception {
@@ -989,7 +1070,8 @@ public class PHPBracketCompleterTest extends PHPTestBase {
                 "            || $b == 11\n" +
                 "            || $a == $b)\n" +
                 "    {^";
-        insertChar(testString, '{', result);
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar(testString, '{', result, null, false, options);
     }
 
     public void testInsertBrace05() throws Exception {
@@ -1005,7 +1087,8 @@ public class PHPBracketCompleterTest extends PHPTestBase {
                 "            || $b == 11\n" +
                 "            || $a == $b)\n" +
                 "    {^";
-        insertChar(testString, '{', result);
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar(testString, '{', result, null, false, options);
     }
 
     public void testInsertBrace06() throws Exception {
@@ -1017,7 +1100,8 @@ public class PHPBracketCompleterTest extends PHPTestBase {
                 "    $a = 10;\n" +
                 "    do\n" +
                 "    {^";
-        insertChar(testString, '{', result);
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar(testString, '{', result, null, false, options);
     }
 
     public void testInsertBrace07() throws Exception {
@@ -1027,7 +1111,8 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         String result  =
                 "    foreach($zzz as $zzzz)\n" +
                 "    {^";
-        insertChar(testString, '{', result);
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar(testString, '{', result, null, false, options);
     }
 
     public void testInsertBrace08() throws Exception {
@@ -1037,9 +1122,19 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         String result  =
                 "    for($i = 0; $i < 10; $i++)\n" +
                 "    {^";
-        insertChar(testString, '{', result);
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar(testString, '{', result, null, false, options);
     }
 
+    public void testBracePlacement01() throws Exception {
+        String testString = "class Name\n" +
+                "    ^";
+        String result  = "class Name\n" +
+                "    {^";
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        insertChar(testString, '{', result, null, false, options);
+    }
 //    public void testLogicalRange1() throws Exception {
 //        String code = "if (true)\n  fo^o\nend";
 //        String next = "if (true)\n  %<%fo^o%>%\nend";

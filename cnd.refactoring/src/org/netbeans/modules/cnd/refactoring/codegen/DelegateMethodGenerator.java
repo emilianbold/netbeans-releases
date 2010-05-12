@@ -48,7 +48,7 @@ import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.DelegatePanel;
-import org.netbeans.modules.cnd.refactoring.codegen.ui.ElementNode;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;

@@ -358,8 +358,18 @@ public class AstNodeUtils {
         }
 
         elements.addAll(content.getPossibleElements());
-        elements.addAll(contentModel.getIncludes());
-        elements.removeAll(contentModel.getExcludes());
+
+
+        //process includes/excludes from the root node to the leaf
+        List<AstNode> path = new ArrayList<AstNode>();
+        for(AstNode node = leafNodeForPosition; node.type() != AstNode.NodeType.ROOT; node = node.parent()) {
+            path.add(0, node);
+        }
+        for(AstNode node : path) {
+            DTD.ContentModel cModel = node.getDTDElement().getContentModel();
+            elements.addAll(cModel.getIncludes());
+            elements.removeAll(cModel.getExcludes());
+        }
 
         return elements;
     }

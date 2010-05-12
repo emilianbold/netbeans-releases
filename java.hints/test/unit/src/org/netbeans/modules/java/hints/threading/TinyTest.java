@@ -419,6 +419,34 @@ public class TinyTest extends TestBase {
                             "}\n");
     }
 
+    public void testUnsyncedWait6() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private void n(Object o) {\n" +
+                            "         new Runnable() {\n" +
+                            "             public synchronized void run() {\n" +
+                            "                 wait();\n" +
+                            "             }\n" +
+                            "         }\n" +
+                            "     }\n" +
+                            "}\n");
+    }
+
+    public void testUnsyncedWait7() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private void n(Object o) {\n" +
+                            "         new Runnable() {\n" +
+                            "             public void run() {\n" +
+                            "                 synchronized (this) {while (true) {wait();}}\n" +
+                            "             }\n" +
+                            "         }\n" +
+                            "     }\n" +
+                            "}\n");
+    }
+
     public void testUnsyncedNotify() throws Exception {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +

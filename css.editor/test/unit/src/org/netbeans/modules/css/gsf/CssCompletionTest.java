@@ -176,6 +176,7 @@ public class CssCompletionTest extends TestBase {
     public void testHtmlSelectorsInMedia() throws ParseException {
         checkCC("@media page {  |   } ", arr("html"), Match.CONTAINS);
         checkCC("@media page {  |   } ", arr("@media"), Match.DOES_NOT_CONTAIN); //media not supported here
+        checkCC("@media page {  h1 { } |   } ", arr("html"), Match.CONTAINS); //media not supported here
 
 //        checkCC("@media page {  htm|   } ", arr("html"), Match.EXACT);
 //        checkCC("@media page {  html, |   } ", arr("body"), Match.CONTAINS);

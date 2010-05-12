@@ -60,7 +60,7 @@ public final class MIMENames {
     public static final String HEADER_MIME_TYPE = "text/x-h"; //NOI18N
 
     /** Preprocessor */
-    public static final String PREPROC_MIME_TYPE = "text/x-cpp-preprocessor";// NOI18N
+    public static final String PREPROC_MIME_TYPE = "text/x-cpp+preprocessor";// NOI18N
 
     /** C++ */
     public static final String CPLUSPLUS_MIME_TYPE = "text/x-c++"; //NOI18N
@@ -145,6 +145,13 @@ public final class MIMENames {
             return false;
         }
         return mime.equals(CPLUSPLUS_MIME_TYPE) || mime.equals(C_MIME_TYPE);
+    }
+
+    public static boolean isHeaderOrCpp(String mime) {
+        if (mime == null || mime.length() == 0) {
+            return false;
+        }
+        return mime.equals(CPLUSPLUS_MIME_TYPE) || mime.equals(HEADER_MIME_TYPE) || mime.equals(C_HEADER_MIME_TYPE);
     }
 
     public static boolean isHeaderOrCppOrC(String mime) {

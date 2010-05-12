@@ -59,11 +59,11 @@ public class KenaiLoginTask implements Runnable {
     public static final Object monitor = new Object();
     @SuppressWarnings("deprecation")
     public void run() {
+        Preferences prefs = NbPreferences.forModule(KenaiLoginTask.class);
         synchronized (monitor) {
-            Preferences prefs = NbPreferences.forModule(KenaiLoginTask.class);
             try {
                 if (prefs.keys().length > 0) {
-                    for (Kenai k: KenaiManager.getDefault().getKenais()) {
+                    for (Kenai k : KenaiManager.getDefault().getKenais()) {
                         UIUtils.tryLogin(k, false);
                     }
                 }
@@ -72,6 +72,15 @@ public class KenaiLoginTask implements Runnable {
             }
             isFinished = true;
             monitor.notify();
+        }
+        try {
+            if (prefs.keys().length > 0) {
+                for (Kenai k : KenaiManager.getDefault().getKenais()) {
+                    Utilities.isChatSupported(k);
+                }
+            }
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 

@@ -42,8 +42,6 @@ import java.awt.Component;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -52,8 +50,6 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.SourceRoots;
@@ -62,7 +58,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
@@ -78,41 +74,20 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     private WizardDescriptor.Panel<WizardDescriptor>[] wizardPanels;
     private int index;
 
+    @Override
     public Set<FileObject> instantiate() throws IOException {
         FileObject dir = Templates.getTargetFolder(wizard);
         FileObject template = Templates.getTemplate(wizard);
 
-        Map<String, Object> wizardProps = new HashMap<String, Object>();
-
         DataFolder dataFolder = DataFolder.findFolder(dir);
         DataObject dataTemplate = DataObject.find(template);
-        String fname = Templates.getTargetName(wizard);
-        String ext = FileUtil.getExtension(fname);
-
-        FileObject foo = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(), fname);
-        if (foo == null || !FileUtils.isPhpFile(foo)) {
-            if (!StringUtils.hasText(ext)) {
-                Templates.setTargetName(wizard, fname + ".php"); // NOI18N
-                fname = Templates.getTargetName(wizard);
-                ext = FileUtil.getExtension(fname);
-            }
-        }
-        if (StringUtils.hasText(ext)) {
-            String name = fname.substring(0, fname.length() - ext.length() - 1);
-            name = name.replaceAll("\\W", ""); // NOI18N
-            wizardProps.put("name", name); // NOI18N
-
-            // #168723
-            String templateExt = FileUtil.getExtension(template.getNameExt());
-            if (StringUtils.hasText(templateExt)) {
-                Templates.setTargetName(wizard, name);
-            }
-        }
-        DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, Templates.getTargetName(wizard), wizardProps);
+        DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, Templates.getTargetName(wizard),
+                Collections.singletonMap(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true));
 
         return Collections.singleton(createdFile.getPrimaryFile());
     }
 
+    @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
         FileObject targetFolder = Templates.getTargetFolder(wizard);
@@ -126,9 +101,6 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
                 Templates.setTargetFolder(wizard, srcDir);
             }
         }
-        FileObject template = Templates.getTemplate(wizard);
-        String targetName = targetFolder != null ? FileUtil.findFreeFileName(targetFolder, template.getName(), "php") : template.getName(); // NOI18N
-        Templates.setTargetName(wizard, targetName + ".php"); // NOI18N
         wizardPanels = getPanels();
 
         // Make sure list of steps is accurate.
@@ -158,10 +130,12 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
         return res;
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
         wizardPanels = null;
     }
 
+    @Override
     public String name() {
         return ""; // NOI18N
     }
@@ -169,6 +143,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     /** Get the current panel.
      * @return the panel
      */
+    @Override
     public Panel<WizardDescriptor> current() {
         return wizardPanels[index];
     }
@@ -176,6 +151,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     /** Test whether there is a next panel.
      * @return <code>true</code> if so
      */
+    @Override
     public boolean hasNext() {
         return index < wizardPanels.length - 1;
     }
@@ -183,6 +159,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     /** Test whether there is a previous panel.
      * @return <code>true</code> if so
      */
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
@@ -191,6 +168,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
      * I.e. increment its index, need not actually change any GUI itself.
      * @exception NoSuchElementException if the panel does not exist
      */
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -202,6 +180,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
      * I.e. decrement its index, need not actually change any GUI itself.
      * @exception NoSuchElementException if the panel does not exist
      */
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -209,9 +188,11 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
         index--;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
 
@@ -255,7 +236,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
                     new IllegalStateException("No source roots found (attach your IDE log to https://netbeans.org/bugzilla/show_bug.cgi?id=180054)"));
             groups = null;
         }
-        WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = Templates.createSimpleTargetChooser(p, groups);
+        WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = Templates.buildSimpleTargetChooser(p, groups).freeFileExtension().create();
 
         @SuppressWarnings("unchecked") // Generic Array Creation
         WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {

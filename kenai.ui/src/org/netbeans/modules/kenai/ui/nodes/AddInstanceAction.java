@@ -45,6 +45,7 @@ import org.netbeans.modules.kenai.api.KenaiManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
@@ -72,12 +73,14 @@ public class AddInstanceAction extends AbstractAction {
 
     @Override
     public void actionPerformed(final ActionEvent ae) {
-        final KenaiInstanceCustomizer kenaiInstanceCustomizer = new KenaiInstanceCustomizer();
+        final JButton addButton = new JButton(ADD_BUTTON);
+        addButton.getAccessibleContext().setAccessibleDescription(ADD_BUTTON);
+        final KenaiInstanceCustomizer kenaiInstanceCustomizer = new KenaiInstanceCustomizer(addButton);
         ActionListener bl = new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (e.getSource().equals(ADD_BUTTON)) {
+                if (e.getSource().equals(addButton)) {
                     kenaiInstanceCustomizer.startProgress();
                     RequestProcessor.getDefault().post(new Runnable() {
 
@@ -143,7 +146,7 @@ public class AddInstanceAction extends AbstractAction {
                 kenaiInstanceCustomizer,
                 NbBundle.getMessage(AddInstanceAction.class, "CTL_NewKenaiInstance"),
                 true,
-                new Object[] {ADD_BUTTON, CANCEL_BUTTON}, ADD_BUTTON,
+                new Object[] {addButton, CANCEL_BUTTON}, addButton,
                 DialogDescriptor.DEFAULT_ALIGN,
                 null,
                 bl
@@ -152,6 +155,8 @@ public class AddInstanceAction extends AbstractAction {
         kenaiInstanceCustomizer.setDialogDescriptor(dd);
 
         dialog = (JDialog) DialogDisplayer.getDefault().createDialog(dd);
+        dialog.validate();
+        dialog.pack();
         dialog.setVisible(true);
     }
 

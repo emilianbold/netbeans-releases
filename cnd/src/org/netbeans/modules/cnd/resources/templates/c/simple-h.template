@@ -5,8 +5,8 @@
  * Created on %<%DATE%>%, %<%TIME%>%
  */
 
-#ifndef _%<%GUARD_NAME%>%
-#define	_%<%GUARD_NAME%>%
+#ifndef %<%GUARD_NAME%>%
+#define	%<%GUARD_NAME%>%
 
 #ifdef	__cplusplus
 extern "C" {
@@ -19,5 +19,5 @@ extern "C" {
 }
 #endif
 
-#endif	/* _%<%GUARD_NAME%>% */
+#endif	/* %<%GUARD_NAME%>% */
 

@@ -105,19 +105,19 @@ public class WebServiceClientActionGroup extends NodeAction implements Presenter
 	private boolean hasWebServiceClient() {
 		Node[] activatedNodes = getActivatedNodes();
 		DataObject dobj = (DataObject)activatedNodes[0].getLookup().lookup(DataObject.class);
-		if(dobj != null) {
-            Project prj = FileOwnerQuery.getOwner(dobj.getPrimaryFile());
-            if (WebServiceData.getWebServiceData(prj) != null) {
-                return true;
-            }
-            WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(dobj.getPrimaryFile());
-            if(clientSupport != null) {
+            if (dobj != null) {
+                Project prj = FileOwnerQuery.getOwner(dobj.getPrimaryFile());
+                if (prj != null && WebServiceData.getWebServiceData(prj) != null) {
+                    return true;
+                }
+                WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(dobj.getPrimaryFile());
+                if(clientSupport != null) {
                     // !PW FIXME add code to confirm that the project actually has
                     // clients added to it.
                     return true;
-            }                   
-		}
-		return false;
+                }
+            }
+            return false;
 	}
 
     public Action createContextAwareInstance(Lookup actionContext) {

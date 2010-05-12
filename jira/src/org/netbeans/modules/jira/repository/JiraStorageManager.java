@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.jira.repository;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -56,7 +57,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.query.JiraQuery;
@@ -295,7 +295,6 @@ public class JiraStorageManager {
             }
         }
         if (success) {
-            success = false;
             // rename the temp file to the permanent one
             File newFile = new File(f, TASKLISTISSUES_STORAGE_FILE);
             try {

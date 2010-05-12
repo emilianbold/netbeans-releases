@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
@@ -64,10 +64,11 @@ public class FunctionImpl implements Function {
         preferredIcons.put(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_FRIEND);
         preferredIcons.put(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION);
     }
-    
-    private CsmFunction function;
+
+    private final CsmFunction function;
     private String htmlDisplayName = ""; // NOI18N
     private String scopeName = null; // NOI18N
+    private CsmFunction cachedFunctionDefinition;
 
     public FunctionImpl(CsmFunction function) {
         super();
@@ -85,19 +86,26 @@ public class FunctionImpl implements Function {
     }
 
     public CsmFunction getDefinition() {
-        if (CsmKindUtilities.isFunctionDeclaration(function)) {
-            CsmFunction f = function.getDefinition();
-            if (f != null) {
-                return f;
+        if (cachedFunctionDefinition == null) {
+            if (CsmKindUtilities.isFunctionDeclaration(function)) {
+                CsmFunction f = function.getDefinition();
+                if (f != null) {
+                    cachedFunctionDefinition = f;
+                    return f;
+                }
             }
+            cachedFunctionDefinition = function;
+            return function;
         }
-        return function;
+        return cachedFunctionDefinition;
     }
 
+    @Override
     public String getName() {
         return function.getName().toString();
     }
 
+    @Override
     public String getScopeName() {
         if (scopeName == null) {
             scopeName = "";
@@ -118,6 +126,7 @@ public class FunctionImpl implements Function {
         return scopeName;
     }
 
+    @Override
     public String getHtmlDisplayName() {
         if (htmlDisplayName.length() == 0) {
             htmlDisplayName = createHtmlDisplayName();
@@ -125,6 +134,7 @@ public class FunctionImpl implements Function {
         return htmlDisplayName;
     }
 
+    @Override
     public boolean isVurtual() {
         try {
             CsmFunction f = getDeclaration();
@@ -141,7 +151,7 @@ public class FunctionImpl implements Function {
         }
         return false;
     }
-    
+
     private String createHtmlDisplayName() {
         String displayName = function.getName().toString().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
         if (scopeName == null) {
@@ -169,10 +179,12 @@ public class FunctionImpl implements Function {
         return displayName;
     }
 
+    @Override
     public String getDescription() {
         return scopeName+function.getSignature().toString();
     }
 
+    @Override
     public Image getIcon() {
         try {
             return CsmImageLoader.getImage(getDefinition(), preferredIcons);
@@ -184,16 +196,17 @@ public class FunctionImpl implements Function {
         return null;
     }
 
+    @Override
     public void open() {
         CsmUtilities.openSource(getDefinition());
     }
 
     @Override
     public boolean equals(Object obj) {
-        CsmFunction f = getDeclaration();
+        CsmFunction f = getDefinition();
         if (f != null) {
             if (obj instanceof FunctionImpl) {
-                return f.equals(((FunctionImpl) obj).getDeclaration());
+                return f.equals(((FunctionImpl) obj).getDefinition());
             }
         }
         return super.equals(obj);
@@ -201,7 +214,7 @@ public class FunctionImpl implements Function {
 
     @Override
     public int hashCode() {
-        CsmFunction f = getDeclaration();
+        CsmFunction f = getDefinition();
         if (f != null) {
             return f.hashCode();
         }

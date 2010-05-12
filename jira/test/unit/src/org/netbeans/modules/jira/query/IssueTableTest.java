@@ -39,14 +39,13 @@
 
 package org.netbeans.modules.jira.query;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
 import java.lang.reflect.Field;
 import junit.framework.Test;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.jira.*;
-import org.eclipse.mylyn.internal.jira.core.JiraCorePlugin;
-import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;

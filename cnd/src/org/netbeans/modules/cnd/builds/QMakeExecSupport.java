@@ -40,7 +40,7 @@
 package org.netbeans.modules.cnd.builds;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.PropertySupport;

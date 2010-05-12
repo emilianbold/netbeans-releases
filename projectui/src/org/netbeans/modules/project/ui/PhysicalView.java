@@ -120,26 +120,28 @@ public class PhysicalView {
             return new Node[0];
         }
 
-        if (!projectDirGroup.getRootFolder().isValid()) {
-            //#150018
+        FileObject rootFolder = projectDirGroup.getRootFolder();
+        if (/* #150018 */!rootFolder.isValid() || /* #181323 */!rootFolder.isFolder()) {
             return new Node[0];
         }
         
-                    
         // Create the nodes
         ArrayList<Node> nodesList = new ArrayList<Node>( groups.length );
-        nodesList.add(/*new GroupContainmentFilterNode(*/new GroupNode(p, projectDirGroup, true, DataFolder.findFolder(projectDirGroup.getRootFolder()))/*, projectDirGroup)*/);
+        nodesList.add(new GroupNode(p, projectDirGroup, true, DataFolder.findFolder(rootFolder)));
         
-        for( int i = 0; i < groups.length; i++ ) {
-            
-            if ( groups[i] == projectDirGroup ) {
+        for (SourceGroup group : groups) {
+            if (group == projectDirGroup) {
                 continue;
             }
-            if ("sharedlibraries".equals(groups[i].getName())) { //NOI18N
+            if ("sharedlibraries".equals(group.getName())) { //NOI18N
                 //HACK - ignore shared libs group in UI, it's only useful for version control commits.
                 continue;
             }
-            nodesList.add(/*new GroupContainmentFilterNode(*/new GroupNode(p, groups[i], false, DataFolder.findFolder(groups[i].getRootFolder()))/*, groups[i])*/);
+            rootFolder = group.getRootFolder();
+            if (!rootFolder.isValid() || !rootFolder.isFolder()) {
+                continue;
+            }
+            nodesList.add(new GroupNode(p, group, false, DataFolder.findFolder(rootFolder)));
         }
         
         Node nodes[] = new Node[ nodesList.size() ];

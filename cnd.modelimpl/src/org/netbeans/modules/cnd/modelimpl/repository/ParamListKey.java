@@ -45,14 +45,15 @@ import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
+
 /**
  * A key for CsmParameterList objects (file and offset -based)
  * @author Vladimir Voskresensky
  */
 /*package*/final class ParamListKey extends OffsetableKey {
     public ParamListKey(CsmParameterList obj) {
-        super(obj, Utils.getCsmParamListKindKey(), CharSequenceKey.empty()); // NOI18N
+        super(obj, Utils.getCsmParamListKindKey(), CharSequences.empty()); // NOI18N
     }
 
     /*package*/ ParamListKey(DataInput aStream) throws IOException {

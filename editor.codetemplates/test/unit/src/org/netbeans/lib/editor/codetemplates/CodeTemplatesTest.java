@@ -50,6 +50,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.NbEditorKit;
@@ -71,6 +72,7 @@ public class CodeTemplatesTest extends NbTestCase {
         return true;
     }
 
+    @RandomlyFails
     public void testMemoryRelease() throws Exception { // Issue #147984
         org.netbeans.junit.Log.enableInstances(Logger.getLogger("TIMER"), "CodeTemplateInsertHandler", Level.FINEST);
 

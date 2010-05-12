@@ -54,6 +54,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.diff.DiffController;
@@ -208,9 +209,15 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     }
 
     protected void setBottomComponent(Component component) {
-        int dl = diffView.getDividerLocation();
+        final int dl = diffView.getDividerLocation();
         diffView.setBottomComponent(component);
         diffView.setDividerLocation(dl);
+        EventQueue.invokeLater(new Runnable () {
+            @Override
+            public void run() {
+                diffView.setDividerLocation(dl);
+            }
+        });
     }
 
     protected HgProgressSupport createShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
@@ -280,10 +287,12 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
         //try to get the root
         File[] roots = parent.getRoots();
+        outer:
         for(File root : roots) {
             for(RepositoryRevision.Event evt : revs) {
                 if(root.equals(evt.getFile())) {
                     event = evt;
+                    break outer;
                 }
             }
         }
@@ -399,6 +408,17 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                                     public void propertyChange(PropertyChangeEvent evt) {
                                         view.removePropertyChangeListener(this);
                                         setLocation(view);
+                                        Runnable inAWT = new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                parent.refreshComponents(false);
+                                            }
+                                        };
+                                        if (EventQueue.isDispatchThread()) {
+                                            inAWT.run();
+                                        } else {
+                                            EventQueue.invokeLater(inAWT);
+                                        }
                                     }
                                 });
                             }

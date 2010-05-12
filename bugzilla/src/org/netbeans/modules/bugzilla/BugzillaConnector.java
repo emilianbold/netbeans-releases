@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugzilla;
 
 import java.awt.Image;
+import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -70,16 +71,19 @@ public class BugzillaConnector extends BugtrackingConnector {
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return getConnectorName();
     }
 
+    @Override
     public String getTooltip() {
         return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorTooltip");        // NOI18N
     }
     
     @Override
     public Repository createRepository() {
+        Bugzilla.init();
         return new BugzillaRepository();
     }
 
@@ -100,14 +104,14 @@ public class BugzillaConnector extends BugtrackingConnector {
         return issueFinder;
     }
 
+    @Override
     public Lookup getLookup() {
         return Lookups.singleton(Bugzilla.getInstance().getKenaiSupport());
     }
 
     @Override
-    public void fireRepositoriesChanged() {
-        super.fireRepositoriesChanged();
+    public void fireRepositoriesChanged(Collection<Repository> oldRepos, Collection<Repository> newRepos) {
+        super.fireRepositoriesChanged(oldRepos, newRepos);
     }
-
 
 }

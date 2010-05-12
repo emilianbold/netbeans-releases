@@ -406,7 +406,9 @@ public final class CreatedModifiedFiles {
             protected @Override void performModification(EditableManifest em, String name, String value, String section) throws IllegalArgumentException {
                 String originalValue = em.getAttribute(name, section);
                 if (originalValue != null) {
-                    em.setAttribute(name, originalValue + ", " + value, section);
+                    if (!Arrays.asList(originalValue.split("[, ]+")).contains(value)) {
+                        em.setAttribute(name, originalValue + ", " + value, section);
+                    }
                 } else {
                     super.performModification(em, name, value, section);
                 }

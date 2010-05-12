@@ -87,7 +87,7 @@ final class JavadocCompletionUtils {
      * <p>See {@link JavadocCompletionUtilsTest#testIsInvalidDocInstance} for
      * test cases
      */
-    static final Pattern JAVADOC_EMPTY = Pattern.compile("^\\n?[ \\t]*\\**$"); // NOI18N
+    static final Pattern JAVADOC_EMPTY = Pattern.compile("(\\s*\\**\\s*\n)*\\s*\\**\\s*"); // NOI18N
     static final Pattern JAVADOC_FIRST_WHITE_SPACE = Pattern.compile("[ \\t]*\\**[ \\t]*"); // NOI18N
     private static Set<JavaTokenId> IGNORE_TOKES = EnumSet.of(
             JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT);
@@ -216,14 +216,15 @@ final class JavadocCompletionUtils {
      * @param e element for which the tokens are queried
      * @return javadoc token sequence or null.
      */
-    static TokenSequence<JavadocTokenId> findJavadocTokenSequence(CompilationInfo javac, Element e) {
-        if (e == null || javac.getElementUtilities().isSynthetic(e) || javac.getElements().getDocComment(e) == null)
+    static TokenSequence<JavadocTokenId> findJavadocTokenSequence(CompilationInfo javac, Tree tree, Element e) {
+        if (e == null || javac.getElementUtilities().isSynthetic(e))
             return null;
-        
-        Tree tree = javac.getTrees().getTree(e);
+
+        if (tree == null)
+            tree = javac.getTrees().getTree(e);
         if (tree == null)
             return null;
-        
+
         int elementStartOffset = (int) javac.getTrees().getSourcePositions().getStartPosition(javac.getCompilationUnit(), tree);
         TokenSequence<JavaTokenId> s = SourceUtils.getJavaTokenSequence(javac.getTokenHierarchy(), elementStartOffset);
         if (s == null) {
@@ -246,6 +247,9 @@ final class JavadocCompletionUtils {
         if (token == null || token.id() != JavaTokenId.JAVADOC_COMMENT) {
             return null;
         }
+
+        if (javac.getElements().getDocComment(e) == null)
+            return null;
 
         return s.embedded(JavadocTokenId.language());
     }
@@ -455,7 +459,7 @@ final class JavadocCompletionUtils {
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=139147">139147</a>
      */
     static boolean isInvalidDocInstance(Doc javadoc, TokenSequence<JavadocTokenId> ts) {
-        if (javadoc != null && javadoc.getRawCommentText().length() == 0) {
+        if (javadoc != null && javadoc.getRawCommentText().trim().length() == 0) {
             if (!ts.isEmpty()) {
                 ts.moveStart();
                 return !(ts.moveNext() && isTokenOfEmptyJavadoc(ts.token()) && ts.moveNext() == false);
@@ -468,10 +472,7 @@ final class JavadocCompletionUtils {
         if (token == null || token.id() != JavadocTokenId.OTHER_TEXT) {
             return false;
         }
-
-        CharSequence text = token.text();
-        boolean result = JAVADOC_EMPTY.matcher(text).find();
-        return result;
+        return JAVADOC_EMPTY.matcher(token.text()).matches();
     }
 
     private static final int MAX_DUMPS = 255;

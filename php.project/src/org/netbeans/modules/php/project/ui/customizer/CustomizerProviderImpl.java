@@ -74,12 +74,14 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         this.project = project;
     }
 
+    @Override
     public void showCustomizer() {
         showCustomizer(null);
     }
 
     public void showCustomizer(final String preselectedCategory) {
         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                 Dialog dialog = PROJECT_2_DIALOG.get(project);
                 if (dialog != null) {
@@ -115,6 +117,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             this.uiProperties = uiProperties;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             uiProperties.save();
         }
@@ -128,7 +131,8 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         }
 
         // Listening to OK button ----------------------------------------------
-        public void actionPerformed( ActionEvent e ) {
+        @Override
+        public void actionPerformed(ActionEvent e) {
             // Close & dispose the the dialog
             Dialog dialog = PROJECT_2_DIALOG.get(project);
             if (dialog != null) {

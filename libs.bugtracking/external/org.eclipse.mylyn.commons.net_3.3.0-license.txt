@@ -1,7 +1,7 @@
 Name: Mylyn Commons Network library
-Version: 3.1.1
+Version: 3.3.0
 License: EPL-v10
-OSR: 11720
+OSR: 10108
 Origin: http://www.eclipse.org/mylyn/
 Description: Mylyn Commons Network library
 

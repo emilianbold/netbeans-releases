@@ -154,7 +154,9 @@ public class FmtOptions {
     public static final String wrapEnumConstants = "wrapEnumConstants"; //NOI18N
     public static final String wrapAnnotations = "wrapAnnotations"; //NOI18N
     public static final String wrapBinaryOps = "wrapBinaryOps"; //NOI18N
+    public static final String wrapAfterBinaryOps = "wrapAfterBinaryOps"; //NOI18N
     public static final String wrapTernaryOps = "wrapTernaryOps"; //NOI18N
+    public static final String wrapAfterTernaryOps = "wrapAfterTernaryOps"; //NOI18N
     public static final String wrapAssignOps = "wrapAssignOps"; //NOI18N
     
     public static final String blankLinesBeforePackage = "blankLinesBeforePackage"; //NOI18N
@@ -385,7 +387,9 @@ public class FmtOptions {
             { wrapEnumConstants, WRAP_NEVER}, //NOI18N
             { wrapAnnotations, WRAP_ALWAYS}, //NOI18N
             { wrapBinaryOps, WRAP_NEVER}, //NOI18N
+            { wrapAfterBinaryOps, FALSE}, //NOI18N
             { wrapTernaryOps, WRAP_NEVER}, //NOI18N
+            { wrapAfterTernaryOps, FALSE}, //NOI18N
             { wrapAssignOps, WRAP_NEVER}, //NOI18N
 
             { blankLinesBeforePackage, "0"}, //NOI18N

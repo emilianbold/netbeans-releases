@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.project.connections;
 
-import org.netbeans.modules.php.project.connections.TransferFile;
 import java.io.File;
 import org.netbeans.junit.NbTestCase;
 

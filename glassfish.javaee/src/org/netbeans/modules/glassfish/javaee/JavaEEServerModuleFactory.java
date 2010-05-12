@@ -83,6 +83,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         return singleton;
     }
     
+    @Override
     public boolean isModuleSupported(String glassfishHome, Properties asenvProps) {
 
         // Do some moderate sanity checking to see if this v3 build looks ok.
@@ -99,6 +100,9 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         return false;
     }
 
+    private static final RequestProcessor RP = new RequestProcessor("JavaEEServerModuleFactory");
+
+    @Override
     public Object createModule(Lookup instanceLookup) {
         // When creating JavaEE support, also ensure this instance is added to j2eeserver
         InstanceProperties ip = null;
@@ -109,8 +113,6 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             ip = InstanceProperties.getInstanceProperties(url);
             if (ip == null) {
                 String username = props.get(InstanceProperties.USERNAME_ATTR);
-                // force the password into the keyring
-                commonModule.getPassword();
                 String password = props.get(InstanceProperties.PASSWORD_ATTR);
                 String displayName = props.get(InstanceProperties.DISPLAY_NAME_ATTR);
                     try {
@@ -135,7 +137,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     GlassfishModule.GLASSFISH_FOLDER_ATTR);
             final String installRoot = commonModule.getInstanceProperties().get(
                     GlassfishModule.INSTALL_FOLDER_ATTR);
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     ensureEclipseLinkSupport(glassfishRoot);
                     ensureCometSupport(glassfishRoot);
@@ -376,6 +379,44 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             lib = null;
         }
 
+        if (lib != null) {
+            List<URL> libList = lib.getContent(JAVADOC_VOLUME);
+            size = libList.size();
+            for (URL libUrl : libList) {
+                String libPath = libUrl.getFile();
+                // file seems to want to return a file: protocol string... not the FILE portion of the URL
+                if (libPath.length() > 5) {
+                    libPath = libPath.substring(5);
+                }
+                if (!new File(libPath.replace("!/", "")).exists()) {
+                    Logger.getLogger("glassfish-javaee").log(Level.FINE, "libPath does not exist.  Updating " + name);
+                    try {
+                        lmgr.removeLibrary(lib);
+                    } catch (IOException ex) {
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                    } catch (IllegalArgumentException ex) {
+                        // Already removed somehow, ignore.
+                        }
+                    lib = null;
+                    size = 0;
+                    break;
+                }
+            }
+        }
+
+        // verify that there are not new components in the 'new' definition
+        // of the library...  If there are new components... rebuild the library.
+        if (lib != null && null != docList &&  size < docList.size()) {
+            try {
+                lmgr.removeLibrary(lib);
+            } catch (IOException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
+            } catch (IllegalArgumentException ex) {
+                // Already removed somehow, ignore.
+            }
+            lib = null;
+        }
+
         if (lib == null) {
             Map<String, List<URL>> contents;
             try {
@@ -426,6 +467,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             this.libType = libType;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (singleton) {
             if (null != name) {
@@ -457,8 +499,9 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         }
 
         private void removeFromListenerList(final PropertyChangeListener pcl) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
+                @Override
                 public void run() {
                     synchronized (singleton) {
                     if (null != lmgr) {

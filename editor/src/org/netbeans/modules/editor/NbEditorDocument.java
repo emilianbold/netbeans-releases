@@ -73,6 +73,7 @@ import org.netbeans.modules.editor.impl.ComplexValueSettingsFactory;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
+import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -139,7 +140,17 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
             }
 
             public @Override Object setValue(Object value) {
-                // ignore, just let the document to fire the property change event
+                // ignore, just let the document fire the property change event
+                return null;
+            }
+        });
+        putProperty(SimpleValueNames.TEXT_LIMIT_WIDTH, new BaseDocument_PropertyHandler() {
+            public @Override Object getValue() {
+                return CodeStylePreferences.get(NbEditorDocument.this).getPreferences().getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, EditorPreferencesDefaults.defaultTextLimitWidth); //NOI18N
+            }
+
+            public @Override Object setValue(Object value) {
+                // ignore, just let the document fire the property change event
                 return null;
             }
         });
@@ -314,6 +325,9 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         private PropertyChangeListener l;
         private Position pos;
         private BaseDocument doc;
+
+        private int lastKnownOffset = -1;
+        private int lastKnownLine = -1;
         
         AnnotationDescDelegate(BaseDocument doc, Position pos, int length, Annotation anno) {
             super(pos.getOffset(),length);
@@ -359,11 +373,23 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         }
         
         public int getLine() {
-            try {
-                return Utilities.getLineOffset(doc, pos.getOffset());
-            } catch (BadLocationException e) {
-                return 0;
+            int offset = pos.getOffset();
+
+            if (lastKnownOffset != -1 && lastKnownLine != -1) {
+                if (lastKnownOffset == offset) {
+                    return lastKnownLine;
+                }
             }
+
+            try {
+                lastKnownLine = Utilities.getLineOffset(doc, offset);
+                lastKnownOffset = offset;
+            } catch (BadLocationException e) {
+                lastKnownOffset = -1;
+                lastKnownLine = 0;
+            }
+
+            return lastKnownLine;
         }
 
         public Lookup getLookup() {

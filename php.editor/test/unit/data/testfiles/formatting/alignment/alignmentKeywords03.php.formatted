@@ -2,7 +2,7 @@
 
 class Example
 {
-    
+
     public function ifExample($a, $b)
     {
         if (convert($a) > $b)
@@ -18,22 +18,22 @@ class Example
             echo $this->property;
         }
     }
-    
+
     public function forExample()
     {
         for ($i = 1; $i <= 10; $i++) {
             echo $i;
         }
     }
-    
+
     public function foreachEample()
     {
         $arr = array(1, 2, 3, 4);
-        foreach ($arr as & $value) {
+        foreach ($arr as &$value) {
             $value = $value * 2;
         }
     }
-    
+
     public function whileExample()
     {
         $i = 1;
@@ -42,7 +42,7 @@ class Example
             echo $i++;
         }
     }
-    
+
     public function doWhileExample($i)
     {
         do
@@ -51,7 +51,7 @@ class Example
         }
         while ($i > 0);
     }
-    
+
     public function switchExample()
     {
         switch ($i) {
@@ -63,7 +63,7 @@ class Example
                 break;
         }
     }
-    
+
     public function tryExample()
     {
         try
@@ -75,6 +75,6 @@ class Example
             echo 'Caught exception: ' . $e->getMessage() . "\n";
         }
     }
-}
 
+}
 ?>

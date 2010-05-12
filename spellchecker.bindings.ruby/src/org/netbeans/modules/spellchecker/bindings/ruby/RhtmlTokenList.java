@@ -34,6 +34,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Tokenize RHTML for spell checking: Spell check Ruby comments AND HTML text content!
@@ -41,14 +43,26 @@ import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
  * @author Tor Norbye
  */
 public class RhtmlTokenList extends RubyTokenList {
+
+
+    private boolean hidden = false;
+
     public RhtmlTokenList(BaseDocument doc) {
         super(doc);
+    }
+
+    @Override
+    public void setStartOffset(int offset) {
+        super.setStartOffset (offset);
+        FileObject fileObject = FileUtil.getConfigFile ("Spellcheckers/RHTML");
+        Boolean b = (Boolean) fileObject.getAttribute ("Hidden");
+        hidden = Boolean.TRUE.equals (b);
     }
 
     /** Given a sequence of Ruby tokens, return the next span of eligible comments */
     @Override
     protected int[] findNextSpellSpan(TokenSequence<? extends TokenId> ts, int offset) throws BadLocationException {
-        if (ts == null) {
+        if (ts == null || hidden) {
             return new int[]{-1, -1};
         }
 

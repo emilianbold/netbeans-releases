@@ -143,7 +143,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, fix);
     }
 
-    @Hint(category="bugs")
+    @Hint(category="bugs", suppressWarnings="UseOfIndexZeroInJDBCResultSet")
     @TriggerPattern(value="$set.$method($columnIndex, $other$)",
                     constraints={
                         @Constraint(variable="$set", type="java.sql.ResultSet"),

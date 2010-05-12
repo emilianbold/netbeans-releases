@@ -377,8 +377,16 @@ made subject to such option by the copyright holder.
         </question>
 -->
     <answer id="exec-property">
-        It will decide which sets of customizations to load based on the look and feel
-        it is asked to install, or the one currently in use if it is not asked to install one.
+        <api name="LookAndFeelClassName" category="devel" group="property" type="export">
+            The module initializes proper Look&amp;Feel. The decision is done
+            based on various inputs including what has been specified on command
+            line. To allow easier branding for those who build applications
+            on top of NetBeans, there is key <code>LookAndFeelClassName</code>
+            in <code>org.netbeans.swing.plaf.Bundle</code>
+            bundle which can be branded to actual name of the L&amp;F class.
+            The module will decide which sets of customizations to load based on
+            the chosen look and feel.
+        </api>
     </answer>
 
 

@@ -65,34 +65,31 @@ public class LinkTestCase extends CndBaseTestCase {
 
     public void testLink() throws Exception {
         File file = getDataFile("gcc.exe.lnk.data");
-        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath());
-        if ("C:\\util\\cygwin\\etc\\alternatives\\gcc".equals(resolved)) {
+        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath()).replace('\\', '/');
+        if ("C:/util/cygwin/etc/alternatives/gcc".equals(resolved)) {
             // normal processing
-        } else if ("C:\\util\\cygwin\\bin\\gcc-3.exe".equals(resolved) ||
-                   "C:\\util\\cygwin\\bin\\gcc-4.exe".equals(resolved)) {
+        } else if ("C:/util/cygwin/bin/gcc-3.exe".equals(resolved) ||
+                   "C:/util/cygwin/bin/gcc-4.exe".equals(resolved)) {
             // it is possible on real windows platform where exist "C:\\util\\cygwin\\etc\\alternatives\\gcc"
         } else {
-            assertEquals("C:\\util\\cygwin\\etc\\alternatives\\gcc", resolved); // NOI18N
+            assertEquals("C:/util/cygwin/etc/alternatives/gcc", resolved); // NOI18N
         }
         file = getDataFile("gcc.lnk.data"); // NOI18N
-        resolved = LinkSupport.getOriginalFile(file.getAbsolutePath());
-        assertEquals("C:\\util\\cygwin\\bin\\gcc-3.exe", resolved); // NOI18N
+        resolved = LinkSupport.getOriginalFile(file.getAbsolutePath()).replace('\\', '/');
+        assertEquals("C:/util/cygwin/bin/gcc-3.exe", resolved); // NOI18N
     }
 
     public void testCygwinLink() throws Exception {
         File file = getDataFile("g++.data"); // NOI18N
-        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath());
+        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath()).replace('\\', '/');
         assertEquals("/etc/alternatives/g++", resolved);
     }
 
     public void testCygwinLink2() throws Exception {
         File file = getDataFile("c++.exe.data"); // NOI18N
-        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath());
-        String expected = file.getAbsolutePath();
-        int i = expected.lastIndexOf("\\"); // NOI18N
-        if (i < 0) {
-            i = expected.lastIndexOf("/"); // NOI18N
-        }
+        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath()).replace('\\', '/');
+        String expected = file.getAbsolutePath().replace('\\', '/');
+        int i = expected.lastIndexOf('/'); // NOI18N
         if (i > 0) {
             expected = expected.substring(0, i + 1) + "g++.exe";// NOI18N
         }
@@ -101,12 +98,9 @@ public class LinkTestCase extends CndBaseTestCase {
 
     public void testCygwinLink3() throws Exception {
         File file = getDataFile("f77.exe.data");// NOI18N
-        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath());
-        String expected = file.getAbsolutePath();
-        int i = expected.lastIndexOf("\\"); // NOI18N
-        if (i < 0) {
-            i = expected.lastIndexOf("/"); // NOI18N
-        }
+        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath()).replace('\\', '/');
+        String expected = file.getAbsolutePath().replace('\\', '/');
+        int i = expected.lastIndexOf('/'); // NOI18N
         if (i > 0) {
             expected = expected.substring(0, i + 1) + "g77.exe";// NOI18N
         }
@@ -115,15 +109,15 @@ public class LinkTestCase extends CndBaseTestCase {
 
     public void testCygwinLink4() throws Exception {
         File file = getDataFile("cygwin1.7/bin/gcc.exe.data");// NOI18N
-        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath());
-        String expected = getDataFile("cygwin1.7/etc/alternatives/gcc").getAbsolutePath();// NOI18N
+        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath()).replace('\\', '/');
+        String expected = getDataFile("cygwin1.7/etc/alternatives/gcc").getAbsolutePath().replace('\\', '/'); // NOI18N
         assertEquals(expected, resolved);
     }
 
     public void testCygwinLink5() throws Exception {
         File file = getDataFile("cygwin1.7/etc/alternatives/gcc.data");// NOI18N
-        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath());
-        String expected = getDataFile("cygwin1.7/bin/gcc-4.exe").getAbsolutePath();// NOI18N
+        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath()).replace('\\', '/');
+        String expected = getDataFile("cygwin1.7/bin/gcc-4.exe").getAbsolutePath().replace('\\', '/'); // NOI18N
         assertEquals(expected, resolved);
     }
 }

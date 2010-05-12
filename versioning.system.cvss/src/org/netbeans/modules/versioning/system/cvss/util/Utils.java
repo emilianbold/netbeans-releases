@@ -149,23 +149,25 @@ public class Utils {
      * @param nodes null (then taken from windowsystem, it may be wrong on editor tabs #66700).
      * @param includingFileStatus if any activated file does not have this CVS status, an empty array is returned
      * @param includingFolderStatus if any activated folder does not have this CVS status, an empty array is returned
+     * @param onlyCachedStatus if set to true, only cached status will be considered
      * @return File [] array of activated files, or an empty array if any of examined files/folders does not have given status
      */ 
-    public static Context getCurrentContext(Node[] nodes, int includingFileStatus, int includingFolderStatus) {
+    public static Context getCurrentContext(Node[] nodes, int includingFileStatus, int includingFolderStatus, boolean onlyCachedStatus) {
         Context context = getCurrentContext(nodes);
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         File [] files = context.getRootFiles();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
-            FileInformation fi = cache.getStatus(file);
+            FileInformation fi = onlyCachedStatus ? cache.getCachedStatus(file) : cache.getStatus(file);
+            int status = fi == null ? FileInformation.STATUS_VERSIONED_UPTODATE : fi.getStatus();
             if (file.isDirectory()) {
-                if ((fi.getStatus() & includingFolderStatus) == 0) return Context.Empty;
+                if ((status & includingFolderStatus) == 0) return Context.Empty;
             } else {
-                if ((fi.getStatus() & includingFileStatus) == 0) return Context.Empty;
+                if ((status & includingFileStatus) == 0) return Context.Empty;
             }
         }
         // if there are no exclusions, we may safely return this context because filtered files == root files
-        if (context.getExclusions().size() == 0) return context;
+        if (context.getExclusions().isEmpty()) return context;
 
         // in this code we remove files from filteredFiles to NOT include any files that do not have required status
         // consider a freeform project that has 'build' in filteredFiles, the Branch action would try to branch it
@@ -192,11 +194,12 @@ public class Utils {
      *  <li> the project contains at least one CVS versioned source group
      * </ul>
      * otherwise <code>false</code>.
+     * @param checkStatus if set to true, cache.getStatus is called and can take significant amount of time
      */
-    public static boolean isVersionedProject(Node node) {
+    public static boolean isVersionedProject(Node node, boolean checkStatus) {
         Lookup lookup = node.getLookup();
         Project project = lookup.lookup(Project.class);
-        return isVersionedProject(project);
+        return isVersionedProject(project, checkStatus);
     }
 
     /**
@@ -206,8 +209,9 @@ public class Utils {
      *  <li> the project contains at least one CVS versioned source group
      * </ul>
      * otherwise <code>false</code>.
+     * @param checkStatus if set to true, cache.getStatus is called and can take significant amount of time
      */
-    public static boolean isVersionedProject(Project project) {
+    public static boolean isVersionedProject(Project project, boolean checkStatus) {
         if (project != null) {
             FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
             Sources sources = ProjectUtils.getSources(project);
@@ -216,7 +220,11 @@ public class Utils {
                 SourceGroup sourceGroup = sourceGroups[j];
                 File f = FileUtil.toFile(sourceGroup.getRootFolder());
                 if (f != null) {
-                    if ((cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
+                    if (checkStatus && (cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                        return true;
+                    } else if (!checkStatus && CvsVersioningSystem.isManaged(f)) {
+                        return true;
+                    }
                 }
             }
         }

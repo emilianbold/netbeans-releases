@@ -659,7 +659,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         ParseErrorAnnotation pea = new ParseErrorAnnotation(
                 mostImportantSeverity,
                 fixes,
-                description.toString() + NbBundle.getMessage(AnnotationHolder.class, "LBL_shortcut_promotion"), //NOI18N
+                description.toString(),
                 line,
                 this);
         Annotation previous = line2Annotations.put(line, pea);

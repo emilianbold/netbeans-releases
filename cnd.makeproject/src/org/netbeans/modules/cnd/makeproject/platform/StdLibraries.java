@@ -64,6 +64,8 @@ import org.openide.util.NbBundle;
         addLibrary("PatternMatching", new String[] {"gen"}); // NOI18N
         addLibrary("Curses", new String[] {"curses"}); // NOI18N
         addLibrary("DynamicLinking", new String[] {"dl"}); // NOI18N
+        addLibrary("CUnit", new String[] {"cunit"}); // NOI18N
+        addLibrary("CppUnit", new String[] {"cppunit"}); // NOI18N
     }
 
     public static LibraryItem.StdLibItem getStandardLibary(String id) {

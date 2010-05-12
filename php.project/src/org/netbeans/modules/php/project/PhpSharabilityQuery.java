@@ -82,9 +82,11 @@ public class PhpSharabilityQuery implements SharabilityQueryImplementation, Prop
         this.selenium.addPropertyChangeListener(this);
     }
 
+    @Override
     public int getSharability(final File file) {
         assert file != null;
         return ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
+            @Override
             public Integer run() {
                 synchronized (PhpSharabilityQuery.this) {
                     if (delegate == null) {
@@ -96,6 +98,7 @@ public class PhpSharabilityQuery implements SharabilityQueryImplementation, Prop
         });
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (SourceRoots.PROP_ROOTS.equals(evt.getPropertyName())) {
             delegate = null;

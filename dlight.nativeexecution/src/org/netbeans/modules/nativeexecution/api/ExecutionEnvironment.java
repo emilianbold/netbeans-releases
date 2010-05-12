@@ -129,5 +129,10 @@ public interface ExecutionEnvironment {
     @Override
     public boolean equals(Object obj);
 
+    /**
+     *
+     * @throws IOException
+     * @throws CancellationException
+     */
     public void prepareForConnection() throws IOException, CancellationException;
 }

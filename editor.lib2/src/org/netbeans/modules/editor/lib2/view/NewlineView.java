@@ -62,9 +62,6 @@ import javax.swing.text.View;
 
 public final class NewlineView extends EditorView {
 
-    /** The default width should incorporate possible width of the wider caret once it blinks at line's end. */
-    private static final float DEFAULT_WIDTH = 2f;
-
     /** Offset of start offset of this view. */
     private int rawOffset; // 24-super + 4 = 28 bytes
 
@@ -88,7 +85,7 @@ public final class NewlineView extends EditorView {
 
     @Override
     public int getStartOffset() {
-        ParagraphView parent = (ParagraphView) getParent();
+        EditorView.Parent parent = (EditorView.Parent) getParent();
         return (parent != null) ? parent.getViewOffset(rawOffset) : rawOffset;
     }
 
@@ -114,13 +111,16 @@ public final class NewlineView extends EditorView {
 
     @Override
     public float getPreferredSpan(int axis) {
+        // Although the width could be e.g. 1 return a default width of a character
+        // since if caret is blinking over the newline character and the caret
+        // is in overwrite mode then this will make the caret fully visible.
         DocumentView documentView = getDocumentView();
         if (axis == View.X_AXIS) {
             return (documentView != null)
                     ? (documentView.isShowNonprintingCharacters()
-                        ? documentView.getNewlineCharTextLayout().getAdvance()
-                        : DEFAULT_WIDTH)
-                    : DEFAULT_WIDTH;
+                        ? documentView.getDefaultLineHeight()
+                        : documentView.getDefaultCharWidth())
+                    : 1; // Only return one if not connected to view hierarchy
         } else {
             return (documentView != null) ? documentView.getDefaultLineHeight() : 1;
         }
@@ -137,10 +137,8 @@ public final class NewlineView extends EditorView {
 
     @Override
     public Shape modelToViewChecked(int offset, Shape alloc, Position.Bias bias) {
-        int endOffset = getEndOffset();
-        assert (offset >= endOffset - 1 && offset <= endOffset);
         Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
-        mutableBounds.width = 1; // Check what width of newline should be?
+        mutableBounds.width = getPreferredSpan(X_AXIS);
         return mutableBounds;
     }
 
@@ -160,6 +158,23 @@ public final class NewlineView extends EditorView {
                     ViewUtils.applyBackgroundAttributes(attributes, componentBackground, g);
                     if (!componentBackground.equals(g.getColor())) {
                         ViewUtils.fillRect(g, mutableBounds);
+                    }
+                    
+                    // Paint the textLimit line
+                    int xInt = (int) mutableBounds.getX();
+                    int yInt = (int) mutableBounds.getY();
+                    int endXInt = (int) (mutableBounds.getX() + mutableBounds.getWidth() - 1);
+                    int endYInt = (int) (mutableBounds.getY() + mutableBounds.getHeight() - 1);
+                    Color textLimitLineColor = docView.getTextLimitLineColor();
+                    boolean drawTextLimitLine = docView.isTextLimitLineDrawn();
+                    int textLimitWidth = docView.getTextLimitWidth();
+                    float defaultCharWidth = docView.getDefaultCharWidth();
+                    if (drawTextLimitLine && textLimitWidth > 0) {
+                        int lineX = (int)(textLimitWidth * defaultCharWidth);
+                        if (lineX >= xInt && lineX <= endXInt){
+                            g.setColor(textLimitLineColor);
+                            g.drawLine(lineX, yInt, lineX, endYInt);
+                        }
                     }
 
                     // Possibly paint pilcrow sign

@@ -73,6 +73,8 @@ import org.openide.util.Utilities;
 
 /**
  * Represents one Ruby platform, i.e. installation of a Ruby interpreter.
+ *<p>
+ * This class is thread safe.
  */
 public final class RubyPlatform implements Comparable<RubyPlatform> {
 
@@ -105,32 +107,50 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     private final RubyPlatformValidator validator;
     private final String id;
     private final String interpreter;
+    private final PropertyChangeSupport pcs;
+    // the following are guarded by "this"
+    /** @GuardedBy("this") */
     private File home;
+    /** @GuardedBy("this") */
     private String homeUrl;
+    /** @GuardedBy("this") */
     private FileObject libDirFO;
+    /** @GuardedBy("this") */
     private GemManager gemManager;
+    /** @GuardedBy("this") */
     private static FileObject stubsFO;
 
     // XXX - see updateIndexRoots below
 //    private boolean indexInitialized;
 
     // Platform tools
+    /** @GuardedBy("this") */
     private String gemTool;
+    /** @GuardedBy("this") */
     private String rdoc;
+    /** @GuardedBy("this") */
     private String irb;
 
-    private PropertyChangeSupport pcs;
 
-    /** 'rake' executable for this platform. */
+    /**
+     * 'rake' executable for this platform.
+     * @GuardedBy("this")
+     */
     private String rake;
 
-    /** 'rails' executable for this platform. */
+    /** 'rails' executable for this platform.
+     *  @GuardedBy("this")
+     */
     private String rails;
 
-    /** 'autotest' executable for this platform. */
+    /** 'autotest' executable for this platform.
+     * @GuardedBy("this")
+     */
     private String autotest;
 
-    /** 'autospec' executable for this platform. */
+    /** 'autospec' executable for this platform.
+     * @GuardedBy("this")
+     */
     private String autospec;
 
     RubyPlatform(String id, String interpreterPath, Info info) {
@@ -138,6 +158,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         this.interpreter = interpreterPath;
         this.info = info;
         this.validator = new RubyPlatformValidator(this);
+        this.pcs = new PropertyChangeSupport(this);
     }
 
     /**
@@ -260,7 +281,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         return platform.hasValidRake(warn);
     }
 
-    public String getRake() {
+    public synchronized String getRake() {
         if (rake == null) {
             rake = findExecutable("rake"); // NOI18N
 
@@ -287,21 +308,21 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         return rake;
     }
 
-    public String getRails() {
+    public synchronized String getRails() {
         if (rails == null) {
             rails = findExecutable("rails"); // NOI18N
         }
         return rails;
     }
 
-    public String getAutoTest() {
+    public synchronized String getAutoTest() {
         if (autotest == null) {
             autotest = findExecutable("autotest"); // NOI18N
         }
         return autotest;
     }
 
-    public String getAutoSpec() {
+    public synchronized String getAutoSpec() {
         if (autospec == null) {
             autospec = findExecutable("autospec"); // NOI18N
         }
@@ -343,7 +364,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         return getHome(true);
     }
 
-    public File getHome(boolean canonical) {
+    public synchronized File getHome(boolean canonical) {
         if (home == null) {
             try {
                 String rp = getInterpreter(canonical);
@@ -372,7 +393,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         return home;
     }
 
-    public String getHomeUrl() {
+    public synchronized String getHomeUrl() {
         if (homeUrl == null) {
             try {
                 File r = getHome();
@@ -423,7 +444,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     /** Utility method. See {@link #getLibDir()}. */
-    public FileObject getLibDirFO() {
+    public synchronized FileObject getLibDirFO() {
         if (libDirFO == null) {
             String lib = getLibDir();
             if (lib != null) {
@@ -611,7 +632,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      * @return either an instance of {@link GemManager} or <tt>null</tt>.
      */
     @CheckForNull
-    public GemManager getGemManager() {
+    public synchronized GemManager getGemManager() {
         if (gemManager == null && hasRubyGemsInstalled()) {
             gemManager = new GemManager(this);
         }
@@ -726,28 +747,28 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      * @return path to the <em>gem</em> tool; might be <tt>null</tt> if not
      *         found.
      */
-    public String getGemTool() {
+    public synchronized String getGemTool() {
         if (gemTool == null) {
             gemTool = findExecutable("gem", false, true); // NOI18N
         }
         return gemTool;
     }
 
-    public String getRDoc() {
+    public synchronized String getRDoc() {
         if (rdoc == null) {
             rdoc = findExecutable("rdoc", false, true); // NOI18N
         }
         return rdoc;
     }
 
-    public String getIRB() {
+    public synchronized String getIRB() {
         if (irb == null) {
             irb = findExecutable(isJRuby() ? "jirb" : "irb", false, true); // NOI18N
         }
         return irb;
     }
 
-    public static FileObject getRubyStubs() {
+    public synchronized static FileObject getRubyStubs() {
         if (stubsFO == null) {
             // Core classes: Stubs generated for the "builtin" Ruby libraries.
             File clusterFile = InstalledFileLocator.getDefault().locate(
@@ -980,9 +1001,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         // XXX - Parsing API
 //        Source.clearSourceCache();
 
-        if (pcs != null) {
-            pcs.firePropertyChange("roots", null, null); // NOI18N
-        }
+        pcs.firePropertyChange("roots", null, null); // NOI18N
 
         //        // Force ClassIndex registration
         //        // Dummy class path provider just to trigger recomputation
@@ -995,17 +1014,11 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        if (pcs == null) {
-            pcs = new PropertyChangeSupport(this);
-        }
-
         pcs.addPropertyChangeListener(listener);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        if (pcs != null) {
-            pcs.removePropertyChangeListener(listener);
-        }
+        pcs.removePropertyChangeListener(listener);
     }
 
     public void setGemHome(File gemHome) {

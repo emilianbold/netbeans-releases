@@ -46,9 +46,12 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -115,6 +118,15 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     }
     
     void read(WizardDescriptor wizardDescriptor) {
+        String hostUID = (String) wizardDescriptor.getProperty("hostUID");  //NOI18N
+        ExecutionEnvironment ee = null;
+        if (hostUID != null) {
+            ee = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+        }
+        CompilerSet cs = null;
+        if (ee != null) {
+            cs = (CompilerSet) wizardDescriptor.getProperty("toolchain"); // NOI18N
+        }
         try {
             removeDocumentLiseners();
             String path = (String) wizardDescriptor.getProperty("simpleModeFolder"); // NOI18N
@@ -133,7 +145,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                         runConfigureCheckBox.setSelected(true);
                     }
                     configureNameTextField.setText(configureScript);
-                    configureArgumentsTextField.setText(ConfigureUtils.getConfigureArguments(configureScript,"")); // NOI18N
+                    configureArgumentsTextField.setText(ConfigureUtils.getConfigureArguments(ee, cs, configureScript,"")); // NOI18N
                 }
             }
         } finally {

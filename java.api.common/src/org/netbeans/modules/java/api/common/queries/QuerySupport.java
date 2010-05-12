@@ -288,6 +288,7 @@ public final class QuerySupport {
      * @param helper project's AntProjectHelper
      * @param evaluator project's evaluator
      * @param annotationProcessingEnabledProperty property whose value says whether the annotation processing is enabled for the given project at all
+     *                                                    (will be returned from {@link Result#annotationProcessingEnabled()})
      * @param annotationProcessingEnabledInEditorProperty property whose value says whether the annotation processing should be enabled
      *                                                    in the editor (will be returned from {@link Result#annotationProcessingEnabled())}
      * @param runAllAnnotationProcessorsProperty when true, {@link Result#annotationProcessorsToRun()} will return null

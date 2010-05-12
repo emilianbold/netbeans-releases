@@ -87,7 +87,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     }
 
     static boolean canBeProcessed(String tName, String name) {
-        return tName.indexOf(name) == -1;
+        return tName.length() > 0 && tName.indexOf(name) == -1;
     }
 
     @CheckForNull

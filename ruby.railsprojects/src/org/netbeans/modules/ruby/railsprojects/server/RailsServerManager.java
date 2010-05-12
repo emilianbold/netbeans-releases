@@ -313,8 +313,9 @@ public final class RailsServerManager {
         // Paths required for GlassFish gem.  Not used or required for WEBrick or Mongrel.
         String gemPath = server.getLocation();
         if(gemPath != null) {
-            desc.initialArgs("-I \"" + gemPath + File.separatorChar + "bin\" " +
-                    "-I \"" + gemPath + File.separatorChar + "lib\"");
+            // always use forward slashes in the load path, even on Win
+            desc.initialArgs("-I \"" + gemPath + "/" + "bin\" " +
+                    "-I \"" + gemPath + "/" + "lib\"");
         }
         desc.scriptPrefix(server.getScriptPrefix());
         desc.additionalArgs(buildStartupArgs());

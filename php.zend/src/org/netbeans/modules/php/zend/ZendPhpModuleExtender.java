@@ -41,6 +41,7 @@ package org.netbeans.modules.php.zend;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -75,7 +76,7 @@ public class ZendPhpModuleExtender extends PhpModuleExtender {
         if (!zendScript.initProject(phpModule)) {
             // can happen if zend script was not chosen
             Logger.getLogger(ZendPhpModuleExtender.class.getName())
-                    .info("Framework Zend not found in newly created project " + phpModule.getDisplayName());
+                    .log(Level.INFO, "Framework Zend not found in newly created project {0}", phpModule.getDisplayName());
             throw new ExtendingException(NbBundle.getMessage(ZendPhpModuleExtender.class, "MSG_NotExtended"));
         }
 

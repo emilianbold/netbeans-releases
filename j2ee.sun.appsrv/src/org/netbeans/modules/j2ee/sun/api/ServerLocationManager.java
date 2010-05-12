@@ -113,6 +113,9 @@ public class ServerLocationManager  {
                 
             }
             
+	    f = new File(installRoot+"/lib/appserver-deployment-client.jar");//NOI18N
+	    loader.addURL(f);
+
             f = new File(installRoot+"/lib/appserv-admin.jar");//NOI18N
 	    loader.addURL(f);
 	    f = new File(installRoot+"/lib/appserv-ext.jar");//NOI18N
@@ -144,10 +147,7 @@ public class ServerLocationManager  {
 	    loader.addURL(f);
 	    f = new File(installRoot+"/lib/jaxrpc-impl.jar");//NOI18N
 	    loader.addURL(f);
-	    
-	    f = new File(installRoot+"/lib/appserver-deployment-client.jar");//NOI18N
-	    loader.addURL(f);
-	    
+	    	    
 	} catch (Exception ex2) {
 	    throw new Exception(ex2.getLocalizedMessage());
 	}

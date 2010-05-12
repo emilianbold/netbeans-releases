@@ -64,7 +64,7 @@ public class MethodTest1 {
      *
      * @return value of something
      */
-    public long thirdMethod( String c, int a) {
+    public long thirdMethod(String c, int a) {
         int e = a++;
         String d = c;
         

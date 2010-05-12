@@ -61,7 +61,6 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
     private final AbstractRefactoring refactoring;
     private CssElementContext context;
     private RenamePanel panel;
-    private boolean folderRename;
     private CssRefactoringExtraInfo extraInfo;
 
     public CssRenameRefactoringUI(CssElementContext context) {
@@ -78,26 +77,31 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
 	this.refactoring = new RenameRefactoring(Lookups.fixed(lookupContent.toArray()));
     }
 
+    @Override
     public String getName() {
-	return NbBundle.getMessage(CssRenameRefactoringUI.class, "LBL_Rename");
+	return NbBundle.getMessage(CssRenameRefactoringUI.class, "LBL_Rename"); //NOI18N
     }
 
+    @Override
     public String getDescription() {
-	return "TODO";
+	return NbBundle.getMessage(CssRenameRefactoringUI.class, "LBL_Rename_Descr"); //NOI18N
     }
 
+    @Override
     public boolean isQuery() {
 	return false;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
 	if (panel == null) {
-	    panel = new RenamePanel(context.getElementName(), parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename"), true, true);
+	    panel = new RenamePanel(context.getElementName(), parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename"), true, true); //NOI18N
 	}
 
 	return panel;
     }
 
+    @Override
     public Problem setParameters() {
         extraInfo.setRefactorAll(panel.isRefactorAllOccurances());
 
@@ -108,33 +112,38 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
 	return refactoring.checkParameters();
     }
 
+    @Override
     public Problem checkParameters() {
 	if (!panel.isUpdateReferences()) {
 	    return null;
 	}
-	if (refactoring instanceof RenameRefactoring) {
+        if (refactoring instanceof RenameRefactoring) {
 	    ((RenameRefactoring) refactoring).setNewName(panel.getNameValue());
 	}
-
-	return refactoring.fastCheckParameters();
+	return refactoring.checkParameters();
     }
 
+    @Override
     public boolean hasParameters() {
 	return true;
     }
 
+    @Override
     public AbstractRefactoring getRefactoring() {
 	return this.refactoring;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
 	return null;
     }
 
+    @Override
     public boolean isRefactoringBypassRequired() {
 	return false; //TODO fix this
     }
 
+    @Override
     public void doRefactoringBypass() throws IOException {
 	//TODO implement
     }

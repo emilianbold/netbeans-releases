@@ -596,6 +596,10 @@ Microsystems, Inc. All Rights Reserved.
           are collected into the start log as well.
           </p>
       </api>
+      <api name="netbeans.logger.noSystem" category="friend" group="systemproperty" type="export">
+          Allows unit tests to prevent changes to <code>System.err</code> and
+          <code>System.out</code> by the logging infrastructure.
+      </api>
   </p>
  </answer>
 

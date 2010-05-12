@@ -388,7 +388,7 @@ public class JarClassLoader extends ProxyClassLoader {
 
     }
 
-    static class JarSource extends Source {
+    static class JarSource extends Source implements ArchiveResources {
         private String resPrefix;
         private File file;
 
@@ -398,6 +398,7 @@ public class JarClassLoader extends ProxyClassLoader {
         private int used;
         /** #141110: expensive to repeatedly look for them */
         private final Set<String> nonexistentResources = Collections.synchronizedSet(new HashSet<String>());
+        private final Set<File> warnedFiles = Collections.synchronizedSet(new HashSet<File>()); // #183696
         
         JarSource(File file) throws IOException {
             this(file, toURI(file));
@@ -408,6 +409,7 @@ public class JarClassLoader extends ProxyClassLoader {
             this.file = file;
         }
 
+        @Override
         public String getPath() {
             return file.getPath();
         }
@@ -454,15 +456,28 @@ public class JarClassLoader extends ProxyClassLoader {
                     fjar = sources.get(this);
                     if (fjar == null) {
                         fjar = init = new FutureTask<JarFile>(new Callable<JarFile>() {
+                            @Override
                             public JarFile call() throws IOException {
-                                long now = System.currentTimeMillis();
-                                JarFile ret = new JarFile(file, false);
-                                long took = System.currentTimeMillis() - now;
-                                opened(JarClassLoader.JarSource.this, forWhat);
-                                if (took > 500) {
-                                    LOGGER.log(Level.WARNING, "Opening " + file + " took " + took + " ms"); // NOI18N
+                                int retry = 0;
+                                for (;;) {
+                                    try {
+                                        long now = System.currentTimeMillis();
+                                        JarFile ret = new JarFile(file, false);
+                                        long took = System.currentTimeMillis() - now;
+                                        opened(JarClassLoader.JarSource.this, forWhat);
+                                        if (took > 500) {
+                                            LOGGER.log(Level.WARNING, "Opening {0} took {1} ms", new Object[]{file, took}); // NOI18N
+                                        }
+                                        return ret;
+                                    } catch (ZipException zip) {
+                                        if (file.exists() && retry++ < 3) {
+                                            LOGGER.log(Level.WARNING, "Error opening " + file + " retry: " + retry, zip); // NOI18N
+                                            opened(JarClassLoader.JarSource.this, "ziperror");
+                                            continue;
+                                        }
+                                        throw zip;
+                                    }
                                 }
-                                return ret;
                             }
                         });
                         sources.put(this, fjar);
@@ -481,6 +496,7 @@ public class JarClassLoader extends ProxyClassLoader {
         }
         
         
+        @Override
         protected URL doGetResource(String name) throws IOException  {
             byte[] buf = archive.getData(this, name);
             if (buf == null) return null;
@@ -488,14 +504,16 @@ public class JarClassLoader extends ProxyClassLoader {
             try {
                 return new URL(resPrefix + new URI(null, name, null).getRawPath());
             } catch (URISyntaxException x) {
-                throw (IOException) new IOException(name + " in " + resPrefix + ": " + x.toString()).initCause(x);
+                throw new IOException(name + " in " + resPrefix + ": " + x.toString(), x);
             }
         }
         
+        @Override
         protected byte[] readClass(String path) throws IOException {
             return archive.getData(this, path);
         }
         
+        @Override
         public byte[] resource(String path) throws IOException {
             if (nonexistentResources.contains(path)) {
                 return null;
@@ -504,7 +522,9 @@ public class JarClassLoader extends ProxyClassLoader {
             try {
                 jf = getJarFile(path);
             } catch (ZipException ex) {
-                LOGGER.log(Level.INFO, "Cannot open " + file, ex);
+                if (warnedFiles.add(file)) {
+                    LOGGER.log(Level.INFO, "Cannot open " + file, ex);
+                }
                 return null;
             }
             try {
@@ -530,6 +550,7 @@ public class JarClassLoader extends ProxyClassLoader {
         }
 
 
+        @Override
         protected void listCoveredPackages(Set<String> known, StringBuffer save) {
             try {
                 JarFile src = getJarFile("pkg");
@@ -549,11 +570,17 @@ public class JarClassLoader extends ProxyClassLoader {
                     }
                 }
             } catch (ZipException x) { // Unix
-                LOGGER.log(Level.INFO, "Cannot open " + file, x);
+                if (warnedFiles.add(file)) {
+                    LOGGER.log(Level.INFO, "Cannot open " + file, x);
+                }
             } catch (FileNotFoundException x) { // Windows
-                LOGGER.log(Level.INFO, "Cannot open " + file, x);
+                if (warnedFiles.add(file)) {
+                    LOGGER.log(Level.INFO, "Cannot open " + file, x);
+                }
             } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, "problems with " + file, ioe);
+                if (warnedFiles.add(file)) {
+                    LOGGER.log(Level.WARNING, "problems with " + file, ioe);
+                }
             } finally {
                 releaseJarFile();
             }
@@ -674,7 +701,7 @@ public class JarClassLoader extends ProxyClassLoader {
             synchronized (sources) {
                 if (sources.size() > LIMIT) {
                     // close something
-                    JarSource toClose = toClose();
+                    JarSource toClose = toClose(source);
                     try {
                         toClose.doCloseJar();
                     } catch (IOException ioe) {
@@ -687,7 +714,7 @@ public class JarClassLoader extends ProxyClassLoader {
         }
 
         // called under lock(sources) 
-        private static JarSource toClose() { 
+        private static JarSource toClose(JarSource notThisOne) {
             assert Thread.holdsLock(sources);
              
             int min = Integer.MAX_VALUE; 
@@ -703,10 +730,12 @@ public class JarClassLoader extends ProxyClassLoader {
                 } 
             } 
              
-            assert candidate != null; 
+            assert candidate != null;
+            assert candidate != notThisOne : "Closing just opened JarSource: " + notThisOne;
             return candidate; 
         }
 
+        @Override
         public String getIdentifier() {
             return getURL().toExternalForm();
         }
@@ -796,14 +825,11 @@ public class JarClassLoader extends ProxyClassLoader {
         return known;
     }
     
-    /**
-     * URLStreamHandler for res protocol
-     */
-    static class ResURLStreamHandler extends URLStreamHandler {
+    static class JarURLStreamHandler extends URLStreamHandler {
 
         private final URLStreamHandler originalJarHandler;
 
-        ResURLStreamHandler(URLStreamHandler originalJarHandler) {
+        JarURLStreamHandler(URLStreamHandler originalJarHandler) {
             this.originalJarHandler = originalJarHandler;
         }
 
@@ -842,7 +868,7 @@ public class JarClassLoader extends ProxyClassLoader {
             } catch (URISyntaxException x) {
                 throw (IOException) new IOException("Decoding " + u + ": " + x).initCause(x);
             }
-            return new ResURLConnection (u, _src, _name);
+            return new NbJarURLConnection (u, _src, _name);
         }
 
         @Override
@@ -859,7 +885,7 @@ public class JarClassLoader extends ProxyClassLoader {
     /** URLConnection for URL with res protocol.
      *
      */
-    private static class ResURLConnection extends JarURLConnection {
+    private static class NbJarURLConnection extends JarURLConnection {
         private JarSource src;
         private final String name;
         private byte[] data;
@@ -870,7 +896,7 @@ public class JarClassLoader extends ProxyClassLoader {
          * @param url the parameter for which the connection should be
          * created
          */
-        private ResURLConnection(URL url, Source src, String name) throws MalformedURLException {
+        private NbJarURLConnection(URL url, Source src, String name) throws MalformedURLException {
             super(url);
             this.src = (JarSource)src;
             this.name = name;

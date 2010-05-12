@@ -62,7 +62,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-public class BugtrackingRuntime {
+public final class BugtrackingRuntime {
 
     private static BugtrackingRuntime instance;
 
@@ -76,25 +76,10 @@ public class BugtrackingRuntime {
     private TaskDataManager         taskDataManager;
     private SynchronizationSession  synchronizationSession;
 
-    public synchronized static BugtrackingRuntime getInstance() {
-        if(instance == null) {
-            instance = new BugtrackingRuntime();
-            instance.init();
-        }
-        return instance;
-    }
-
-    private void init() {
+    private BugtrackingRuntime () {
         initCacheStore();
-        if(SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    initWebUtil();
-                }
-            });
-        } else {
-            initWebUtil();
-        }
+        initWebUtil();
+
         // XXX this is dummy
         taskRepositoryManager = new TaskRepositoryManager();
 
@@ -102,13 +87,26 @@ public class BugtrackingRuntime {
         TaskList tl = new TaskList();
         TaskActivityManager tam = new TaskActivityManager(taskRepositoryManager, tl);
         taskDataManager = new TaskDataManager(taskDataStore, taskRepositoryManager, tl, tam);
-        taskDataManager.setDataPath(BugtrackingRuntime.getInstance().getCacheStore().getAbsolutePath());
+        taskDataManager.setDataPath(getCacheStore().getAbsolutePath());
         synchronizationSession = new SynchronizationSession(taskDataManager);
 
         externalizationManager = new ExternalizationManager(cacheStore.getAbsolutePath());
 
         IExternalizationParticipant repositoryParticipant = new RepositoryExternalizationParticipant(externalizationManager, taskRepositoryManager);
         externalizationManager.addParticipant(repositoryParticipant);
+
+        LOG.fine("Bugtracking runtime initialized");                            // NOI8N
+    }
+
+    public synchronized static BugtrackingRuntime getInstance() {
+        if(instance == null) {
+            instance = new BugtrackingRuntime();
+        }
+        return instance;
+    }
+
+    public synchronized static void init() {
+        getInstance();
     }
 
     private void initWebUtil() {

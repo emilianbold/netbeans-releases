@@ -50,6 +50,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -80,6 +82,9 @@ import org.xml.sax.SAXException;
  * @author Petr Hejl
  */
 public class ServerPropertiesVisual extends javax.swing.JPanel {
+
+    // TODO read from domain-registry.xml instead?
+    private static final String DOMAIN_LIST = "common/nodemanager/nodemanager.domains"; // NOI18N
 
     private static final String DEFAULT_USERNAME = "weblogic"; // NOI18N
 
@@ -231,18 +236,15 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
      */
     private String[] getRegisteredDomains(String serverRoot){
         // init the resulting vector
-        Vector result = new Vector();
+        List<String> result = new ArrayList<String>();
 
         // is the server root was not defined, return an empty array of domains
         if (serverRoot == null) {
             return new String[0];
         }
 
-        // the relative path to the domains list file
-        String domainListFile = "/common/nodemanager/nodemanager.domains";  // NOI18N
-
         // init the input stream for the file and the w3c document object
-        File file = new File(serverRoot + domainListFile);
+        File file = new File(serverRoot + File.separator + DOMAIN_LIST.replaceAll("/", File.separator));
         LineNumberReader lnr = null;
 
         // read the list file line by line fetching out the domain paths

@@ -156,6 +156,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
         }
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         for (Component component : configPanel.getComponents()) {
             if (component instanceof HelpCtx.Provider) {
@@ -168,14 +169,17 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
         return null;
     }
 
+    @Override
     public void tableChanged(TableModelEvent e) {
         changeDescriptionAndPanel();
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent e) {
         changeDescriptionAndPanel();
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireChange();
     }
@@ -343,10 +347,12 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
             model = new DefaultListModel();
         }
 
+        @Override
         public int getColumnCount() {
             return 2;
         }
 
+        @Override
         public int getRowCount() {
             return model.size();
         }
@@ -370,6 +376,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
             return columnIndex == 0;
         }
 
+        @Override
         public Object getValueAt(int row, int column) {
             FrameworkModelItem item = getItem(row);
             switch (column) {

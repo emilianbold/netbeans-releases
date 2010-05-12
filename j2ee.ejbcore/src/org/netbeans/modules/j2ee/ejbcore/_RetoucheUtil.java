@@ -174,6 +174,7 @@ public final class _RetoucheUtil {
                 TreeMaker treeMaker = workingCopy.getTreeMaker();
                 GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
                 TypeElement returnTypeElement = workingCopy.getElements().getTypeElement(fieldType);
+                assert returnTypeElement != null : "TypeElement not found for " + fieldType;
                 // modifiers
                 Set<Modifier> modifiers = new HashSet<Modifier>();
                 modifiers.add(Modifier.PRIVATE);

@@ -40,6 +40,9 @@
 package org.netbeans.modules.jira;
 
 import java.awt.Image;
+import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -58,7 +61,9 @@ import org.openide.util.lookup.ServiceProvider;
                                            @ServiceProvider(service=org.netbeans.modules.jira.JiraConnector.class)})
 public class JiraConnector extends BugtrackingConnector {
 
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.jira.JiraConnector");  //  NOI18N
     private JiraIssueFinder issueFinder;
+    private boolean alreadyLogged = false;
 
     @Override
     public String getID() {
@@ -70,22 +75,37 @@ public class JiraConnector extends BugtrackingConnector {
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return getConnectorName();
     }
 
+    @Override
     public String getTooltip() {
-        return "Jira Issue Tracking System";
+        return NbBundle.getMessage(BugtrackingConnector.class, "LBL_ConnectorTooltip"); // NOI18N
     }
 
     @Override
     public Repository createRepository() {
+        try {
+            Jira.init();
+        } catch (Throwable t) {
+            if(!alreadyLogged) {
+                alreadyLogged = true;
+                LOG.log(Level.SEVERE, null, t);
+            }
+            return null;
+        }
         return new JiraRepository();
     }
 
     @Override
     public Repository[] getRepositories() {
-        return Jira.getInstance().getRepositories();
+        Jira jira = getJira();
+        if(jira != null) {
+            return jira.getRepositories();
+        }
+        return new Repository[0];
     }
 
     public static String getConnectorName() {
@@ -101,13 +121,29 @@ public class JiraConnector extends BugtrackingConnector {
         return issueFinder;
     }
 
+    @Override
     public Lookup getLookup() {
-        return Lookups.singleton(Jira.getInstance().getKenaiSupport());
+        Jira jira = getJira();
+        if(jira != null) {
+            return Lookups.singleton(jira.getKenaiSupport());
+        }
+        return Lookup.EMPTY;
     }
 
     @Override
-    public void fireRepositoriesChanged() {
-        super.fireRepositoriesChanged();
+    protected void fireRepositoriesChanged(Collection<Repository> oldRepositories, Collection<Repository> newRepositories) {
+        super.fireRepositoriesChanged(oldRepositories, newRepositories);
     }
 
+    private Jira getJira() {
+        try {
+            return Jira.getInstance();
+        } catch (Throwable t) {
+            if(!alreadyLogged) {
+                alreadyLogged = true;
+                LOG.log(Level.SEVERE, null, t);
+            }
+        }
+        return null;
+    }
 }

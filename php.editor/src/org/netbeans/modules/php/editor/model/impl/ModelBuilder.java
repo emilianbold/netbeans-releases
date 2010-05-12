@@ -47,6 +47,7 @@ import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
@@ -134,7 +135,8 @@ class ModelBuilder {
     }
 
      MethodScope build(MethodDeclaration node, OccurenceBuilder occurencesBuilder) {
-        MethodScopeImpl methodScope = ModelElementFactory.create(MethodDeclarationInfo.create(getProgram(),node), this);
+        final ScopeImpl scope = getCurrentScope();
+        MethodScopeImpl methodScope = ModelElementFactory.create(MethodDeclarationInfo.create(getProgram(),node, (TypeScope)scope), this);
         setCurrentScope(methodScope);
         occurencesBuilder.prepare(node, methodScope);
         return methodScope;

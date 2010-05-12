@@ -54,5 +54,21 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="Templates">
+        <folder name="SaaSServices">
+            <file name="OAuthAuthorizationPanelNb.java"
+                  url="/org/netbeans/modules/websvc/saas/oauth/OAuthAuthorizationPanelNb.template">
+                <attr name="position" intvalue="77"/>
+            </file>
+            <file name="OAuthSearchXML.method"
+                  url="/org/netbeans/modules/websvc/saas/oauth/OAuthSearchXML.template">
+                <attr name="position" intvalue="78"/>
+            </file>
+            <file name="OAuthSearchJSON.method"
+                  url="/org/netbeans/modules/websvc/saas/oauth/OAuthSearchJSON.template">
+                <attr name="position" intvalue="79"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
 

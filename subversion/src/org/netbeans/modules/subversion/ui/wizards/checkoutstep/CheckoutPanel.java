@@ -177,6 +177,7 @@ public class CheckoutPanel extends JPanel {
                         .add(lblEmptyMeansHead)
                         .addPreferredGap(UNRELATED)
                         .add(atWorkingDirLevelCheckBox)
+                        .addPreferredGap(RELATED)
                         .add(exportCheckBox)
                         .add(28)
                         .add(lblSpecifyLocalFolders)

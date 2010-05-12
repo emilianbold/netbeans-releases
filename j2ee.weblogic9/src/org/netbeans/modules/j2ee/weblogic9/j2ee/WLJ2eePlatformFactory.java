@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.weblogic9.j2ee;
 
 import java.awt.Image;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -208,17 +209,41 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     list.addAll(getJarClassPath(apiFile));
                 }
 
+                //XXX there seems to be a bug in api.jar - it does not contain link to javax.persistence
+                File platformRootFile = new File(getPlatformRoot());
+                File middleware = platformRootFile.getParentFile();
+                // make guess :(
+                if (middleware != null && middleware.exists()) {
+                    File modules = new File(middleware, "modules"); // NOI18N
+                    if (modules.exists() && modules.isDirectory()) {
+                        File[] persistenceCandidates = modules.listFiles(new FilenameFilter() {
+                            @Override
+                            public boolean accept(File dir, String name) {
+                                return name.startsWith("javax.persistence"); // NOI18N
+                            }
+                        });
+                        if (persistenceCandidates.length > 0) {
+                            for (File candidate : persistenceCandidates) {
+                                list.add(fileToUrl(candidate));
+                            }
+                            if (persistenceCandidates.length > 1) {
+                                LOGGER.log(Level.INFO, "Multiple javax.persistence JAR candidates");
+                            }
+                        }
+                    }
+                }
+
                 // file needed for jsp parsing WL9 and WL10
                 list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/wls-api.jar")));         // NOI18N
 
                 library.setContent(J2eeLibraryTypeProvider.
                         VOLUME_TYPE_CLASSPATH, list);
-               File j2eeDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
-               if (j2eeDoc != null) {
-                   list = new ArrayList();
-                   list.add(fileToUrl(j2eeDoc));
-                   library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
-               }
+                File j2eeDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
+                if (j2eeDoc != null) {
+                    list = new ArrayList();
+                    list.add(fileToUrl(j2eeDoc));
+                    library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
+                }
             } catch (MalformedURLException e) {
                 Logger.getLogger("global").log(Level.WARNING, null, e);
             }

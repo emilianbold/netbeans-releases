@@ -578,10 +578,13 @@ public abstract class GsfCompletionItem implements CompletionItem {
                             }
                             return;
                         }
-                        Position position = doc.createPosition(offset);
+                        int common = 0;
+                        while (text.regionMatches(0, textToReplace, 0, ++common));
+                        common--;
+                        Position position = doc.createPosition(offset + common);
                         Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
-                        doc.remove(offset, len);
-                        doc.insertString(position.getOffset(), text, null);
+                        doc.remove(offset + common, len - common);
+                        doc.insertString(position.getOffset(), text.substring(common), null);
                         if (semiPosition != null) {
                             doc.insertString(semiPosition.getOffset(), ";", null);
                         }

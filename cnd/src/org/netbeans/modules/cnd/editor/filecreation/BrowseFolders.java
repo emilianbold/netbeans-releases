@@ -321,7 +321,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
             super.addNotify();
             List<FileObject> l = new ArrayList<FileObject>();
             for (FileObject f : fo.getChildren()) {
-                if (f.isFolder() && group.contains(f) && VisibilityQuery.getDefault().isVisible(f)) {
+                if (f.isFolder() && /*group.contains(f) &&*/ VisibilityQuery.getDefault().isVisible(f)) {
                     l.add(f);
                 }
             }

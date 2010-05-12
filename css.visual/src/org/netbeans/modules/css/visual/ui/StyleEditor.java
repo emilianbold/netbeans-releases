@@ -47,7 +47,11 @@
 
 package org.netbeans.modules.css.visual.ui;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.css.editor.model.CssRuleContent;
 import java.beans.PropertyChangeEvent;
@@ -57,12 +61,12 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JPanel;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
-import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Super class for all Style editors
- * @author  Winston Prakash
+ * @author  Winston Prakash, Marek Fukala
  * @version 1.0
  */
 abstract public class StyleEditor extends JPanel {
@@ -74,17 +78,92 @@ abstract public class StyleEditor extends JPanel {
     boolean listenerAdded = false;
 
     private CssRuleContext content;
-    
+
+    private final Object LOCK = new Object();
+    private Executor EXECUTOR = Executors.newSingleThreadExecutor();
+
+    protected StyleEditor(String name, String dispName) {
+        setName(name); //NOI18N
+        setDisplayName(dispName);
+        
+        armPanel();
+    }
+
     /** Called by StyleBuilderPanel to set the UI panel property values. */
-    public void setContent(CssRuleContext content) {
+    public synchronized void setContent(final CssRuleContext content) {
         this.content = content;
-        setCssPropertyValues(content.selectedRuleContent());
+
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        setCssPropertyValues(content.selectedRuleContent());
+                        //once the instance executor is used, we can release it and run the code directly
+                        EXECUTOR = null;
+                    }
+                    
+                });
+            }
+        };
+
+        if(EXECUTOR != null) {
+            EXECUTOR.execute(task);
+        } else {
+            task.run();
+        }
+
     }
     
     protected CssRuleContext content() {
         return content;
     }
+
+    protected abstract void lazyInitializePanel();
     
+    public void initializePanel() {
+        synchronized (LOCK) {
+            LOCK.notifyAll(); //AWT
+        }
+    }
+
+    private StyleEditor armPanel() {
+        EXECUTOR.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                //this blocks the execution until the editor panel is selected
+                synchronized (LOCK) {
+                    try {
+                        LOCK.wait();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            lazyInitializePanel();
+
+                            revalidate();
+                            repaint();
+                        }
+                    });
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+
+        return this;
+    }
+
     /**
      * Overriden by the subclasses
      * - Remove the property change listener
@@ -184,6 +263,7 @@ abstract public class StyleEditor extends JPanel {
             cssStyleData = styleData;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             try {
                 cssStyleData.modifyProperty(evt.getPropertyName(), (String) evt.getNewValue());

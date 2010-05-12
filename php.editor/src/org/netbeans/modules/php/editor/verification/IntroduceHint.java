@@ -364,7 +364,7 @@ public class IntroduceHint extends AbstractRule {
         static IntroduceClassFix getInstance(String className, Model model, ClassInstanceCreation instanceCreation) {
             FileObject currentFile = model.getFileScope().getFileObject();
             FileObject folder = currentFile.getParent();
-            String templatePath = "Templates/Scripting/PHPClass";//NOI18N
+            String templatePath = "Templates/Scripting/PHPClass.php";//NOI18N
             FileObject template = FileUtil.getConfigFile(templatePath);
             return (template != null && folder != null && folder.canWrite())
                     ? new IntroduceClassFix(className, template, folder, model, instanceCreation) : null;
@@ -448,7 +448,7 @@ public class IntroduceHint extends AbstractRule {
             String clsName = type.getName();
             String fileName = type.getFileObject().getNameExt();
             return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintMethodDesc",
-                    item.getMethod().asString(PrintAs.NameAndParams), clsName, fileName);//NOI18N
+                    item.getMethod().asString(PrintAs.NameAndParamsDeclaration), clsName, fileName);//NOI18N
 
         }
 
@@ -482,7 +482,7 @@ public class IntroduceHint extends AbstractRule {
             String clsName = type.getName();
             String fileName = type.getFileObject().getNameExt();
             return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintStaticMethodDesc",
-                    item.getMethod().asString(PrintAs.NameAndParams), clsName, fileName);//NOI18N
+                    item.getMethod().asString(PrintAs.NameAndParamsDeclaration), clsName, fileName);//NOI18N
         }
 
         int getOffset() throws BadLocationException {

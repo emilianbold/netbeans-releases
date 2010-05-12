@@ -52,18 +52,19 @@ import org.openide.util.NbBundle;
  * @author thp
  */
 public class DummyPackager implements PackagerDescriptor {
+
     private final String name;
-    
+
     public DummyPackager(String name) {
         this.name = name;
     }
-    
+
     public String getName() {
         return name;
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(CompilerSet2Configuration.class,  "NOT_FOUND", name); // NOI18N // FIXUP: wrong bundle, but cannot change now after freeze
+        return NbBundle.getMessage(CompilerSet2Configuration.class, "NOT_FOUND", name); // NOI18N // FIXUP: wrong bundle, but cannot change now after freeze
     }
 
     public boolean hasInfoList() {

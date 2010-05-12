@@ -102,10 +102,12 @@ public class ElementOrTypeChooserEditorPanel extends javax.swing.JPanel {
         elementOrTypeTextField = new javax.swing.JTextField();
         browseBtn = new javax.swing.JButton();
 
+        setToolTipText("Click, or select and press CTRL-SPACE to  open chooser.");
         setName("Form"); // NOI18N
         setLayout(new java.awt.GridBagLayout());
 
         elementOrTypeTextField.setEditable(false);
+        elementOrTypeTextField.setToolTipText("Click, or select and press CTRL-SPACE to  open chooser.");
         elementOrTypeTextField.setFocusable(false);
         elementOrTypeTextField.setMargin(new java.awt.Insets(0, 0, 0, 0));
         elementOrTypeTextField.setName("elementOrTypeTextField"); // NOI18N
@@ -116,6 +118,7 @@ public class ElementOrTypeChooserEditorPanel extends javax.swing.JPanel {
 
         browseBtn.setBackground(new java.awt.Color(255, 255, 255));
         browseBtn.setText("...");
+        browseBtn.setToolTipText("Click, or select and press CTRL-SPACE to  open chooser.");
         browseBtn.setFocusCycleRoot(true);
         browseBtn.setMargin(new java.awt.Insets(0, 14, 0, 14));
         browseBtn.setMaximumSize(new java.awt.Dimension(16, 16));

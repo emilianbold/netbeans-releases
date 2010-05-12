@@ -40,6 +40,7 @@ package org.netbeans.modules.nativeexecution.support.hostinfo.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -52,6 +53,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider.class, position = 90)
 public class WindowsHostInfoProvider implements HostInfoProvider {
 
+    @Override
     public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException {
         // Windows is supported for localhosts only.
         if (!execEnv.isLocal() || !Utilities.isWindows()) {
@@ -60,6 +62,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
 
         HostInfoImpl info = new HostInfoImpl();
         info.initTmpDirs();
+        info.initUserDirs();
         return info;
     }
 
@@ -74,12 +77,14 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         private final int cpuNum;
         private final String hostname;
         private final String shell;
-        private final String path;
         private File tmpDirFile;
         private String tmpDir;
+        private File userDirFile;
+        private String userDir;
+        private Map<String, String> environment;
 
-        public HostInfoImpl() {
-            Map<String, String> env = WindowsSupport.getInstance().getEnv();
+        HostInfoImpl() {
+            Map<String, String> env = new ProcessBuilder("").environment(); // NOI18N
 
             // Use os.arch to detect bitness.
             // Another way is described in the following article:
@@ -99,22 +104,39 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             cpuNum = _cpuNum;
             hostname = env.get("COMPUTERNAME"); // NOI18N
             shell = WindowsSupport.getInstance().getShell();
-            path = env.get("PATH") + ';' + new File(shell).getParent(); // NOI18N
+
+            if (shell != null) {
+                String path = new File(shell).getParent();
+
+                if (env.containsKey("Path")) { // NOI18N
+                    path = path + ";" + env.get("Path"); // NOI18N
+                    env.put("Path", path); // NOI18N
+                } else if (env.containsKey("PATH")) { // NOI18N
+                    path = path + ";" + env.get("PATH"); // NOI18N
+                    env.put("PATH", path); // NOI18N
+                }
+            }
+
+            environment = Collections.unmodifiableMap(env);
 
             os = new OS() {
 
+                @Override
                 public OSFamily getFamily() {
                     return osFamily;
                 }
 
+                @Override
                 public String getName() {
                     return osName;
                 }
 
+                @Override
                 public String getVersion() {
                     return osVersion;
                 }
 
+                @Override
                 public Bitness getBitness() {
                     return osBitness;
                 }
@@ -125,9 +147,37 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             File _tmpDirFile = null;
             String _tmpDir = null;
             String ioTmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
-            Map<String, String> env = WindowsSupport.getInstance().getEnv();
 
-            _tmpDirFile = new File(ioTmpDir, "dlight_" + env.get("USERNAME")); // NOI18N
+            /**
+             * Some magic with temp dir...
+             * In case of non-ascii chars in username use hashcode instead of
+             * plain name as in case of MinGW (without cygwin) execution may (will)
+             * fail...
+             */
+            String username = environment.get("USERNAME"); // NOI18N
+
+            if (username != null) {
+                for (int i = 0; i < username.length(); i++) {
+                    char c = username.charAt(i);
+
+                    if (Character.isDigit(c) || c == '_') {
+                        continue;
+                    }
+
+                    if (c >= 'A' && c <= 'Z') {
+                        continue;
+                    }
+
+                    if (c >= 'a' && c <= 'z') {
+                        continue;
+                    }
+
+                    username = "" + username.hashCode(); // NOI18N
+                    break;
+                }
+            }
+
+            _tmpDirFile = new File(ioTmpDir, "dlight_" + username); // NOI18N
             _tmpDirFile = new File(_tmpDirFile, HostInfoFactory.getNBKey());
             _tmpDir = _tmpDirFile.getAbsolutePath();
 
@@ -144,44 +194,117 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             tmpDir = _tmpDir;
         }
 
+        public void initUserDirs() throws IOException {
+            File _userDirFile = null;
+            String _userDir = null;
+            String ioUserDir = System.getProperty("user.home"); // NOI18N
+
+            /**
+             * Some magic with temp dir...
+             * In case of non-ascii chars in username use hashcode instead of
+             * plain name as in case of MinGW (without cygwin) execution may (will)
+             * fail...
+             */
+            String username = environment.get("USERNAME"); // NOI18N
+
+            if (username != null) {
+                for (int i = 0; i < username.length(); i++) {
+                    char c = username.charAt(i);
+
+                    if (Character.isDigit(c) || c == '_') {
+                        continue;
+                    }
+
+                    if (c >= 'A' && c <= 'Z') {
+                        continue;
+                    }
+
+                    if (c >= 'a' && c <= 'z') {
+                        continue;
+                    }
+
+                    username = "" + username.hashCode(); // NOI18N
+                    break;
+                }
+            }
+
+            _userDirFile = new File(ioUserDir); // NOI18N
+            _userDir = _userDirFile.getAbsolutePath();
+
+            if (shell != null) {
+                _userDir = WindowsSupport.getInstance().convertToShellPath(_userDir);
+            }
+
+
+            userDirFile = _userDirFile;
+            userDir = _userDir;
+        }
+
+        @Override
         public OS getOS() {
             return os;
         }
 
+        @Override
         public CpuFamily getCpuFamily() {
             return cpuFamily;
         }
 
+        @Override
         public int getCpuNum() {
             return cpuNum;
         }
 
+        @Override
         public OSFamily getOSFamily() {
             return osFamily;
         }
 
+        @Override
         public String getHostname() {
             return hostname;
         }
 
+        @Override
         public String getShell() {
             return shell;
         }
 
+        @Override
         public String getTempDir() {
             return tmpDir;
         }
 
+        @Override
         public File getTempDirFile() {
             return tmpDirFile;
         }
 
+        @Override
+        public String getUserDir() {
+            return userDir;
+        }
+
+        @Override
+        public File getUserDirFile() {
+            return userDirFile;
+        }
+
+        @Override
         public long getClockSkew() {
             return 0;
         }
 
-        public String getPath() {
-            return path;
+        @Override
+        public String getEnvFile() {
+            // Windows is always local...
+            // env is the same as in jvm
+            return "/dev/null"; // NOI18N
+        }
+
+        @Override
+        public Map<String, String> getEnvironment() {
+            return environment;
         }
     }
 }

@@ -147,6 +147,7 @@ final class LocalOperationFactory extends FileOperationFactory {
         assert source.isFolder();
         LOGGER.log(Level.FINE, "Creating COPY FOLDER handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
                 LOGGER.log(Level.FINE, "Running COPY FOLDER handler for {0} (project {1})", new Object[]{getPath(source), project.getName()});
                 File target = getTarget(source);
@@ -192,6 +193,7 @@ final class LocalOperationFactory extends FileOperationFactory {
         assert source.isData();
         LOGGER.log(Level.FINE, "Creating COPY FILE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
                 LOGGER.log(Level.FINE, "Running COPY FILE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
                 File target = getTarget(source);
@@ -208,6 +210,7 @@ final class LocalOperationFactory extends FileOperationFactory {
     protected Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName, FileRenameEvent fileRenameEvent) {
         LOGGER.log(Level.FINE, "Creating RENAME handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
                 LOGGER.log(Level.FINE, "Running RENAME handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
                 File target = getTarget(source);
@@ -250,6 +253,7 @@ final class LocalOperationFactory extends FileOperationFactory {
     protected Callable<Boolean> createDeleteHandlerInternal(final FileObject source, FileEvent fileEvent) {
         LOGGER.log(Level.FINE, "Creating DELETE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
                 LOGGER.log(Level.FINE, "Running DELETE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
                 File target = getTarget(source);

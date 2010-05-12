@@ -207,7 +207,7 @@ public class ArchetypeWizardUtils {
 
         OSGI_ARCH = new Archetype();
         OSGI_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        OSGI_ARCH.setVersion("1.0-SNAPSHOT"); //NOI18N
+        OSGI_ARCH.setVersion("1.0-beta-3-SNAPSHOT"); //NOI18N
         OSGI_ARCH.setArtifactId("osgi-archetype"); //NOI18N
         OSGI_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
     }
@@ -335,7 +335,7 @@ public class ArchetypeWizardUtils {
                 handle.start(8 + (web_vi != null ? 3 : 0) + (ejb_vi != null ? 3 : 0));
                 File rootFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi, //NOI18N
                         arch, additional, 0); //NOI18N
-                createFromArchetype(handle, (File)wiz.getProperty("ear_projdir"), ear_vi, //NOI18N
+                File earFile = createFromArchetype(handle, (File)wiz.getProperty("ear_projdir"), ear_vi, //NOI18N
                         (Archetype)wiz.getProperty("ear_archetype"), null, 4); //NOI18N
                 int progressCounter = 6;
                 if (web_vi != null) {
@@ -351,13 +351,15 @@ public class ArchetypeWizardUtils {
                 addEARDeps((File)wiz.getProperty("ear_projdir"), ejb_vi, web_vi, progressCounter);
                 updateProjectName(rootFile,
                         NbBundle.getMessage(ArchetypeWizardUtils.class, "TXT_EAProjectName", vi.artifactId));
-                return openProjects(handle, rootFile, progressCounter);
+                return openProjects(handle, rootFile, earFile, progressCounter);
             } else {
 
                 String nbm_artifactId = (String) wiz.getProperty("nbm_artifactId");
                 handle.start( nbm_artifactId == null ? 4 : (4 + 3));
                 File projFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi, //NOI18N
-                        arch, additional, 0); //NOI18N
+                        arch, additional, 0);
+                final File appDir = new File(projFile, "application"); //NOI18N
+
                 if (nbm_artifactId != null && projFile.exists()) {
                     //NOW we have the nbm-Platform or nbm suite template
                     //create the nbm module
@@ -366,18 +368,18 @@ public class ArchetypeWizardUtils {
                     nbm.groupId = vi.groupId;
                     nbm.version = vi.version;
                     nbm.packageName = vi.packageName;
-                    File nbm_folder = createFromArchetype(handle, new File(projFile, nbm_artifactId), nbm, //NOI18N
-                            ArchetypeWizardUtils.NB_MODULE_ARCH, null, 3); //NOI18N
+                    File nbm_folder = createFromArchetype(handle, new File(projFile, nbm_artifactId), nbm,
+                            ArchetypeWizardUtils.NB_MODULE_ARCH, null, 3);
                     trimInheritedFromNbmProject(nbm_folder);
                     if (ArchetypeWizardUtils.NB_APP_ARCH.equals(arch)) {
-                        addModuleToApplication(new File(projFile, "application"), nbm, null);
+                        addModuleToApplication(appDir, nbm, null);
                     }
                 }
                 if (setOsgiDeps != null && setOsgiDeps.booleanValue()) {
                     //now we have the nbm-archetype (or the netbeans platform one).
                     addNbmPluginOsgiParameter(projFile);
                 }
-                return openProjects(handle, projFile, nbm_artifactId == null ? 3 : 3 + 3);
+                return openProjects(handle, projFile, appDir, nbm_artifactId == null ? 3 : 3 + 3);
             }
         } finally {
             handle.finish();
@@ -444,13 +446,15 @@ public class ArchetypeWizardUtils {
         return dirF;
     }
 
-    private static Set<FileObject> openProjects (ProgressHandle handle, File dirF, int progressCounter) throws IOException {
-        Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
+    private static Set<FileObject> openProjects (ProgressHandle handle, File dirF, File mainProjectDir, int progressCounter) throws IOException {
+        List<FileObject> resultList = new ArrayList<FileObject>();
+
         // Always open top dir as a project:
         FileObject fDir = FileUtil.toFileObject(dirF);
         if (fDir != null) {
             // the archetype generation didn't fail.
-            resultSet.add(fDir);
+            FileObject mainFO = FileUtil.toFileObject(mainProjectDir);
+            resultList.add(fDir);
             processProjectFolder(fDir, null);
 
             FileObject nbAppModuleDir = findNbAppProjectDir(fDir);
@@ -459,13 +463,17 @@ public class ArchetypeWizardUtils {
             while (e.hasMoreElements()) {
                 FileObject subfolder = e.nextElement();
                 if (ProjectManager.getDefault().isProject(subfolder)) {
-                    resultSet.add(subfolder);
+                    if (subfolder.equals(mainFO)) {
+                        resultList.add(0, subfolder);
+                    } else {
+                        resultList.add(subfolder);
+                    }
                     processProjectFolder(subfolder, nbAppModuleDir);
                 }
             }
         }
         handle.progress(++progressCounter);
-        return resultSet;
+        return new LinkedHashSet<FileObject>(resultList);
     }
 
     private static void processProjectFolder(final FileObject fo, final FileObject nbAppModuleDir) {

@@ -124,6 +124,18 @@ public class RubyFormatterTest extends RubyTestBase {
                 continue;
             }
 
+            // Fails due to #182494
+            if (fo.getName().equals("indexer") && fo.getParent().getName().equals("rubygems")) {
+                System.err.println("SKIPPING known bad file " + fo.getNameExt());
+                continue;
+            }
+
+            // Fails due to #182761
+            if ((fo.getName().equals("mathn") || fo.getName().equals("rational"))
+                    && fo.getParent().getNameExt().equals("1.9")) {
+                System.err.println("SKIPPING known bad file " + fo.getNameExt());
+                continue;
+            }
             // This bug triggers #108889
             if (fo.getName().equals("action_controller_dispatcher") && fo.getParent().getName().equals("dispatcher")) {
                 System.err.println("SKIPPING known bad file " + fo.getNameExt());
@@ -361,6 +373,14 @@ public class RubyFormatterTest extends RubyTestBase {
 
     public void testIndent3() throws Exception {
         insertNewline("      def foo^", "      def foo\n        ^\n      end", null);
+    }
+
+    public void testIndentCurlyBraces() throws Exception {
+        insertNewline("{^}", "{\n  ^\n}", null);
+    }
+
+    public void testIndentCurlyBraces2() throws Exception {
+        insertNewline("{ ^}", "{ \n  ^\n}", null);
     }
 
     public void testHeredoc1() throws Exception {

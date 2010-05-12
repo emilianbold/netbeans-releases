@@ -88,7 +88,7 @@ public class PhpStructureScanner implements StructureScanner {
 
     private static final String FOLD_CODE_BLOCKS = "codeblocks"; //NOI18N
 
-    private static final String FOLD_CLASS = "codeblocks"; //NOI18N
+    private static final String FOLD_CLASS = "tags"; //NOI18N
 
     private static final String FOLD_PHPDOC = "comments"; //NOI18N
 
@@ -129,7 +129,7 @@ public class PhpStructureScanner implements StructureScanner {
             }
             Collection<? extends ConstantElement> declaredConstants = nameScope.getDeclaredConstants();
             for (ConstantElement constant : declaredConstants) {
-                namespaceChildren.add(new PHPSimpleStructureItem(constant, "const"));
+                namespaceChildren.add(new PHPConstantStructureItem(constant, "const"));
             }
             Collection<? extends TypeScope> declaredTypes = nameScope.getDeclaredTypes();
             for (TypeScope type : declaredTypes) {
@@ -157,7 +157,7 @@ public class PhpStructureScanner implements StructureScanner {
                 }
                 Collection<? extends ClassConstantElement> declaredClsConstants = type.getDeclaredConstants();
                 for (ClassConstantElement classConstant : declaredClsConstants) {
-                    children.add(new PHPSimpleStructureItem(classConstant, "con"));//NOI18N
+                    children.add(new PHPConstantStructureItem(classConstant, "con"));//NOI18N
                 }
                 if (type instanceof ClassScope) {
                     ClassScope cls = (ClassScope) type;
@@ -215,7 +215,10 @@ public class PhpStructureScanner implements StructureScanner {
                 if (scope instanceof TypeScope) {
                     getRanges(folds, FOLD_CLASS).add(offsetRange);
                 } else {
-                    getRanges(folds, FOLD_CODE_BLOCKS).add(offsetRange);
+                    //NamespaceScope excluded until getBlockRange() return proper vaalues
+                    if (scope instanceof FunctionScope || scope instanceof MethodScope /*|| scope instanceof NamespaceScope*/) {
+                        getRanges(folds, FOLD_CODE_BLOCKS).add(offsetRange);
+                    } 
                 }
             }
             Source source = info.getSnapshot().getSource();
@@ -545,6 +548,32 @@ public class PhpStructureScanner implements StructureScanner {
                 appendInterfeas(interfaes, formatter);
                 formatter.appendHtml(CLOSE_FONT);
             }
+            return formatter.getText();
+        }
+
+    }
+
+    private class PHPConstantStructureItem extends PHPStructureItem {
+        public PHPConstantStructureItem(ConstantElement elementHandle, String prefix) {
+            super(elementHandle, null, prefix);
+        }
+
+        public ConstantElement getConstant() {
+            return (ConstantElement) getModelElement();
+        }
+
+        @Override
+        public String getHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            formatter.appendText(getName());
+            final ConstantElement constant = getConstant();
+            String value = constant.getValue();
+            if (value != null) {
+                formatter.appendText(" ");//NOI18N
+                formatter.appendHtml(FONT_GRAY_COLOR); //NOI18N
+                formatter.appendText(value);
+                formatter.appendHtml(CLOSE_FONT);
+            }            
             return formatter.getText();
         }
 

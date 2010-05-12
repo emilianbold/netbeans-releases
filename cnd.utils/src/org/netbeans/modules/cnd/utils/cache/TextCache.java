@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.utils.cache;
 
+import org.openide.util.CharSequences;
+
 /**
  * cache entry
  * @author Vladimir Voskresensky
@@ -58,7 +60,7 @@ public class TextCache extends APTStringManager {
         if (text == null) {
             throw new NullPointerException("null string is illegal to share"); // NOI18N
         }
-        text = CharSequenceKey.create(text);
+        text = CharSequences.create(text);
         return instance.getString(text);
     }
     

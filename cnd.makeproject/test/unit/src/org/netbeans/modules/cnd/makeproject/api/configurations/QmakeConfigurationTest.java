@@ -146,17 +146,26 @@ public class QmakeConfigurationTest extends CndBaseTestCase {
             assertEquals("./Dummy2.dll", qconf.getOutputValue());
             qconf.getDestdir().reset();
             assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/Dummy2.dll", qconf.getOutputValue());
-        } else if (Utilities.isUnix()) {
-            String soext = Utilities.isMac() ? "dylib" : "so";
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest." + soext + ".1.0.0", qconf.getOutputValue());
+        } else if (Utilities.isMac()) {
+            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest.1.0.0.dylib", qconf.getOutputValue());
             qconf.getVersion().setValue("2.3.4");
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest." + soext + ".2.3.4", qconf.getOutputValue());
+            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest.2.3.4.dylib", qconf.getOutputValue());
             qconf.getDestdir().setValue(".");
-            assertEquals("./libQmakeConfigurationTest." + soext + ".2.3.4", qconf.getOutputValue());
+            assertEquals("./libQmakeConfigurationTest.2.3.4.dylib", qconf.getOutputValue());
             qconf.getTarget().setValue("Dummy");
-            assertEquals("./libDummy." + soext + ".2.3.4", qconf.getOutputValue());
+            assertEquals("./libDummy.2.3.4.dylib", qconf.getOutputValue());
             qconf.getDestdir().reset();
-            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libDummy." + soext + ".2.3.4", qconf.getOutputValue());
+            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libDummy.2.3.4.dylib", qconf.getOutputValue());
+        } else if (Utilities.isUnix()) {
+            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest.so.1.0.0", qconf.getOutputValue());
+            qconf.getVersion().setValue("2.3.4");
+            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libQmakeConfigurationTest.so.2.3.4", qconf.getOutputValue());
+            qconf.getDestdir().setValue(".");
+            assertEquals("./libQmakeConfigurationTest.so.2.3.4", qconf.getOutputValue());
+            qconf.getTarget().setValue("Dummy");
+            assertEquals("./libDummy.so.2.3.4", qconf.getOutputValue());
+            qconf.getDestdir().reset();
+            assertEquals("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libDummy.so.2.3.4", qconf.getOutputValue());
         } else {
             System.err.println("OS not recognized. Skipping test");
         }

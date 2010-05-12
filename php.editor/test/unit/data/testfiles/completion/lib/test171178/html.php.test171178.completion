@@ -3,6 +3,8 @@ $hTML->|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     BlueBox($sBorder = true)        [PUBLIC]   HTML
 METHOD     BlueBox()                       [PUBLIC]   HTML
+VARIABLE   string sHTML                    [PUBLIC]   HTML
+VARIABLE   string sTitle                   [PUBLIC]   HTML
 ------------------------------------
 METHOD     BulletSection($sFieldName)      [PUBLIC]   HTMLbase
 METHOD     BulletSection($sFieldName, $sT  [PUBLIC]   HTMLbase
@@ -10,7 +12,7 @@ METHOD     BulletSection($sFieldName, $sT  [PUBLIC]   HTMLbase
 METHOD     BulletSection($sFieldName, $sT  [PUBLIC]   HTMLbase
 METHOD     BulletSubSection($sFieldName)   [PUBLIC]   HTMLbase
 METHOD     Clear()                         [PUBLIC]   HTMLbase
-METHOD     ClearOthers($s)                 [PUBLIC]   HTMLbase
+METHOD     ClearOthers(&$s)                [PUBLIC]   HTMLbase
 METHOD     CommaSection($sFieldName)       [PUBLIC]   HTMLbase
 METHOD     Debug($s)                       [PUBLIC]   HTMLbase
 METHOD     FieldsetSection()               [PUBLIC]   HTMLbase
@@ -35,9 +37,7 @@ VARIABLE   ? aFieldNames                   [PUBLIC]   HTMLbase
 VARIABLE   ? sBBEndText                    [PUBLIC]   HTMLbase
 VARIABLE   ? sBBStartText                  [PUBLIC]   HTMLbase
 VARIABLE   ? sBBStyle                      [PUBLIC]   HTMLbase
-VARIABLE   ? sHTML                         [PUBLIC]   HTMLbase
 VARIABLE   ? sHTML2                        [PUBLIC]   HTMLbase
 VARIABLE   ? sHTML3                        [PUBLIC]   HTMLbase
 VARIABLE   ? sHTML4                        [PUBLIC]   HTMLbase
-VARIABLE   ? sTitle                        [PUBLIC]   HTMLbase
 VARIABLE   ? sTitle2                       [PUBLIC]   HTMLbase

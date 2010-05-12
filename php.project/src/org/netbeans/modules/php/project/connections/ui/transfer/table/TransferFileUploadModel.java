@@ -53,14 +53,17 @@ public class TransferFileUploadModel extends TransferFileTableModel {
         setData(fileUnits);
     }
 
+    @Override
     protected Type getType() {
         return TransferFileTableModel.Type.UPLOAD;
     }
 
+    @Override
     protected String getTabTitle() {
         return NbBundle.getMessage(TransferFileUploadModel.class, "FileConfirmationTableModel_Upload_Title");
     }
 
+    @Override
     protected String getFirstColumnName() {
         return NbBundle.getMessage(TransferFileUploadModel.class, "FileConfirmationTableModel_Columns_Upload");
     }

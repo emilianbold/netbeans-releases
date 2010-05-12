@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -60,7 +60,7 @@ public abstract class APTTokenAbstact implements APTToken {
     public int getEndLine() {return -1;};
     public void setEndLine(int l) {};
     
-    public CharSequence getTextID() {return CharSequenceKey.empty();};
+    public CharSequence getTextID() {return CharSequences.empty();};
     public void setTextID(CharSequence id) {};
     
     public int getColumn() {return -1;};

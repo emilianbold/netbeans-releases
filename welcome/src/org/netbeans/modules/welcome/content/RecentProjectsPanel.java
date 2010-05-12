@@ -97,6 +97,7 @@ public class RecentProjectsPanel extends JPanel implements Constants {
     private PropertyChangeListener getPropertyChangeListener() {
         if( null == changeListener ) {
             changeListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent e) {
                     if( RecentProjects.PROP_RECENT_PROJECT_INFO.equals( e.getPropertyName() ) ) {
                         removeAll();
@@ -136,11 +137,12 @@ public class RecentProjectsPanel extends JPanel implements Constants {
     
     private void addProject( JPanel panel, int row, final UnloadedProjectInformation project ) {
         OpenProjectAction action = new OpenProjectAction( project );
-        ActionButton b = new ActionButton( action, true, project.getURL().toString() );
+        ActionButton b = new ActionButton( action, project.getURL().toString(), false );
         b.setFont( BUTTON_FONT );
         b.getAccessibleContext().setAccessibleName( b.getText() );
         b.getAccessibleContext().setAccessibleDescription( 
                 BundleSupport.getAccessibilityDescription( "RecentProject", b.getText() ) ); //NOI18N
+        b.setIcon(project.getIcon());
         panel.add( b, new GridBagConstraints( 0,row,1,1,1.0,0.0,
             GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(2,2,2,2), 0, 0 ) );
     }

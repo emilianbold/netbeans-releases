@@ -97,7 +97,7 @@ public class IntroduceHintTest extends NbTestCase {
 //
 //        return s;
 //    }
-    
+
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
@@ -292,6 +292,30 @@ public class IntroduceHintTest extends NbTestCase {
                        "            name.getColumn(0);\n" +
                        "        }\n" +
                        "    }\n" +
+                       "}\n",
+                       new DialogDisplayerImpl("name", true, false, true),
+                       3, 0);
+    }
+
+    public void testFix180164() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    private final Object o = new Runnable() {\n" +
+                       "        public void run() {\n" +
+                       "            String u = null;\n" +
+                       "            String n = |u|;\n" +
+                       "        }\n" +
+                       "    };\n" +
+                       "}\n",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    private final Object o = new Runnable() {\n" +
+                       "        public void run() {\n" +
+                       "            String u = null;\n" +
+                       "            String name = u;\n" +
+                       "            String n = name;\n" +
+                       "        }\n" +
+                       "    };\n" +
                        "}\n",
                        new DialogDisplayerImpl("name", true, false, true),
                        3, 0);
@@ -1161,6 +1185,19 @@ public class IntroduceHintTest extends NbTestCase {
                        "package test; public class Test { public static void test1() { int i = 0; i = name(i); System.err.println(i); } private static int name(int i) { i++; i++; return i; } public static void test2(int ii) { int[] a = {0}; switch (ii) { case 0: a[0] = name(a[0]); break; } System.err.println(a[0]); } }",
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
                        1, 0);
+    }
+
+    public void testIntroduceMethodFromExpressionDuplicatesAndRemap() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void test(java.util.List<? extends String> l, java.util.List<? extends String> ll) {\n" +
+                       "        System.err.println(|l.get(0)|);\n" +
+                       "        System.err.println(ll.get(0));\n" +
+                       "    }\n" +
+                       "}",
+                       "package test; import java.util.List; public class Test { public static void test(java.util.List<? extends String> l, java.util.List<? extends String> ll) { System.err.println(name(l)); System.err.println(name(ll)); } private static String name(List<? extends String> l) { return l.get(0); } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
+                       3, 2);
     }
 
     protected void prepareTest(String code) throws Exception {

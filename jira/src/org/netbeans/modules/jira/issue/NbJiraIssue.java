@@ -39,6 +39,16 @@
 
 package org.netbeans.modules.jira.issue;
 
+import com.atlassian.connector.eclipse.internal.jira.core.IJiraConstants;
+import com.atlassian.connector.eclipse.internal.jira.core.JiraAttribute;
+import com.atlassian.connector.eclipse.internal.jira.core.WorkLogConverter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Component;
+import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
@@ -64,17 +74,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.jira.core.IJiraConstants;
-import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
-import org.eclipse.mylyn.internal.jira.core.WorkLogConverter;
-import org.eclipse.mylyn.internal.jira.core.model.Component;
-import org.eclipse.mylyn.internal.jira.core.model.IssueType;
-import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
-import org.eclipse.mylyn.internal.jira.core.model.Priority;
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
-import org.eclipse.mylyn.internal.jira.core.model.Version;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.IRepositoryPerson;
@@ -94,8 +93,8 @@ import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -354,9 +353,13 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     public long getLastModify() {
         String value = getFieldValue(IssueField.MODIFICATION);
         try {
-            return Long.parseLong(value);
+            if(!"".equals(value)) {
+                return Long.parseLong(value);
+            } else {
+                Jira.LOG.log(Level.WARNING, "no modification value available for [{0}, {1}]", new Object[]{getRepository().getUrl(), getID()});
+            }
         } catch (NumberFormatException nfex) {
-            Jira.LOG.log(Level.WARNING, null, nfex);
+            Jira.LOG.log(Level.WARNING, "[" + getRepository().getUrl() + ", " + getID()+ "]", nfex);
         }
         return -1;
     }
@@ -483,6 +486,8 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             mapper.setLongValue(attribute.createMappedAttribute(WorkLogConverter.TIME_SPENT.key()), spentTime);
             mapper.setDateValue(attribute.createMappedAttribute(WorkLogConverter.START_DATE.key()), startDate);
             mapper.setValue(attribute.createMappedAttribute(WorkLogConverter.COMMENT.key()), comment);
+            mapper.setValue(attribute.createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG), "true"); // NOI18N
+            mapper.setBooleanValue(attribute.createMappedAttribute(WorkLogConverter.ADJUST_ESTIMATE.key()), Boolean.TRUE);
         }
     }
 
@@ -789,13 +794,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             addComment(comment);
         }
 
-        JiraCommand submitCmd = new JiraCommand() {
-            @Override
-            public void execute() throws CoreException, IOException {
-                submitAndRefresh();
-            }
-        };
-        repository.getExecutor().execute(submitCmd);
+        submitAndRefresh();
     }
 
     /**
@@ -991,7 +990,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                 new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
                                               loc.getString("CTL_Issue_ID_Title"), // NOI18N
                                               loc.getString("CTL_Issue_ID_Desc"), // NOI18N
-                                              BugtrackingUtil.getColumnWidthInPixels(20, t)),
+                                              UIUtils.getColumnWidthInPixels(20, t)),
                 new ColumnDescriptor<String>(IssueNode.LABEL_NAME_SUMMARY, String.class,
                                               loc.getString("CTL_Issue_Summary_Title"), // NOI18N
                                               loc.getString("CTL_Issue_Summary_Desc")), // NOI18N
@@ -1409,7 +1408,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                 scrollPane.getHorizontalScrollBar().setUnitIncrement(size);
                 scrollPane.getVerticalScrollBar().setUnitIncrement(size);
             }
-            BugtrackingUtil.keepFocusedComponentVisible(scrollPane);
+            UIUtils.keepFocusedComponentVisible(scrollPane);
             issuePanel = panel;
             component = scrollPane;
         }

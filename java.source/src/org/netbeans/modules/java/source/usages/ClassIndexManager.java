@@ -43,15 +43,17 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.openide.util.Exceptions;
 
 /**
@@ -59,7 +61,7 @@ import org.openide.util.Exceptions;
  * @author Tomas Zezula
  */
 public final class ClassIndexManager {
-    
+
     private static final byte OP_ADD    = 1;
     private static final byte OP_REMOVE = 2;
 
@@ -67,24 +69,22 @@ public final class ClassIndexManager {
     private final Map<URL, ClassIndexImpl> instances = new HashMap<URL, ClassIndexImpl> ();
     private final ReentrantReadWriteLock lock;
     private final InternalLock internalLock;
-    private final List<ClassIndexManagerListener> listeners = new CopyOnWriteArrayList<ClassIndexManagerListener> ();
+    private final Map<ClassIndexManagerListener,Void> listeners = Collections.synchronizedMap(new IdentityHashMap<ClassIndexManagerListener, Void>());
     private boolean invalid;
     private Set<URL> added;
     private Set<URL> removed;
     private int depth = 0;
-    
-    
-    
+
     private ClassIndexManager() {
         this.lock = new ReentrantReadWriteLock (false);
         this.internalLock = new InternalLock();
     }
-    
+
     public void addClassIndexManagerListener (final ClassIndexManagerListener listener) {
         assert listener != null;
-        this.listeners.add(listener);
+        this.listeners.put(listener,null);
     }
-    
+
     public void removeClassIndexManagerListener (final ClassIndexManagerListener listener) {
         assert listener != null;
         this.listeners.remove(listener);
@@ -144,7 +144,23 @@ public final class ClassIndexManager {
     public <T> T takeWriteLock(final ExceptionAction<T> r) throws IOException, InterruptedException {
         this.lock.writeLock().lock();
         try {
-            return r.run();
+            return Utilities.runPriorityIO(new Callable<T>() {
+                @Override
+                public T call() throws Exception {
+                    return r.run();
+                }
+            });
+        } catch (IOException ioe) {
+            //rethrow ioe
+            throw ioe;
+        } catch (InterruptedException ie) {
+            //rethrow ioe
+            throw ie;
+        } catch (RuntimeException re) {
+            //rethrow ioe
+            throw re;
+        } catch (Exception e) {
+            throw new IOException(e);
         } finally {
             this.lock.writeLock().unlock();
         }
@@ -153,7 +169,23 @@ public final class ClassIndexManager {
     public <T> T readLock (final ExceptionAction<T> r) throws IOException, InterruptedException {
         this.lock.readLock().lock();
         try {
-            return r.run();
+            return Utilities.runPriorityIO(new Callable<T>() {
+                @Override
+                public T call() throws Exception {
+                    return r.run();
+                }
+            });
+        } catch (IOException ioe) {
+            //rethrow ioe
+            throw ioe;
+        } catch (InterruptedException ie) {
+            //rethrow ioe
+            throw ie;
+        } catch (RuntimeException re) {
+            //rethrow ioe
+            throw re;
+        } catch (Exception e) {
+            throw new IOException(e);
         } finally {
             this.lock.readLock().unlock();
         }
@@ -236,8 +268,12 @@ public final class ClassIndexManager {
     
     private void fire (final Set<? extends URL> roots, final byte op) {
         if (!this.listeners.isEmpty()) {
+            ClassIndexManagerListener[] _listeners;
+            synchronized (this.listeners) {
+                _listeners = this.listeners.keySet().toArray(new ClassIndexManagerListener[this.listeners.size()]);
+            }
             final ClassIndexManagerEvent event = new ClassIndexManagerEvent (this, roots);
-            for (ClassIndexManagerListener listener : this.listeners) {
+            for (ClassIndexManagerListener listener : _listeners) {
                 if (op == OP_ADD) {
                     listener.classIndexAdded(event);
                 }

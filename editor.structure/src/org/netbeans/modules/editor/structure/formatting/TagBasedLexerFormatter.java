@@ -148,8 +148,17 @@ public abstract class TagBasedLexerFormatter {
         OUTER}
 
     public void process(Context context) throws BadLocationException{
-        if (context.isIndent()){
-            enterPressed(context);
+        if (context.isIndent()) {
+            //
+            // A temporary workaround for issue #178512
+            BaseDocument doc = (BaseDocument)context.document();
+            int firstLine = Utilities.getLineOffset(doc, context.startOffset());
+            int lastLine = Utilities.getLineOffset(doc, context.endOffset());
+            if (firstLine == lastLine) {
+                enterPressed(context);
+            } else {
+                reformat(context);
+            }
         } else {
             reformat(context);
         }

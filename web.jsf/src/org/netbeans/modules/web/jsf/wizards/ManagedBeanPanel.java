@@ -102,10 +102,10 @@ final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor
             return;
         }
 
-        if (targetName.equals(managedBeanClass)) {
+        if (managedBeanClass!=null && targetName.equals(managedBeanClass.substring(0, 1).toUpperCase()+ managedBeanClass.substring(1))) {
             return;
         } else {
-            managedBeanClass = targetName;
+            managedBeanClass = targetName.substring(0, 1).toLowerCase()+targetName.substring(1);
         }
 
         getComponent();

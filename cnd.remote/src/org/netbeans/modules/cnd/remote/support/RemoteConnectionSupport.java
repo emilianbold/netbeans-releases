@@ -63,19 +63,19 @@ public abstract class RemoteConnectionSupport {
         this.executionEnvironment = env;
         exit_status = -1; // this is what JSch initializes it to...
         failureReason = "";
-        RemoteUtil.LOGGER.finest("RCS<Init>: Starting " + getClass().getName() + " on " + executionEnvironment);
+        RemoteUtil.LOGGER.log(Level.FINEST, "RCS<Init>: Starting {0} on {1}", new Object[]{getClass().getName(), executionEnvironment});
 
         if (!ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
             try {
                 ConnectionManager.getInstance().connectTo(executionEnvironment);
             } catch (IOException ex) {
-                RemoteUtil.LOGGER.warning("RCS<Init>: Got " + ex.getClass().getSimpleName() + " [" + ex.getMessage() + "]");
+                RemoteUtil.LOGGER.log(Level.WARNING, "RCS<Init>: Got {0} [{1}]", new Object[]{ex.getClass().getSimpleName(), ex.getMessage()});
                 RemoteUtil.LOGGER.log(Level.FINE, "Caused by:", ex);
             } catch (CancellationException ex) {
                 cancelled = true;
             }
             if (!ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
-                RemoteUtil.LOGGER.fine("RCS<Init>: Connection failed on " + executionEnvironment);
+                RemoteUtil.LOGGER.log(Level.FINE, "RCS<Init>: Connection failed on {0}", executionEnvironment);
             }
         }
     }

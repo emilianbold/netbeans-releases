@@ -113,11 +113,13 @@ public class NativeExecutionTestSupport {
                     defaultTestExecutionEnvironment = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "127.0.0.1"); // NOI18N
                 }
                 if (defaultTestExecutionEnvironment != null) {
-                    if (connect) {
-                        ConnectionManager.getInstance().connectTo(defaultTestExecutionEnvironment, passwd, false);
-                    } else if(passwd != null && passwd.length > 0) {
-                        PasswordManager.getInstance().put(defaultTestExecutionEnvironment, passwd, false);
+                    if(passwd != null && passwd.length > 0) {
+                        PasswordManager.getInstance().storePassword(defaultTestExecutionEnvironment, passwd, false);
                     }
+                    
+                    if (connect) {
+                        ConnectionManager.getInstance().connectTo(defaultTestExecutionEnvironment);
+                    } 
                 }
             }
         }
@@ -184,9 +186,8 @@ public class NativeExecutionTestSupport {
 
         if (result != null) {
             if (passwd != null) {
-                PasswordManager.getInstance().put(result, passwd, false);
+                PasswordManager.getInstance().storePassword(result, passwd, false);
             }
-            //ConnectionManager.getInstance().connectTo(result, passwd, false);
         }
 
         spec2env.put(mspec, result);

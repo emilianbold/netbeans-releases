@@ -41,7 +41,6 @@
 
 package org.netbeans.core.startup.layers;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
@@ -76,20 +75,24 @@ implements XMLFileSystemTestHid.Factory {
         return new BinaryFSTest(suite);
     }
     
+    @Override
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
         XMLFileSystem xfs = (XMLFileSystem)TestUtilHid.createXMLFileSystem(testName, resources);
         LayerCacheManager bm = LayerCacheManager.manager(true);
         return new FileSystem[] {BinaryCacheManagerTest.store(bm, Arrays.asList(xfs.getXmlUrls()))};
     }
 
+    @Override
     protected void destroyFileSystem(String testName) throws IOException {
     }
 
+    @Override
     public FileSystem createLayerSystem(String testName, URL[] layers) throws IOException {
         LayerCacheManager bm = LayerCacheManager.manager(true);
         return BinaryCacheManagerTest.store(bm, Arrays.asList(layers));
     }
 
+    @Override
     public boolean setXmlUrl(FileSystem fs, URL[] layers) throws IOException {
         return false;
     }

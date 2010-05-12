@@ -94,6 +94,7 @@ public class MyProjectNode extends LeafNode {
     private final PropertyChangeListener projectListener;
     private TreeLabel rightPar;
     private TreeLabel leftPar;
+    private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
 
     public MyProjectNode( final ProjectHandle project ) {
         super( null );
@@ -158,8 +159,7 @@ public class MyProjectNode extends LeafNode {
                 lbl = new TreeLabel(project.getDisplayName());
                 component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,16,0,3), 0,0) );
 
-                MessagingHandle messaging = maccessor.getMessaging(project);
-                int count = messaging.getMessageCount();
+                int count = mh.getMessageCount();
 
                 leftPar = new TreeLabel("("); // NOI18N
                 rightPar = new TreeLabel(")"); // NOI18N
@@ -168,9 +168,9 @@ public class MyProjectNode extends LeafNode {
                 btnMessages.setHorizontalTextPosition(JLabel.LEFT);
                 component.add(btnMessages, new GridBagConstraints(2, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 component.add(rightPar, new GridBagConstraints(4, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                setOnline(messaging.getOnlineCount() >= 0 && count >0);
+                setOnline(mh.getOnlineCount() >= 0 && count >0);
                 
-                post(new Runnable() {
+                issuesRP.post(new Runnable() {
 
                     public void run() {
                         DashboardImpl.getInstance().myProjectsProgressStarted();
@@ -258,15 +258,6 @@ public class MyProjectNode extends LeafNode {
         refreshChildren();
     }
 
-    private static RequestProcessor rp;;
-
-    private static synchronized void post(Runnable run) {
-        if (rp == null) {
-            rp = new RequestProcessor();
-        }
-        rp.post(run);
-    }
-
     @Override
     protected void dispose() {
         super.dispose();
@@ -276,9 +267,6 @@ public class MyProjectNode extends LeafNode {
             mh.removePropertyChangeListener(projectListener);
         }
         project.getKenaiProject().getKenai().removePropertyChangeListener(projectListener);
-        synchronized(MyProjectNode.class) {
-            rp=null;
-        }
     }
 
     private void setBugsLater(final QueryResultHandle bug) {

@@ -87,7 +87,7 @@ public class WebServicesHintsProvider {
     private boolean cancelled = false;
     private ProblemContext context = null;
     private List<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
-    private Object cancellationLock = new Object();
+    private final Object cancellationLock = new Object();
     private WSDLModel wsdlModel;
     private Service service;
     private ComponentListener changeListener;
@@ -124,16 +124,17 @@ public class WebServicesHintsProvider {
                 if (tree.getKind() == Tree.Kind.CLASS){
                     TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
                     TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
-                    
-                    initServiceMetadata(javaClass);
-                    createProblemContext(info, javaClass);
-                    
-                    RulesEngine rulesEngine = new WebServicesRulesEngine();
-                    javaClass.accept(rulesEngine, context);
-                    problemsFound.addAll(rulesEngine.getProblemsFound());
+                    if (javaClass != null) {
+                        initServiceMetadata(javaClass);
+                        createProblemContext(info, javaClass);
 
-                    synchronized(cancellationLock){
-                        context = null;
+                        RulesEngine rulesEngine = new WebServicesRulesEngine();
+                        javaClass.accept(rulesEngine, context);
+                        problemsFound.addAll(rulesEngine.getProblemsFound());
+
+                        synchronized(cancellationLock){
+                            context = null;
+                        }
                     }
                 }
             }

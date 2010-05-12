@@ -41,7 +41,6 @@
 
 package org.netbeans.core.startup.layers;
 
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -69,15 +68,16 @@ import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
-@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.URLMapper.class)
+@ServiceProvider(service=URLMapper.class)
 public class ArchiveURLMapper extends URLMapper {
-    private static boolean warningAlreadyReported = false;
+
     private static final String JAR_PROTOCOL = "jar";   //NOI18N
 
     private static Map<File,SoftReference<JarFileSystem>> mountRoots = new ConcurrentHashMap<File,SoftReference<JarFileSystem>>();
 
-    public URL getURL(FileObject fo, int type) {
+    public @Override URL getURL(FileObject fo, int type) {
         assert fo != null;
         if (type == URLMapper.EXTERNAL || type == URLMapper.INTERNAL) {
             if (fo.isValid()) {
@@ -100,7 +100,7 @@ public class ArchiveURLMapper extends URLMapper {
         return null;
     }
 
-    public FileObject[] getFileObjects(URL url) {
+    public @Override FileObject[] getFileObjects(URL url) {
         assert url != null;
         String protocol  = url.getProtocol ();
         if (JAR_PROTOCOL.equals (protocol)) {
@@ -113,6 +113,7 @@ public class ArchiveURLMapper extends URLMapper {
                     try {
                         archiveFileURL = archiveFileURI.toURL();
                     } catch (IllegalArgumentException x) {
+                        ModuleLayeredFileSystem.err.log(Level.INFO, "checking " + archiveFileURI, x);
                         return null;
                     }
                     FileObject fo = URLMapper.findFileObject (archiveFileURL);
@@ -131,14 +132,7 @@ public class ArchiveURLMapper extends URLMapper {
                         return new FileObject[] {resource};
                     }
                 } catch (IOException e) {                    
-                    // Can easily happen if the JAR file is corrupt etc,
-                    // it is better for user to log localized message than to dump stack
-                    if (warningAlreadyReported) {
-                        ModuleLayeredFileSystem.err.log(Level.INFO, null, e);
-                    } else {
-                        ModuleLayeredFileSystem.err.log(Level.WARNING, null, e);
-                        warningAlreadyReported = true;
-                    }
+                    ModuleLayeredFileSystem.err.log(Level.INFO, "checking " + url, e);
                 }
                 catch (URISyntaxException e) {
                     Exceptions.printStackTrace(e);

@@ -71,6 +71,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -288,7 +289,7 @@ public class LookupProviderImpl implements LookupProvider {
             if (web == null) {
                 return null;
             }
-            List<Element> webModules = Util.findSubElements(web);
+            List<Element> webModules = XMLUtil.findSubElements(web);
             List<FileObject> roots = new ArrayList<FileObject>();
             for (Element webModulesEl : webModules) {
                 assert webModulesEl.getLocalName().equals("web-module") : webModulesEl; // NOI18N
@@ -298,8 +299,8 @@ public class LookupProviderImpl implements LookupProvider {
         }
         
         private File getFile(Element parent, String fileElName, Project proj, PropertyEvaluator evaluator) {
-            Element el = Util.findElement(parent, fileElName, WebProjectNature.NS_WEB_2);
-            return Util.resolveFile(evaluator, FileUtil.toFile(proj.getProjectDirectory()), Util.findText(el));
+            Element el = XMLUtil.findElement(parent, fileElName, WebProjectNature.NS_WEB_2);
+            return Util.resolveFile(evaluator, FileUtil.toFile(proj.getProjectDirectory()), XMLUtil.findText(el));
         }
         
     }

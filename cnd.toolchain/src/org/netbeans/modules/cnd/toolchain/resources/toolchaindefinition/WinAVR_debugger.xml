@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <debugger>
+    <debugger id="GNU">
         <tool name="avr-gdb"/>
         <alternative_path>
             <path directory="$PATH"/>

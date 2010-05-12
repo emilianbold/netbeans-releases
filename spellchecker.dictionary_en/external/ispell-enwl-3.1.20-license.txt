@@ -1,3 +1,9 @@
+Name: Ispell word list
+Version: 3.1.20
+License: BSD
+Description: English dictionary word list
+Origin: http://wordlist.sourceforge.net/
+OSR: Oracle-2411
 
 This file contains the contents of the Ispell (ver 3.1.20) word list after
 being expand from there affix compressed form used by Ispell.

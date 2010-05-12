@@ -106,6 +106,8 @@ public class CustomizerProvider implements CardCustomizerProvider {
             assert EventQueue.isDispatchThread();
             if (pnl == null) {
                 pnl = new DevicePropertiesPanel(props);
+            } else {
+                pnl.read(new KeysAndValues.PropertiesAdapter(props));
             }
             return pnl;
         }

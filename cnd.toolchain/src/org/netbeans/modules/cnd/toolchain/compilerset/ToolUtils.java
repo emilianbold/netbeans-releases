@@ -545,9 +545,12 @@ public final class ToolUtils {
         }
         ExitStatus status = ProcessUtils.executeInDir(path, ExecutionEnvironmentFactory.getLocal(), command, args.toArray(new String[args.size()]));
         StringBuilder buf = new StringBuilder();
-        if (status.isOK()){
+        //if (status.isOK()){
+        if (status.output != null) {
             buf.append(status.output);
-            buf.append('\n');
+        }
+        buf.append('\n');
+        if (status.error != null) {
             buf.append(status.error);
         }
         commandCache.put(command+" "+flags, buf.toString()); // NOI18N
@@ -573,7 +576,8 @@ public final class ToolUtils {
 
         ExitStatus status = ProcessUtils.executeWithoutMacroExpansion(null, ExecutionEnvironmentFactory.getLocal(), reg_exe, "query", key, "/s"); // NOI18N
 
-        if (status.isOK()){
+        //if (status.isOK()){
+        if (status.output != null) {
             res = status.output.toString();
         } else {
             res = ""; // NOI18N

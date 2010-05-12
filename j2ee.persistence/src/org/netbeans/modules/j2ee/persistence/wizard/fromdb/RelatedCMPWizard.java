@@ -104,6 +104,8 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
     private ProgressPanel progressPanel;
 
     private Project project;
+
+    private final RequestProcessor RP = new RequestProcessor(RelatedCMPWizard.class.getSimpleName(), 5);
     
     public static RelatedCMPWizard createForJPA() {
         return new RelatedCMPWizard(TYPE_JPA);
@@ -310,12 +312,13 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         // -  the first invocation event of our runnable
         // -  the invocation event which closes the wizard
         // -  the second invocation event of our runnable
-        
+
+
         SwingUtilities.invokeLater(new Runnable() {
             private boolean first = true;
             public void run() {
                 if (!first) {
-                    RequestProcessor.getDefault().post(r);
+                    RP.post(r);
                     progressPanel.open(progressComponent, title);
                 } else {
                     first = false;

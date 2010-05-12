@@ -49,6 +49,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -65,14 +66,17 @@ public class QueryAction extends SystemAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(QueryAction.class, "CTL_QueryAction"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(QueryAction.class);
     }
 
+    @Override
     public void actionPerformed(ActionEvent ev) {
         openQuery(null, WindowManager.getDefault().getRegistry().getActivatedNodes());
     }
@@ -95,27 +99,34 @@ public class QueryAction extends SystemAction {
 
     private static void openQuery(final Query query, final Repository repository, final Node[] context, final boolean suggestedSelectionOnly) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery start. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
-                QueryTopComponent tc = null;
-                if(query != null) {
-                    tc = QueryTopComponent.find(query);
+                UIUtils.setWaitCursor(true);
+                try {
+                    QueryTopComponent tc = null;
+                    if(query != null) {
+                        tc = QueryTopComponent.find(query);
+                    }
+                    if(tc == null) {
+                        tc = new QueryTopComponent();
+                        tc.init(query, repository, context, suggestedSelectionOnly);
+                    }
+                    if(!tc.isOpened()) {
+                        tc.open();
+                    }
+                    tc.requestActive();
+                    BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery finnish. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
+                } finally {
+                    UIUtils.setWaitCursor(false);
                 }
-                if(tc == null) {
-                    tc = new QueryTopComponent();
-                    tc.init(query, repository, context, suggestedSelectionOnly);
-                }
-                if(!tc.isOpened()) {
-                    tc.open();
-                }
-                tc.requestActive();
-                BugtrackingManager.LOG.log(Level.FINE, "QueryAction.openQuery finnish. query [{0}]", new Object[] {query != null ? query.getDisplayName() : null});
             }
         });
     }
 
     public static void closeQuery(final Query query) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 TopComponent tc = null;
                 if(query != null) {

@@ -46,6 +46,7 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 
 import javax.swing.event.ChangeListener;
+import org.openide.nodes.Node.Cookie;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -483,7 +484,21 @@ public final class CookieSet extends Object implements Lookup.Provider {
             for(;;) {
                 Node.Cookie cookie = lookupCookie(cookieClazz);
                 if (cookie != null) {
-                    removeImpl(cookie);
+                    synchronized (this) {
+                        R r = findR(cookie.getClass());
+                        if (r != null && r.cookies != null) {
+                            List<Cookie> arr = r.cookies;
+                            r.base = null;
+                            r.cookies = null;
+                            for (Cookie c : arr) {
+                                unregisterCookie(cookie.getClass(), c);
+                            }
+                        }
+                    }
+                    unregisterCookie(cookie.getClass(), cookie);
+                    if (ic != null) {
+                        ic.remove(cookie);
+                    }
                 } else {
                     break;
                 }

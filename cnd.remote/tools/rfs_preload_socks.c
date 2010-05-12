@@ -39,14 +39,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <dlfcn.h>
-#include <memory.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include  <stdarg.h>
-#include  <string.h>
-#include  <limits.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>

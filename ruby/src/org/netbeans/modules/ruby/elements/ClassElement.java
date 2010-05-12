@@ -47,7 +47,13 @@ import java.util.Set;
  * @author Tor Norbye
  */
 public interface ClassElement extends Element {
+    @Override
     String getIn();
     String getFqn();
     Set<String> getIncludes();
+    /**
+     * @return true if this class represents a class that 
+     *  is not present in sources/AST, i.e. a dynamically created class.
+     */
+    boolean isVirtual();
 }

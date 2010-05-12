@@ -88,10 +88,12 @@ import org.jrubyparser.ast.DotNode;
 import org.jrubyparser.ast.HashNode;
 import org.jrubyparser.ast.ILiteralNode;
 import org.jrubyparser.ast.IfNode;
+import org.jrubyparser.ast.LiteralNode;
 import org.jrubyparser.ast.NewlineNode;
 import org.jrubyparser.ast.NilNode;
 import org.jrubyparser.ast.NotNode;
 import org.jrubyparser.ast.OrNode;
+import org.jrubyparser.ast.RescueNode;
 import org.jrubyparser.ast.ReturnNode;
 import org.jrubyparser.ast.UntilNode;
 import org.jrubyparser.ast.WhenNode;
@@ -708,6 +710,13 @@ public class AstUtilities {
                 node.getNodeType() == NodeType.CALLNODE;
     }
 
+    static boolean isRaiseCall(Node node) {
+        if (isCall(node)) {
+            return "raise".equals(getName(node)); //NOI18N
+        }
+        return false;
+    }
+
     static boolean isAssignmentNode(Node node) {
         return node.getNodeType() == NodeType.INSTASGNNODE ||
                 node.getNodeType() == NodeType.LOCALASGNNODE ||
@@ -1111,12 +1120,12 @@ public class AstUtilities {
                 if (name.equals(shoulda)) {
                     return node;
                 }
-            }
+                }
 
             break;
         case ALIASNODE:
             AliasNode aliasNode = (AliasNode) node;
-            if (name.equals(aliasNode.getNewName()) || name.equals(aliasNode.getOldName())) {
+            if (name.equals(getNameOrValue(aliasNode.getNewName())) || name.equals(getNameOrValue(aliasNode.getOldName()))) {
                 return aliasNode;
             }
             break;
@@ -1426,7 +1435,9 @@ public class AstUtilities {
 
         int newStart = pos.getStartOffset() + 6; // 6: "alias ".length()
 
-        return new OffsetRange(newStart, newStart + node.getNewName().length());
+        String name = getNameOrValue(node.getNewName());
+        int length = name != null ? name.length() : 0;
+        return new OffsetRange(newStart, newStart + length);
     }
 
     /**
@@ -1442,9 +1453,15 @@ public class AstUtilities {
         // spaces are - between alias and the first word or between old and new. XXX.
         SourcePosition pos = node.getPosition();
 
-        int oldStart = pos.getStartOffset() + 6 + node.getNewName().length() + 1; // 6: "alias ".length; 1: " ".length
+        String newName = getNameOrValue(node.getNewName());
+        int newLength = newName != null ? newName.length() : 0;
 
-        return new OffsetRange(oldStart, oldStart + node.getOldName().length());
+        String oldName = getNameOrValue(node.getOldName());
+        int oldLength = oldName != null ? oldName.length() : 0;
+
+        int oldStart = pos.getStartOffset() + 6 + newLength + 1; // 6: "alias ".length; 1: " ".length
+
+        return new OffsetRange(oldStart, oldStart + oldLength);
     }
 
     public static String getClassOrModuleName(IScopingNode node) {
@@ -1624,6 +1641,30 @@ public class AstUtilities {
     }
 
     /**
+     * Returns the names or values of the nodes in the given {@code listNode}; 
+     * not including null and not empty values.
+     *
+     * @param listNode
+     * @return the names/values; the result does not contain {@code null}s or empty strings.
+     */
+    static List<String> getNamesOrValues(ListNode listNode) {
+        List<String> result = new ArrayList<String>(listNode.size());
+        for (int i = 0, max = listNode.size(); i < max; i++) {
+            Node n = listNode.get(i);
+
+            // For dynamically computed strings, we have n instanceof DStrNode
+            // but I can't handle these anyway
+            if (n instanceof StrNode || n instanceof SymbolNode || n instanceof ConstNode) {
+                String name = getNameOrValue(n);
+                if (name != null && !name.isEmpty()) {
+                    result.add(name);
+                }
+            } 
+        }
+        return result;
+
+    }
+    /**
      * Gets the name or the value of given node, depending on its type.
      * 
      * @param node the node whose value to get.
@@ -1644,6 +1685,9 @@ public class AstUtilities {
                 Node child = node.childNodes().get(0);
                 return getNameOrValue(child);
             }
+        }
+        if (node instanceof LiteralNode) {
+            return ((LiteralNode) node).getName();
         }
         return null;
     }
@@ -2198,12 +2242,15 @@ public class AstUtilities {
 
     /**
      * Throws {@link ClassCastException} if the given node is not instance of
-     * {@link INameNode}.
+     * {@link INameNode} or {@link LiteralNode}.
      *
-     * @param node instance of {@link INameNode}.
+     * @param node instance of {@link INameNode} or {@link LiteralNode}.
      * @return node's name
      */
     public static String getName(final Node node) {
+        if (node instanceof LiteralNode) {
+            return ((LiteralNode) node).getName();
+        }
         return ((INameNode) node).getName();
     }
 
@@ -2216,7 +2263,7 @@ public class AstUtilities {
      * @return the name or <code>null</code>.
      */
     static String safeGetName(final Node node) {
-        if (node instanceof INameNode) {
+        if (node instanceof INameNode || node instanceof LiteralNode) {
             return getName(node);
         }
         return null;
@@ -2311,6 +2358,9 @@ public class AstUtilities {
                 || node instanceof UntilNode
                 || node instanceof DefinedNode) {
             return Collections.emptyList();
+        }
+        if (node instanceof RescueNode) {
+            return node.childNodes();
         }
         List<Node> children = node.childNodes();
         if (!children.isEmpty()) {

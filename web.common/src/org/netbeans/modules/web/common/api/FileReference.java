@@ -59,7 +59,7 @@ public final class FileReference {
     private FileReferenceType type;
 
     FileReference(FileObject source, FileObject target, FileObject baseFolder, String linkPath, FileReferenceType type) {
-        assert baseFolder.isFolder();
+        assert baseFolder == null || baseFolder.isFolder();
 
         this.source = source;
         this.target = target;
@@ -91,6 +91,9 @@ public final class FileReference {
     }
 
     private List<FileObject> getPathMembersToBase(FileObject file) {
+        if(baseFolder() == null) {
+            return Collections.emptyList();
+        }
         List<FileObject> members = new LinkedList<FileObject>();
         FileObject member = file;
         while((member = member.getParent()) != null && !member.equals(baseFolder())) {

@@ -351,6 +351,7 @@ public final class ServerRegistry implements java.io.Serializable {
     public void addInstance(String url, String username, String password,
             String displayName, boolean withoutUI, Map<String, String> initialproperties) throws InstanceCreationException {
         // should never have empty url; UI should have prevented this
+        // may happen when autoregistered instance is removed
         if (url == null || url.equals("")) { //NOI18N
             LOGGER.log(Level.INFO, NbBundle.getMessage(ServerRegistry.class, "MSG_EmptyUrl"));
             return;
@@ -418,6 +419,11 @@ public final class ServerRegistry implements java.io.Serializable {
     private void addInstanceImpl(String url, String username,
             String password, String displayName, boolean withoutUI,
             Map<String, String> initialProperties, boolean loadPlugins) throws InstanceCreationException {
+
+        if (url == null) {
+            // may happen when autoregistered instance is removed
+            LOGGER.log(Level.FINE, "Tried to add instance with null url");
+        }
 
         synchronized (this) {
             if (instancesMap().containsKey(url)) {

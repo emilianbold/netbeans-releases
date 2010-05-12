@@ -47,7 +47,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "program p|"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line program indent (free form)",
                 "program p\n" +
@@ -59,8 +59,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "      program p|"
                 );
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line program indent (fixed form)",
                 "      program p\n" +
@@ -73,7 +72,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "program p\n"+
                 "    end progra|"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('m', true);
         assertDocumentTextAndCaret("Incorrect new-line end program indent (free form)",
                 "program p\n" +
@@ -86,8 +85,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      program p\n"+
                 "    end progra|"
                 );
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('m', true);
         assertDocumentTextAndCaret("Incorrect new-line end program indent (fixed form)",
                 "      program p\n" +
@@ -100,7 +98,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "program p\n"+
                 "    endprogra|"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('m', true);
         assertDocumentTextAndCaret("Incorrect new-line end program indent (free form)",
                 "program p\n" +
@@ -113,8 +111,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      program p\n"+
                 "    endprogra|"
                 );
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('m', true);
         assertDocumentTextAndCaret("Incorrect new-line end program indent (fixed form)",
                 "      program p\n" +
@@ -126,7 +123,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "subroutine p(c)|"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line subroutine indent (free form)",
                 "subroutine p(c)\n"+
@@ -138,8 +135,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "      subroutine p(c)|"
                 );
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line subroutine indent (fixed form)",
                 "      subroutine p(c)\n"+
@@ -152,7 +148,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "subroutine p(c)\n"+
                 "    end subroutin|"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect new-line emd subroutine indent (free form)",
                 "subroutine p(c)\n"+
@@ -165,8 +161,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      subroutine p(c)\n"+
                 "    end subroutin|"
                 );
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect new-line emd subroutine indent (fixed form)",
                 "      subroutine p(c)\n"+
@@ -179,7 +174,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "subroutine p(c)\n"+
                 "    endsubroutin|"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect new-line end subroutine indent (free form)",
                 "subroutine p(c)\n"+
@@ -192,8 +187,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      subroutine p(c)\n"+
                 "    endsubroutin|"
                 );
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect new-line end subroutine indent (fixed form)",
                 "      subroutine p(c)\n"+
@@ -205,7 +199,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "if (a .eq. 0) then|"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line if indent (free form)",
                 "if (a .eq. 0) then\n"+
@@ -217,8 +211,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "      if (a .eq. 0) then|"
                 );
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line if indent (fixed form)",
                 "      if (a .eq. 0) then\n"+
@@ -240,7 +233,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "             c = 0\n"+
                 "             end i|"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('f', true);
         assertDocumentTextAndCaret("Infinite loop CR# 6749526",
                 "program test\n"+
@@ -266,7 +259,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "        i = j(5)\n" +
                 "        elsei|"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('f', true);
         assertDocumentTextAndCaret("Incorrect new-line else if indent (free form)",
                 "program A\n" +
@@ -287,7 +280,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "        i = j(5)\n" +
                 "        end whil|"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect new-line while indent (free form)",
                 "program A\n" +
@@ -302,7 +295,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
     public void testSubroutine2Free() {
         setLoadDocumentText(
                 "recursive subroutine p(c)|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line subroutine indent (free form)",
                 "recursive subroutine p(c)\n" +
@@ -312,7 +305,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
     public void testBlockDataFree() {
         setLoadDocumentText(
                 "BLoCKdatA Unit|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect block data indent (free form)",
                 "BLoCKdatA Unit\n" +
@@ -322,7 +315,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
     public void testBlockData2Free() {
         setLoadDocumentText(
                 "BLoCK datA Unit|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect block data indent (free form)",
                 "BLoCK datA Unit\n" +
@@ -336,7 +329,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    datA a/1d0/\n" +
                 "    COMMOn /a/ a\n" +
                 "   eNDBLOCKdat|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('a', true);
         assertDocumentTextAndCaret("Incorrect block data indent (free form)",
                 "BLoCKdatA Unit\n" +
@@ -353,7 +346,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    datA a/1d0/\n" +
                 "    COMMOn /a/ a\n" +
                 "   eND BLOCK dat|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('a', true);
         assertDocumentTextAndCaret("Incorrect block data indent (free form)",
                 "BLoCKdatA Unit\n" +
@@ -370,7 +363,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    datA a/1d0/\n" +
                 "    COMMOn /a/ a\n" +
                 "   eND BLOCKdat|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('a', true);
         assertDocumentTextAndCaret("Incorrect block data indent (free form)",
                 "BLoCKdatA Unit\n" +
@@ -387,7 +380,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    datA a/1d0/\n" +
                 "    COMMOn /a/ a\n" +
                 "   eNDBLOCK dat|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('a', true);
         assertDocumentTextAndCaret("Incorrect block data indent (free form)",
                 "BLoCKdatA Unit\n" +
@@ -405,7 +398,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    if (j(3) == i + 2) then\n" +
                 "        i = j(5)\n" +
                 "    elseif |");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect statements indent (free form)",
                 "program A\n" +
@@ -425,7 +418,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    if (j(3) == i + 2) then\n" +
                 "        i = j(5)\n" +
                 "    else if |");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect statements indent (free form)",
                 "program A\n" +
@@ -445,7 +438,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    if (j(3) == i + 2) then\n" +
                 "        i = j(5)\n" +
                 "        elsei|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('f', true);
         assertDocumentTextAndCaret("Incorrect statements indent (free form)",
                 "program A\n" +
@@ -464,7 +457,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    if (j(3) == i + 2) then\n" +
                 "        i = j(5)\n" +
                 "        else i|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('f', true);
         assertDocumentTextAndCaret("Incorrect statements indent (free form)",
                 "program A\n" +
@@ -485,7 +478,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    elseif (i < 3) then\n" +
                 "        i = 2\n" +
                 "        endi|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('f', true);
         assertDocumentTextAndCaret("Incorrect statements indent (free form)",
                 "program A\n" +
@@ -504,7 +497,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
                 "    i = 1\n" +
                 "    where(j > 2)|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect statements indent (free form)",
                 "program A\n" +
@@ -522,7 +515,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    where(j > 2)\n" +
                 "        j = 10\n" +
                 "        else wher|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect statements indent (free form)",
                 "program A\n" +
@@ -541,7 +534,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    where(j > 2)\n" +
                 "        j = 10\n" +
                 "        elsewher|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect statements indent (free form)",
                 "program A\n" +
@@ -560,7 +553,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    where(j > 2)\n" +
                 "        j = 10\n" +
                 "    else where|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect statements indent (free form)",
                 "program A\n" +
@@ -582,7 +575,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    else where(j == 1)\n" +
                 "        j = 0\n" +
                 "        end wher|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect statements indent (free form)",
                 "program A\n" +
@@ -605,7 +598,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    else where(j == 1)\n" +
                 "        j = 0\n" +
                 "        endwher|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect statements indent (free form)",
                 "program A\n" +
@@ -621,7 +614,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
     public void testTypeFree() {
         setLoadDocumentText(
                 "Type|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect type indent (free form)",
                 "Type\n" +
@@ -636,7 +629,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "Type Enum1\n" +
                 "    Type(Enum) Enum\n" +
                 "    endTyp|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect type indent (free form)",
                 "Enum Enum\n" +
@@ -655,7 +648,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "Type Enum1\n" +
                 "    Type(Enum) Enum\n" +
                 "    end Typ|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect type indent (free form)",
                 "Enum Enum\n" +
@@ -669,7 +662,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
     public void testEnumFree() {
         setLoadDocumentText(
                 "Enum |");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect enum indent (free form)",
                 "Enum \n" +
@@ -681,7 +674,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "Enum Enum\n" +
                 "    Enumerator zero, one, two\n" +
                 "endEnu|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('m', true);
         assertDocumentTextAndCaret("Incorrect enum indent (free form)",
                 "Enum Enum\n" +
@@ -694,7 +687,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "Enum Enum\n" +
                 "    Enumerator zero, one, two\n" +
                 "end Enu|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('m', true);
         assertDocumentTextAndCaret("Incorrect enum indent (free form)",
                 "Enum Enum\n" +
@@ -714,7 +707,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "Type(Enum1) Enum,Enum3\n" +
                 "Enum3.Enum=two\n" +
                 "selectCase|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect select indent (free form)",
                 "Enum Enum\n" +
@@ -742,7 +735,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "Type(Enum1) Enum,Enum3\n" +
                 "Enum3.Enum=two\n" +
                 "select Case|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect select indent (free form)",
                 "Enum Enum\n" +
@@ -771,7 +764,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "Enum3.Enum=two\n" +
                 "selectCase(Enum3.Enum)\n" +
                 "    case(zero)|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect select indent (free form)",
                 "Enum Enum\n" +
@@ -803,7 +796,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    case(zero)\n" +
                 "        print *, \" zero \", Enum3.Enum\n" +
                 "        cas|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect select indent (free form)",
                 "Enum Enum\n" +
@@ -840,7 +833,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    case(two)\n" +
                 "        print *, \" two \", Enum3.Enum\n" +
                 "        endSelec|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('t', true);
         assertDocumentTextAndCaret("Incorrect select indent (free form)",
                 "Enum Enum\n" +
@@ -881,7 +874,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    case(two)\n" +
                 "        print *, \" two \", Enum3.Enum\n" +
                 "        end Selec|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('t', true);
         assertDocumentTextAndCaret("Incorrect select indent (free form)",
                 "Enum Enum\n" +
@@ -906,7 +899,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
     public void testModuleFree() {
         setLoadDocumentText(
                 "Module|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect module indent (free form)",
                 "Module\n" +
@@ -917,7 +910,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "Module A\n" +
                 "    EndModul|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect module indent (free form)",
                 "Module A\n" +
@@ -928,7 +921,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "Module A\n" +
                 "    End Modul|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect module indent (free form)",
                 "Module A\n" +
@@ -939,7 +932,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "Module A\n" +
                 "    INTERFACE|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect inreface indent (free form)",
                 "Module A\n" +
@@ -961,7 +954,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "            LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
                 "        ENDFUNCTION EXT3\n" +
                 "        ENDINTERFAC|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('E', true);
         assertDocumentTextAndCaret("Incorrect end interface indent (free form)",
                 "Module A\n" +
@@ -992,7 +985,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "            LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
                 "        ENDFUNCTION EXT3\n" +
                 "        END INTERFAC|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('E', true);
         assertDocumentTextAndCaret("Incorrect end interface indent (free form)",
                 "Module A\n" +
@@ -1014,7 +1007,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "Module A\n" +
                 "    INTERFACE\n" +
                 "        FUNCTION EXT3 (P, Q)|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect function indent (free form)",
                 "Module A\n" +
@@ -1028,7 +1021,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "Module A\n" +
                 "    INTERFACE\n" +
                 "        DOUBLEPRECISION FUNCTION EXT3 (P, Q)|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect function indent (free form)",
                 "Module A\n" +
@@ -1044,7 +1037,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "        FUNCTION EXT3 (P, Q)\n" +
                 "            LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
                 "            ENDFUNCTIO|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('N', true);
         assertDocumentTextAndCaret("Incorrect end function indent (free form)",
                 "Module A\n" +
@@ -1061,7 +1054,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "        FUNCTION EXT3 (P, Q)\n" +
                 "            LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
                 "            END FUNCTIO|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('N', true);
         assertDocumentTextAndCaret("Incorrect end function indent (free form)",
                 "Module A\n" +
@@ -1079,7 +1072,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    call a(i);j(10-i)=i\n" +
                 "enddo\n" +
                 "forall (i = 2:7, J(I) <> 3)|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect forall indent (free form)",
                 "implicit none\n" +
@@ -1101,7 +1094,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "forall (i=2:7,J(I)<>3)\n" +
                 "    j(i)=100\n" +
                 "    endforal|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('l', true);
         assertDocumentTextAndCaret("Incorrect forall indent (free form)",
                 "implicit none\n" +
@@ -1124,7 +1117,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "forall (i=2:7,J(I)<>3)\n" +
                 "    j(i)=100\n" +
                 "    end foral|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('l', true);
         assertDocumentTextAndCaret("Incorrect forall indent (free form)",
                 "implicit none\n" +
@@ -1141,7 +1134,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "PROGRAM test\n" +
                 "    do i = 1, 7|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect do indent (free form)",
                 "PROGRAM test\n" +
@@ -1158,7 +1151,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "            k = k + 1\n" +
                 "        enddo\n" +
                 "        endd|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('o', true);
         assertDocumentTextAndCaret("Incorrect do indent (free form)",
                 "PROGRAM test\n" +
@@ -1179,7 +1172,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "            k = k + 1\n" +
                 "        enddo\n" +
                 "        end d|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('o', true);
         assertDocumentTextAndCaret("Incorrect do indent (free form)",
                 "PROGRAM test\n" +
@@ -1197,7 +1190,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    structure /explorer2/\n" +
                 "        union\n" +
                 "            map|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect map indent (free form)",
                 "program\n" +
@@ -1215,7 +1208,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "            map\n" +
                 "                logical*1 :: var\n" +
                 "                end ma|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('p', true);
         assertDocumentTextAndCaret("Incorrect map indent (free form)",
                 "program\n" +
@@ -1231,7 +1224,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "program\n" +
                 "    structure /explorer2/\n" +
                 "        union|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect union indent (free form)",
                 "program\n" +
@@ -1244,7 +1237,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "program\n" +
                 "    structure /OUTSTR/|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect structure indent (free form)",
                 "program\n" +
@@ -1259,7 +1252,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "        real*4 zxc\n" +
                 "        record /STR1/ inex\n" +
                 "        end structur|");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect structure indent (free form)",
                 "program\n" +
@@ -1272,8 +1265,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
     public void testSubroutine2Fixed() {
         setLoadDocumentText(
                 "      recursive subroutine p(c)|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line subroutine indent (fixed form)",
                 "      recursive subroutine p(c)\n" +
@@ -1283,8 +1275,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
     public void testBlockDataFixed() {
         setLoadDocumentText(
                 "      BLoCKdatA Unit|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect block data indent (fixed form)",
                 "      BLoCKdatA Unit\n" +
@@ -1294,8 +1285,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
     public void testBlockData2Fixed() {
         setLoadDocumentText(
                 "      BLoCK datA Unit|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect block data indent (fixed form)",
                 "      BLoCK datA Unit\n" +
@@ -1309,8 +1299,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          datA a/1d0/\n" +
                 "          COMMOn /a/ a\n" +
                 "         eNDBLOCKdat|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('a', true);
         assertDocumentTextAndCaret("Incorrect block data indent (fixed form)",
                 "      BLoCKdatA Unit\n" +
@@ -1327,8 +1316,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          datA a/1d0/\n" +
                 "          COMMOn /a/ a\n" +
                 "         eND BLOCK dat|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('a', true);
         assertDocumentTextAndCaret("Incorrect block data indent (fixed form)",
                 "      BLoCKdatA Unit\n" +
@@ -1345,8 +1333,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          datA a/1d0/\n" +
                 "          COMMOn /a/ a\n" +
                 "         eND BLOCKdat|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('a', true);
         assertDocumentTextAndCaret("Incorrect block data indent (fixed form)",
                 "      BLoCKdatA Unit\n" +
@@ -1363,8 +1350,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          datA a/1d0/\n" +
                 "          COMMOn /a/ a\n" +
                 "         eNDBLOCK dat|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('a', true);
         assertDocumentTextAndCaret("Incorrect block data indent (fixed form)",
                 "      BLoCKdatA Unit\n" +
@@ -1382,8 +1368,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          if (j(3) == i + 2) then\n" +
                 "              i = j(5)\n" +
                 "          elseif |");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect statements indent (fixed form)",
                 "      program A\n" +
@@ -1403,8 +1388,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          if (j(3) == i + 2) then\n" +
                 "              i = j(5)\n" +
                 "          else if |");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect statements indent (fixed form)",
                 "      program A\n" +
@@ -1424,8 +1408,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          if (j(3) == i + 2) then\n" +
                 "              i = j(5)\n" +
                 "              elsei|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('f', true);
         assertDocumentTextAndCaret("Incorrect statements indent (fixed form)",
                 "      program A\n" +
@@ -1444,8 +1427,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          if (j(3) == i + 2) then\n" +
                 "              i = j(5)\n" +
                 "              else i|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('f', true);
         assertDocumentTextAndCaret("Incorrect statements indent (fixed form)",
                 "      program A\n" +
@@ -1466,8 +1448,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          elseif (i < 3) then\n" +
                 "              i = 2\n" +
                 "              endi|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('f', true);
         assertDocumentTextAndCaret("Incorrect statements indent (fixed form)",
                 "      program A\n" +
@@ -1486,8 +1467,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
                 "          i = 1\n" +
                 "          where(j > 2)|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect statements indent (fixed form)",
                 "      program A\n" +
@@ -1505,8 +1485,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          where(j > 2)\n" +
                 "              j = 10\n" +
                 "              else wher|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect statements indent (fixed form)",
                 "      program A\n" +
@@ -1525,8 +1504,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          where(j > 2)\n" +
                 "              j = 10\n" +
                 "              elsewher|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect statements indent (fixed form)",
                 "      program A\n" +
@@ -1545,8 +1523,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          where(j > 2)\n" +
                 "              j = 10\n" +
                 "          else where|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect statements indent (fixed form)",
                 "      program A\n" +
@@ -1568,8 +1545,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          else where(j == 1)\n" +
                 "              j = 0\n" +
                 "              end wher|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect statements indent (fixed form)",
                 "      program A\n" +
@@ -1592,8 +1568,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          else where(j == 1)\n" +
                 "              j = 0\n" +
                 "              endwher|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect statements indent (fixed form)",
                 "      program A\n" +
@@ -1609,8 +1584,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
     public void testTypeFixed() {
         setLoadDocumentText(
                 "      Type|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect type indent (fixed form)",
                 "      Type\n" +
@@ -1625,8 +1599,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      Type Enum1\n" +
                 "          Type(Enum) Enum\n" +
                 "          endTyp|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect type indent (fixed form)",
                 "      Enum Enum\n" +
@@ -1645,8 +1618,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      Type Enum1\n" +
                 "          Type(Enum) Enum\n" +
                 "          end Typ|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect type indent (fixed form)",
                 "      Enum Enum\n" +
@@ -1660,8 +1632,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
     public void testEnumFixed() {
         setLoadDocumentText(
                 "      Enum |");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect enum indent (fixed form)",
                 "      Enum \n" +
@@ -1673,8 +1644,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      Enum Enum\n" +
                 "          Enumerator zero, one, two\n" +
                 "      endEnu|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('m', true);
         assertDocumentTextAndCaret("Incorrect enum indent (fixed form)",
                 "      Enum Enum\n" +
@@ -1687,8 +1657,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      Enum Enum\n" +
                 "          Enumerator zero, one, two\n" +
                 "      end Enu|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('m', true);
         assertDocumentTextAndCaret("Incorrect enum indent (fixed form)",
                 "      Enum Enum\n" +
@@ -1708,8 +1677,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      Type(Enum1) Enum,Enum3\n" +
                 "      Enum3.Enum=two\n" +
                 "      selectCase|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect select indent (fixed form)",
                 "      Enum Enum\n" +
@@ -1737,8 +1705,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      Type(Enum1) Enum,Enum3\n" +
                 "      Enum3.Enum=two\n" +
                 "      select Case|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect select indent (fixed form)",
                 "      Enum Enum\n" +
@@ -1767,8 +1734,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      Enum3.Enum=two\n" +
                 "      selectCase(Enum3.Enum)\n" +
                 "          case(zero)|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect select indent (fixed form)",
                 "      Enum Enum\n" +
@@ -1800,8 +1766,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          case(zero)\n" +
                 "              print *, \" zero \", Enum3.Enum\n" +
                 "              cas|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect select indent (fixed form)",
                 "      Enum Enum\n" +
@@ -1838,8 +1803,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          case(two)\n" +
                 "              print *, \" two \", Enum3.Enum\n" +
                 "              endSelec|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('t', true);
         assertDocumentTextAndCaret("Incorrect select indent (fixed form)",
                 "      Enum Enum\n" +
@@ -1880,8 +1844,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          case(two)\n" +
                 "              print *, \" two \", Enum3.Enum\n" +
                 "              end Selec|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('t', true);
         assertDocumentTextAndCaret("Incorrect select indent (fixed form)",
                 "      Enum Enum\n" +
@@ -1906,8 +1869,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
     public void testModuleFixed() {
         setLoadDocumentText(
                 "      Module|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect module indent (fixed form)",
                 "      Module\n" +
@@ -1918,8 +1880,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "      Module A\n" +
                 "          EndModul|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect module indent (fixed form)",
                 "      Module A\n" +
@@ -1930,8 +1891,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "      Module A\n" +
                 "          End Modul|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect module indent (fixed form)",
                 "      Module A\n" +
@@ -1942,8 +1902,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "      Module A\n" +
                 "          INTERFACE|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect inreface indent (fixed form)",
                 "      Module A\n" +
@@ -1965,8 +1924,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "                  LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
                 "              ENDFUNCTION EXT3\n" +
                 "              ENDINTERFAC|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('E', true);
         assertDocumentTextAndCaret("Incorrect end interface indent (fixed form)",
                 "      Module A\n" +
@@ -1997,8 +1955,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "                  LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
                 "              ENDFUNCTION EXT3\n" +
                 "              END INTERFAC|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('E', true);
         assertDocumentTextAndCaret("Incorrect end interface indent (fixed form)",
                 "      Module A\n" +
@@ -2020,8 +1977,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      Module A\n" +
                 "          INTERFACE\n" +
                 "              FUNCTION EXT3 (P, Q)|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect function indent (fixed form)",
                 "      Module A\n" +
@@ -2035,8 +1991,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      Module A\n" +
                 "          INTERFACE\n" +
                 "              DOUBLEPRECISION FUNCTION EXT3 (P, Q)|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect function indent (fixed form)",
                 "      Module A\n" +
@@ -2052,8 +2007,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "              FUNCTION EXT3 (P, Q)\n" +
                 "                  LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
                 "                  ENDFUNCTIO|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('N', true);
         assertDocumentTextAndCaret("Incorrect end function indent (fixed form)",
                 "      Module A\n" +
@@ -2070,8 +2024,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "              FUNCTION EXT3 (P, Q)\n" +
                 "                  LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
                 "                  END FUNCTIO|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('N', true);
         assertDocumentTextAndCaret("Incorrect end function indent (fixed form)",
                 "      Module A\n" +
@@ -2089,8 +2042,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          call a(i);j(10-i)=i\n" +
                 "      enddo\n" +
                 "      forall (i = 2:7, J(I) <> 3)|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect forall indent (fixed form)",
                 "      implicit none\n" +
@@ -2112,8 +2064,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      forall (i=2:7,J(I)<>3)\n" +
                 "          j(i)=100\n" +
                 "          endforal|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('l', true);
         assertDocumentTextAndCaret("Incorrect forall indent (fixed form)",
                 "      implicit none\n" +
@@ -2136,8 +2087,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      forall (i=2:7,J(I)<>3)\n" +
                 "          j(i)=100\n" +
                 "          end foral|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('l', true);
         assertDocumentTextAndCaret("Incorrect forall indent (fixed form)",
                 "      implicit none\n" +
@@ -2154,8 +2104,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "      PROGRAM test\n" +
                 "          do i = 1, 7|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect do indent (fixed form)",
                 "      PROGRAM test\n" +
@@ -2172,8 +2121,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "                  k = k + 1\n" +
                 "              enddo\n" +
                 "              endd|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('o', true);
         assertDocumentTextAndCaret("Incorrect do indent (fixed form)",
                 "      PROGRAM test\n" +
@@ -2194,8 +2142,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "                  k = k + 1\n" +
                 "              enddo\n" +
                 "              end d|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('o', true);
         assertDocumentTextAndCaret("Incorrect do indent (fixed form)",
                 "      PROGRAM test\n" +
@@ -2213,8 +2160,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          structure /explorer2/\n" +
                 "              union\n" +
                 "                  map|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect map indent (fixed form)",
                 "      program\n" +
@@ -2232,8 +2178,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "                  map\n" +
                 "                      logical*1 :: var\n" +
                 "                      end ma|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('p', true);
         assertDocumentTextAndCaret("Incorrect map indent (fixed form)",
                 "      program\n" +
@@ -2249,8 +2194,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "      program\n" +
                 "          structure /explorer2/\n" +
                 "              union|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect union indent (fixed form)",
                 "      program\n" +
@@ -2263,8 +2207,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
         setLoadDocumentText(
                 "      program\n" +
                 "          structure /OUTSTR/|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect structure indent (fixed form)",
                 "      program\n" +
@@ -2279,8 +2222,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "              real*4 zxc\n" +
                 "              record /STR1/ inex\n" +
                 "              end structur|");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        setDefaultsOptions(false);
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect structure indent (fixed form)",
                 "      program\n" +
@@ -2301,8 +2243,7 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "\n" +
                 "    return\n" +
                 "  end function QC_LOG");
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(true);
+        setDefaultsOptions(true);
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect structure indent (fixed form)",
                 "  function QC_LOG(X) result(Z)\n" +

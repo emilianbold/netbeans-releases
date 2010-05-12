@@ -39,12 +39,12 @@
 
 package org.netbeans.modules.jira.commands;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.jira.Jira;
 

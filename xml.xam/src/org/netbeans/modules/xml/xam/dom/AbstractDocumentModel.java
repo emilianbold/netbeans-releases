@@ -93,6 +93,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     
     public abstract T createRootComponent(Element root);
     
+    @Override
     public boolean areSameNodes(Node n1, Node n2) {
         return getAccess().areSameNodes(n1, n2);
     }
@@ -159,14 +160,16 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
 	    
 	    return l;
 	}
-	
+
+        @Override
 	public void removeUpdate(DocumentEvent e) {
 	    DocumentListener l = getDelegate();
 	    if (l != null) {
 		l.removeUpdate(e);
 	    }
 	}
-	
+
+        @Override
 	public void changedUpdate(DocumentEvent e) {
 	    DocumentListener l = getDelegate();
 	    if (l != null) {
@@ -174,6 +177,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
 	    }
 	}
 	
+        @Override
 	public void insertUpdate(DocumentEvent e) {
 	    DocumentListener l = getDelegate();
 	    if (l != null) {
@@ -186,14 +190,17 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     }
     
     private class DocumentChangeListener implements DocumentListener {
+        @Override
 	public void removeUpdate(DocumentEvent e) {
 	    documentChanged();
 	}
 	
+        @Override
 	public void insertUpdate(DocumentEvent e) {
 	    documentChanged();
 	}
 	
+        @Override
 	public void changedUpdate(DocumentEvent e) {
 	    // ignore these events as these are not changes
 	    // to the document text but the document itself
@@ -217,6 +224,12 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         return elementNames;
     }
 
+    /**
+     *
+     * @deprecated This implementation isn't called anymore.
+     * It was migrated to XDMListener.prepareChangeInfo().
+     *
+     */
     public ChangeInfo prepareChangeInfo(List<Node> pathToRoot) {
         // we already handle change on root before enter here
         if (pathToRoot.size() < 1) {
@@ -393,7 +406,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
             addChildComponent(targetComponent, c, index);
         }
     }
-    
+
     private DocumentComponent createChildComponent(DocumentComponent parent, Element e) {
         DocumentModel m = (DocumentModel) parent.getModel();
         if (m == null) {
@@ -402,6 +415,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         return m.createComponent(parent, e);
     }
     
+    @Override
     public void addChildComponent(Component target, Component child, int index) {
         AbstractDocumentModel m = (AbstractDocumentModel)target.getModel();
         //assert m != null : "Cannot add child to a deleted component.";
@@ -410,6 +424,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         m.getComponentUpdater().update(target, child, index, ComponentUpdater.Operation.ADD);
     }
     
+    @Override
     public void removeChildComponent(Component child) {
         if (child.getParent() == null) return;
         AbstractDocumentModel m = (AbstractDocumentModel) child.getParent().getModel();
@@ -461,7 +476,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     public DocumentComponent findComponent(List<Element> pathFromRoot) {
         return findComponent((AbstractDocumentComponent)getRootComponent(), pathFromRoot, 0);
     }
-    
+
     public AbstractDocumentComponent findComponent(AbstractDocumentComponent base, List<Element> pathFromRoot, int current) {
         if (pathFromRoot == null || pathFromRoot.size() <= current) {
             return null;
@@ -484,6 +499,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         return null;
     }
     
+    @Override
     public DocumentComponent findComponent(int position) {
         if (getState() != State.VALID) {
             return getRootComponent();
@@ -507,15 +523,18 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         }
     }
     
+    @Override
     public String getXPathExpression(DocumentComponent component) {
         Element e = (Element) component.getPeer();
         return getAccess().getXPath(getDocument(), e);
     }
 
+    @Override
     public org.w3c.dom.Document getDocument() {
         return getAccess().getDocumentRoot();
     }
 
+    @Override
     public DocumentModelAccess getAccess() { 
         if (access == null) {
             access = getEffectiveAccessProvider().createModelAccess(this);

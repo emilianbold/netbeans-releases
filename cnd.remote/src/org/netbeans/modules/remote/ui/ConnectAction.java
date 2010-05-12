@@ -84,27 +84,13 @@ public class ConnectAction extends SingleHostAction {
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
             try {
                 ConnectionManager.getInstance().connectTo(env);
-                checkSetupAfterConnection();
+                RemoteUtil.checkSetupAfterConnection(env);
             } catch (IOException ex) {
                 conectionFailed(env, ex);
             } catch (CancellationException ex) {
                 conectionFailed(env, ex);
             }
         }
-    }
-
-    private void checkSetupAfterConnection() {
-        // TODO: implement (ideally in RAS)
-//            RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
-//            if (!record.isOnline()) {
-//                record.resetOfflineState(); // this is a do-over
-//                record.init(null);
-//                if (record.isOnline()) {
-//                    CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment(), false);
-//                    csm.initialize(false, true, null);
-//                }
-//
-//            }
     }
 
     private void conectionFailed(ExecutionEnvironment env, Exception e) {

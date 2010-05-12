@@ -42,9 +42,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +74,7 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.CMakeExecSupport;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.QMakeExecSupport;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -353,52 +353,56 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return toolName;
     }
 
-    private static List<String> getAdditionalEnvirounment(Node node){
-        List<String> res = new ArrayList<String>();
-        ExecutionSupport mes = node.getCookie(ExecutionSupport.class);
-        if (mes != null) {
-            res.addAll(Arrays.asList(mes.getEnvironmentVariables()));
-            return res;
+    private static Map<String, String> parseEnvironmentVariables(Collection<String> vars) {
+        if (vars.isEmpty()) {
+            return Collections.emptyMap();
+        } else {
+            Map<String, String> envMap = new HashMap<String, String>();
+            for (String s : vars) {
+                int i = s.indexOf('='); // NOI18N
+                if (i > 0) {
+                    String key = s.substring(0, i);
+                    String value = s.substring(i + 1).trim();
+                    if (value.length() > 1 && (value.startsWith("\"") && value.endsWith("\"") || // NOI18N
+                            value.startsWith("'") && value.endsWith("'"))) { // NOI18N
+                        value = value.substring(1, value.length() - 1);
+                    }
+                    envMap.put(key, value);
+                }
+            }
+            return envMap;
         }
-        return res;
     }
-
-    private static List<String> prepareEnv(ExecutionEnvironment execEnv, Node node) {
-        String csdirs = ""; // NOI18N
+    private static Map<String, String> getDefaultEnvironment(ExecutionEnvironment execEnv, Node node) {
         PlatformInfo pi = PlatformInfo.getDefault(execEnv);
+        String defaultPath = pi.getPathAsString();
         CompilerSet cs = getCompilerSet(node);
         if (cs != null) {
-            csdirs = cs.getDirectory();
+            defaultPath += pi.pathSeparator() + cs.getDirectory();
             // TODO Provide platform info
-            String commands = cs.getCompilerFlavor().getCommandFolder(pi.getPlatform());
-            if (commands != null && commands.length()>0) {
+            String cmdDir = cs.getCompilerFlavor().getCommandFolder(pi.getPlatform());
+            if (cmdDir != null && 0 < cmdDir.length()) {
                 // Also add msys to path. Thet's where sh, mkdir, ... are.
-                csdirs += pi.pathSeparator() + commands;
+                defaultPath += pi.pathSeparator() + cmdDir;
             }
         }
-        List<String> res = new ArrayList<String>();
-        res.add(pi.getPathAsStringWith(csdirs));
-        return res;
+        return Collections.singletonMap(pi.getPathName(), defaultPath);
+    }
+
+    private static Map<String, String> getExecCookieEnvironment(Node node){
+        ExecutionSupport execSupport = node.getCookie(ExecutionSupport.class);
+        if (execSupport == null) {
+            return Collections.emptyMap();
+        } else {
+            return parseEnvironmentVariables(Arrays.asList(execSupport.getEnvironmentVariables()));
+        }
     }
 
     protected static Map<String, String> getEnv(ExecutionEnvironment execEnv, Node node, List<String> additionalEnvironment) {
-        List<String> nodeEnvironment = getAdditionalEnvirounment(node);
+        Map<String, String> envMap = new HashMap<String, String>(getDefaultEnvironment(execEnv, node));
+        envMap.putAll(getExecCookieEnvironment(node));
         if (additionalEnvironment != null) {
-            nodeEnvironment.addAll(additionalEnvironment);
-        }
-        nodeEnvironment.addAll(prepareEnv(execEnv, node));
-        Map<String, String> envMap = new HashMap<String, String>();
-        for(String s: nodeEnvironment) {
-            int i = s.indexOf('='); // NOI18N
-            if (i>0) {
-                String key = s.substring(0, i);
-                String value = s.substring(i+1).trim();
-                if (value.length()>1 && (value.startsWith("\"") && value.endsWith("\"") || // NOI18N
-                                         value.startsWith("'") && value.endsWith("'"))) { // NOI18N
-                    value = value.substring(1,value.length()-1);
-                }
-                envMap.put(key, value);
-            }
+            envMap.putAll(parseEnvironmentVariables(additionalEnvironment));
         }
         return envMap;
     }

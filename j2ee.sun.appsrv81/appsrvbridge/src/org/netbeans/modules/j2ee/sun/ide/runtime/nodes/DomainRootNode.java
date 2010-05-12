@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -90,9 +90,12 @@ public class DomainRootNode extends AppserverMgmtContainerNode  implements  Prop
         
         shutOffJMXAndAMXLogging();
     }
+
+    private static final RequestProcessor RP = new RequestProcessor("Refresher", 5);
     
+    @Override
     public void refresh(){
-        RequestProcessor.getDefault().post(this);
+        RP.post(this);
     }
     
     public void run() {
@@ -126,6 +129,7 @@ public class DomainRootNode extends AppserverMgmtContainerNode  implements  Prop
      * @param boolean true/false
      * @return An array of Action objects.
      */
+    @Override
     public Action[] getActions(boolean flag) {
         return new SystemAction[] {};
     }
@@ -136,6 +140,7 @@ public class DomainRootNode extends AppserverMgmtContainerNode  implements  Prop
      *
      * @returns the Sheet to display when Properties is chosen by the user.
      */
+    @Override
     protected Sheet createSheet() {
         Sheet sheet = Sheet.createDefault();
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();

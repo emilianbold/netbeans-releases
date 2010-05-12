@@ -183,7 +183,10 @@ public class StatFilesTest extends NbTestCase {
                 // called File.toURI() from FileUtil.normalizeFile()
                 expectedCount = 1;
             }
-            monitor.getResults().assertResult(expectedCount, StatFiles.ALL);
+            // we check canWrite once
+            monitor.getResults().assertResult(1, StatFiles.WRITE);
+            // adding one for the canWrite access above
+            monitor.getResults().assertResult(1 + expectedCount, StatFiles.ALL);
             //second time
             monitor.reset();
             FileLock lock2 = null;
@@ -192,7 +195,8 @@ public class StatFilesTest extends NbTestCase {
                 fail();
             } catch (IOException ex) {
             }
-            monitor.getResults().assertResult(expectedCount, StatFiles.ALL);
+            // again one for canWrite
+            monitor.getResults().assertResult(1 + expectedCount, StatFiles.ALL);
         } finally {
             lock.releaseLock();
         }
@@ -263,8 +267,7 @@ public class StatFilesTest extends NbTestCase {
         FileObject fobj = getFileObject(testFile);
         monitor.reset();
         FileObject parent = fobj.getParent();
-        monitor.getResults().assertResult(1, StatFiles.ALL);
-        monitor.getResults().assertResult(1, StatFiles.READ);
+        monitor.getResults().assertResult(0, StatFiles.ALL);
         monitor.reset();
         parent = fobj.getParent();
         monitor.getResults().assertResult(0, StatFiles.ALL);

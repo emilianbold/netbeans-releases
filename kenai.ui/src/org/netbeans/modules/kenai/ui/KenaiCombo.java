@@ -41,10 +41,12 @@ package org.netbeans.modules.kenai.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.accessibility.AccessibleContext;
 import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -65,6 +67,10 @@ public class KenaiCombo extends JComboBox {
     }
 
     private void init(boolean alwaysVisible) {
+        AccessibleContext ac = getAccessibleContext();
+        String a11y = NbBundle.getMessage(KenaiCombo.class, "A11Y_TeamServer");
+        ac.setAccessibleName(a11y);
+        ac.setAccessibleDescription(a11y);
         setRenderer(new KenaiListRenderer());
         if (!alwaysVisible) {
             final KenaiManager manager = KenaiManager.getDefault();

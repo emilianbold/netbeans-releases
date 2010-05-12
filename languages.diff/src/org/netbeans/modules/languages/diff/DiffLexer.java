@@ -112,8 +112,12 @@ class DiffLexer implements Lexer<DiffTokenId> {
     private static boolean read (String text, LexerInput input) {
         boolean result = true;
         for (int i = 0; i < text.length (); i++) {
-            if (text.charAt (i) != input.read ()) {
+            int c;
+            if (text.charAt (i) != (c = input.read ())) {
                 result = false;
+                if (c == '\n' || c == '\r') {
+                    input.backup(1);
+                }
                 break;
             }
         }

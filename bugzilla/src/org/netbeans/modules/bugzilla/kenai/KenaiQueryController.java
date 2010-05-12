@@ -96,6 +96,9 @@ public class KenaiQueryController extends QueryController {
                             sb.append(data.get(0));
                         }
                         urlParameters = sb.toString();
+
+                        // select only if owner awailable
+                        selectFirstProduct();
                     }
                 }
                 if(urlParameters == null) {
@@ -107,6 +110,7 @@ public class KenaiQueryController extends QueryController {
         } else {
             super.populate(urlParameters);
             disableProduct();
+            selectFirstProduct();
         }
     }
 

@@ -85,6 +85,7 @@ public class OverrideAnnotationAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         if (!invokeDefaultAction((JTextComponent) e.getSource())) {
             // sorry, don't know how to do without deprecated ImplementationProvider
+            @SuppressWarnings("deprecation")
             Action actions[] = org.netbeans.editor.ImplementationProvider.getDefault().getGlyphGutterActions((JTextComponent) e.getSource());
             if (actions == null) {
                 return ;

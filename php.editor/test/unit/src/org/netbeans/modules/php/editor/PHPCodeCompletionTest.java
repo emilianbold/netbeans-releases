@@ -482,9 +482,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test136188_4() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136188.php", "$v2 = new cls136188^", false);
     }
-    public void test136188_5() throws Exception {
+    //removed because of camel case CC
+    /*public void test136188_5() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136188.php", "$v3 = new CLS136188^", false);
-    }
+    }*/
     public void test149519() throws Exception {
         checkCompletion("testfiles/completion/lib/issue149519.php", "$this->^", false);
     }

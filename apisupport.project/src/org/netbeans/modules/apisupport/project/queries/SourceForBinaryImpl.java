@@ -50,11 +50,11 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.TestEntry;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -136,11 +136,11 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
                 if (res == null) {
                 // Check extra compilation units.
                 ECUS: for (Map.Entry<FileObject,Element> entry : project.getExtraCompilationUnits().entrySet()) {
-                    for (Element kid : Util.findSubElements(entry.getValue())) {
+                    for (Element kid : XMLUtil.findSubElements(entry.getValue())) {
                         if (!kid.getLocalName().equals("built-to")) { // NOI18N
                             continue;
                         }
-                        String rawtext = Util.findText(kid);
+                        String rawtext = XMLUtil.findText(kid);
                         assert rawtext != null : "Null content for <built-to> in " + project;
                         String text = project.evaluator().evaluate(rawtext);
                         if (text == null) {

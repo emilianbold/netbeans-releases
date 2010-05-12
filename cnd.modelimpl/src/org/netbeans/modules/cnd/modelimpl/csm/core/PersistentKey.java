@@ -45,7 +45,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -106,7 +106,7 @@ public final class PersistentKey {
                     return key.equals(what.key);
                 case DECLARATION:
                     if (project.equals(what.project)) {
-                        return CharSequenceKey.Comparator.compare((CharSequence)key,(CharSequence)what.key)==0;
+                        return CharSequences.comparator().compare((CharSequence)key,(CharSequence)what.key)==0;
                     }
                     return false;
             }

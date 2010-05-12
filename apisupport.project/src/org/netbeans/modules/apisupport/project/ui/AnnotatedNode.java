@@ -61,6 +61,8 @@ import org.openide.util.RequestProcessor;
  * Would be nice to have available as a separate API. Here used for ImportantFilesNode.
  */
 class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener {
+
+    private static final RequestProcessor RP = new RequestProcessor(AnnotatedNode.class.getName());
     
     private Set<FileObject> files;
     private Set<FileStatusListener> fileSystemListeners;
@@ -138,7 +140,7 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
     
     public final void annotationChanged(FileStatusEvent event) {
         if (task == null) {
-            task = RequestProcessor.getDefault().create(this);
+            task = RP.create(this);
         }
         
         boolean changed = false;

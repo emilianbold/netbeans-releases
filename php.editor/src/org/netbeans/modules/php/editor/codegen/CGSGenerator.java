@@ -9,13 +9,16 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.codegen.ui.ConstructorPanel;
+import org.netbeans.modules.php.editor.codegen.ui.MethodPanel;
 import org.openide.util.NbBundle;
 
 /**
@@ -36,7 +39,8 @@ public class CGSGenerator implements CodeGenerator {
         CONSTRUCTOR,
         GETTER,
         SETTER,
-        GETTER_AND_SETTER
+        GETTER_AND_SETTER,
+        METHODS;
     }
 
     public enum GenWay {
@@ -97,27 +101,37 @@ public class CGSGenerator implements CodeGenerator {
         this.component = component;
     }
 
+    @Override
     public void invoke() {
         String dialogTitle = null;
 
+        JPanel panel = null;
         switch (type) {
             case CONSTRUCTOR:
                 dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_CONSTRUCTOR");    //NOI18N
+                panel = new ConstructorPanel(type, cgsInfo);
                 break;
             case GETTER:
                 dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_GETTERS");    //NOI18N
+                panel = new ConstructorPanel(type, cgsInfo);
                 break;
             case SETTER:
                 dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_SETTERS");    //NOI18N
+                panel = new ConstructorPanel(type, cgsInfo);
                 break;
             case GETTER_AND_SETTER:
                 dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_GETTERS_AND_SETTERS");    //NOI18N
+                panel = new ConstructorPanel(type, cgsInfo);
                 break;
+            case METHODS:
+                dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_METHODS");    //NOI18N
+                panel = new MethodPanel(cgsInfo);
+                break;
+
         }
 
         //TODO obtain the value from project properties
         cgsInfo.setHowToGenerate(GenWay.AS_JAVA);
-        JPanel panel = new ConstructorPanel(type, cgsInfo);
         DialogDescriptor desc = new DialogDescriptor(panel, dialogTitle);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
         dialog.setVisible(true);
@@ -130,6 +144,7 @@ public class CGSGenerator implements CodeGenerator {
         }
     }
 
+    @Override
     public String getDisplayName() {
         String name = null;
         switch (type) {
@@ -145,12 +160,16 @@ public class CGSGenerator implements CodeGenerator {
             case GETTER_AND_SETTER:
                 name = NbBundle.getMessage(CGSGenerator.class, "LBL_GETTER_AND_SETTER");    //NOI18N
                 break;
+            case METHODS:
+                name = NbBundle.getMessage(CGSGenerator.class, "LBL_METHOD");    //NOI18N
+                break;
         }
         return name;
     }
 
     public static class Factory implements CodeGenerator.Factory {
 
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             JTextComponent textComp = context.lookup(JTextComponent.class);
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
@@ -169,6 +188,9 @@ public class CGSGenerator implements CodeGenerator {
                 if (info.getPossibleGettersSetters().size() > 0) {
                     ret.add(new CGSGenerator(textComp, info, GenType.GETTER_AND_SETTER));
                 }
+                if (info.getPossibleMethods().size() > 0) {
+                    ret.add(new CGSGenerator(textComp, info, GenType.METHODS));
+                }
             }
             return ret;
         }
@@ -184,8 +206,8 @@ public class CGSGenerator implements CodeGenerator {
         ArrayList<String> createdMethods = new ArrayList<String>();
         switch (type) {
             case CONSTRUCTOR:
-                StringBuffer params = new StringBuffer();
-                StringBuffer assignments = new StringBuffer();
+                StringBuilder params = new StringBuilder();
+                StringBuilder assignments = new StringBuilder();
                 for (Property property : cgsInfo.getProperties()) {
                     name = property.getName();
                     if (property.isSelected()) {
@@ -199,7 +221,7 @@ public class CGSGenerator implements CodeGenerator {
                 text = CONSTRUCTOR_TEMPLATE.replace(PARAMS, params.toString().substring(2)).replace(ASSIGNMENTS, assignments);
                 break;
             case GETTER:
-                StringBuffer getters = new StringBuffer();
+                StringBuilder getters = new StringBuilder();
                 for (Property property : cgsInfo.getPossibleGetters()) {
                     if (property.isSelected()) {
                         name = property.getName();
@@ -211,7 +233,7 @@ public class CGSGenerator implements CodeGenerator {
                 text = getters.toString();
                 break;
             case SETTER:
-                StringBuffer setters = new StringBuffer();
+                StringBuilder setters = new StringBuilder();
                 for (Property property : cgsInfo.getPossibleSetters()) {
                     if (property.isSelected()) {
                         name = property.getName();
@@ -223,7 +245,7 @@ public class CGSGenerator implements CodeGenerator {
                 text = setters.toString();
                 break;
             case GETTER_AND_SETTER:
-                StringBuffer gettersAndSetters = new StringBuffer();
+                StringBuilder gettersAndSetters = new StringBuilder();
                 for (Property property : cgsInfo.getPossibleSetters()) {
                     if (property.isSelected()) {
                         name = property.getName();
@@ -235,6 +257,21 @@ public class CGSGenerator implements CodeGenerator {
                     }
                 }
                 text = gettersAndSetters.toString();
+                break;
+            case METHODS:
+                StringBuilder inheritedMethods = new StringBuilder();
+                for (MethodProperty methodProperty : cgsInfo.getPossibleMethods()) {
+                    if (methodProperty.isSelected()) {
+                        MethodElement method = methodProperty.getMethod();
+                        if (method.isAbstract() || method.isMagic() || method.getType().isInterface()) {
+                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithEmptyBody).replace("abstract ", "")); //NOI18N;
+                        } else {
+                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithParentCallInBody).replace("abstract ", "")); //NOI18N;
+                        }
+                        inheritedMethods.append(NEW_LINE);
+                    }
+                }
+                text = inheritedMethods.toString();
                 break;
         }
         return text;

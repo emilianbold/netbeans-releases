@@ -87,6 +87,8 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
     public final AnnotationFormat EXCLUDED_FILE_TOOLTIP = createAnnotationFormat("excludedTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Excluded"), new Color(0x99, 0x99, 0x99), true); //NOI18N
     public final AnnotationFormat CONFLICT_FILE = createAnnotationFormat("conflict", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Conflict"), new Color(0xff, 0, 0), false); //NOI18N
     public final AnnotationFormat CONFLICT_FILE_TOOLTIP = createAnnotationFormat("conflictTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Conflict"), new Color(0xff, 0, 0), true); //NOI18N
+    public final AnnotationFormat TREECONFLICT_FILE = createAnnotationFormat("treeconflict", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_TreeConflict"), new Color(0xff, 0, 0), false); //NOI18N
+    public final AnnotationFormat TREECONFLICT_FILE_TOOLTIP = createAnnotationFormat("treeconflictTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_TreeConflict"), new Color(0xff, 0, 0), true); //NOI18N
 
     public static synchronized AnnotationColorProvider getInstance() {
         if (INSTANCE == null) {

@@ -32,10 +32,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.spellchecker.spi.language.TokenList;
@@ -52,7 +48,7 @@ public abstract class AbstractTokenList implements TokenList {
     protected BaseDocument doc;
     private CharSequence currentWord;
     private int currentStartOffset;
-    private int nextSearchOffset;
+    protected int nextSearchOffset;
     private int ignoreBefore;
 
     /** Creates a new instance of HtmlXmlTokenList */
@@ -80,14 +76,7 @@ public abstract class AbstractTokenList implements TokenList {
         return currentWord;
     }
 
-    private int[] findNextSpellSpan() throws BadLocationException {
-        TokenHierarchy<Document> h = TokenHierarchy.get((Document) doc);
-        TokenSequence<?> ts = h.tokenSequence();
-        return findNextSpellSpan(ts, nextSearchOffset);
-    }
-
-    /** Given a sequence of Html/Xml tokens, return the next span of eligible comments */
-    protected abstract int[] findNextSpellSpan(TokenSequence<? extends TokenId> ts, int offset) throws BadLocationException;
+    protected abstract int[] findNextSpellSpan() throws BadLocationException;
 
     public boolean nextWord() {
         boolean next = nextWordImpl();

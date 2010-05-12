@@ -291,8 +291,8 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
             // should be lexed as a symbol
             String category = id.primaryCategory();
             boolean isString = "string".equals(category); // NOI18N
-
-            if (!isString || (id == RubyTokenId.STRING_END || id == RubyTokenId.QUOTED_STRING_END)) {
+            boolean inEmbedded = id == RubyTokenId.EMBEDDED_RUBY;
+            if (!(isString || inEmbedded) || (id == RubyTokenId.STRING_END || id == RubyTokenId.QUOTED_STRING_END)) {
                 inSymbol = (token == Tokens.tSYMBEG);
             }
 

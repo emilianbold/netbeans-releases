@@ -85,7 +85,7 @@ public class CssIndexer extends EmbeddingIndexer {
                 LOGGER.log(Level.FINE, "indexing " + fo.getPath()); //NOI18N
             }
 
-            CssFileModel model = new CssFileModel((CssParserResult) parserResult);
+            CssFileModel model = CssFileModel.create((CssParserResult) parserResult);
             IndexingSupport support = IndexingSupport.getInstance(context);
             IndexDocument document = support.createDocument(indexable);
 
