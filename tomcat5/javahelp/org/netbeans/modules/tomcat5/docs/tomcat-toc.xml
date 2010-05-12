@@ -6,39 +6,37 @@
 
 <!DOCTYPE toc
 
-  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
+PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
 
-         "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+"http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-
-<tocitem text="IDE Basics">
-<tocitem text="Servers and Databases">
-<tocitem text="Servers">
-   <tocitem text="Tomcat Web Server">
-	<tocitem text="About the Tomcat Web Server" target="tomcat_plugin" />
-	<tocitem text="Working with the Tomcat Web Server" target="tomcat_process" />
-	<tocitem text="Tomcat Web Server Tasks: Quick Reference" target="tomcat_quickref" />
-	<tocitem text="Setting Up the Tomcat Web Server">
-	<tocitem text="Viewing the Tomcat Web Server in the IDE" target="tomcat_top_node" />
-	<tocitem text="Customizing the Tomcat Web Server" target="tomcat_internal_props"/>
-	<tocitem text="Registering a Tomcat Web Server" target="tomcat_addinstall_noncsh" />
-        </tocitem>
-	<tocitem text="Editing the Tomcat Configuration File">
-	<tocitem text="About Editing the Tomcat Configuration File" target="tomcat_edit_config" />
-	<tocitem text="Accessing the Tomcat Web Server Administration Tool" target="tomcat_admin_access" />
-	<tocitem text="Setting Up a Connection Pool on the Tomcat Web Server" target="tomcat_setup_tdcp" />
-	<tocitem text="Accessing a Connection Pool from a JSP Page" target="tomcat_use_tdcp" />
-        </tocitem>
-	<tocitem text="Deploying to the Tomcat Web Server">
-	<tocitem text="Authenticating the Tomcat Web Server" target="tomcat_edit_tomcatuser" />
-        <tocitem text="Deploying a Web Application" target="tomcat_setup_registered" />
-            <tocitem text="Using JWSDP 1.6 on the Tomcat Web Server" target="tomcat_websvc_jwsdp" />
-                <tocitem text="Writing Ant Targets for Web Services on the Tomcat Web Server" target="tomcat_websvc" />
-                    <tocitem text="Writing Ant Targets to Deploy to Tomcat Web Server 4" target="tomcat_setup_unsupported" />
+    <tocitem text="IDE Basics">
+        <tocitem text="Servers and Databases">
+            <tocitem text="Servers">
+                <tocitem text="Tomcat Web Server">
+                    <tocitem text="About the Tomcat Web Server" target="tomcat_plugin" />
+                    <tocitem text="Working with the Tomcat Web Server" target="tomcat_process" />
+                    <tocitem text="Tomcat Web Server Tasks: Quick Reference" target="tomcat_quickref" />
+                    <tocitem text="Setting Up the Tomcat Web Server">
+                        <tocitem text="Viewing the Tomcat Web Server in the IDE" target="tomcat_top_node" />
+                        <tocitem text="Customizing the Tomcat Web Server" target="tomcat_internal_props"/>
+                        <tocitem text="Registering a Tomcat Web Server" target="tomcat_addinstall_noncsh" />
+                    </tocitem>
+                    <tocitem text="Editing the Tomcat Configuration File">
+                        <tocitem text="About Editing the Tomcat Configuration File" target="tomcat_edit_config" />
+                        <tocitem text="Accessing the Tomcat Web Server Administration Tool" target="tomcat_admin_access" />
+                        <tocitem text="Setting Up a Connection Pool on the Tomcat Web Server" target="tomcat_setup_tdcp" />
+                        <tocitem text="Accessing a Connection Pool from a JSP Page" target="tomcat_use_tdcp" />
+                    </tocitem>
+                    <tocitem text="Deploying to the Tomcat Web Server">
+                        <tocitem text="Authenticating the Tomcat Web Server" target="tomcat_edit_tomcatuser" />
+                        <tocitem text="Deploying a Web Application" target="tomcat_setup_registered" />
+                        <tocitem text="Using JWSDP 1.6 on the Tomcat Web Server" target="tomcat_websvc_jwsdp" />
+                        <tocitem text="Writing Ant Targets for Web Services on the Tomcat Web Server" target="tomcat_websvc" />
                     </tocitem>
                 </tocitem>
             </tocitem>
         </tocitem>
-        </tocitem>
+    </tocitem>
 </toc>
