@@ -105,9 +105,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     @Override
-    public void runOnCodeModelReadiness(NamedRunnable task) {
+    public void runOnProjectReadiness(NamedRunnable task) {
         if (getMakeConfigurationDescriptor() != null) {
-            getMakeConfigurationDescriptor().getConfs().runOnCodeModelReadiness(task);
+            getMakeConfigurationDescriptor().getConfs().runOnProjectReadiness(task);
         }
     }
 

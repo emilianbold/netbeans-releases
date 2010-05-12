@@ -156,7 +156,7 @@ public interface NativeProject {
      * For example, we'd like to say user "To perform XXX IDE needs to connect host yyy@zzz" :)
      * In this case NamedRunnable.getName() is used and its value is inserted instead of XXX
      */
-    public abstract void runOnCodeModelReadiness(NamedRunnable task);
+    public abstract void runOnProjectReadiness(NamedRunnable task);
 
     /**
      * Execute a command from user's PATH in the context of the native project
