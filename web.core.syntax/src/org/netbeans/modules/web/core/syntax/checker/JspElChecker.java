@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.BadLocationException;
 
 import javax.swing.text.Document;
 
@@ -70,9 +71,9 @@ public class JspElChecker {
     protected static ErrorRule DEFAULT_ERROR_RULE = new Rule(HintSeverity.ERROR, true);
     protected static final int DEFAULT_ERROR_HINT_PRIORITY = 50;
     
-    public ELExpression parseExpression( Document doc, int offset ) {
-        JspELExpression expression = new JspELExpression( JspSyntaxSupport.get(doc));
-        expression.parse( offset );
+    public ELExpression parseExpression( Document doc, int offset ) throws BadLocationException {
+        JspELExpression expression = new JspELExpression( JspSyntaxSupport.get(doc), offset);
+        expression.parse();
         return expression;
     }
 

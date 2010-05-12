@@ -72,7 +72,7 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Mysik
  */
 public final class ProjectPropertiesSupport {
-    private static final RequestProcessor RP = new RequestProcessor(ProjectPropertiesSupport.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(ProjectPropertiesSupport.class);
 
     private ProjectPropertiesSupport() {
     }

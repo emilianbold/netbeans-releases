@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,36 +34,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.spi.actions;
 
-package org.netbeans.modules.php.symfony.ui.actions;
-
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
+ * Base Go To View action.
+ * <p>
+ * This implementation just sets the correct name and runs the method
+ * {@link #actionPerformedInternal() actionPerformedInternal()} in its
+ * own {@link RequestProcessor request processor}.
  * @author Tomas Mysik
+ * @since 1.29
+ * @see GoToActionAction
  */
-public final class RunCommandAction extends BaseAction {
-    private static final long serialVersionUID = -22735302227232842L;
-    private static final RunCommandAction INSTANCE = new RunCommandAction();
+public abstract class GoToViewAction extends AbstractAction {
+    protected static final int DEFAULT_OFFSET = 0;
 
-    private RunCommandAction() {
+    private static final RequestProcessor RP = new RequestProcessor(GoToViewAction.class);
+
+    public GoToViewAction() {
+        super(NbBundle.getMessage(GoToViewAction.class, "LBL_GoToView"));
     }
 
-    public static RunCommandAction getInstance() {
-        return INSTANCE;
-    }
+    /**
+     * Method where the navigation itself happens. It is run in its
+     * own {@link RequestProcessor request processor}.
+     */
+    public abstract void actionPerformedInternal();
 
     @Override
-    public void actionPerformed(PhpModule phpModule) {
-        SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
-    }
-
-    @Override
-    protected String getPureName() {
-        return NbBundle.getMessage(RunCommandAction.class, "LBL_RunCommand");
+    public final void actionPerformed(ActionEvent e) {
+        RP.execute(new Runnable() {
+            @Override
+            public void run() {
+                actionPerformedInternal();
+            }
+        });
     }
 }

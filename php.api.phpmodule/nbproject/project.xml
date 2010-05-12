@@ -94,7 +94,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.2</specification-version>
+                        <specification-version>8.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -143,6 +143,7 @@
                 <package>org.netbeans.modules.php.api.editor</package>
                 <package>org.netbeans.modules.php.api.phpmodule</package>
                 <package>org.netbeans.modules.php.api.util</package>
+                <package>org.netbeans.modules.php.spi.actions</package>
                 <package>org.netbeans.modules.php.spi.commands</package>
                 <package>org.netbeans.modules.php.spi.editor</package>
                 <package>org.netbeans.modules.php.spi.phpmodule</package>

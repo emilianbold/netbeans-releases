@@ -59,6 +59,10 @@ public class PhpModuleImpl extends PhpModule {
         this.phpProject = phpProject;
     }
 
+    public PhpProject getPhpProject() {
+        return phpProject;
+    }
+
     @Override
     public String getName() {
         return phpProject.getLookup().lookup(ProjectInformation.class).getName();
