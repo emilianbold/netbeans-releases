@@ -562,7 +562,8 @@ public class TreeModelNode extends AbstractNode {
             if (iconLoaded) {
                 iconLoaded = false;
                 fireIconChange();
-                fireOpenedIconChange();
+                //fireOpenedIconChange(); - not necessary, just adds more events!
+                // VisualizerNode.propertyChange() interprets all name/icon changes as one kind.
             }
             refreshed = true;
         }
@@ -755,7 +756,8 @@ public class TreeModelNode extends AbstractNode {
         if (iconLoaded) {
             iconLoaded = false;
             fireIconChange();
-            fireOpenedIconChange();
+            //fireOpenedIconChange(); - not necessary, just adds more events!
+            // VisualizerNode.propertyChange() interprets all name/icon changes as one kind.
         }
         firePropertyChange(null, null, null);
     }
