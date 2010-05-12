@@ -307,8 +307,11 @@ public class JPDAStart extends Task implements Runnable {
                 ListeningConnector lc = null;
                 final Set<ListeningConnector> connectors = new HashSet<ListeningConnector>();
                 // search for connectors registered by NetBeans modules
-                final Lookup.Result<ListeningConnector> r = Lookup.getDefault().lookupResult(ListeningConnector.class);
-                connectors.addAll(r.allInstances());
+                // In JavaFX listening connectors are registered as Connector.class.
+                final Lookup.Result<Connector> r = Lookup.getDefault().lookupResult(Connector.class);
+                for(Connector c: r.allInstances()) {
+                    if (c instanceof ListeningConnector) connectors.add((ListeningConnector) c);
+                }
                 // use JDI default as well
                 connectors.addAll(Bootstrap.virtualMachineManager().listeningConnectors());
 
