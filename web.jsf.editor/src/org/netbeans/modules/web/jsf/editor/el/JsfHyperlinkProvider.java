@@ -44,9 +44,14 @@ package org.netbeans.modules.web.jsf.editor.el;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicStampedReference;
 
 import javax.lang.model.element.TypeElement;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
@@ -164,50 +169,78 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
      * @return a two member array which contains starting and ending offset of a hyperlink
      *         that should be on a given offset
      */
-    public int[] getHyperlinkSpan(Document doc, int offset) {
-        if (!(doc instanceof BaseDocument))
+    @Override
+    public int[] getHyperlinkSpan(final Document doc, final int offset) {
+        FileObject fObject = NbEditorUtilities.getFileObject(doc);
+        final WebModule wm = WebModule.getWebModule(fObject);
+        if(wm == null) {
             return null;
-
-        BaseDocument bdoc = (BaseDocument) doc;
-        JTextComponent target = Utilities.getFocusedComponent();
-
-        if (target == null || target.getDocument() != bdoc)
-            return null;
-
-        TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(bdoc);
-        TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
-        if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
-            return null; //no token found
-        }
-        if(!tokenSequence.moveNext()) {
-            return null; //no token
         }
 
-        //Token<?> token = tokenSequence.token();
+        final AtomicReference<Callable<int[]>> returnTaskRef = new AtomicReference<Callable<int[]>>();
+        doc.render(new Runnable() {
 
-        // is it a bean in EL ?
-        TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
-                ELTokenId.language());
+            @Override
+            public void run() {
 
-        if (elTokenSequence != null){
-            FileObject fObject = NbEditorUtilities.getFileObject(doc);
-            WebModule wm = WebModule.getWebModule(fObject);
-            if (wm != null){
-                JsfElExpression exp = new JsfElExpression(wm, doc);
-                elTokenSequence.move(offset);
-                if(!elTokenSequence.moveNext()) {
-                    return null; //no token
+                BaseDocument bdoc = (BaseDocument) doc;
+                JTextComponent target = Utilities.getFocusedComponent();
+
+                if (target == null || target.getDocument() != bdoc) {
+                    return;
                 }
 
-                int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
+                TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(bdoc);
+                TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
+                if (tokenSequence.move(offset) == Integer.MAX_VALUE) {
+                    return; //no token found
+                }
+                if (!tokenSequence.moveNext()) {
+                    return; //no token
+                }
 
-                int res = exp.parse(elEnd);
-                if (res == JsfElExpression.EL_JSF_BEAN || res == JsfElExpression.EL_START
-                        || res == JsfElExpression.EL_JSF_BEAN_REFERENCE)
-                    return new int[] {elTokenSequence.offset(), elEnd};
+                // is it a bean in EL ?
+                TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
+                        ELTokenId.language());
+
+                if (elTokenSequence != null) {
+                    elTokenSequence.move(offset);
+                    if (!elTokenSequence.moveNext()) {
+                        return; //no token
+                    }
+                    //set the parse offset
+                    final int parseOffset = elTokenSequence.offset() + elTokenSequence.token().length();
+                    final int elStartOffset = elTokenSequence.offset();
+
+                    try {
+                        final JsfElExpression exp = new JsfElExpression(wm, doc, parseOffset);
+                        returnTaskRef.set(new Callable<int[]>() {
+
+                            @Override
+                            public int[] call() throws Exception {
+                                    int res = exp.parse(); //parse outside of the document's lock
+                                    if (res == JsfElExpression.EL_JSF_BEAN || res == JsfElExpression.EL_START || res == JsfElExpression.EL_JSF_BEAN_REFERENCE) {
+                                        return new int[]{elStartOffset, parseOffset};
+                                    }
+                                    return null;
+                            }
+                        });
+                        
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
+        });
+
+        try {
+            Callable<int[]> returnTask = returnTaskRef.get();
+            return returnTask == null ? null : returnTask.call();
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
         }
-        return null;
+
     }
 
     /**
@@ -221,58 +254,79 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
      * @param offset &gt;=0 offset to test (it generally should be offset &lt; doc.getLength(), but
      *               the implementations should not depend on it)
      */
-    public void performClickAction(Document doc, int offset) {
+    public void performClickAction(final Document doc, final int offset) {
+        final FileObject fObject = NbEditorUtilities.getFileObject(doc);
+        final WebModule wm = WebModule.getWebModule(fObject);
+        if (wm == null) {
+            return;
+        }
 
-        BaseDocument bdoc = (BaseDocument) doc;
         JTextComponent target = Utilities.getFocusedComponent();
 
-        if (target == null || target.getDocument() != bdoc)
+        if (target == null || target.getDocument() != doc) {
             return;
-
-        TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(bdoc);
-        TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
-        if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
-            return; //no token found
-        }
-        if(!tokenSequence.moveNext()) {
-            return ; //no token
         }
 
-        //Token<?> token = tokenSequence.token();
+        final AtomicReference<Runnable> taskRef = new AtomicReference<Runnable>();
+        doc.render(new Runnable() {
 
-        // is it a bean in EL
-        TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
-                ELTokenId.language());
-        if (elTokenSequence != null){
-            FileObject fObject = NbEditorUtilities.getFileObject(doc);
-            WebModule wm = WebModule.getWebModule(fObject);
-            if (wm != null){
-                JsfElExpression exp = new JsfElExpression(wm, bdoc);
-                elTokenSequence.move(offset);
-                if(!elTokenSequence.moveNext()) {
+            @Override
+            public void run() {
+
+                TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(doc);
+                TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
+                if (tokenSequence.move(offset) == Integer.MAX_VALUE) {
+                    return; //no token found
+                }
+                if (!tokenSequence.moveNext()) {
                     return; //no token
                 }
 
-                int res = exp.parse(elTokenSequence.offset() +
-                            elTokenSequence.token().length());
-                if (res == JsfElExpression.EL_START ){
-                    //TODO XXX Add code to point references to beans in JSF file
-                    (new OpenConfigFile(fObject, wm,
-                            elTokenSequence.token().text().toString())).run();
-                    return;
-                }
-                if (res == JsfElExpression.EL_JSF_BEAN ||
-                        res == JsfElExpression.EL_JSF_BEAN_REFERENCE)
-                {
-                    if (!exp.gotoPropertyDeclaration(exp.getBaseObjectClass())){
-                        String msg = NbBundle.getBundle(JsfHyperlinkProvider.class).
-                            getString("MSG_source_not_found");
-                        StatusDisplayer.getDefault().setStatusText(msg);
-                        Toolkit.getDefaultToolkit().beep();
+                // is it a bean in EL
+                TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
+                        ELTokenId.language());
+                if (elTokenSequence != null) {
+                    elTokenSequence.move(offset);
+                    if (!elTokenSequence.moveNext()) {
+                        return; //no token
                     }
+                    try {
+                        final int parseOffset = elTokenSequence.offset() + elTokenSequence.token().length();
+                        final String beanName = elTokenSequence.token().text().toString();
+                        final JsfElExpression exp = new JsfElExpression(wm, doc, parseOffset);
+                        taskRef.set(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                int res = exp.parse();
+                                if (res == JsfElExpression.EL_START) {
+                                    //TODO XXX Add code to point references to beans in JSF file
+                                    (new OpenConfigFile(fObject, wm, beanName)).run();
+                                    return;
+                                }
+                                if (res == JsfElExpression.EL_JSF_BEAN || res == JsfElExpression.EL_JSF_BEAN_REFERENCE) {
+                                    if (!exp.gotoPropertyDeclaration(exp.getBaseObjectClass())) {
+                                        String msg = NbBundle.getBundle(JsfHyperlinkProvider.class).getString("MSG_source_not_found");
+                                        StatusDisplayer.getDefault().setStatusText(msg);
+                                        Toolkit.getDefaultToolkit().beep();
+                                    }
+                                }
+
+                            }
+                        });
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+
                 }
             }
+        });
+
+        Runnable task = taskRef.get();
+        if(task != null) {
+            task.run();
         }
+
     }
 
     private static class OpenConfigFile implements Runnable {

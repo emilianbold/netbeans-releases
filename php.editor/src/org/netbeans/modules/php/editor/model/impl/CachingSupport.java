@@ -120,7 +120,7 @@ class CachingSupport {
         Collection<? extends MethodScope> retval;
         CachingSupport cachingSupport = CachingSupport.getInstance(elem);
         if (cachingSupport != null) {
-            retval = cachingSupport.getMergedMethods((ClassScopeImpl)clsScope, methodName);
+            retval = cachingSupport.getMergedMethods(clsScope, methodName);
         } else {
             Set<MethodScope> tmp =  new HashSet<MethodScope>();
             tmp.addAll(ModelUtils.filter(clsScope.getDeclaredMethods(), methodName));
@@ -270,10 +270,10 @@ class CachingSupport {
 
     }
 
-    private Collection<? extends MethodScope> getMergedMethods(ClassScopeImpl clsScope, String methodName, final int... modifiers) {
+    private Collection<? extends MethodScope> getMergedMethods(TypeScope clsScope, String methodName, final int... modifiers) {
         Collection<? extends MethodScope> methods = getCachedMethods(clsScope, methodName);
         if (methods.isEmpty()) {
-            methods = (clsScope != null ? clsScope.findDeclaredMethods(methodName, modifiers) : Collections.<MethodScopeImpl>emptyList());
+            methods = clsScope instanceof TypeScopeImpl ? ((TypeScopeImpl)clsScope).findDeclaredMethods(methodName, modifiers) : Collections.<MethodScopeImpl>emptyList();
             if (methods.isEmpty()) {
                 Set<MethodScope> tmp = new HashSet<MethodScope>();
                 tmp.addAll(ModelUtils.filter(clsScope.getDeclaredMethods(), methodName));
@@ -433,12 +433,12 @@ class CachingSupport {
         });
     }
 
-    private List<? extends MethodScope> getCachedMethods(TypeScopeImpl typeScope, final String queryName, final int... modifiers) {
+    private List<? extends MethodScope> getCachedMethods(TypeScope typeScope, final String queryName, final int... modifiers) {
         return getCachedMethods(QuerySupport.Kind.EXACT, typeScope, queryName, modifiers);
     }
 
     private List<? extends MethodScope> getCachedMethods(final QuerySupport.Kind nameKind, 
-            TypeScopeImpl typeScope, final String queryName, final int... modifiers) {
+            TypeScope typeScope, final String queryName, final int... modifiers) {
         List<MethodScope> toFilter = methodScopes.get(typeScope);
         if (toFilter == null) return Collections.emptyList();
 

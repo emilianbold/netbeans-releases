@@ -196,7 +196,6 @@ public class JsfElExpressionTest extends TestBase {
         WebModule wm = WebModule.getWebModule(file);
         assertNotNull(wm);
 
-        JsfElExpression expr = new JsfElExpression(wm, doc);
 
         //initialize the html extension
         JsfSupport.findFor(file);
@@ -240,7 +239,8 @@ public class JsfElExpressionTest extends TestBase {
         doc.insertString(0, code, null);
 
         int offset = code.lastIndexOf('.') + 1;
-        int parseCode = expr.parse(offset);
+        JsfElExpression expr = new JsfElExpression(wm, doc, offset);
+        int parseCode = expr.parse();
 
         System.out.println("parsed text=" + code);
         System.out.println("parser code=" + parseCode);
@@ -382,7 +382,6 @@ public class JsfElExpressionTest extends TestBase {
         WebModule wm = WebModule.getWebModule(file);
         assertNotNull(wm);
 
-        JsfElExpression expr = new JsfElExpression(wm, doc);
         
         doc.remove(0, doc.getLength());
         doc.insertString(0, code, null);
@@ -394,7 +393,8 @@ public class JsfElExpressionTest extends TestBase {
         //remove the pipe from the code
         doc.remove(offset, 1);
 
-        int parseCode = expr.parse(offset);
+        JsfElExpression expr = new JsfElExpression(wm, doc, offset);
+        int parseCode = expr.parse();
 
         assertEquals(JsfElExpression.EL_JSF_BEAN, parseCode);
 

@@ -37,17 +37,18 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.zend.ui.actions;
+package org.netbeans.modules.php.spi.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.zend.ZendPhpFrameworkProvider;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
+ * Base action class which operates with a PHP module, suitable for framework classes.
+ * It takes care about names (name in menu, name in shortcuts).
  * @author Tomas Mysik
+ * @since 1.30
  */
 public abstract class BaseAction extends AbstractAction implements HelpCtx.Provider {
 
@@ -57,29 +58,40 @@ public abstract class BaseAction extends AbstractAction implements HelpCtx.Provi
         putValue("menuText", getPureName()); // NOI18N
     }
 
-    @Override
-    public final void actionPerformed(ActionEvent e) {
-        PhpModule phpModule = PhpModule.inferPhpModule();
+    /**
+     * Get the name for shortcuts table (Tools > Options > Keymap).
+     * @return the name for shortcuts table (Tools > Options > Keymap)
+     */
+    protected abstract String getFullName();
 
-        if (phpModule == null) {
-            return;
-        }
-        if (!ZendPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
-            return;
-        }
+    /**
+     * Get the name for menu (and context menu).
+     * @return the name for menu (and context menu)
+     */
+    protected abstract String getPureName();
 
-        actionPerformed(phpModule);
-    }
-
-    protected String getFullName() {
-        return NbBundle.getMessage(BaseAction.class, "LBL_ZendAction", getPureName());
-    }
+    /**
+     * Framework implementations should likely check whether they
+     * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#isInPhpModule(PhpModule) extend} the given PHP module.
+     * @param phpModule PHP module the action is invoked on, never {@code null}
+     */
+    protected abstract void actionPerformed(PhpModule phpModule);
 
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    protected abstract String getPureName();
-    protected abstract void actionPerformed(PhpModule phpModule);
+    /**
+     * If a PHP module {@link PhpModule#inferPhpModule() is found} then
+     * {@link #actionPerformed(PhpModule) actionPerformed(PhpModule)} is called.
+     */
+    @Override
+    public final void actionPerformed(ActionEvent e) {
+        PhpModule phpModule = PhpModule.inferPhpModule();
+        if (phpModule == null) {
+            return;
+        }
+        actionPerformed(phpModule);
+    }
 }

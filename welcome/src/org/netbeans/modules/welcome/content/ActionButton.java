@@ -53,12 +53,12 @@ public class ActionButton extends LinkButton {
     private String urlString;
     private boolean visited = false;
 
-    public ActionButton( Action a, String urlString, boolean showBorder ) {
-        this( a, urlString, Utils.getColor(LINK_COLOR), showBorder );
+    public ActionButton( Action a, String urlString, boolean showBorder, String usageTrackingId ) {
+        this( a, urlString, Utils.getColor(LINK_COLOR), showBorder, usageTrackingId );
     }
 
-    public ActionButton( Action a, String urlString, Color foreground, boolean showBorder ) {
-        super( a.getValue( Action.NAME ).toString(), foreground, showBorder );
+    public ActionButton( Action a, String urlString, Color foreground, boolean showBorder, String usageTrackingId ) {
+        super( a.getValue( Action.NAME ).toString(), foreground, showBorder, usageTrackingId );
         this.action = a;
         this.urlString = urlString;
         Object icon = a.getValue( Action.SMALL_ICON );
@@ -67,11 +67,6 @@ public class ActionButton extends LinkButton {
         Object tooltip = a.getValue( Action.SHORT_DESCRIPTION );
         if( null != tooltip )
             setToolTipText( tooltip.toString() );
-        if( null == urlString ) {
-            setUsageTrackingId(getText());
-        } else {
-            setUsageTrackingId(getText() + " (" + urlString + ")"); //NOI18N
-        }
     }
 
     @Override
