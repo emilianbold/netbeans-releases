@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.php.project.ui;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.GroupLayout;
@@ -149,60 +152,89 @@ public class BrowseTestSources extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        infoLabel = new javax.swing.JLabel();
-        testSourcesLabel = new javax.swing.JLabel();
-        testSourcesTextField = new javax.swing.JTextField();
-        testSourcesBrowseButton = new javax.swing.JButton();
+        infoLabel = new JLabel();
+        testSourcesLabel = new JLabel();
+        testSourcesTextField = new JTextField();
+        testSourcesBrowseButton = new JButton();
 
-        org.openide.awt.Mnemonics.setLocalizedText(infoLabel, "dummy"); // NOI18N
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
 
-        testSourcesLabl.setLabelFor(testSourcesTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(testSourcesLabel, org.openide.util.NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(testSourcesBrowseButton, org.openide.util.NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesBrowseButton.text")); // NOI18N
-        testSourcesBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            publonPerformed(java.awt.event evt) {
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return testSourcesTextField;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return testSourcesTextField;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return testSourcesBrowseButton;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  testSourcesTextField){
+                    return testSourcesBrowseButton;
+                }
+                return testSourcesTextField;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  testSourcesBrowseButton){
+                    return testSourcesTextField;
+                }
+                return testSourcesBrowseButton;//end getComponentBefore
+
+            }}
+        );
+
+        Mnemonics.setLocalizedText(infoLabel, "dummy"); // NOI18N
+
+        testSourcesLabel.setLabelFor(testSourcesTextField);
+
+        Mnemonics.setLocalizedText(testSourcesLabel, NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.text"));
+        Mnemonics.setLocalizedText(testSourcesBrowseButton, NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesBrowseButton.text"));
+        testSourcesBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 testSourcesBrowseButtonActionPerformed(evt);
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(infoLabel)
-                    .addGroup(layout.createSup()
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(testSourcesLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(testSourcesTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(testSourcesTextField, GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(testSourcesBrowseButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-         omponent(infoLabel)
-        PreferredGap(javax.swing.LomponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELIN           .addComponent(testSourcesLabel)
-                    .addComponent(testSourcesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(infoLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(testSourcesLabel)
+                    .addComponent(testSourcesTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(testSourcesBrowseButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        testSourcesLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.AccessibleContext.accessibleName")); // NOI18N
-        testSourcesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        testSourcesTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesTextField.AccessibleContext.accessibleName")); // NOI18N
-        testSourcesTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        testSourcesBrowseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesBrowseButton.AccessibleContext.accessibleName")); // NOI18N
-        testSourcesBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
-
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.AccessibleContext.accessibleName")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.AccessibleContext.accessibleDescription")); // NOI18N
+        testSourcesLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.AccessibleContext.accessibleName")); // NOI18N
+        testSourcesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        testSourcesTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesTextField.AccessibleContext.accessibleName")); // NOI18N
+        testSourcesTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        testSourcesBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesBrowseButton.AccessibleContext.accessibleName")); // NOI18N
+        testSourcesBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void testSourcesBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_testSourcesBrowseButtonActionPerformed
@@ -211,10 +243,10 @@ public class BrowseTestSources extends JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel infoLabel;
-    private javax.swing.JButton testSourcesBrowseButton;
-    private javax.swing.JLabel testSourcesLabel;
-    private javax.swing.JTextField testSourcesTextField;
+    private JLabel infoLabel;
+    private JButton testSourcesBrowseButton;
+    private JLabel testSourcesLabel;
+    private JTextField testSourcesTextField;
     // End of variables declaration//GEN-END:variables
 
 }
