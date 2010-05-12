@@ -526,7 +526,7 @@ public final class NbMavenProjectImpl implements Project {
         if (ProjectManager.mutex().isReadAccess() ||
             ProjectManager.mutex().isWriteAccess() ||
             SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RELOAD_RP.post(new Runnable() {
                 @Override
                 public void run() {
                     fireProjectReload();

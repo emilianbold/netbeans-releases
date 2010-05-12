@@ -53,10 +53,8 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -300,32 +298,7 @@ public class BridgeImpl implements BridgeInterface {
         }
         
         // Now check to see if the Project defined any cool new custom tasks.
-            RP.post(new Runnable() {
-            public void run() {
-                IntrospectedInfo custom = AntSettings.getCustomDefs();
-                Map<String,Map<String,Class>> defs = new HashMap<String,Map<String,Class>>();
-                try {
-                    defs.put("task", NbCollections.checkedMapByCopy(project.getTaskDefinitions(), String.class, Class.class, true));
-                    defs.put("type", NbCollections.checkedMapByCopy(project.getDataTypeDefinitions(), String.class, Class.class, true));
-                } catch (ThreadDeath t) {
-                    // #137883: late clicks on Stop which can be ignored.
-                }
-                custom.scanProject(defs);
-                AntSettings.setCustomDefs(custom);
-                logger.shutdown();
-                // #85698: do not invoke multiple refreshes at once
-                refreshFilesystemsTask.schedule(0);
-                gutProject(project);
-                if (!ant16) {
-                    // #36393 - memory leak in Ant 1.5.
-                        RP.post(new Runnable() {
-                        public void run() {
-                            hack36393();
-                        }
-                    });
-                }
-            }
-        });
+        RP.post(new PostRun(project, logger));
         
         } finally {
             AntBridge.unfakeJavaClassPath();
@@ -338,8 +311,8 @@ public class BridgeImpl implements BridgeInterface {
         return ok;
     }
 
-    private static final RequestProcessor.Task refreshFilesystemsTask = new RequestProcessor("post-Ant file refresh").create(new Runnable() {
-        public void run() {
+    private static final RequestProcessor.Task refreshFilesystemsTask = RP.create(new Runnable() {
+        public @Override void run() {
             Logger.getLogger(BridgeImpl.class.getName()).log(Level.FINE, "Refreshing filesystems");
             FileUtil.refreshAll(); 
         }
@@ -358,25 +331,24 @@ public class BridgeImpl implements BridgeInterface {
         process.interrupt();
         // But if that doesn't do it, double-check later...
         // Yes Thread.stop() is deprecated; that is why we try to avoid using it.
-        RP.create(new Runnable() {
-            public void run () {
-                forciblyStop(process);
-            }
-        }).schedule(STOP_TIMEOUT);
+        RP.create(new StopProcess(process)).schedule(STOP_TIMEOUT);
     }
-    
-    private void forciblyStop(Thread process) {
-        if (process.isAlive()) {
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "MSG_halting"));
-            stopThread(process);
+    private static class StopProcess implements Runnable {
+        private final Thread process;
+        StopProcess(Thread process) {
+            this.process = process;
+        }
+        public @Override void run() {
+            if (process.isAlive()) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "MSG_halting"));
+                stopThread();
+            }
+        }
+        @SuppressWarnings("deprecation")
+        private void stopThread() {
+            process.stop();
         }
     }
-
-    @SuppressWarnings("deprecation")
-    private static void stopThread(Thread process) {
-        process.stop();
-    }
-            
 
     private static void addCustomDefs(Project project) throws BuildException, IOException {
         long start = System.currentTimeMillis();
@@ -408,54 +380,6 @@ public class BridgeImpl implements BridgeInterface {
         }
         if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
             AntModule.err.log("addCustomDefs took " + (System.currentTimeMillis() - start) + "msec");
-        }
-    }
-    
-    private static boolean doHack36393 = true;
-    /**
-     * Remove any outstanding ProcessDestroyer shutdown hooks.
-     * They should not be left in the JRE static area.
-     * Workaround for bug in Ant 1.5.x, fixed already in Ant 1.6.
-     */
-    private static void hack36393() {
-        if (!doHack36393) {
-            // Failed last time, skip this time.
-            return;
-        }
-        try {
-            Class shutdownC = Class.forName("java.lang.Shutdown"); // NOI18N
-            Class wrappedHookC = Class.forName("java.lang.Shutdown$WrappedHook"); // NOI18N
-            Field hooksF = shutdownC.getDeclaredField("hooks"); // NOI18N
-            hooksF.setAccessible(true);
-            Field hookF = wrappedHookC.getDeclaredField("hook"); // NOI18N
-            hookF.setAccessible(true);
-            Field lockF = shutdownC.getDeclaredField("lock"); // NOI18N
-            lockF.setAccessible(true);
-            Object lock = lockF.get(null);
-            Set<Thread> toRemove = new HashSet<Thread>();
-            synchronized (lock) {
-                @SuppressWarnings("unchecked")
-                Set<Object> hooks = (Set) hooksF.get(null);
-                for (Object wrappedHook : hooks) {
-                    Thread hook = (Thread)hookF.get(wrappedHook);
-                    if (hook.getClass().getName().equals("org.apache.tools.ant.taskdefs.ProcessDestroyer")) { // NOI18N
-                        // Don't remove it now - will get ConcurrentModificationException.
-                        toRemove.add(hook);
-                    }
-                }
-            }
-            for (Thread hook : toRemove) {
-                if (!Runtime.getRuntime().removeShutdownHook(hook)) {
-                    throw new IllegalStateException("Hook was not really registered!"); // NOI18N
-                }
-                AntModule.err.log("#36393: removing an unwanted ProcessDestroyer shutdown hook");
-                // #36395: memory leak in ThreadGroup if the thread is not started.
-                hook.start();
-            }
-        } catch (Exception e) {
-            // Oh well.
-            AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
-            doHack36393 = false;
         }
     }
     
@@ -519,6 +443,35 @@ public class BridgeImpl implements BridgeInterface {
             // Oh well.
             AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
             doGutProject = false;
+        }
+    }
+
+    private static class PostRun implements Runnable {
+        private Project project;
+        private NbBuildLogger logger;
+        public PostRun(Project project, NbBuildLogger logger) {
+            this.project = project;
+            this.logger = logger;
+        }
+        public @Override void run() {
+            IntrospectedInfo custom = AntSettings.getCustomDefs();
+            @SuppressWarnings("rawtypes")
+            Map<String,Map<String,Class>> defs = new HashMap<String, Map<String, Class>>();
+            try {
+                defs.put("task", NbCollections.checkedMapByCopy(project.getTaskDefinitions(), String.class, Class.class, true));
+                defs.put("type", NbCollections.checkedMapByCopy(project.getDataTypeDefinitions(), String.class, Class.class, true));
+            } catch (ThreadDeath t) {
+                // #137883: late clicks on Stop which can be ignored.
+            }
+            custom.scanProject(defs);
+            AntSettings.setCustomDefs(custom);
+            logger.shutdown();
+            // #85698: do not invoke multiple refreshes at once
+            refreshFilesystemsTask.schedule(0);
+            gutProject(project);
+            // #185853: make sure these fields do not stick around
+            project = null;
+            logger = null;
         }
     }
     
