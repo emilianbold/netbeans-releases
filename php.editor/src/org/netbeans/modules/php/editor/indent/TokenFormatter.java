@@ -736,10 +736,32 @@ public class TokenFormatter {
                                         }
                                         break;
                                     case WHITESPACE_WITHIN_METHOD_DECL_PARENS:
-                                        countSpaces = docOptions.spaceWithinMethodDeclParens ? 1 : 0;
+                                        int helpIndex = index - 1;
+                                        while (helpIndex > 0
+                                                && formatTokens.get(helpIndex).getId() != FormatToken.Kind.WHITESPACE_WITHIN_METHOD_DECL_PARENS
+                                                && (formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE
+                                                /*|| formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE_INDENT*/)) {
+                                            helpIndex --;
+                                        }
+                                        if (helpIndex > 0 && formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE_WITHIN_METHOD_DECL_PARENS) {
+                                            countSpaces = 0;
+                                        } else {
+                                            countSpaces = docOptions.spaceWithinMethodDeclParens ? 1 : 0;
+                                        }
                                         break;
                                     case WHITESPACE_WITHIN_METHOD_CALL_PARENS:
-                                        countSpaces = docOptions.spaceWithinMethodCallParens ? 1 : 0;
+                                        helpIndex = index - 1;
+                                        while (helpIndex > 0
+                                                && formatTokens.get(helpIndex).getId() != FormatToken.Kind.WHITESPACE_WITHIN_METHOD_CALL_PARENS
+                                                && (formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE
+                                                || formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE_INDENT)) {
+                                            helpIndex --;
+                                        }
+                                        if (index > 0 && formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE_WITHIN_METHOD_CALL_PARENS) {
+                                            countSpaces = 0;
+                                        } else {
+                                            countSpaces = docOptions.spaceWithinMethodCallParens ? 1 : 0;
+                                        }
                                         break;
                                     case WHITESPACE_WITHIN_IF_PARENS:
                                         countSpaces = docOptions.spaceWithinIfParens ? 1 : 0;

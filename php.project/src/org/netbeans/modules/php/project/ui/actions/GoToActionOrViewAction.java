@@ -37,24 +37,21 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony.ui.actions;
+package org.netbeans.modules.php.project.ui.actions;
 
 import java.awt.event.ActionEvent;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.text.TextAction;
-import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.php.api.editor.EditorSupport;
-import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
-import org.netbeans.modules.php.symfony.util.SymfonyUtils;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.spi.actions.GoToActionAction;
+import org.netbeans.modules.php.spi.actions.GoToViewAction;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -63,23 +60,19 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
- * @see BaseAction
  * @author Tomas Mysik
  */
 public final class GoToActionOrViewAction extends TextAction implements ContextAwareAction {
-    private static final long serialVersionUID = -1231423139431663L;
-
-    static final RequestProcessor RP = new RequestProcessor(GoToActionOrViewAction.class.getName());
+    private static final long serialVersionUID = -28799856213215454L;
 
     private static final GoToActionOrViewAction INSTANCE = new GoToActionOrViewAction();
     private static final int DEFAULT_OFFSET = 0;
 
     private GoToActionOrViewAction() {
         super(getFullName());
-        // copied from BaseAction
+        // copied from BaseAction from php.api module
         putValue("noIconInMenu", true); // NOI18N
         putValue(NAME, getFullName());
         putValue("menuText", getPureName()); // NOI18N
@@ -90,7 +83,7 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
     }
 
     private static String getFullName() {
-        return NbBundle.getMessage(GoToActionOrViewAction.class, "LBL_SymfonyAction", getPureName());
+        return NbBundle.getMessage(GoToActionOrViewAction.class, "LBL_PhpPrefix", getPureName());
     }
 
     private static String getPureName() {
@@ -113,27 +106,35 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
     }
 
     private Action getGoToAction(FileObject fo, int offset) {
-        if (!isValid(fo)) {
+        if (fo == null) {
+            return null;
+        }
+        PhpProject phpProject = PhpProjectUtils.getPhpProject(fo);
+        if (phpProject == null) {
             return null;
         }
 
-        if (SymfonyUtils.isViewWithAction(fo)) {
-            return new GoToActionAction(fo);
-        } else if (SymfonyUtils.isAction(fo)) {
-            return new GoToViewAction(fo, offset);
+        // the 1st wins
+        final PhpModule phpModule = phpProject.getPhpModule();
+        for (PhpFrameworkProvider frameworkProvider : phpProject.getFrameworks()) {
+            PhpModuleActionsExtender actionsExtender = frameworkProvider.getActionsExtender(phpModule);
+            if (actionsExtender != null) {
+                if (actionsExtender.isActionWithView(fo)) {
+                    GoToViewAction goToViewAction = actionsExtender.getGoToViewAction(fo, offset);
+                    if (goToViewAction == null) {
+                        throw new IllegalStateException(fo.getPath() + " is action with view so GoToView instance must be returned by " + frameworkProvider.getName());
+                    }
+                    return goToViewAction;
+                } else if (actionsExtender.isViewWithAction(fo)) {
+                    GoToActionAction goToActionAction = actionsExtender.getGoToActionAction(fo, offset);
+                    if (goToActionAction == null) {
+                        throw new IllegalStateException(fo.getPath() + " is view with action so GoToAction instance must be returned by " + frameworkProvider.getName());
+                    }
+                    return goToActionAction;
+                }
+            }
         }
         return null;
-    }
-
-    private boolean isValid(FileObject fo) {
-        if (fo == null) {
-            return false;
-        }
-        PhpModule phpModule = PhpModule.forFileObject(fo);
-        if (phpModule == null) {
-            return false;
-        }
-        return SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
     }
 
     private int getOffset(Lookup context) {
@@ -163,88 +164,5 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
             return DEFAULT_OFFSET;
         }
         return openedPanes[0].getCaretPosition();
-    }
-
-    static final class GoToActionAction extends AbstractAction {
-        private static final long serialVersionUID = -95284445913404L;
-        private static final Pattern ACTION_METHOD_NAME = Pattern.compile("^(\\w+)[A-Z]"); // NOI18N
-
-        private final FileObject fo;
-
-        public GoToActionAction(FileObject fo) {
-            super(NbBundle.getMessage(GoToActionOrViewAction.class, "LBL_GoToAction"));
-            assert SymfonyUtils.isViewWithAction(fo);
-            this.fo = fo;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            RP.execute(new Runnable() {
-                @Override
-                public void run() {
-                    FileObject action = SymfonyUtils.getAction(fo);
-                    if (action != null) {
-                        UiUtils.open(action, getActionMethodOffset(action));
-                    }
-                }
-            });
-        }
-
-        private int getActionMethodOffset(FileObject action) {
-            String actionMethodName = getActionMethodName(fo.getName());
-            EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
-            for (PhpClass phpClass : editorSupport.getClasses(action)) {
-                if (actionMethodName != null) {
-                    for (PhpClass.Method method : phpClass.getMethods()) {
-                        if (actionMethodName.equals(method.getName())) {
-                            return method.getOffset();
-                        }
-                    }
-                }
-                return phpClass.getOffset();
-            }
-            return DEFAULT_OFFSET;
-        }
-
-        static String getActionMethodName(String filename) {
-            Matcher matcher = ACTION_METHOD_NAME.matcher(filename);
-            if (matcher.find()) {
-                String group = matcher.group(1);
-                return SymfonyUtils.ACTION_METHOD_PREFIX + group.substring(0, 1).toUpperCase() + group.substring(1);
-            }
-            return null;
-        }
-    }
-
-    private static final class GoToViewAction extends AbstractAction {
-        private static final long serialVersionUID = -95232154930113404L;
-
-        private final FileObject fo;
-        private final int offset;
-
-        public GoToViewAction(FileObject fo, int offset) {
-            super(NbBundle.getMessage(GoToActionOrViewAction.class, "LBL_GoToView"));
-            assert SymfonyUtils.isAction(fo);
-            this.fo = fo;
-            this.offset = offset;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            RP.execute(new Runnable() {
-                @Override
-                public void run() {
-                    EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
-                    PhpBaseElement phpElement = editorSupport.getElement(fo, offset);
-                    if (phpElement == null) {
-                        return;
-                    }
-                    FileObject view = SymfonyUtils.getView(fo, phpElement);
-                    if (view != null) {
-                        UiUtils.open(view, DEFAULT_OFFSET);
-                    }
-                }
-            });
-        }
     }
 }

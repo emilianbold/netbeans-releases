@@ -41,6 +41,10 @@ package org.netbeans.modules.php.spi.phpmodule;
 
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.php.spi.actions.GoToActionAction;
+import org.netbeans.modules.php.spi.actions.GoToViewAction;
+import org.netbeans.modules.php.spi.actions.RunCommandAction;
+import org.openide.filesystems.FileObject;
 
 /**
  * Provides support for extending a PHP module with a PHP framework's actions, that is,
@@ -62,4 +66,80 @@ public abstract class PhpModuleActionsExtender {
      * @return list of actions, can be empty but never <code>null</code>.
      */
     public abstract List<? extends Action> getActions();
+
+    /**
+     * Get the {@link RunCommandAction} if the framework provider supports it or {@code null} if not.
+     * <p>
+     * If it is not {@code null}, it is places as the 1st action in the {@link #getMenuName() actions submenu}
+     * followed by a separator and {@link #getActions() actions}.
+     * <p>
+     * The default implementation returns {@code null}.
+     * @return {@link RunCommandAction} if the framework provider supports it or {@code null} if not
+     * @since 1.30
+     */
+    public RunCommandAction getRunCommandAction() {
+        return null;
+    }
+
+    /**
+     * Return {@code true} if the given file object is a <em>view</em> (or a <em>template</em>).
+     * <p>
+     * If {@code true} is returned then {@link #getGoToActionAction(FileObject, int) getGoToActionAction()} cannot return {@code null}
+     * ({@link IllegalStateException} is thrown in such case).
+     * <p>
+     * The default implementation returns {@code false}.
+     * @param fo file object to check (the currently opened file in editor)
+     * @return {@code true} if the given FileObject is a <em>view</em> (or a <em>template</em>)
+     * @see #getGoToActionAction(FileObject, int)
+     * @since 1.29
+     */
+    public boolean isViewWithAction(FileObject fo) {
+        return false;
+    }
+
+    /**
+     * Return {@code true} if the given file object is an <em>action</em> (or a <em>controller</em>).
+     * <p>
+     * If {@code true} is returned then {@link #getGoToViewAction(FileObject, int) getGoToViewAction()} cannot return {@code null}
+     * ({@link IllegalStateException} is thrown in such case).
+     * <p>
+     * The default implementation returns {@code false}.
+     * @param fo file object to check (the currently opened file in editor)
+     * @return {@code true} if the given FileObject is an <em>action</em> (or a <em>controller</em>)
+     * @see #getGoToViewAction(FileObject, int)
+     * @since 1.29
+     */
+    public boolean isActionWithView(FileObject fo) {
+        return false;
+    }
+
+    /**
+     * Get instance of framework specific Go To Action action. It can return {@code null}
+     * only if the given file object is not a {@link #isViewWithAction(FileObject) <em>view</em>}.
+     * <p>
+     * The default implementation returns {@code null}.
+     * @param fo file object to get action for (the currently opened file in editor)
+     * @param offset current offset in the file object
+     * @return instance of framework specific Go To Action action or {@code null}
+     * @see #isViewWithAction(FileObject)
+     * @since 1.29
+     */
+    public GoToActionAction getGoToActionAction(FileObject fo, int offset) {
+        return null;
+    }
+
+    /**
+     * Get instance of framework specific Go To View action. It can return {@code null}
+     * only if the given file object is not an {@link #isActionWithView(FileObject) <em>action</em>}.
+     * <p>
+     * The default implementation returns {@code null}.
+     * @param fo file object to get action for (the currently opened file in editor)
+     * @param offset current offset in the file object
+     * @return instance of framework specific Go To View action or {@code null}
+     * @see #isActionWithView(FileObject)
+     * @since 1.29
+     */
+    public GoToViewAction getGoToViewAction(FileObject fo, int offset) {
+        return null;
+    }
 }
