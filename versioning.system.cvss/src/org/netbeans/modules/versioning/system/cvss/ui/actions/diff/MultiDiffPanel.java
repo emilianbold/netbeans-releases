@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 
+import org.openide.util.Cancellable;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
@@ -194,9 +195,9 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         // mimics refreshSetups()
         Setup[] localSetups = new Setup[] {new Setup(file, rev1, rev2)};
         setSetups(localSetups, DiffUtils.setupsToEditorCookies(localSetups));
-        setDiffIndex(0, 0);
+        setDiffIndex(0, 0, false);
         dpt = new DiffPrepareTask(setups);
-        prepareTask = CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(dpt);
+        prepareTask = CvsVersioningSystem.getInstance().getRequestProcessor().post(dpt);
     }
 
     private void replaceVerticalSplitPane(JComponent replacement) {
@@ -217,7 +218,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
 
     public void tableRowSelected(int viewIndex) {
         if (fileTableSetSelectedIndexContext) return;
-        setDiffIndex(viewIndex, 0);
+        setDiffIndex(viewIndex, 0, true);
     }
     
     UndoRedo getUndoRedo() {
@@ -471,14 +472,14 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         return context.contains(file);
     }
     
-    private void setDiffIndex(int idx, int location) {
+    private void setDiffIndex(int idx, int location, boolean restartPrepareTask) {
         assert EventQueue.isDispatchThread();
         currentIndex = idx;
         DiffController view = null;
         
         if (currentIndex != -1) {
-            if (dpt != null) {
-                prepareTask.cancel();
+            if (restartPrepareTask && dpt != null) {
+                dpt.cancel();
                 dpt.setTableIndex(currentIndex);
                 prepareTask.schedule(100);
             }
@@ -636,14 +637,14 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 if (++currentIndex >= setups.length) {
                     currentIndex--;
                 } else {
-                    setDiffIndex(currentIndex, 0);
+                    setDiffIndex(currentIndex, 0, true);
                 }
             } else {
                 view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
             }
         } else {
             if (++currentIndex >= setups.length) currentIndex = 0;
-            setDiffIndex(currentIndex, 0);
+            setDiffIndex(currentIndex, 0, true);
         }
         refreshComponents();
     }
@@ -656,14 +657,14 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 if (--currentIndex < 0) {
                     currentIndex++;
                 } else {
-                    setDiffIndex(currentIndex, -1);
+                    setDiffIndex(currentIndex, -1, true);
                 }
             } else {
                 view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
             }
         } else {
             if (--currentIndex < 0) currentIndex = setups.length - 1;
-            setDiffIndex(currentIndex, -1);
+            setDiffIndex(currentIndex, -1, true);
         }
         refreshComponents();
     }
@@ -756,10 +757,10 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                     fileTable.getComponent().setPreferredSize(null);
                     Dimension dim = fileTable.getComponent().getPreferredSize();
                     fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
-                    setDiffIndex(0, 0);
+                    setDiffIndex(0, 0, false);
                     commitButton.setEnabled(true);
                     dpt = new DiffPrepareTask(setups);
-                    prepareTask = CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(dpt);
+                    prepareTask = CvsVersioningSystem.getInstance().getRequestProcessor().post(dpt);
                 }
             }
         };
@@ -798,10 +799,11 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         }
     }
 
-    private class DiffPrepareTask implements Runnable {
+    private class DiffPrepareTask implements Runnable, Cancellable {
         
         private final Setup[] prepareSetups;
         private int tableIndex; // index of a row in the table - viewIndex, needs to be translated to modelIndex
+        private boolean canceled;
 
         public DiffPrepareTask(Setup [] prepareSetups) {
             this.prepareSetups = prepareSetups;
@@ -811,6 +813,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         @Override
         public void run() {
             try {
+                canceled = false;
                 int[] indexes = prepareIndexesToRefresh();
                 for (int i : indexes) {
                     if (prepareSetups != setups || Thread.interrupted()) return;
@@ -823,9 +826,12 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                         final int fi = modelIndex;
                         StreamSource ss1 = prepareSetups[fi].getFirstSource();
                         StreamSource ss2 = prepareSetups[fi].getSecondSource();
+                        if (Thread.interrupted() || canceled) {
+                            return;
+                        }
                         final DiffController view = DiffController.createEnhanced(ss1, ss2);  // possibly executing slow external diff
                         view.addPropertyChangeListener(MultiDiffPanel.this);
-                        if (Thread.interrupted()) {
+                        if (Thread.interrupted() || canceled) {
                             return;
                         }
                         prepareSetups[fi].setView(view);
@@ -836,7 +842,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                                     return;
                                 }
                                 if (currentModelIndex == fi) {
-                                    setDiffIndex(currentIndex, 0);
+                                    setDiffIndex(currentIndex, 0, false);
                                 }
                                 if (splitPane != null) {
                                     updateSplitLocation();
@@ -853,11 +859,12 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         }
 
         private int[] prepareIndexesToRefresh () {
-            int min = Math.max(0, tableIndex - 2);
-            int max = Math.min(prepareSetups.length - 1, tableIndex + 2);
+            int index = tableIndex;
+            int min = Math.max(0, index - 2);
+            int max = Math.min(prepareSetups.length - 1, index + 2);
             int[] indexes = new int[max - min + 1];
             // adding tableIndex, tableIndex - 1, tableIndex + 1, tableIndex - 2, tableIndex + 2, etc.
-            for (int i = tableIndex, j = tableIndex + 1, k = 0; i >= min || j <= max; --i, ++j) {
+            for (int i = index, j = index + 1, k = 0; i >= min || j <= max; --i, ++j) {
                 if (i >= min) {
                     indexes[k++] = i;
                 }
@@ -870,6 +877,11 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
 
         private void setTableIndex(int index) {
             this.tableIndex = index;
+        }
+
+        @Override
+        public boolean cancel() {
+            return this.canceled = true;
         }
     }
 

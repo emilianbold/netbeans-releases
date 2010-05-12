@@ -287,10 +287,12 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
         //try to get the root
         File[] roots = parent.getRoots();
+        outer:
         for(File root : roots) {
             for(RepositoryRevision.Event evt : revs) {
                 if(root.equals(evt.getFile())) {
                     event = evt;
+                    break outer;
                 }
             }
         }
