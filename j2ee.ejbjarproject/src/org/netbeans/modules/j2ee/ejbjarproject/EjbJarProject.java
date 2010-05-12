@@ -1171,6 +1171,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             }
 
             if (resources != null) {
+                FileUtil.removeFileChangeListener(this, resources);
                 FileUtil.addFileChangeListener(this, resources);
             }
 

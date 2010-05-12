@@ -655,6 +655,7 @@ public final class ProjectEar extends J2eeApplicationProvider
             resources = getResourceDirectory();
 
             if (resources != null) {
+                FileUtil.removeFileChangeListener(this, resources);
                 FileUtil.addFileChangeListener(this, resources);
             }
 
