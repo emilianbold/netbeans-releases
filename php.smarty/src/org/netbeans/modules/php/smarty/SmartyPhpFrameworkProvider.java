@@ -138,33 +138,6 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
         final FoundSmarty fs = new FoundSmarty();
         Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(phpModule.getSourceDirectory()));
         final Set<FileObject> filesWithUsedSmarty = index.getLocationsForIdentifiers(SmartyFramework.BASE_CLASS_NAME);
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            @Override
-            public void run() {
-                for (FileObject fileObject : filesWithUsedSmarty) {
-                    try {
-                        ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
-
-                            @Override
-                            public void run(ResultIterator resultIterator) throws Exception {
-                                PHPParseResult result = (PHPParseResult) resultIterator.getParserResult();
-                                if (result.getProgram() != null) {
-                                    SmartyVerificationVisitor smartyVerificationVisitor = new SmartyVerificationVisitor();
-                                    result.getProgram().accept(smartyVerificationVisitor);
-                                    if (smartyVerificationVisitor.isFoundSmarty()) {
-                                        fs.setFound(true);
-                                    }
-                                }
-
-                            }
-                        });
-                    } catch (ParseException e) {
-                        Exceptions.printStackTrace(e);
-                    }
-                }
-            }
-        }, 0);
 
         if (fs.isFound()) {
             return true;
