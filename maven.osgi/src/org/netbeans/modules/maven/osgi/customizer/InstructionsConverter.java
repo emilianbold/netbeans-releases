@@ -40,7 +40,9 @@
 package org.netbeans.modules.maven.osgi.customizer;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
@@ -56,25 +58,41 @@ import org.netbeans.modules.maven.api.FileUtilities;
 public final class InstructionsConverter {
 
     private static final String DELIMITER = ",";
+    private static final String ALL_MARK = ".*";
 
     public static final Integer EXPORT_PACKAGE = 1;
     public static final Integer PRIVATE_PACKAGE = 2;
 
-    public static Map<Integer, String> computeExportInstructions (Map<String, Boolean> items) {
+    public static Map<Integer, String> computeExportInstructions (Map<String, Boolean> items, Project project) {
         Map<Integer, String> instructionsMap = new HashMap<Integer, String>(2);
         StringBuilder exportIns = new StringBuilder();
-        for (Map.Entry<String, Boolean> entry : items.entrySet()) {
+        boolean isFirst = true;
+        for (Entry<String, Boolean> entry : items.entrySet()) {
             if (entry.getValue()) {
+                if (!isFirst) {
+                    exportIns.append(DELIMITER);
+                }
                 exportIns.append(entry.getKey());
-                exportIns.append(DELIMITER);
+                isFirst = false;
             }
         }
-        if (exportIns.length() > 0) {
-            exportIns.deleteCharAt(exportIns.length() - 1);
-        }
-
         instructionsMap.put(EXPORT_PACKAGE, exportIns.toString());
-        instructionsMap.put(PRIVATE_PACKAGE, "*");
+
+        Iterator<String> baseNames = FileUtilities.getBasePackageNames(project).iterator();
+        StringBuilder privateIns = new StringBuilder();
+        while (baseNames.hasNext()) {
+            String baseName = baseNames.next();
+            privateIns.append(baseName);
+            if (baseNames.hasNext()) {
+                privateIns.append(ALL_MARK + DELIMITER);
+            } else {
+                privateIns.append(ALL_MARK);
+            }
+        }
+        String privateText = privateIns.toString();
+        if (!privateText.equals("..*")) {
+            instructionsMap.put(PRIVATE_PACKAGE, privateText);
+        }
 
         return instructionsMap;
     }
