@@ -727,7 +727,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         assert showAssertFor185229 = true;
         if (showAssertFor185229) {
             Variable field = originalNode.getField();
-            if (field.getName() instanceof Quote) {
+            if (field instanceof ReflectionVariable) {
                 return;
             }
         }
