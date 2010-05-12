@@ -652,10 +652,12 @@ public final class ProjectEar extends J2eeApplicationProvider
         }
 
         public void initialize() throws FileStateInvalidException {
+            if (resources != null) {
+                FileUtil.removeFileChangeListener(this, resources);
+            }
             resources = getResourceDirectory();
 
             if (resources != null) {
-                FileUtil.removeFileChangeListener(this, resources);
                 FileUtil.addFileChangeListener(this, resources);
             }
 
