@@ -153,7 +153,7 @@ public class KdpDebugTask extends Task {
     
     @Override
     public void execute() throws BuildException {
-        
+
         Project project = getProject();
         if (name == null) name = project.getProperty("app.codename"); //NOI18N
         if (name == null) throw new BuildException(NbBundle.getMessage(KdpDebugTask.class, "ERR_ANT_Session_name_missing"), getLocation()); //NOI18N
@@ -179,7 +179,7 @@ public class KdpDebugTask extends Task {
         String jar = project.getProperty("dist.jar"); //NOI18N
         if (dist != null && jar != null) {
             File jarFile = new File(project.getBaseDir(), dist + '/' + jar);
-            if (jarFile.isFile() && jarFile.length() > 50000) {
+            if (jarFile.isFile() && jarFile.length() > 50000 && this.timeout != 0) {
                 long newTimeoutAdd = jarFile.length() - 50000;
                 log(NbBundle.getMessage(KdpDebugTask.class, "ERR_ANT_Debugger_Add_time_out", Long.toString(newTimeoutAdd/1000)));
                 timeout = newTimeoutAdd + timeout;
@@ -258,9 +258,9 @@ public class KdpDebugTask extends Task {
                     ie.printStackTrace();
                 }
             }
-        } while (!debuggerConnected && (System.currentTimeMillis() < this.startTime + this.timeout));
+        } while (!debuggerConnected && (System.currentTimeMillis() < this.startTime + this.timeout) && this.timeout != 0);
         
-        if (!debuggerConnected) {
+        if (!debuggerConnected && this.timeout != 0) { //timeout == 0, forever
             int attemptTime = (int) ((System.currentTimeMillis() - this.startTime) / 1000);
             log(NbBundle.getMessage(KdpDebugTask.class, "ERR_ANT_Debugger_timed_out", Integer.toString(attemptCount), Integer.toString(attemptTime)));
             throw new BuildException(NbBundle.getMessage(KdpDebugTask.class, "ERR_ANT_Debugger_timed_out", //NOI18N
